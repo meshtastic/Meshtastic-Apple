@@ -5,7 +5,6 @@
 //  Copyright(c) Garth Vander Houwen 3/17/24.
 //
 
-
 import SwiftUI
 #if canImport(MapKit)
 import MapKit
@@ -26,9 +25,9 @@ struct ChannelForm: View {
 	@Binding var hasChanges: Bool
 	@Binding var hasValidKey: Bool
 	@Binding var supportedVersion: Bool
-	
+
 	var body: some View {
-		
+
 		NavigationStack {
 			Form {
 				Section(header: Text("channel details")) {
@@ -98,15 +97,14 @@ struct ChannelForm: View {
 									Color.clear :
 										Color.red
 									, lineWidth: 2.0)
-							
+
 						)
 						.onChange(of: channelKey, perform: { _ in
-					
+
 							let tempKey = Data(base64Encoded: channelKey) ?? Data()
-							if tempKey.count == channelKeySize || channelKeySize == -1{
+							if tempKey.count == channelKeySize || channelKeySize == -1 {
 								hasValidKey = true
-							}
-							else {
+							} else {
 								hasValidKey = false
 							}
 							hasChanges = true
@@ -131,9 +129,9 @@ struct ChannelForm: View {
 						}
 					}
 				}
-				
+
 				Section(header: Text("position")) {
-					
+
 					VStack(alignment: .leading) {
 						Toggle(isOn: $positionsEnabled) {
 							Label(channelRole == 1 ? "Positions Enabled" : "Allow Position Requests", systemImage: positionsEnabled ? "mappin" : "mappin.slash")
@@ -141,7 +139,7 @@ struct ChannelForm: View {
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						.disabled(!supportedVersion)
 					}
-					
+
 					if positionsEnabled {
 						VStack(alignment: .leading) {
 							Toggle(isOn: $preciseLocation) {
@@ -156,7 +154,7 @@ struct ChannelForm: View {
 								}
 							}
 						}
-						
+
 						if !preciseLocation {
 							VStack(alignment: .leading) {
 								Label("Approximate Location", systemImage: "location.slash.circle.fill")
@@ -236,8 +234,7 @@ struct ChannelForm: View {
 				let tempKey = Data(base64Encoded: channelKey) ?? Data()
 				if tempKey.count == channelKeySize || channelKeySize == -1 {
 					hasValidKey = true
-				}
-				else {
+				} else {
 					hasValidKey = false
 				}
 			}

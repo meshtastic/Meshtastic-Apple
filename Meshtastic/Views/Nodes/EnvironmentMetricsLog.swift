@@ -113,7 +113,7 @@ struct EnvironmentMetricsLog: View {
 								GridItem(spacing: 0)
 							]
 							LazyVGrid(columns: columns, alignment: .leading, spacing: 1, pinnedViews: [.sectionHeaders]) {
-								
+
 								GridRow {
 									Text("Temp")
 										.font(.caption)
@@ -132,9 +132,9 @@ struct EnvironmentMetricsLog: View {
 										.fontWeight(.bold)
 								}
 								ForEach(environmentMetrics, id: \.self) { em  in
-									
+
 									GridRow {
-										
+
 										Text(em.temperature.formattedTemperature())
 											.font(.caption)
 										Text("\(String(format: "%.0f", em.relativeHumidity))%")
@@ -154,7 +154,7 @@ struct EnvironmentMetricsLog: View {
 					}
 				}
 				HStack {
-					
+
 					Button(role: .destructive) {
 						isPresentingClearLogConfirm = true
 					} label: {
@@ -188,7 +188,7 @@ struct EnvironmentMetricsLog: View {
 					.padding(.bottom)
 					.padding(.trailing)
 				}
-			
+
 			} else {
 				if #available (iOS 17, *) {
 					ContentUnavailableView("No Environment Metrics", systemImage: "slash.circle")
@@ -197,7 +197,7 @@ struct EnvironmentMetricsLog: View {
 				}
 			}
 		}
-		
+
 		.navigationTitle("Environment Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:

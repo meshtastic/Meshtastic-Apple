@@ -32,21 +32,21 @@ struct NodeMapSwiftUI: View {
 	@State var isShowingAltitude = false
 	@State var isEditingSettings = false
 	@State var isMeshMap = false
-	
+
 	@State private var mapRegion = MKCoordinateRegion.init()
-	
+
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
 				  predicate: NSPredicate(
 					format: "expire == nil || expire >= %@", Date() as NSDate
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
-	
+
 	var body: some View {
 		var mostRecent = node.positions?.lastObject as? PositionEntity
-		
+
 		if node.hasPositions {
 			ZStack {
-				MapReader { reader in
+				MapReader { _ in
 					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
 						NodeMapContent(node: node)
 					}

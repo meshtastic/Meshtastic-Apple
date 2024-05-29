@@ -21,14 +21,26 @@ struct PositionAltitudeChart: View {
 	@Environment(\.dismiss) private var dismiss
 	@ObservedObject var node: NodeInfoEntity
 	@State private var lineWidth = 2.0
-	
-	var body: some View {
+
+	var data: [PositionAltitude] {
 		let fiveYearsAgo = Calendar.current.date(byAdding: .year, value: -5, to: Date())
-		let nodePositions = Array(node.positions!) as! [PositionEntity]
-		let filteredPositions = nodePositions.filter({$0.time != nil && ($0.time ?? fiveYearsAgo!) > fiveYearsAgo!})
-		let data = filteredPositions.map { PositionAltitude(time: $0.time ?? Date(), altitude: Measurement(value: Double($0.altitude), unit: .meters) ) }
+		guard let nodePositions = node.positions,
+			let positions = Array(nodePositions) as? [PositionEntity]
+		else {
+			return []
+		}
+
+		let filteredPositions = positions.filter({$0.time != nil && ($0.time ?? fiveYearsAgo!) > fiveYearsAgo!})
+		return filteredPositions.map {
+			PositionAltitude(
+				time: $0.time ?? Date(),
+				altitude: Measurement(value: Double($0.altitude), unit: .meters)
+			)
+		}
+	}
+
+	var body: some View {
 		GroupBox(label: Label("Altitude", systemImage: "mountain.2")) {
-			
 			Chart(data, id: \.time) {
 				LineMark(
 					x: .value("Time", $0.time),

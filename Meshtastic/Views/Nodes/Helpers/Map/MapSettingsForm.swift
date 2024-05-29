@@ -24,7 +24,7 @@ struct MapSettingsForm: View {
 	@Binding var meshMap: Bool
 
 	var body: some View {
-		
+
 		NavigationStack {
 			Form {
 				Section(header: Text("Map Options")) {
@@ -63,7 +63,7 @@ struct MapSettingsForm: View {
 							UserDefaults.enableMapWaypoints = !waypoints
 						}
 					}
-					
+
 					Toggle(isOn: $nodeHistory) {
 						Label("Node History", systemImage: "building.columns.fill")
 					}
@@ -75,7 +75,7 @@ struct MapSettingsForm: View {
 					Toggle(isOn: $routeLines) {
 						Label("Route Lines", systemImage: "road.lanes")
 					}
-					
+
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.onTapGesture {
 						self.routeLines.toggle()
@@ -123,6 +123,6 @@ Spacer()
 		}
 		.presentationDetents([.fraction(meshMap ? 0.55 : 0.45), .fraction(0.65)])
 		.presentationDragIndicator(.visible)
-		
+
 	}
 }

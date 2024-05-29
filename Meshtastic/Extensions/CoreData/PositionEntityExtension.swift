@@ -11,7 +11,7 @@ import MapKit
 import SwiftUI
 
 extension PositionEntity {
-	
+
 	static func allPositionsFetchRequest() -> NSFetchRequest<PositionEntity> {
 		let request: NSFetchRequest<PositionEntity> = PositionEntity.fetchRequest()
 		request.fetchLimit = 1000
@@ -20,20 +20,20 @@ extension PositionEntity {
 		request.returnsDistinctResults = true
 		request.sortDescriptors = [NSSortDescriptor(key: "time", ascending: false)]
 		let positionPredicate = NSPredicate(format: "nodePosition != nil && (nodePosition.user.shortName != nil || nodePosition.user.shortName != '') && latest == true")
-		
+
 		let pointOfInterest = LocationHelper.currentLocation
-		
+
 		if pointOfInterest.latitude != LocationHelper.DefaultLocation.latitude && pointOfInterest.longitude != LocationHelper.DefaultLocation.longitude {
-			let D: Double = UserDefaults.meshMapDistance * 1.1
-			let R: Double = 6371009
+			let d: Double = UserDefaults.meshMapDistance * 1.1
+			let r: Double = 6371009
 			let meanLatitidue = pointOfInterest.latitude * .pi / 180
-			let deltaLatitude = D / R * 180 / .pi
-			let deltaLongitude = D / (R * cos(meanLatitidue)) * 180 / .pi
+			let deltaLatitude = d / r * 180 / .pi
+			let deltaLongitude = d / (r * cos(meanLatitidue)) * 180 / .pi
 			let minLatitude: Double = pointOfInterest.latitude - deltaLatitude
 			let maxLatitude: Double = pointOfInterest.latitude + deltaLatitude
 			let minLongitude: Double = pointOfInterest.longitude - deltaLongitude
 			let maxLongitude: Double = pointOfInterest.longitude + deltaLongitude
-			let distancePredicate = NSPredicate(format: "(%lf <= (longitudeI / 1e7)) AND ((longitudeI / 1e7) <= %lf) AND (%lf <= (latitudeI / 1e7)) AND ((latitudeI / 1e7) <= %lf)", minLongitude, maxLongitude,minLatitude, maxLatitude)
+			let distancePredicate = NSPredicate(format: "(%lf <= (longitudeI / 1e7)) AND ((longitudeI / 1e7) <= %lf) AND (%lf <= (latitudeI / 1e7)) AND ((latitudeI / 1e7) <= %lf)", minLongitude, maxLongitude, minLatitude, maxLatitude)
 			request.predicate = NSCompoundPredicate(type: .and, subpredicates: [positionPredicate, distancePredicate])
 		} else {
 			request.predicate = positionPredicate

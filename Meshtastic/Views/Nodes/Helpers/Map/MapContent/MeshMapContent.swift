@@ -10,7 +10,7 @@ import MapKit
 
 @available(iOS 17.0, macOS 14.0, *)
 struct MeshMapContent: MapContent {
-	
+
 	@StateObject var appState = AppState.shared
 	/// Parameters
 	@Binding var showUserLocation: Bool
@@ -24,13 +24,13 @@ struct MeshMapContent: MapContent {
 	@Binding var selectedPosition: PositionEntity?
 	@AppStorage("enableMapWaypoints") private var showWaypoints = false
 	@Binding var selectedWaypoint: WaypointEntity?
-	
+
 	@FetchRequest(fetchRequest: PositionEntity.allPositionsFetchRequest(), animation: .easeIn)
 	var positions: FetchedResults<PositionEntity>
-	
+
 	@FetchRequest(fetchRequest: WaypointEntity.allWaypointssFetchRequest(), animation: .none)
 	var waypoints: FetchedResults<WaypointEntity>
-	
+
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: true)],
 				  predicate: NSPredicate(format: "enabled == true", ""), animation: .none)
 	private var routes: FetchedResults<RouteEntity>
@@ -39,26 +39,13 @@ struct MeshMapContent: MapContent {
 	@State private var scale: CGFloat = 0.5
 
 	@MapContentBuilder
-	var meshMap: some MapContent {
-		let loraNodes = positions.filter { $0.nodePosition?.viaMqtt ?? true == false }
-		let loraCoords = Array(loraNodes).compactMap({(position) -> CLLocationCoordinate2D in
-				return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
-		})
-		/// Convex Hull
-		if showConvexHull {
-			if loraCoords.count > 0 {
-				let hull = loraCoords.getConvexHull()
-				MapPolygon(coordinates: hull)
-					.stroke(.blue, lineWidth: 3)
-					.foregroundStyle(.indigo.opacity(0.4))
-			}
-		}
-		/// Position Annotations
-		ForEach(Array(positions), id: \.id) { position in
+	var positionAnnotations: some MapContent {
+		ForEach(positions, id: \.id) { position in
 			/// Node color from node.num
 			let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
+			let positionName = position.nodePosition?.user?.longName ?? "?"
 			/// Latest Position Anotations
-			Annotation(position.nodePosition?.user?.longName ?? "?", coordinate: position.coordinate) {
+			Annotation(positionName, coordinate: position.coordinate) {
 				LazyVStack {
 					ZStack {
 						let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
@@ -89,16 +76,14 @@ struct MeshMapContent: MapContent {
 						}
 					}
 				}
-				.onTapGesture { location in
-					selectedPosition = (selectedPosition == position ? nil : position)
-				}
 			}
-			
-			
+
 			/// Node History and Route Lines for favorites
-			if position.nodePosition?.favorite ?? false {
+			if let nodePosition = position.nodePosition,
+			   nodePosition.favorite,
+			   let positions = nodePosition.positions,
+			   let nodePositions = Array(positions) as? [PositionEntity] {
 				if showRouteLines {
-					let nodePositions = Array(position.nodePosition!.positions!) as! [PositionEntity]
 					let routeCoords = nodePositions.compactMap({(pos) -> CLLocationCoordinate2D in
 						return pos.nodeCoordinate ?? LocationHelper.DefaultLocation
 					})
@@ -114,7 +99,7 @@ struct MeshMapContent: MapContent {
 						.stroke(gradient, style: dashed)
 				}
 				if showNodeHistory {
-					ForEach(Array(position.nodePosition!.positions!) as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
+					ForEach(nodePositions, id: \.self) { (mappin: PositionEntity) in
 						if mappin.latest == false && mappin.nodePosition?.favorite ?? false {
 							let pf = PositionFlags(rawValue: Int(mappin.nodePosition?.metadata?.positionFlags ?? 771))
 							let headingDegrees = Angle.degrees(Double(mappin.heading))
@@ -129,11 +114,11 @@ struct MeshMapContent: MapContent {
 											.clipShape(Circle())
 											.rotationEffect(headingDegrees)
 											.frame(width: 16, height: 16)
-										
+
 									} else {
 										Circle()
 											.fill(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))))
-											.strokeBorder(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))).isLight() ? .black : .white ,lineWidth: 2)
+											.strokeBorder(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))).isLight() ? .black : .white, lineWidth: 2)
 											.frame(width: 12, height: 12)
 									}
 								}
@@ -147,19 +132,23 @@ struct MeshMapContent: MapContent {
 			/// Reduced Precision Map Circles
 			if 10...19 ~= position.precisionBits {
 				let pp = PositionPrecision(rawValue: Int(position.precisionBits))
-				let radius : CLLocationDistance = pp?.precisionMeters ?? 0
+				let radius: CLLocationDistance = pp?.precisionMeters ?? 0
 				if radius > 0.0 {
 					MapCircle(center: position.coordinate, radius: radius)
 						.foregroundStyle(Color(nodeColor).opacity(0.25))
 						.stroke(.white, lineWidth: 2)
 				}
 			}
-			/// Routes
-			ForEach(Array(routes)) { route in
-				let routeLocations = Array(route.locations!) as! [LocationEntity]
-				let routeCoords = routeLocations.compactMap({(loc) -> CLLocationCoordinate2D in
+		}
+	}
+
+	@MapContentBuilder
+	var routeAnnotations: some MapContent {
+		ForEach(routes) { route in
+			if let routeLocations = route.locations, let locations = Array(routeLocations) as? [LocationEntity] {
+				let routeCoords = locations.compactMap {(loc) -> CLLocationCoordinate2D in
 					return loc.locationCoordinate ?? LocationHelper.DefaultLocation
-				})
+				}
 				Annotation("Start", coordinate: routeCoords.first ?? LocationHelper.DefaultLocation) {
 					ZStack {
 						Circle()
@@ -184,18 +173,19 @@ struct MeshMapContent: MapContent {
 				)
 				MapPolyline(coordinates: routeCoords)
 					.stroke(Color(UIColor(hex: UInt32(route.color))), style: solid)
-				
 			}
 		}
-		
-		/// Waypoint Annotations
-		if waypoints.count > 0 && showWaypoints {
-			ForEach(Array(waypoints) as! [WaypointEntity], id: \.self) { waypoint in
+	}
+
+	@MapContentBuilder
+	var waypointAnnotations: some MapContent {
+		if waypoints.count > 0, showWaypoints, let waypoints = Array(waypoints) as? [WaypointEntity] {
+			ForEach(waypoints, id: \.self) { waypoint in
 				Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
 					LazyVStack {
 						ZStack {
 							CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 40)
-								.onTapGesture(perform: { location in
+								.onTapGesture(perform: { _ in
 									selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
 								})
 						}
@@ -204,7 +194,27 @@ struct MeshMapContent: MapContent {
 			}
 		}
 	}
-	
+
+	@MapContentBuilder
+	var meshMap: some MapContent {
+		let loraNodes = positions.filter { $0.nodePosition?.viaMqtt ?? true == false }
+		let loraCoords = Array(loraNodes).compactMap({(position) -> CLLocationCoordinate2D in
+			return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
+		})
+		/// Convex Hull
+		if showConvexHull {
+			if loraCoords.count > 0 {
+				let hull = loraCoords.getConvexHull()
+				MapPolygon(coordinates: hull)
+					.stroke(.blue, lineWidth: 3)
+					.foregroundStyle(.indigo.opacity(0.4))
+			}
+		}
+		positionAnnotations
+		routeAnnotations
+		waypointAnnotations
+	}
+
 	@MapContentBuilder
 	var body: some MapContent {
 		meshMap

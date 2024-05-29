@@ -22,7 +22,7 @@ struct NodeDetail: View {
 
 		let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 		NavigationStack {
-			GeometryReader { bounds in
+			GeometryReader { _ in
 				VStack {
 					ScrollView {
 						NodeInfoItem(node: node)
@@ -78,12 +78,12 @@ struct NodeDetail: View {
 								Image(systemName: "flipphone")
 									.symbolRenderingMode(.hierarchical)
 									.font(.title)
-								
+
 								Text("Device Metrics Log")
 									.font(.title3)
 							}
 							.disabled(!node.hasDeviceMetrics)
-							
+
 							Divider()
 							NavigationLink {
 								if #available (iOS 17, macOS 14, *) {
@@ -91,12 +91,12 @@ struct NodeDetail: View {
 								} else {
 									NodeMapMapkit(node: node)
 								}
-								
+
 							} label: {
 								Image(systemName: "map")
 									.symbolRenderingMode(.hierarchical)
 									.font(.title)
-								
+
 								Text("Node Map")
 									.font(.title3)
 							}
@@ -108,7 +108,7 @@ struct NodeDetail: View {
 								Image(systemName: "mappin.and.ellipse")
 									.symbolRenderingMode(.hierarchical)
 									.font(.title)
-								
+
 								Text("Position Log")
 									.font(.title3)
 							}
@@ -120,7 +120,7 @@ struct NodeDetail: View {
 								Image(systemName: "cloud.sun.rain")
 									.symbolRenderingMode(.hierarchical)
 									.font(.title)
-								
+
 								Text("Environment Metrics Log")
 									.font(.title3)
 							}
@@ -133,7 +133,7 @@ struct NodeDetail: View {
 									Image(systemName: "signpost.right.and.left")
 										.symbolRenderingMode(.hierarchical)
 										.font(.title)
-									
+
 									Text("Trace Route Log")
 										.font(.title3)
 								}
@@ -146,7 +146,7 @@ struct NodeDetail: View {
 								Image(systemName: "sensor")
 									.symbolRenderingMode(.hierarchical)
 									.font(.title)
-								
+
 								Text("Detection Sensor Log")
 									.font(.title3)
 							}
@@ -159,7 +159,7 @@ struct NodeDetail: View {
 									Image(systemName: "figure.walk.motion")
 										.symbolRenderingMode(.hierarchical)
 										.font(.title)
-									
+
 									Text("paxcounter.log")
 										.font(.title3)
 								}

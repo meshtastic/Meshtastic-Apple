@@ -12,7 +12,7 @@ import TipKit
 #endif
 
 struct Messages: View {
-	
+
 	@StateObject var appState = AppState.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -20,9 +20,9 @@ struct Messages: View {
 	@State var node: NodeInfoEntity?
 	@State private var userSelection: UserEntity? // Nothing selected by default.
 	@State private var channelSelection: ChannelEntity? // Nothing selected by default.
-	
+
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
-	
+
 	enum MessagesSidebar {
 		case groupMessages
 		case directMessages
@@ -67,9 +67,9 @@ struct Messages: View {
 			.navigationBarTitleDisplayMode(.large)
 			.navigationBarItems(leading: MeshtasticLogo())
 			.onChange(of: (appState.navigationPath)) { newPath in
-				
-				if ((newPath?.hasPrefix("meshtastic://messages")) != nil) {
-					
+
+				if (newPath?.hasPrefix("meshtastic://messages")) != nil {
+
 					if let urlComponent = URLComponents(string: newPath ?? "") {
 						let queryItems = urlComponent.queryItems
 						let messageId = queryItems?.first(where: { $0.name == "messageId" })?.value
@@ -77,8 +77,7 @@ struct Messages: View {
 
 						if channel == nil {
 							print("Channel not found")
-						}
-						else {
+						} else {
 							print("Channel \(channel)")
 						//	selectedNode = nodes.first(where: { $0.num == Int64(nodeNum ?? "-1") })
 						//	AppState.shared.navigationPath = nil
@@ -106,7 +105,7 @@ struct Messages: View {
 					}
 				}
 			}
-			
+
 		} content: {
 
 		} detail: {

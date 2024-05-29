@@ -56,19 +56,19 @@ struct ContentView: View {
 		}
 	}
 }
-//#Preview {
+// #Preview {
 //	if #available(iOS 17.0, *) {
 //	//	ContentView(deepLinkManager: .init())
 //	} else {
 //		// Fallback on earlier versions
 //	}
-//}
+// }
 
-//struct ContentView_Previews: PreviewProvider {
+// struct ContentView_Previews: PreviewProvider {
 //	static var previews: some View {
 //		ContentView()
 //	}
-//}
+// }
 
 enum Tab: Hashable {
 	case contacts

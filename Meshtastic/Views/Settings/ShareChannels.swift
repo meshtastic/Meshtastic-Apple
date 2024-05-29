@@ -52,7 +52,7 @@ struct ShareChannels: View {
 	var qrCodeImage = QrCodeImage()
 
 	var body: some View {
-		
+
 		if #available(iOS 17.0, macOS 14.0, *) {
 			VStack {
 				TipView(ShareChannelsTip(), arrowEdge: .bottom)
@@ -202,7 +202,7 @@ struct ShareChannels: View {
 							.controlSize(.large)
 							.padding(.top)
 							.padding(.bottom)
-							
+
 							ShareLink("Share QR Code & Link",
 										item: Image(uiImage: qrImage),
 										subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),

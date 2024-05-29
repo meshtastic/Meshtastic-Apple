@@ -1032,10 +1032,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = DDC2E17E26CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "Meshtastic" */;
 			buildPhases = (
+				BB450974275599CE00509624 /* ShellScript */,
 				DDC2E15026CE248E0042C5E4 /* Sources */,
 				DDC2E15126CE248E0042C5E4 /* Frameworks */,
 				DDC2E15226CE248E0042C5E4 /* Resources */,
-				BB450974275599CE00509624 /* ShellScript */,
 				DDDE5A0829AF163F00490C6C /* Embed Foundation Extensions */,
 			);
 			buildRules = (
@@ -1177,6 +1177,7 @@
 /* Begin PBXShellScriptBuildPhase section */
 		BB450974275599CE00509624 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);

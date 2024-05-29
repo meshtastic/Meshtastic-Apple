@@ -9,14 +9,14 @@ import SwiftUI
 import CoreLocation
 
 struct NodeListItem: View {
-	
+
 	@ObservedObject var node: NodeInfoEntity
 	var connected: Bool
 	var connectedNode: Int64
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
-	
+
 	var body: some View {
-		
+
 		NavigationLink(value: node) {
 			LazyVStack(alignment: .leading) {
 				HStack {
@@ -69,7 +69,7 @@ struct NodeListItem: View {
 							Text("Role: \(role?.name ?? "unknown".localized)")
 								.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 								.foregroundColor(.gray)
-							
+
 						}
 						if node.isStoreForwardRouter {
 							HStack {
@@ -82,14 +82,29 @@ struct NodeListItem: View {
 									.foregroundColor(.gray)
 							}
 						}
-						
+
 						if node.positions?.count ?? 0 > 0 && connectedNode != node.num {
 							HStack {
-								let lastPostion = node.positions!.reversed()[0] as! PositionEntity
-								if #available(iOS 17.0, macOS 14.0, *) {
-									if let currentLocation = LocationsHandler.shared.locationsArray.last {
-										let myCoord = CLLocation(latitude:  currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
-										if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
+								if let lastPostion = node.positions?.lastObject as? PositionEntity {
+									if #available(iOS 17.0, macOS 14.0, *) {
+										if let currentLocation = LocationsHandler.shared.locationsArray.last {
+											let myCoord = CLLocation(latitude: currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
+											if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
+												let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
+												let metersAway = nodeCoord.distance(from: myCoord)
+												Image(systemName: "lines.measurement.horizontal")
+													.font(.callout)
+													.symbolRenderingMode(.hierarchical)
+													.frame(width: 30)
+												DistanceText(meters: metersAway)
+													.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+													.foregroundColor(.gray)
+											}
+										}
+									} else {
+
+										let myCoord = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
+										if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationHelper.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationHelper.DefaultLocation.latitude {
 											let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
 											let metersAway = nodeCoord.distance(from: myCoord)
 											Image(systemName: "lines.measurement.horizontal")
@@ -100,20 +115,6 @@ struct NodeListItem: View {
 												.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 												.foregroundColor(.gray)
 										}
-									}
-								} else {
-									
-									let myCoord = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
-									if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationHelper.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationHelper.DefaultLocation.latitude {
-										let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
-										let metersAway = nodeCoord.distance(from: myCoord)
-										Image(systemName: "lines.measurement.horizontal")
-											.font(.callout)
-											.symbolRenderingMode(.hierarchical)
-											.frame(width: 30)
-										DistanceText(meters: metersAway)
-											.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-											.foregroundColor(.gray)
 									}
 								}
 							}
@@ -131,7 +132,7 @@ struct NodeListItem: View {
 										.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 								}
 							}
-							
+
 							if node.viaMqtt && connectedNode != node.num {
 								Image(systemName: "dot.radiowaves.up.forward")
 									.symbolRenderingMode(.hierarchical)

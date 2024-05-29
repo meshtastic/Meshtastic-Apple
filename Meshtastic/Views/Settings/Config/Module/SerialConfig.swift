@@ -25,12 +25,12 @@ struct SerialConfig: View {
 	@State var timeout = 0
 	@State var overrideConsoleSerialPort = false
 	@State var mode = 0
-	
+
 	var body: some View {
 		VStack {
 			Form {
 				ConfigHeader(title: "Serial", config: \.serialConfig, node: node, onAppear: setSerialValues)
-				
+
 				Section(header: Text("options")) {
 
 					Toggle(isOn: $enabled) {

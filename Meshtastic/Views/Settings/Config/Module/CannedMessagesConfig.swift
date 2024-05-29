@@ -39,21 +39,21 @@ struct CannedMessagesConfig: View {
 		VStack {
 			Form {
 				ConfigHeader(title: "Canned messages", config: \.cannedMessageConfig, node: node, onAppear: setCannedMessagesValues)
-				
+
 				Section(header: Text("options")) {
-			
+
 					Toggle(isOn: $enabled) {
 
 						Label("enabled", systemImage: "list.bullet.rectangle.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
+
 					Toggle(isOn: $sendBell) {
 
 						Label("Send Bell", systemImage: "bell")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
+
 					Picker("Configuration Presets", selection: $configPreset ) {
 						ForEach(ConfigPresets.allCases) { cp in
 							Text(cp.description)

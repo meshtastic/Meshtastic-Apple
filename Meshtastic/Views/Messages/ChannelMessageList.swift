@@ -60,7 +60,7 @@ struct ChannelMessageList: View {
 											.foregroundColor(.gray)
 											.offset(y: 8)
 									}
-									
+
 									HStack {
 										MessageText(
 											message: message,
@@ -75,13 +75,13 @@ struct ChannelMessageList: View {
 											RetryButton(message: message, destination: .channel(channel))
 										}
 									}
-									
+
 									TapbackResponses(message: message) {
 										appState.unreadChannelMessages = myInfo.unreadMessages
 										UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 										context.refresh(myInfo, mergeChanges: true)
 									}
-					
+
 									HStack {
 										if currentUser && message.receivedACK {
 											// Ack Received
@@ -142,7 +142,7 @@ struct ChannelMessageList: View {
 					}
 				})
 			}
-			
+
 			TextMessageField(
 				destination: .channel(channel),
 				replyMessageId: $replyMessageId,

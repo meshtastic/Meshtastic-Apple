@@ -24,13 +24,12 @@ struct TelemetryConfig: View {
 	@State var powerMeasurementEnabled = false
 	@State var powerUpdateInterval = 0
 	@State var powerScreenEnabled = false
-	
 
 	var body: some View {
 		VStack {
 			Form {
 				ConfigHeader(title: "Telemetry", config: \.telemetryConfig, node: node, onAppear: setTelemetryValues)
-				
+
 				Section(header: Text("update.interval")) {
 					Picker("Device Metrics", selection: $deviceUpdateInterval ) {
 						ForEach(UpdateIntervals.allCases) { ui in
@@ -176,7 +175,7 @@ struct TelemetryConfig: View {
 				if node != nil && node?.telemetryConfig != nil {
 					if newPowerUpdateInterval != node!.telemetryConfig!.powerUpdateInterval { hasChanges = true	}
 				}
-			}		
+			}
 			.onChange(of: powerScreenEnabled) { newPowerScreenEnabled in
 				if node != nil && node?.telemetryConfig != nil {
 					if newPowerScreenEnabled != node!.telemetryConfig!.powerScreenEnabled { hasChanges = true	}

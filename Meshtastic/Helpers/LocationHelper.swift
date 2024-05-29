@@ -5,8 +5,8 @@ import MapKit
 class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 	static let shared = LocationHelper()
 	var locationManager = CLLocationManager()
-	
-	//@Published var region = MKCoordinateRegion()
+
+	// @Published var region = MKCoordinateRegion()
 	@Published var authorizationStatus: CLAuthorizationStatus?
 	override init() {
 		super.init()
@@ -47,7 +47,7 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 		}
 		return sats
 	}
-	
+
 	func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
 		switch manager.authorizationStatus {
 		case .authorizedAlways:
@@ -67,7 +67,7 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 		}
 	}
 	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-		
+
 	}
 	func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
 		print("Location manager error: \(error.localizedDescription)")

@@ -28,16 +28,16 @@ struct NetworkConfig: View {
 		VStack {
 			Form {
 				ConfigHeader(title: "Network", config: \.networkConfig, node: node, onAppear: setNetworkValues)
-				
-				if (node != nil && node?.metadata?.hasWifi ?? false) {
+
+				if node != nil && node?.metadata?.hasWifi ?? false {
 					Section(header: Text("WiFi Options")) {
-						
+
 						Toggle(isOn: $wifiEnabled) {
 							Label("enabled", systemImage: "wifi")
 							Text("Enabling WiFi will disable the bluetooth connection to the app.")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						
+
 						HStack {
 							Label("ssid", systemImage: "network")
 							TextField("ssid", text: $wifiSsid)
@@ -74,7 +74,7 @@ struct NetworkConfig: View {
 						.keyboardType(.default)
 					}
 				}
-				if (node != nil && node?.metadata?.hasEthernet ?? false) {
+				if node != nil && node?.metadata?.hasEthernet ?? false {
 					Section(header: Text("Ethernet Options")) {
 						Toggle(isOn: $ethEnabled) {
 							Label("enabled", systemImage: "network")

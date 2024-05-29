@@ -8,7 +8,7 @@
 import Foundation
 
 extension Date {
-	
+
 	func formattedDate(format: String) -> String {
 		let dateformat = DateFormatter()
 		dateformat.dateFormat = format
@@ -20,12 +20,12 @@ extension Date {
 	}
 	func relativeTimeOfDay() -> String {
 		let hour = Calendar.current.component(.hour, from: self)
-		
+
 		switch hour {
-		case 6..<12 : return "relativetimeofday.morning".localized
-		case 12 : return "relativetimeofday.midday".localized
-		case 13..<17 : return "relativetimeofday.afternoon".localized
-		case 17..<22 : return "relativetimeofday.evening".localized
+		case 6..<12: return "relativetimeofday.morning".localized
+		case 12: return "relativetimeofday.midday".localized
+		case 13..<17: return "relativetimeofday.afternoon".localized
+		case 17..<22: return "relativetimeofday.evening".localized
 		default: return "relativetimeofday.nighttime".localized
 		}
 	}

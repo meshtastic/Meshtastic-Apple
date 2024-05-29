@@ -4,7 +4,7 @@ import CoreData
 struct MessageContextMenuItems: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	
+
 	let message: MessageEntity
 	let tapBackDestination: MessageDestination
 	let isCurrentUser: Bool
@@ -47,7 +47,7 @@ struct MessageContextMenuItems: View {
 			Text("copy")
 			Image(systemName: "doc.on.doc")
 		}
-		
+
 		Menu("message.details") {
 			VStack {
 				let messageDate = Date(timeIntervalSince1970: TimeInterval(message.messageTimestamp))

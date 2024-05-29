@@ -16,7 +16,7 @@ extension UIColor {
 		var green: CGFloat = 0
 		var alpha: CGFloat = 0
 
-		getRed(&red, green: &green,	blue: &blue, alpha: &alpha)
+		getRed(&red, green: &green, blue: &blue, alpha: &alpha)
 
 		return UIColor(
 			red: add(componentDelta, toComponent: red),
@@ -37,7 +37,7 @@ extension UIColor {
 	private func add(_ value: CGFloat, toComponent: CGFloat) -> CGFloat {
 		return max(0, min(1, toComponent + value))
 	}
-	
+
 	static var random: UIColor {
 		 return UIColor(
 			 red: .random(in: 0...1),

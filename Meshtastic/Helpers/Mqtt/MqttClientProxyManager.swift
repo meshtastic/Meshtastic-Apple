@@ -39,7 +39,7 @@ class MqttClientProxyManager {
 		let minimumVersion = "2.3.2"
 		let currentVersion = UserDefaults.firmwareVersion
 		let supportedVersion = minimumVersion.compare(currentVersion, options: .numeric) == .orderedAscending  || minimumVersion.compare(currentVersion, options: .numeric) == .orderedSame
-		
+
 		if let host = host {
 			let port = defaultServerPort
 			let username = node.mqttConfig?.username

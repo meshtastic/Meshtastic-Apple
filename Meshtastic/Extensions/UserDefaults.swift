@@ -29,7 +29,7 @@ struct UserDefault<T: Decodable> {
 
 				return value
 			}
-			
+
 			return UserDefaults.standard.object(forKey: key.rawValue) as? T ?? defaultValue
 		}
 		set {
@@ -95,10 +95,10 @@ extension UserDefaults {
 
 	@UserDefault(.meshMapDistance, defaultValue: 800000)
 	static var meshMapDistance: Double
-	
+
 	@UserDefault(.enableMapWaypoints, defaultValue: false)
 	static var enableMapWaypoints: Bool
-	
+
 	@UserDefault(.enableMapRecentering, defaultValue: false)
 	static var enableMapRecentering: Bool
 
@@ -146,13 +146,13 @@ extension UserDefaults {
 
 	@UserDefault(.enableSmartPosition, defaultValue: false)
 	static var enableSmartPosition: Bool
-	
+
 	@UserDefault(.channelMessageNotifications, defaultValue: true)
 	static var channelMessageNotifications: Bool
-	
+
 	@UserDefault(.newNodeNotifications, defaultValue: true)
 	static var newNodeNotifications: Bool
-	
+
 	@UserDefault(.lowBatteryNotifications, defaultValue: true)
 	static var lowBatteryNotifications: Bool
 

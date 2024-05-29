@@ -37,7 +37,7 @@ class LocalNotificationManager {
             content.body = notification.content
             content.sound = .default
             content.interruptionLevel = .timeSensitive
-			
+
 			if notification.target != nil {
 				content.userInfo["target"]  = notification.target
 			}
