@@ -111,13 +111,13 @@ struct UserList: View {
 									let success = bleManager.setFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
 									if success {
 										user.userNode?.favorite = !(user.userNode?.favorite ?? true)
-										print("Favorited a node")
+										logger.info("Favorited a node")
 									}
 								} else {
 									let success = bleManager.removeFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
 									if success {
 										user.userNode?.favorite = !(user.userNode?.favorite ?? true)
-										print("Favorited a node")
+										logger.info("Favorited a node")
 									}
 								}
 								context.refresh(user, mergeChanges: true)
@@ -125,7 +125,7 @@ struct UserList: View {
 									try context.save()
 								} catch {
 									context.rollback()
-									print("💥 Save Node Favorite Error")
+									logger.error("Save Node Favorite Error")
 								}
 							} label: {
 								Label((user.userNode?.favorite ?? false)  ? "Un-Favorite" : "Favorite", systemImage: (user.userNode?.favorite ?? false) ? "star.slash.fill" : "star.fill")
@@ -136,7 +136,7 @@ struct UserList: View {
 									try context.save()
 								} catch {
 									context.rollback()
-									print("💥 Save User Mute Error")
+									logger.error("Save User Mute Error")
 								}
 							} label: {
 								Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")
@@ -206,7 +206,6 @@ struct UserList: View {
 			}
 			.onChange(of: selectedUserNum) { newUserNum in
 				userSelection = users.first(where: { $0.num == newUserNum })
-				print(userSelection)
 			}
 			.onAppear {
 				if self.bleManager.context == nil {

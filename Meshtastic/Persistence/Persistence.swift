@@ -47,7 +47,7 @@ class PersistenceController {
 
 			if let error = error as NSError? {
 
-				print("💥 CoreData Error: \(error.localizedDescription). Now attempting to truncate CoreData database.  All app data will be lost.")
+				logger.error("CoreData Error: \(error.localizedDescription). Now attempting to truncate CoreData database.  All app data will be lost.")
 				self.clearDatabase()
 			}
 		})
@@ -59,16 +59,16 @@ class PersistenceController {
 		let persistentStoreCoordinator = self.container.persistentStoreCoordinator
 		 do {
 			 try persistentStoreCoordinator.destroyPersistentStore(at: url, ofType: NSSQLiteStoreType, options: nil)
-			 print("💥 CoreData database truncated.  All app data has been erased.")
+			 logger.error("CoreData database truncated.  All app data has been erased.")
 
 			 do {
 				 try persistentStoreCoordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
 			 } catch let error {
-				 print("💣 Failed to re-create CoreData database: " + error.localizedDescription)
+				 logger.error("Failed to re-create CoreData database: \(error.localizedDescription)")
 			 }
 
 		} catch let error {
-			print("💣 Failed to destroy CoreData database, delete the app and re-install to clear data. Attempted to clear persistent store: " + error.localizedDescription)
+			logger.error("Failed to destroy CoreData database, delete the app and re-install to clear data. Attempted to clear persistent store: \(error.localizedDescription)")
 		}
 	}
 }

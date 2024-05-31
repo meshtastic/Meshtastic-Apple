@@ -126,7 +126,7 @@ struct NodeMapMapkit: View {
 													attributionLogo = colorScheme == .light ? attribution.combinedMarkLightURL : attribution.combinedMarkDarkURL
 												}
 											} catch {
-												print("Could not gather weather information...", error.localizedDescription)
+												logger.error("Could not gather weather information: \(error.localizedDescription)")
 												condition = .clear
 												symbolName = "cloud.fill"
 											}

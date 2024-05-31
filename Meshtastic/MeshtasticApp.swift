@@ -34,7 +34,7 @@ struct MeshtasticAppleApp: App {
 			}
 			.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
 
-				print("URL received \(userActivity)")
+				logger.debug("URL received \(userActivity)")
 				self.incomingUrl = userActivity.webpageURL
 
 				if (self.incomingUrl?.absoluteString.lowercased().contains("meshtastic.org/e/#")) != nil {
@@ -44,25 +44,25 @@ struct MeshtasticAppleApp: App {
 						}
 						self.channelSettings = cs
 						self.addChannels = Bool(self.incomingUrl?["add"] ?? "false") ?? false
-						print("Add Channel \(self.addChannels)")
+						logger.debug("Add Channel \(self.addChannels)")
 					}
 					self.saveChannels = true
-					print("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link")")
+					logger.debug("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link")")
 				}
 				if self.saveChannels {
-					print("User wants to open Channel Settings URL: \(String(describing: self.incomingUrl!.relativeString))")
+					logger.debug("User wants to open Channel Settings URL: \(String(describing: self.incomingUrl!.relativeString))")
 				}
 			}
 			.onOpenURL(perform: { (url) in
 
-				print("Some sort of URL was received \(url)")
+				logger.debug("Some sort of URL was received \(url)")
 				self.incomingUrl = url
 				if url.absoluteString.lowercased().contains("meshtastic.org/e/#") {
 					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
 						self.channelSettings = components.last!
 					}
 					self.saveChannels = true
-					print("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link")")
+					logger.debug("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link")")
 				} else if url.absoluteString.lowercased().contains("meshtastic://") {
 					appState.navigationPath = url.absoluteString
 					let path = appState.navigationPath ?? ""
@@ -74,7 +74,7 @@ struct MeshtasticAppleApp: App {
 
 				} else {
 					saveChannels = false
-					print("User wants to import a MBTILES offline map file: \(self.incomingUrl?.absoluteString ?? "No Tiles link")")
+					logger.debug("User wants to import a MBTILES offline map file: \(self.incomingUrl?.absoluteString ?? "No Tiles link")")
 				}
 
 				/// Only do the map tiles stuff if it is enabled
@@ -94,24 +94,24 @@ struct MeshtasticAppleApp: App {
 
 						// do we need to delete an old one?
 						if fileManager.fileExists(atPath: destination.path) {
-							print("ℹ️ Found an old map file.  Deleting it")
+							logger.info("Found an old map file.  Deleting it")
 							try? fileManager.removeItem(atPath: destination.path)
 						}
 
 						do {
 							try fileManager.copyItem(at: url, to: destination)
 						} catch {
-							print("Copy MB Tile file failed. Error: \(error)")
+							logger.error("Copy MB Tile file failed. Error: \(error.localizedDescription)")
 						}
 
 						if fileManager.fileExists(atPath: destination.path) {
-							print("ℹ️ Saved the map file")
+							logger.info("Saved the map file")
 
 							// need to tell the map view that it needs to update and try loading the new overlay
 							UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "lastUpdatedLocalMapFile")
 
 						} else {
-							print("💥 Didn't save the map file")
+							logger.error("Didn't save the map file")
 						}
 					}
 				}
@@ -139,22 +139,22 @@ struct MeshtasticAppleApp: App {
 		.onChange(of: scenePhase) { (newScenePhase) in
 			switch newScenePhase {
 			case .background:
-				print("ℹ️ Scene is in the background")
+				logger.info("Scene is in the background")
 				do {
 
 					try persistenceController.container.viewContext.save()
-					print("💾 Saved CoreData ViewContext when the app went to the background.")
+					logger.info("💾 Saved CoreData ViewContext when the app went to the background.")
 
 				} catch {
 
-					print("💥 Failed to save viewContext when the app goes to the background.")
+					logger.error("Failed to save viewContext when the app goes to the background.")
 				}
 			case .inactive:
-				print("ℹ️ Scene is inactive")
+				logger.info("Scene is inactive")
 			case .active:
-				print("ℹ️ Scene is active")
+				logger.info("Scene is active")
 			@unknown default:
-				print("💥 Apple must have changed something")
+				logger.error("Apple must have changed something")
 			}
 		}
 	}

@@ -70,6 +70,6 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 
 	}
 	func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-		print("Location manager error: \(error.localizedDescription)")
+		logger.error("Location manager error: \(error.localizedDescription)")
 	}
 }

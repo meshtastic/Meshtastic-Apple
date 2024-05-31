@@ -115,7 +115,7 @@ struct Firmware: View {
 											bleManager.disconnectPeripheral(reconnect: false)
 										}
 									} else {
-										print("Enter DFU Failed")
+										logger.error("Enter DFU Failed")
 									}
 								}
 							} label: {
@@ -160,7 +160,7 @@ struct Firmware: View {
 								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
 								if connectedNode != nil {
 									if !bleManager.sendRebootOta(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex) {
-										print("Reboot Failed")
+										logger.error("Reboot Failed")
 									}
 								}
 							} label: {

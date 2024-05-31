@@ -137,7 +137,7 @@ struct SerialConfig: View {
 				setSerialValues()
 				// Need to request a SerialModuleConfig from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.serialConfig == nil {
-					print("empty serial module config")
+					logger.debug("empty serial module config")
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 					if node != nil && connectedNode != nil {
 						_ = bleManager.requestSerialModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

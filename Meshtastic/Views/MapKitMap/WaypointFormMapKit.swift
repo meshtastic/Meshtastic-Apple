@@ -152,7 +152,7 @@ struct WaypointFormMapKit: View {
 					dismiss()
 				} else {
 					dismiss()
-					print("Send waypoint failed")
+					logger.error("Send waypoint failed")
 				}
 			} label: {
 				Label("Send", systemImage: "arrow.up")
@@ -212,7 +212,7 @@ struct WaypointFormMapKit: View {
 							dismiss()
 						} else {
 							dismiss()
-							print("Send waypoint failed")
+							logger.error("Send waypoint failed")
 						}
 					})
 				}

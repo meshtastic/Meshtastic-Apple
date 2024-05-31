@@ -175,9 +175,9 @@ struct PaxCounterLog: View {
 					) {
 						Button("paxcounter.delete", role: .destructive) {
 							if clearPax(destNum: node.num, context: context) {
-								print("Cleared Pax Counter for \(node.num)")
+								logger.info("Cleared Pax Counter for \(node.num)")
 							} else {
-								print("Clear Pax Counter Log Failed")
+								logger.error("Clear Pax Counter Log Failed")
 							}
 						}
 					}
@@ -219,11 +219,12 @@ struct PaxCounterLog: View {
 			contentType: .commaSeparatedText,
 			defaultFilename: String("\(node.user?.longName ?? "Node") \("paxcounter.log".localized)"),
 			onCompletion: { result in
-				if case .success = result {
-					print("PAX Counter log download succeeded.")
+				switch result {
+				case .success:
 					self.isExporting = false
-				} else {
-					print("PAX Counter log download failed: \(result).")
+					logger.info("PAX Counter log download succeeded")
+				case .failure(let error):
+					logger.error("PAX Counter log download failed: \(error.localizedDescription)")
 				}
 			}
 		)

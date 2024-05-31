@@ -20,7 +20,7 @@ class OfflineTileManager: ObservableObject {
 	}
 
 	init() {
-		print("Documents Directory = \(documentsDirectory)")
+		logger.debug("Documents Directory = \(self.documentsDirectory.absoluteString)")
 		createDirectoriesIfNecessary()
 	}
 

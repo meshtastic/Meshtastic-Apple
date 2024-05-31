@@ -184,11 +184,11 @@ struct RouteRecorder: View {
 										self.recording = newRoute
 										do {
 											try context.save()
-											print("💾 Saved a new route")
+											logger.info("💾 Saved a new route")
 										} catch {
 											context.rollback()
 											let nsError = error as NSError
-											print("💥 Error Saving RouteEntity from the Route Recorder \(nsError)")
+											logger.error("Error Saving RouteEntity from the Route Recorder \(nsError)")
 										}
 									} label: {
 										Label("start", systemImage: "play")
@@ -242,11 +242,11 @@ struct RouteRecorder: View {
 										locationsHandler.recordingStarted = nil
 										do {
 											try context.save()
-											print("💾 Saved a route finish")
+											logger.info("💾 Saved a route finish")
 										} catch {
 											context.rollback()
 											let nsError = error as NSError
-											print("💥 Error Saving RouteEntity from the Route Recorder \(nsError)")
+											logger.error("Error Saving RouteEntity from the Route Recorder \(nsError)")
 										}
 										isShowingDetails = false
 									} label: {
@@ -297,12 +297,12 @@ struct RouteRecorder: View {
 								locationEntity.longitudeI = Int32(loc.coordinate.longitude * 1e7)
 								do {
 									try context.save()
-									print("💾 Saved a new route location")
-									// print("💾 Updated Canned Messages Messages For: \(fetchedNode[0].num)")
+									logger.info("💾 Saved a new route location")
+									// logger.info("💾 Updated Canned Messages Messages For: \(fetchedNode[0].num)")
 								} catch {
 									context.rollback()
 									let nsError = error as NSError
-									print("💥 Error Saving LocationEntity from the Route Recorder \(nsError)")
+									logger.error("Error Saving LocationEntity from the Route Recorder \(nsError)")
 								}
 							}
 						}

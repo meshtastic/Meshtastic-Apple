@@ -75,12 +75,12 @@ struct Messages: View {
 						let messageId = queryItems?.first(where: { $0.name == "messageId" })?.value
 						let channel = queryItems?.first(where: { $0.name == "channel" })?.value
 
-						if channel == nil {
-							print("Channel not found")
+						if let channel {
+							logger.info("Channel \(channel)")
+							//	selectedNode = nodes.first(where: { $0.num == Int64(nodeNum ?? "-1") })
+							//	AppState.shared.navigationPath = nil
 						} else {
-							print("Channel \(channel)")
-						//	selectedNode = nodes.first(where: { $0.num == Int64(nodeNum ?? "-1") })
-						//	AppState.shared.navigationPath = nil
+							logger.info("Channel not found")
 						}
 					}
 				}

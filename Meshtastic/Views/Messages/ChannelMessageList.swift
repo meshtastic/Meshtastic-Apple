@@ -114,12 +114,12 @@ struct ChannelMessageList: View {
 									message.read = true
 									do {
 										try context.save()
-										print("📖 Read message \(message.messageId) ")
+										logger.info("📖 Read message \(message.messageId) ")
 										appState.unreadChannelMessages = myInfo.unreadMessages
 										UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 										context.refresh(myInfo, mergeChanges: true)
 									} catch {
-										print("Failed to read message \(message.messageId)")
+										logger.error("Failed to read message \(message.messageId): \(error.localizedDescription)")
 									}
 								}
 							}
