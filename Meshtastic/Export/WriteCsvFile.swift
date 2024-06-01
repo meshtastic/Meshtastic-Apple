@@ -118,7 +118,6 @@ func positionToCsvFile(positions: [PositionEntity]) -> String {
 	return csvString
 }
 
-
 func routeToCsvFile(locations: [LocationEntity]) -> String {
 	var csvString: String = ""
 	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)

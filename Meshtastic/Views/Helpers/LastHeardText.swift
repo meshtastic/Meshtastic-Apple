@@ -8,13 +8,13 @@ import SwiftUI
 struct LastHeardText: View {
 	var lastHeard: Date?
 	let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
-	
+
 	static let formatter: RelativeDateTimeFormatter = {
 		let formatter = RelativeDateTimeFormatter()
 		formatter.unitsStyle = .full
 		return formatter
 	}()
-	
+
 	var body: some View {
 		if lastHeard != nil && lastHeard! >= sixMonthsAgo! {
 			Text(lastHeard?.formatted() ?? "unknown.age".localized)

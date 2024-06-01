@@ -2,9 +2,9 @@ import SwiftUI
 
 struct TapbackResponses: View {
 	@Environment(\.managedObjectContext) var context
-	
+
 	let message: MessageEntity
-	let onRead: () ->  Void
+	let onRead: () -> Void
 
 	@ViewBuilder
 	var body: some View {

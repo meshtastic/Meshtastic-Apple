@@ -13,8 +13,8 @@ struct LoRaSignalStrengthMeter: View {
 	var preset: ModemPresets
 	var compact: Bool
 	var body: some View {
-		
-		if (snr != 0.0 && rssi != 0)  {
+
+		if snr != 0.0 && rssi != 0 {
 			let signalStrength = getLoRaSignalStrength(snr: snr, rssi: rssi, preset: preset)
 			let gradient = Gradient(colors: [.red, .orange, .yellow, .green])
 			if !compact {

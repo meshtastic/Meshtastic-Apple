@@ -13,11 +13,9 @@ import Foundation
 import MapKit
 #endif
 
-
-
 @available(iOS 17.0, macOS 14.0, *)
 struct MeshMap: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@StateObject var appState = AppState.shared
@@ -29,7 +27,7 @@ struct MeshMap: View {
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .standard
 	// Map Configuration
 	@Namespace var mapScope
-	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .flat, emphasis: MapStyle.StandardEmphasis.muted ,pointsOfInterest: .excludingAll, showsTraffic: false)
+	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .flat, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .excludingAll, showsTraffic: false)
 	@State var position = MapCameraPosition.automatic
 	@State var isEditingSettings = false
 	@State var selectedPosition: PositionEntity?
@@ -39,15 +37,14 @@ struct MeshMap: View {
 	@State var newWaypointCoord: CLLocationCoordinate2D?
 	@State var isMeshMap = true
 
-	
 	var body: some View {
-		
+
 		NavigationStack {
 			ZStack {
 				MapReader { reader in
 					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
 						MeshMapContent(showUserLocation: $showUserLocation, showTraffic: $showTraffic, showPointsOfInterest: $showPointsOfInterest, selectedMapLayer: $selectedMapLayer, selectedPosition: $selectedPosition, selectedWaypoint: $selectedWaypoint)
-				
+
 					}
 					.mapScope(mapScope)
 					.mapStyle(mapStyle)
@@ -60,7 +57,7 @@ struct MeshMap: View {
 							.mapControlVisibility(.automatic)
 					}
 					.controlSize(.regular)
-					.onTapGesture(count: 1,  perform: { position in
+					.onTapGesture(count: 1, perform: { position in
 						newWaypointCoord = reader.convert(position, from: .local) ??  CLLocationCoordinate2D.init()
 					})
 					.gesture(
@@ -73,7 +70,7 @@ struct MeshMap: View {
 										print("Unable to retreive tap location from gesture data.")
 										return
 									}
-									
+
 									guard let coordinate = reader.convert(point, from: .local) else {
 										print("Unable to convert local point to coordinate on map.")
 										return
@@ -162,7 +159,7 @@ struct MeshMap: View {
 					}
 					.tint(Color(UIColor.secondarySystemBackground))
 					.foregroundColor(.accentColor)
-					.buttonStyle(.borderedProminent)					
+					.buttonStyle(.borderedProminent)
 				}
 				.controlSize(.regular)
 				.padding(5)
@@ -176,9 +173,9 @@ struct MeshMap: View {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
-		
+
 			//	let wayPointEntity = getWaypoint(id: Int64(deepLinkManager.waypointId) ?? -1, context: context)
-			//if wayPointEntity.id > 0 {
+			// if wayPointEntity.id > 0 {
 			//	position = .camera(MapCamera(centerCoordinate: wayPointEntity.coordinate, distance: 1000, heading: 0, pitch: 60))
 			switch selectedMapLayer {
 			case .standard:

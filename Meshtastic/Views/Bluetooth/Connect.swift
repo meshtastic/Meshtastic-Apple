@@ -71,7 +71,7 @@ struct Connect: View {
 											Text("subscribed").font(.callout)
 												.foregroundColor(.green)
 										} else {
-											
+
 											HStack {
 												if #available(iOS 17.0, macOS 14.0, *) {
 													Image(systemName: "square.stack.3d.down.forward")
@@ -125,7 +125,7 @@ struct Connect: View {
 											if !bleManager.sendShutdown(fromUser: node!.user!, toUser: node!.user!, adminIndex: node!.myInfo!.adminIndex) {
 												print("Shutdown Failed")
 											}
-											
+
 										} label: {
 											Label("Power Off", systemImage: "power")
 										}
@@ -233,7 +233,7 @@ struct Connect: View {
 										bleManager.disconnectPeripheral()
 									}
 									clearCoreDataDatabase(context: context, includeRoutes: false)
-									
+
 									let radio = bleManager.peripherals.first(where: { $0.peripheral.identifier.uuidString == selectedPeripherialId })
 									if radio != nil {
 										bleManager.connectTo(peripheral: radio!.peripheral)
@@ -242,7 +242,7 @@ struct Connect: View {
 							}
 							.textCase(nil)
 						}
- 
+
 					} else {
 						Text("bluetooth.off")
 							.foregroundColor(.red)
@@ -269,7 +269,7 @@ struct Connect: View {
 					if bleManager.isConnecting {
 						Button(role: .destructive, action: {
 							bleManager.cancelPeripheralConnection()
-							
+
 						}) {
 							Label("disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 						}

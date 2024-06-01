@@ -16,7 +16,7 @@ import CoreLocation
 	private let manager: CLLocationManager
 	private var background: CLBackgroundActivitySession?
 	var enableSmartPosition: Bool = UserDefaults.enableSmartPosition
-	
+
 	@Published var locationsArray: [CLLocation]
 	@Published var isStationary = false
 	@Published var count = 0
@@ -25,12 +25,12 @@ import CoreLocation
 	@Published var recordingStarted: Date?
 	@Published var distanceTraveled = 0.0
 	@Published var elevationGain = 0.0
-	
+
 	@Published
 	var updatesStarted: Bool = UserDefaults.standard.bool(forKey: "liveUpdatesStarted") {
 		didSet { UserDefaults.standard.set(updatesStarted, forKey: "liveUpdatesStarted") }
 	}
-	
+
 	@Published
 	var backgroundActivity: Bool = UserDefaults.standard.bool(forKey: "BGActivitySessionStarted") {
 		didSet {
@@ -38,27 +38,27 @@ import CoreLocation
 			UserDefaults.standard.set(backgroundActivity, forKey: "BGActivitySessionStarted")
 		}
 	}
-	
+
 	private init() {
 		self.manager = CLLocationManager()  // Creating a location manager instance is safe to call here in `MainActor`.
 		self.manager.allowsBackgroundLocationUpdates = true
 		locationsArray = [CLLocation]()
 	}
-	
+
 	func startLocationUpdates() {
 		if self.manager.authorizationStatus == .notDetermined {
 			self.manager.requestWhenInUseAuthorization()
 		}
 		print("Starting location updates")
-		Task() {
+		Task {
 			do {
 				self.updatesStarted = true
 				let updates = CLLocationUpdate.liveUpdates()
 				for try await update in updates {
-					if !self.updatesStarted { break } 
+					if !self.updatesStarted { break }
 					if let loc = update.location {
 						self.isStationary = update.isStationary
-					
+
 						var locationAdded: Bool
 						locationAdded = addLocation(loc, smartPostion: enableSmartPosition)
 						if !isRecording && locationAdded {
@@ -74,12 +74,12 @@ import CoreLocation
 			return
 		}
 	}
-	
+
 	func stopLocationUpdates() {
 		print("Stopping location updates")
 		self.updatesStarted = false
 	}
-	
+
 	func addLocation(_ location: CLLocation, smartPostion: Bool) -> Bool {
 		if smartPostion {
 			let age = -location.timestamp.timeIntervalSinceNow
@@ -111,9 +111,9 @@ import CoreLocation
 		}
 		return true
 	}
-	
+
 	static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
-	
+
 	static var satsInView: Int {
 		var sats = 0
 		if let newLocation = shared.locationsArray.last {

@@ -11,7 +11,7 @@ import MapKit
 
 @available(iOS 17.0, macOS 14.0, *)
 struct Routes: View {
-	
+
 	@State private var columnVisibility = NavigationSplitViewVisibility.doubleColumn
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -20,18 +20,18 @@ struct Routes: View {
 	@State private var isShowingBadFileAlert = false
 	@State var isExporting = false
 	@State var exportString = ""
-	
+
 	@State var hasChanges = false
 	@State var name = ""
 	@State var notes = ""
 	@State var enabled = true
 	@State var color = Color(red: 51, green: 199, blue: 88)
-	
+
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "enabled", ascending: false), NSSortDescriptor(key: "name", ascending: true), NSSortDescriptor(key: "date", ascending: false)], animation: .default)
-	
+
 	var routes: FetchedResults<RouteEntity>
 	var body: some View {
-		
+
 		VStack {
 			if selectedRoute == nil {
 				Button("Import Route") {
@@ -41,7 +41,7 @@ struct Routes: View {
 				.buttonBorderShape(.capsule)
 				.controlSize(.large)
 				.padding()
-				
+
 				.alert(isPresented: $isShowingBadFileAlert) {
 					Alert(title: Text("Not a valid route file"), message: Text("Your route file must have both Latitude and Longitude columns and headers."), dismissButton: .default(Text("OK")))
 				}
@@ -55,7 +55,7 @@ struct Routes: View {
 						guard selectedFile.startAccessingSecurityScopedResource() else {
 							return
 						}
-						
+
 						do {
 							guard let fileContent = String(data: try Data(contentsOf: selectedFile), encoding: .utf8) else { return }
 							let routeName = selectedFile.lastPathComponent.dropLast(4)
@@ -101,11 +101,11 @@ struct Routes: View {
 							} else {
 								isShowingBadFileAlert = true
 							}
-							
+
 						} catch {
 							print("error: \(error)") // to do deal with errors
 						}
-						
+
 					} catch {
 						print("CSV Import Error")
 					}
@@ -113,16 +113,16 @@ struct Routes: View {
 				List(routes, id: \.self, selection: $selectedRoute) { route in
 					let routeColor = Color(UIColor(hex: route.color >= 0 ? UInt32(route.color) : 0))
 					Label {
-						VStack (alignment: .leading) {
+						VStack(alignment: .leading) {
 							Text("\(route.name ?? "No Name Route")")
 								.padding(.top)
 								.foregroundStyle(.primary)
-							
+
 							Text("\(route.date?.formatted() ?? "Unknown Time")")
 								.padding(.bottom)
 								.font(.callout)
 								.foregroundColor(.gray)
-							
+
 							if route.notes?.count ?? 0 > 0 {
 								Text("\(route.notes ?? "")")
 									.padding(.bottom)
@@ -157,7 +157,7 @@ struct Routes: View {
 							Label("delete", systemImage: "trash")
 						}
 					}
-					
+
 				}
 				.listStyle(.plain)
 			} else {
@@ -177,20 +177,20 @@ struct Routes: View {
 							.onChange(of: name, perform: { _ in
 								let totalBytes = name.utf8.count
 								// Only mess with the value if it is too big
-								
+
 								if totalBytes > 100 {
 									name = String(name.dropLast())
 								}
 							})
-							
+
 							Toggle(isOn: $enabled) {
 								Label("enabled", systemImage: "point.topleft.filled.down.to.point.bottomright.curvepath")
 								Text("Show on the mesh map.")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							
+
 							ColorPicker("Color", selection: $color, supportsOpacity: false)
-							
+
 							TextField(
 								"Notes",
 								text: $notes,
@@ -207,14 +207,14 @@ struct Routes: View {
 							hasChanges = false
 						}
 						HStack {
-							
+
 							Button("cancel", role: .cancel) {
 								selectedRoute = nil
 							}
 							.buttonStyle(.bordered)
 							.buttonBorderShape(.capsule)
 							.controlSize(.large)
-							
+
 							Button("save") {
 								selectedRoute?.name = name
 								selectedRoute?.notes = notes
@@ -235,19 +235,19 @@ struct Routes: View {
 							.controlSize(.large)
 							.disabled(!hasChanges)
 						}
-						.onChange(of: name) { newName in
+						.onChange(of: name) { _ in
 							hasChanges = true
 						}
-						.onChange(of: notes) { newNotes in
+						.onChange(of: notes) { _ in
 							hasChanges = true
 						}
-						.onChange(of: enabled) { newEnabled in
+						.onChange(of: enabled) { _ in
 							hasChanges = true
 						}
-						.onChange(of: color) { newColor in
+						.onChange(of: color) { _ in
 							hasChanges = true
 						}
-						Map() {
+						Map {
 							Annotation("Start", coordinate: lineCoords.first ?? LocationHelper.DefaultLocation) {
 								ZStack {
 									Circle()

@@ -15,7 +15,7 @@ struct TraceRouteLog: View {
 	@ObservedObject var locationsHandler = LocationsHandler.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	
+
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
 	@State var exportString = ""
@@ -23,16 +23,16 @@ struct TraceRouteLog: View {
 	@State private var selectedRoute: TraceRouteEntity?
 	// Map Configuration
 	@Namespace var mapScope
-	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .realistic, emphasis: MapStyle.StandardEmphasis.muted ,pointsOfInterest: .all, showsTraffic: true)
+	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .realistic, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .all, showsTraffic: true)
 	@State var position = MapCameraPosition.automatic
 	let distanceFormatter = MKDistanceFormatter()
-	
+
 	var body: some View {
-		HStack (alignment: .top) {
+		HStack(alignment: .top) {
 			VStack {
 				VStack {
 					List(node.traceRoutes?.reversed() as? [TraceRouteEntity] ?? [], id: \.self, selection: $selectedRoute) { route in
-						
+
 						Label {
 							Text("\(route.time?.formatted() ?? "unknown".localized) - \(route.response ? (route.hops?.count == 0 && route.response ? "Direct" : "\(route.hops?.count ?? 0) \(route.hops?.count ?? 0 == 1 ? "Hop": "Hops")") : "No Response")")
 						} icon: {
@@ -63,12 +63,12 @@ struct TraceRouteLog: View {
 							}
 							.font(.title2)
 						}
-						
+
 						let hopsArray = selectedRoute?.hops?.array as? [TraceRouteHopEntity] ?? []
 						let lineCoords = hopsArray.compactMap({(hop) -> CLLocationCoordinate2D in
 							return hop.coordinate ?? LocationHelper.DefaultLocation
 						})
-						if selectedRoute?.response ?? false  {
+						if selectedRoute?.response ?? false {
 							if selectedRoute?.hasPositions ?? false {
 								Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
 									Annotation("You", coordinate: selectedRoute?.coordinate ?? LocationHelper.DefaultLocation) {
@@ -82,8 +82,7 @@ struct TraceRouteLog: View {
 									.annotationTitles(.automatic)
 									// Direct Trace Route
 									if selectedRoute?.response ?? false && selectedRoute?.hops?.count ?? 0 == 0 {
-										if selectedRoute?.node?.positions?.count ?? 0 > 0 {
-											let mostRecent = selectedRoute?.node?.positions?.lastObject as! PositionEntity
+										if selectedRoute?.node?.positions?.count ?? 0 > 0, let mostRecent = selectedRoute?.node?.positions?.lastObject as? PositionEntity {
 											var traceRouteCoords: [CLLocationCoordinate2D] = [selectedRoute?.coordinate ?? LocationsHandler.DefaultLocation, mostRecent.coordinate]
 											Annotation(selectedRoute?.node?.user?.shortName ?? "???", coordinate: mostRecent.nodeCoordinate ?? LocationHelper.DefaultLocation) {
 												ZStack {
@@ -101,19 +100,21 @@ struct TraceRouteLog: View {
 												.stroke(.blue, style: dashed)
 										}
 									} else if selectedRoute?.hops?.count ?? 0 == 0 {
-										
+
 									}
 								}
 								.frame(maxWidth: .infinity, maxHeight: .infinity)
 							}
 							VStack {
 								/// Distance
-								if selectedRoute?.node?.positions?.count ?? 0 > 0 && selectedRoute?.coordinate != nil {
-									let mostRecent = selectedRoute?.node?.positions?.lastObject as! PositionEntity
+								if selectedRoute?.node?.positions?.count ?? 0 > 0,
+								   selectedRoute?.coordinate != nil,
+									let mostRecent = selectedRoute?.node?.positions?.lastObject as? PositionEntity {
+
 									let startPoint = CLLocation(latitude: selectedRoute?.coordinate?.latitude ?? LocationsHandler.DefaultLocation.latitude, longitude: selectedRoute?.coordinate?.longitude ?? LocationsHandler.DefaultLocation.longitude)
-									
+
 									if startPoint.distance(from: CLLocation(latitude: LocationsHandler.DefaultLocation.latitude, longitude: LocationsHandler.DefaultLocation.longitude)) > 0.0 {
-										let metersAway = selectedRoute?.coordinate?.distance(from:CLLocationCoordinate2D(latitude: mostRecent.latitude ?? LocationsHandler.DefaultLocation.latitude, longitude: mostRecent.longitude ?? LocationsHandler.DefaultLocation.longitude))
+										let metersAway = selectedRoute?.coordinate?.distance(from: CLLocationCoordinate2D(latitude: mostRecent.latitude ?? LocationsHandler.DefaultLocation.latitude, longitude: mostRecent.longitude ?? LocationsHandler.DefaultLocation.longitude))
 										Label {
 											Text("distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway ?? 0)))")
 												.foregroundColor(.primary)

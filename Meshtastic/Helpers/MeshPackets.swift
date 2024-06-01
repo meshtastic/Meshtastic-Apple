@@ -226,7 +226,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 			if fetchedNode.count > 0 {
 				fetchedNode[0].metadata = newMetadata
 			} else {
-				
+
 				if fromNum > 0 {
 					let newNode = createNodeInfo(num: Int64(fromNum), context: context)
 					newNode.metadata = newMetadata
@@ -284,7 +284,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
 			newNode.snr = nodeInfo.snr
 			if nodeInfo.hasUser {
-				
+
 				let newUser = UserEntity(context: context)
 				newUser.userId = nodeInfo.user.id
 				newUser.num = Int64(nodeInfo.num)
@@ -307,7 +307,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				position.longitudeI = nodeInfo.position.longitudeI
 				position.altitude = nodeInfo.position.altitude
 				position.satsInView = Int32(nodeInfo.position.satsInView)
-				position.speed = Int32(nodeInfo.position.groundSpeed) 
+				position.speed = Int32(nodeInfo.position.groundSpeed)
 				position.heading = Int32(nodeInfo.position.groundTrack)
 				position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
 				var newPostions = [PositionEntity]()
@@ -349,7 +349,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			fetchedNode[0].hopsAway = Int32(nodeInfo.hopsAway)
 
 			if nodeInfo.hasUser {
-				if (fetchedNode[0].user == nil) {
+				if fetchedNode[0].user == nil {
 					fetchedNode[0].user = UserEntity(context: context)
 				}
 				fetchedNode[0].user!.userId = nodeInfo.user.id
@@ -360,9 +360,9 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				fetchedNode[0].user!.isLicensed = nodeInfo.user.isLicensed
 				fetchedNode[0].user!.role = Int32(nodeInfo.user.role.rawValue)
 				fetchedNode[0].user!.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
-			} else  {
-				if (fetchedNode[0].user == nil && nodeInfo.num > Int16.max) {
-					
+			} else {
+				if fetchedNode[0].user == nil && nodeInfo.num > Int16.max {
+
 					let newUser = createUser(num: Int64(nodeInfo.num), context: context)
 					fetchedNode[0].user = newUser
 				}
@@ -550,25 +550,25 @@ func adminResponseAck (packet: MeshPacket, context: NSManagedObjectContext) {
 	}
 }
 func paxCounterPacket (packet: MeshPacket, context: NSManagedObjectContext) {
-	
+
 	let logString = String.localizedStringWithFormat("mesh.log.paxcounter %@".localized, String(packet.from))
 	MeshLogger.log("🧑‍🤝‍🧑 \(logString)")
 
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
-	
+
 	do {
 		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity]
-		
+
 		if let paxMessage = try? Paxcount(serializedData: packet.decoded.payload) {
-			
+
 			let newPax = PaxCounterEntity(context: context)
 			newPax.ble = Int32(truncatingIfNeeded: paxMessage.ble)
 			newPax.wifi = Int32(truncatingIfNeeded: paxMessage.wifi)
 			newPax.uptime = Int32(truncatingIfNeeded: paxMessage.uptime)
 			newPax.time = Date()
-			
-			if (fetchedNode?.count ?? 0 > 0) {
+
+			if fetchedNode?.count ?? 0 > 0 {
 				guard let mutablePax = fetchedNode?[0].pax!.mutableCopy() as? NSMutableOrderedSet else {
 					return
 				}
@@ -584,7 +584,7 @@ func paxCounterPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			}
 		}
 	} catch {
-		
+
 	}
 }
 
@@ -619,7 +619,7 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 				}
 				fetchedMessage![0].ackSNR = packet.rxSnr
 				fetchedMessage![0].ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
-				
+
 				if fetchedMessage![0].toUser != nil {
 					fetchedMessage![0].toUser!.objectWillChange.send()
 				} else {
@@ -772,20 +772,20 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 		}
 	}
 	let rangeTest = messageText?.contains(rangeTestRegex) ?? false && messageText?.starts(with: "seq ") ?? false
-	
+
 	if !wantRangeTestPackets && rangeTest {
 		return
 	}
 	var storeForwardBroadcast = false
 	if storeForward {
 		if let storeAndForwardMessage = try? StoreAndForward(serializedData: packet.decoded.payload) {
-			messageText = String(bytes:  storeAndForwardMessage.text, encoding: .utf8)
+			messageText = String(bytes: storeAndForwardMessage.text, encoding: .utf8)
 			if storeAndForwardMessage.rr == .routerTextBroadcast {
 				storeForwardBroadcast = true
 			}
 		}
 	}
-	
+
 	if messageText?.count ?? 0 > 0 {
 
 		MeshLogger.log("💬 \("mesh.log.textmessage.received".localized)")
@@ -837,7 +837,7 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 				messageSaved = true
 
 				if messageSaved {
-					
+
 					if packet.decoded.portnum == PortNum.detectionSensorApp && !UserDefaults.enableDetectionNotifications {
 						return
 					}
@@ -876,7 +876,7 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 							if !fetchedMyInfo.isEmpty {
 								appState.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
 								UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
-								
+
 								for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
 									if channel.index == newMessage.channel {
 										context.refresh(channel, mergeChanges: true)

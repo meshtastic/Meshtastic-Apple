@@ -8,10 +8,10 @@
 import Foundation
 
 extension URL {
-	
+
 	func regularFileAllocatedSize() throws -> UInt64 {
 		let resourceValues = try self.resourceValues(forKeys: allocatedSizeResourceKeys)
-		
+
 		guard resourceValues.isRegularFile ?? false else {
 			return 0
 		}

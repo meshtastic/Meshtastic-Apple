@@ -16,7 +16,7 @@ struct AppSettings: View {
 		VStack {
 			Form {
 				Section(header: Text("App Settings")) {
-					Button("Open Settings",  systemImage: "gear") {
+					Button("Open Settings", systemImage: "gear") {
 						// Get the settings URL and open it
 						if let url = URL(string: UIApplication.openSettingsURLString) {
 							UIApplication.shared.open(url)

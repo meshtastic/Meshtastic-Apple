@@ -28,7 +28,7 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 	case my_919 = 17
 	case sg_923 = 18
 	case lora24 = 13
-	var topic: String { 
+	var topic: String {
 		switch self {
 		case .unset:
 			"UNSET"

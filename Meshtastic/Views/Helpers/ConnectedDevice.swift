@@ -5,7 +5,6 @@ A view draws the indicator used in the upper right corner for views using BLE
 
 import SwiftUI
 
-
 struct ConnectedDevice: View {
     var bluetoothOn: Bool
     var deviceConnected: Bool
@@ -22,7 +21,7 @@ struct ConnectedDevice: View {
             if (phoneOnly && UIDevice.current.userInterfaceIdiom == .phone) || !phoneOnly {
                 if bluetoothOn {
                     if deviceConnected {
-						if (mqttUplinkEnabled || mqttDownlinkEnabled) {
+						if mqttUplinkEnabled || mqttDownlinkEnabled {
 							MQTTIcon(connected: mqttProxyConnected, uplink: mqttUplinkEnabled, downlink: mqttDownlinkEnabled, topic: mqttTopic)
 						}
                         Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
@@ -44,12 +43,9 @@ struct ConnectedDevice: View {
     }
 }
 
-
-
-
 struct ConnectedDevice_Previews: PreviewProvider {
     static var previews: some View {
-            VStack (alignment: .trailing) {
+            VStack(alignment: .trailing) {
                 ConnectedDevice(bluetoothOn: true, deviceConnected: true, name: "MEMO", mqttProxyConnected: true)
                 ConnectedDevice(bluetoothOn: true, deviceConnected: true, name: "MEMO", mqttProxyConnected: false, mqttUplinkEnabled: true, mqttDownlinkEnabled: true)
                 ConnectedDevice(bluetoothOn: true, deviceConnected: true, name: "MEMO", mqttProxyConnected: true, mqttUplinkEnabled: true, mqttDownlinkEnabled: true, mqttTopic: "msh/US/2/e/#")

@@ -22,7 +22,7 @@ struct AboutMeshtastic: View {
 
 				}
 				Section(header: Text("Apple Apps")) {
-					
+
 					if locale.region?.identifier ?? "US" == "US" {
 						HStack {
 							Image("SOLAR_NODE")
@@ -48,7 +48,7 @@ struct AboutMeshtastic: View {
 						}
 					}
 					.font(.title2)
-					
+
 					Text("Version: \(Bundle.main.appVersionLong) (\(Bundle.main.appBuild)) ")
 				}
 

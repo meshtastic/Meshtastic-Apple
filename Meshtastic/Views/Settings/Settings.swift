@@ -94,11 +94,10 @@ struct Settings: View {
 					}
 					.tag(SettingsSidebar.routeRecorder)
 				}
-				
+
 				let node = nodes.first(where: { $0.num == preferredNodeNum })
 				let hasAdmin = node?.myInfo?.adminIndex ?? 0 > 0 ? true : false
-				
-				
+
 				if !(node?.deviceConfig?.isManaged ?? false) {
 					if bleManager.connectedPeripheral != nil {
 						Section("Configure") {
@@ -107,7 +106,7 @@ struct Settings: View {
 									if selectedNode == 0 {
 										Text("Connect to a Node").tag(0)
 									}
-									
+
 									ForEach(nodes) { node in
 										if node.num == bleManager.connectedPeripheral?.num ?? 0 {
 											Label {
@@ -161,8 +160,8 @@ struct Settings: View {
 					Section("radio.configuration") {
 						if node != nil && node?.loRaConfig != nil {
 							let rc = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))
-							if rc?.dutyCycle ?? 0 > 0 && rc?.dutyCycle ?? 0 < 100  {
-								
+							if rc?.dutyCycle ?? 0 > 0 && rc?.dutyCycle ?? 0 < 100 {
+
 								Label {
 									Text("Hourly Duty Cycle")
 								} icon: {

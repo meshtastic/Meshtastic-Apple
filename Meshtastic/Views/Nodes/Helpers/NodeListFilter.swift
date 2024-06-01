@@ -20,14 +20,14 @@ struct NodeListFilter: View {
 	@Binding var maximumDistance: Double
 	@Binding var hopsAway: Int
 	@Binding var deviceRole: Int
-	
+
 	var body: some View {
-		
+
 		NavigationStack {
 			Form {
 				Section(header: Text(filterTitle)) {
 					Toggle(isOn: $viaLora) {
-						
+
 						Label {
 							Text("Via Lora")
 						} icon: {
@@ -37,7 +37,7 @@ struct NodeListFilter: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Toggle(isOn: $viaMqtt) {
-						
+
 						Label {
 							Text("Via Mqtt")
 						} icon: {
@@ -46,9 +46,9 @@ struct NodeListFilter: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
-					
+
 					Toggle(isOn: $isOnline) {
-						
+
 						Label {
 							Text("Online")
 						} icon: {
@@ -59,13 +59,13 @@ struct NodeListFilter: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
-					
+
 					Toggle(isOn: $isFavorite) {
-						
+
 						Label {
 							Text("Favorites")
 						} icon: {
-							
+
 							Image(systemName: "star.fill")
 								.foregroundColor(.yellow)
 								.symbolRenderingMode(.hierarchical)
@@ -73,9 +73,9 @@ struct NodeListFilter: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
-					
+
 					Toggle(isOn: $distanceFilter) {
-						
+
 						Label {
 							Text("Distance")
 						} icon: {

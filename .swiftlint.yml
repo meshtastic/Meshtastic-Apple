@@ -1,3 +1,7 @@
+# Exclude automatically generated Swift files
+excluded:
+  - Meshtastic/Protobufs
+
 line_length: 400
 
 type_name:
@@ -46,3 +50,4 @@ disabled_rules: # rule identifiers to exclude from running
 nesting:
   type_level:
     warning: 3
+

@@ -25,7 +25,7 @@ struct PositionPopover: View {
 		VStack {
 			HStack {
 				ZStack {
-					
+
 					if position.nodePosition?.isOnline ?? false {
 						Circle()
 							.fill(Color(nodeColor.lighter()).opacity(0.4).shadow(.drop(color: Color(nodeColor).isLight() ? .black : .white, radius: 5)))
@@ -42,13 +42,13 @@ struct PositionPopover: View {
 					}
 					CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 65)
 				}
-				
+
 				Text(position.nodePosition?.user?.longName ?? "Unknown")
 					.font(.largeTitle)
 			}
 			Divider()
-			HStack (alignment: .center) {
-				VStack (alignment: .leading) {
+			HStack(alignment: .center) {
+				VStack(alignment: .leading) {
 					/// Time
 					Label {
 						Text("heard".localized + ":")
@@ -131,7 +131,7 @@ struct PositionPopover: View {
 					}
 					.padding(.bottom, 5)
 					if position.nodePosition?.viaMqtt ?? false {
-						
+
 						Label {
 							let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees)
 							Text("MQTT")
@@ -146,7 +146,7 @@ struct PositionPopover: View {
 					if let lastLocation = locationsHandler.locationsArray.last {
 						/// Distance
 						if lastLocation.distance(from: CLLocation(latitude: LocationsHandler.DefaultLocation.latitude, longitude: LocationsHandler.DefaultLocation.longitude)) > 0.0 {
-							let metersAway = position.coordinate.distance(from:CLLocationCoordinate2D(latitude: lastLocation.coordinate.latitude, longitude: lastLocation.coordinate.longitude))
+							let metersAway = position.coordinate.distance(from: CLLocationCoordinate2D(latitude: lastLocation.coordinate.latitude, longitude: lastLocation.coordinate.longitude))
 							Label {
 								Text("distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
 									.foregroundColor(.primary)
@@ -160,7 +160,7 @@ struct PositionPopover: View {
 					Spacer()
 				}
 				Spacer()
-				VStack (alignment: .center) {
+				VStack(alignment: .center) {
 					if position.nodePosition != nil {
 						if position.nodePosition?.favorite ?? false {
 							Image(systemName: "star.fill")

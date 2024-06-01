@@ -25,13 +25,13 @@ struct PaxCounterLog: View {
 	var body: some View {
 		VStack {
 			if node.hasPax {
-				
+
 				let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
 				let pax = node.pax?.reversed() as? [PaxCounterEntity] ?? []
 				let chartData = pax
 						.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
 						.sorted { $0.time! < $1.time! }
-				let maxValue = (chartData.map{ $0.wifi }.max() ?? 0) + (chartData.map{ $0.ble }.max() ?? 0) + 5
+				let maxValue = (chartData.map { $0.wifi }.max() ?? 0) + (chartData.map { $0.ble }.max() ?? 0) + 5
 				if chartData.count > 0 {
 					GroupBox(label: Label("\(pax.count) Readings Total", systemImage: "chart.xyaxis.line")) {
 
@@ -47,7 +47,7 @@ struct PaxCounterLog: View {
 								.accessibilityValue("X: \(point.time!), Y: \(point.wifi + point.ble)")
 								.foregroundStyle(paxChartColor)
 								.interpolationMethod(.cardinal)
-								
+
 								Plot {
 									PointMark(
 										x: .value("x", point.time!),

@@ -9,7 +9,7 @@ import TipKit
 @available(iOS 17.0, *)
 @main
 struct MeshtasticAppleApp: App {
-		
+
 	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self) var appDelegate
 	let persistenceController = PersistenceController.shared
 	@ObservedObject private var bleManager: BLEManager = BLEManager.shared
@@ -28,7 +28,7 @@ struct MeshtasticAppleApp: App {
 			.environment(\.managedObjectContext, persistenceController.container.viewContext)
 			.environmentObject(bleManager)
 			.sheet(isPresented: $saveChannels) {
-				SaveChannelQRCode(channelSetLink: channelSettings ?? "Empty Channel URL", addChannels: addChannels,  bleManager: bleManager)
+				SaveChannelQRCode(channelSetLink: channelSettings ?? "Empty Channel URL", addChannels: addChannels, bleManager: bleManager)
 					.presentationDetents([.large])
 					.presentationDragIndicator(.visible)
 			}
@@ -71,13 +71,12 @@ struct MeshtasticAppleApp: App {
 					} else if path.starts(with: "meshtastic://nodes") {
 						AppState.shared.tabSelection = Tab.nodes
 					}
-					
-					
+
 				} else {
 					saveChannels = false
 					print("User wants to import a MBTILES offline map file: \(self.incomingUrl?.absoluteString ?? "No Tiles link")")
 				}
-				
+
 				/// Only do the map tiles stuff if it is enabled
 				if UserDefaults.enableOfflineMapsMBTiles {
 					/// we are expecting a .mbtiles map file that contains raster data
@@ -87,30 +86,30 @@ struct MeshtasticAppleApp: App {
 					let destination = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false)
 
 					if !self.saveChannels {
-						
+
 						// tell the system we want the file please
 						guard url.startAccessingSecurityScopedResource() else {
 							return
 						}
-						
+
 						// do we need to delete an old one?
 						if fileManager.fileExists(atPath: destination.path) {
 							print("ℹ️ Found an old map file.  Deleting it")
 							try? fileManager.removeItem(atPath: destination.path)
 						}
-						
+
 						do {
 							try fileManager.copyItem(at: url, to: destination)
 						} catch {
 							print("Copy MB Tile file failed. Error: \(error)")
 						}
-						
+
 						if fileManager.fileExists(atPath: destination.path) {
 							print("ℹ️ Saved the map file")
-							
+
 							// need to tell the map view that it needs to update and try loading the new overlay
 							UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "lastUpdatedLocalMapFile")
-							
+
 						} else {
 							print("💥 Didn't save the map file")
 						}
@@ -168,6 +167,6 @@ class AppState: ObservableObject {
 	@Published var unreadDirectMessages: Int = 0
 	@Published var unreadChannelMessages: Int = 0
 	@Published var firmwareVersion: String = "0.0.0"
-	//@Published var connectedNode: NodeInfoEntity?
+	// @Published var connectedNode: NodeInfoEntity?
 	@Published var navigationPath: String?
 }

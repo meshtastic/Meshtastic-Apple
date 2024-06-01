@@ -32,9 +32,9 @@ struct StoreForwardConfig: View {
 		VStack {
 			Form {
 				ConfigHeader(title: "storeforward", config: \.storeForwardConfig, node: node, onAppear: setStoreAndForwardValues)
-				
+
 				Section(header: Text("options")) {
-					
+
 					Toggle(isOn: $enabled) {
 						Label("enabled", systemImage: "envelope.arrow.triangle.branch")
 						Text("Enables the store and forward module. Store and forward must be enabled on both client and router devices.")
@@ -66,7 +66,7 @@ struct StoreForwardConfig: View {
 						}
 					}
 				}
-				
+
 				if isRouter {
 					Section(header: Text("Router Options")) {
 						Toggle(isOn: $heartbeat) {
@@ -119,7 +119,7 @@ struct StoreForwardConfig: View {
 						print("Failed to save isRouter")
 					}
 				}
-				
+
 				var sfc = ModuleConfig.StoreForwardConfig()
 				sfc.enabled = self.enabled
 				sfc.heartbeat = self.heartbeat
@@ -144,7 +144,7 @@ struct StoreForwardConfig: View {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
-			
+
 			// Need to request a Detection Sensor Module Config from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.storeForwardConfig == nil {
 				print("empty store and forward module config")

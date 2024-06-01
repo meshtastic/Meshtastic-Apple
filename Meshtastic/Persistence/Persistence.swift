@@ -60,7 +60,7 @@ class PersistenceController {
 		 do {
 			 try persistentStoreCoordinator.destroyPersistentStore(at: url, ofType: NSSQLiteStoreType, options: nil)
 			 print("💥 CoreData database truncated.  All app data has been erased.")
-			
+
 			 do {
 				 try persistentStoreCoordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
 			 } catch let error {

@@ -20,7 +20,7 @@ struct PositionLog: View {
 	@ObservedObject var node: NodeInfoEntity
 	@State private var isPresentingClearLogConfirm = false
 	@State private var sortOrder = [KeyPathComparator(\PositionEntity.time)]
-	
+
 	var body: some View {
 		VStack {
 			if node.hasPositions {
@@ -62,7 +62,7 @@ struct PositionLog: View {
 						}
 						.width(min: 180)
 					}
-					
+
 				} else {
 					ScrollView {
 						// Use a grid on iOS as a table only shows a single column
@@ -91,19 +91,21 @@ struct PositionLog: View {
 									.font(.caption2)
 									.fontWeight(.bold)
 							}
-							ForEach(node.positions!.reversed() as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
-								let altitude = Measurement(value: Double(mappin.altitude), unit: UnitLength.meters)
-								GridRow {
-									Text(String(format: "%.5f", mappin.latitude ?? 0))
-										.font(.caption2)
-									Text(String(format: "%.5f", mappin.longitude ?? 0))
-										.font(.caption2)
-									Text(String(mappin.satsInView))
-										.font(.caption2)
-									Text(altitude.formatted())
-										.font(.caption2)
-									Text(mappin.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
-										.font(.caption2)
+							if let positions = node.positions?.reversed() as? [PositionEntity] {
+								ForEach(positions, id: \.self) { (mappin: PositionEntity) in
+									let altitude = Measurement(value: Double(mappin.altitude), unit: UnitLength.meters)
+									GridRow {
+										Text(String(format: "%.5f", mappin.latitude ?? 0))
+											.font(.caption2)
+										Text(String(format: "%.5f", mappin.longitude ?? 0))
+											.font(.caption2)
+										Text(String(mappin.satsInView))
+											.font(.caption2)
+										Text(altitude.formatted())
+											.font(.caption2)
+										Text(mappin.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+											.font(.caption2)
+									}
 								}
 							}
 						}
@@ -160,7 +162,7 @@ struct PositionLog: View {
 						}
 					}
 				)
-				
+
 			} else {
 				if #available (iOS 17, *) {
 					ContentUnavailableView("No Positions", systemImage: "mappin.slash")

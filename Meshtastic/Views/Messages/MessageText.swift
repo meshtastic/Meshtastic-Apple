@@ -10,7 +10,7 @@ struct MessageText: View {
 	static let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mm:ss:a")
 
 	@Environment(\.managedObjectContext) var context
-	
+
 	let message: MessageEntity
 	let tapBackDestination: MessageDestination
 	let isCurrentUser: Bool

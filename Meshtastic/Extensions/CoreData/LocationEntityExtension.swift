@@ -39,4 +39,3 @@ extension LocationEntity {
 		}
 	}
 }
-

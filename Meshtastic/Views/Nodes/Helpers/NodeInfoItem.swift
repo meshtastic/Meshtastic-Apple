@@ -15,9 +15,9 @@ struct NodeInfoItem: View {
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
 
 	var body: some View {
-		
+
 		Divider()
-		
+
 		HStack {
 
 			VStack(alignment: .center) {

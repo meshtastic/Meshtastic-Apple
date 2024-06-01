@@ -3,7 +3,7 @@ import SwiftUI
 struct TextMessageSize: View {
 	let maxbytes: Int
 	let totalBytes: Int
-	
+
 	var body: some View {
 		ProgressView("\("bytes".localized): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
 			.frame(width: 130)

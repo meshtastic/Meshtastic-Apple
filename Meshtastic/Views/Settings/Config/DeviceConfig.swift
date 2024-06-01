@@ -46,7 +46,7 @@ struct DeviceConfig: View {
 							.font(.callout)
 					}
 					.pickerStyle(DefaultPickerStyle())
-					
+
 					VStack(alignment: .leading) {
 						Picker("Rebroadcast Mode", selection: $rebroadcastMode ) {
 							ForEach(RebroadcastModes.allCases) { rm in
@@ -58,13 +58,13 @@ struct DeviceConfig: View {
 							.font(.callout)
 					}
 					.pickerStyle(DefaultPickerStyle())
-					
+
 					Toggle(isOn: $isManaged) {
 						Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
 						Text("Enabling Managed mode will restrict access to all radio configurations, such as short/long names, regions, channels, modules, etc. and will only be accessible through the Admin channel. To avoid being locked out, make sure the Admin channel is working properly before enabling it.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
+
 					Picker("Node Info Broadcast Interval", selection: $nodeInfoBroadcastSecs ) {
 						ForEach(UpdateIntervals.allCases) { ui in
 							if ui.rawValue >= 3600 {
@@ -75,13 +75,13 @@ struct DeviceConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 				}
 				Section(header: Text("Hardware")) {
-					
+
 					Toggle(isOn: $doubleTapAsButtonPress) {
 						Label("Double Tap as Button", systemImage: "hand.tap")
 						Text("Treat double tap on supported accelerometers as a user button press.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
+
 					Toggle(isOn: $ledHeartbeatEnabled) {
 						Label("LED Heartbeat", systemImage: "waveform.path.ecg")
 						Text("Controls the blinking LED on the device.  For most devices this will control one of the up to 4 LEDS, the charger and GPS LEDs are not controllable.")
@@ -110,7 +110,7 @@ struct DeviceConfig: View {
 									}
 								})
 								.foregroundColor(.gray)
-						
+
 						}
 						.keyboardType(.default)
 						.disableAutocorrection(true)
@@ -165,7 +165,7 @@ struct DeviceConfig: View {
 									bleManager.disconnectPeripheral()
 									clearCoreDataDatabase(context: context, includeRoutes: false)
 								}
-								
+
 							} else {
 								print("NodeDB Reset Failed")
 							}

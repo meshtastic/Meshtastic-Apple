@@ -24,7 +24,7 @@ struct RangeTestConfig: View {
 		VStack {
 			Form {
 				ConfigHeader(title: "Range", config: \.rangeTestConfig, node: node, onAppear: setRangeTestValues)
-				
+
 				Section(header: Text("options")) {
 					Toggle(isOn: $enabled) {
 						Label("enabled", systemImage: "figure.walk")
@@ -41,14 +41,14 @@ struct RangeTestConfig: View {
 					Text("This device will send out range test messages on the selected interval.")
 						.foregroundColor(.gray)
 						.font(.callout)
-					
+
 					Toggle(isOn: $save) {
 						Label("save", systemImage: "square.and.arrow.down.fill")
 						Text("Saves a CSV with the range test message details, currently only available on ESP32 devices with a web server.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.disabled(!(node != nil && node?.metadata?.hasWifi ?? false))
-					
+
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.rangeTestConfig == nil)

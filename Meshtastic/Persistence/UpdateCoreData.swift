@@ -110,12 +110,12 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes
 
 	let persistenceController = PersistenceController.shared.container
 	for i in 0...persistenceController.managedObjectModel.entities.count-1 {
-		
+
 		let entity = persistenceController.managedObjectModel.entities[i]
 		let query = NSFetchRequest<NSFetchRequestResult>(entityName: entity.name!)
 		var deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
 		let entityName = entity.name ?? "UNK"
-		
+
 		if includeRoutes {
 			deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
 		} else if !includeRoutes {
@@ -153,7 +153,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			newNode.snr = packet.rxSnr
 			newNode.rssi = packet.rxRssi
 			newNode.viaMqtt = packet.viaMqtt
-		
+
 			if packet.to == 4294967295 || packet.to == UserDefaults.preferredPeripheralNum {
 				newNode.channel = Int32(packet.channel)
 			}
@@ -161,16 +161,16 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				newNode.hopsAway = Int32(nodeInfoMessage.hopsAway)
 				newNode.favorite = nodeInfoMessage.isFavorite
 			}
-			
+
 			if let newUserMessage = try? User(serializedData: packet.decoded.payload) {
-				
-				if newUserMessage.id.isEmpty  {
+
+				if newUserMessage.id.isEmpty {
 					if packet.from > Int16.max {
 						let newUser = createUser(num: Int64(packet.from), context: context)
 						newNode.user = newUser
 					}
 				} else {
-					
+
 					let newUser = UserEntity(context: context)
 					newUser.userId = newUserMessage.id
 					newUser.num = Int64(packet.from)
@@ -179,9 +179,8 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					newUser.role = Int32(newUserMessage.role.rawValue)
 					newUser.hwModel = String(describing: newUserMessage.hwModel).uppercased()
 					newNode.user = newUser
-					
-					
-					if (UserDefaults.newNodeNotifications){
+
+					if UserDefaults.newNodeNotifications {
 						let manager = LocalNotificationManager()
 						manager.notifications = [
 							Notification(
@@ -202,7 +201,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].user = newUser
 				}
 			}
-			
+
 			if newNode.user == nil && packet.from > Int16.max {
 				newNode.user = createUser(num: Int64(packet.from), context: context)
 			}
@@ -219,7 +218,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				print("💥 Error Inserting New Core Data MyInfoEntity: \(nsError)")
 			}
 			newNode.myInfo = myInfoEntity
-			
+
 		} else {
 			// Update an existing node
 			fetchedNode[0].id = Int64(packet.from)
@@ -260,7 +259,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			} else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 				fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
 			}
-			if (fetchedNode[0].user == nil) {
+			if fetchedNode[0].user == nil {
 				let newUser = createUser(num: Int64(packet.from), context: context)
 				fetchedNode[0].user! = newUser
 			}
@@ -335,8 +334,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					}
 					/// Don't save nearly the same position over and over. If the next position is less than 10 meters from the new position, delete the previous position and save the new one.
 					if mutablePositions.count > 0 && (position.precisionBits == 32 || position.precisionBits == 0) {
-						let mostRecent = mutablePositions.lastObject as! PositionEntity
-						if  mostRecent.coordinate.distance(from: position.coordinate) < 15.0 {
+						if let mostRecent = mutablePositions.lastObject as? PositionEntity, mostRecent.coordinate.distance(from: position.coordinate) < 15.0 {
 							mutablePositions.remove(mostRecent)
 						}
 					} else if mutablePositions.count > 0 {
@@ -798,7 +796,7 @@ func upsertAmbientLightingModuleConfigPacket(config: Meshtastic.ModuleConfig.Amb
 				fetchedNode[0].ambientLightingConfig = newAmbientLightingConfig
 
 			} else {
-				
+
 				if fetchedNode[0].ambientLightingConfig == nil {
 					fetchedNode[0].ambientLightingConfig = AmbientLightingConfigEntity(context: context)
 				}
@@ -1041,7 +1039,7 @@ func upsertPaxCounterModuleConfigPacket(config: Meshtastic.ModuleConfig.Paxcount
 				let newPaxCounterConfig = PaxCounterConfigEntity(context: context)
 				newPaxCounterConfig.enabled = config.enabled
 				newPaxCounterConfig.paxcounterUpdateInterval = Int32(config.paxcounterUpdateInterval)
-				
+
 				fetchedNode[0].paxCounterConfig = newPaxCounterConfig
 
 			} else {

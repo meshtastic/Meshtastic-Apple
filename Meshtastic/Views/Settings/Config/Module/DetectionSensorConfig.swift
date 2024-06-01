@@ -44,9 +44,9 @@ struct DetectionSensorConfig: View {
 		VStack {
 			Form {
 				ConfigHeader(title: "Detection Sensor", config: \.detectionSensorConfig, node: node, onAppear: setDetectionSensorValues)
-				
+
 				Section(header: Text("options")) {
-					
+
 					Toggle(isOn: $enabled) {
 						Label("enabled", systemImage: "dot.radiowaves.right")
 						Text("Enables the detection sensor module, it needs to be enabled on both the node with the sensor, and any nodes that you want to receive detection sensor text messages or view the detection sensor log and chart.")
@@ -90,7 +90,7 @@ struct DetectionSensorConfig: View {
 								.autocapitalization(.none)
 								.disableAutocorrection(true)
 								.onChange(of: name, perform: { _ in
-									
+
 									let totalBytes = name.utf8.count
 									// Only mess with the value if it is too big
 									if totalBytes > 20 {
@@ -102,7 +102,7 @@ struct DetectionSensorConfig: View {
 						Text("Friendly name used to format message sent to mesh. Example: A name \"Motion\" would result in a message \"Motion detected\"")
 							.font(.callout)
 							.foregroundStyle(.gray)
-						
+
 						Picker("GPIO Pin to monitor", selection: $monitorPin) {
 							ForEach(0..<49) {
 								if $0 == 0 {
@@ -113,13 +113,13 @@ struct DetectionSensorConfig: View {
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
-						
+
 						Toggle(isOn: $detectionTriggeredHigh) {
 							Label("Detection trigger High", systemImage: "dial.high")
 							Text("Whether or not the GPIO pin state detection is triggered on HIGH (1) or LOW (0)")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						
+
 						Toggle(isOn: $usePullup) {
 							Label("Uses pullup resistor", systemImage: "arrow.up.to.line")
 							Text(" Whether or not use INPUT_PULLUP mode for GPIO pin. Only applicable if the board uses pull-up resistors on the pin")

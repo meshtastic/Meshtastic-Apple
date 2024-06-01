@@ -13,7 +13,7 @@ import CoreMotion
 
 @available(iOS 17.0, macOS 14.0, *)
 struct RouteRecorder: View {
-	
+
 	@ObservedObject var locationsHandler: LocationsHandler = LocationsHandler.shared
 	@Environment(\.managedObjectContext) var context
 	@State private var position: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
@@ -24,7 +24,7 @@ struct RouteRecorder: View {
 	@State var recording: RouteEntity?
 	@State var color: Color = .blue
 	@State var activity: Int = 1
-	
+
 	var body: some View {
 		VStack {
 			ZStack {
@@ -34,7 +34,7 @@ struct RouteRecorder: View {
 					let lineCoords = locationsHandler.locationsArray.compactMap({(position) -> CLLocationCoordinate2D in
 						return position.coordinate
 					})
-					
+
 					let gradient = LinearGradient(
 						colors: [color],
 						startPoint: .leading, endPoint: .trailing
@@ -79,7 +79,7 @@ struct RouteRecorder: View {
 				NavigationStack {
 					VStack {
 						if locationsHandler.isRecording {
-							HStack (alignment: .center) {
+							HStack(alignment: .center) {
 								Image(systemName: "record.circle.fill")
 									.symbolRenderingMode(.multicolor)
 									.font(.title)
@@ -93,8 +93,8 @@ struct RouteRecorder: View {
 							}
 							.padding()
 						} else if locationsHandler.isRecordingPaused {
-							HStack (alignment: .center) {
-								
+							HStack(alignment: .center) {
+
 								Image(systemName: "playpause")
 									.symbolRenderingMode(.multicolor)
 									.font(.title3)
@@ -104,7 +104,7 @@ struct RouteRecorder: View {
 							}
 							.padding(.top)
 						}
-						
+
 						if locationsHandler.isRecording || locationsHandler.isRecordingPaused {
 							Divider()
 							HStack {
@@ -197,7 +197,7 @@ struct RouteRecorder: View {
 									.buttonBorderShape(.capsule)
 									.controlSize(.large)
 									.padding(.bottom)
-									
+
 								} else if locationsHandler.isRecording {
 									/// We are recording show pause button
 									Button {
@@ -223,16 +223,16 @@ struct RouteRecorder: View {
 									.controlSize(.large)
 									.padding(.bottom)
 								}
-								
+
 								if locationsHandler.isRecording || locationsHandler.isRecordingPaused {
 									/// We are recording or paused, show finish button
 									Button {
-									
+
 										if let rec = recording {
 											rec.enabled = true
 											rec.distance = locationsHandler.distanceTraveled
 											rec.elevationGain = locationsHandler.elevationGain
-											context.refresh(rec, mergeChanges:true)
+											context.refresh(rec, mergeChanges: true)
 										}
 										locationsHandler.isRecording = false
 										locationsHandler.isRecordingPaused = false
@@ -270,7 +270,7 @@ struct RouteRecorder: View {
 #endif
 								Spacer()
 							}
-							
+
 						}
 					}
 				}
@@ -298,7 +298,7 @@ struct RouteRecorder: View {
 								do {
 									try context.save()
 									print("💾 Saved a new route location")
-									//print("💾 Updated Canned Messages Messages For: \(fetchedNode[0].num)")
+									// print("💾 Updated Canned Messages Messages For: \(fetchedNode[0].num)")
 								} catch {
 									context.rollback()
 									let nsError = error as NSError

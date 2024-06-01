@@ -17,14 +17,14 @@ struct Firmware: View {
 	@State private var currentDevice: DeviceHardware?
 	@State private var latestStable: FirmwareRelease?
 	@State private var latestAlpha: FirmwareRelease?
-	
+
 	var body: some View {
-		
+
 		let supportedVersion = self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
 		ScrollView {
 			VStack(alignment: .leading) {
 				let deviceString = currentDevice?.hwModelSlug.replacingOccurrences(of: "_", with: "")
-				
+
 				HStack {
 					VStack {
 						Image(systemName: currentDevice?.activelySupported ?? false ? "checkmark.seal.fill" : "x.circle")
@@ -45,7 +45,7 @@ struct Firmware: View {
 						.frame(width: 300, height: 300)
 						.cornerRadius(5)
 				}
-				
+
 				if supportedVersion {
 					Text("Your Firmware is up to date")
 						.fixedSize(horizontal: false, vertical: true)
@@ -72,7 +72,7 @@ struct Firmware: View {
 					.fixedSize(horizontal: false, vertical: true)
 					.font(.title2)
 					.padding(.bottom)
-				
+
 				Text("Get the latest stable firmware")
 					.fixedSize(horizontal: false, vertical: true)
 					.font(.callout)
@@ -81,7 +81,7 @@ struct Firmware: View {
 				Link("Release Notes", destination: URL(string: "\(latestStable?.pageURL ?? "https://meshtastic.org")")!)
 					.font(.caption)
 					.padding(.bottom)
-				
+
 				Text("Get the latest alpha firmware")
 					.fixedSize(horizontal: false, vertical: true)
 					.font(.callout)
@@ -90,10 +90,10 @@ struct Firmware: View {
 				Link("Release Notes", destination: URL(string: "\(latestAlpha?.pageURL ?? "https://meshtastic.org")")!)
 					.font(.caption)
 					.padding(.bottom)
-				
+
 				if currentDevice?.architecture == Meshtastic.Architecture.nrf52840 {
 					VStack(alignment: .leading) {
-						
+
 						Text("Drag & Drop is the recommended way to update firmware for NRF devices. If your iPhone or iPad is USB-C it will work with your regular USB-C charging cable, for lightning devices you need the Apple Lightning to USB camera adaptor.")
 							.fixedSize(horizontal: false, vertical: true)
 							.foregroundStyle(.gray)
@@ -109,7 +109,7 @@ struct Firmware: View {
 							Button {
 								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
 								if connectedNode != nil {
-									
+
 									if bleManager.sendEnterDfuMode(fromUser: connectedNode!.user!, toUser: node!.user!) {
 										DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
 											bleManager.disconnectPeripheral(reconnect: false)
@@ -178,18 +178,18 @@ struct Firmware: View {
 						.font(.title3)
 					Text(node?.user?.hwModel ?? "UNSET")
 						.font(.title3)
-					Text ( currentDevice?.architecture.rawValue ?? "UNKNOWN")
+					Text( currentDevice?.architecture.rawValue ?? "UNKNOWN")
 						.font(.title3)
 				}
 			}
 			.padding()
 			.padding(.bottom, 5)
-			.onAppear() {
+			.onAppear {
 				Api().loadDeviceHardwareData { (hw) in
 					for device in hw {
 						let currentHardware = node?.user?.hwModel ?? "UNSET"
 						let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "")
-						if deviceString == currentHardware  {
+						if deviceString == currentHardware {
 							currentDevice = device
 						}
 					}

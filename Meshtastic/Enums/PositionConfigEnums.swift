@@ -103,9 +103,9 @@ enum GpsMode: Int, CaseIterable, Equatable {
 	case enabled = 1
 	case disabled = 0
 	case notPresent = 2
-	
+
 	var id: Int { self.rawValue }
-	
+
 	var description: String {
 		switch self {
 		case .disabled:

@@ -8,10 +8,6 @@ import SwiftUI
 
 class SwiftUIEmojiTextField: UITextField {
 
-	override func awakeFromNib() {
-		super.awakeFromNib()
-	}
-
 	func setEmoji() {
 		_ = self.textInputMode
 	}

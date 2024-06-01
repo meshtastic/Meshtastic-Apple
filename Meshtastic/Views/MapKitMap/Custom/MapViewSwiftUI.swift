@@ -75,7 +75,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.showsBuildings = true
 		mapView.showsScale = true
 		mapView.showsTraffic = true
-		
+
 		mapView.showsCompass = false
 		let compass = MKCompassButton(mapView: mapView)
 		compass.translatesAutoresizingMaskIntoConstraints = false

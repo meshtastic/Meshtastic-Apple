@@ -15,7 +15,7 @@ enum Aqi: Int, CaseIterable, Identifiable {
 	case unhealthy = 3
 	case veryUnhealthy = 4
 	case hazardous = 5
-	
+
 	var id: Int { self.rawValue }
 	var description: String {
 		switch self {
@@ -65,7 +65,7 @@ enum Aqi: Int, CaseIterable, Identifiable {
 			return Range(301...500)
 		}
 	}
-	
+
 	static func getAqi(for value: Int) -> Aqi {
 		let aqi: Aqi
 		switch value {
@@ -96,7 +96,7 @@ enum Iaq: Int, CaseIterable, Identifiable {
 	case heavilyPolluted = 4
 	case severelyPolluted = 5
 	case extremelyPolluted = 6
-	
+
 	var id: Int { self.rawValue }
 	var description: String {
 		switch self {
@@ -134,7 +134,7 @@ enum Iaq: Int, CaseIterable, Identifiable {
 			return .brown
 		}
 	}
-	
+
 	var range: Range<Int> {
 		switch self {
 		case .excellent:
