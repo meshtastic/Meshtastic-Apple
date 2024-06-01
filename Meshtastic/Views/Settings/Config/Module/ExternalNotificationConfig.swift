@@ -102,7 +102,7 @@ struct ExternalNotificationConfig: View {
 								.listRowSeparator(.visible)
 							
 							Picker("Nag timeout", selection: $nagTimeout ) {
-								ForEach(OutputIntervals.allCases) { oi in
+								ForEach(NagIntervals.allCases) { oi in
 									Text(oi.description)
 								}
 							}

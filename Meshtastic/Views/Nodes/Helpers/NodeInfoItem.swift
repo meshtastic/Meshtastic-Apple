@@ -25,7 +25,7 @@ struct NodeInfoItem: View {
 			}
 			if node.user != nil {
 				Divider()
-				VStack {
+				VStack (alignment: .center) {
 					if node.user?.hwModel != "UNSET" {
 						Image(node.user!.hwModel ?? "unset".localized)
 							.resizable()
