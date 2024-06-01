@@ -7,6 +7,40 @@
 
 import Foundation
 
+enum NagIntervals: Int, CaseIterable, Identifiable {
+
+	case unset = 0
+	case oneSecond = 1
+	case fiveSeconds = 5
+	case tenSeconds = 10
+	case fifteenSeconds = 15
+	case thirtySeconds = 30
+	case oneMinute = 60
+	case fiveMinutes = 300
+
+	var id: Int { self.rawValue }
+	var description: String {
+		switch self {
+		case .unset:
+			return "unset".localized
+		case .oneSecond:
+			return "interval.one.second".localized
+		case .fiveSeconds:
+			return "interval.five.seconds".localized
+		case .tenSeconds:
+			return "interval.ten.seconds".localized
+		case .fifteenSeconds:
+			return "interval.fifteen.seconds".localized
+		case .thirtySeconds:
+			return "interval.thirty.seconds".localized
+		case .oneMinute:
+			return "interval.one.minute".localized
+		case .fiveMinutes:
+			return "interval.five.minutes".localized
+		}
+	}
+}
+
 enum OutputIntervals: Int, CaseIterable, Identifiable {
 
 	case unset = 0
