@@ -76,7 +76,7 @@ struct PaxCounterConfig: View {
 			}
 		}
 		.onChange(of: paxcounterUpdateInterval) {
-			if let val = node?.paxCounterConfig?.paxcounterUpdateInterval {
+			if let val = node?.paxCounterConfig?.updateInterval {
 				hasChanges = $0 != val
 			}
 		}
@@ -109,6 +109,6 @@ struct PaxCounterConfig: View {
 
 	private func setPaxValues() {
 		enabled = node?.paxCounterConfig?.enabled ?? enabled
-		paxcounterUpdateInterval = Int(node?.paxCounterConfig?.paxcounterUpdateInterval ?? 900)
+		paxcounterUpdateInterval = Int(node?.paxCounterConfig?.updateInterval ?? 900)
 	}
 }

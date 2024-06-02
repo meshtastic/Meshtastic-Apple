@@ -149,6 +149,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			let newNode = NodeInfoEntity(context: context)
 			newNode.id = Int64(packet.from)
 			newNode.num = Int64(packet.from)
+			newNode.firstHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 			newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 			newNode.snr = packet.rxSnr
 			newNode.rssi = packet.rxRssi
@@ -225,6 +226,9 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			fetchedNode[0].num = Int64(packet.from)
 			if packet.rxTime > 0 {
 				fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+				if fetchedNode[0].firstHeard == nil {
+					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+				}
 			}
 			fetchedNode[0].snr = packet.rxSnr
 			fetchedNode[0].rssi = packet.rxRssi
@@ -1037,13 +1041,13 @@ func upsertPaxCounterModuleConfigPacket(config: Meshtastic.ModuleConfig.Paxcount
 			if fetchedNode[0].paxCounterConfig == nil {
 				let newPaxCounterConfig = PaxCounterConfigEntity(context: context)
 				newPaxCounterConfig.enabled = config.enabled
-				newPaxCounterConfig.paxcounterUpdateInterval = Int32(config.paxcounterUpdateInterval)
+				newPaxCounterConfig.updateInterval = Int32(config.paxcounterUpdateInterval)
 
 				fetchedNode[0].paxCounterConfig = newPaxCounterConfig
 
 			} else {
 				fetchedNode[0].paxCounterConfig?.enabled = config.enabled
-				fetchedNode[0].paxCounterConfig?.paxcounterUpdateInterval = Int32(config.paxcounterUpdateInterval)
+				fetchedNode[0].paxCounterConfig?.updateInterval = Int32(config.paxcounterUpdateInterval)
 			}
 
 			do {
