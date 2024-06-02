@@ -383,11 +383,23 @@ struct GeoChat {
   /// Clears the value of `to`. Subsequent reads from it will return its default value.
   mutating func clearTo() {self._to = nil}
 
+  ///
+  /// Callsign of the recipient for the message
+  var toCallsign: String {
+    get {return _toCallsign ?? String()}
+    set {_toCallsign = newValue}
+  }
+  /// Returns true if `toCallsign` has been explicitly set.
+  var hasToCallsign: Bool {return self._toCallsign != nil}
+  /// Clears the value of `toCallsign`. Subsequent reads from it will return its default value.
+  mutating func clearToCallsign() {self._toCallsign = nil}
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
   fileprivate var _to: String? = nil
+  fileprivate var _toCallsign: String? = nil
 }
 
 ///
@@ -633,6 +645,7 @@ extension GeoChat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "message"),
     2: .same(proto: "to"),
+    3: .standard(proto: "to_callsign"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -643,6 +656,7 @@ extension GeoChat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.message) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self._to) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self._toCallsign) }()
       default: break
       }
     }
@@ -659,12 +673,16 @@ extension GeoChat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     try { if let v = self._to {
       try visitor.visitSingularStringField(value: v, fieldNumber: 2)
     } }()
+    try { if let v = self._toCallsign {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 3)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: GeoChat, rhs: GeoChat) -> Bool {
     if lhs.message != rhs.message {return false}
     if lhs._to != rhs._to {return false}
+    if lhs._toCallsign != rhs._toCallsign {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

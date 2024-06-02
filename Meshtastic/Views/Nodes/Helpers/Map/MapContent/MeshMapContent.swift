@@ -137,6 +137,7 @@ struct MeshMapContent: MapContent {
 					MapCircle(center: position.coordinate, radius: radius)
 						.foregroundStyle(Color(nodeColor).opacity(0.25))
 						.stroke(.white, lineWidth: 2)
+						.tag(position.nodePosition?.num ?? 0)
 				}
 			}
 		}
