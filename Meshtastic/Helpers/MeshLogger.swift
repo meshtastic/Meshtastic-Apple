@@ -18,17 +18,22 @@ class MeshLogger {
 		let formatter = DateFormatter()
 		formatter.dateFormat = dateFormatString
 		let timestamp = formatter.string(from: Date())
-		guard let data = (message + " - " + timestamp + "\n").data(using: String.Encoding.utf8) else { return }
-		print(message)
+		guard let data = (message + " - " + timestamp + "\n").data(using: String.Encoding.utf8) else {
+			logger.error("Unable to create log data")
+			return
+		}
 
-		if FileManager.default.fileExists(atPath: logFile.path) {
-			if let fileHandle = try? FileHandle(forWritingTo: logFile) {
+		do {
+			if FileManager.default.fileExists(atPath: logFile.path) {
+				let fileHandle = try FileHandle(forWritingTo: logFile)
 				fileHandle.seekToEndOfFile()
 				fileHandle.write(data)
 				fileHandle.closeFile()
+			} else {
+				try data.write(to: logFile, options: .atomicWrite)
 			}
-		} else {
-			try? data.write(to: logFile, options: .atomicWrite)
+		} catch {
+			logger.error("Error writing log data: \(error.localizedDescription)")
 		}
 	}
 }

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		25183D462C0A6D97001E31D5 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25183D452C0A6D97001E31D5 /* Logger.swift */; };
 		6DA39D8E2A92DC52007E311C /* MeshtasticAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */; };
 		6DEDA55A2A957B8E00321D2E /* DetectionSensorLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */; };
 		6DEDA55C2A9592F900321D2E /* MessageEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */; };
@@ -244,6 +245,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		25183D452C0A6D97001E31D5 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAppDelegate.swift; sourceTree = "<group>"; };
 		6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorLog.swift; sourceTree = "<group>"; };
 		6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntityExtension.swift; sourceTree = "<group>"; };
@@ -943,6 +945,7 @@
 				DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */,
 				DDDB443C29F6592F00EE2349 /* NetworkManager.swift */,
 				DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */,
+				25183D452C0A6D97001E31D5 /* Logger.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1300,6 +1303,7 @@
 				D93068D32B8129510066FBC8 /* MessageContextMenuItems.swift in Sources */,
 				DD0E20FE2B87090400F2D100 /* paxcount.pb.swift in Sources */,
 				DD5E520A298EE33B00D21B61 /* channel.pb.swift in Sources */,
+				25183D462C0A6D97001E31D5 /* Logger.swift in Sources */,
 				DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */,
 				DD964FC42974767D007C176F /* MapViewFitExtension.swift in Sources */,
 				DD47E3D626F17ED900029299 /* CircleText.swift in Sources */,

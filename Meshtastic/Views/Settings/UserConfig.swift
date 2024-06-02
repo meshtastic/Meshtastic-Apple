@@ -167,7 +167,6 @@ struct UserConfig: View {
 								ham.callSign = longName
 								ham.txPower = Int32(txPower)
 								ham.frequency = overrideFrequency
-								print(ham)
 								let adminMessageId = bleManager.saveLicensedUser(ham: ham, fromUser: connectedUser, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 								if adminMessageId > 0 {
 									hasChanges = false

@@ -133,11 +133,12 @@ struct DetectionSensorLog: View {
 			contentType: .commaSeparatedText,
 			defaultFilename: String("\(node.user?.longName ?? "Node") \("detection.sensor.log".localized)"),
 			onCompletion: { result in
-				if case .success = result {
-					print("Detections metrics log download succeeded.")
+				switch result {
+				case .success:
 					self.isExporting = false
-				} else {
-					print("Detections log download failed: \(result).")
+					logger.info("Detections metrics log download succeeded.")
+				case .failure(let error):
+					logger.error("Detections log download failed: \(error.localizedDescription).")
 				}
 			}
 		)

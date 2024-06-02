@@ -67,12 +67,12 @@ struct MeshMap: View {
 							switch value {
 								case let .second(_, tapValue):
 									guard let point = tapValue?.location else {
-										print("Unable to retreive tap location from gesture data.")
+										logger.error("Unable to retreive tap location from gesture data.")
 										return
 									}
 
 									guard let coordinate = reader.convert(point, from: .local) else {
-										print("Unable to convert local point to coordinate on map.")
+										logger.error("Unable to convert local point to coordinate on map.")
 										return
 									}
 
@@ -84,7 +84,7 @@ struct MeshMap: View {
 									editingWaypoint!.longitudeI = Int32((newWaypointCoord?.longitude ?? 0) * 1e7)
 									editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
 									editingWaypoint!.id = 0
-									print("Long press occured at: \(coordinate)")
+									logger.debug("Long press occured at Lat: \(coordinate.latitude) Long: \(coordinate.longitude)")
 								default: return
 							}
 					})

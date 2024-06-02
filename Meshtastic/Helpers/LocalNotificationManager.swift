@@ -60,7 +60,7 @@ class LocalNotificationManager {
         UNUserNotificationCenter.current().getPendingNotificationRequests { notifications in
 
             for notification in notifications {
-                print(notification)
+				logger.debug("\(notification)")
             }
         }
     }

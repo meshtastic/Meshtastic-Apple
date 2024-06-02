@@ -71,7 +71,7 @@ struct MessageText: View {
 					do {
 						try context.save()
 					} catch {
-						print("Failed to delete message \(message.messageId)")
+						logger.error("Failed to delete message \(message.messageId): \(error.localizedDescription)")
 					}
 				}
 				Button("Cancel", role: .cancel) {}

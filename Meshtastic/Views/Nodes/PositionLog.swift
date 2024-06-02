@@ -130,9 +130,9 @@ struct PositionLog: View {
 					) {
 						Button("Delete all positions?", role: .destructive) {
 							if clearPositions(destNum: node.num, context: context) {
-								print("Successfully Cleared Position Log")
+								logger.info("Successfully Cleared Position Log")
 							} else {
-								print("Clear Position Log Failed")
+								logger.error("Clear Position Log Failed")
 							}
 						}
 					}
@@ -154,11 +154,12 @@ struct PositionLog: View {
 					contentType: .commaSeparatedText,
 					defaultFilename: String("\(node.user?.longName ?? "Node") Position Log"),
 					onCompletion: { result in
-						if case .success = result {
-							print("Position log download succeeded.")
+						switch result {
+						case .success:
+							logger.info("Position log download succeeded.")
 							self.isExporting = false
-						} else {
-							print("Position log download failed: \(result).")
+						case .failure(let error):
+							logger.error("Position log download failed: \(error.localizedDescription)")
 						}
 					}
 				)

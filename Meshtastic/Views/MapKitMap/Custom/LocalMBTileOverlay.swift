@@ -83,7 +83,7 @@ class LocalMBTileOverlay: MKTileOverlay {
 			self._boundingMapRect = MKMapRect(coordinates: coords)
 
 		} catch {
-			print("💥 Map tile error: \(error)")
+			logger.error("Map tile error: \(error)")
 			return nil
 		}
 	}
@@ -102,7 +102,7 @@ class LocalMBTileOverlay: MKTileOverlay {
 			let data = Data(bytes: dataQuery[tileData].bytes, count: dataQuery[tileData].bytes.count)// dataQuery![tileData].bytes
 			result(data, nil)
 		} else {
-			print("💥 No tile here: x:\(tileX) y:\(tileY) z:\(tileZ)")
+			logger.error("No tile here: x:\(tileX) y:\(tileY) z:\(tileZ)")
 			let error = NSError(domain: "LocalMBTileOverlay", code: 1, userInfo: ["reason": "no_tile"])
 			result(nil, error)
 		}

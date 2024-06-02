@@ -97,7 +97,7 @@ struct AppSettings: View {
 							Button("Delete all map tiles?", role: .destructive) {
 								tileManager.removeAll()
 								totalDownloadedTileSize = tileManager.getAllDownloadedSize()
-								print("delete all tiles")
+								logger.debug("delete all tiles")
 							}
 						}
 					}

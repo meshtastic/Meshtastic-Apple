@@ -107,7 +107,7 @@ struct TextMessageField: View {
 					wantResponse: destination.wantPositionResponse
 				)
 				if positionSent {
-					print("Location Sent")
+					logger.info("Location Sent")
 				}
 			}
 		}

@@ -361,7 +361,7 @@ struct MQTTConfig: View {
 			setMqttValues()
 			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.mqttConfig == nil {
-				print("empty mqtt module config")
+				logger.info("empty mqtt module config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
@@ -379,8 +379,8 @@ struct MQTTConfig: View {
 				let region  = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))?.topic
 				defaultTopic = "msh/" + (region ?? "UNSET")
 				geocoder.reverseGeocodeLocation(LocationsHandler.shared.locationsArray.first!, completionHandler: {(placemarks, error) in
-					if error != nil {
-						print("Failed to reverse geocode location")
+					if let error {
+						logger.error("Failed to reverse geocode location: \(error.localizedDescription)")
 						return
 					}
 
@@ -412,7 +412,7 @@ struct MQTTConfig: View {
 							nearbyTopics.append(neightborhoodTopic)
 						}
 					} else {
-						print("No Location")
+						logger.debug("No Location")
 					}
 				})
 			}
