@@ -72,9 +72,9 @@ struct NodeList: View {
 									try context.save()
 								} catch {
 									context.rollback()
-									print("💥 Save Node Favorite Error")
+									logger.error("Save Node Favorite Error")
 								}
-								print("Favorited a node")
+								logger.debug("Favorited a node")
 							}
 						} else {
 							let success = bleManager.removeFavoriteNode(node: node, connectedNodeNum: Int64(connectedNodeNum))
@@ -84,9 +84,9 @@ struct NodeList: View {
 									try context.save()
 								} catch {
 									context.rollback()
-									print("💥 Save Node Favorite Error")
+									logger.error("Save Node Favorite Error")
 								}
-								print("Favorited a node")
+								logger.debug("Favorited a node")
 							}
 						}
 
@@ -101,7 +101,7 @@ struct NodeList: View {
 								try context.save()
 							} catch {
 								context.rollback()
-								print("💥 Save User Mute Error")
+								logger.error("Save User Mute Error")
 							}
 						} label: {
 							Label(node.user!.mute ? "Show Alerts" : "Hide Alerts", systemImage: node.user!.mute ? "bell" : "bell.slash")
@@ -226,7 +226,7 @@ struct NodeList: View {
 						if deleteNode != nil {
 							let success = bleManager.removeNode(node: deleteNode!, connectedNodeNum: Int64(connectedNodeNum))
 							if !success {
-								print("Failed to delete node \(deleteNode?.user?.longName ?? "unknown".localized)")
+								logger.error("Failed to delete node \(deleteNode?.user?.longName ?? "unknown".localized)")
 							}
 						}
 					}
@@ -325,7 +325,7 @@ struct NodeList: View {
 					let queryItems = urlComponent.queryItems
 					let nodeNum = queryItems?.first(where: { $0.name == "nodenum" })?.value
 					if nodeNum == nil {
-						print("nodeNum not found")
+						logger.debug("nodeNum not found")
 					} else {
 						selectedNode = nodes.first(where: { $0.num == Int64(nodeNum ?? "-1") })
 						AppState.shared.navigationPath = nil

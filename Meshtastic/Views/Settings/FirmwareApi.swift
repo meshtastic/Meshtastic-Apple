@@ -49,7 +49,7 @@ class Api: ObservableObject {
 
 		/// List from https://api.meshtastic.org/resource/deviceHardware
 		guard let url = Bundle.main.url(forResource: "DeviceHardware.json", withExtension: nil) else {
-			print("Couldn't find DeviceHardware.json in main bundle.")
+			logger.critical("Couldn't find DeviceHardware.json in main bundle.")
 			return
 		}
 
@@ -60,8 +60,8 @@ class Api: ObservableObject {
 					DispatchQueue.main.async {
 						completion(deviceHardware)
 					}
-				} catch let jsonError as NSError {
-					print("JSON decode failure: \(jsonError.localizedDescription)")
+				} catch {
+					logger.error("JSON decode failure: \(error.localizedDescription)")
 				}
 				return
 			}
@@ -70,7 +70,7 @@ class Api: ObservableObject {
 
 	func loadFirmwareReleaseData(completion: @escaping (FirmwareReleases) -> Void) {
 		guard let url = URL(string: "https://api.meshtastic.org/github/firmware/list") else {
-			print("Invalid url...")
+			logger.error("Invalid url...")
 			return
 		}
 		URLSession.shared.dataTask(with: url) { data, _, _ in
@@ -80,8 +80,8 @@ class Api: ObservableObject {
 					DispatchQueue.main.async {
 						completion(firmwareReleases)
 					}
-				} catch let jsonError as NSError {
-					print("JSON decode failure: \(jsonError.localizedDescription)")
+				} catch {
+					logger.error("JSON decode failure: \(error.localizedDescription)")
 				}
 				return
 			}

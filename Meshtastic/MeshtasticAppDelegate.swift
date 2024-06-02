@@ -9,7 +9,7 @@ import SwiftUI
 
 class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, ObservableObject {
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-		print("🚀 Meshtstic Apple App launched!")
+		logger.info("🚀 Meshtstic Apple App launched!")
 		// Default User Default Values
 		UserDefaults.standard.register(defaults: ["meshMapRecentering": true])
 		UserDefaults.standard.register(defaults: ["meshMapShowNodeHistory": true])

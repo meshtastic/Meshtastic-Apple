@@ -172,7 +172,7 @@ struct EnvironmentMetricsLog: View {
 					) {
 						Button("Delete all environment metrics?", role: .destructive) {
 							if clearTelemetry(destNum: node.num, metricsType: 1, context: context) {
-								print("Clear Environment Metrics Log Failed")
+								logger.error("Clear Environment Metrics Log Failed")
 							}
 						}
 					}
@@ -215,11 +215,12 @@ struct EnvironmentMetricsLog: View {
 			contentType: .commaSeparatedText,
 			defaultFilename: String("\(node.user?.longName ?? "Node") Environment Metrics Log"),
 			onCompletion: { result in
-				if case .success = result {
-					print("Environment metrics log download succeeded.")
+				switch result {
+				case .success:
 					self.isExporting = false
-				} else {
-					print("Environment metrics log download failed: \(result).")
+					logger.info("Environment metrics log download succeeded.")
+				case .failure(let error):
+					logger.error("Environment metrics log download failed: \(error.localizedDescription)")
 				}
 			}
 		)

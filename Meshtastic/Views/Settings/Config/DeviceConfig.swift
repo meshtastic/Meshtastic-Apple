@@ -167,7 +167,7 @@ struct DeviceConfig: View {
 								}
 
 							} else {
-								print("NodeDB Reset Failed")
+								logger.error("NodeDB Reset Failed")
 							}
 						}
 					}
@@ -191,7 +191,7 @@ struct DeviceConfig: View {
 									clearCoreDataDatabase(context: context, includeRoutes: false)
 								}
 							} else {
-								print("Factory Reset Failed")
+								logger.error("Factory Reset Failed")
 							}
 						}
 					}
@@ -241,7 +241,7 @@ struct DeviceConfig: View {
 			setDeviceValues()
 			// Need to request a LoRaConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.deviceConfig == nil {
-				print("empty device config")
+				logger.info("empty device config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 				if node != nil && connectedNode != nil && connectedNode?.user != nil {
 					_ = bleManager.requestDeviceConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

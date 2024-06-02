@@ -144,13 +144,13 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
 					let tilePath = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false).path
 					if fileManager.fileExists(atPath: tilePath) {
-						print("Loading local map file")
+						logger.info("Loading local map file")
 						if let overlay = LocalMBTileOverlay(mbTilePath: tilePath) {
 							overlay.canReplaceMapContent = false// customMapOverlay.canReplaceMapContent
 							mapView.addOverlay(overlay)
 						}
 					} else {
-						print("Couldn't find a local map file to load")
+						logger.info("Couldn't find a local map file to load")
 					}
 				}
 				DispatchQueue.main.async {
@@ -209,7 +209,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 		let annotationCount = waypoints.count + (showNodeHistory ? positions.count : latest.count)
 		if annotationCount != mapView.annotations.count {
-			print("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
+			logger.info("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
 			mapView.removeAnnotations(mapView.annotations)
 			mapView.addAnnotations(waypoints)
 		}

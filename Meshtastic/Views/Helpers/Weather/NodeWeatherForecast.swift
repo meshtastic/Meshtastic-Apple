@@ -34,7 +34,7 @@ struct NodeWeatherForecastView: View {
 					)
 				})
 			} catch {
-				print("Could not load weather", error.localizedDescription)
+				logger.error("Could not load weather: \(error.localizedDescription)")
 			}
 		}
 	}

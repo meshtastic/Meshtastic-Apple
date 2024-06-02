@@ -30,10 +30,10 @@ struct TapbackResponses: View {
 							tapback.read = true
 							do {
 								try context.save()
-								print("📖 Read tapback \(tapback.messageId) ")
+								logger.info("📖 Read tapback \(tapback.messageId) ")
 								onRead()
 							} catch {
-								print("Failed to read tapback \(tapback.messageId)")
+								logger.error("Failed to read tapback \(tapback.messageId): \(error.localizedDescription)")
 							}
 						}
 					}

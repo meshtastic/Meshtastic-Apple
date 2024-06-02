@@ -70,7 +70,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	func startScanning() {
 		if isSwitchedOn {
 			centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
-			print("✅ Scanning Started")
+			logger.info("✅ Scanning Started")
 		}
 	}
 
@@ -78,7 +78,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	func stopScanning() {
 		if centralManager.isScanning {
 			centralManager.stopScan()
-			print("🛑 Stopped Scanning")
+			logger.info("🛑 Stopped Scanning")
 		}
 	}
 
@@ -111,7 +111,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			self.timeoutTimerCount = 0
 			self.startScanning()
 		} else {
-			print("🚨 BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)")
+			logger.info("🚨 BLE Connecting 2 Second Timeout Timer Fired \(self.timeoutTimerCount) Time(s): \(name)")
 		}
 	}
 
@@ -124,7 +124,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			self.automaticallyReconnect = true
 		}
 		if connectedPeripheral != nil {
-			print("ℹ️ BLE Disconnecting from: \(connectedPeripheral.name) to connect to \(peripheral.name ?? "Unknown")")
+			logger.info("ℹ️ BLE Disconnecting from: \(self.connectedPeripheral.name) to connect to \(peripheral.name ?? "Unknown")")
 			disconnectPeripheral()
 		}
 
@@ -138,7 +138,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		let context = ["name": "\(peripheral.name ?? "Unknown")"]
 		timeoutTimer = Timer.scheduledTimer(timeInterval: 1.5, target: self, selector: #selector(timeoutTimerFired), userInfo: context, repeats: true)
 		RunLoop.current.add(timeoutTimer!, forMode: .common)
-		print("ℹ️ BLE Connecting: \(peripheral.name ?? "Unknown")")
+		logger.info("ℹ️ BLE Connecting: \(peripheral.name ?? "Unknown")")
 	}
 
 	// Disconnect Connected Peripheral
@@ -208,13 +208,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		// Discover Services
 		peripheral.discoverServices([meshtasticServiceCBUUID])
-		print("✅ BLE Connected: \(peripheral.name ?? "Unknown")")
+		logger.info("✅ BLE Connected: \(peripheral.name ?? "Unknown")")
 	}
 
 	// Called when a Peripheral fails to connect
 	func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
 		cancelPeripheralConnection()
-		print("🚫 BLE Failed to Connect: \(peripheral.name ?? "Unknown")")
+		logger.error("🚫 BLE Failed to Connect: \(peripheral.name ?? "Unknown")")
 	}
 
 	// Disconnect Peripheral Event
@@ -230,7 +230,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			if errorCode == 6 { // CBError.Code.connectionTimeout The connection has timed out unexpectedly.
 				// Happens when device is manually reset / powered off
 				lastConnectionError = "🚨" + String.localizedStringWithFormat("ble.errorcode.6 %@".localized, e.localizedDescription)
-				print("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
+				logger.error("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
 			} else if errorCode == 7 { // CBError.Code.peripheralDisconnected The specified device has disconnected from us.
 				// Seems to be what is received when a tbeam sleeps, immediately recconnecting does not work.
 				if UserDefaults.preferredPeripheralId == peripheral.identifier.uuidString {
@@ -247,11 +247,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					manager.schedule()
 				}
 				lastConnectionError = "🚨 \(e.localizedDescription)"
-				print("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
+				logger.error("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
 			} else if errorCode == 14 { // Peer removed pairing information
 				// Forgetting and reconnecting seems to be necessary so we need to show the user an error telling them to do that
 				lastConnectionError = "🚨 " + String.localizedStringWithFormat("ble.errorcode.14 %@".localized, e.localizedDescription)
-				print("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(lastConnectionError)")
+				logger.error("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(self.lastConnectionError)")
 			} else {
 				if UserDefaults.preferredPeripheralId == peripheral.identifier.uuidString {
 					manager.notifications = [
@@ -267,12 +267,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					manager.schedule()
 				}
 				lastConnectionError = "🚨 \(e.localizedDescription)"
-				print("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
+				logger.error("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
 			}
 		} else {
 			// Disconnected without error which indicates user intent to disconnect
 			// Happens when swiping to disconnect
-			print("ℹ️ BLE Disconnected: \(peripheral.name ?? "Unknown"): User Initiated Disconnect")
+			logger.info("ℹ️ BLE Disconnected: \(peripheral.name ?? "Unknown"): User Initiated Disconnect")
 		}
 		// Start a scan so the disconnected peripheral is moved to the peripherals[] if it is awake
 		self.startScanning()
@@ -280,14 +280,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 	// MARK: Peripheral Services functions
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-		if let e = error {
-			print("🚫 Discover Services error \(e)")
+		if let error {
+			logger.error("🚫 Discover Services error \(error.localizedDescription)")
 		}
 		guard let services = peripheral.services else { return }
 		for service in services {
 			if service.uuid == meshtasticServiceCBUUID {
 				peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID], for: service)
-				print("✅ BLE Service for Meshtastic discovered by \(peripheral.name ?? "Unknown")")
+				logger.info("✅ BLE Service for Meshtastic discovered by \(peripheral.name ?? "Unknown")")
 			}
 		}
 	}
@@ -295,8 +295,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	// MARK: Discover Characteristics Event
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
 
-		if let e = error {
-			print("🚫 BLE Discover Characteristics error for \(peripheral.name ?? "Unknown") \(e) disconnecting device")
+		if let error {
+			logger.error("🚫 BLE Discover Characteristics error for \(peripheral.name ?? "Unknown") \(error.localizedDescription) disconnecting device")
 			// Try and stop crashes when this error occurs
 			disconnectPeripheral()
 			return
@@ -308,16 +308,16 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			switch characteristic.uuid {
 
 			case TORADIO_UUID:
-				print("✅ BLE did discover TORADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
+				logger.info("✅ BLE did discover TORADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
 				TORADIO_characteristic = characteristic
 
 			case FROMRADIO_UUID:
-				print("✅ BLE did discover FROMRADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
+				logger.info("✅ BLE did discover FROMRADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
 				FROMRADIO_characteristic = characteristic
 				peripheral.readValue(for: FROMRADIO_characteristic)
 
 			case FROMNUM_UUID:
-				print("✅ BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
+				logger.info("✅ BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
 				FROMNUM_characteristic = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
 
@@ -337,13 +337,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	func onMqttConnected() {
 		mqttProxyConnected = true
 		mqttError = ""
-		print("📲 Mqtt Client Proxy onMqttConnected now subscribing to \(mqttManager.topic).")
+		logger.info("📲 Mqtt Client Proxy onMqttConnected now subscribing to \(self.mqttManager.topic).")
 		mqttManager.mqttClientProxy?.subscribe(mqttManager.topic)
 	}
 
 	func onMqttDisconnected() {
 		mqttProxyConnected = false
-		print("MQTT Disconnected")
+		logger.info("MQTT Disconnected")
 	}
 
 	func onMqttMessageReceived(message: CocoaMQTTMessage) {
@@ -369,7 +369,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	func onMqttError(message: String) {
 		mqttProxyConnected = false
 		mqttError = message
-		print("📲 Mqtt Client Proxy onMqttError: \(message)")
+		logger.info("📲 Mqtt Client Proxy onMqttError: \(message)")
 	}
 
 	// MARK: Protobuf Methods
@@ -448,11 +448,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 				do {
 					try context!.save()
-					print("💾 Saved TraceRoute sent to node: \(String(receivingNode?.user?.longName ?? "unknown".localized))")
+					logger.info("💾 Saved TraceRoute sent to node: \(String(receivingNode?.user?.longName ?? "unknown".localized))")
 				} catch {
 					context!.rollback()
 					let nsError = error as NSError
-					print("💥 Error Updating Core Data BluetoothConfigEntity: \(nsError)")
+					logger.error("Error Updating Core Data BluetoothConfigEntity: \(nsError)")
 				}
 
 				let logString = String.localizedStringWithFormat("mesh.log.traceroute.sent %@".localized, String(destNum))
@@ -490,24 +490,22 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	}
 
 	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
-		if let errorText = error?.localizedDescription {
-			print("🚫 didUpdateNotificationStateFor error: \(errorText)")
-		}
+		logger.error("didUpdateNotificationStateFor error: \(error?.localizedDescription ?? "Unknown")")
 	}
 
 	// MARK: Data Read / Update Characteristic Event
 	func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
 
-		if let e = error {
+		if let error {
 
-			print("🚫 didUpdateValueFor Characteristic error \(e)")
-			let errorCode = (e as NSError).code
+			logger.error("🚫 didUpdateValueFor Characteristic error \(error.localizedDescription)")
+			let errorCode = (error as NSError).code
 			if errorCode == 5 || errorCode == 15 {
 				// BLE PIN connection errors
 				// 5 CBATTErrorDomain Code=5 "Authentication is insufficient."
 				// 15 CBATTErrorDomain Code=15 "Encryption is insufficient."
-				lastConnectionError = "🚨" + String.localizedStringWithFormat("ble.errorcode.pin %@".localized, e.localizedDescription)
-				print("🚨 \(e.localizedDescription) Please try connecting again and check the PIN carefully.")
+				lastConnectionError = "🚨" + String.localizedStringWithFormat("ble.errorcode.pin %@".localized, error.localizedDescription)
+				logger.error("\(error.localizedDescription) Please try connecting again and check the PIN carefully.")
 				self.disconnectPeripheral(reconnect: false)
 			}
 			return
@@ -526,7 +524,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				decodedInfo = try FromRadio(serializedData: characteristic.value!)
 
 			} catch {
-				print(characteristic.value!)
+				logger.error("\(error.localizedDescription) \(characteristic.value!)")
 			}
 
 			// Publish mqttClientProxyMessages received on the from radio
@@ -718,11 +716,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						traceRoute?.hops = NSOrderedSet(array: hopNodes)
 						do {
 							try context!.save()
-							print("💾 Saved Trace Route")
+							logger.info("💾 Saved Trace Route")
 						} catch {
 							context!.rollback()
 							let nsError = error as NSError
-							print("💥 Error Updating Core Data TraceRouteHOp: \(nsError)")
+							logger.error("Error Updating Core Data TraceRouteHOp: \(nsError)")
 						}
 						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.route %@".localized, routeString)
 						MeshLogger.log("🪧 \(logString)")
@@ -740,7 +738,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .UNRECOGNIZED:
 				MeshLogger.log("🕸️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 			case .max:
-				print("MAX PORT NUM OF 511")
+				logger.info("MAX PORT NUM OF 511")
 			case .atakPlugin:
 				MeshLogger.log("🕸️ MESH PACKET received for ATAK Plugin App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 
@@ -750,7 +748,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				invalidVersion = false
 				lastConnectionError = ""
 				isSubscribed = true
-				print("🤜 Want Config Complete. ID:\(decodedInfo.configCompleteID)")
+				logger.info("🤜 Want Config Complete. ID:\(decodedInfo.configCompleteID)")
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again
 
@@ -786,7 +784,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						}
 
 					} catch {
-						print("Failed to find a node info for the connected node")
+						logger.error("Failed to find a node info for the connected node \(error.localizedDescription)")
 					}
 				}
 
@@ -804,9 +802,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			}
 
 		case FROMNUM_UUID:
-			print("🗞️ BLE (Notify) characteristic, value will be read next")
+			logger.info("🗞️ BLE (Notify) characteristic, value will be read next")
 		default:
-			print("🚨 Unhandled Characteristic UUID: \(characteristic.uuid)")
+			logger.error("Unhandled Characteristic UUID: \(characteristic.uuid)")
 		}
 		if FROMRADIO_characteristic != nil {
 			// Either Read the config complete value or from num notify value
@@ -836,7 +834,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		} else if message.count < 1 {
 
 			// Don't send an empty message
-			print("🚫 Don't Send an Empty Message")
+			logger.info("🚫 Don't Send an Empty Message")
 			success = false
 
 		} else {
@@ -853,7 +851,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 				if fetchedUsers.isEmpty {
 
-					print("🚫 Message Users Not Found, Fail")
+					logger.error("🚫 Message Users Not Found, Fail")
 					success = false
 				} else if fetchedUsers.count >= 1 {
 
@@ -913,13 +911,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						MeshLogger.log("💬 \(logString)")
 						do {
 							try context!.save()
-							print("💾 Saved a new sent message from \(connectedPeripheral.num) to \(toUserNum)")
+							logger.info("💾 Saved a new sent message from \(self.connectedPeripheral.num) to \(toUserNum)")
 							success = true
 
 						} catch {
 							context!.rollback()
 							let nsError = error as NSError
-							print("💥 Unresolved Core Data error in Send Message Function your database is corrupted running a node db reset should clean up the data. Error: \(nsError)")
+							logger.error("Unresolved Core Data error in Send Message Function your database is corrupted running a node db reset should clean up the data. Error: \(nsError)")
 						}
 					}
 				}
@@ -984,11 +982,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			}
 			do {
 				try context!.save()
-				print("💾 Updated Waypoint from Waypoint App Packet From: \(fromNodeNum)")
+				logger.info("💾 Updated Waypoint from Waypoint App Packet From: \(fromNodeNum)")
 			} catch {
 				context!.rollback()
 				let nsError = error as NSError
-				print("💥 Error Saving NodeInfoEntity from WAYPOINT_APP \(nsError)")
+				logger.error("Error Saving NodeInfoEntity from WAYPOINT_APP \(nsError)")
 			}
 		}
 		return success
@@ -1109,7 +1107,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
 			let logString = String.localizedStringWithFormat("mesh.log.sharelocation %@".localized, String(fromNodeNum))
-			print("📍 \(logString)")
+			logger.debug("📍 \(logString)")
 		}
 		return success
 	}
@@ -1348,7 +1346,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 									}
 								}
 							} catch {
-								print("Failed to find a node MyInfo to save these channels to")
+								logger.error("Failed to find a node MyInfo to save these channels to: \(error.localizedDescription)")
 							}
 						}
 
@@ -1470,7 +1468,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			} catch {
 				context!.rollback()
 				let nsError = error as NSError
-				print("💥 Error deleting node from core data: \(nsError)")
+				logger.error("Error deleting node from core data: \(nsError)")
 			}
 		}
 		return false
@@ -2623,12 +2621,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			do {
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 				try context!.save()
-				print(adminDescription)
+				logger.debug("\(adminDescription)")
 				return true
 			} catch {
 				context!.rollback()
 				let nsError = error as NSError
-				print("💥 Error inserting new core data MessageEntity: \(nsError)")
+				logger.error("Error inserting new core data MessageEntity: \(nsError)")
 			}
 		}
 		return false
@@ -2659,7 +2657,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		let binaryData: Data = try! toRadio.serializedData()
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			print("📮 Sent a request for a Store & Forward Client History to \(toUser.num) for the last \(120) minutes.")
+			logger.debug("📮 Sent a request for a Store & Forward Client History to \(toUser.num) for the last \(120) minutes.")
 			return true
 		}
 		return false
@@ -2697,7 +2695,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						try context.save()
 					} catch {
 						context.rollback()
-						print("💥 Save Store and Forward Router Error")
+						logger.error("Save Store and Forward Router Error")
 					}
 				}
 				MeshLogger.log("💓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
@@ -2724,7 +2722,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					try context.save()
 				} catch {
 					context.rollback()
-					print("💥 Save Store and Forward Router Error")
+					logger.error("Save Store and Forward Router Error")
 				}
 				MeshLogger.log("📜 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
 			case .routerStats:
@@ -2767,11 +2765,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				do {
 					try context!.save()
 				} catch {
-					print("Failed to clear existing channels from local app database")
+					logger.error("Failed to clear existing channels from local app database: \(error.localizedDescription)")
 				}
 			}
 		} catch {
-			print("Failed to find a node MyInfo to save these channels to")
+			logger.error("Failed to find a node MyInfo to save these channels to: \(error.localizedDescription)")
 		}
 	}
 }
@@ -2782,7 +2780,7 @@ extension BLEManager: CBCentralManagerDelegate {
 	// MARK: Bluetooth enabled/disabled
 	func centralManagerDidUpdateState(_ central: CBCentralManager) {
 		if central.state == CBManagerState.poweredOn {
-			print("BLE powered on")
+			logger.debug("BLE powered on")
 			isSwitchedOn = true
 			startScanning()
 		} else {
@@ -2807,7 +2805,7 @@ extension BLEManager: CBCentralManagerDelegate {
 		default:
 			status = "default"
 		}
-		print("BLEManager status: \(status)")
+		logger.debug("BLEManager status: \(status)")
 	}
 
 	// Called each time a peripheral is discovered
@@ -2815,7 +2813,7 @@ extension BLEManager: CBCentralManagerDelegate {
 
 		if self.automaticallyReconnect && peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" {
 			self.connectTo(peripheral: peripheral)
-			print("ℹ️ BLE Reconnecting to prefered peripheral: \(peripheral.name ?? "Unknown")")
+			logger.info("BLE Reconnecting to prefered peripheral: \(peripheral.name ?? "Unknown")")
 		}
 		let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String
 		let device = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: name ?? "Unknown", shortName: "?", longName: name ?? "Unknown", firmwareVersion: "Unknown", rssi: RSSI.intValue, lastUpdate: Date(), peripheral: peripheral)

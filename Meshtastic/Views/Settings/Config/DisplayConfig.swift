@@ -164,7 +164,7 @@ struct DisplayConfig: View {
 
 			// Need to request a LoRaConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.displayConfig == nil {
-				print("empty display config")
+				logger.info("empty display config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestDisplayConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

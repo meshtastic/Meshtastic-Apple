@@ -180,11 +180,11 @@ struct Channels: View {
 							context.refresh(selectedChannel!, mergeChanges: true)
 							do {
 								try context.save()
-								print("💾 Saved Channel: \(channel.settings.name)")
+								logger.info("💾 Saved Channel: \(channel.settings.name)")
 							} catch {
 								context.rollback()
 								let nsError = error as NSError
-								print("💥 Unresolved Core Data error in the channel editor. Error: \(nsError)")
+								logger.error("Unresolved Core Data error in the channel editor. Error: \(nsError)")
 							}
 						} else {
 							guard let channelEntities = node?.myInfo?.channels as? [ChannelEntity],
@@ -204,11 +204,11 @@ struct Channels: View {
 							context.delete(channelEntity)
 							do {
 								try context.save()
-								print("💾 Deleted Channel: \(channel.settings.name)")
+								logger.info("💾 Deleted Channel: \(channel.settings.name)")
 							} catch {
 								context.rollback()
 								let nsError = error as NSError
-								print("💥 Unresolved Core Data error in the channel editor. Error: \(nsError)")
+								logger.error("Unresolved Core Data error in the channel editor. Error: \(nsError)")
 							}
 						}
 

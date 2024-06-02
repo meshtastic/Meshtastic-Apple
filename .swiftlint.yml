@@ -51,3 +51,10 @@ nesting:
   type_level:
     warning: 3
 
+custom_rules:
+    disable_print:
+      included: ".*\\.swift"
+      name: "Disable `print()`"
+      regex: "((\\bprint)|(Swift\\.print))\\s*\\("
+      message: "Consider using a dedicated log message or the Xcode debugger instead of using `print`. ex. logger.debug(...)"
+      severity: warning

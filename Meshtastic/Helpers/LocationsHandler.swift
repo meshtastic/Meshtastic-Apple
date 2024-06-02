@@ -49,7 +49,7 @@ import CoreLocation
 		if self.manager.authorizationStatus == .notDetermined {
 			self.manager.requestWhenInUseAuthorization()
 		}
-		print("Starting location updates")
+		logger.info("Starting location updates")
 		Task {
 			do {
 				self.updatesStarted = true
@@ -69,14 +69,14 @@ import CoreLocation
 					}
 				}
 			} catch {
-				print("Could not start location updates")
+				logger.error("Could not start location updates: \(error.localizedDescription)")
 			}
 			return
 		}
 	}
 
 	func stopLocationUpdates() {
-		print("Stopping location updates")
+		logger.info("Stopping location updates")
 		self.updatesStarted = false
 	}
 
@@ -84,15 +84,15 @@ import CoreLocation
 		if smartPostion {
 			let age = -location.timestamp.timeIntervalSinceNow
 			if age > 10 {
-				print("Bad Location \(self.count): Too Old \(age) seconds ago \(location)")
+				logger.warning("Bad Location \(self.count): Too Old \(age) seconds ago \(location)")
 				return false
 			}
 			if location.horizontalAccuracy < 0 {
-				print("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
+				logger.warning("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
 				return false
 			}
 			if location.horizontalAccuracy > 5 {
-				print("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
+				logger.warning("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
 				return false
 			}
 		}
