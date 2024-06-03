@@ -7,6 +7,7 @@
 
 import Foundation
 import Network
+import OSLog
 
 class NetworkManager {
 	static let shared = NetworkManager()
@@ -16,7 +17,7 @@ class NetworkManager {
 		pathMonitor.pathUpdateHandler = {
 			guard $0.status == .satisfied else {
 				// No network available
-				logger.info("Network Not available")
+				Logger.services.info("Network Not available")
 				return pathMonitor.cancel()
 			}
 			pathMonitor.cancel()

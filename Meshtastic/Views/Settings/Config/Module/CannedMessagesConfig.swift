@@ -5,6 +5,7 @@
 //  Copyright (c) Garth Vander Houwen 6/22/22.
 //
 import SwiftUI
+import OSLog
 
 struct CannedMessagesConfig: View {
 	@Environment(\.managedObjectContext) var context
@@ -233,7 +234,7 @@ struct CannedMessagesConfig: View {
 				setCannedMessagesValues()
 				// Need to request a CannedMessagesModuleConfig from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.cannedMessageConfig == nil {
-					logger.info("empty canned messages module config")
+					Logger.mesh.info("empty canned messages module config")
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 					if node != nil && connectedNode != nil {
 						_ = bleManager.requestCannedMessagesModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

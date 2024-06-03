@@ -1,4 +1,5 @@
 import SwiftUI
+import OSLog
 
 struct TextMessageField: View {
 	static let maxbytes = 228
@@ -107,7 +108,7 @@ struct TextMessageField: View {
 					wantResponse: destination.wantPositionResponse
 				)
 				if positionSent {
-					logger.info("Location Sent")
+					Logger.mesh.info("Location Sent")
 				}
 			}
 		}

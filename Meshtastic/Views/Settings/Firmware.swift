@@ -7,6 +7,7 @@
 
 import SwiftUI
 import StoreKit
+import OSLog
 
 struct Firmware: View {
 	@Environment(\.managedObjectContext) var context
@@ -115,7 +116,7 @@ struct Firmware: View {
 											bleManager.disconnectPeripheral(reconnect: false)
 										}
 									} else {
-										logger.error("Enter DFU Failed")
+										Logger.mesh.error("Enter DFU Failed")
 									}
 								}
 							} label: {
@@ -160,7 +161,7 @@ struct Firmware: View {
 								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
 								if connectedNode != nil {
 									if !bleManager.sendRebootOta(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex) {
-										logger.error("Reboot Failed")
+										Logger.mesh.error("Reboot Failed")
 									}
 								}
 							} label: {

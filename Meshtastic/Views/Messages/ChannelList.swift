@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreData
+import OSLog
 
 struct ChannelList: View {
 
@@ -127,7 +128,7 @@ struct ChannelList: View {
 
 									} catch {
 										context.rollback()
-										logger.error("💥 Save Channel Mute Error")
+										Logger.data.error("💥 Save Channel Mute Error")
 									}
 								} label: {
 									Label(channel.mute ? "Show Alerts" : "Hide Alerts", systemImage: channel.mute ? "bell" : "bell.slash")

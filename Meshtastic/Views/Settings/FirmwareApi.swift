@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 /// Device Hardware API
 struct DeviceHardware: Codable {
@@ -49,7 +50,7 @@ class Api: ObservableObject {
 
 		/// List from https://api.meshtastic.org/resource/deviceHardware
 		guard let url = Bundle.main.url(forResource: "DeviceHardware.json", withExtension: nil) else {
-			logger.critical("Couldn't find DeviceHardware.json in main bundle.")
+			Logger.services.critical("Couldn't find DeviceHardware.json in main bundle.")
 			return
 		}
 
@@ -61,7 +62,7 @@ class Api: ObservableObject {
 						completion(deviceHardware)
 					}
 				} catch {
-					logger.error("JSON decode failure: \(error.localizedDescription)")
+					Logger.services.error("JSON decode failure: \(error.localizedDescription)")
 				}
 				return
 			}
@@ -70,7 +71,7 @@ class Api: ObservableObject {
 
 	func loadFirmwareReleaseData(completion: @escaping (FirmwareReleases) -> Void) {
 		guard let url = URL(string: "https://api.meshtastic.org/github/firmware/list") else {
-			logger.error("Invalid url...")
+			Logger.services.error("Invalid url...")
 			return
 		}
 		URLSession.shared.dataTask(with: url) { data, _, _ in
@@ -81,7 +82,7 @@ class Api: ObservableObject {
 						completion(firmwareReleases)
 					}
 				} catch {
-					logger.error("JSON decode failure: \(error.localizedDescription)")
+					Logger.services.error("JSON decode failure: \(error.localizedDescription)")
 				}
 				return
 			}

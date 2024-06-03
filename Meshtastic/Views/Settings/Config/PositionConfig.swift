@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 struct PositionFlags: OptionSet {
 	let rawValue: Int
@@ -284,35 +285,34 @@ struct PositionConfig: View {
 				if node?.positionConfig?.fixedPosition ?? false {
 					Button("Remove", role: .destructive) {
 						if !bleManager.removeFixedPosition(fromUser: node!.user!, channel: 0) {
-							logger.error("Set Position Failed")
+							Logger.mesh.error("Remove Fixed Position Failed")
 						}
-						logger.debug("Remove a fixed position here")
 						let mutablePositions = node?.positions?.mutableCopy() as? NSMutableOrderedSet
 						mutablePositions?.removeAllObjects()
 						node?.positions = mutablePositions
 						node?.positionConfig?.fixedPosition = false
 						do {
 							try context.save()
-							logger.info("💾 Updated Position Config with Fixed Position = false")
+							Logger.data.info("💾 Updated Position Config with Fixed Position = false")
 						} catch {
 							context.rollback()
 							let nsError = error as NSError
-							logger.error("Error Saving Position Config Entity \(nsError)")
+							Logger.data.error("Error Saving Position Config Entity \(nsError)")
 						}
 					}
 				} else {
 					Button("Set") {
 						if !bleManager.setFixedPosition(fromUser: node!.user!, channel: 0) {
-							logger.error("Set Position Failed")
+							Logger.mesh.error("Set Position Failed")
 						}
 						node?.positionConfig?.fixedPosition = true
 						do {
 							try context.save()
-							logger.info("💾 Updated Position Config with Fixed Position = true")
+							Logger.data.info("💾 Updated Position Config with Fixed Position = true")
 						} catch {
 							context.rollback()
 							let nsError = error as NSError
-							logger.error("Error Saving Position Config Entity \(nsError)")
+							Logger.data.error("Error Saving Position Config Entity \(nsError)")
 						}
 					}
 				}
@@ -375,7 +375,7 @@ struct PositionConfig: View {
 			supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
 			// Need to request a PositionConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.positionConfig == nil {
-				logger.info("empty position config")
+				Logger.mesh.info("empty position config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestPositionConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

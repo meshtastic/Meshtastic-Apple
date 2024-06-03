@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 7/5/22.
 //
 import SwiftUI
+import OSLog
 
 struct PositionLog: View {
 	@Environment(\.managedObjectContext) var context
@@ -130,9 +131,9 @@ struct PositionLog: View {
 					) {
 						Button("Delete all positions?", role: .destructive) {
 							if clearPositions(destNum: node.num, context: context) {
-								logger.info("Successfully Cleared Position Log")
+								Logger.services.info("Successfully Cleared Position Log")
 							} else {
-								logger.error("Clear Position Log Failed")
+								Logger.services.error("Clear Position Log Failed")
 							}
 						}
 					}
@@ -156,10 +157,10 @@ struct PositionLog: View {
 					onCompletion: { result in
 						switch result {
 						case .success:
-							logger.info("Position log download succeeded.")
+							Logger.services.info("Position log download succeeded.")
 							self.isExporting = false
 						case .failure(let error):
-							logger.error("Position log download failed: \(error.localizedDescription)")
+							Logger.services.error("Position log download failed: \(error.localizedDescription)")
 						}
 					}
 				)

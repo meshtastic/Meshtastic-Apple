@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 #if canImport(TipKit)
 import TipKit
 #endif
@@ -142,7 +143,7 @@ struct Settings: View {
 										if connectedNode != nil && connectedNode?.user != nil && connectedNode?.myInfo != nil && node?.user != nil && node?.metadata == nil {
 											let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
 											if adminMessageId > 0 {
-												logger.info("Sent node metadata request from node details")
+												Logger.mesh.info("Sent node metadata request from node details")
 											}
 										}
 									}

@@ -9,6 +9,7 @@ import SwiftUI
 import CoreLocation
 import Charts
 import WeatherKit
+import OSLog
 
 struct NodeWeatherForecastView: View {
 	var location: CLLocation
@@ -34,7 +35,7 @@ struct NodeWeatherForecastView: View {
 					)
 				})
 			} catch {
-				logger.error("Could not load weather: \(error.localizedDescription)")
+				Logger.services.error("Could not load weather: \(error.localizedDescription)")
 			}
 		}
 	}

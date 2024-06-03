@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import Charts
+import OSLog
 
 struct EnvironmentMetricsLog: View {
 
@@ -172,7 +173,7 @@ struct EnvironmentMetricsLog: View {
 					) {
 						Button("Delete all environment metrics?", role: .destructive) {
 							if clearTelemetry(destNum: node.num, metricsType: 1, context: context) {
-								logger.error("Clear Environment Metrics Log Failed")
+								Logger.services.error("Clear Environment Metrics Log Failed")
 							}
 						}
 					}
@@ -218,9 +219,9 @@ struct EnvironmentMetricsLog: View {
 				switch result {
 				case .success:
 					self.isExporting = false
-					logger.info("Environment metrics log download succeeded.")
+					Logger.services.info("Environment metrics log download succeeded.")
 				case .failure(let error):
-					logger.error("Environment metrics log download failed: \(error.localizedDescription)")
+					Logger.services.error("Environment metrics log download failed: \(error.localizedDescription)")
 				}
 			}
 		)

@@ -1,4 +1,5 @@
 import SwiftUI
+import OSLog
 
 struct RetryButton: View {
 	@Environment(\.managedObjectContext) var context
@@ -36,7 +37,7 @@ struct RetryButton: View {
 				do {
 					try context.save()
 				} catch {
-					logger.error("Failed to delete message \(messageID): \(error.localizedDescription)")
+					Logger.data.error("Failed to delete message \(messageID): \(error.localizedDescription)")
 				}
 				if !bleManager.sendMessage(
 					message: payload,
@@ -46,7 +47,7 @@ struct RetryButton: View {
 					replyID: replyID
 				) {
 					// Best effort, unlikely since we already checked BLE state
-					logger.warning("Failed to resend message \(messageID)")
+					Logger.services.warning("Failed to resend message \(messageID)")
 				} else {
 					switch destination {
 					case .user:

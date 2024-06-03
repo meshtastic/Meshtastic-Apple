@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Charts
+import OSLog
 
 struct PaxCounterLog: View {
 
@@ -175,9 +176,9 @@ struct PaxCounterLog: View {
 					) {
 						Button("paxcounter.delete", role: .destructive) {
 							if clearPax(destNum: node.num, context: context) {
-								logger.info("Cleared Pax Counter for \(node.num)")
+								Logger.services.info("Cleared Pax Counter for \(node.num)")
 							} else {
-								logger.error("Clear Pax Counter Log Failed")
+								Logger.services.error("Clear Pax Counter Log Failed")
 							}
 						}
 					}
@@ -222,9 +223,9 @@ struct PaxCounterLog: View {
 				switch result {
 				case .success:
 					self.isExporting = false
-					logger.info("PAX Counter log download succeeded")
+					Logger.services.info("PAX Counter log download succeeded")
 				case .failure(let error):
-					logger.error("PAX Counter log download failed: \(error.localizedDescription)")
+					Logger.services.error("PAX Counter log download failed: \(error.localizedDescription)")
 				}
 			}
 		)

@@ -7,6 +7,7 @@
 
 import Foundation
 import MapKit
+import OSLog
 
 class OfflineTileManager: ObservableObject {
 	static let shared = OfflineTileManager()
@@ -20,7 +21,7 @@ class OfflineTileManager: ObservableObject {
 	}
 
 	init() {
-		logger.debug("Documents Directory = \(self.documentsDirectory.absoluteString)")
+		Logger.services.debug("Documents Directory = \(self.documentsDirectory.absoluteString)")
 		createDirectoriesIfNecessary()
 	}
 

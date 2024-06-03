@@ -1,6 +1,7 @@
 import SwiftUI
 import Foundation
 import UniformTypeIdentifiers
+import OSLog
 
 struct MeshLog: View {
 	let logFile = MeshLogger.logFile
@@ -48,9 +49,9 @@ struct MeshLog: View {
 			onCompletion: { result in
 				switch result {
 				case .success:
-					logger.info("Mesh activity log download: success")
+					Logger.services.info("Mesh activity log download: success")
 				case .failure(let error):
-					logger.error("Mesh activity log download: \(error.localizedDescription)")
+					Logger.services.error("Mesh activity log download: \(error.localizedDescription)")
 				}
 			}
 		)
@@ -65,7 +66,7 @@ struct MeshLog: View {
 					 try text.write(to: logFile!, atomically: false, encoding: .utf8)
 					 logs.removeAll()
 				   } catch {
-					   logger.error("\(error.localizedDescription)")
+					   Logger.services.error("\(error.localizedDescription)")
 				   }
 			} label: {
 				Label("Clear", systemImage: "trash.fill")

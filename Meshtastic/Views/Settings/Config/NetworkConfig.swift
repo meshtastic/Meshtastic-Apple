@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 struct NetworkConfig: View {
 
@@ -119,7 +120,7 @@ struct NetworkConfig: View {
 			setNetworkValues()
 			// Need to request a NetworkConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.networkConfig == nil {
-				logger.info("empty network config")
+				Logger.mesh.info("empty network config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestNetworkConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

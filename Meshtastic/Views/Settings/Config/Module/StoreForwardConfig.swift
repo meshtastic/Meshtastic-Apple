@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 struct StoreForwardConfig: View {
 
@@ -116,7 +117,7 @@ struct StoreForwardConfig: View {
 					do {
 						try context.save()
 					} catch {
-						logger.error("Failed to save isRouter: \(error.localizedDescription)")
+						Logger.mesh.error("Failed to save isRouter: \(error.localizedDescription)")
 					}
 				}
 
@@ -147,7 +148,7 @@ struct StoreForwardConfig: View {
 
 			// Need to request a Detection Sensor Module Config from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.storeForwardConfig == nil {
-				logger.debug("empty store and forward module config")
+				Logger.mesh.debug("empty store and forward module config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestStoreAndForwardModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

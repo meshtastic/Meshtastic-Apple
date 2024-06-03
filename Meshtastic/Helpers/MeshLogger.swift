@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 
 class MeshLogger {
 
@@ -19,7 +20,7 @@ class MeshLogger {
 		formatter.dateFormat = dateFormatString
 		let timestamp = formatter.string(from: Date())
 		guard let data = (message + " - " + timestamp + "\n").data(using: String.Encoding.utf8) else {
-			logger.error("Unable to create log data")
+			Logger.mesh.error("Unable to create mesh log data")
 			return
 		}
 
@@ -33,7 +34,7 @@ class MeshLogger {
 				try data.write(to: logFile, options: .atomicWrite)
 			}
 		} catch {
-			logger.error("Error writing log data: \(error.localizedDescription)")
+			Logger.mesh.error("Error writing mesh log data: \(error.localizedDescription)")
 		}
 	}
 }

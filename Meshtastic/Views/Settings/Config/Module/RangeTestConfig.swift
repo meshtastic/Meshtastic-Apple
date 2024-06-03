@@ -5,6 +5,7 @@
 //  Copyright (c) Garth Vander Houwen 6/13/22.
 //
 import SwiftUI
+import OSLog
 
 struct RangeTestConfig: View {
 
@@ -81,7 +82,7 @@ struct RangeTestConfig: View {
 				setRangeTestValues()
 				// Need to request a RangeTestModule Config from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.rangeTestConfig == nil {
-					logger.debug("empty range test module config")
+					Logger.mesh.debug("empty range test module config")
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 					if node != nil && connectedNode != nil {
 						_ = bleManager.requestRangeTestModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 8/16/23.
 //
 import SwiftUI
+import OSLog
 
 enum DetectionSensorRole: String, CaseIterable, Equatable, Decodable {
 	case sensor
@@ -189,7 +190,7 @@ struct DetectionSensorConfig: View {
 			setDetectionSensorValues()
 			// Need to request a Detection Sensor Module Config from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.detectionSensorConfig == nil {
-				logger.info("empty detection sensor module config")
+				Logger.mesh.info("empty detection sensor module config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestDetectionSensorModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

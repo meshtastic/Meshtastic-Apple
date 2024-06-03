@@ -1,6 +1,7 @@
 import Foundation
 import CoreLocation
 import MapKit
+import OSLog
 
 class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 	static let shared = LocationHelper()
@@ -70,6 +71,6 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 
 	}
 	func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-		logger.error("Location manager error: \(error.localizedDescription)")
+		Logger.services.error("Location manager error: \(error.localizedDescription)")
 	}
 }

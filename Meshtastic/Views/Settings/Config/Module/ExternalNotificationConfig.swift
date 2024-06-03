@@ -5,6 +5,7 @@
 //  Copyright (c) Garth Vander Houwen 6/22/22.
 //
 import SwiftUI
+import OSLog
 
 struct ExternalNotificationConfig: View {
 
@@ -199,7 +200,7 @@ struct ExternalNotificationConfig: View {
 			setExternalNotificationValues()
 			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.externalNotificationConfig == nil {
-				logger.info("empty external notification module config")
+				Logger.mesh.info("empty external notification module config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestExternalNotificationModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

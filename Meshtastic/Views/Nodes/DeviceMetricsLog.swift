@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import Charts
+import OSLog
 
 struct DeviceMetricsLog: View {
 
@@ -188,9 +189,9 @@ struct DeviceMetricsLog: View {
 					) {
 						Button("device.metrics.delete", role: .destructive) {
 							if clearTelemetry(destNum: node.num, metricsType: 0, context: context) {
-								logger.notice("Cleared Device Metrics for \(node.num)")
+								Logger.data.notice("Cleared Device Metrics for \(node.num)")
 							} else {
-								logger.error("Clear Device Metrics Log Failed")
+								Logger.data.error("Clear Device Metrics Log Failed")
 							}
 						}
 					}
@@ -235,9 +236,9 @@ struct DeviceMetricsLog: View {
 				switch result {
 				case .success:
 					self.isExporting = false
-					logger.info("Device metrics log download succeeded.")
+					Logger.services.info("Device metrics log download succeeded.")
 				case .failure(let error):
-					logger.error("Device metrics log download failed: \(error.localizedDescription)")
+					Logger.services.error("Device metrics log download failed: \(error.localizedDescription)")
 				}
 			}
 		)

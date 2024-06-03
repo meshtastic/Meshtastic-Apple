@@ -8,6 +8,7 @@
 import SwiftUI
 import CoreData
 import MapKit
+import OSLog
 
 @available(iOS 17.0, macOS 14.0, *)
 struct Routes: View {
@@ -64,7 +65,7 @@ struct Routes: View {
 							var latIndex = -1
 							var longIndex = -1
 							for index in headers!.indices {
-								logger.debug("\(index): \( headers![index])")
+								Logger.services.debug("\(index): \( headers![index])")
 								if headers![index].trimmingCharacters(in: .whitespaces) == "Latitude" {
 									latIndex = index
 								} else if headers![index].trimmingCharacters(in: .whitespaces) == "Longitude" {
@@ -88,14 +89,13 @@ struct Routes: View {
 										loc.latitudeI = Int32((Double(latitude) ?? 0) * 1e7)
 										loc.longitudeI = Int32((Double(longitude) ?? 0) * 1e7)
 										newLocations.append(loc)
-										logger.debug("Longitude: \(longitude) Latitude: \(latitude)")
 									}
 								}
 								newRoute.locations? = NSOrderedSet(array: newLocations)
 								do {
 									try context.save()
 								} catch let error as NSError {
-									logger.error("\(error.localizedDescription)")
+									Logger.services.error("\(error.localizedDescription)")
 									isShowingBadFileAlert = true
 								}
 							} else {
@@ -104,11 +104,11 @@ struct Routes: View {
 
 						} catch {
 							// TODO: deal with errors
-							logger.error("\(error.localizedDescription)")
+							Logger.services.error("\(error.localizedDescription)")
 						}
 
 					} catch {
-						logger.error("CSV Import Error: \(error.localizedDescription)")
+						Logger.services.error("CSV Import Error: \(error.localizedDescription)")
 					}
 				}
 				List(routes, id: \.self, selection: $selectedRoute) { route in
@@ -152,7 +152,7 @@ struct Routes: View {
 							do {
 								try context.save()
 							} catch let error as NSError {
-								logger.error("\(error.localizedDescription)")
+								Logger.data.error("\(error.localizedDescription)")
 							}
 						} label: {
 							Label("delete", systemImage: "trash")
@@ -224,11 +224,11 @@ struct Routes: View {
 								do {
 									try context.save()
 									selectedRoute = nil
-									logger.info("💾 Saved a route")
+									Logger.data.info("💾 Saved a route")
 								} catch {
 									context.rollback()
 									let nsError = error as NSError
-									logger.error("Error Saving RouteEntity from the Route Editor \(nsError)")
+									Logger.data.error("Error Saving RouteEntity from the Route Editor \(nsError)")
 								}
 							}
 							.buttonStyle(.bordered)
@@ -299,9 +299,9 @@ struct Routes: View {
 						switch result {
 						case .success:
 							self.isExporting = false
-							logger.info("Route log download succeeded.")
+							Logger.services.info("Route log download succeeded.")
 						case .failure(let error):
-							logger.error("Route log download failed: \(error.localizedDescription).")
+							Logger.services.error("Route log download failed: \(error.localizedDescription).")
 						}
 					}
 				)

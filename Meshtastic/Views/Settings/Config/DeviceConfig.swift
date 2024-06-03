@@ -5,6 +5,7 @@
 //  Copyright (c) Garth Vander Houwen 6/13/22.
 //
 import SwiftUI
+import OSLog
 
 struct DeviceConfig: View {
 
@@ -167,7 +168,7 @@ struct DeviceConfig: View {
 								}
 
 							} else {
-								logger.error("NodeDB Reset Failed")
+								Logger.mesh.error("NodeDB Reset Failed")
 							}
 						}
 					}
@@ -191,7 +192,7 @@ struct DeviceConfig: View {
 									clearCoreDataDatabase(context: context, includeRoutes: false)
 								}
 							} else {
-								logger.error("Factory Reset Failed")
+								Logger.mesh.error("Factory Reset Failed")
 							}
 						}
 					}
@@ -241,7 +242,7 @@ struct DeviceConfig: View {
 			setDeviceValues()
 			// Need to request a LoRaConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.deviceConfig == nil {
-				logger.info("empty device config")
+				Logger.mesh.info("empty device config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 				if node != nil && connectedNode != nil && connectedNode?.user != nil {
 					_ = bleManager.requestDeviceConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

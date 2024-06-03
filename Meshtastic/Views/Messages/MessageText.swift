@@ -1,4 +1,5 @@
 import SwiftUI
+import OSLog
 
 struct MessageText: View {
 	static let linkBlue = Color(red: 0.4627, green: 0.8392, blue: 1) /* #76d6ff */
@@ -71,7 +72,7 @@ struct MessageText: View {
 					do {
 						try context.save()
 					} catch {
-						logger.error("Failed to delete message \(message.messageId): \(error.localizedDescription)")
+						Logger.data.error("Failed to delete message \(message.messageId): \(error.localizedDescription)")
 					}
 				}
 				Button("Cancel", role: .cancel) {}

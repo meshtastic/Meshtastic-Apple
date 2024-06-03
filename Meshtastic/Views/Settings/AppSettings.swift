@@ -3,6 +3,7 @@ import Combine
 import SwiftUI
 import SwiftProtobuf
 import MapKit
+import OSLog
 
 struct AppSettings: View {
 	@Environment(\.managedObjectContext) var context
@@ -97,7 +98,7 @@ struct AppSettings: View {
 							Button("Delete all map tiles?", role: .destructive) {
 								tileManager.removeAll()
 								totalDownloadedTileSize = tileManager.getAllDownloadedSize()
-								logger.debug("delete all tiles")
+								Logger.services.debug("delete all tiles")
 							}
 						}
 					}

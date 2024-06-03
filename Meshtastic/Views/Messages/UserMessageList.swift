@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreData
+import OSLog
 
 struct UserMessageList: View {
 	@StateObject var appState = AppState.shared
@@ -99,12 +100,12 @@ struct UserMessageList: View {
 										message.read = true
 										do {
 											try context.save()
-											logger.info("📖 Read message \(message.messageId) ")
+											Logger.data.info("📖 Read message \(message.messageId) ")
 											appState.unreadDirectMessages = user.unreadMessages
 											UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 
 										} catch {
-											logger.error("Failed to read message \(message.messageId): \(error.localizedDescription)")
+											Logger.data.error("Failed to read message \(message.messageId): \(error.localizedDescription)")
 										}
 									}
 								}

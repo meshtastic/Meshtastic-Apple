@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Charts
+import OSLog
 
 struct DetectionSensorLog: View {
 	@Environment(\.managedObjectContext) var context
@@ -136,9 +137,9 @@ struct DetectionSensorLog: View {
 				switch result {
 				case .success:
 					self.isExporting = false
-					logger.info("Detections metrics log download succeeded.")
+					Logger.services.info("Detection Sensor metrics log download succeeded.")
 				case .failure(let error):
-					logger.error("Detections log download failed: \(error.localizedDescription).")
+					Logger.services.error("Detection Sensor log download failed: \(error.localizedDescription).")
 				}
 			}
 		)

@@ -9,6 +9,7 @@ import SwiftUI
 import CoreData
 import CoreLocation
 import Foundation
+import OSLog
 #if canImport(MapKit)
 import MapKit
 #endif
@@ -67,12 +68,12 @@ struct MeshMap: View {
 							switch value {
 							case let .second(_, tapValue):
 								guard let point = tapValue?.location else {
-									logger.error("Unable to retreive tap location from gesture data.")
+									Logger.services.error("Unable to retreive tap location from gesture data.")
 									return
 								}
 
 								guard let coordinate = reader.convert(point, from: .local) else {
-									logger.error("Unable to convert local point to coordinate on map.")
+									Logger.services.error("Unable to convert local point to coordinate on map.")
 									return
 								}
 
@@ -84,7 +85,7 @@ struct MeshMap: View {
 								editingWaypoint!.longitudeI = Int32((newWaypointCoord?.longitude ?? 0) * 1e7)
 								editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
 								editingWaypoint!.id = 0
-								logger.debug("Long press occured at Lat: \(coordinate.latitude) Long: \(coordinate.longitude)")
+								Logger.services.debug("Long press occured at Lat: \(coordinate.latitude) Long: \(coordinate.longitude)")
 							default: return
 							}
 					})

@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import CoreLocation
+import OSLog
 
 struct NodeList: View {
 
@@ -72,9 +73,9 @@ struct NodeList: View {
 									try context.save()
 								} catch {
 									context.rollback()
-									logger.error("Save Node Favorite Error")
+									Logger.data.error("Save Node Favorite Error")
 								}
-								logger.debug("Favorited a node")
+								Logger.data.debug("Favorited a node")
 							}
 						} else {
 							let success = bleManager.removeFavoriteNode(node: node, connectedNodeNum: Int64(connectedNodeNum))
@@ -84,9 +85,9 @@ struct NodeList: View {
 									try context.save()
 								} catch {
 									context.rollback()
-									logger.error("Save Node Favorite Error")
+									Logger.data.error("Save Node Favorite Error")
 								}
-								logger.debug("Favorited a node")
+								Logger.data.debug("Favorited a node")
 							}
 						}
 
@@ -101,7 +102,7 @@ struct NodeList: View {
 								try context.save()
 							} catch {
 								context.rollback()
-								logger.error("Save User Mute Error")
+								Logger.data.error("Save User Mute Error")
 							}
 						} label: {
 							Label(node.user!.mute ? "Show Alerts" : "Hide Alerts", systemImage: node.user!.mute ? "bell" : "bell.slash")
@@ -226,7 +227,7 @@ struct NodeList: View {
 						if deleteNode != nil {
 							let success = bleManager.removeNode(node: deleteNode!, connectedNodeNum: Int64(connectedNodeNum))
 							if !success {
-								logger.error("Failed to delete node \(deleteNode?.user?.longName ?? "unknown".localized)")
+								Logger.data.error("Failed to delete node \(deleteNode?.user?.longName ?? "unknown".localized)")
 							}
 						}
 					}
@@ -325,7 +326,7 @@ struct NodeList: View {
 					let queryItems = urlComponent.queryItems
 					let nodeNum = queryItems?.first(where: { $0.name == "nodenum" })?.value
 					if nodeNum == nil {
-						logger.debug("nodeNum not found")
+						Logger.data.debug("nodeNum not found")
 					} else {
 						selectedNode = nodes.first(where: { $0.num == Int64(nodeNum ?? "-1") })
 						AppState.shared.navigationPath = nil

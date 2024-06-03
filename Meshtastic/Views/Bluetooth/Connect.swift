@@ -10,6 +10,7 @@ import MapKit
 import CoreData
 import CoreLocation
 import CoreBluetooth
+import OSLog
 #if canImport(TipKit)
 import TipKit
 #endif
@@ -34,9 +35,9 @@ struct Connect: View {
 		   if settings.authorizationStatus == .notDetermined {
 			   UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
 				   if success {
-					   logger.info("Notifications are all set!")
+					   Logger.services.info("Notifications are all set!")
 				   } else if let error = error {
-					   logger.error("\(error.localizedDescription)")
+					   Logger.services.error("\(error.localizedDescription)")
 				   }
 			   }
 		   }
@@ -104,12 +105,12 @@ struct Connect: View {
 										Button {
 											if !liveActivityStarted {
 											#if canImport(ActivityKit)
-												logger.info("Start live activity.")
+												Logger.services.info("Start live activity.")
 												startNodeActivity()
 											#endif
 											} else {
 												#if canImport(ActivityKit)
-												logger.info("Stop live activity.")
+												Logger.services.info("Stop live activity.")
 												endActivity()
 											#endif
 											}
@@ -123,7 +124,7 @@ struct Connect: View {
 										Text("BLE RSSI: \(bleManager.connectedPeripheral.rssi)")
 										Button {
 											if !bleManager.sendShutdown(fromUser: node!.user!, toUser: node!.user!, adminIndex: node!.myInfo!.adminIndex) {
-												logger.error("Shutdown Failed")
+												Logger.mesh.error("Shutdown Failed")
 											}
 
 										} label: {
@@ -346,9 +347,9 @@ struct Connect: View {
 		do {
 			let myActivity = try Activity<MeshActivityAttributes>.request(attributes: activityAttributes, content: activityContent,
 																		  pushType: nil)
-			logger.info("Requested MyActivity live activity. ID: \(myActivity.id)")
+			Logger.services.info("Requested MyActivity live activity. ID: \(myActivity.id)")
 		} catch {
-			logger.error("Error requesting live activity: \(error.localizedDescription)")
+			Logger.services.error("Error requesting live activity: \(error.localizedDescription)")
 		}
 	}
 

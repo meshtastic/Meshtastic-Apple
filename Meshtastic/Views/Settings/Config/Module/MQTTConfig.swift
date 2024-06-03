@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import CoreLocation
+import OSLog
 
 struct MQTTConfig: View {
 
@@ -361,7 +362,7 @@ struct MQTTConfig: View {
 			setMqttValues()
 			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.mqttConfig == nil {
-				logger.info("empty mqtt module config")
+				Logger.mesh.info("empty mqtt module config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
@@ -380,7 +381,7 @@ struct MQTTConfig: View {
 				defaultTopic = "msh/" + (region ?? "UNSET")
 				geocoder.reverseGeocodeLocation(LocationsHandler.shared.locationsArray.first!, completionHandler: {(placemarks, error) in
 					if let error {
-						logger.error("Failed to reverse geocode location: \(error.localizedDescription)")
+						Logger.services.error("Failed to reverse geocode location: \(error.localizedDescription)")
 						return
 					}
 
@@ -412,7 +413,7 @@ struct MQTTConfig: View {
 							nearbyTopics.append(neightborhoodTopic)
 						}
 					} else {
-						logger.debug("No Location")
+						Logger.services.debug("No Location")
 					}
 				})
 			}

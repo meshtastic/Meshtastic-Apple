@@ -9,6 +9,7 @@ import Foundation
 import CoreData
 import SwiftUI
 import RegexBuilder
+import OSLog
 #if canImport(ActivityKit)
 import ActivityKit
 #endif
@@ -111,12 +112,12 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 			myInfoEntity.rebootCount = Int32(myInfo.rebootCount)
 			do {
 				try context.save()
-				logger.info("💾 Saved a new myInfo for node number: \(String(myInfo.myNodeNum))")
+				Logger.data.info("💾 Saved a new myInfo for node number: \(String(myInfo.myNodeNum))")
 				return myInfoEntity
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				logger.error("Error Inserting New Core Data MyInfoEntity: \(nsError)")
+				Logger.data.error("Error Inserting New Core Data MyInfoEntity: \(nsError)")
 			}
 		} else {
 
@@ -126,16 +127,16 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 
 			do {
 				try context.save()
-				logger.info("💾 Updated myInfo for node number: \(String(myInfo.myNodeNum))")
+				Logger.data.info("💾 Updated myInfo for node number: \(String(myInfo.myNodeNum))")
 				return fetchedMyInfo[0]
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				logger.error("Error Updating Core Data MyInfoEntity: \(nsError)")
+				Logger.data.error("Error Updating Core Data MyInfoEntity: \(nsError)")
 			}
 		}
 	} catch {
-		logger.error("Fetch MyInfo Error")
+		Logger.data.error("Fetch MyInfo Error")
 	}
 	return nil
 }
@@ -184,16 +185,16 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				do {
 					try context.save()
 				} catch {
-					logger.error("Failed to save channel: \(error.localizedDescription)")
+					Logger.data.error("Failed to save channel: \(error.localizedDescription)")
 				}
-				logger.info("💾 Updated MyInfo channel \(channel.index) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
+				Logger.data.info("💾 Updated MyInfo channel \(channel.index) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
 			} else if channel.role.rawValue > 0 {
-				logger.error("Trying to save a channel to a MyInfo that does not exist: \(fromNum)")
+				Logger.data.error("Trying to save a channel to a MyInfo that does not exist: \(fromNum)")
 			}
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
-			logger.error("Error Saving MyInfo Channel from ADMIN_APP \(nsError)")
+			Logger.data.error("Error Saving MyInfo Channel from ADMIN_APP \(nsError)")
 		}
 	}
 }
@@ -237,13 +238,13 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 			do {
 				try context.save()
 			} catch {
-				logger.error("Failed to save device metadata: \(error.localizedDescription)")
+				Logger.data.error("Failed to save device metadata: \(error.localizedDescription)")
 			}
-			logger.info("💾 Updated Device Metadata from Admin App Packet For: \(fromNum)")
+			Logger.data.info("💾 Updated Device Metadata from Admin App Packet For: \(fromNum)")
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
-			logger.error("Error Saving MyInfo Channel from ADMIN_APP \(nsError)")
+			Logger.data.error("Error Saving MyInfo Channel from ADMIN_APP \(nsError)")
 		}
 	}
 }
@@ -330,15 +331,15 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				}
 				do {
 					try context.save()
-					logger.info("💾 Saved a new Node Info For: \(String(nodeInfo.num))")
+					Logger.data.info("💾 Saved a new Node Info For: \(String(nodeInfo.num))")
 					return newNode
 				} catch {
 					context.rollback()
 					let nsError = error as NSError
-					logger.error("Error Saving Core Data NodeInfoEntity: \(nsError)")
+					Logger.data.error("Error Saving Core Data NodeInfoEntity: \(nsError)")
 				}
 			} catch {
-				logger.error("Fetch MyInfo Error")
+				Logger.data.error("Fetch MyInfo Error")
 			}
 		} else if nodeInfo.num > 0 {
 
@@ -414,19 +415,19 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				}
 				do {
 					try context.save()
-					logger.info("💾 NodeInfo saved for \(nodeInfo.num)")
+					Logger.data.info("💾 NodeInfo saved for \(nodeInfo.num)")
 					return fetchedNode[0]
 				} catch {
 					context.rollback()
 					let nsError = error as NSError
-					logger.error("Error Saving Core Data NodeInfoEntity: \(nsError)")
+					Logger.data.error("Error Saving Core Data NodeInfoEntity: \(nsError)")
 				}
 			} catch {
-				logger.error("Fetch MyInfo Error")
+				Logger.data.error("Fetch MyInfo Error")
 			}
 		}
 	} catch {
-		logger.error("Fetch NodeInfoEntity Error")
+		Logger.data.error("Fetch NodeInfoEntity Error")
 	}
 	return nil
 }
@@ -459,15 +460,15 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 							fetchedNode[0].cannedMessageConfig?.messages = messages
 							do {
 								try context.save()
-								logger.info("💾 Updated Canned Messages Messages For: \(fetchedNode[0].num)")
+								Logger.data.info("💾 Updated Canned Messages Messages For: \(fetchedNode[0].num)")
 							} catch {
 								context.rollback()
 								let nsError = error as NSError
-								logger.error("Error Saving NodeInfoEntity from POSITION_APP \(nsError)")
+								Logger.data.error("Error Saving NodeInfoEntity from POSITION_APP \(nsError)")
 							}
 						}
 					} catch {
-						logger.error("Error Deserializing ADMIN_APP packet.")
+						Logger.data.error("Error Deserializing ADMIN_APP packet.")
 					}
 				}
 			}
@@ -544,11 +545,11 @@ func adminResponseAck (packet: MeshPacket, context: NSManagedObjectContext) {
 			do {
 				try context.save()
 			} catch {
-				logger.error("Failed to save admin message response as an ack: \(error.localizedDescription)")
+				Logger.data.error("Failed to save admin message response as an ack: \(error.localizedDescription)")
 			}
 		}
 	} catch {
-		logger.error("Failed to fetch admin message by requestID: \(error.localizedDescription)")
+		Logger.data.error("Failed to fetch admin message by requestID: \(error.localizedDescription)")
 	}
 }
 func paxCounterPacket (packet: MeshPacket, context: NSManagedObjectContext) {
@@ -579,10 +580,10 @@ func paxCounterPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				do {
 					try context.save()
 				} catch {
-					logger.error("Failed to save pax: \(error.localizedDescription)")
+					Logger.data.error("Failed to save pax: \(error.localizedDescription)")
 				}
 			} else {
-				logger.info("Node Info Not Found")
+				Logger.data.info("Node Info Not Found")
 			}
 		}
 	} catch {
@@ -642,11 +643,11 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 				return
 			}
 			try context.save()
-			logger.info("💾 ACK Saved for Message: \(packet.decoded.requestID)")
+			Logger.data.info("💾 ACK Saved for Message: \(packet.decoded.requestID)")
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
-			logger.error("Error Saving ACK for message: \(packet.id) Error: \(nsError)")
+			Logger.data.error("Error Saving ACK for message: \(packet.id) Error: \(nsError)")
 		}
 	}
 }
@@ -707,7 +708,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 			try context.save()
 			// Only log telemetry from the mesh not the connected device
 			if connectedNode != Int64(packet.from) {
-				logger.info("💾 Telemetry Saved for Node: \(packet.from)")
+				Logger.data.info("💾 Telemetry Saved for Node: \(packet.from)")
 			} else if telemetry.metricsType == 0 {
 				// Connected Device Metrics
 				// ------------------------
@@ -740,7 +741,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 						Task {
 							await meshActivity?.update(updatedContent, alertConfiguration: alertConfiguration)
 							// await meshActivity?.update(updatedContent)
-							logger.debug("Updated live activity.")
+							Logger.services.debug("Updated live activity.")
 						}
 					}
 #endif
@@ -748,10 +749,10 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
-			logger.error("Error Saving Telemetry for Node \(packet.from) Error: \(nsError)")
+			Logger.data.error("Error Saving Telemetry for Node \(packet.from) Error: \(nsError)")
 		}
 	} else {
-		logger.error("Error Fetching NodeInfoEntity for Node \(packet.from)")
+		Logger.data.error("Error Fetching NodeInfoEntity for Node \(packet.from)")
 	}
 }
 
@@ -830,7 +831,7 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 			do {
 
 				try context.save()
-				logger.info("💾 Saved a new message for \(newMessage.messageId)")
+				Logger.data.info("💾 Saved a new message for \(newMessage.messageId)")
 				messageSaved = true
 
 				if messageSaved {
@@ -859,7 +860,7 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 								)
 							]
 							manager.schedule()
-							logger.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
+							Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
 						}
 					} else if newMessage.fromUser != nil && newMessage.toUser == nil {
 
@@ -891,7 +892,7 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 												path: "meshtastic://messages?channel=\(newMessage.channel)&messageId=\(newMessage.messageId)")
 										]
 										manager.schedule()
-										logger.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
+										Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
 									}
 								}
 							}
@@ -903,10 +904,10 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				logger.error("Failed to save new MessageEntity \(nsError)")
+				Logger.data.error("Failed to save new MessageEntity \(nsError)")
 			}
 		} catch {
-			logger.error("Fetch Message To and From Users Error")
+			Logger.data.error("Fetch Message To and From Users Error")
 		}
 	}
 }
@@ -943,7 +944,7 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				waypoint.created = Date()
 				do {
 					try context.save()
-					logger.info("💾 Added Node Waypoint App Packet For: \(waypoint.id)")
+					Logger.data.info("💾 Added Node Waypoint App Packet For: \(waypoint.id)")
 					let manager = LocalNotificationManager()
 					let icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
 					let latitude = Double(waypoint.latitudeI) / 1e7
@@ -958,12 +959,12 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 							path: "meshtastic://map?waypontid=\(waypoint.id)"
 						)
 					]
-					logger.debug("meshtastic://map?waypontid=\(waypoint.id)")
+					Logger.data.debug("meshtastic://map?waypontid=\(waypoint.id)")
 					manager.schedule()
 				} catch {
 					context.rollback()
 					let nsError = error as NSError
-					logger.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError)")
+					Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError)")
 				}
 			} else {
 				fetchedWaypoint[0].id = Int64(packet.id)
@@ -981,15 +982,15 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				fetchedWaypoint[0].lastUpdated = Date()
 				do {
 					try context.save()
-					logger.info("💾 Updated Node Waypoint App Packet For: \(fetchedWaypoint[0].id)")
+					Logger.data.info("💾 Updated Node Waypoint App Packet For: \(fetchedWaypoint[0].id)")
 				} catch {
 					context.rollback()
 					let nsError = error as NSError
-					logger.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError)")
+					Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError)")
 				}
 			}
 		}
 	} catch {
-		logger.error("Error Deserializing WAYPOINT_APP packet.")
+		Logger.mesh.error("Error Deserializing WAYPOINT_APP packet.")
 	}
 }

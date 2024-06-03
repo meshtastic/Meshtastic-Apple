@@ -213,7 +213,7 @@ struct PositionPopover: View {
 #endif
 			}
 		}
-		.presentationDetents([.fraction(0.55), .fraction(0.65), .fraction(0.75)])
+		.presentationDetents([.fraction(0.65), .fraction(0.75), .fraction(0.85)])
 		.presentationDragIndicator(.visible)
 	}
 }

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreData
+import OSLog
 #if canImport(TipKit)
 import TipKit
 #endif
@@ -111,13 +112,13 @@ struct UserList: View {
 									let success = bleManager.setFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
 									if success {
 										user.userNode?.favorite = !(user.userNode?.favorite ?? true)
-										logger.info("Favorited a node")
+										Logger.data.info("Favorited a node")
 									}
 								} else {
 									let success = bleManager.removeFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
 									if success {
 										user.userNode?.favorite = !(user.userNode?.favorite ?? true)
-										logger.info("Favorited a node")
+										Logger.data.info("Un Favorited a node")
 									}
 								}
 								context.refresh(user, mergeChanges: true)
@@ -125,7 +126,7 @@ struct UserList: View {
 									try context.save()
 								} catch {
 									context.rollback()
-									logger.error("Save Node Favorite Error")
+									Logger.data.error("Save Node Favorite Error")
 								}
 							} label: {
 								Label((user.userNode?.favorite ?? false)  ? "Un-Favorite" : "Favorite", systemImage: (user.userNode?.favorite ?? false) ? "star.slash.fill" : "star.fill")
@@ -136,7 +137,7 @@ struct UserList: View {
 									try context.save()
 								} catch {
 									context.rollback()
-									logger.error("Save User Mute Error")
+									Logger.data.error("Save User Mute Error")
 								}
 							} label: {
 								Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")

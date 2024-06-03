@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 struct BluetoothConfig: View {
 	@Environment(\.managedObjectContext) var context
@@ -100,7 +101,7 @@ struct BluetoothConfig: View {
 			setBluetoothValues()
 			// Need to request a BluetoothConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.bluetoothConfig == nil {
-				logger.info("empty bluetooth config")
+				Logger.mesh.info("empty bluetooth config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestBluetoothConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreLocation
+import OSLog
 
 // Shared state that manages the `CLLocationManager` and `CLBackgroundActivitySession`.
 @available(iOS 17.0, macOS 14.0, *)
@@ -49,7 +50,7 @@ import CoreLocation
 		if self.manager.authorizationStatus == .notDetermined {
 			self.manager.requestWhenInUseAuthorization()
 		}
-		logger.info("Starting location updates")
+		Logger.services.info("Starting location updates")
 		Task {
 			do {
 				self.updatesStarted = true
@@ -69,14 +70,14 @@ import CoreLocation
 					}
 				}
 			} catch {
-				logger.error("Could not start location updates: \(error.localizedDescription)")
+				Logger.services.error("Could not start location updates: \(error.localizedDescription)")
 			}
 			return
 		}
 	}
 
 	func stopLocationUpdates() {
-		logger.info("Stopping location updates")
+		Logger.services.info("Stopping location updates")
 		self.updatesStarted = false
 	}
 
@@ -84,15 +85,15 @@ import CoreLocation
 		if smartPostion {
 			let age = -location.timestamp.timeIntervalSinceNow
 			if age > 10 {
-				logger.warning("Bad Location \(self.count): Too Old \(age) seconds ago \(location)")
+				Logger.services.warning("Bad Location \(self.count): Too Old \(age) seconds ago \(location)")
 				return false
 			}
 			if location.horizontalAccuracy < 0 {
-				logger.warning("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
+				Logger.services.warning("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
 				return false
 			}
 			if location.horizontalAccuracy > 5 {
-				logger.warning("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
+				Logger.services.warning("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
 				return false
 			}
 		}

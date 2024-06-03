@@ -7,6 +7,7 @@
 import Foundation
 import SwiftUI
 import MapKit
+import OSLog
 
 struct PolygonInfo: Codable {
 	let stroke: String?
@@ -142,13 +143,13 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
 					let tilePath = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false).path
 					if fileManager.fileExists(atPath: tilePath) {
-						logger.info("Loading local map file")
+						Logger.services.info("Loading local map file")
 						if let overlay = LocalMBTileOverlay(mbTilePath: tilePath) {
 							overlay.canReplaceMapContent = false// customMapOverlay.canReplaceMapContent
 							mapView.addOverlay(overlay)
 						}
 					} else {
-						logger.info("Couldn't find a local map file to load")
+						Logger.services.info("Couldn't find a local map file to load")
 					}
 				}
 				DispatchQueue.main.async {
@@ -203,7 +204,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 		let annotationCount = waypoints.count + (showNodeHistory ? positions.count : latest.count)
 		if annotationCount != mapView.annotations.count {
-			logger.info("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
+			Logger.services.info("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
 			mapView.removeAnnotations(mapView.annotations)
 			mapView.addAnnotations(waypoints)
 		}

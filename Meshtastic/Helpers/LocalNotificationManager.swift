@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import OSLog
 
 class LocalNotificationManager {
 
@@ -60,7 +61,7 @@ class LocalNotificationManager {
         UNUserNotificationCenter.current().getPendingNotificationRequests { notifications in
 
             for notification in notifications {
-				logger.debug("\(notification)")
+				Logger.services.debug("\(notification)")
             }
         }
     }

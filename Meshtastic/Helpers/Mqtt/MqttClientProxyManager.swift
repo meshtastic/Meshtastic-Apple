@@ -7,6 +7,7 @@
 
 import Foundation
 import CocoaMQTT
+import OSLog
 
 protocol MqttClientProxyManagerDelegate: AnyObject {
 	func onMqttConnected()
@@ -80,28 +81,28 @@ class MqttClientProxyManager {
 		}
 	}
 	func subscribe(topic: String, qos: CocoaMQTTQoS) {
-		logger.info("📲 MQTT Client Proxy subscribed to: \(topic)")
+		Logger.services.info("📲 MQTT Client Proxy subscribed to: \(topic)")
 		mqttClientProxy?.subscribe(topic, qos: qos)
 	}
 	func unsubscribe(topic: String) {
 		mqttClientProxy?.unsubscribe(topic)
-		logger.info("📲 MQTT Client Proxy unsubscribe for: \(topic)")
+		Logger.services.info("📲 MQTT Client Proxy unsubscribe for: \(topic)")
 	}
 	func publish(message: String, topic: String, qos: CocoaMQTTQoS) {
 		mqttClientProxy?.publish(topic, withString: message, qos: qos)
-		logger.debug("📲 MQTT Client Proxy publish for: \(topic)")
+		Logger.services.debug("📲 MQTT Client Proxy publish for: \(topic)")
 	}
 	func disconnect() {
 		if let client = mqttClientProxy {
 			client.disconnect()
-			logger.info("📲 MQTT Client Proxy Disconnected")
+			Logger.services.info("📲 MQTT Client Proxy Disconnected")
 		}
 	}
 }
 
 extension MqttClientProxyManager: CocoaMQTTDelegate {
 	func mqtt(_ mqtt: CocoaMQTT, didConnectAck ack: CocoaMQTTConnAck) {
-		logger.info("📲 MQTT Client Proxy didConnectAck: \(ack)")
+		Logger.services.info("📲 MQTT Client Proxy didConnectAck: \(ack)")
 		if ack == .accept {
 			delegate?.onMqttConnected()
 		} else {
@@ -123,13 +124,13 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 			default:
 				errorDescription = "Unknown Error"
 			}
-			logger.error("\(errorDescription)")
+			Logger.services.error("\(errorDescription)")
 			delegate?.onMqttError(message: errorDescription)
 			self.disconnect()
 		}
 	}
 	func mqttDidDisconnect(_ mqtt: CocoaMQTT, withError err: Error?) {
-		logger.debug("mqttDidDisconnect: \(err?.localizedDescription ?? "")")
+		Logger.services.debug("mqttDidDisconnect: \(err?.localizedDescription ?? "")")
 
 		if let error = err {
 			delegate?.onMqttError(message: error.localizedDescription)
@@ -137,26 +138,26 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 		delegate?.onMqttDisconnected()
 	}
 	func mqtt(_ mqtt: CocoaMQTT, didPublishMessage message: CocoaMQTTMessage, id: UInt16) {
-		logger.debug("📲 MQTT Client Proxy didPublishMessage from MqttClientProxyManager: \(message)")
+		Logger.services.debug("📲 MQTT Client Proxy didPublishMessage from MqttClientProxyManager: \(message)")
 	}
 	func mqtt(_ mqtt: CocoaMQTT, didPublishAck id: UInt16) {
-		logger.debug("📲 MQTT Client Proxy didPublishAck from MqttClientProxyManager: \(id)")
+		Logger.services.debug("📲 MQTT Client Proxy didPublishAck from MqttClientProxyManager: \(id)")
 	}
 
 	public func mqtt(_ mqtt: CocoaMQTT, didReceiveMessage message: CocoaMQTTMessage, id: UInt16) {
 		delegate?.onMqttMessageReceived(message: message)
-		logger.debug("📲 MQTT Client Proxy message received on topic: \(message.topic)")
+		Logger.services.debug("📲 MQTT Client Proxy message received on topic: \(message.topic)")
 	}
 	func mqtt(_ mqtt: CocoaMQTT, didSubscribeTopics success: NSDictionary, failed: [String]) {
-		logger.info("📲 MQTT Client Proxy didSubscribeTopics: \(success.allKeys.count) topics. failed: \(failed.count) topics")
+		Logger.services.info("📲 MQTT Client Proxy didSubscribeTopics: \(success.allKeys.count) topics. failed: \(failed.count) topics")
 	}
 	func mqtt(_ mqtt: CocoaMQTT, didUnsubscribeTopics topics: [String]) {
-		logger.info("didUnsubscribeTopics: \(topics.joined(separator: ", "))")
+		Logger.services.info("didUnsubscribeTopics: \(topics.joined(separator: ", "))")
 	}
 	func mqttDidPing(_ mqtt: CocoaMQTT) {
-		logger.info("📲 MQTT Client Proxy mqttDidPing")
+		Logger.services.info("📲 MQTT Client Proxy mqttDidPing")
 	}
 	func mqttDidReceivePong(_ mqtt: CocoaMQTT) {
-		logger.info("📲 MQTT Client Proxy mqttDidReceivePong")
+		Logger.services.info("📲 MQTT Client Proxy mqttDidReceivePong")
 	}
 }

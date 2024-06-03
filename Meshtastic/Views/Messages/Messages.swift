@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreData
+import OSLog
 #if canImport(TipKit)
 import TipKit
 #endif
@@ -76,11 +77,11 @@ struct Messages: View {
 						let channel = queryItems?.first(where: { $0.name == "channel" })?.value
 
 						if let channel {
-							logger.info("Channel \(channel)")
+							Logger.services.info("Deep Link Channel \(channel)")
 							//	selectedNode = nodes.first(where: { $0.num == Int64(nodeNum ?? "-1") })
 							//	AppState.shared.navigationPath = nil
 						} else {
-							logger.info("Channel not found")
+							Logger.services.info("Channel Deep Link not found")
 						}
 					}
 				}

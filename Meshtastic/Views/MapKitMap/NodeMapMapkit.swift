@@ -8,6 +8,7 @@ import SwiftUI
 import CoreLocation
 import MapKit
 import WeatherKit
+import OSLog
 
 struct NodeMapMapkit: View {
 
@@ -125,7 +126,7 @@ struct NodeMapMapkit: View {
 													attributionLogo = colorScheme == .light ? attribution.combinedMarkLightURL : attribution.combinedMarkDarkURL
 												}
 											} catch {
-												logger.error("Could not gather weather information: \(error.localizedDescription)")
+												Logger.services.error("Could not gather weather information: \(error.localizedDescription)")
 												condition = .clear
 												symbolName = "cloud.fill"
 											}
