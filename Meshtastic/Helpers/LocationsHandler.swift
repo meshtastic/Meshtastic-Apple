@@ -50,7 +50,7 @@ import OSLog
 		if self.manager.authorizationStatus == .notDetermined {
 			self.manager.requestWhenInUseAuthorization()
 		}
-		Logger.services.info("Starting location updates")
+		Logger.services.info("📍 Starting location updates")
 		Task {
 			do {
 				self.updatesStarted = true
@@ -70,14 +70,14 @@ import OSLog
 					}
 				}
 			} catch {
-				Logger.services.error("Could not start location updates: \(error.localizedDescription)")
+				Logger.services.error("💥 Could not start location updates: \(error.localizedDescription)")
 			}
 			return
 		}
 	}
 
 	func stopLocationUpdates() {
-		Logger.services.info("Stopping location updates")
+		Logger.services.info("🛑 Stopping location updates")
 		self.updatesStarted = false
 	}
 
@@ -85,15 +85,15 @@ import OSLog
 		if smartPostion {
 			let age = -location.timestamp.timeIntervalSinceNow
 			if age > 10 {
-				Logger.services.warning("Bad Location \(self.count): Too Old \(age) seconds ago \(location)")
+				Logger.services.warning("📍 Bad Location \(self.count): Too Old \(age) seconds ago \(location)")
 				return false
 			}
 			if location.horizontalAccuracy < 0 {
-				Logger.services.warning("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
+				Logger.services.warning("📍 Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
 				return false
 			}
 			if location.horizontalAccuracy > 5 {
-				Logger.services.warning("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
+				Logger.services.warning("📍 Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
 				return false
 			}
 		}

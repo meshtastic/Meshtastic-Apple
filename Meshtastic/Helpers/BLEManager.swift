@@ -62,7 +62,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	func startScanning() {
 		if isSwitchedOn {
 			centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
-			Logger.data.info("✅ Scanning Started")
+			Logger.services.info("✅ Scanning Started")
 		}
 	}
 
@@ -2988,7 +2988,7 @@ extension BLEManager: CBCentralManagerDelegate {
 	// MARK: Bluetooth enabled/disabled
 	func centralManagerDidUpdateState(_ central: CBCentralManager) {
 		if central.state == CBManagerState.poweredOn {
-			Logger.services.debug("BLE powered on")
+			Logger.services.debug("🔌 BLE powered on")
 			isSwitchedOn = true
 			startScanning()
 		} else {
@@ -3013,7 +3013,7 @@ extension BLEManager: CBCentralManagerDelegate {
 		default:
 			status = "default"
 		}
-		Logger.services.debug("BLEManager status: \(status)")
+		Logger.services.debug("📜 BLEManager status: \(status)")
 	}
 
 	// Called each time a peripheral is discovered

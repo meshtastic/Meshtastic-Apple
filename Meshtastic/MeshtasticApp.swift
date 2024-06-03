@@ -140,7 +140,7 @@ struct MeshtasticAppleApp: App {
 		.onChange(of: scenePhase) { (newScenePhase) in
 			switch newScenePhase {
 			case .background:
-				Logger.services.info("Scene is in the background")
+				Logger.services.info("🍏 Scene is in the background")
 				do {
 
 					try persistenceController.container.viewContext.save()
@@ -148,14 +148,14 @@ struct MeshtasticAppleApp: App {
 
 				} catch {
 
-					Logger.services.error("Failed to save viewContext when the app goes to the background.")
+					Logger.services.error("💥 Failed to save viewContext when the app goes to the background.")
 				}
 			case .inactive:
-				Logger.services.info("Scene is inactive")
+				Logger.services.info("🍏 Scene is inactive")
 			case .active:
-				Logger.services.info("Scene is active")
+				Logger.services.info("🍏 Scene is active")
 			@unknown default:
-				Logger.services.error("Apple must have changed something")
+				Logger.services.error("🍎 Apple must have changed something")
 			}
 		}
 	}
@@ -168,6 +168,5 @@ class AppState: ObservableObject {
 	@Published var unreadDirectMessages: Int = 0
 	@Published var unreadChannelMessages: Int = 0
 	@Published var firmwareVersion: String = "0.0.0"
-	// @Published var connectedNode: NodeInfoEntity?
 	@Published var navigationPath: String?
 }
