@@ -15,9 +15,9 @@ struct NodeInfoItem: View {
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
 
 	var body: some View {
-		
+
 		Divider()
-		
+
 		HStack {
 
 			VStack(alignment: .center) {
@@ -25,15 +25,26 @@ struct NodeInfoItem: View {
 			}
 			if node.user != nil {
 				Divider()
-				VStack {
-					Image(node.user!.hwModel ?? "unset".localized)
-						.resizable()
-						.aspectRatio(contentMode: .fit)
-						.frame(width: 75, height: 75)
-						.cornerRadius(5)
-					Text(String(node.user!.hwModel ?? "unset".localized))
-						.font(.caption2)
-						.frame(maxWidth: 125)
+				VStack(alignment: .center) {
+					if node.user?.hwModel != "UNSET" {
+						Image(node.user!.hwModel ?? "unset".localized)
+							.resizable()
+							.aspectRatio(contentMode: .fit)
+							.frame(width: 75, height: 75)
+							.cornerRadius(5)
+						Text(String(node.user!.hwModel ?? "unset".localized))
+							.font(.caption2)
+							.frame(maxWidth: 100)
+					} else {
+						Image(systemName: "person.crop.circle.badge.questionmark")
+							.resizable()
+							.aspectRatio(contentMode: .fit)
+							.frame(width: 65, height: 65)
+							.cornerRadius(5)
+						Text(String("incomplete".localized))
+							.font(.caption)
+							.frame(maxWidth: 80)
+					}
 				}
 			}
 			if node.snr != 0 && !node.viaMqtt {

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 struct StoreForwardConfig: View {
 
@@ -32,9 +33,9 @@ struct StoreForwardConfig: View {
 		VStack {
 			Form {
 				ConfigHeader(title: "storeforward", config: \.storeForwardConfig, node: node, onAppear: setStoreAndForwardValues)
-				
+
 				Section(header: Text("options")) {
-					
+
 					Toggle(isOn: $enabled) {
 						Label("enabled", systemImage: "envelope.arrow.triangle.branch")
 						Text("Enables the store and forward module. Store and forward must be enabled on both client and router devices.")
@@ -66,7 +67,7 @@ struct StoreForwardConfig: View {
 						}
 					}
 				}
-				
+
 				if isRouter {
 					Section(header: Text("Router Options")) {
 						Toggle(isOn: $heartbeat) {
@@ -116,10 +117,10 @@ struct StoreForwardConfig: View {
 					do {
 						try context.save()
 					} catch {
-						print("Failed to save isRouter")
+						Logger.mesh.error("Failed to save isRouter: \(error.localizedDescription)")
 					}
 				}
-				
+
 				var sfc = ModuleConfig.StoreForwardConfig()
 				sfc.enabled = self.enabled
 				sfc.heartbeat = self.heartbeat
@@ -144,10 +145,10 @@ struct StoreForwardConfig: View {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
-			
+
 			// Need to request a Detection Sensor Module Config from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.storeForwardConfig == nil {
-				print("empty store and forward module config")
+				Logger.mesh.debug("empty store and forward module config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestStoreAndForwardModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

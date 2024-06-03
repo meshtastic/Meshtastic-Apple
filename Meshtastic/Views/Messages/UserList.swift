@@ -7,12 +7,13 @@
 
 import SwiftUI
 import CoreData
+import OSLog
 #if canImport(TipKit)
 import TipKit
 #endif
 
 struct UserList: View {
-	
+
 	@StateObject var appState = AppState.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -26,7 +27,7 @@ struct UserList: View {
 	@State private var hopsAway: Int = -1
 	@State private var deviceRole: Int = -1
 	@State var isEditingFilters = false
-	
+
 	@FetchRequest(
 		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false),
 						  NSSortDescriptor(key: "userNode.favorite", ascending: false),
@@ -38,7 +39,7 @@ struct UserList: View {
 	@State var selectedUserNum: Int64?
 	@State private var userSelection: UserEntity? // Nothing selected by default.
 	@State private var isPresentingDeleteUserMessagesConfirm: Bool = false
-	
+
 	var body: some View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
@@ -61,15 +62,15 @@ struct UserList: View {
 									.foregroundColor(.accentColor)
 									.brightness(0.2)
 							}
-							
+
 							CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))))
-							
-							VStack(alignment: .leading){
-								HStack{
+
+							VStack(alignment: .leading) {
+								HStack {
 									Text(user.longName ?? "unknown".localized)
 										.font(.headline)
 									Spacer()
-									if (user.userNode?.favorite ?? false) {
+									if user.userNode?.favorite ?? false {
 										Image(systemName: "star.fill")
 											.foregroundColor(.yellow)
 									}
@@ -93,7 +94,7 @@ struct UserList: View {
 										}
 									}
 								}
-								
+
 								if user.messageList.count > 0 {
 									HStack(alignment: .top) {
 										Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
@@ -106,18 +107,18 @@ struct UserList: View {
 						.frame(height: 62)
 						.contextMenu {
 							Button {
-								
+
 								if node != nil && !(user.userNode?.favorite ?? false) {
 									let success = bleManager.setFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
 									if success {
 										user.userNode?.favorite = !(user.userNode?.favorite ?? true)
-										print("Favorited a node")
+										Logger.data.info("Favorited a node")
 									}
 								} else {
 									let success = bleManager.removeFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
 									if success {
 										user.userNode?.favorite = !(user.userNode?.favorite ?? true)
-										print("Favorited a node")
+										Logger.data.info("Un Favorited a node")
 									}
 								}
 								context.refresh(user, mergeChanges: true)
@@ -125,7 +126,7 @@ struct UserList: View {
 									try context.save()
 								} catch {
 									context.rollback()
-									print("💥 Save Node Favorite Error")
+									Logger.data.error("Save Node Favorite Error")
 								}
 							} label: {
 								Label((user.userNode?.favorite ?? false)  ? "Un-Favorite" : "Favorite", systemImage: (user.userNode?.favorite ?? false) ? "star.slash.fill" : "star.fill")
@@ -136,7 +137,7 @@ struct UserList: View {
 									try context.save()
 								} catch {
 									context.rollback()
-									print("💥 Save User Mute Error")
+									Logger.data.error("Save User Mute Error")
 								}
 							} label: {
 								Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")
@@ -206,7 +207,6 @@ struct UserList: View {
 			}
 			.onChange(of: selectedUserNum) { newUserNum in
 				userSelection = users.first(where: { $0.num == newUserNum })
-				print(userSelection)
 			}
 			.onAppear {
 				if self.bleManager.context == nil {
@@ -238,9 +238,9 @@ struct UserList: View {
 				.scrollDismissesKeyboard(.immediately)
 		}
 	}
-	
+
 	private func searchUserList() {
-		
+
 		/// Case Insensitive Search Text Predicates
 		let searchPredicates = ["userId", "numString", "hwModel", "longName", "shortName"].map { property in
 			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
@@ -269,7 +269,7 @@ struct UserList: View {
 			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway == %i", Int32(hopsAway))
 			predicates.append(hopsAwayPredicate)
 		}
-		
+
 		/// Online
 		if isOnline {
 			let isOnlinePredicate = NSPredicate(format: "userNode.lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -15, to: Date())! as NSDate)
@@ -283,22 +283,22 @@ struct UserList: View {
 		/// Distance
 		if distanceFilter {
 			let pointOfInterest = LocationHelper.currentLocation
-		
+
 			if pointOfInterest.latitude != LocationHelper.DefaultLocation.latitude && pointOfInterest.longitude != LocationHelper.DefaultLocation.longitude {
-				let D: Double = maxDistance * 1.1
-				let R: Double = 6371009
+				let d: Double = maxDistance * 1.1
+				let r: Double = 6371009
 				let meanLatitidue = pointOfInterest.latitude * .pi / 180
-				let deltaLatitude = D / R * 180 / .pi
-				let deltaLongitude = D / (R * cos(meanLatitidue)) * 180 / .pi
+				let deltaLatitude = d / r * 180 / .pi
+				let deltaLongitude = d / (r * cos(meanLatitidue)) * 180 / .pi
 				let minLatitude: Double = pointOfInterest.latitude - deltaLatitude
 				let maxLatitude: Double = pointOfInterest.latitude + deltaLatitude
 				let minLongitude: Double = pointOfInterest.longitude - deltaLongitude
 				let maxLongitude: Double = pointOfInterest.longitude + deltaLongitude
-				let distancePredicate = NSPredicate(format: "(SUBQUERY(userNode.positions, $position, $position.latest == TRUE && (%lf <= ($position.longitudeI / 1e7)) AND (($position.longitudeI / 1e7) <= %lf) AND (%lf <= ($position.latitudeI / 1e7)) AND (($position.latitudeI / 1e7) <= %lf))).@count > 0", minLongitude, maxLongitude,minLatitude, maxLatitude)
+				let distancePredicate = NSPredicate(format: "(SUBQUERY(userNode.positions, $position, $position.latest == TRUE && (%lf <= ($position.longitudeI / 1e7)) AND (($position.longitudeI / 1e7) <= %lf) AND (%lf <= ($position.latitudeI / 1e7)) AND (($position.latitudeI / 1e7) <= %lf))).@count > 0", minLongitude, maxLongitude, minLatitude, maxLatitude)
 				predicates.append(distancePredicate)
 			}
 		}
-		
+
 		if predicates.count > 0 || !searchText.isEmpty {
 			if !searchText.isEmpty {
 				let filterPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)

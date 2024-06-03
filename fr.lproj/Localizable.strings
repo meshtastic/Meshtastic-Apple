@@ -114,6 +114,7 @@
 "hybrid"="Hybride";
 "hybrid.flyover"="Flyover hybride";
 "include"="Inclure";
+"incomplete"="Incomplete";
 "inputevent.none"="Aucun";
 "inputevent.up"="Haut";
 "inputevent.down"="Bas";

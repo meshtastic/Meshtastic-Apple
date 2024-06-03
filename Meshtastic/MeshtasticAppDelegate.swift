@@ -6,14 +6,15 @@
 //
 
 import SwiftUI
+import OSLog
 
 class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, ObservableObject {
-	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-		print("🚀 Meshtstic Apple App launched!")
+	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+		Logger.services.info("🚀 Meshtstic Apple App launched!")
 		// Default User Default Values
-		UserDefaults.standard.register(defaults: ["meshMapRecentering" : true])
-		UserDefaults.standard.register(defaults: ["meshMapShowNodeHistory" : true])
-		UserDefaults.standard.register(defaults: ["meshMapShowRouteLines" : true])
+		UserDefaults.standard.register(defaults: ["meshMapRecentering": true])
+		UserDefaults.standard.register(defaults: ["meshMapShowNodeHistory": true])
+		UserDefaults.standard.register(defaults: ["meshMapShowRouteLines": true])
 		UNUserNotificationCenter.current().delegate = self
 		if #available(iOS 17.0, macOS 14.0, *) {
 			let locationsHandler = LocationsHandler.shared

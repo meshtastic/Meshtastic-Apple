@@ -28,15 +28,15 @@ struct AmbientLightingConfig: View {
 		VStack {
 			Form {
 				ConfigHeader(title: "Ambient Lighting", config: \.ambientLightingConfig, node: node, onAppear: setAmbientLightingConfigValue)
-				
+
 				Section(header: Text("options")) {
-					
+
 					Toggle(isOn: $ledState) {
 						Label("LED State", systemImage: ledState ? "lightbulb.led.fill" : "lightbulb.led")
 						Text("The state of the LED (on/off)")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				
+
 					HStack {
 						Image(systemName: "eyedropper")
 							.foregroundColor(.accentColor)

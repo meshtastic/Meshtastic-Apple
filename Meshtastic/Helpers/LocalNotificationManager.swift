@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import OSLog
 
 class LocalNotificationManager {
 
@@ -37,7 +38,7 @@ class LocalNotificationManager {
             content.body = notification.content
             content.sound = .default
             content.interruptionLevel = .timeSensitive
-			
+
 			if notification.target != nil {
 				content.userInfo["target"]  = notification.target
 			}
@@ -60,7 +61,7 @@ class LocalNotificationManager {
         UNUserNotificationCenter.current().getPendingNotificationRequests { notifications in
 
             for notification in notifications {
-                print(notification)
+				Logger.services.debug("\(notification)")
             }
         }
     }

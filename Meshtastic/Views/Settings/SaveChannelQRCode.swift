@@ -63,7 +63,6 @@ struct SaveChannelQRCode: View {
 					.padding()
 				}
 
-
 			#if targetEnvironment(macCatalyst)
 				Button {
 					dismiss()

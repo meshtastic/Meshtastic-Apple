@@ -16,7 +16,7 @@ extension PlottableMeasurement: Plottable where UnitType == UnitLength {
 	var primitivePlottable: Double {
 		self.measurement.converted(to: .meters).value
 	}
-	
+
 	init?(primitivePlottable: Double) {
 		self.init(
 			measurement: Measurement(

@@ -22,7 +22,7 @@ struct RtttlConfig: View {
 		VStack {
 			Form {
 				ConfigHeader(title: "ringtone", config: \.rtttlConfig, node: node, onAppear: setRtttLConfigValue)
-				
+
 				Section(header: Text("options")) {
 					HStack {
 						Label("ringtone", systemImage: "music.quarternote.3")

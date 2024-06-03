@@ -116,6 +116,10 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
   ///
   /// AMS TSL25911FN RGB Light Sensor
   case tsl25911Fn // = 22
+
+  ///
+  /// AHT10 Integrated temperature and humidity sensor
+  case aht10 // = 23
   case UNRECOGNIZED(Int)
 
   init() {
@@ -147,6 +151,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
     case 20: self = .opt3001
     case 21: self = .ltr390Uv
     case 22: self = .tsl25911Fn
+    case 23: self = .aht10
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -176,6 +181,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
     case .opt3001: return 20
     case .ltr390Uv: return 21
     case .tsl25911Fn: return 22
+    case .aht10: return 23
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -210,6 +216,7 @@ extension TelemetrySensorType: CaseIterable {
     .opt3001,
     .ltr390Uv,
     .tsl25911Fn,
+    .aht10,
   ]
 }
 
@@ -535,6 +542,7 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     20: .same(proto: "OPT3001"),
     21: .same(proto: "LTR390UV"),
     22: .same(proto: "TSL25911FN"),
+    23: .same(proto: "AHT10"),
   ]
 }
 

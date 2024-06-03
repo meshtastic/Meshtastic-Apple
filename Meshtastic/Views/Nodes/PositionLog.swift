@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 7/5/22.
 //
 import SwiftUI
+import OSLog
 
 struct PositionLog: View {
 	@Environment(\.managedObjectContext) var context
@@ -20,7 +21,7 @@ struct PositionLog: View {
 	@ObservedObject var node: NodeInfoEntity
 	@State private var isPresentingClearLogConfirm = false
 	@State private var sortOrder = [KeyPathComparator(\PositionEntity.time)]
-	
+
 	var body: some View {
 		VStack {
 			if node.hasPositions {
@@ -62,7 +63,7 @@ struct PositionLog: View {
 						}
 						.width(min: 180)
 					}
-					
+
 				} else {
 					ScrollView {
 						// Use a grid on iOS as a table only shows a single column
@@ -91,19 +92,21 @@ struct PositionLog: View {
 									.font(.caption2)
 									.fontWeight(.bold)
 							}
-							ForEach(node.positions!.reversed() as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
-								let altitude = Measurement(value: Double(mappin.altitude), unit: UnitLength.meters)
-								GridRow {
-									Text(String(format: "%.5f", mappin.latitude ?? 0))
-										.font(.caption2)
-									Text(String(format: "%.5f", mappin.longitude ?? 0))
-										.font(.caption2)
-									Text(String(mappin.satsInView))
-										.font(.caption2)
-									Text(altitude.formatted())
-										.font(.caption2)
-									Text(mappin.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
-										.font(.caption2)
+							if let positions = node.positions?.reversed() as? [PositionEntity] {
+								ForEach(positions, id: \.self) { (mappin: PositionEntity) in
+									let altitude = Measurement(value: Double(mappin.altitude), unit: UnitLength.meters)
+									GridRow {
+										Text(String(format: "%.5f", mappin.latitude ?? 0))
+											.font(.caption2)
+										Text(String(format: "%.5f", mappin.longitude ?? 0))
+											.font(.caption2)
+										Text(String(mappin.satsInView))
+											.font(.caption2)
+										Text(altitude.formatted())
+											.font(.caption2)
+										Text(mappin.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+											.font(.caption2)
+									}
 								}
 							}
 						}
@@ -128,9 +131,9 @@ struct PositionLog: View {
 					) {
 						Button("Delete all positions?", role: .destructive) {
 							if clearPositions(destNum: node.num, context: context) {
-								print("Successfully Cleared Position Log")
+								Logger.services.info("Successfully Cleared Position Log")
 							} else {
-								print("Clear Position Log Failed")
+								Logger.services.error("Clear Position Log Failed")
 							}
 						}
 					}
@@ -152,15 +155,16 @@ struct PositionLog: View {
 					contentType: .commaSeparatedText,
 					defaultFilename: String("\(node.user?.longName ?? "Node") Position Log"),
 					onCompletion: { result in
-						if case .success = result {
-							print("Position log download succeeded.")
+						switch result {
+						case .success:
+							Logger.services.info("Position log download succeeded.")
 							self.isExporting = false
-						} else {
-							print("Position log download failed: \(result).")
+						case .failure(let error):
+							Logger.services.error("Position log download failed: \(error.localizedDescription)")
 						}
 					}
 				)
-				
+
 			} else {
 				if #available (iOS 17, *) {
 					ContentUnavailableView("No Positions", systemImage: "mappin.slash")

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Charts
+import OSLog
 
 struct PaxCounterLog: View {
 
@@ -25,13 +26,13 @@ struct PaxCounterLog: View {
 	var body: some View {
 		VStack {
 			if node.hasPax {
-				
+
 				let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
 				let pax = node.pax?.reversed() as? [PaxCounterEntity] ?? []
 				let chartData = pax
 						.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
 						.sorted { $0.time! < $1.time! }
-				let maxValue = (chartData.map{ $0.wifi }.max() ?? 0) + (chartData.map{ $0.ble }.max() ?? 0) + 5
+				let maxValue = (chartData.map { $0.wifi }.max() ?? 0) + (chartData.map { $0.ble }.max() ?? 0) + 5
 				if chartData.count > 0 {
 					GroupBox(label: Label("\(pax.count) Readings Total", systemImage: "chart.xyaxis.line")) {
 
@@ -47,7 +48,7 @@ struct PaxCounterLog: View {
 								.accessibilityValue("X: \(point.time!), Y: \(point.wifi + point.ble)")
 								.foregroundStyle(paxChartColor)
 								.interpolationMethod(.cardinal)
-								
+
 								Plot {
 									PointMark(
 										x: .value("x", point.time!),
@@ -175,9 +176,9 @@ struct PaxCounterLog: View {
 					) {
 						Button("paxcounter.delete", role: .destructive) {
 							if clearPax(destNum: node.num, context: context) {
-								print("Cleared Pax Counter for \(node.num)")
+								Logger.services.info("Cleared Pax Counter for \(node.num)")
 							} else {
-								print("Clear Pax Counter Log Failed")
+								Logger.services.error("Clear Pax Counter Log Failed")
 							}
 						}
 					}
@@ -219,11 +220,12 @@ struct PaxCounterLog: View {
 			contentType: .commaSeparatedText,
 			defaultFilename: String("\(node.user?.longName ?? "Node") \("paxcounter.log".localized)"),
 			onCompletion: { result in
-				if case .success = result {
-					print("PAX Counter log download succeeded.")
+				switch result {
+				case .success:
 					self.isExporting = false
-				} else {
-					print("PAX Counter log download failed: \(result).")
+					Logger.services.info("PAX Counter log download succeeded")
+				case .failure(let error):
+					Logger.services.error("PAX Counter log download failed: \(error.localizedDescription)")
 				}
 			}
 		)

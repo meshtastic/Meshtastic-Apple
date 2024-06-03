@@ -9,29 +9,19 @@ struct CircleText: View {
     var text: String
     var color: Color
 	var circleSize: CGFloat = 45
-	
+
     var body: some View {
 
         ZStack {
             Circle()
                 .fill(color)
                 .frame(width: circleSize, height: circleSize)
-			#if os(macOS)
 			Text(text)
-				.frame(width: circleSize * 0.95, height: circleSize * 0.95, alignment: .center)
+				.frame(width: circleSize * 0.9, height: circleSize * 0.9, alignment: .center)
 				.foregroundColor(color.isLight() ? .black : .white)
-				.font(.system(size: 3000))
 				.minimumScaleFactor(0.001)
-		   #else
-			Text(text)
-				.frame(width: circleSize * 0.95, height: circleSize * 0.95, alignment: .center)
-				.foregroundColor(color.isLight() ? .black : .white)
-				.font(.system(size: 5000))
-				.minimumScaleFactor(0.001)
-		   #endif
-			
+				.font(.system(size: 1300))
         }
-		.aspectRatio(1, contentMode: .fit)
     }
 }
 
@@ -59,8 +49,7 @@ struct CircleText_Previews: PreviewProvider {
 					.previewLayout(.fixed(width: 300, height: 100))
 			}
 			HStack {
-				
-		
+
 				CircleText(text: "CW-A", color: Color.secondary)
 					.previewLayout(.fixed(width: 300, height: 100))
 				CircleText(text: "CW-A", color: Color.secondary, circleSize: 80)
@@ -71,7 +60,7 @@ struct CircleText_Previews: PreviewProvider {
 					.previewLayout(.fixed(width: 300, height: 100))
 			}
 			HStack {
-				
+
 				CircleText(text: "🚗", color: Color.orange)
 					.previewLayout(.fixed(width: 300, height: 100))
 				CircleText(text: "🔋", color: Color.indigo, circleSize: 80)

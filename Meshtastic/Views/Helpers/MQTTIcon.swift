@@ -18,8 +18,8 @@ struct MQTTIcon: View {
 
 	var body: some View {
 		Button( action: {
-			if(topic.length > 0) {self.isPopoverOpen.toggle()}
-		} ) {
+			if topic.length > 0 {self.isPopoverOpen.toggle()}
+		}) {
 			// the last one defaults to just showing up/down if it isn't specified b/c on the mqtt config screen, there's no information about uplink/downlink and no good alternative icon
 			Image(systemName: uplink && downlink ? "arrow.up.arrow.down.circle.fill" : uplink ? "arrow.up.circle.fill" : downlink ? "arrow.down.circle.fill" : "arrow.up.arrow.down.circle.fill")
 				.imageScale(.large)

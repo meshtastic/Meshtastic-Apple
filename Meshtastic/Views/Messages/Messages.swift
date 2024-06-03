@@ -7,12 +7,13 @@
 
 import SwiftUI
 import CoreData
+import OSLog
 #if canImport(TipKit)
 import TipKit
 #endif
 
 struct Messages: View {
-	
+
 	@StateObject var appState = AppState.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -20,9 +21,9 @@ struct Messages: View {
 	@State var node: NodeInfoEntity?
 	@State private var userSelection: UserEntity? // Nothing selected by default.
 	@State private var channelSelection: ChannelEntity? // Nothing selected by default.
-	
+
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
-	
+
 	enum MessagesSidebar {
 		case groupMessages
 		case directMessages
@@ -67,21 +68,20 @@ struct Messages: View {
 			.navigationBarTitleDisplayMode(.large)
 			.navigationBarItems(leading: MeshtasticLogo())
 			.onChange(of: (appState.navigationPath)) { newPath in
-				
-				if ((newPath?.hasPrefix("meshtastic://messages")) != nil) {
-					
+
+				if (newPath?.hasPrefix("meshtastic://messages")) != nil {
+
 					if let urlComponent = URLComponents(string: newPath ?? "") {
 						let queryItems = urlComponent.queryItems
 						let messageId = queryItems?.first(where: { $0.name == "messageId" })?.value
 						let channel = queryItems?.first(where: { $0.name == "channel" })?.value
 
-						if channel == nil {
-							print("Channel not found")
-						}
-						else {
-							print("Channel \(channel)")
-						//	selectedNode = nodes.first(where: { $0.num == Int64(nodeNum ?? "-1") })
-						//	AppState.shared.navigationPath = nil
+						if let channel {
+							Logger.services.info("Deep Link Channel \(channel)")
+							//	selectedNode = nodes.first(where: { $0.num == Int64(nodeNum ?? "-1") })
+							//	AppState.shared.navigationPath = nil
+						} else {
+							Logger.services.info("Channel Deep Link not found")
 						}
 					}
 				}
@@ -106,7 +106,7 @@ struct Messages: View {
 					}
 				}
 			}
-			
+
 		} content: {
 
 		} detail: {

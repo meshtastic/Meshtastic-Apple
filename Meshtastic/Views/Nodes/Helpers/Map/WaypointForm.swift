@@ -1,4 +1,3 @@
-
 //
 //  WaypointForm.swift
 //  Meshtastic
@@ -9,9 +8,10 @@
 import SwiftUI
 import MapKit
 import CoreLocation
+import OSLog
 
 struct WaypointForm: View {
-	
+
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var dismiss
 	@State var waypoint: WaypointEntity
@@ -27,7 +27,7 @@ struct WaypointForm: View {
 	@State private var expire: Date = Date.now.addingTimeInterval(60 * 480) // 1 minute * 480 = 8 Hours
 	@State private var locked: Bool = false
 	@State private var lockedTo: Int64 = 0
-	
+
 	var body: some View {
 		NavigationStack {
 			if editMode {
@@ -35,7 +35,7 @@ struct WaypointForm: View {
 					.font(.largeTitle)
 				Divider()
 				Form {
-					let distance = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude).distance(from: CLLocation(latitude: waypoint.coordinate.latitude , longitude: waypoint.coordinate.longitude ))
+					let distance = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude).distance(from: CLLocation(latitude: waypoint.coordinate.latitude, longitude: waypoint.coordinate.longitude ))
 					Section(header: Text("Coordinate") ) {
 						HStack {
 							Text("Location: \(String(format: "%.5f", waypoint.coordinate.latitude) + "," + String(format: "%.5f", waypoint.coordinate.longitude))")
@@ -91,14 +91,14 @@ struct WaypointForm: View {
 								.font(.title)
 								.focused($iconIsFocused)
 								.onChange(of: icon) { value in
-									
+
 									// If you have anything other than emojis in your string make it empty
 									if !value.onlyEmojis() {
 										icon = ""
 									}
 									// If a second emoji is entered delete the first one
 									if value.count >= 1 {
-										
+
 										if value.count > 1 {
 											let index = value.index(value.startIndex, offsetBy: 1)
 											icon = String(value[index])
@@ -106,7 +106,7 @@ struct WaypointForm: View {
 										iconIsFocused = false
 									}
 								}
-							
+
 						}
 						Toggle(isOn: $expires) {
 							Label("Expires", systemImage: "clock.badge.xmark")
@@ -158,7 +158,7 @@ struct WaypointForm: View {
 							dismiss()
 						} else {
 							dismiss()
-							print("Send waypoint failed")
+							Logger.mesh.warning("Send waypoint failed")
 						}
 					} label: {
 						Label("Send", systemImage: "arrow.up")
@@ -168,7 +168,7 @@ struct WaypointForm: View {
 					.controlSize(.regular)
 					.disabled(bleManager.connectedPeripheral == nil)
 					.padding(.bottom)
-					
+
 					Button(role: .cancel) {
 						dismiss()
 					} label: {
@@ -178,9 +178,9 @@ struct WaypointForm: View {
 					.buttonBorderShape(.capsule)
 					.controlSize(.regular)
 					.padding(.bottom)
-					
+
 					if waypoint.id > 0 && bleManager.isConnected {
-						
+
 						Menu {
 							Button("For me", action: {
 								bleManager.context!.delete(waypoint)
@@ -211,7 +211,7 @@ struct WaypointForm: View {
 								}
 								newWaypoint.expire = UInt32(1)
 								if bleManager.sendWaypoint(waypoint: newWaypoint) {
-									
+
 									bleManager.context!.delete(waypoint)
 									do {
 										try bleManager.context!.save()
@@ -221,7 +221,7 @@ struct WaypointForm: View {
 									dismiss()
 								} else {
 									dismiss()
-									print("Send waypoint failed")
+									Logger.mesh.warning("Send waypoint failed")
 								}
 							})
 						}
@@ -237,7 +237,7 @@ struct WaypointForm: View {
 				}
 			} else {
 				VStack {
-					HStack  {
+					HStack {
 						CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 65)
 						Spacer()
 						Text(waypoint.name ?? "?")
@@ -258,7 +258,7 @@ struct WaypointForm: View {
 						}
 					}
 					Divider()
-					VStack (alignment: .leading) {
+					VStack(alignment: .leading) {
 						// Description
 						if (waypoint.longDescription ?? "").count > 0 {
 							Label {

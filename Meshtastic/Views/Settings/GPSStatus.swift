@@ -10,20 +10,20 @@ import CoreLocation
 
 @available(iOS 17.0, macOS 14.0, *)
 struct GPSStatus: View {
-	
+
 	var largeFont: Font = .footnote
 	var smallFont: Font = .caption2
-	
+
 	@ObservedObject var locationsHandler: LocationsHandler = LocationsHandler.shared
 	var body: some View {
-		
+
 		if let newLocation = locationsHandler.locationsArray.last {
 		let horizontalAccuracy = Measurement(value: newLocation.horizontalAccuracy, unit: UnitLength.meters)
 		let verticalAccuracy = Measurement(value: newLocation.verticalAccuracy, unit: UnitLength.meters)
 		let altitiude = Measurement(value: newLocation.altitude, unit: UnitLength.meters)
 		let speed = Measurement(value: newLocation.speed, unit: UnitSpeed.kilometersPerHour)
 		let speedAccuracy = Measurement(value: newLocation.speedAccuracy, unit: UnitSpeed.metersPerSecond)
-		let courseAccuracy = Measurement(value: newLocation.courseAccuracy, unit:  UnitAngle.degrees)
+		let courseAccuracy = Measurement(value: newLocation.courseAccuracy, unit: UnitAngle.degrees)
 
 			Label("Coordinate \(String(format: "%.5f", newLocation.coordinate.latitude)), \(String(format: "%.5f", newLocation.coordinate.longitude))", systemImage: "mappin")
 				.font(largeFont)
@@ -33,7 +33,7 @@ struct GPSStatus: View {
 					.font(largeFont)
 				Label("Sats Estimate \(LocationsHandler.satsInView)", systemImage: "sparkles")
 					.font(largeFont)
-				
+
 			}
 			HStack {
 				if newLocation.verticalAccuracy > 0 {

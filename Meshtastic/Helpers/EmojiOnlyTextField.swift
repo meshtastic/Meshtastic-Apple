@@ -8,10 +8,6 @@ import SwiftUI
 
 class SwiftUIEmojiTextField: UITextField {
 
-	override func awakeFromNib() {
-		super.awakeFromNib()
-	}
-
 	func setEmoji() {
 		_ = self.textInputMode
 	}
@@ -21,11 +17,9 @@ class SwiftUIEmojiTextField: UITextField {
 	}
 
 	override var textInputMode: UITextInputMode? {
-		for mode in UITextInputMode.activeInputModes {
-			if mode.primaryLanguage == "emoji" {
-				self.keyboardType = .default // do not remove this
-				return mode
-			}
+		for mode in UITextInputMode.activeInputModes where mode.primaryLanguage == "emoji" {
+			self.keyboardType = .default // do not remove this
+			return mode
 		}
 		return nil
 	}

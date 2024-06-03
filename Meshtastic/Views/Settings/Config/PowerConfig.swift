@@ -17,9 +17,9 @@ struct PowerConfig: View {
 	@State private var waitBluetoothSecs = 60
 	@State private var lsSecs = 300
 	@State private var minWakeSecs = 10
-	
+
 	@State private var currentDevice: DeviceHardware?
-	
+
 	@State private var hasChanges: Bool = false
 	@FocusState private var isFocused: Bool
 
@@ -28,7 +28,7 @@ struct PowerConfig: View {
 			ConfigHeader(title: "config.power.title", config: \.powerConfig, node: node, onAppear: setPowerValues)
 
 			Section {
-				if (currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3) || (currentDevice?.architecture == .nrf52840 && (node?.deviceConfig?.role ?? 0 == 5 || node?.deviceConfig?.role ?? 0 == 6))  {
+				if (currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3) || (currentDevice?.architecture == .nrf52840 && (node?.deviceConfig?.role ?? 0 == 5 || node?.deviceConfig?.role ?? 0 == 6)) {
 					Toggle(isOn: $isPowerSaving) {
 						Label("config.power.saving", systemImage: "bolt")
 						Text("config.power.saving.description")
@@ -120,13 +120,13 @@ struct PowerConfig: View {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
-			
+
 			Api().loadDeviceHardwareData { (hw) in
-				
+
 				for device in hw {
 					let currentHardware = node?.user?.hwModel ?? "UNSET"
 					let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "")
-					if deviceString == currentHardware  {
+					if deviceString == currentHardware {
 						currentDevice = device
 					}
 				}

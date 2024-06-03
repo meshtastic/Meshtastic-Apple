@@ -8,6 +8,7 @@
 import SwiftUI
 import CoreData
 import MapKit
+import OSLog
 #if canImport(TipKit)
 import TipKit
 #endif
@@ -44,10 +45,10 @@ struct Channels: View {
 	@State var positionsEnabled = true
 	@State var supportedVersion = true
 	@State var selectedChannel: ChannelEntity?
-	
+
 	/// Minimum Version for granular position configuration
 	@State var minimumVersion = "2.2.24"
-	
+
 	@FetchRequest(
 		sortDescriptors: [NSSortDescriptor(key: "favorite", ascending: false),
 						  NSSortDescriptor(key: "lastHeard", ascending: false),
@@ -90,7 +91,7 @@ struct Channels: View {
 								positionPrecision = 32
 								preciseLocation = true
 								positionsEnabled = true
-								
+
 							} else if !supportedVersion && channelRole == 2 {
 								positionPrecision = 0
 								preciseLocation = false
@@ -135,7 +136,7 @@ struct Channels: View {
 					}
 				}
 			}
-			.sheet(item: $selectedChannel) { selection in
+			.sheet(item: $selectedChannel) { _ in
 				#if targetEnvironment(macCatalyst)
 				Text("channel")
 					.font(.largeTitle)
@@ -159,7 +160,7 @@ struct Channels: View {
 							channel.settings.uplinkEnabled = uplink
 							channel.settings.downlinkEnabled = downlink
 							channel.settings.moduleSettings.positionPrecision = UInt32(positionPrecision)
-							
+
 							selectedChannel!.role = Int32(channelRole)
 							selectedChannel!.index = channelIndex
 							selectedChannel!.name = channelName
@@ -180,34 +181,33 @@ struct Channels: View {
 							context.refresh(selectedChannel!, mergeChanges: true)
 							do {
 								try context.save()
-								print("💾 Saved Channel: \(channel.settings.name)")
+								Logger.data.info("💾 Saved Channel: \(channel.settings.name)")
 							} catch {
 								context.rollback()
 								let nsError = error as NSError
-								print("💥 Unresolved Core Data error in the channel editor. Error: \(nsError)")
+								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError)")
 							}
 						} else {
-							guard let channelEntity = node?.myInfo?.channels?.first(where: { ($0 as! ChannelEntity).index == channelIndex }) else {
+							guard let channelEntities = node?.myInfo?.channels as? [ChannelEntity],
+								  let channelEntity = channelEntities.first(where: { $0.index == channelIndex }) else {
 								return
 							}
-							
-							let objects = (channelEntity as! ChannelEntity).allPrivateMessages
+
+							let objects = channelEntity.allPrivateMessages
 							for object in objects {
 								context.delete(object)
 							}
-							for node in nodes {
-								if node.channel == (channelEntity as AnyObject).index {
-									context.delete(node)
-								}
+							for node in nodes where node.channel == channelEntity.index {
+								context.delete(node)
 							}
-							context.delete(channelEntity as! ChannelEntity)
+							context.delete(channelEntity)
 							do {
 								try context.save()
-								print("💾 Deleted Channel: \(channel.settings.name)")
+								Logger.data.info("💾 Deleted Channel: \(channel.settings.name)")
 							} catch {
 								context.rollback()
 								let nsError = error as NSError
-								print("💥 Unresolved Core Data error in the channel editor. Error: \(nsError)")
+								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError)")
 							}
 						}
 
@@ -259,7 +259,7 @@ struct Channels: View {
 					uplink = false
 					downlink = false
 					hasChanges = true
-					
+
 					let newChannel = ChannelEntity(context: context)
 					newChannel.id = channelIndex
 					newChannel.index = channelIndex
@@ -294,13 +294,11 @@ struct Channels: View {
 }
 
 func firstMissingChannelIndex(_ indexes: [Int]) -> Int {
-	var smallestIndex = 1
+	let smallestIndex = 1
 	if indexes.isEmpty { return smallestIndex }
 	if smallestIndex <= indexes.count {
-		for element in smallestIndex...indexes.count {
-			if !indexes.contains(element) {
-				return element
-			}
+		for element in smallestIndex...indexes.count where !indexes.contains(element) {
+			return element
 		}
 	}
 	return indexes.count + 1
@@ -333,7 +331,7 @@ enum PositionPrecision: Int, CaseIterable, Identifiable {
 	case twentyfour = 24
 
 	var id: Int { self.rawValue }
-	
+
 	var precisionMeters: Double {
 		switch self {
 		case .two:
@@ -384,7 +382,7 @@ enum PositionPrecision: Int, CaseIterable, Identifiable {
 			return 1.413763999910884
 		}
 	}
-	
+
 	var description: String {
 		let distanceFormatter = MKDistanceFormatter()
 		return String.localizedStringWithFormat("position.precision %@".localized, String(distanceFormatter.string(fromDistance: precisionMeters)))

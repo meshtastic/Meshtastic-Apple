@@ -52,7 +52,7 @@ struct ShareChannels: View {
 	var qrCodeImage = QrCodeImage()
 
 	var body: some View {
-		
+
 		if #available(iOS 17.0, macOS 14.0, *) {
 			VStack {
 				TipView(ShareChannelsTip(), arrowEdge: .bottom)
@@ -202,7 +202,7 @@ struct ShareChannels: View {
 							.controlSize(.large)
 							.padding(.top)
 							.padding(.bottom)
-							
+
 							ShareLink("Share QR Code & Link",
 										item: Image(uiImage: qrImage),
 										subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),
@@ -269,20 +269,18 @@ struct ShareChannels: View {
 		channelSet.loraConfig = loRaConfig
 		if node?.myInfo?.channels != nil && node?.myInfo?.channels?.count ?? 0 > 0 {
 			for ch in node?.myInfo?.channels?.array as? [ChannelEntity] ?? [] {
-				if ch.role > 0 {
-
-					if ch.index == 0 && includeChannel0 || ch.index == 1 && includeChannel1 || ch.index == 2 && includeChannel2 || ch.index == 3 && includeChannel3 ||
-						ch.index == 4 && includeChannel4 || ch.index == 5 && includeChannel5 || ch.index == 6 && includeChannel6 || ch.index == 7 && includeChannel7 {
-
-						var channelSettings = ChannelSettings()
-							channelSettings.name = ch.name!
-							channelSettings.psk = ch.psk!
-							channelSettings.id = UInt32(ch.id)
-							channelSet.settings.append(channelSettings)
-					}
+				if ch.role > 0, ch.index == 0 && includeChannel0 || ch.index == 1 && includeChannel1 || ch.index == 2 && includeChannel2 || ch.index == 3 && includeChannel3 ||
+					ch.index == 4 && includeChannel4 || ch.index == 5 && includeChannel5 || ch.index == 6 && includeChannel6 || ch.index == 7 && includeChannel7 {
+					var channelSettings = ChannelSettings()
+					channelSettings.name = ch.name!
+					channelSettings.psk = ch.psk!
+					channelSettings.id = UInt32(ch.id)
+					channelSet.settings.append(channelSettings)
 				}
 			}
-			let settingsString = try! channelSet.serializedData().base64EncodedString()
+			guard let settingsString = try? channelSet.serializedData().base64EncodedString() else {
+				return
+			}
 			channelsUrl = ("https://meshtastic.org/e/#" + settingsString.base64ToBase64url() + (replaceChannels ? "" : "?add=true"))
 		}
 	}

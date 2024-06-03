@@ -9,15 +9,14 @@ import SwiftUI
 import CoreData
 import CoreLocation
 import Foundation
+import OSLog
 #if canImport(MapKit)
 import MapKit
 #endif
 
-
-
 @available(iOS 17.0, macOS 14.0, *)
 struct MeshMap: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@StateObject var appState = AppState.shared
@@ -29,7 +28,7 @@ struct MeshMap: View {
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .standard
 	// Map Configuration
 	@Namespace var mapScope
-	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .flat, emphasis: MapStyle.StandardEmphasis.muted ,pointsOfInterest: .excludingAll, showsTraffic: false)
+	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .flat, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .excludingAll, showsTraffic: false)
 	@State var position = MapCameraPosition.automatic
 	@State var isEditingSettings = false
 	@State var selectedPosition: PositionEntity?
@@ -39,15 +38,14 @@ struct MeshMap: View {
 	@State var newWaypointCoord: CLLocationCoordinate2D?
 	@State var isMeshMap = true
 
-	
 	var body: some View {
-		
+
 		NavigationStack {
 			ZStack {
 				MapReader { reader in
 					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
 						MeshMapContent(showUserLocation: $showUserLocation, showTraffic: $showTraffic, showPointsOfInterest: $showPointsOfInterest, selectedMapLayer: $selectedMapLayer, selectedPosition: $selectedPosition, selectedWaypoint: $selectedWaypoint)
-				
+
 					}
 					.mapScope(mapScope)
 					.mapStyle(mapStyle)
@@ -60,7 +58,7 @@ struct MeshMap: View {
 							.mapControlVisibility(.automatic)
 					}
 					.controlSize(.regular)
-					.onTapGesture(count: 1,  perform: { position in
+					.onTapGesture(count: 1, perform: { position in
 						newWaypointCoord = reader.convert(position, from: .local) ??  CLLocationCoordinate2D.init()
 					})
 					.gesture(
@@ -68,27 +66,27 @@ struct MeshMap: View {
 							.sequenced(before: SpatialTapGesture(coordinateSpace: .local))
 							.onEnded { value in
 							switch value {
-								case let .second(_, tapValue):
-									guard let point = tapValue?.location else {
-										print("Unable to retreive tap location from gesture data.")
-										return
-									}
-									
-									guard let coordinate = reader.convert(point, from: .local) else {
-										print("Unable to convert local point to coordinate on map.")
-										return
-									}
+							case let .second(_, tapValue):
+								guard let point = tapValue?.location else {
+									Logger.services.error("Unable to retreive tap location from gesture data.")
+									return
+								}
 
-									newWaypointCoord = coordinate
-									editingWaypoint = WaypointEntity(context: context)
-									editingWaypoint!.name = "Waypoint Pin"
-									editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
-									editingWaypoint!.latitudeI = Int32((newWaypointCoord?.latitude ?? 0) * 1e7)
-									editingWaypoint!.longitudeI = Int32((newWaypointCoord?.longitude ?? 0) * 1e7)
-									editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
-									editingWaypoint!.id = 0
-									print("Long press occured at: \(coordinate)")
-								default: return
+								guard let coordinate = reader.convert(point, from: .local) else {
+									Logger.services.error("Unable to convert local point to coordinate on map.")
+									return
+								}
+
+								newWaypointCoord = coordinate
+								editingWaypoint = WaypointEntity(context: context)
+								editingWaypoint!.name = "Waypoint Pin"
+								editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
+								editingWaypoint!.latitudeI = Int32((newWaypointCoord?.latitude ?? 0) * 1e7)
+								editingWaypoint!.longitudeI = Int32((newWaypointCoord?.longitude ?? 0) * 1e7)
+								editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
+								editingWaypoint!.id = 0
+								Logger.services.debug("Long press occured at Lat: \(coordinate.latitude) Long: \(coordinate.longitude)")
+							default: return
 							}
 					})
 				}
@@ -112,25 +110,25 @@ struct MeshMap: View {
 //				
 //				if ((newPath?.hasPrefix("meshtastic://open-waypoint")) != nil) {
 //					guard let url = URL(string: appState.navigationPath ?? "NONE") else {
-//						print("Invalid URL")
+//						logger.error("Invalid URL")
 //						return
 //					}
 //					guard let components = URLComponents(url: url, resolvingAgainstBaseURL: true) else {
-//					  print("Invalid URL Components")
+//					  logger.error("Invalid URL Components")
 //					  return
 //					}
 //					guard let action = components.host, action == "open-waypoint" else {
-//					  print("Unknown waypoint URL action")
+//					  logger.error("Unknown waypoint URL action")
 //					  return
 //					}
 //					guard let waypointId = components.queryItems?.first(where: { $0.name == "id" })?.value else {
-//					  print("Waypoint id not found")
+//					  logger.error("Waypoint id not found")
 //					  return
 //					}
-////					guard let waypoint = waypoints.first(where: { $0.id == Int64(waypointId) }) else {
-////					  print("Waypoint not found")
-////					  return
-////					}
+//					guard let waypoint = waypoints.first(where: { $0.id == Int64(waypointId) }) else {
+//					  logger.error("Waypoint not found")
+//					  return
+//					}
 //					//showWaypoints = true
 //					//position = .camera(MapCamera(centerCoordinate: waypoint.coordinate, distance: 1000, heading: 0, pitch: 60))
 //				}
@@ -162,7 +160,7 @@ struct MeshMap: View {
 					}
 					.tint(Color(UIColor.secondarySystemBackground))
 					.foregroundColor(.accentColor)
-					.buttonStyle(.borderedProminent)					
+					.buttonStyle(.borderedProminent)
 				}
 				.controlSize(.regular)
 				.padding(5)
@@ -173,12 +171,9 @@ struct MeshMap: View {
 		})
 		.onAppear {
 			UIApplication.shared.isIdleTimerDisabled = true
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
-		
+
 			//	let wayPointEntity = getWaypoint(id: Int64(deepLinkManager.waypointId) ?? -1, context: context)
-			//if wayPointEntity.id > 0 {
+			// if wayPointEntity.id > 0 {
 			//	position = .camera(MapCamera(centerCoordinate: wayPointEntity.coordinate, distance: 1000, heading: 0, pitch: 60))
 			switch selectedMapLayer {
 			case .standard:

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 struct NetworkConfig: View {
 
@@ -28,16 +29,16 @@ struct NetworkConfig: View {
 		VStack {
 			Form {
 				ConfigHeader(title: "Network", config: \.networkConfig, node: node, onAppear: setNetworkValues)
-				
-				if (node != nil && node?.metadata?.hasWifi ?? false) {
+
+				if node != nil && node?.metadata?.hasWifi ?? false {
 					Section(header: Text("WiFi Options")) {
-						
+
 						Toggle(isOn: $wifiEnabled) {
 							Label("enabled", systemImage: "wifi")
 							Text("Enabling WiFi will disable the bluetooth connection to the app.")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						
+
 						HStack {
 							Label("ssid", systemImage: "network")
 							TextField("ssid", text: $wifiSsid)
@@ -74,7 +75,7 @@ struct NetworkConfig: View {
 						.keyboardType(.default)
 					}
 				}
-				if (node != nil && node?.metadata?.hasEthernet ?? false) {
+				if node != nil && node?.metadata?.hasEthernet ?? false {
 					Section(header: Text("Ethernet Options")) {
 						Toggle(isOn: $ethEnabled) {
 							Label("enabled", systemImage: "network")
@@ -119,7 +120,7 @@ struct NetworkConfig: View {
 			setNetworkValues()
 			// Need to request a NetworkConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.networkConfig == nil {
-				print("empty network config")
+				Logger.mesh.info("empty network config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestNetworkConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

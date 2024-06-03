@@ -26,7 +26,7 @@ public func getNodeInfo(id: Int64, context: NSManagedObjectContext) -> NodeInfoE
 }
 
 public func getStoreAndForwardMessageIds(seconds: Int, context: NSManagedObjectContext) -> [UInt32] {
-	
+
 	let time = seconds * -1
 	let fetchMessagesRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
 	let timeRange = Calendar.current.date(byAdding: .minute, value: time, to: Date())

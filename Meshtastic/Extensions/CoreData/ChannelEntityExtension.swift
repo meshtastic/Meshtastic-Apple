@@ -12,13 +12,13 @@ extension ChannelEntity {
 
 		self.value(forKey: "allPrivateMessages") as? [MessageEntity] ?? [MessageEntity]()
 	}
-	
+
 	var unreadMessages: Int {
-		
-		let unreadMessages = allPrivateMessages.filter{ ($0 as AnyObject).read == false }
+
+		let unreadMessages = allPrivateMessages.filter { ($0 as AnyObject).read == false }
 		return unreadMessages.count
 	}
-	
+
 	var protoBuf: Channel {
 		var channel = Channel()
 		channel.index = self.index

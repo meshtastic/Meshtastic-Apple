@@ -14,8 +14,7 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 	if metricsType == 0 {
 		// Create Device Metrics Header
 		csvString = "\("battery.level".localized), \("voltage".localized), \("channel.utilization".localized), \("airtime".localized), \("uptime".localized), \("timestamp".localized)"
-		for dm in telemetry {
-			if dm.metricsType == 0 {
+		for dm in telemetry where dm.metricsType == 0 {
 				csvString += "\n"
 				csvString += String(dm.batteryLevel)
 				csvString += ", "
@@ -28,26 +27,23 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 				csvString += String(dm.uptimeSeconds)
 				csvString += ", "
 				csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
-			}
 		}
 	} else if metricsType == 1 {
 		// Create Environment Telemetry Header
 		csvString = "Temperature, Relative Humidity, Barometric Pressure, Indoor Air Quality, Gas Resistance, \("timestamp".localized)"
-		for dm in telemetry {
-			if dm.metricsType == 1 {
-				csvString += "\n"
-				csvString += String(dm.temperature.localeTemperature())
-				csvString += ", "
-				csvString += String(dm.relativeHumidity)
-				csvString += ", "
-				csvString += String(dm.barometricPressure)
-				csvString += ", "
-				csvString += String(dm.iaq)
-				csvString += ", "
-				csvString += String(dm.gasResistance)
-				csvString += ", "
-				csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
-			}
+		for dm in telemetry where dm.metricsType == 1 {
+			csvString += "\n"
+			csvString += String(dm.temperature.localeTemperature())
+			csvString += ", "
+			csvString += String(dm.relativeHumidity)
+			csvString += ", "
+			csvString += String(dm.barometricPressure)
+			csvString += ", "
+			csvString += String(dm.iaq)
+			csvString += ", "
+			csvString += String(dm.gasResistance)
+			csvString += ", "
+			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
 		}
 	}
 	return csvString
@@ -118,11 +114,8 @@ func positionToCsvFile(positions: [PositionEntity]) -> String {
 	return csvString
 }
 
-
 func routeToCsvFile(locations: [LocationEntity]) -> String {
 	var csvString: String = ""
-	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
-	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 	// Create Position Header
 	csvString = "Id, Latitude, Longitude, Altitude, Speed, Heading"
 	for loc in locations {

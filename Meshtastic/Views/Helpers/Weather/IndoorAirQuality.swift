@@ -28,7 +28,7 @@ struct IndoorAirQuality: View {
 		let iaqEnum = Iaq.getIaq(for: iaq)
 		switch displayMode {
 		case .pill:
-			ZStack (alignment: .leading) {
+			ZStack(alignment: .leading) {
 				RoundedRectangle(cornerRadius: 10)
 					.fill(iaqEnum.color)
 					.frame(width: 125, height: 30)
@@ -49,7 +49,7 @@ struct IndoorAirQuality: View {
 				.font(.caption)
 		case .gauge:
 			Gauge(value: Double(iaq), in: 0...500) {
-						
+
 						Text("IAQ")
 							.foregroundColor(iaqEnum.color)
 					} currentValueLabel: {
@@ -117,19 +117,19 @@ struct IndoorAirQuality_Previews: PreviewProvider {
 			}
 				Text(".gauge")
 				.font(.title2)
-			HStack (alignment: .top) {
+			HStack(alignment: .top) {
 				IndoorAirQuality(iaq: 6, displayMode: .gauge)
 				IndoorAirQuality(iaq: 51, displayMode: .gauge)
 				IndoorAirQuality(iaq: 101, displayMode: .gauge)
 				IndoorAirQuality(iaq: 151, displayMode: .gauge)
 			}
-			HStack (alignment: .top) {
+			HStack(alignment: .top) {
 				IndoorAirQuality(iaq: 201, displayMode: .gauge)
 				IndoorAirQuality(iaq: 251, displayMode: .gauge)
 				IndoorAirQuality(iaq: 301, displayMode: .gauge)
 				IndoorAirQuality(iaq: 351, displayMode: .gauge)
 			}
-			HStack (alignment: .top) {
+			HStack(alignment: .top) {
 				IndoorAirQuality(iaq: 401, displayMode: .gauge)
 				IndoorAirQuality(iaq: 500, displayMode: .gauge)
 			}
@@ -142,7 +142,7 @@ struct IndoorAirQuality_Previews: PreviewProvider {
 			IndoorAirQuality(iaq: 351, displayMode: .gradient)
 			IndoorAirQuality(iaq: 401, displayMode: .gradient)
 			IndoorAirQuality(iaq: 500, displayMode: .gradient)
-			
+
 		}.previewLayout(.fixed(width: 300, height: 800))
 	}
 }

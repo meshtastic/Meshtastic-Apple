@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import CoreLocation
+import OSLog
 
 struct MQTTConfig: View {
 
@@ -32,8 +33,7 @@ struct MQTTConfig: View {
 	@State var mapPublishIntervalSecs = 3600
 	@State var preciseLocation: Bool = false
 	@State var mapPositionPrecision: Double = 13.0
-	
-	
+
 	let locale = Locale.current
 
 	var body: some View {
@@ -41,7 +41,7 @@ struct MQTTConfig: View {
 			Form {
 				if node != nil && node?.loRaConfig != nil {
 					let rc = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))
-					if rc?.dutyCycle ?? 0 > 0 && rc?.dutyCycle ?? 0 < 100  {
+					if rc?.dutyCycle ?? 0 > 0 && rc?.dutyCycle ?? 0 < 100 {
 						Text("Your region has a \(rc?.dutyCycle ?? 0)% duty cycle. MQTT is not advised when you are duty cycle restricted, the extra traffic will quickly overwhelm your LoRa mesh.")
 							.font(.callout)
 							.foregroundColor(.red)
@@ -51,19 +51,19 @@ struct MQTTConfig: View {
 				ConfigHeader(title: "MQTT", config: \.mqttConfig, node: node, onAppear: setMqttValues)
 
 				Section(header: Text("options")) {
-					
+
 					Toggle(isOn: $enabled) {
 						Label("enabled", systemImage: "dot.radiowaves.up.forward")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
+
 					Toggle(isOn: $proxyToClientEnabled) {
-						
+
 						Label("mqtt.clientproxy", systemImage: "iphone.radiowaves.left.and.right")
 						Text("Utilizes the network connection on your phone to connect to MQTT.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
+
 					if enabled && proxyToClientEnabled && node!.mqttConfig!.proxyToClientEnabled == true {
 						Toggle(isOn: $mqttConnected) {
 							Label(mqttConnected ? "mqtt.disconnect".localized : "mqtt.connect".localized, systemImage: "server.rack")
@@ -72,25 +72,25 @@ struct MQTTConfig: View {
 									.fixedSize(horizontal: false, vertical: true)
 									.foregroundColor(.red)
 							}
-								
+
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-					
+
 					Toggle(isOn: $encryptionEnabled) {
 						Label("Encryption Enabled", systemImage: "lock.icloud")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
+
 					Toggle(isOn: $jsonEnabled) {
 						Label("JSON Enabled", systemImage: "ellipsis.curlybraces")
 						Text("JSON mode is a limited, unencrypted MQTT output for locally integrating with home assistant")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
-				
+
 				Section(header: Text("Map Report")) {
-					
+
 					Toggle(isOn: $mapReportingEnabled) {
 						Label("enabled", systemImage: "map")
 					}
@@ -104,7 +104,7 @@ struct MQTTConfig: View {
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
-						
+
 						VStack(alignment: .leading) {
 							Toggle(isOn: $preciseLocation) {
 								Label("Precise Location", systemImage: "scope")
@@ -119,7 +119,7 @@ struct MQTTConfig: View {
 								}
 							}
 						}
-						
+
 						if !preciseLocation {
 							VStack(alignment: .leading) {
 								Label("Approximate Location", systemImage: "location.slash.circle.fill")
@@ -157,7 +157,7 @@ struct MQTTConfig: View {
 					Text("The root topic to use for MQTT.")
 						.foregroundColor(.gray)
 						.font(.callout)
-					
+
 					if nearbyTopics.count > 0 {
 						Picker("Nearby Topics", selection: $selectedTopic ) {
 							ForEach(nearbyTopics, id: \.self) { nt in
@@ -171,7 +171,7 @@ struct MQTTConfig: View {
 							.font(.callout)
 					}
 				}
-				
+
 				Section(header: Text("Server")) {
 					HStack {
 						Label("Address", systemImage: "server.rack")
@@ -190,7 +190,7 @@ struct MQTTConfig: View {
 							.keyboardType(.default)
 					}
 					.autocorrectionDisabled()
-					
+
 					HStack {
 						Label("mqtt.username", systemImage: "person.text.rectangle")
 						TextField("mqtt.username", text: $username)
@@ -198,9 +198,9 @@ struct MQTTConfig: View {
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
 							.onChange(of: username, perform: { _ in
-								
+
 								let totalBytes = username.utf8.count
-								
+
 								// Only mess with the value if it is too big
 								if totalBytes > 62 {
 									username = String(username.dropLast())
@@ -218,7 +218,7 @@ struct MQTTConfig: View {
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
 							.onChange(of: password, perform: { _ in
-								
+
 								let totalBytes = password.utf8.count
 								// Only mess with the value if it is too big
 								if totalBytes > 62 {
@@ -362,7 +362,7 @@ struct MQTTConfig: View {
 			setMqttValues()
 			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.mqttConfig == nil {
-				print("empty mqtt module config")
+				Logger.mesh.info("empty mqtt module config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
@@ -371,20 +371,20 @@ struct MQTTConfig: View {
 		}
 	}
 	func setMqttValues() {
-		
+
 		if #available(iOS 17.0, macOS 14.0, *) {
-			
+
 			nearbyTopics = []
 			let geocoder = CLGeocoder()
 			if LocationsHandler.shared.locationsArray.count > 0 {
 				let region  = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))?.topic
 				defaultTopic = "msh/" + (region ?? "UNSET")
-				geocoder.reverseGeocodeLocation(LocationsHandler.shared.locationsArray.first!, completionHandler: {(placemarks, error) -> Void in
-					if error != nil {
-						print("Failed to reverse geocode location")
+				geocoder.reverseGeocodeLocation(LocationsHandler.shared.locationsArray.first!, completionHandler: {(placemarks, error) in
+					if let error {
+						Logger.services.error("Failed to reverse geocode location: \(error.localizedDescription)")
 						return
 					}
-					
+
 					if let placemarks = placemarks, let placemark = placemarks.first {
 						let cc = locale.region?.identifier ?? "UNK"
 						/// Country Topic unless you are US
@@ -412,10 +412,8 @@ struct MQTTConfig: View {
 						if !neightborhoodTopic.isEmpty {
 							nearbyTopics.append(neightborhoodTopic)
 						}
-					}
-					else
-					{
-						print("No Location")
+					} else {
+						Logger.services.debug("No Location")
 					}
 				})
 			}

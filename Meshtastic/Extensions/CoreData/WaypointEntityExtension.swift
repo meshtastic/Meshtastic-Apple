@@ -10,13 +10,13 @@ import MapKit
 import SwiftUI
 
 extension WaypointEntity {
-	
+
 	static func allWaypointssFetchRequest() -> NSFetchRequest<WaypointEntity> {
 		let request: NSFetchRequest<WaypointEntity> = WaypointEntity.fetchRequest()
 		request.fetchLimit = 50
-		//request.fetchBatchSize = 1
-		//request.returnsObjectsAsFaults = false
-		//request.includesSubentities = true
+		// request.fetchBatchSize = 1
+		// request.returnsObjectsAsFaults = false
+		// request.includesSubentities = true
 		request.returnsDistinctResults = true
 		request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: false)]
 		request.predicate = NSPredicate(format: "expire == nil || expire >= %@", Date() as NSDate)

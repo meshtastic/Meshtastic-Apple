@@ -10,6 +10,7 @@ import MapKit
 import CoreData
 import CoreLocation
 import CoreBluetooth
+import OSLog
 #if canImport(TipKit)
 import TipKit
 #endif
@@ -34,9 +35,9 @@ struct Connect: View {
 		   if settings.authorizationStatus == .notDetermined {
 			   UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
 				   if success {
-					   print("Notifications are all set!")
+					   Logger.services.info("Notifications are all set!")
 				   } else if let error = error {
-					   print(error.localizedDescription)
+					   Logger.services.error("\(error.localizedDescription)")
 				   }
 			   }
 		   }
@@ -71,7 +72,7 @@ struct Connect: View {
 											Text("subscribed").font(.callout)
 												.foregroundColor(.green)
 										} else {
-											
+
 											HStack {
 												if #available(iOS 17.0, macOS 14.0, *) {
 													Image(systemName: "square.stack.3d.down.forward")
@@ -104,12 +105,12 @@ struct Connect: View {
 										Button {
 											if !liveActivityStarted {
 											#if canImport(ActivityKit)
-												print("Start live activity.")
+												Logger.services.info("Start live activity.")
 												startNodeActivity()
 											#endif
 											} else {
 												#if canImport(ActivityKit)
-												print("Stop live activity.")
+												Logger.services.info("Stop live activity.")
 												endActivity()
 											#endif
 											}
@@ -123,9 +124,9 @@ struct Connect: View {
 										Text("BLE RSSI: \(bleManager.connectedPeripheral.rssi)")
 										Button {
 											if !bleManager.sendShutdown(fromUser: node!.user!, toUser: node!.user!, adminIndex: node!.myInfo!.adminIndex) {
-												print("Shutdown Failed")
+												Logger.mesh.error("Shutdown Failed")
 											}
-											
+
 										} label: {
 											Label("Power Off", systemImage: "power")
 										}
@@ -233,7 +234,7 @@ struct Connect: View {
 										bleManager.disconnectPeripheral()
 									}
 									clearCoreDataDatabase(context: context, includeRoutes: false)
-									
+
 									let radio = bleManager.peripherals.first(where: { $0.peripheral.identifier.uuidString == selectedPeripherialId })
 									if radio != nil {
 										bleManager.connectTo(peripheral: radio!.peripheral)
@@ -242,7 +243,7 @@ struct Connect: View {
 							}
 							.textCase(nil)
 						}
- 
+
 					} else {
 						Text("bluetooth.off")
 							.foregroundColor(.red)
@@ -269,7 +270,7 @@ struct Connect: View {
 					if bleManager.isConnecting {
 						Button(role: .destructive, action: {
 							bleManager.cancelPeripheralConnection()
-							
+
 						}) {
 							Label("disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 						}
@@ -346,18 +347,17 @@ struct Connect: View {
 		do {
 			let myActivity = try Activity<MeshActivityAttributes>.request(attributes: activityAttributes, content: activityContent,
 																		  pushType: nil)
-			print(" Requested MyActivity live activity. ID: \(myActivity.id)")
-		} catch let error {
-			print("Error requesting live activity: \(error.localizedDescription)")
+			Logger.services.info("Requested MyActivity live activity. ID: \(myActivity.id)")
+		} catch {
+			Logger.services.error("Error requesting live activity: \(error.localizedDescription)")
 		}
 	}
 
 	func endActivity() {
 		liveActivityStarted = false
 		Task {
-			for activity in Activity<MeshActivityAttributes>.activities {
-				// Check if this is the activity associated with this order.
-				if activity.attributes.nodeNum == node?.num ?? 0 { await activity.end(nil, dismissalPolicy: .immediate)	}
+			for activity in Activity<MeshActivityAttributes>.activities where activity.attributes.nodeNum == node?.num ?? 0 {
+				await activity.end(nil, dismissalPolicy: .immediate)
 			}
 		}
 	}

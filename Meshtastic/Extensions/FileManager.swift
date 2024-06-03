@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 5/5/23.
 //
 import Foundation
+import OSLog
 
 let allocatedSizeResourceKeys: Set<URLResourceKey> = [
   .isRegularFileKey,
@@ -52,11 +53,13 @@ public extension FileManager {
 	  do {
 		accumulatedSize += try contentItemURL.regularFileAllocatedSize()
 	  } catch {
-		print("💥 File Manager Error: \(error.localizedDescription)")
+		  Logger.services.error("💥 File Manager Error: \(error.localizedDescription)")
 	  }
 
 	}
-	if let error = enumeratorError { print("💥 AllocatedSizeOfDirectory enumeratorError = \(error.localizedDescription)") }
+	if let error = enumeratorError {
+		Logger.services.error("💥 AllocatedSizeOfDirectory enumeratorError = \(error.localizedDescription)")
+	}
 
 	return Double(accumulatedSize).toBytes
 

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 struct DisplayConfig: View {
 
@@ -37,7 +38,7 @@ struct DisplayConfig: View {
 							Text(dm.description)
 						}
 					}
-					
+
 					Text("Override automatic OLED screen detection.")
 						.foregroundColor(.gray)
 						.font(.callout)
@@ -54,13 +55,13 @@ struct DisplayConfig: View {
 					Text("Requires that there be an accelerometer on your device.")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				
+
 				Toggle(isOn: $flipScreen) {
 					Label("Flip Screen", systemImage: "pip.swap")
 					Text("Flip screen vertically")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				
+
 				VStack(alignment: .leading) {
 					Picker("OLED Type", selection: $oledType ) {
 						ForEach(OledTypes.allCases) { ot in
@@ -85,20 +86,20 @@ struct DisplayConfig: View {
 						.font(.callout)
 				}
 				.pickerStyle(DefaultPickerStyle())
-				
+
 				VStack(alignment: .leading) {
 					Picker("Carousel Interval", selection: $screenCarouselInterval ) {
 						ForEach(ScreenCarouselIntervals.allCases) { sci in
 							Text(sci.description)
 						}
 					}
-					
+
 					Text("Automatically toggles to the next page on the screen like a carousel, based the specified interval.")
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
 				.pickerStyle(DefaultPickerStyle())
-				
+
 				VStack(alignment: .leading) {
 					Picker("GPS Format", selection: $gpsFormat ) {
 						ForEach(GpsFormats.allCases) { lu in
@@ -110,7 +111,7 @@ struct DisplayConfig: View {
 						.font(.callout)
 				}
 				.pickerStyle(DefaultPickerStyle())
-				
+
 				VStack(alignment: .leading) {
 					Picker("Display Units", selection: $units ) {
 						ForEach(Units.allCases) { un in
@@ -164,7 +165,7 @@ struct DisplayConfig: View {
 
 			// Need to request a LoRaConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.displayConfig == nil {
-				print("empty display config")
+				Logger.mesh.info("empty display config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestDisplayConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

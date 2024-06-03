@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreData
+import OSLog
 
 struct ChannelMessageList: View {
 	@StateObject var appState = AppState.shared
@@ -60,7 +61,7 @@ struct ChannelMessageList: View {
 											.foregroundColor(.gray)
 											.offset(y: 8)
 									}
-									
+
 									HStack {
 										MessageText(
 											message: message,
@@ -75,13 +76,13 @@ struct ChannelMessageList: View {
 											RetryButton(message: message, destination: .channel(channel))
 										}
 									}
-									
+
 									TapbackResponses(message: message) {
 										appState.unreadChannelMessages = myInfo.unreadMessages
 										UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 										context.refresh(myInfo, mergeChanges: true)
 									}
-					
+
 									HStack {
 										if currentUser && message.receivedACK {
 											// Ack Received
@@ -114,12 +115,12 @@ struct ChannelMessageList: View {
 									message.read = true
 									do {
 										try context.save()
-										print("📖 Read message \(message.messageId) ")
+										Logger.data.info("📖 Read message \(message.messageId) ")
 										appState.unreadChannelMessages = myInfo.unreadMessages
 										UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 										context.refresh(myInfo, mergeChanges: true)
 									} catch {
-										print("Failed to read message \(message.messageId)")
+										Logger.data.error("Failed to read message \(message.messageId): \(error.localizedDescription)")
 									}
 								}
 							}
@@ -142,7 +143,7 @@ struct ChannelMessageList: View {
 					}
 				})
 			}
-			
+
 			TextMessageField(
 				destination: .channel(channel),
 				replyMessageId: $replyMessageId,

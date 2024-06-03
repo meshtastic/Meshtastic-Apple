@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreLocation
+import OSLog
 
 struct WaypointFormMapKit: View {
 
@@ -152,7 +153,7 @@ struct WaypointFormMapKit: View {
 					dismiss()
 				} else {
 					dismiss()
-					print("Send waypoint failed")
+					Logger.mesh.error("Send waypoint failed")
 				}
 			} label: {
 				Label("Send", systemImage: "arrow.up")
@@ -212,7 +213,7 @@ struct WaypointFormMapKit: View {
 							dismiss()
 						} else {
 							dismiss()
-							print("Send waypoint failed")
+							Logger.mesh.error("Send waypoint failed")
 						}
 					})
 				}

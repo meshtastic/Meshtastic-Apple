@@ -5,6 +5,7 @@
 //  Copyright (c) Garth Vander Houwen 6/13/22.
 //
 import SwiftUI
+import OSLog
 
 struct RangeTestConfig: View {
 
@@ -24,7 +25,7 @@ struct RangeTestConfig: View {
 		VStack {
 			Form {
 				ConfigHeader(title: "Range", config: \.rangeTestConfig, node: node, onAppear: setRangeTestValues)
-				
+
 				Section(header: Text("options")) {
 					Toggle(isOn: $enabled) {
 						Label("enabled", systemImage: "figure.walk")
@@ -41,14 +42,14 @@ struct RangeTestConfig: View {
 					Text("This device will send out range test messages on the selected interval.")
 						.foregroundColor(.gray)
 						.font(.callout)
-					
+
 					Toggle(isOn: $save) {
 						Label("save", systemImage: "square.and.arrow.down.fill")
 						Text("Saves a CSV with the range test message details, currently only available on ESP32 devices with a web server.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.disabled(!(node != nil && node?.metadata?.hasWifi ?? false))
-					
+
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.rangeTestConfig == nil)
@@ -81,7 +82,7 @@ struct RangeTestConfig: View {
 				setRangeTestValues()
 				// Need to request a RangeTestModule Config from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.rangeTestConfig == nil {
-					print("empty range test module config")
+					Logger.mesh.debug("empty range test module config")
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 					if node != nil && connectedNode != nil {
 						_ = bleManager.requestRangeTestModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

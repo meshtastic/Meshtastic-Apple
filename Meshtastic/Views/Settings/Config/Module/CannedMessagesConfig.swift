@@ -5,6 +5,7 @@
 //  Copyright (c) Garth Vander Houwen 6/22/22.
 //
 import SwiftUI
+import OSLog
 
 struct CannedMessagesConfig: View {
 	@Environment(\.managedObjectContext) var context
@@ -39,21 +40,21 @@ struct CannedMessagesConfig: View {
 		VStack {
 			Form {
 				ConfigHeader(title: "Canned messages", config: \.cannedMessageConfig, node: node, onAppear: setCannedMessagesValues)
-				
+
 				Section(header: Text("options")) {
-			
+
 					Toggle(isOn: $enabled) {
 
 						Label("enabled", systemImage: "list.bullet.rectangle.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
+
 					Toggle(isOn: $sendBell) {
 
 						Label("Send Bell", systemImage: "bell")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
+
 					Picker("Configuration Presets", selection: $configPreset ) {
 						ForEach(ConfigPresets.allCases) { cp in
 							Text(cp.description)
@@ -233,7 +234,7 @@ struct CannedMessagesConfig: View {
 				setCannedMessagesValues()
 				// Need to request a CannedMessagesModuleConfig from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.cannedMessageConfig == nil {
-					print("empty canned messages module config")
+					Logger.mesh.info("empty canned messages module config")
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 					if node != nil && connectedNode != nil {
 						_ = bleManager.requestCannedMessagesModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

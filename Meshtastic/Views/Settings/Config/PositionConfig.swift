@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 struct PositionFlags: OptionSet {
 	let rawValue: Int
@@ -76,8 +77,8 @@ struct PositionConfig: View {
 	@State var minimumVersion = "2.3.3"
 	@State private var supportedVersion = true
 	@State private var showingSetFixedAlert = false
-	//@State private var showingRemoveFixedAlert = false
-	
+	// @State private var showingRemoveFixedAlert = false
+
 	var body: some View {
 		VStack {
 			Form {
@@ -98,12 +99,12 @@ struct PositionConfig: View {
 							.foregroundColor(.gray)
 							.font(.callout)
 					}
-					
+
 					Toggle(isOn: $smartPositionEnabled) {
 						Label("Smart Position", systemImage: "brain")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
+
 					if smartPositionEnabled {
 						VStack(alignment: .leading) {
 							Picker("Minimum Interval", selection: $broadcastSmartMinimumIntervalSecs) {
@@ -147,8 +148,7 @@ struct PositionConfig: View {
 					.padding(.top, 5)
 					.padding(.bottom, 5)
 					if gpsMode == 1 {
-						
-						
+
 					Text("Positions will be provided by your device GPS, if you select disabled or not present you can set a fixed position.")
 						.foregroundColor(.gray)
 						.font(.callout)
@@ -170,7 +170,7 @@ struct PositionConfig: View {
 								if !(node?.positionConfig?.fixedPosition ?? false) {
 									Text("Your current location will be set as the fixed position and broadcast over the mesh on the position interval.")
 								} else {
-									
+
 								}
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -215,7 +215,7 @@ struct PositionConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 				Section(header: Text("Advanced Position Flags")) {
-					
+
 					if includeAltitude {
 						Toggle(isOn: $includeAltitudeMsl) {
 							Label("Altitude is Mean Sea Level", systemImage: "arrow.up.to.line.compact")
@@ -239,7 +239,7 @@ struct PositionConfig: View {
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
 				}
-				
+
 				if gpsMode == 1 {
 					Section(header: Text("Advanced Device GPS")) {
 						Picker("GPS Receive GPIO", selection: $rxGpio) {
@@ -285,35 +285,34 @@ struct PositionConfig: View {
 				if node?.positionConfig?.fixedPosition ?? false {
 					Button("Remove", role: .destructive) {
 						if !bleManager.removeFixedPosition(fromUser: node!.user!, channel: 0) {
-							print("Set Position Failed")
+							Logger.mesh.error("Remove Fixed Position Failed")
 						}
-						print("Remove a fixed position here")
 						let mutablePositions = node?.positions?.mutableCopy() as? NSMutableOrderedSet
 						mutablePositions?.removeAllObjects()
 						node?.positions = mutablePositions
 						node?.positionConfig?.fixedPosition = false
 						do {
 							try context.save()
-							print("💾 Updated Position Config with Fixed Position = false")
+							Logger.data.info("💾 Updated Position Config with Fixed Position = false")
 						} catch {
 							context.rollback()
 							let nsError = error as NSError
-							print("💥 Error Saving Position Config Entity \(nsError)")
+							Logger.data.error("Error Saving Position Config Entity \(nsError)")
 						}
 					}
 				} else {
 					Button("Set") {
 						if !bleManager.setFixedPosition(fromUser: node!.user!, channel: 0) {
-							print("Set Position Failed")
+							Logger.mesh.error("Set Position Failed")
 						}
 						node?.positionConfig?.fixedPosition = true
 						do {
 							try context.save()
-							print("💾 Updated Position Config with Fixed Position = true")
+							Logger.data.info("💾 Updated Position Config with Fixed Position = true")
 						} catch {
 							context.rollback()
 							let nsError = error as NSError
-							print("💥 Error Saving Position Config Entity \(nsError)")
+							Logger.data.error("Error Saving Position Config Entity \(nsError)")
 						}
 					}
 				}
@@ -376,7 +375,7 @@ struct PositionConfig: View {
 			supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
 			// Need to request a PositionConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.positionConfig == nil {
-				print("empty position config")
+				Logger.mesh.info("empty position config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestPositionConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

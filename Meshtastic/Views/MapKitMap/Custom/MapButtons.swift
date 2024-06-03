@@ -49,7 +49,7 @@ struct MapButtons: View {
 }
 
 // MARK: Previews
-//struct MapControl_Previews: PreviewProvider {
+// struct MapControl_Previews: PreviewProvider {
 //	@State static var tracking: UserTrackingModes = .none
 //	@State static var isPresentingInfoSheet = false
 //	static var previews: some View {
@@ -61,4 +61,4 @@ struct MapButtons: View {
 //		}
 //		.previewLayout(.fixed(width: 60, height: 100))
 //	}
-//}
+// }

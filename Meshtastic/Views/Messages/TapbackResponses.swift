@@ -1,10 +1,11 @@
 import SwiftUI
+import OSLog
 
 struct TapbackResponses: View {
 	@Environment(\.managedObjectContext) var context
-	
+
 	let message: MessageEntity
-	let onRead: () ->  Void
+	let onRead: () -> Void
 
 	@ViewBuilder
 	var body: some View {
@@ -30,10 +31,10 @@ struct TapbackResponses: View {
 							tapback.read = true
 							do {
 								try context.save()
-								print("📖 Read tapback \(tapback.messageId) ")
+								Logger.data.info("📖 Read tapback \(tapback.messageId) ")
 								onRead()
 							} catch {
-								print("Failed to read tapback \(tapback.messageId)")
+								Logger.data.error("Failed to read tapback \(tapback.messageId): \(error.localizedDescription)")
 							}
 						}
 					}

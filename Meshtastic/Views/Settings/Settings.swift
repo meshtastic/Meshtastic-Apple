@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 #if canImport(TipKit)
 import TipKit
 #endif
@@ -94,11 +95,10 @@ struct Settings: View {
 					}
 					.tag(SettingsSidebar.routeRecorder)
 				}
-				
+
 				let node = nodes.first(where: { $0.num == preferredNodeNum })
 				let hasAdmin = node?.myInfo?.adminIndex ?? 0 > 0 ? true : false
-				
-				
+
 				if !(node?.deviceConfig?.isManaged ?? false) {
 					if bleManager.connectedPeripheral != nil {
 						Section("Configure") {
@@ -107,7 +107,7 @@ struct Settings: View {
 									if selectedNode == 0 {
 										Text("Connect to a Node").tag(0)
 									}
-									
+
 									ForEach(nodes) { node in
 										if node.num == bleManager.connectedPeripheral?.num ?? 0 {
 											Label {
@@ -143,7 +143,7 @@ struct Settings: View {
 										if connectedNode != nil && connectedNode?.user != nil && connectedNode?.myInfo != nil && node?.user != nil && node?.metadata == nil {
 											let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
 											if adminMessageId > 0 {
-												print("Sent node metadata request from node details")
+												Logger.mesh.info("Sent node metadata request from node details")
 											}
 										}
 									}
@@ -161,8 +161,8 @@ struct Settings: View {
 					Section("radio.configuration") {
 						if node != nil && node?.loRaConfig != nil {
 							let rc = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))
-							if rc?.dutyCycle ?? 0 > 0 && rc?.dutyCycle ?? 0 < 100  {
-								
+							if rc?.dutyCycle ?? 0 > 0 && rc?.dutyCycle ?? 0 < 100 {
+
 								Label {
 									Text("Hourly Duty Cycle")
 								} icon: {

@@ -28,19 +28,19 @@ extension [CLLocationCoordinate2D] {
 		/// 2D cross product of OA and OB vectors, i.e. z-component of their 3D cross product.
 		/// Returns a positive value, if OAB makes a counter-clockwise turn,
 		/// negative for clockwise turn, and zero if the points are collinear.
-		func cross(P: CLLocationCoordinate2D, A: CLLocationCoordinate2D, B: CLLocationCoordinate2D) -> Double {
-			let part1 = (A.longitude - P.longitude) * (B.latitude - P.latitude)
-			let part2 = (A.latitude - P.latitude) * (B.longitude - P.longitude)
-			return part1 - part2;
+		func cross(p: CLLocationCoordinate2D, a: CLLocationCoordinate2D, b: CLLocationCoordinate2D) -> Double {
+			let part1 = (a.longitude - p.longitude) * (b.latitude - p.latitude)
+			let part2 = (a.latitude - p.latitude) * (b.longitude - p.longitude)
+			return part1 - part2
 		}
 		// Sort points lexicographically
-		let points = self.sorted() {
+		let points = self.sorted {
 			$0.longitude == $1.longitude ? $0.latitude < $1.latitude : $0.longitude < $1.longitude
 		}
 		// Build the lower hull
 		var lower: [CLLocationCoordinate2D] = []
 		for p in points {
-			while lower.count >= 2 && cross(P: lower[lower.count - 2], A: lower[lower.count - 1], B: p) <= 0 {
+			while lower.count >= 2 && cross(p: lower[lower.count - 2], a: lower[lower.count - 1], b: p) <= 0 {
 				lower.removeLast()
 			}
 			lower.append(p)
@@ -48,7 +48,7 @@ extension [CLLocationCoordinate2D] {
 		// Build upper hull
 		var upper: [CLLocationCoordinate2D] = []
 		for p in points.reversed() {
-			while upper.count >= 2 && cross(P: upper[upper.count-2], A: upper[upper.count-1], B: p) <= 0 {
+			while upper.count >= 2 && cross(p: upper[upper.count-2], a: upper[upper.count-1], b: p) <= 0 {
 				upper.removeLast()
 			}
 			upper.append(p)

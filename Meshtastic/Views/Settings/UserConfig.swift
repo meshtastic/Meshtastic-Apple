@@ -42,11 +42,11 @@ struct UserConfig: View {
 		VStack {
 			Form {
 				Section(header: Text("User Details")) {
-					
+
 					VStack(alignment: .leading) {
 						HStack {
 							Label(isLicensed ? "Call Sign" : "Long Name", systemImage: "person.crop.rectangle.fill")
-							
+
 							TextField("Long Name", text: $longName)
 								.onChange(of: longName, perform: { _ in
 									let totalBytes = longName.utf8.count
@@ -65,7 +65,7 @@ struct UserConfig: View {
 						Text("\(String(isLicensed ? "Call Sign" : "Long Name")) can be up to \(isLicensed ? "8" : "36") bytes long.")
 							.foregroundColor(.gray)
 							.font(.callout)
-						
+
 					}
 					VStack(alignment: .leading) {
 						HStack {
@@ -167,7 +167,6 @@ struct UserConfig: View {
 								ham.callSign = longName
 								ham.txPower = Int32(txPower)
 								ham.frequency = overrideFrequency
-								print(ham)
 								let adminMessageId = bleManager.saveLicensedUser(ham: ham, fromUser: connectedUser, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 								if adminMessageId > 0 {
 									hasChanges = false

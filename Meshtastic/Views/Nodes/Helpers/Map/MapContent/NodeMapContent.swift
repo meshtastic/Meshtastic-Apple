@@ -10,7 +10,7 @@ import CoreData
 
 @available(iOS 17.0, macOS 14.0, *)
 struct NodeMapContent: MapContent {
-	
+
 	@ObservedObject var node: NodeInfoEntity
 	@State var showUserLocation: Bool = false
 	@State var positions: [PositionEntity] = []
@@ -22,7 +22,7 @@ struct NodeMapContent: MapContent {
 	@AppStorage("enableMapTraffic") private var showTraffic: Bool = false
 	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = false
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .hybrid
-	
+
 	// Map Configuration
 	@Namespace var mapScope
 	@State var mapStyle: MapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: .all, showsTraffic: true)
@@ -33,26 +33,26 @@ struct NodeMapContent: MapContent {
 	@State var isEditingSettings = false
 	@State var selectedPosition: PositionEntity?
 	@State var isMeshMap = false
-	
+
 	@MapContentBuilder
 	var nodeMap: some MapContent {
 		let positionArray = node.positions?.array as? [PositionEntity] ?? []
 		let lineCoords = positionArray.compactMap({(position) -> CLLocationCoordinate2D in
 			return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
 		})
-		
+
 		/// Node Color from node.num
 		let nodeColor = UIColor(hex: UInt32(node.num))
-		
+
 		/// Node Annotations
 		ForEach(node.positions?.array as? [PositionEntity] ?? [], id: \.id) { position in
-			
+
 			let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 771))
 			let headingDegrees = Angle.degrees(Double(position.heading))
 			/// Reduced Precision Map Circle
 			if position.latest && 10...19 ~= position.precisionBits {
 				let pp = PositionPrecision(rawValue: Int(position.precisionBits))
-				let radius : CLLocationDistance = pp?.precisionMeters ?? 0
+				let radius: CLLocationDistance = pp?.precisionMeters ?? 0
 				if radius > 0.0 {
 					MapCircle(center: position.coordinate, radius: radius)
 						.foregroundStyle(Color(nodeColor).opacity(0.25))
@@ -73,7 +73,7 @@ struct NodeMapContent: MapContent {
 				}
 			}
 			/// Route Lines
-			if showRouteLines  {
+			if showRouteLines {
 				let gradient = LinearGradient(
 					colors: [Color(nodeColor.lighter().lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
 					startPoint: .leading, endPoint: .trailing
@@ -153,11 +153,11 @@ struct NodeMapContent: MapContent {
 									.clipShape(Circle())
 									.rotationEffect(headingDegrees)
 									.frame(width: 16, height: 16)
-								
+
 							} else {
 								Circle()
 									.fill(Color(UIColor(hex: UInt32(position.nodePosition?.num ?? 0))))
-									.strokeBorder(Color(UIColor(hex: UInt32(position.nodePosition?.num ?? 0))).isLight() ? .black : .white ,lineWidth: 2)
+									.strokeBorder(Color(UIColor(hex: UInt32(position.nodePosition?.num ?? 0))).isLight() ? .black : .white, lineWidth: 2)
 									.frame(width: 12, height: 12)
 							}
 						}
@@ -168,7 +168,7 @@ struct NodeMapContent: MapContent {
 			}
 		}
 	}
-	
+
 	@MapContentBuilder
 	var body: some MapContent {
 		if node.positions?.count ?? 0 > 0 {

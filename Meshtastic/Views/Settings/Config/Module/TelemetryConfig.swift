@@ -5,6 +5,7 @@
 //  Copyright (c) Garth Vander Houwen 6/13/22.
 //
 import SwiftUI
+import OSLog
 
 struct TelemetryConfig: View {
 
@@ -24,13 +25,12 @@ struct TelemetryConfig: View {
 	@State var powerMeasurementEnabled = false
 	@State var powerUpdateInterval = 0
 	@State var powerScreenEnabled = false
-	
 
 	var body: some View {
 		VStack {
 			Form {
 				ConfigHeader(title: "Telemetry", config: \.telemetryConfig, node: node, onAppear: setTelemetryValues)
-				
+
 				Section(header: Text("update.interval")) {
 					Picker("Device Metrics", selection: $deviceUpdateInterval ) {
 						ForEach(UpdateIntervals.allCases) { ui in
@@ -135,7 +135,7 @@ struct TelemetryConfig: View {
 				setTelemetryValues()
 				// Need to request a TelemetryModuleConfig from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.telemetryConfig == nil {
-					print("empty telemetry module config")
+					Logger.mesh.info("empty telemetry module config")
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 					if node != nil && connectedNode != nil {
 						_ = bleManager.requestTelemetryModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
@@ -176,7 +176,7 @@ struct TelemetryConfig: View {
 				if node != nil && node?.telemetryConfig != nil {
 					if newPowerUpdateInterval != node!.telemetryConfig!.powerUpdateInterval { hasChanges = true	}
 				}
-			}		
+			}
 			.onChange(of: powerScreenEnabled) { newPowerScreenEnabled in
 				if node != nil && node?.telemetryConfig != nil {
 					if newPowerScreenEnabled != node!.telemetryConfig!.powerScreenEnabled { hasChanges = true	}

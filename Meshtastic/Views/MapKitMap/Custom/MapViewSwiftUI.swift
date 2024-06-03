@@ -7,6 +7,7 @@
 import Foundation
 import SwiftUI
 import MapKit
+import OSLog
 
 struct PolygonInfo: Codable {
 	let stroke: String?
@@ -75,7 +76,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.showsBuildings = true
 		mapView.showsScale = true
 		mapView.showsTraffic = true
-		
+
 		mapView.showsCompass = false
 		let compass = MKCompassButton(mapView: mapView)
 		compass.translatesAutoresizingMaskIntoConstraints = false
@@ -98,10 +99,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		// Avoid refreshing UI if selectedLayer has not changed
 		guard currentMapLayer != selectedMapLayer else { return }
 		currentMapLayer = selectedMapLayer
-		for overlay in mapView.overlays {
-			if overlay is MKTileOverlay {
-				mapView.removeOverlay(overlay)
-			}
+		for overlay in mapView.overlays where overlay is MKTileOverlay {
+			mapView.removeOverlay(overlay)
 		}
 		switch selectedMapLayer {
 		case .offline:
@@ -144,13 +143,13 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
 					let tilePath = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false).path
 					if fileManager.fileExists(atPath: tilePath) {
-						print("Loading local map file")
+						Logger.services.info("Loading local map file")
 						if let overlay = LocalMBTileOverlay(mbTilePath: tilePath) {
 							overlay.canReplaceMapContent = false// customMapOverlay.canReplaceMapContent
 							mapView.addOverlay(overlay)
 						}
 					} else {
-						print("Couldn't find a local map file to load")
+						Logger.services.info("Couldn't find a local map file to load")
 					}
 				}
 				DispatchQueue.main.async {
@@ -179,10 +178,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		// Node Route Lines
 		if showRouteLines {
 			// Remove all existing PolyLine Overlays
-			for overlay in mapView.overlays {
-				if overlay is MKPolyline {
-					mapView.removeOverlay(overlay)
-				}
+			for overlay in mapView.overlays where overlay is MKPolyline {
+				mapView.removeOverlay(overlay)
 			}
 			var lineIndex = 0
 			for position in latest {
@@ -201,15 +198,13 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			}
 		} else {
 			// Remove all existing PolyLine Overlays
-			for overlay in mapView.overlays {
-				if overlay is MKPolyline {
-					mapView.removeOverlay(overlay)
-				}
+			for overlay in mapView.overlays where overlay is MKPolyline {
+				mapView.removeOverlay(overlay)
 			}
 		}
 		let annotationCount = waypoints.count + (showNodeHistory ? positions.count : latest.count)
 		if annotationCount != mapView.annotations.count {
-			print("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
+			Logger.services.info("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
 			mapView.removeAnnotations(mapView.annotations)
 			mapView.addAnnotations(waypoints)
 		}

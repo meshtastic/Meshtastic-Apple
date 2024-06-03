@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 10/3/22.
 
 import CoreData
+import OSLog
 
 public func clearPax(destNum: Int64, context: NSManagedObjectContext) -> Bool {
 
@@ -26,7 +27,7 @@ public func clearPax(destNum: Int64, context: NSManagedObjectContext) -> Bool {
 			return false
 		}
 	} catch {
-		print("💥 Fetch NodeInfoEntity Error")
+		Logger.data.error("Fetch NodeInfoEntity Error")
 		return false
 	}
 }
@@ -51,7 +52,7 @@ public func clearPositions(destNum: Int64, context: NSManagedObjectContext) -> B
 			return false
 		}
 	} catch {
-		print("💥 Fetch NodeInfoEntity Error")
+		Logger.data.error("Fetch NodeInfoEntity Error")
 		return false
 	}
 }
@@ -76,7 +77,7 @@ public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManage
 			return false
 		}
 	} catch {
-		print("💥 Fetch NodeInfoEntity Error")
+		Logger.data.error("Fetch NodeInfoEntity Error")
 		return false
 	}
 }
@@ -89,7 +90,7 @@ public func deleteChannelMessages(channel: ChannelEntity, context: NSManagedObje
 		}
 		try context.save()
 	} catch let error as NSError {
-		print("Error: \(error.localizedDescription)")
+		Logger.data.error("\(error.localizedDescription)")
 	}
 }
 
@@ -102,7 +103,7 @@ public func deleteUserMessages(user: UserEntity, context: NSManagedObjectContext
 		}
 		try context.save()
 	} catch let error as NSError {
-		print("Error: \(error.localizedDescription)")
+		Logger.data.error("\(error.localizedDescription)")
 	}
 }
 
@@ -110,12 +111,12 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes
 
 	let persistenceController = PersistenceController.shared.container
 	for i in 0...persistenceController.managedObjectModel.entities.count-1 {
-		
+
 		let entity = persistenceController.managedObjectModel.entities[i]
 		let query = NSFetchRequest<NSFetchRequestResult>(entityName: entity.name!)
 		var deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
 		let entityName = entity.name ?? "UNK"
-		
+
 		if includeRoutes {
 			deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
 		} else if !includeRoutes {
@@ -125,8 +126,8 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes
 		}
 		do {
 			try context.executeAndMergeChanges(using: deleteRequest)
-		} catch let error as NSError {
-			print(error)
+		} catch {
+			Logger.data.error("\(error.localizedDescription)")
 		}
 	}
 }
@@ -149,11 +150,12 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			let newNode = NodeInfoEntity(context: context)
 			newNode.id = Int64(packet.from)
 			newNode.num = Int64(packet.from)
+			newNode.firstHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 			newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 			newNode.snr = packet.rxSnr
 			newNode.rssi = packet.rxRssi
 			newNode.viaMqtt = packet.viaMqtt
-		
+
 			if packet.to == 4294967295 || packet.to == UserDefaults.preferredPeripheralNum {
 				newNode.channel = Int32(packet.channel)
 			}
@@ -161,16 +163,16 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				newNode.hopsAway = Int32(nodeInfoMessage.hopsAway)
 				newNode.favorite = nodeInfoMessage.isFavorite
 			}
-			
+
 			if let newUserMessage = try? User(serializedData: packet.decoded.payload) {
-				
-				if newUserMessage.id.isEmpty  {
+
+				if newUserMessage.id.isEmpty {
 					if packet.from > Int16.max {
 						let newUser = createUser(num: Int64(packet.from), context: context)
 						newNode.user = newUser
 					}
 				} else {
-					
+
 					let newUser = UserEntity(context: context)
 					newUser.userId = newUserMessage.id
 					newUser.num = Int64(packet.from)
@@ -179,9 +181,8 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					newUser.role = Int32(newUserMessage.role.rawValue)
 					newUser.hwModel = String(describing: newUserMessage.hwModel).uppercased()
 					newNode.user = newUser
-					
-					
-					if (UserDefaults.newNodeNotifications){
+
+					if UserDefaults.newNodeNotifications {
 						let manager = LocalNotificationManager()
 						manager.notifications = [
 							Notification(
@@ -202,7 +203,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].user = newUser
 				}
 			}
-			
+
 			if newNode.user == nil && packet.from > Int16.max {
 				newNode.user = createUser(num: Int64(packet.from), context: context)
 			}
@@ -212,20 +213,23 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			myInfoEntity.rebootCount = 0
 			do {
 				try context.save()
-				print("💾 Saved a new myInfo for node number: \(String(packet.from))")
+				Logger.data.info("💾 Saved a new myInfo for node number: \(String(packet.from))")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				print("💥 Error Inserting New Core Data MyInfoEntity: \(nsError)")
+				Logger.data.error("Error Inserting New Core Data MyInfoEntity: \(nsError)")
 			}
 			newNode.myInfo = myInfoEntity
-			
+
 		} else {
 			// Update an existing node
 			fetchedNode[0].id = Int64(packet.from)
 			fetchedNode[0].num = Int64(packet.from)
 			if packet.rxTime > 0 {
 				fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+				if fetchedNode[0].firstHeard == nil {
+					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+				}
 			}
 			fetchedNode[0].snr = packet.rxSnr
 			fetchedNode[0].rssi = packet.rxRssi
@@ -260,21 +264,21 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			} else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 				fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
 			}
-			if (fetchedNode[0].user == nil) {
+			if fetchedNode[0].user == nil {
 				let newUser = createUser(num: Int64(packet.from), context: context)
 				fetchedNode[0].user! = newUser
 			}
 			do {
 				try context.save()
-				print("💾 Updated NodeInfo from Node Info App Packet For: \(fetchedNode[0].num)")
+				Logger.data.info("💾 Updated NodeInfo from Node Info App Packet For: \(fetchedNode[0].num)")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				print("💥 Error Saving NodeInfoEntity from NODEINFO_APP \(nsError)")
+				Logger.data.error("Error Saving NodeInfoEntity from NODEINFO_APP \(nsError)")
 			}
 		}
 	} catch {
-		print("💥 Error Fetching NodeInfoEntity for NODEINFO_APP")
+		Logger.data.error("Error Fetching NodeInfoEntity for NODEINFO_APP")
 	}
 }
 
@@ -319,7 +323,11 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					position.altitude = positionMessage.altitude
 					position.satsInView = Int32(positionMessage.satsInView)
 					position.speed = Int32(positionMessage.groundSpeed)
-					position.heading = Int32(positionMessage.groundTrack)
+					let heading = Int32(positionMessage.groundTrack)
+					// Throw out bad haeadings from the device
+					if heading >= 0 && heading <= 360 {
+						position.heading = Int32(positionMessage.groundTrack)
+					}
 					position.precisionBits = Int32(positionMessage.precisionBits)
 					if positionMessage.timestamp != 0 {
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.timestamp)))
@@ -331,8 +339,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					}
 					/// Don't save nearly the same position over and over. If the next position is less than 10 meters from the new position, delete the previous position and save the new one.
 					if mutablePositions.count > 0 && (position.precisionBits == 32 || position.precisionBits == 0) {
-						let mostRecent = mutablePositions.lastObject as! PositionEntity
-						if  mostRecent.coordinate.distance(from: position.coordinate) < 15.0 {
+						if let mostRecent = mutablePositions.lastObject as? PositionEntity, mostRecent.coordinate.distance(from: position.coordinate) < 15.0 {
 							mutablePositions.remove(mostRecent)
 						}
 					} else if mutablePositions.count > 0 {
@@ -355,11 +362,11 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 
 					do {
 						try context.save()
-						print("💾 Updated Node Position Coordinates, SNR and Time from Position App Packet For: \(fetchedNode[0].num)")
+						Logger.data.info("💾 Updated Node Position Coordinates, SNR and Time from Position App Packet For: \(fetchedNode[0].num)")
 					} catch {
 						context.rollback()
 						let nsError = error as NSError
-						print("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError)")
+						Logger.data.error("Error Saving NodeInfoEntity from POSITION_APP \(nsError)")
 					}
 				}
 			} else {
@@ -367,13 +374,12 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				if (try? NodeInfo(serializedData: packet.decoded.payload)) != nil {
 					upsertNodeInfoPacket(packet: packet, context: context)
 				} else {
-					print("💥 Empty POSITION_APP Packet")
-					print((try? packet.jsonString()) ?? "JSON Decode Failure")
+					Logger.data.error("Empty POSITION_APP Packet: \((try? packet.jsonString()) ?? "JSON Decode Failure")")
 				}
 			}
 		}
 	} catch {
-		print("💥 Error Deserializing POSITION_APP packet.")
+		Logger.data.error("Error Deserializing POSITION_APP packet.")
 	}
 }
 
@@ -404,18 +410,18 @@ func upsertBluetoothConfigPacket(config: Meshtastic.Config.BluetoothConfig, node
 			}
 			do {
 				try context.save()
-				print("💾 Updated Bluetooth Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 Updated Bluetooth Config for node number: \(String(nodeNum))")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				print("💥 Error Updating Core Data BluetoothConfigEntity: \(nsError)")
+				Logger.data.error("Error Updating Core Data BluetoothConfigEntity: \(nsError)")
 			}
 		} else {
-			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Bluetooth Config")
+			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Bluetooth Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		print("💥 Fetching node for core data BluetoothConfigEntity failed: \(nsError)")
+		Logger.data.error("Fetching node for core data BluetoothConfigEntity failed: \(nsError)")
 	}
 }
 
@@ -461,16 +467,16 @@ func upsertDeviceConfigPacket(config: Meshtastic.Config.DeviceConfig, nodeNum: I
 			}
 			do {
 				try context.save()
-				print("💾 Updated Device Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 Updated Device Config for node number: \(String(nodeNum))")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				print("💥 Error Updating Core Data DeviceConfigEntity: \(nsError)")
+				Logger.data.error("Error Updating Core Data DeviceConfigEntity: \(nsError)")
 			}
 		}
 	} catch {
 		let nsError = error as NSError
-		print("💥 Fetching node for core data DeviceConfigEntity failed: \(nsError)")
+		Logger.data.error("Fetching node for core data DeviceConfigEntity failed: \(nsError)")
 	}
 }
 
@@ -519,24 +525,24 @@ func upsertDisplayConfigPacket(config: Meshtastic.Config.DisplayConfig, nodeNum:
 			do {
 
 				try context.save()
-				print("💾 Updated Display Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 Updated Display Config for node number: \(String(nodeNum))")
 
 			} catch {
 
 				context.rollback()
 
 				let nsError = error as NSError
-				print("💥 Error Updating Core Data DisplayConfigEntity: \(nsError)")
+				Logger.data.error("Error Updating Core Data DisplayConfigEntity: \(nsError)")
 			}
 		} else {
 
-			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Display Config")
+			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Display Config")
 		}
 
 	} catch {
 
 		let nsError = error as NSError
-		print("💥 Fetching node for core data DisplayConfigEntity failed: \(nsError)")
+		Logger.data.error("Fetching node for core data DisplayConfigEntity failed: \(nsError)")
 	}
 }
 
@@ -592,18 +598,18 @@ func upsertLoRaConfigPacket(config: Meshtastic.Config.LoRaConfig, nodeNum: Int64
 			}
 			do {
 				try context.save()
-				print("💾 Updated LoRa Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 Updated LoRa Config for node number: \(String(nodeNum))")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				print("💥 Error Updating Core Data LoRaConfigEntity: \(nsError)")
+				Logger.data.error("Error Updating Core Data LoRaConfigEntity: \(nsError)")
 			}
 		} else {
-			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Lora Config")
+			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Lora Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		print("💥 Fetching node for core data LoRaConfigEntity failed: \(nsError)")
+		Logger.data.error("Fetching node for core data LoRaConfigEntity failed: \(nsError)")
 	}
 }
 
@@ -638,19 +644,19 @@ func upsertNetworkConfigPacket(config: Meshtastic.Config.NetworkConfig, nodeNum:
 
 			do {
 				try context.save()
-				print("💾 Updated Network Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 Updated Network Config for node number: \(String(nodeNum))")
 
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				print("💥 Error Updating Core Data WiFiConfigEntity: \(nsError)")
+				Logger.data.error("Error Updating Core Data WiFiConfigEntity: \(nsError)")
 			}
 		} else {
-			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Network Config")
+			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Network Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		print("💥 Fetching node for core data NetworkConfigEntity failed: \(nsError)")
+		Logger.data.error("Fetching node for core data NetworkConfigEntity failed: \(nsError)")
 	}
 }
 
@@ -702,18 +708,18 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 			}
 			do {
 				try context.save()
-				print("💾 Updated Position Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 Updated Position Config for node number: \(String(nodeNum))")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				print("💥 Error Updating Core Data PositionConfigEntity: \(nsError)")
+				Logger.data.error("Error Updating Core Data PositionConfigEntity: \(nsError)")
 			}
 		} else {
-			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Position Config")
+			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Position Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		print("💥 Fetching node for core data PositionConfigEntity failed: \(nsError)")
+		Logger.data.error("Fetching node for core data PositionConfigEntity failed: \(nsError)")
 	}
 }
 
@@ -751,18 +757,18 @@ func upsertPowerConfigPacket(config: Meshtastic.Config.PowerConfig, nodeNum: Int
 			}
 			do {
 				try context.save()
-				print("💾 Updated Power Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 Updated Power Config for node number: \(String(nodeNum))")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				print("💥 Error Updating Core Data PowerConfigEntity: \(nsError)")
+				Logger.data.error("Error Updating Core Data PowerConfigEntity: \(nsError)")
 			}
 		} else {
-			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Power Config")
+			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Power Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		print("💥 Fetching node for core data PowerConfigEntity failed: \(nsError)")
+		Logger.data.error("Fetching node for core data PowerConfigEntity failed: \(nsError)")
 	}
 }
 
@@ -794,7 +800,7 @@ func upsertAmbientLightingModuleConfigPacket(config: Meshtastic.ModuleConfig.Amb
 				fetchedNode[0].ambientLightingConfig = newAmbientLightingConfig
 
 			} else {
-				
+
 				if fetchedNode[0].ambientLightingConfig == nil {
 					fetchedNode[0].ambientLightingConfig = AmbientLightingConfigEntity(context: context)
 				}
@@ -807,18 +813,18 @@ func upsertAmbientLightingModuleConfigPacket(config: Meshtastic.ModuleConfig.Amb
 
 			do {
 				try context.save()
-				print("💾 Updated Ambient Lighting Module Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 Updated Ambient Lighting Module Config for node number: \(String(nodeNum))")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				print("💥 Error Updating Core Data AmbientLightingConfigEntity: \(nsError)")
+				Logger.data.error("Error Updating Core Data AmbientLightingConfigEntity: \(nsError)")
 			}
 		} else {
-			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Ambient Lighting Module Config")
+			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Ambient Lighting Module Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		print("💥 Fetching node for core data AmbientLightingConfigEntity failed: \(nsError)")
+		Logger.data.error("Fetching node for core data AmbientLightingConfigEntity failed: \(nsError)")
 	}
 }
 
@@ -871,18 +877,18 @@ func upsertCannedMessagesModuleConfigPacket(config: Meshtastic.ModuleConfig.Cann
 
 			do {
 				try context.save()
-				print("💾 Updated Canned Message Module Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 Updated Canned Message Module Config for node number: \(String(nodeNum))")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				print("💥 Error Updating Core Data CannedMessageConfigEntity: \(nsError)")
+				Logger.data.error("Error Updating Core Data CannedMessageConfigEntity: \(nsError)")
 			}
 		} else {
-			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Canned Message Module Config")
+			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Canned Message Module Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		print("💥 Fetching node for core data CannedMessageConfigEntity failed: \(nsError)")
+		Logger.data.error("Fetching node for core data CannedMessageConfigEntity failed: \(nsError)")
 	}
 }
 
@@ -929,21 +935,21 @@ func upsertDetectionSensorModuleConfigPacket(config: Meshtastic.ModuleConfig.Det
 
 			do {
 				try context.save()
-				print("💾 Updated Detection Sensor Module Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 Updated Detection Sensor Module Config for node number: \(String(nodeNum))")
 
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				print("💥 Error Updating Core Data DetectionSensorConfigEntity: \(nsError)")
+				Logger.data.error("Error Updating Core Data DetectionSensorConfigEntity: \(nsError)")
 			}
 
 		} else {
-			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Detection Sensor Module Config")
+			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Detection Sensor Module Config")
 		}
 
 	} catch {
 		let nsError = error as NSError
-		print("💥 Fetching node for core data DetectionSensorConfigEntity failed: \(nsError)")
+		Logger.data.error("Fetching node for core data DetectionSensorConfigEntity failed: \(nsError)")
 	}
 }
 
@@ -1002,18 +1008,18 @@ func upsertExternalNotificationModuleConfigPacket(config: Meshtastic.ModuleConfi
 
 			do {
 				try context.save()
-				print("💾 Updated External Notification Module Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 Updated External Notification Module Config for node number: \(String(nodeNum))")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				print("💥 Error Updating Core Data ExternalNotificationConfigEntity: \(nsError)")
+				Logger.data.error("Error Updating Core Data ExternalNotificationConfigEntity: \(nsError)")
 			}
 		} else {
-			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save External Notification Module Config")
+			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save External Notification Module Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		print("💥 Fetching node for core data ExternalNotificationConfigEntity failed: \(nsError)")
+		Logger.data.error("Fetching node for core data ExternalNotificationConfigEntity failed: \(nsError)")
 	}
 }
 
@@ -1036,29 +1042,29 @@ func upsertPaxCounterModuleConfigPacket(config: Meshtastic.ModuleConfig.Paxcount
 			if fetchedNode[0].paxCounterConfig == nil {
 				let newPaxCounterConfig = PaxCounterConfigEntity(context: context)
 				newPaxCounterConfig.enabled = config.enabled
-				newPaxCounterConfig.paxcounterUpdateInterval = Int32(config.paxcounterUpdateInterval)
-				
+				newPaxCounterConfig.updateInterval = Int32(config.paxcounterUpdateInterval)
+
 				fetchedNode[0].paxCounterConfig = newPaxCounterConfig
 
 			} else {
 				fetchedNode[0].paxCounterConfig?.enabled = config.enabled
-				fetchedNode[0].paxCounterConfig?.paxcounterUpdateInterval = Int32(config.paxcounterUpdateInterval)
+				fetchedNode[0].paxCounterConfig?.updateInterval = Int32(config.paxcounterUpdateInterval)
 			}
 
 			do {
 				try context.save()
-				print("💾 Updated PAX Counter Module Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 Updated PAX Counter Module Config for node number: \(String(nodeNum))")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				print("💥 Error Updating Core Data ExternalNotificationConfigEntity: \(nsError)")
+				Logger.data.error("Error Updating Core Data ExternalNotificationConfigEntity: \(nsError)")
 			}
 		} else {
-			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save PAX Counter Module Config")
+			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save PAX Counter Module Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		print("💥 Fetching node for core data PaxCounterConfigEntity failed: \(nsError)")
+		Logger.data.error("Fetching node for core data PaxCounterConfigEntity failed: \(nsError)")
 	}
 }
 
@@ -1086,18 +1092,18 @@ func upsertRtttlConfigPacket(ringtone: String, nodeNum: Int64, context: NSManage
 			}
 			do {
 				try context.save()
-				print("💾 Updated RTTTL Ringtone Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 Updated RTTTL Ringtone Config for node number: \(String(nodeNum))")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				print("💥 Error Updating Core Data RtttlConfigEntity: \(nsError)")
+				Logger.data.error("Error Updating Core Data RtttlConfigEntity: \(nsError)")
 			}
 		} else {
-			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save RTTTL Ringtone Config")
+			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save RTTTL Ringtone Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		print("💥 Fetching node for core data RtttlConfigEntity failed: \(nsError)")
+		Logger.data.error("Fetching node for core data RtttlConfigEntity failed: \(nsError)")
 	}
 }
 
@@ -1148,18 +1154,18 @@ func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, no
 			}
 			do {
 				try context.save()
-				print("💾 Updated MQTT Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 Updated MQTT Config for node number: \(String(nodeNum))")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				print("💥 Error Updating Core Data MQTTConfigEntity: \(nsError)")
+				Logger.data.error("Error Updating Core Data MQTTConfigEntity: \(nsError)")
 			}
 		} else {
-			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save MQTT Module Config")
+			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save MQTT Module Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		print("💥 Fetching node for core data MQTTConfigEntity failed: \(nsError)")
+		Logger.data.error("Fetching node for core data MQTTConfigEntity failed: \(nsError)")
 	}
 }
 
@@ -1191,18 +1197,18 @@ func upsertRangeTestModuleConfigPacket(config: Meshtastic.ModuleConfig.RangeTest
 			}
 			do {
 				try context.save()
-				print("💾 Updated Range Test Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 Updated Range Test Config for node number: \(String(nodeNum))")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				print("💥 Error Updating Core Data RangeTestConfigEntity: \(nsError)")
+				Logger.data.error("Error Updating Core Data RangeTestConfigEntity: \(nsError)")
 			}
 		} else {
-			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Range Test Module Config")
+			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Range Test Module Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		print("💥 Fetching node for core data RangeTestConfigEntity failed: \(nsError)")
+		Logger.data.error("Fetching node for core data RangeTestConfigEntity failed: \(nsError)")
 	}
 }
 
@@ -1247,25 +1253,25 @@ func upsertSerialModuleConfigPacket(config: Meshtastic.ModuleConfig.SerialConfig
 
 			do {
 				try context.save()
-				print("💾 Updated Serial Module Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 Updated Serial Module Config for node number: \(String(nodeNum))")
 
 			} catch {
 
 				context.rollback()
 
 				let nsError = error as NSError
-				print("💥 Error Updating Core Data SerialConfigEntity: \(nsError)")
+				Logger.data.error("Error Updating Core Data SerialConfigEntity: \(nsError)")
 			}
 
 		} else {
 
-			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Serial Module Config")
+			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Serial Module Config")
 		}
 
 	} catch {
 
 		let nsError = error as NSError
-		print("💥 Fetching node for core data SerialConfigEntity failed: \(nsError)")
+		Logger.data.error("Fetching node for core data SerialConfigEntity failed: \(nsError)")
 	}
 }
 
@@ -1304,18 +1310,18 @@ func upsertStoreForwardModuleConfigPacket(config: Meshtastic.ModuleConfig.StoreF
 			}
 			do {
 				try context.save()
-				print("💾 Updated Store & Forward Module Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 Updated Store & Forward Module Config for node number: \(String(nodeNum))")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				print("💥 Error Updating Core Data StoreForwardConfigEntity: \(nsError)")
+				Logger.data.error("Error Updating Core Data StoreForwardConfigEntity: \(nsError)")
 			}
 		} else {
-			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Store & Forward Module Config")
+			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Store & Forward Module Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		print("💥 Fetching node for core data DetectionSensorConfigEntity failed: \(nsError)")
+		Logger.data.error("Fetching node for core data DetectionSensorConfigEntity failed: \(nsError)")
 	}
 }
 
@@ -1361,20 +1367,20 @@ func upsertTelemetryModuleConfigPacket(config: Meshtastic.ModuleConfig.Telemetry
 
 			do {
 				try context.save()
-				print("💾 Updated Telemetry Module Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 Updated Telemetry Module Config for node number: \(String(nodeNum))")
 
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				print("💥 Error Updating Core Data TelemetryConfigEntity: \(nsError)")
+				Logger.data.error("Error Updating Core Data TelemetryConfigEntity: \(nsError)")
 			}
 
 		} else {
-			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Telemetry Module Config")
+			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Telemetry Module Config")
 		}
 
 	} catch {
 		let nsError = error as NSError
-		print("💥 Fetching node for core data TelemetryConfigEntity failed: \(nsError)")
+		Logger.data.error("Fetching node for core data TelemetryConfigEntity failed: \(nsError)")
 	}
 }

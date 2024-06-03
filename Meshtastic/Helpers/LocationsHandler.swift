@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreLocation
+import OSLog
 
 // Shared state that manages the `CLLocationManager` and `CLBackgroundActivitySession`.
 @available(iOS 17.0, macOS 14.0, *)
@@ -16,7 +17,7 @@ import CoreLocation
 	private let manager: CLLocationManager
 	private var background: CLBackgroundActivitySession?
 	var enableSmartPosition: Bool = UserDefaults.enableSmartPosition
-	
+
 	@Published var locationsArray: [CLLocation]
 	@Published var isStationary = false
 	@Published var count = 0
@@ -25,12 +26,12 @@ import CoreLocation
 	@Published var recordingStarted: Date?
 	@Published var distanceTraveled = 0.0
 	@Published var elevationGain = 0.0
-	
+
 	@Published
 	var updatesStarted: Bool = UserDefaults.standard.bool(forKey: "liveUpdatesStarted") {
 		didSet { UserDefaults.standard.set(updatesStarted, forKey: "liveUpdatesStarted") }
 	}
-	
+
 	@Published
 	var backgroundActivity: Bool = UserDefaults.standard.bool(forKey: "BGActivitySessionStarted") {
 		didSet {
@@ -38,27 +39,27 @@ import CoreLocation
 			UserDefaults.standard.set(backgroundActivity, forKey: "BGActivitySessionStarted")
 		}
 	}
-	
+
 	private init() {
 		self.manager = CLLocationManager()  // Creating a location manager instance is safe to call here in `MainActor`.
 		self.manager.allowsBackgroundLocationUpdates = true
 		locationsArray = [CLLocation]()
 	}
-	
+
 	func startLocationUpdates() {
 		if self.manager.authorizationStatus == .notDetermined {
 			self.manager.requestWhenInUseAuthorization()
 		}
-		print("Starting location updates")
-		Task() {
+		Logger.services.info("📍 Starting location updates")
+		Task {
 			do {
 				self.updatesStarted = true
 				let updates = CLLocationUpdate.liveUpdates()
 				for try await update in updates {
-					if !self.updatesStarted { break } 
+					if !self.updatesStarted { break }
 					if let loc = update.location {
 						self.isStationary = update.isStationary
-					
+
 						var locationAdded: Bool
 						locationAdded = addLocation(loc, smartPostion: enableSmartPosition)
 						if !isRecording && locationAdded {
@@ -69,30 +70,30 @@ import CoreLocation
 					}
 				}
 			} catch {
-				print("Could not start location updates")
+				Logger.services.error("💥 Could not start location updates: \(error.localizedDescription)")
 			}
 			return
 		}
 	}
-	
+
 	func stopLocationUpdates() {
-		print("Stopping location updates")
+		Logger.services.info("🛑 Stopping location updates")
 		self.updatesStarted = false
 	}
-	
+
 	func addLocation(_ location: CLLocation, smartPostion: Bool) -> Bool {
 		if smartPostion {
 			let age = -location.timestamp.timeIntervalSinceNow
 			if age > 10 {
-				print("Bad Location \(self.count): Too Old \(age) seconds ago \(location)")
+				Logger.services.warning("📍 Bad Location \(self.count): Too Old \(age) seconds ago \(location)")
 				return false
 			}
 			if location.horizontalAccuracy < 0 {
-				print("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
+				Logger.services.warning("📍 Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
 				return false
 			}
 			if location.horizontalAccuracy > 5 {
-				print("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
+				Logger.services.warning("📍 Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
 				return false
 			}
 		}
@@ -111,9 +112,9 @@ import CoreLocation
 		}
 		return true
 	}
-	
+
 	static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
-	
+
 	static var satsInView: Int {
 		var sats = 0
 		if let newLocation = shared.locationsArray.last {

@@ -1,14 +1,15 @@
 import SwiftUI
+import OSLog
 
 struct TextMessageField: View {
 	static let maxbytes = 228
 	@EnvironmentObject var bleManager: BLEManager
-	
+
 	let destination: MessageDestination
 	@Binding var replyMessageId: Int64
 	@FocusState.Binding var isFocused: Bool
 	let onSubmit: () -> Void
-	
+
 	@State private var typingMessage: String = ""
 	@State private var totalBytes = 0
 	@State private var sendPositionWithMessage = false
@@ -25,7 +26,7 @@ struct TextMessageField: View {
 			TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes).padding(.trailing)
 		}
 		#endif
-		
+
 		HStack(alignment: .top) {
 			ZStack {
 				TextField("message", text: $typingMessage, axis: .vertical)
@@ -80,13 +81,13 @@ struct TextMessageField: View {
 		}
 		.padding(.all, 15)
 	}
-	
+
 	private func requestPosition() {
 		let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
 		sendPositionWithMessage = true
 		typingMessage =  "📍 " + userLongName + " \(destination.positionShareMessage)."
 	}
-	
+
 	private func sendMessage() {
 		let messageSent = bleManager.sendMessage(
 			message: typingMessage,
@@ -107,7 +108,7 @@ struct TextMessageField: View {
 					wantResponse: destination.wantPositionResponse
 				)
 				if positionSent {
-					print("Location Sent")
+					Logger.mesh.info("Location Sent")
 				}
 			}
 		}
@@ -121,7 +122,7 @@ private extension MessageDestination {
 		case .channel: return "has shared their position with you"
 		}
 	}
-	
+
 	var positionDestNum: Int64 {
 		switch self {
 		case let .user(user): return user.num

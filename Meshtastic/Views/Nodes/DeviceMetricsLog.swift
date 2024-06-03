@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import Charts
+import OSLog
 
 struct DeviceMetricsLog: View {
 
@@ -19,7 +20,7 @@ struct DeviceMetricsLog: View {
 	@State private var batteryChartColor: Color = .blue
 	@State private var airtimeChartColor: Color = .orange
 	@State private var channelUtilizationChartColor: Color = .green
-	@ObservedObject  var node: NodeInfoEntity
+	@ObservedObject var node: NodeInfoEntity
 
 	var body: some View {
 		VStack {
@@ -188,9 +189,9 @@ struct DeviceMetricsLog: View {
 					) {
 						Button("device.metrics.delete", role: .destructive) {
 							if clearTelemetry(destNum: node.num, metricsType: 0, context: context) {
-								print("Cleared Device Metrics for \(node.num)")
+								Logger.data.notice("Cleared Device Metrics for \(node.num)")
 							} else {
-								print("Clear Device Metrics Log Failed")
+								Logger.data.error("Clear Device Metrics Log Failed")
 							}
 						}
 					}
@@ -232,11 +233,12 @@ struct DeviceMetricsLog: View {
 			contentType: .commaSeparatedText,
 			defaultFilename: String("\(node.user?.longName ?? "Node") \("device.metrics.log".localized)"),
 			onCompletion: { result in
-				if case .success = result {
-					print("Device metrics log download succeeded.")
+				switch result {
+				case .success:
 					self.isExporting = false
-				} else {
-					print("Device metrics log download failed: \(result).")
+					Logger.services.info("Device metrics log download succeeded.")
+				case .failure(let error):
+					Logger.services.error("Device metrics log download failed: \(error.localizedDescription)")
 				}
 			}
 		)

@@ -9,17 +9,17 @@ import SwiftUI
 import Charts
 
 struct BatteryGauge: View {
-	
+
 	@ObservedObject var node: NodeInfoEntity
 	private let minValue = 0.0
 	private let maxValue = 100.00
 
 	var body: some View {
-		
+
 		let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
 		let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
 		let batteryLevel = Double(mostRecent?.batteryLevel ?? 0)
-		
+
 		VStack {
 			if batteryLevel > 100.0 {
 				// Plugged in

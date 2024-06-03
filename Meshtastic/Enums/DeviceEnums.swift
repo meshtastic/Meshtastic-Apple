@@ -21,7 +21,7 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 	case repeater = 4
 	case router = 2
 	case routerClient = 3
-	
+
 	var id: Int { self.rawValue }
 	var name: String {
 		switch self {
@@ -48,7 +48,7 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 		case .lostAndFound:
 			return "Lost and Found"
 		}
-		
+
 	}
 	var description: String {
 		switch self {
@@ -76,7 +76,7 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "device.role.lostandfound".localized
 		}
 	}
-	
+
 	var systemName: String {
 		switch self {
 		case .client:

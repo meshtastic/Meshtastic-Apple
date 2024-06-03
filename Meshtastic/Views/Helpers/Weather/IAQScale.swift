@@ -10,7 +10,7 @@ import SwiftUI
 struct IAQScale: View {
 
 	var body: some View {
-		VStack(alignment:.leading) {
+		VStack(alignment: .leading) {
 			ForEach(Iaq.allCases) { iaq in
 				HStack {
 					RoundedRectangle(cornerRadius: 5)

@@ -6,9 +6,10 @@
 //
 import SwiftUI
 import CoreLocation
+import OSLog
 
 struct NodeList: View {
-	
+
 	@StateObject var appState = AppState.shared
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
@@ -26,25 +27,25 @@ struct NodeList: View {
 	@State private var maxDistance: Double = 800000
 	@State private var hopsAway: Int = -1
 	@State private var deviceRole: Int = -1
-	
+
 	@State var isEditingFilters = false
-	
+
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 
 	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "favorite", ascending: false), 
+		sortDescriptors: [NSSortDescriptor(key: "favorite", ascending: false),
 						  NSSortDescriptor(key: "lastHeard", ascending: false),
 						  NSSortDescriptor(key: "user.longName", ascending: true)],
 		animation: .default)
 
 	var nodes: FetchedResults<NodeInfoEntity>
-	
+
 	var body: some View {
 		NavigationSplitView(columnVisibility: $columnVisibility) {
-			
+
 //			HStack {
 //				Button("Open Node") {
 //					UIApplication
@@ -52,19 +53,19 @@ struct NodeList: View {
 //						.open(URL(string: "meshtastic://nodes?nodeNum=530606484")!)
 //				}
 //			}
-			
+
 			let connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
 			let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
 			List(nodes, id: \.self, selection: $selectedNode) { node in
-				
-				NodeListItem(node: node, 
+
+				NodeListItem(node: node,
 							 connected: bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num,
 							 connectedNode: (bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? -1 : -1))
 				.contextMenu {
-					
+
 					Button {
 						if !node.favorite {
-							
+
 							let success = bleManager.setFavoriteNode(node: node, connectedNodeNum: Int64(connectedNodeNum))
 							if success {
 								node.favorite = !node.favorite
@@ -72,9 +73,9 @@ struct NodeList: View {
 									try context.save()
 								} catch {
 									context.rollback()
-									print("💥 Save Node Favorite Error")
+									Logger.data.error("Save Node Favorite Error")
 								}
-								print("Favorited a node")
+								Logger.data.debug("Favorited a node")
 							}
 						} else {
 							let success = bleManager.removeFavoriteNode(node: node, connectedNodeNum: Int64(connectedNodeNum))
@@ -84,12 +85,12 @@ struct NodeList: View {
 									try context.save()
 								} catch {
 									context.rollback()
-									print("💥 Save Node Favorite Error")
+									Logger.data.error("Save Node Favorite Error")
 								}
-								print("Favorited a node")
+								Logger.data.debug("Favorited a node")
 							}
 						}
-						
+
 					} label: {
 						Label(node.favorite ? "Un-Favorite" : "Favorite", systemImage: node.favorite ? "star.slash.fill" : "star.fill")
 					}
@@ -101,7 +102,7 @@ struct NodeList: View {
 								try context.save()
 							} catch {
 								context.rollback()
-								print("💥 Save User Mute Error")
+								Logger.data.error("Save User Mute Error")
 							}
 						} label: {
 							Label(node.user!.mute ? "Show Alerts" : "Hide Alerts", systemImage: node.user!.mute ? "bell" : "bell.slash")
@@ -132,14 +133,14 @@ struct NodeList: View {
 										isPresentingTraceRouteSentAlert = false
 									}
 								}
-								
+
 							} label: {
 								Label("Trace Route", systemImage: "signpost.right.and.left")
 							}
 							if node.isStoreForwardRouter {
 
 								Button {
-									let success = bleManager.requestStoreAndForwardClientHistory(fromUser: connectedNode!.user!, toUser:  node.user!)
+									let success = bleManager.requestStoreAndForwardClientHistory(fromUser: connectedNode!.user!, toUser: node.user!)
 									if success {
 										isPresentingClientHistorySentAlert = true
 										DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
@@ -152,7 +153,7 @@ struct NodeList: View {
 							}
 						}
 						if bleManager.connectedPeripheral != nil {
-							Button (role: .destructive) {
+							Button(role: .destructive) {
 								deleteNodeId = node.num
 								isPresentingDeleteNodeAlert = true
 							} label: {
@@ -212,7 +213,7 @@ struct NodeList: View {
 				.disableAutocorrection(true)
 				.scrollDismissesKeyboard(.immediately)
 			.navigationTitle(String.localizedStringWithFormat("nodes %@".localized, String(nodes.count)))
-			
+
 			.listStyle(.plain)
 			.confirmationDialog(
 
@@ -226,7 +227,7 @@ struct NodeList: View {
 						if deleteNode != nil {
 							let success = bleManager.removeNode(node: deleteNode!, connectedNodeNum: Int64(connectedNodeNum))
 							if !success {
-								print("Failed to delete node \(deleteNode?.user?.longName ?? "unknown".localized)")
+								Logger.data.error("Failed to delete node \(deleteNode?.user?.longName ?? "unknown".localized)")
 							}
 						}
 					}
@@ -251,7 +252,7 @@ struct NodeList: View {
 						.navigationBarItems(
 							trailing:
 							ZStack {
-								if (UIDevice.current.userInterfaceIdiom != .phone) {
+								if UIDevice.current.userInterfaceIdiom != .phone {
 									Button {
 										columnVisibility = .detailOnly
 									} label: {
@@ -264,7 +265,7 @@ struct NodeList: View {
 									name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", phoneOnly: true)
 						})
 				}
-			
+
 			 } else {
 				 if #available (iOS 17, *) {
 					 ContentUnavailableView("select.node", systemImage: "flipphone")
@@ -278,7 +279,7 @@ struct NodeList: View {
 			} else {
 				Text("Select something to view")
 			}
-			
+
 		}
 		.navigationSplitViewStyle(.balanced)
 		.onChange(of: searchText) { _ in
@@ -315,19 +316,18 @@ struct NodeList: View {
 			searchNodeList()
 		}
 		.onChange(of: (appState.navigationPath)) { newPath in
-			
+
 			guard let deepLink = newPath else {
 				return
 			}
 			if deepLink.hasPrefix("meshtastic://nodes") {
-				
+
 				if let urlComponent = URLComponents(string: deepLink) {
 					let queryItems = urlComponent.queryItems
 					let nodeNum = queryItems?.first(where: { $0.name == "nodenum" })?.value
 					if nodeNum == nil {
-						print("nodeNum not found")
-					}
-					else {
+						Logger.data.debug("nodeNum not found")
+					} else {
 						selectedNode = nodes.first(where: { $0.num == Int64(nodeNum ?? "-1") })
 						AppState.shared.navigationPath = nil
 					}
@@ -371,7 +371,7 @@ struct NodeList: View {
 			let hopsAwayPredicate = NSPredicate(format: "hopsAway == %i", Int32(hopsAway))
 			predicates.append(hopsAwayPredicate)
 		}
-		
+
 		/// Online
 		if isOnline {
 			let isOnlinePredicate = NSPredicate(format: "lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -15, to: Date())! as NSDate)
@@ -385,22 +385,22 @@ struct NodeList: View {
 		/// Distance
 		if distanceFilter {
 			let pointOfInterest = LocationHelper.currentLocation
-		
+
 			if pointOfInterest.latitude != LocationHelper.DefaultLocation.latitude && pointOfInterest.longitude != LocationHelper.DefaultLocation.longitude {
-				let D: Double = maxDistance * 1.1
-				let R: Double = 6371009
+				let d: Double = maxDistance * 1.1
+				let r: Double = 6371009
 				let meanLatitidue = pointOfInterest.latitude * .pi / 180
-				let deltaLatitude = D / R * 180 / .pi
-				let deltaLongitude = D / (R * cos(meanLatitidue)) * 180 / .pi
+				let deltaLatitude = d / r * 180 / .pi
+				let deltaLongitude = d / (r * cos(meanLatitidue)) * 180 / .pi
 				let minLatitude: Double = pointOfInterest.latitude - deltaLatitude
 				let maxLatitude: Double = pointOfInterest.latitude + deltaLatitude
 				let minLongitude: Double = pointOfInterest.longitude - deltaLongitude
 				let maxLongitude: Double = pointOfInterest.longitude + deltaLongitude
-				let distancePredicate = NSPredicate(format: "(SUBQUERY(positions, $position, $position.latest == TRUE && (%lf <= ($position.longitudeI / 1e7)) AND (($position.longitudeI / 1e7) <= %lf) AND (%lf <= ($position.latitudeI / 1e7)) AND (($position.latitudeI / 1e7) <= %lf))).@count > 0", minLongitude, maxLongitude,minLatitude, maxLatitude)
+				let distancePredicate = NSPredicate(format: "(SUBQUERY(positions, $position, $position.latest == TRUE && (%lf <= ($position.longitudeI / 1e7)) AND (($position.longitudeI / 1e7) <= %lf) AND (%lf <= ($position.latitudeI / 1e7)) AND (($position.latitudeI / 1e7) <= %lf))).@count > 0", minLongitude, maxLongitude, minLatitude, maxLatitude)
 				predicates.append(distancePredicate)
 			}
 		}
-		
+
 		if predicates.count > 0 || !searchText.isEmpty {
 			if !searchText.isEmpty {
 				let filterPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)

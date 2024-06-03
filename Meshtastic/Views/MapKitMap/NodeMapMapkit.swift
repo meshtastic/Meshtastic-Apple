@@ -8,9 +8,10 @@ import SwiftUI
 import CoreLocation
 import MapKit
 import WeatherKit
+import OSLog
 
 struct NodeMapMapkit: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	/// Weather
@@ -21,7 +22,7 @@ struct NodeMapMapkit: View {
 	@State private var symbolName: String = "cloud.fill"
 	@State private var attributionLink: URL?
 	@State private var attributionLogo: URL?
-	
+
 	@Environment(\.colorScheme) var colorScheme: ColorScheme
 	@AppStorage("meshMapType") private var meshMapType = 0
 	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
@@ -40,10 +41,9 @@ struct NodeMapMapkit: View {
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
 	@ObservedObject var node: NodeInfoEntity
-	
+
 	var body: some View {
 
-		let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 		NavigationStack {
 			GeometryReader { bounds in
 				VStack {
@@ -90,7 +90,7 @@ struct NodeMapMapkit: View {
 											VStack {
 												Label(temperature?.formatted(.measurement(width: .narrow)) ?? "??", systemImage: symbolName)
 													.font(.caption)
-												
+
 												Label("\(humidity ?? 0)%", systemImage: "humidity")
 													.font(.caption2)
 
@@ -103,12 +103,12 @@ struct NodeMapMapkit: View {
 														.controlSize(.mini)
 												}
 												.frame(height: 10)
-				
+
 												Link("Other data sources", destination: attributionLink ?? URL(string: "https://weather-data.apple.com/legal-attribution.html")!)
 													.font(.caption2)
 											}
 											.padding(5)
-											
+
 										}
 										.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 										.padding(5)
@@ -126,7 +126,7 @@ struct NodeMapMapkit: View {
 													attributionLogo = colorScheme == .light ? attribution.combinedMarkLightURL : attribution.combinedMarkDarkURL
 												}
 											} catch {
-												print("Could not gather weather information...", error.localizedDescription)
+												Logger.services.error("Could not gather weather information: \(error.localizedDescription)")
 												condition = .clear
 												symbolName = "cloud.fill"
 											}

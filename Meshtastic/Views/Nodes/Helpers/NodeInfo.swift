@@ -14,9 +14,9 @@ struct NodeInfoItem: View {
 	@ObservedObject var node: NodeInfoEntity
 
 	var body: some View {
-		
+
 		Divider()
-		
+
 		HStack {
 
 			VStack(alignment: .center) {

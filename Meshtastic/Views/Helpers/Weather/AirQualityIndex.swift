@@ -21,13 +21,13 @@ struct AirQualityIndex: View {
 	var aqi: Int
 	var displayMode: IaqDisplayMode = .pill
 	let gradient = Gradient(colors: [.green, .yellow, .orange, .red, .purple, .magenta])
-	
+
 	var body: some View {
-		
+
 		let aqiEnum = Aqi.getAqi(for: aqi)
 		switch displayMode {
 		case .pill:
-			ZStack (alignment: .leading) {
+			ZStack(alignment: .leading) {
 				RoundedRectangle(cornerRadius: 10)
 					.fill(aqiEnum.color)
 					.frame(width: 125, height: 30)
@@ -48,7 +48,7 @@ struct AirQualityIndex: View {
 				.font(.caption)
 		case .gauge:
 			Gauge(value: Double(aqi), in: 0...500) {
-						
+
 						Text("IAQ")
 							.foregroundColor(aqiEnum.color)
 					} currentValueLabel: {
@@ -115,19 +115,19 @@ struct AirQualityIndex_Previews: PreviewProvider {
 			}
 				Text(".gauge")
 				.font(.title2)
-			HStack (alignment: .top) {
+			HStack(alignment: .top) {
 				AirQualityIndex(aqi: 6, displayMode: .gauge)
 				AirQualityIndex(aqi: 51, displayMode: .gauge)
 				AirQualityIndex(aqi: 101, displayMode: .gauge)
 				AirQualityIndex(aqi: 151, displayMode: .gauge)
 			}
-			HStack (alignment: .top) {
+			HStack(alignment: .top) {
 				AirQualityIndex(aqi: 201, displayMode: .gauge)
 				AirQualityIndex(aqi: 251, displayMode: .gauge)
 				AirQualityIndex(aqi: 301, displayMode: .gauge)
 				AirQualityIndex(aqi: 351, displayMode: .gauge)
 			}
-			HStack (alignment: .top) {
+			HStack(alignment: .top) {
 				AirQualityIndex(aqi: 401, displayMode: .gauge)
 				AirQualityIndex(aqi: 500, displayMode: .gauge)
 			}
@@ -140,7 +140,7 @@ struct AirQualityIndex_Previews: PreviewProvider {
 			AirQualityIndex(aqi: 351, displayMode: .gradient)
 			AirQualityIndex(aqi: 401, displayMode: .gradient)
 			AirQualityIndex(aqi: 500, displayMode: .gradient)
-			
+
 		}.previewLayout(.fixed(width: 300, height: 800))
 	}
 }

@@ -3,6 +3,7 @@ import Combine
 import SwiftUI
 import SwiftProtobuf
 import MapKit
+import OSLog
 
 struct AppSettings: View {
 	@Environment(\.managedObjectContext) var context
@@ -16,7 +17,7 @@ struct AppSettings: View {
 		VStack {
 			Form {
 				Section(header: Text("App Settings")) {
-					Button("Open Settings",  systemImage: "gear") {
+					Button("Open Settings", systemImage: "gear") {
 						// Get the settings URL and open it
 						if let url = URL(string: UIApplication.openSettingsURLString) {
 							UIApplication.shared.open(url)
@@ -97,7 +98,7 @@ struct AppSettings: View {
 							Button("Delete all map tiles?", role: .destructive) {
 								tileManager.removeAll()
 								totalDownloadedTileSize = tileManager.getAllDownloadedSize()
-								print("delete all tiles")
+								Logger.services.debug("delete all tiles")
 							}
 						}
 					}

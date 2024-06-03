@@ -15,7 +15,7 @@ enum ActivityType: Int, CaseIterable, Identifiable {
 	case driving = 3
 	case overlanding = 4
 	case skiing = 5
-	
+
 	var id: Int { self.rawValue }
 	var description: String {
 		switch self {
@@ -33,7 +33,7 @@ enum ActivityType: Int, CaseIterable, Identifiable {
 			return "routes.activitytype.skiing".localized
 		}
 	}
-	
+
 	var fileNameString: String {
 		switch self {
 		case .walking:

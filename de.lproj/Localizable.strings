@@ -133,6 +133,7 @@
 "hybrid"="Hybrid";
 "hybrid.flyover"="Hybrid Flyover";
 "include"="Include";
+"incomplete"="Incomplete";
 "inputevent.none"="Keins";
 "inputevent.up"="Hoch";
 "inputevent.down"="Runter";

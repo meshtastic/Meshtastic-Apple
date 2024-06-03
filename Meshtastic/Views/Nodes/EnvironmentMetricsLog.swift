@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import Charts
+import OSLog
 
 struct EnvironmentMetricsLog: View {
 
@@ -113,7 +114,7 @@ struct EnvironmentMetricsLog: View {
 								GridItem(spacing: 0)
 							]
 							LazyVGrid(columns: columns, alignment: .leading, spacing: 1, pinnedViews: [.sectionHeaders]) {
-								
+
 								GridRow {
 									Text("Temp")
 										.font(.caption)
@@ -132,9 +133,9 @@ struct EnvironmentMetricsLog: View {
 										.fontWeight(.bold)
 								}
 								ForEach(environmentMetrics, id: \.self) { em  in
-									
+
 									GridRow {
-										
+
 										Text(em.temperature.formattedTemperature())
 											.font(.caption)
 										Text("\(String(format: "%.0f", em.relativeHumidity))%")
@@ -154,7 +155,7 @@ struct EnvironmentMetricsLog: View {
 					}
 				}
 				HStack {
-					
+
 					Button(role: .destructive) {
 						isPresentingClearLogConfirm = true
 					} label: {
@@ -172,7 +173,7 @@ struct EnvironmentMetricsLog: View {
 					) {
 						Button("Delete all environment metrics?", role: .destructive) {
 							if clearTelemetry(destNum: node.num, metricsType: 1, context: context) {
-								print("Clear Environment Metrics Log Failed")
+								Logger.services.error("Clear Environment Metrics Log Failed")
 							}
 						}
 					}
@@ -188,7 +189,7 @@ struct EnvironmentMetricsLog: View {
 					.padding(.bottom)
 					.padding(.trailing)
 				}
-			
+
 			} else {
 				if #available (iOS 17, *) {
 					ContentUnavailableView("No Environment Metrics", systemImage: "slash.circle")
@@ -197,7 +198,7 @@ struct EnvironmentMetricsLog: View {
 				}
 			}
 		}
-		
+
 		.navigationTitle("Environment Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
@@ -215,11 +216,12 @@ struct EnvironmentMetricsLog: View {
 			contentType: .commaSeparatedText,
 			defaultFilename: String("\(node.user?.longName ?? "Node") Environment Metrics Log"),
 			onCompletion: { result in
-				if case .success = result {
-					print("Environment metrics log download succeeded.")
+				switch result {
+				case .success:
 					self.isExporting = false
-				} else {
-					print("Environment metrics log download failed: \(result).")
+					Logger.services.info("Environment metrics log download succeeded.")
+				case .failure(let error):
+					Logger.services.error("Environment metrics log download failed: \(error.localizedDescription)")
 				}
 			}
 		)
