@@ -196,10 +196,8 @@ struct Channels: View {
 							for object in objects {
 								context.delete(object)
 							}
-							for node in nodes {
-								if node.channel == channelEntity.index {
-									context.delete(node)
-								}
+							for node in nodes where node.channel == channelEntity.index {
+								context.delete(node)
 							}
 							context.delete(channelEntity)
 							do {
@@ -295,7 +293,7 @@ struct Channels: View {
 }
 
 func firstMissingChannelIndex(_ indexes: [Int]) -> Int {
-	var smallestIndex = 1
+	let smallestIndex = 1
 	if indexes.isEmpty { return smallestIndex }
 	if smallestIndex <= indexes.count {
 		for element in smallestIndex...indexes.count where !indexes.contains(element) {

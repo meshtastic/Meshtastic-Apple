@@ -16,7 +16,9 @@ import ActivityKit
 func generateMessageMarkdown (message: String) -> String {
 	if !message.isEmoji() {
 		let types: NSTextCheckingResult.CheckingType = [.address, .link, .phoneNumber]
-		let detector = try! NSDataDetector(types: types.rawValue)
+		guard let detector = try? NSDataDetector(types: types.rawValue) else {
+			return message
+		}
 		let matches = detector.matches(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count))
 		var messageWithMarkdown = message
 		if matches.count > 0 {
@@ -629,16 +631,11 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity]
 						if fetchedMyInfo?.count ?? 0 > 0 {
 
-							for ch in fetchedMyInfo![0].channels!.array as? [ChannelEntity] ?? [] {
-
-								if ch.index == packet.channel {
-									ch.objectWillChange.send()
-								}
+							for ch in fetchedMyInfo![0].channels!.array as? [ChannelEntity] ?? [] where ch.index == packet.channel {
+								ch.objectWillChange.send()
 							}
 						}
-					} catch {
-
-					}
+					} catch { }
 				}
 
 			} else {

@@ -355,9 +355,8 @@ struct Connect: View {
 	func endActivity() {
 		liveActivityStarted = false
 		Task {
-			for activity in Activity<MeshActivityAttributes>.activities {
-				// Check if this is the activity associated with this order.
-				if activity.attributes.nodeNum == node?.num ?? 0 { await activity.end(nil, dismissalPolicy: .immediate)	}
+			for activity in Activity<MeshActivityAttributes>.activities where activity.attributes.nodeNum == node?.num ?? 0 {
+				await activity.end(nil, dismissalPolicy: .immediate)
 			}
 		}
 	}

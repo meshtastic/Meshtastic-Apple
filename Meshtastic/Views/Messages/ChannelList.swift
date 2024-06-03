@@ -97,7 +97,6 @@ struct ChannelList: View {
 			}
 		}
 	}
-	
 	var body: some View {
 		VStack {
 			// Display Contacts for the rest of the non admin channels

@@ -10,13 +10,6 @@ import CocoaMQTT
 // ---------------------------------------------------------------------------------------
 class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate, ObservableObject {
 
-	private static var documentsFolder: URL {
-		do {
-			return try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-		} catch {
-			fatalError("Can't find documents directory.")
-		}
-	}
 	var context: NSManagedObjectContext?
 
 	static let shared = BLEManager()
@@ -52,8 +45,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	let FROMRADIO_UUID = CBUUID(string: "0x2C55E69E-4993-11ED-B878-0242AC120002")
 	let EOL_FROMRADIO_UUID = CBUUID(string: "0x8BA2BCC2-EE02-4A55-A531-C525C5E454D5")
 	let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
-
-	let meshLog = documentsFolder.appendingPathComponent("meshlog.txt")
 
 	// MARK: init BLEManager
 	override init() {
@@ -284,11 +275,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			logger.error("🚫 Discover Services error \(error.localizedDescription)")
 		}
 		guard let services = peripheral.services else { return }
-		for service in services {
-			if service.uuid == meshtasticServiceCBUUID {
-				peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID], for: service)
-				logger.info("✅ BLE Service for Meshtastic discovered by \(peripheral.name ?? "Unknown")")
-			}
+		for service in services where service.uuid == meshtasticServiceCBUUID {
+			peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID], for: service)
+			logger.info("✅ BLE Service for Meshtastic discovered by \(peripheral.name ?? "Unknown")")
 		}
 	}
 
@@ -359,10 +348,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
 		toRadio.mqttClientProxyMessage = proxyMessage
-		let binaryData: Data = try! toRadio.serializedData()
+		guard let binaryData: Data = try? toRadio.serializedData() else {
+			return
+		}
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-
 		}
 	}
 
@@ -387,10 +377,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
-		dataMessage.portnum = PortNum.adminApp
-		dataMessage.wantResponse = true
-		meshPacket.decoded = dataMessage
+		if let serializedData: Data = try? adminPacket.serializedData() {
+			dataMessage.payload = serializedData
+			dataMessage.portnum = PortNum.adminApp
+			dataMessage.wantResponse = true
+			meshPacket.decoded = dataMessage
+		} else {
+			return 0
+		}
+
 		let messageDescription = "🛎️ Requested Device Metadata for node \(toUser.longName ?? "unknown".localized) by \(fromUser.longName ?? "unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return Int64(meshPacket.id)
@@ -411,16 +406,20 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= UInt32(fromNodeNum)
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! routePacket.serializedData()
-		dataMessage.portnum = PortNum.tracerouteApp
-		dataMessage.wantResponse = wantResponse
-		meshPacket.decoded = dataMessage
-
+		if let serializedData: Data = try? routePacket.serializedData() {
+			dataMessage.payload = serializedData
+			dataMessage.portnum = PortNum.tracerouteApp
+			dataMessage.wantResponse = true
+			meshPacket.decoded = dataMessage
+		} else {
+			return false
+		}
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
-		let binaryData: Data = try! toRadio.serializedData()
-
+		guard let binaryData: Data = try? toRadio.serializedData() else {
+			return false
+		}
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
@@ -481,7 +480,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			var toRadio: ToRadio = ToRadio()
 			configNonce += 1
 			toRadio.wantConfigID = configNonce
-			let binaryData: Data = try! toRadio.serializedData()
+			guard let binaryData: Data = try? toRadio.serializedData() else {
+				return
+			}
 			connectedPeripheral!.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			// Either Read the config complete value or from num notify value
 			guard connectedPeripheral != nil else { return }
@@ -903,7 +904,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					var toRadio: ToRadio!
 					toRadio = ToRadio()
 					toRadio.packet = meshPacket
-					let binaryData: Data = try! toRadio.serializedData()
+					guard let binaryData: Data = try? toRadio.serializedData() else {
+						return false
+					}
 					if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 						connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 						let logString = String.localizedStringWithFormat("mesh.log.textmessage.sent %@ %@ %@".localized, String(newMessage.messageId), String(fromUserNum), String(toUserNum))
@@ -952,7 +955,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
-		let binaryData: Data = try! toRadio.serializedData()
+		guard let binaryData: Data = try? toRadio.serializedData() else {
+			return false
+		}
 		let logString = String.localizedStringWithFormat("mesh.log.waypoint.sent %@".localized, String(fromNodeNum))
 		MeshLogger.log("📍 \(logString)")
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
@@ -1051,9 +1056,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 		meshPacket.channel = UInt32(channel)
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
-		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
+		if let serializedData: Data = try? adminPacket.serializedData() {
+			dataMessage.payload = serializedData
+			dataMessage.portnum = PortNum.adminApp
+			meshPacket.decoded = dataMessage
+		} else {
+			return false
+		}
 		let messageDescription = "🚀 Sent Set Fixed Postion Admin Message to: \(fromUser.longName ?? "unknown".localized) from: \(fromUser.longName ?? "unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: fromUser) {
 			return true
@@ -1072,9 +1082,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 		meshPacket.channel = UInt32(channel)
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
-		dataMessage.portnum = PortNum.adminApp
-		meshPacket.decoded = dataMessage
+		if let serializedData: Data = try? adminPacket.serializedData() {
+			dataMessage.payload = serializedData
+			dataMessage.portnum = PortNum.adminApp
+			meshPacket.decoded = dataMessage
+		} else {
+			return false
+		}
 		let messageDescription = "🚀 Sent Remove Fixed Position Admin Message to: \(fromUser.longName ?? "unknown".localized) from: \(fromUser.longName ?? "unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: fromUser) {
 			return true
@@ -1094,15 +1108,21 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.channel = UInt32(channel)
 		meshPacket.from	= UInt32(fromNodeNum)
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! positionPacket.serializedData()
-		dataMessage.portnum = PortNum.positionApp
-		dataMessage.wantResponse = wantResponse
-		meshPacket.decoded = dataMessage
+		if let serializedData: Data = try? positionPacket.serializedData() {
+			dataMessage.payload = serializedData
+			dataMessage.portnum = PortNum.positionApp
+			dataMessage.wantResponse = wantResponse
+			meshPacket.decoded = dataMessage
+		} else {
+			return false
+		}
 
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
-		let binaryData: Data = try! toRadio.serializedData()
+		guard let binaryData: Data = try? toRadio.serializedData() else {
+			return false
+		}
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
@@ -1132,9 +1152,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 		meshPacket.channel = UInt32(adminIndex)
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
-		dataMessage.portnum = PortNum.adminApp
-		meshPacket.decoded = dataMessage
+		if let serializedData: Data = try? adminPacket.serializedData() {
+			dataMessage.payload = serializedData
+			dataMessage.portnum = PortNum.adminApp
+			meshPacket.decoded = dataMessage
+		} else {
+			return false
+		}
 		let messageDescription = "🚀 Sent Shutdown Admin Message to: \(toUser.longName ?? "unknown".localized) from: \(fromUser.longName ?? "unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
@@ -1153,9 +1177,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 		meshPacket.channel = UInt32(adminIndex)
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
-		dataMessage.portnum = PortNum.adminApp
-		meshPacket.decoded = dataMessage
+		if let serializedData: Data = try? adminPacket.serializedData() {
+			dataMessage.payload = serializedData
+			dataMessage.portnum = PortNum.adminApp
+			meshPacket.decoded = dataMessage
+		} else {
+			return false
+		}
 		let messageDescription = "🚀 Sent Reboot Admin Message to: \(toUser.longName ?? "unknown".localized) from: \(fromUser.longName ?? "unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
@@ -1174,9 +1202,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 		meshPacket.channel = UInt32(adminIndex)
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
-		dataMessage.portnum = PortNum.adminApp
-		meshPacket.decoded = dataMessage
+		if let serializedData: Data = try? adminPacket.serializedData() {
+			dataMessage.payload = serializedData
+			dataMessage.portnum = PortNum.adminApp
+			meshPacket.decoded = dataMessage
+		} else {
+			return false
+		}
 		let messageDescription = "🚀 Sent Reboot OTA Admin Message to: \(toUser.longName ?? "unknown".localized) from: \(fromUser.longName ?? "unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
@@ -1195,9 +1227,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 		meshPacket.channel = UInt32(0)
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
-		dataMessage.portnum = PortNum.adminApp
-		meshPacket.decoded = dataMessage
+		if let serializedData: Data = try? adminPacket.serializedData() {
+			dataMessage.payload = serializedData
+			dataMessage.portnum = PortNum.adminApp
+			meshPacket.decoded = dataMessage
+		} else {
+			return false
+		}
 		automaticallyReconnect = false
 		let messageDescription = "🚀 Sent enter DFU mode Admin Message to: \(toUser.longName ?? "unknown".localized) from: \(fromUser.longName ?? "unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
@@ -1216,9 +1252,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
-		dataMessage.portnum = PortNum.adminApp
-		meshPacket.decoded = dataMessage
+		if let serializedData: Data = try? adminPacket.serializedData() {
+			dataMessage.payload = serializedData
+			dataMessage.portnum = PortNum.adminApp
+			meshPacket.decoded = dataMessage
+		} else {
+			return false
+		}
 
 		let messageDescription = "🚀 Sent Factory Reset Admin Message to: \(toUser.longName ?? "unknown".localized) from: \(fromUser.longName ??  "unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
@@ -1237,7 +1277,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 
 		meshPacket.decoded = dataMessage
@@ -1276,7 +1319,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 		meshPacket.decoded = dataMessage
@@ -1297,7 +1343,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 		meshPacket.decoded = dataMessage
@@ -1370,13 +1419,18 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						meshPacket.wantAck = true
 						meshPacket.channel = 0
 						var dataMessage = DataMessage()
-						dataMessage.payload = try! adminPacket.serializedData()
+						guard let adminData: Data = try? adminPacket.serializedData() else {
+							return false
+						}
+						dataMessage.payload = adminData
 						dataMessage.portnum = PortNum.adminApp
 						meshPacket.decoded = dataMessage
 						var toRadio: ToRadio!
 						toRadio = ToRadio()
 						toRadio.packet = meshPacket
-						let binaryData: Data = try! toRadio.serializedData()
+						guard let binaryData: Data = try? toRadio.serializedData() else {
+							return false
+						}
 						if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 							self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
 							let logString = String.localizedStringWithFormat("mesh.log.channel.sent %@ %d".localized, String(connectedPeripheral.num), chan.index)
@@ -1394,13 +1448,18 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					meshPacket.wantAck = true
 					meshPacket.channel = 0
 					var dataMessage = DataMessage()
-					dataMessage.payload = try! adminPacket.serializedData()
+					guard let adminData: Data = try? adminPacket.serializedData() else {
+						return false
+					}
+					dataMessage.payload = adminData
 					dataMessage.portnum = PortNum.adminApp
 					meshPacket.decoded = dataMessage
 					var toRadio: ToRadio!
 					toRadio = ToRadio()
 					toRadio.packet = meshPacket
-					let binaryData: Data = try! toRadio.serializedData()
+					guard let binaryData: Data = try? toRadio.serializedData() else {
+						return false
+					}
 					if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 						self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
 						let logString = String.localizedStringWithFormat("mesh.log.lora.config.sent %@".localized, String(connectedPeripheral.num))
@@ -1431,9 +1490,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
-		dataMessage.portnum = PortNum.adminApp
-		meshPacket.decoded = dataMessage
+		if let serializedData: Data = try? adminPacket.serializedData() {
+			dataMessage.payload = serializedData
+			dataMessage.portnum = PortNum.adminApp
+			meshPacket.decoded = dataMessage
+		} else {
+			return 0
+		}
 		let messageDescription = "🛟 Saved User Config for \(toUser.longName ?? "unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return Int64(meshPacket.id)
@@ -1450,13 +1513,19 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
-		dataMessage.portnum = PortNum.adminApp
-		meshPacket.decoded = dataMessage
+		if let serializedData: Data = try? adminPacket.serializedData() {
+			dataMessage.payload = serializedData
+			dataMessage.portnum = PortNum.adminApp
+			meshPacket.decoded = dataMessage
+		} else {
+			return false
+		}
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
-		let binaryData: Data = try! toRadio.serializedData()
+		guard let binaryData: Data = try? toRadio.serializedData() else {
+			return false
+		}
 
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			do {
@@ -1483,13 +1552,18 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
-		let binaryData: Data = try! toRadio.serializedData()
+		guard let binaryData: Data = try? toRadio.serializedData() else {
+			return false
+		}
 
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
@@ -1507,13 +1581,18 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
-		let binaryData: Data = try! toRadio.serializedData()
+		guard let binaryData: Data = try? toRadio.serializedData() else {
+			return false
+		}
 
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
@@ -1533,7 +1612,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 		let messageDescription = "🛟 Saved Ham Parameters for \(toUser.longName ?? "unknown".localized)"
@@ -1553,7 +1635,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 		let messageDescription = "🛟 Saved Bluetooth Config for \(toUser.longName ?? "unknown".localized)"
@@ -1579,7 +1664,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 		let messageDescription = "🛟 Saved Device Config for \(toUser.longName ?? "unknown".localized)"
@@ -1603,7 +1691,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 		let messageDescription = "🛟 Saved Display Config for \(toUser.longName ?? "unknown".localized)"
@@ -1626,7 +1717,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 		let messageDescription = "🛟 Saved LoRa Config for \(toUser.longName ?? "unknown".localized)"
@@ -1652,7 +1746,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 
 		meshPacket.decoded = dataMessage
@@ -1680,7 +1777,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 
 		meshPacket.decoded = dataMessage
@@ -1708,7 +1808,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 
 		meshPacket.decoded = dataMessage
@@ -1736,7 +1839,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 
@@ -1763,7 +1869,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 
@@ -1790,7 +1899,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 		meshPacket.decoded = dataMessage
@@ -1819,7 +1931,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 
@@ -1845,7 +1960,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 
@@ -1871,7 +1989,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 
@@ -1897,7 +2018,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 
@@ -1925,7 +2049,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 
 		meshPacket.decoded = dataMessage
@@ -1951,7 +2078,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 
@@ -1979,7 +2109,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 
@@ -2005,7 +2138,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 
@@ -2031,7 +2167,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 
@@ -2056,7 +2195,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = wantResponse
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 
@@ -2086,7 +2228,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.decoded.wantResponse = wantResponse
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = wantResponse
 
@@ -2096,7 +2241,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
 
-		let binaryData: Data = try! toRadio.serializedData()
+		guard let binaryData: Data = try? toRadio.serializedData() else {
+			return false
+		}
 
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
@@ -2122,7 +2269,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 
@@ -2150,7 +2300,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 
@@ -2178,7 +2331,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 
@@ -2206,7 +2362,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 
@@ -2236,7 +2395,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 		meshPacket.decoded = dataMessage
@@ -2263,7 +2425,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 
@@ -2290,7 +2455,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 
@@ -2317,7 +2485,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 
@@ -2344,7 +2515,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 
@@ -2371,7 +2545,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 
@@ -2398,7 +2575,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 
@@ -2425,7 +2605,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 
@@ -2452,7 +2635,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 
@@ -2479,7 +2665,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 
@@ -2506,7 +2695,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 
@@ -2533,7 +2725,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 
@@ -2560,7 +2755,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 
@@ -2587,7 +2785,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 
@@ -2606,7 +2807,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
-		let binaryData: Data = try! toRadio.serializedData()
+		guard let binaryData: Data = try? toRadio.serializedData() else {
+			return false
+		}
 
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			let newMessage = MessageEntity(context: context!)
@@ -2646,7 +2849,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! sfPacket.serializedData()
+		guard let sfData: Data = try? sfPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = sfData
 		dataMessage.portnum = PortNum.storeForwardApp
 		dataMessage.wantResponse = true
 		meshPacket.decoded = dataMessage
@@ -2654,7 +2860,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
-		let binaryData: Data = try! toRadio.serializedData()
+		guard let binaryData: Data = try? toRadio.serializedData() else {
+			return false
+		}
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			logger.debug("📮 Sent a request for a Store & Forward Client History to \(toUser.num) for the last \(120) minutes.")

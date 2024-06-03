@@ -43,7 +43,6 @@ struct NodeMapMapkit: View {
 
 	var body: some View {
 
-		let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 		NavigationStack {
 			GeometryReader { bounds in
 				VStack {

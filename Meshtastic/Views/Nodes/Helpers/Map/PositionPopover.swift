@@ -133,7 +133,6 @@ struct PositionPopover: View {
 					if position.nodePosition?.viaMqtt ?? false {
 
 						Label {
-							let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees)
 							Text("MQTT")
 						} icon: {
 							Image(systemName: "network")

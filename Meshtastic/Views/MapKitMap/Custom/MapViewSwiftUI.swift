@@ -98,10 +98,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		// Avoid refreshing UI if selectedLayer has not changed
 		guard currentMapLayer != selectedMapLayer else { return }
 		currentMapLayer = selectedMapLayer
-		for overlay in mapView.overlays {
-			if overlay is MKTileOverlay {
-				mapView.removeOverlay(overlay)
-			}
+		for overlay in mapView.overlays where overlay is MKTileOverlay {
+			mapView.removeOverlay(overlay)
 		}
 		switch selectedMapLayer {
 		case .offline:
@@ -179,10 +177,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		// Node Route Lines
 		if showRouteLines {
 			// Remove all existing PolyLine Overlays
-			for overlay in mapView.overlays {
-				if overlay is MKPolyline {
-					mapView.removeOverlay(overlay)
-				}
+			for overlay in mapView.overlays where overlay is MKPolyline {
+				mapView.removeOverlay(overlay)
 			}
 			var lineIndex = 0
 			for position in latest {
@@ -201,10 +197,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			}
 		} else {
 			// Remove all existing PolyLine Overlays
-			for overlay in mapView.overlays {
-				if overlay is MKPolyline {
-					mapView.removeOverlay(overlay)
-				}
+			for overlay in mapView.overlays where overlay is MKPolyline {
+				mapView.removeOverlay(overlay)
 			}
 		}
 		let annotationCount = waypoints.count + (showNodeHistory ? positions.count : latest.count)
