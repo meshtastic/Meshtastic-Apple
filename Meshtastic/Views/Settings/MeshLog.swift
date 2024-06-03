@@ -18,7 +18,7 @@ struct MeshLog: View {
 					let url = logFile!
 					logs.removeAll()
 					var lineCount = 0
-					let lineLimit = 500
+					let lineLimit = 5000
 					// Get the number of lines
 					for try await _ in url.lines {
 						lineCount += 1

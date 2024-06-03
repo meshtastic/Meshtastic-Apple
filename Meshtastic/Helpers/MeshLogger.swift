@@ -32,6 +32,8 @@ class MeshLogger {
 				fileHandle.closeFile()
 			} else {
 				try data.write(to: logFile, options: .atomicWrite)
+				let log = String(data: data, encoding: .utf8) ?? "unknown".localized
+				Logger.mesh.notice("\(log)")
 			}
 		} catch {
 			Logger.mesh.error("Error writing mesh log data: \(error.localizedDescription)")
