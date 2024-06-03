@@ -188,7 +188,7 @@ struct DeviceMetricsLog: View {
 					) {
 						Button("device.metrics.delete", role: .destructive) {
 							if clearTelemetry(destNum: node.num, metricsType: 0, context: context) {
-								logger.debug("Cleared Device Metrics for \(node.num)")
+								logger.notice("Cleared Device Metrics for \(node.num)")
 							} else {
 								logger.error("Clear Device Metrics Log Failed")
 							}

@@ -76,8 +76,10 @@ struct MeshMapContent: MapContent {
 						}
 					}
 				}
+				.onTapGesture { location in
+					selectedPosition = (selectedPosition == position ? nil : position)
+				}
 			}
-
 			/// Node History and Route Lines for favorites
 			if let nodePosition = position.nodePosition,
 			   nodePosition.favorite,
