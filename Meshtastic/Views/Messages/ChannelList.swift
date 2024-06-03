@@ -127,7 +127,7 @@ struct ChannelList: View {
 
 									} catch {
 										context.rollback()
-										print("💥 Save Channel Mute Error")
+										logger.error("💥 Save Channel Mute Error")
 									}
 								} label: {
 									Label(channel.mute ? "Show Alerts" : "Hide Alerts", systemImage: channel.mute ? "bell" : "bell.slash")

@@ -517,7 +517,7 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			let ringtone = adminMessage.getRingtoneResponse
 			upsertRtttlConfigPacket(ringtone: ringtone, nodeNum: Int64(packet.from), context: context)
 		} else {
-			MeshLogger.log("🕸️ MESH PACKET received for Admin App \(try! packet.decoded.jsonString())")
+			MeshLogger.log("🕸️ MESH PACKET received Admin App UNHANDLED \((try? packet.decoded.jsonString()) ?? "JSON Decode Failure")")
 		}
 		// Save an ack for the admin message log for each admin message response received as we stopped sending acks if there is also a response to reduce airtime.
 		adminResponseAck(packet: packet, context: context)

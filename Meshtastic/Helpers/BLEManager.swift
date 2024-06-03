@@ -729,20 +729,19 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 			case .neighborinfoApp:
 				if let neighborInfo = try? NeighborInfo(serializedData: decodedInfo.packet.decoded.payload) {
-					MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED")
-					//	MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \(neighborInfo)")
+					// MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED")
+					MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \(neighborInfo)")
 				}
 			case .paxcounterApp:
 				paxCounterPacket(packet: decodedInfo.packet, context: context!)
 			case .mapReportApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Map Report App UNHANDLED\(try! decodedInfo.packet.jsonString())")
+				MeshLogger.log("🕸️ MESH PACKET received Map Report App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .UNRECOGNIZED:
-				MeshLogger.log("🕸️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+				MeshLogger.log("🕸️ MESH PACKET received UNRECOGNIZED App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .max:
 				logger.info("MAX PORT NUM OF 511")
 			case .atakPlugin:
 				MeshLogger.log("🕸️ MESH PACKET received for ATAK Plugin App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-
 			}
 
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {

@@ -109,25 +109,25 @@ struct MeshMap: View {
 //				
 //				if ((newPath?.hasPrefix("meshtastic://open-waypoint")) != nil) {
 //					guard let url = URL(string: appState.navigationPath ?? "NONE") else {
-//						print("Invalid URL")
+//						logger.error("Invalid URL")
 //						return
 //					}
 //					guard let components = URLComponents(url: url, resolvingAgainstBaseURL: true) else {
-//					  print("Invalid URL Components")
+//					  logger.error("Invalid URL Components")
 //					  return
 //					}
 //					guard let action = components.host, action == "open-waypoint" else {
-//					  print("Unknown waypoint URL action")
+//					  logger.error("Unknown waypoint URL action")
 //					  return
 //					}
 //					guard let waypointId = components.queryItems?.first(where: { $0.name == "id" })?.value else {
-//					  print("Waypoint id not found")
+//					  logger.error("Waypoint id not found")
 //					  return
 //					}
-////					guard let waypoint = waypoints.first(where: { $0.id == Int64(waypointId) }) else {
-////					  print("Waypoint not found")
-////					  return
-////					}
+//					guard let waypoint = waypoints.first(where: { $0.id == Int64(waypointId) }) else {
+//					  logger.error("Waypoint not found")
+//					  return
+//					}
 //					//showWaypoints = true
 //					//position = .camera(MapCamera(centerCoordinate: waypoint.coordinate, distance: 1000, heading: 0, pitch: 60))
 //				}

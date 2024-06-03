@@ -64,10 +64,6 @@ struct TraceRouteLog: View {
 							.font(.title2)
 						}
 
-						let hopsArray = selectedRoute?.hops?.array as? [TraceRouteHopEntity] ?? []
-						let lineCoords = hopsArray.compactMap({(hop) -> CLLocationCoordinate2D in
-							return hop.coordinate ?? LocationHelper.DefaultLocation
-						})
 						if selectedRoute?.response ?? false {
 							if selectedRoute?.hasPositions ?? false {
 								Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
@@ -83,7 +79,7 @@ struct TraceRouteLog: View {
 									// Direct Trace Route
 									if selectedRoute?.response ?? false && selectedRoute?.hops?.count ?? 0 == 0 {
 										if selectedRoute?.node?.positions?.count ?? 0 > 0, let mostRecent = selectedRoute?.node?.positions?.lastObject as? PositionEntity {
-											var traceRouteCoords: [CLLocationCoordinate2D] = [selectedRoute?.coordinate ?? LocationsHandler.DefaultLocation, mostRecent.coordinate]
+											let traceRouteCoords: [CLLocationCoordinate2D] = [selectedRoute?.coordinate ?? LocationsHandler.DefaultLocation, mostRecent.coordinate]
 											Annotation(selectedRoute?.node?.user?.shortName ?? "???", coordinate: mostRecent.nodeCoordinate ?? LocationHelper.DefaultLocation) {
 												ZStack {
 													Circle()

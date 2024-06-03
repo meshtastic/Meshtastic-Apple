@@ -116,8 +116,6 @@ func positionToCsvFile(positions: [PositionEntity]) -> String {
 
 func routeToCsvFile(locations: [LocationEntity]) -> String {
 	var csvString: String = ""
-	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
-	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 	// Create Position Header
 	csvString = "Id, Latitude, Longitude, Altitude, Speed, Heading"
 	for loc in locations {
