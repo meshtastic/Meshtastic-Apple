@@ -156,7 +156,6 @@
 		DDC2E15826CE248E0042C5E4 /* MeshtasticApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */; };
 		DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */; };
 		DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15E26CE248F0042C5E4 /* Preview Assets.xcassets */; };
-		DDC2E17A26CE248F0042C5E4 /* MeshtasticUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E17926CE248F0042C5E4 /* MeshtasticUITests.swift */; };
 		DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */; };
 		DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */; };
 		DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC3B273283F411B00AC321C /* LastHeardText.swift */; };
@@ -214,13 +213,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		DDC2E17626CE248F0042C5E4 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = DDC2E14C26CE248E0042C5E4 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = DDC2E15326CE248E0042C5E4;
-			remoteInfo = MeshtasticClient;
-		};
 		DDDE5A0129AF163E00490C6C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = DDC2E14C26CE248E0042C5E4 /* Project object */;
@@ -246,6 +238,7 @@
 
 /* Begin PBXFileReference section */
 		25183D452C0A6D97001E31D5 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		258EE1262C0E833D0025A5FB /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAppDelegate.swift; sourceTree = "<group>"; };
 		6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorLog.swift; sourceTree = "<group>"; };
 		6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntityExtension.swift; sourceTree = "<group>"; };
@@ -422,10 +415,6 @@
 		DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../Assets.xcassets; sourceTree = "<group>"; };
 		DDC2E15E26CE248F0042C5E4 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		DDC2E16526CE248F0042C5E4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		DDC2E17026CE248F0042C5E4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		DDC2E17526CE248F0042C5E4 /* MeshtasticUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MeshtasticUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		DDC2E17926CE248F0042C5E4 /* MeshtasticUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticUITests.swift; sourceTree = "<group>"; };
-		DDC2E17B26CE248F0042C5E4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHelper.swift; sourceTree = "<group>"; };
 		DDC3B273283F411B00AC321C /* LastHeardText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastHeardText.swift; sourceTree = "<group>"; };
@@ -441,7 +430,6 @@
 		DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserConfig.swift; sourceTree = "<group>"; };
 		DDD28D362C0CCCD10063CFA3 /* pt-PT */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-PT"; path = "pt-PT.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		DDD28D372C0CD2670063CFA3 /* MeshtasticDataModelV 37.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 37.xcdatamodel"; sourceTree = "<group>"; };
-		DDD3BBD4292D763200D609B3 /* MeshtasticTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MeshtasticTests.swift; sourceTree = "<group>"; };
 		DDD43FE22A78C8900083A3E9 /* MqttClientProxyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MqttClientProxyManager.swift; sourceTree = "<group>"; };
 		DDD6EEAE29BC024700383354 /* Firmware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Firmware.swift; sourceTree = "<group>"; };
 		DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateTimeText.swift; sourceTree = "<group>"; };
@@ -506,13 +494,6 @@
 				C9697FA527933B8C00250207 /* SQLite in Frameworks */,
 				DD0D3D222A55CEB10066DB71 /* CocoaMQTT in Frameworks */,
 				DD5394FC276993AD00AD86B1 /* SwiftProtobuf in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		DDC2E17226CE248F0042C5E4 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -794,12 +775,11 @@
 		DDC2E14B26CE248E0042C5E4 = {
 			isa = PBXGroup;
 			children = (
+				258EE1262C0E833D0025A5FB /* README.md */,
 				DDDBC87A2BC62E4E001E8DF7 /* Settings.bundle */,
 				DDCDC6CD29481FCC004C1DDA /* Localizable.strings */,
 				DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */,
 				DDC2E15626CE248E0042C5E4 /* Meshtastic */,
-				DDC2E16D26CE248F0042C5E4 /* MeshtasticTests */,
-				DDC2E17826CE248F0042C5E4 /* MeshtasticUITests */,
 				DDDE59F729AF163D00490C6C /* Widgets */,
 				DDC2E15526CE248E0042C5E4 /* Products */,
 				DD8EDE9226F97A2B00A5A10B /* Frameworks */,
@@ -811,7 +791,6 @@
 			isa = PBXGroup;
 			children = (
 				DDC2E15426CE248E0042C5E4 /* Meshtastic.app */,
-				DDC2E17526CE248F0042C5E4 /* MeshtasticUITests.xctest */,
 				DDDE59F429AF163D00490C6C /* WidgetsExtension.appex */,
 			);
 			name = Products;
@@ -845,24 +824,6 @@
 				DDC2E15E26CE248F0042C5E4 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
-			sourceTree = "<group>";
-		};
-		DDC2E16D26CE248F0042C5E4 /* MeshtasticTests */ = {
-			isa = PBXGroup;
-			children = (
-				DDD3BBD4292D763200D609B3 /* MeshtasticTests.swift */,
-				DDC2E17026CE248F0042C5E4 /* Info.plist */,
-			);
-			path = MeshtasticTests;
-			sourceTree = "<group>";
-		};
-		DDC2E17826CE248F0042C5E4 /* MeshtasticUITests */ = {
-			isa = PBXGroup;
-			children = (
-				DDC2E17926CE248F0042C5E4 /* MeshtasticUITests.swift */,
-				DDC2E17B26CE248F0042C5E4 /* Info.plist */,
-			);
-			path = MeshtasticUITests;
 			sourceTree = "<group>";
 		};
 		DDC2E18726CE24E40042C5E4 /* Views */ = {
@@ -1037,7 +998,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = DDC2E17E26CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "Meshtastic" */;
 			buildPhases = (
-				BB450974275599CE00509624 /* ShellScript */,
 				DDC2E15026CE248E0042C5E4 /* Sources */,
 				DDC2E15126CE248E0042C5E4 /* Frameworks */,
 				DDC2E15226CE248E0042C5E4 /* Resources */,
@@ -1046,6 +1006,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				258EE1232C0E81DC0025A5FB /* PBXTargetDependency */,
 				DDDE5A0229AF163E00490C6C /* PBXTargetDependency */,
 			);
 			name = Meshtastic;
@@ -1058,24 +1019,6 @@
 			productReference = DDC2E15426CE248E0042C5E4 /* Meshtastic.app */;
 			productType = "com.apple.product-type.application";
 		};
-		DDC2E17426CE248F0042C5E4 /* MeshtasticUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = DDC2E18426CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "MeshtasticUITests" */;
-			buildPhases = (
-				DDC2E17126CE248F0042C5E4 /* Sources */,
-				DDC2E17226CE248F0042C5E4 /* Frameworks */,
-				DDC2E17326CE248F0042C5E4 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				DDC2E17726CE248F0042C5E4 /* PBXTargetDependency */,
-			);
-			name = MeshtasticUITests;
-			productName = MeshtasticClientUITests;
-			productReference = DDC2E17526CE248F0042C5E4 /* MeshtasticUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 		DDDE59F329AF163D00490C6C /* WidgetsExtension */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = DDDE5A0529AF163F00490C6C /* Build configuration list for PBXNativeTarget "WidgetsExtension" */;
@@ -1087,6 +1030,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				258EE1252C0E826E0025A5FB /* PBXTargetDependency */,
 			);
 			name = WidgetsExtension;
 			productName = WidgetsExtension;
@@ -1106,10 +1050,6 @@
 					DDC2E15326CE248E0042C5E4 = {
 						CreatedOnToolsVersion = 12.5.1;
 						LastSwiftMigration = 1340;
-					};
-					DDC2E17426CE248F0042C5E4 = {
-						CreatedOnToolsVersion = 12.5.1;
-						TestTargetID = DDC2E15326CE248E0042C5E4;
 					};
 					DDDE59F329AF163D00490C6C = {
 						CreatedOnToolsVersion = 14.2;
@@ -1137,13 +1077,13 @@
 				DD5394FA276993AD00AD86B1 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
 				C9697FA327933B8C00250207 /* XCRemoteSwiftPackageReference "SQLite.swift" */,
 				DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */,
+				258EE1212C0E81AE0025A5FB /* XCRemoteSwiftPackageReference "SwiftLint" */,
 			);
 			productRefGroup = DDC2E15526CE248E0042C5E4 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				DDC2E15326CE248E0042C5E4 /* Meshtastic */,
-				DDC2E17426CE248F0042C5E4 /* MeshtasticUITests */,
 				DDDE59F329AF163D00490C6C /* WidgetsExtension */,
 			);
 		};
@@ -1164,13 +1104,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		DDC2E17326CE248F0042C5E4 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		DDDE59F229AF163D00490C6C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1180,27 +1113,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		BB450974275599CE00509624 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if [[ \"$(uname -m)\" == arm64 ]]\nthen\n    export PATH=\"/opt/homebrew/bin:$PATH\"\nfi\n\nif command -v swiftlint >/dev/null 2>&1\nthen\n    swiftlint\nelse\n    echo \"warning: `swiftlint` command not found - See https://github.com/realm/SwiftLint#installation for installation instructions.\"\nfi\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		DDC2E15026CE248E0042C5E4 /* Sources */ = {
@@ -1395,14 +1307,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		DDC2E17126CE248F0042C5E4 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DDC2E17A26CE248F0042C5E4 /* MeshtasticUITests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		DDDE59F029AF163D00490C6C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1417,10 +1321,13 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		DDC2E17726CE248F0042C5E4 /* PBXTargetDependency */ = {
+		258EE1232C0E81DC0025A5FB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = DDC2E15326CE248E0042C5E4 /* Meshtastic */;
-			targetProxy = DDC2E17626CE248F0042C5E4 /* PBXContainerItemProxy */;
+			productRef = 258EE1222C0E81DC0025A5FB /* SwiftLintBuildToolPlugin */;
+		};
+		258EE1252C0E826E0025A5FB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 258EE1242C0E826E0025A5FB /* SwiftLintBuildToolPlugin */;
 		};
 		DDDE5A0229AF163E00490C6C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1639,48 +1546,6 @@
 			};
 			name = Release;
 		};
-		DDC2E18526CE248F0042C5E4 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
-				INFOPLIST_FILE = MeshtasticUITests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = Meshtastic;
-			};
-			name = Debug;
-		};
-		DDC2E18626CE248F0042C5E4 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
-				INFOPLIST_FILE = MeshtasticUITests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = Meshtastic;
-			};
-			name = Release;
-		};
 		DDDE5A0629AF163F00490C6C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1768,15 +1633,6 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DDC2E18426CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "MeshtasticUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				DDC2E18526CE248F0042C5E4 /* Debug */,
-				DDC2E18626CE248F0042C5E4 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		DDDE5A0529AF163F00490C6C /* Build configuration list for PBXNativeTarget "WidgetsExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1789,6 +1645,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		258EE1212C0E81AE0025A5FB /* XCRemoteSwiftPackageReference "SwiftLint" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/realm/SwiftLint";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.55.1;
+			};
+		};
 		C9697FA327933B8C00250207 /* XCRemoteSwiftPackageReference "SQLite.swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/stephencelis/SQLite.swift.git";
@@ -1816,6 +1680,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		258EE1222C0E81DC0025A5FB /* SwiftLintBuildToolPlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 258EE1212C0E81AE0025A5FB /* XCRemoteSwiftPackageReference "SwiftLint" */;
+			productName = "plugin:SwiftLintBuildToolPlugin";
+		};
+		258EE1242C0E826E0025A5FB /* SwiftLintBuildToolPlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 258EE1212C0E81AE0025A5FB /* XCRemoteSwiftPackageReference "SwiftLint" */;
+			productName = "plugin:SwiftLintBuildToolPlugin";
+		};
 		C9697FA427933B8C00250207 /* SQLite */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C9697FA327933B8C00250207 /* XCRemoteSwiftPackageReference "SQLite.swift" */;
