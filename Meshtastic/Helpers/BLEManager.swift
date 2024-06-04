@@ -452,7 +452,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				} catch {
 					context!.rollback()
 					let nsError = error as NSError
-					Logger.data.error("Error Updating Core Data BluetoothConfigEntity: \(nsError)")
+					Logger.data.error("💥 Error Updating Core Data BluetoothConfigEntity: \(nsError)")
 				}
 
 				let logString = String.localizedStringWithFormat("mesh.log.traceroute.sent %@".localized, String(destNum))
@@ -492,7 +492,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	}
 
 	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
-		Logger.services.error("didUpdateNotificationStateFor error: \(error?.localizedDescription ?? "Unknown")")
+		Logger.services.error("💥 didUpdateNotificationStateFor error: \(error?.localizedDescription ?? "Unknown")")
 	}
 
 	// MARK: Data Read / Update Characteristic Event
@@ -507,7 +507,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// 5 CBATTErrorDomain Code=5 "Authentication is insufficient."
 				// 15 CBATTErrorDomain Code=15 "Encryption is insufficient."
 				lastConnectionError = "🚨" + String.localizedStringWithFormat("ble.errorcode.pin %@".localized, error.localizedDescription)
-				Logger.services.error("\(error.localizedDescription) Please try connecting again and check the PIN carefully.")
+				Logger.services.error("💥 \(error.localizedDescription) Please try connecting again and check the PIN carefully.")
 				self.disconnectPeripheral(reconnect: false)
 			}
 			return

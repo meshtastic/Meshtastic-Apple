@@ -130,8 +130,7 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 		}
 	}
 	func mqttDidDisconnect(_ mqtt: CocoaMQTT, withError err: Error?) {
-		Logger.services.debug("mqttDidDisconnect: \(err?.localizedDescription ?? "")")
-
+		Logger.services.debug("📲 MQTT Client Proxy mqttDidDisconnect: \(err?.localizedDescription ?? "")")
 		if let error = err {
 			delegate?.onMqttError(message: error.localizedDescription)
 		}
@@ -152,7 +151,7 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 		Logger.services.info("📲 MQTT Client Proxy didSubscribeTopics: \(success.allKeys.count) topics. failed: \(failed.count) topics")
 	}
 	func mqtt(_ mqtt: CocoaMQTT, didUnsubscribeTopics topics: [String]) {
-		Logger.services.info("didUnsubscribeTopics: \(topics.joined(separator: ", "))")
+		Logger.services.info("📲 MQTT Client Proxy didUnsubscribeTopics: \(topics.joined(separator: ", "))")
 	}
 	func mqttDidPing(_ mqtt: CocoaMQTT) {
 		Logger.services.info("📲 MQTT Client Proxy mqttDidPing")
