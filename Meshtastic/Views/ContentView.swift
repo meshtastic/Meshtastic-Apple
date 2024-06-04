@@ -8,13 +8,24 @@ import SwiftUI
 struct ContentView: View {
 
 	@StateObject var appState = AppState.shared
+
+	var meshMap: some View {
+		SwiftUI.Group {
+			if #available(iOS 17.0, macOS 14.0, *), !UserDefaults.mapUseLegacy {
+				MeshMap()
+			} else {
+				NodeMap()
+			}
+		}
+	}
+
 	var body: some View {
 		TabView(selection: $appState.tabSelection) {
 			Messages()
 				.tabItem {
 					Label("messages", systemImage: "message")
 				}
-				.tag(Tab.contacts)
+				.tag(Tab.messages)
 				.badge(appState.unreadDirectMessages + appState.unreadChannelMessages)
 			Connect()
 				.tabItem {
@@ -26,27 +37,11 @@ struct ContentView: View {
 					Label("nodes", systemImage: "flipphone")
 				}
 				.tag(Tab.nodes)
-			if #available(iOS 17.0, macOS 14.0, *) {
-				if UserDefaults.mapUseLegacy {
-					NodeMap()
-						.tabItem {
-							Label("map", systemImage: "map")
-						}
-						.tag(Tab.map)
-				} else {
-					MeshMap()
-						.tabItem {
-							Label("map", systemImage: "map")
-						}
-						.tag(Tab.map)
+			meshMap
+				.tabItem {
+					Label("map", systemImage: "map")
 				}
-			} else {
-				NodeMap()
-					.tabItem {
-						Label("map", systemImage: "map")
-					}
-					.tag(Tab.map)
-			}
+				.tag(Tab.map)
 			Settings()
 				.tabItem {
 					Label("settings", systemImage: "gear")
@@ -56,22 +51,8 @@ struct ContentView: View {
 		}
 	}
 }
-// #Preview {
-//	if #available(iOS 17.0, *) {
-//	//	ContentView(deepLinkManager: .init())
-//	} else {
-//		// Fallback on earlier versions
-//	}
-// }
-
-// struct ContentView_Previews: PreviewProvider {
-//	static var previews: some View {
-//		ContentView()
-//	}
-// }
 
 enum Tab: Hashable {
-	case contacts
 	case messages
 	case map
 	case ble
