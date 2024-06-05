@@ -1010,7 +1010,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				258EE1232C0E81DC0025A5FB /* PBXTargetDependency */,
 				DDDE5A0229AF163E00490C6C /* PBXTargetDependency */,
 			);
 			name = Meshtastic;
@@ -1347,10 +1346,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		258EE1232C0E81DC0025A5FB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = 258EE1222C0E81DC0025A5FB /* SwiftLintBuildToolPlugin */;
-		};
 		258EE1252C0E826E0025A5FB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			productRef = 258EE1242C0E826E0025A5FB /* SwiftLintBuildToolPlugin */;
@@ -1710,11 +1705,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		258EE1222C0E81DC0025A5FB /* SwiftLintBuildToolPlugin */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 258EE1212C0E81AE0025A5FB /* XCRemoteSwiftPackageReference "SwiftLint" */;
-			productName = "plugin:SwiftLintBuildToolPlugin";
-		};
 		258EE1242C0E826E0025A5FB /* SwiftLintBuildToolPlugin */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 258EE1212C0E81AE0025A5FB /* XCRemoteSwiftPackageReference "SwiftLint" */;
