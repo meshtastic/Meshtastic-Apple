@@ -74,7 +74,8 @@ struct PositionPopover: View {
 					.padding(.bottom, 5)
 					/// Altitude
 					Label {
-						Text("Altitude: \(distanceFormatter.string(fromDistance: Double(position.altitude)))")
+						let altitude = Measurement(value: Double(position.altitude), unit: UnitLength.meters)
+						Text("Altitude: \(altitude.formatted())")
 							.foregroundColor(.primary)
 					} icon: {
 						Image(systemName: "mountain.2.fill")

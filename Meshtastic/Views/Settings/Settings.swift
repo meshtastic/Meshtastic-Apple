@@ -425,16 +425,18 @@ struct Settings: View {
 						}
 						.tag(SettingsSidebar.adminMessageLog)
 #if DEBUG
-						NavigationLink {
-							AppLog()
-						} label: {
-							Label {
-								Text("Debug Logs")
-							} icon: {
-								Image(systemName: "building.columns")
+						if #available (iOS 17.4, *) {
+							NavigationLink {
+								AppLog()
+							} label: {
+								Label {
+									Text("Debug Logs")
+								} icon: {
+									Image(systemName: "building.columns")
+								}
 							}
+							.tag(SettingsSidebar.appLog)
 						}
-						.tag(SettingsSidebar.appLog)
 #endif
 					}
 					Section(header: Text("Firmware")) {

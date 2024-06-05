@@ -85,15 +85,15 @@ import OSLog
 		if smartPostion {
 			let age = -location.timestamp.timeIntervalSinceNow
 			if age > 10 {
-				Logger.services.warning("📍 Bad Location \(self.count): Too Old \(age) seconds ago \(location)")
+				Logger.services.warning("📍 Bad Location \(self.count): Too Old \(age) seconds ago \(location, privacy: .private)")
 				return false
 			}
 			if location.horizontalAccuracy < 0 {
-				Logger.services.warning("📍 Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
+				Logger.services.warning("📍 Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location, privacy: .private)")
 				return false
 			}
 			if location.horizontalAccuracy > 5 {
-				Logger.services.warning("📍 Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
+				Logger.services.warning("📍 Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location, privacy: .private)")
 				return false
 			}
 		}
