@@ -1010,6 +1010,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				DDF8E1F72C10D7E00019C87E /* PBXTargetDependency */,
 				DDDE5A0229AF163E00490C6C /* PBXTargetDependency */,
 			);
 			name = Meshtastic;
@@ -1355,6 +1356,10 @@
 			platformFilter = ios;
 			target = DDDE59F329AF163D00490C6C /* WidgetsExtension */;
 			targetProxy = DDDE5A0129AF163E00490C6C /* PBXContainerItemProxy */;
+		};
+		DDF8E1F72C10D7E00019C87E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = DDF8E1F62C10D7E00019C87E /* SwiftLintBuildToolPlugin */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1724,6 +1729,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DD5394FA276993AD00AD86B1 /* XCRemoteSwiftPackageReference "swift-protobuf" */;
 			productName = SwiftProtobuf;
+		};
+		DDF8E1F62C10D7E00019C87E /* SwiftLintBuildToolPlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 258EE1212C0E81AE0025A5FB /* XCRemoteSwiftPackageReference "SwiftLint" */;
+			productName = "plugin:SwiftLintBuildToolPlugin";
 		};
 /* End XCSwiftPackageProductDependency section */
 
