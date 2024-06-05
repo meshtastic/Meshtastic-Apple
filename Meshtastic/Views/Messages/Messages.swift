@@ -73,7 +73,6 @@ struct Messages: View {
 
 					if let urlComponent = URLComponents(string: newPath ?? "") {
 						let queryItems = urlComponent.queryItems
-						let messageId = queryItems?.first(where: { $0.name == "messageId" })?.value
 						let channel = queryItems?.first(where: { $0.name == "channel" })?.value
 
 						if let channel {
