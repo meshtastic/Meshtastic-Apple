@@ -58,21 +58,22 @@ struct Routes: View {
 						}
 
 						do {
-							guard let fileContent = String(data: try Data(contentsOf: selectedFile), encoding: .utf8) else { return }
+							let data = try Data(contentsOf: selectedFile)
+							let fileContent = String(decoding: data, as: UTF8.self)
 							let routeName = selectedFile.lastPathComponent.dropLast(4)
 							let lines = fileContent.components(separatedBy: "\n")
-							let headers = lines.first?.components(separatedBy: ",")
-							var latIndex = -1
-							var longIndex = -1
-							for index in headers!.indices {
-								Logger.services.debug("\(index): \( headers![index])")
-								if headers![index].trimmingCharacters(in: .whitespaces) == "Latitude" {
+							guard let headers = lines.first?.components(separatedBy: ",") else { return }
+							var latIndex: Int?
+							var longIndex: Int?
+							for index in headers.indices {
+								Logger.services.debug("\(index): \(headers[index])")
+								if headers[index].trimmingCharacters(in: .whitespaces) == "Latitude" {
 									latIndex = index
-								} else if headers![index].trimmingCharacters(in: .whitespaces) == "Longitude" {
+								} else if headers[index].trimmingCharacters(in: .whitespaces) == "Longitude" {
 									longIndex = index
 								}
 							}
-							if latIndex >= 0 && longIndex >= 0 {
+							if let latIndex, let longIndex {
 								let newRoute = RouteEntity(context: context)
 								newRoute.name = String(routeName)
 								newRoute.id = Int32.random(in: Int32(Int8.max) ... Int32.max)
@@ -83,8 +84,8 @@ struct Routes: View {
 								lines.dropFirst().forEach { line in
 									let data = line.components(separatedBy: ",")
 									if data.count > 1 {
-										let latitude = latIndex >= 0 ? data[latIndex].trimmingCharacters(in: .whitespaces) : "0"
-										let longitude = longIndex >= 0 ? data[longIndex].trimmingCharacters(in: .whitespaces) : "0"
+										let latitude = data[latIndex].trimmingCharacters(in: .whitespaces)
+										let longitude = data[longIndex].trimmingCharacters(in: .whitespaces)
 										let loc = LocationEntity(context: context)
 										loc.latitudeI = Int32((Double(latitude) ?? 0) * 1e7)
 										loc.longitudeI = Int32((Double(longitude) ?? 0) * 1e7)
