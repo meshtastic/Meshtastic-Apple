@@ -426,10 +426,10 @@ struct Settings: View {
 						.tag(SettingsSidebar.adminMessageLog)
 #if DEBUG
 						NavigationLink {
-						//	AppLogs()
+							AppLog()
 						} label: {
 							Label {
-								Text("app.log")
+								Text("Debug Logs")
 							} icon: {
 								Image(systemName: "building.columns")
 							}
