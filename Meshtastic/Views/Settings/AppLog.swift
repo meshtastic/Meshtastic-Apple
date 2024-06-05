@@ -15,13 +15,21 @@ struct AppLog: View {
 	@State private var sortOrder = [KeyPathComparator(\OSLogEntryLog.date)]
 	@State private var selection = Set<OSLogEntryLog.ID>()
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+	let dateFormatStyle = Date.FormatStyle()
+		.year(.twoDigits)
+		.month(.defaultDigits)
+		.day(.defaultDigits)
+		.hour(.twoDigits(amPM: .omitted))
+		.minute()
+		.second()
+		.secondFraction(.fractional(3))
 
 	var body: some View {
 
 		Table(logs, selection: $selection, sortOrder: $sortOrder) {
 			if idiom != .phone {
 				TableColumn("Date", value: \.date) { value in
-					Text("\(value.date, format: .dateTime)")
+					Text(value.date.formatted(dateFormatStyle))
 				}
 				.width(min: 150, max: 200)
 				TableColumn("Category", value: \.category)
@@ -36,7 +44,6 @@ struct AppLog: View {
 		.task {
 			logs = await fetchLogs()
 		}
-		.presentationCompactAdaptation(.fullScreenCover)
 		.navigationTitle("Debug Logs")
 	}
 }
