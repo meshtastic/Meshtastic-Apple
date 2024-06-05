@@ -47,6 +47,7 @@ struct Settings: View {
 		case telemetryConfig
 		case meshLog
 		case adminMessageLog
+		case appLog
 		case about
 	}
 	var body: some View {
@@ -423,6 +424,18 @@ struct Settings: View {
 							}
 						}
 						.tag(SettingsSidebar.adminMessageLog)
+#if DEBUG
+						NavigationLink {
+						//	AppLogs()
+						} label: {
+							Label {
+								Text("app.log")
+							} icon: {
+								Image(systemName: "building.columns")
+							}
+						}
+						.tag(SettingsSidebar.appLog)
+#endif
 					}
 					Section(header: Text("Firmware")) {
 						NavigationLink {

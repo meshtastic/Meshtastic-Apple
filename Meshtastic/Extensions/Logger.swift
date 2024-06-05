@@ -1,3 +1,10 @@
+//
+//  Logger.swift
+//  Meshtastic
+//
+//  Copyright(c) Garth Vander Houwen 6/3/24.
+//
+
 import OSLog
 
 extension Logger {
