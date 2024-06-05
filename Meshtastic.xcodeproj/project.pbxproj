@@ -1121,7 +1121,8 @@
 /* Begin PBXShellScriptBuildPhase section */
 		DDF8E1F52C10C84D0019C87E /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
+			alwaysOutOfDate = 1;
+			buildActionMask = 8;
 			files = (
 			);
 			inputFileListPaths = (
@@ -1132,7 +1133,7 @@
 			);
 			outputPaths = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
+			runOnlyForDeploymentPostprocessing = 1;
 			shellPath = /bin/sh;
 			shellScript = "defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES\n";
 		};
