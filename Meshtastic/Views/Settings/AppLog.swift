@@ -14,7 +14,7 @@ struct AppLog: View {
 	@State private var logs: [OSLogEntryLog] = []
 	@State private var sortOrder = [KeyPathComparator(\OSLogEntryLog.date)]
 	@State private var selection = Set<OSLogEntryLog.ID>()
-	private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 
 	var body: some View {
 
@@ -37,6 +37,7 @@ struct AppLog: View {
 			logs = await fetchLogs()
 		}
 		.presentationCompactAdaptation(.fullScreenCover)
+		.navigationTitle("Debug Logs")
 	}
 }
 

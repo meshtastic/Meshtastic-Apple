@@ -1005,6 +1005,7 @@
 				DDC2E15126CE248E0042C5E4 /* Frameworks */,
 				DDC2E15226CE248E0042C5E4 /* Resources */,
 				DDDE5A0829AF163F00490C6C /* Embed Foundation Extensions */,
+				DDF8E1F52C10C84D0019C87E /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -1116,6 +1117,26 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		DDF8E1F52C10C84D0019C87E /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		DDC2E15026CE248E0042C5E4 /* Sources */ = {
