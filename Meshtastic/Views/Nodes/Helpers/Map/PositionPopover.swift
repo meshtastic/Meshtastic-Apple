@@ -18,6 +18,7 @@ struct PositionPopover: View {
 	var popover: Bool = true
 	let distanceFormatter = MKDistanceFormatter()
 	var delay: Double = 0
+
 	@State private var scale: CGFloat = 0.5
 	var body: some View {
 		// Node Color from node.num

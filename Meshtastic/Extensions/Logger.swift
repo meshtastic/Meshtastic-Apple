@@ -37,14 +37,8 @@ extension Logger {
 
 			try Task.checkCancellation()
 
-		if let log = entry as? OSLogEntryLog {
-			logs.append(log)
-//		logs.append("""
-//		\(entry.date.formatted(.dateTime.hour(.twoDigits(amPM: .omitted)).minute().second().secondFraction(.fractional(3)))) \(log.level.description) \
-//		\(log.category) \(entry.composedMessage)\n
-//		""")
-		} else {
-			 // logs.append("\(entry.date): \(entry.composedMessage)\n")
+			if let log = entry as? OSLogEntryLog {
+				logs.append(log)
 			}
 		}
 
@@ -54,14 +48,14 @@ extension Logger {
 }
 
 extension OSLogEntryLog.Level {
-	fileprivate var description: String {
+	var description: String {
 		switch self {
 		case .undefined: "undefined"
-		case .debug: "Debug"
-		case .info: "Info"
-		case .notice: "Notice"
-		case .error: "Error"
-		case .fault: "Fault"
+		case .debug: "🐛 Debug"
+		case .info: "ℹ️ Info"
+		case .notice: "⚠️ Notice"
+		case .error: "🚨 Error"
+		case .fault: "💥  Fault"
 		@unknown default: "default"
 		}
 	}

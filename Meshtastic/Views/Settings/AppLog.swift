@@ -13,12 +13,11 @@ struct AppLog: View {
 
 	@State private var logs: [OSLogEntryLog] = []
 	@State private var sortOrder = [KeyPathComparator(\OSLogEntryLog.date)]
-	@State private var selection = Set<OSLogEntryLog.ID>()
+	@State private var selection: OSLogEntry.ID?
+	@State private var selectedLog: OSLogEntryLog?
+	@State private var presentingErrorDetails: Bool = false
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-	let dateFormatStyle = Date.FormatStyle()
-		.year(.twoDigits)
-		.month(.defaultDigits)
-		.day(.defaultDigits)
+	private let dateFormatStyle = Date.FormatStyle()
 		.hour(.twoDigits(amPM: .omitted))
 		.minute()
 		.second()
@@ -28,23 +27,41 @@ struct AppLog: View {
 
 		Table(logs, selection: $selection, sortOrder: $sortOrder) {
 			if idiom != .phone {
-				TableColumn("Date", value: \.date) { value in
+				TableColumn("Time", value: \.date) { value in
 					Text(value.date.formatted(dateFormatStyle))
 				}
-				.width(min: 150, max: 200)
+				.width(min: 100, max: 125)
 				TableColumn("Category", value: \.category)
 					.width(min: 100, max: 125)
+				TableColumn("Level") { value in
+					Text(value.level.description)
+				}
+				.width(min: 50, max: 100)
 			}
 			TableColumn("Message", value: \.composedMessage)
 				.width(ideal: 200, max: .infinity)
+
 		}
 		.onChange(of: sortOrder) { _, sortOrder in
-			logs.sort(using: sortOrder)
+			withAnimation {
+				logs.sort(using: sortOrder)
+			}
+		}
+		.onChange(of: selection) { newSelection in
+			presentingErrorDetails = true
+			let log = logs.first {
+			   $0.id == newSelection
+			 }
+			selectedLog = log
+		}
+		.sheet(item: $selectedLog) { log in
+			LogDetail(log: log)
+				.padding()
 		}
 		.task {
 			logs = await fetchLogs()
 		}
-		.navigationTitle("Debug Logs")
+		.navigationBarTitle("Debug Logs", displayMode: .inline)
 	}
 }
 

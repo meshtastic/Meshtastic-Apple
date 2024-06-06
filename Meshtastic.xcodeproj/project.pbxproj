@@ -208,6 +208,7 @@
 		DDF45C372BC46A5A005ED5F2 /* TimeZone.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF45C362BC46A5A005ED5F2 /* TimeZone.swift */; };
 		DDF6B2482A9AEBF500BA6931 /* StoreForwardConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF6B2472A9AEBF500BA6931 /* StoreForwardConfig.swift */; };
 		DDF8E1F42C10125B0019C87E /* AppLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF8E1F32C10125B0019C87E /* AppLog.swift */; };
+		DDF8E1F92C115CCE0019C87E /* LogDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF8E1F82C115CCE0019C87E /* LogDetail.swift */; };
 		DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF924C926FBB953009FE055 /* ConnectedDevice.swift */; };
 		DDFEB3BB29900C1200EE7472 /* CurrentConditionsCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */; };
 		DDFFA7472B3A7F3C004730DB /* Bundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFFA7462B3A7F3C004730DB /* Bundle.swift */; };
@@ -483,6 +484,7 @@
 		DDF6B2472A9AEBF500BA6931 /* StoreForwardConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreForwardConfig.swift; sourceTree = "<group>"; };
 		DDF6B24B2A9C2FC800BA6931 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DDF8E1F32C10125B0019C87E /* AppLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLog.swift; sourceTree = "<group>"; };
+		DDF8E1F82C115CCE0019C87E /* LogDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDetail.swift; sourceTree = "<group>"; };
 		DDF924C926FBB953009FE055 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
 		DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentConditionsCompact.swift; sourceTree = "<group>"; };
 		DDFFA7462B3A7F3C004730DB /* Bundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
@@ -894,6 +896,7 @@
 				DDB75A1D2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift */,
 				DDB75A202A12B954006ED576 /* LoRaSignalStrength.swift */,
 				DDB75A222A13CDA9006ED576 /* BatteryLevelCompact.swift */,
+				DDF8E1F82C115CCE0019C87E /* LogDetail.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1197,6 +1200,7 @@
 				DD5E5208298EE33B00D21B61 /* rtttl.pb.swift in Sources */,
 				DD6193792863875F00E59241 /* SerialConfig.swift in Sources */,
 				DDDB263F2AABEE20003AFCB7 /* NodeList.swift in Sources */,
+				DDF8E1F92C115CCE0019C87E /* LogDetail.swift in Sources */,
 				DDA0B6B2294CDC55001356EC /* Channels.swift in Sources */,
 				DDE9659C2B1C3B6A00531070 /* RouteRecorder.swift in Sources */,
 				B399E8A42B6F486400E4488E /* RetryButton.swift in Sources */,

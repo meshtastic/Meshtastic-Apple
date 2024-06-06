@@ -130,7 +130,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		let context = ["name": "\(peripheral.name ?? "Unknown")"]
 		timeoutTimer = Timer.scheduledTimer(timeInterval: 1.5, target: self, selector: #selector(timeoutTimerFired), userInfo: context, repeats: true)
 		RunLoop.current.add(timeoutTimer!, forMode: .common)
-		Logger.services.info("ℹ️ BLE Connecting: \(peripheral.name ?? "Unknown")")
+		Logger.services.info("ℹ️ BLE Connecting: \(peripheral.name ?? "Unknown", privacy: .public)")
 	}
 
 	// Disconnect Connected Peripheral
@@ -259,12 +259,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					manager.schedule()
 				}
 				lastConnectionError = "🚨 \(e.localizedDescription)"
-				Logger.services.error("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
+				Logger.services.error("🚫 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
 			}
 		} else {
 			// Disconnected without error which indicates user intent to disconnect
 			// Happens when swiping to disconnect
-			Logger.services.info("ℹ️ BLE Disconnected: \(peripheral.name ?? "Unknown"): User Initiated Disconnect")
+			Logger.services.info("🚫 BLE Disconnected: \(peripheral.name ?? "Unknown"): User Initiated Disconnect")
 		}
 		// Start a scan so the disconnected peripheral is moved to the peripherals[] if it is awake
 		self.startScanning()
@@ -3021,7 +3021,7 @@ extension BLEManager: CBCentralManagerDelegate {
 
 		if self.automaticallyReconnect && peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" {
 			self.connectTo(peripheral: peripheral)
-			Logger.services.info("BLE Reconnecting to prefered peripheral: \(peripheral.name ?? "Unknown")")
+			Logger.services.info("🔄 BLE Reconnecting to prefered peripheral: \(peripheral.name ?? "Unknown")")
 		}
 		let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String
 		let device = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: name ?? "Unknown", shortName: "?", longName: name ?? "Unknown", firmwareVersion: "Unknown", rssi: RSSI.intValue, lastUpdate: Date(), peripheral: peripheral)
