@@ -22,7 +22,7 @@ extension Logger {
 	static let services = Logger(subsystem: subsystem, category: "🍏 Services")
 
 	/// All logs related to tracking and analytics.
-	static let statistics = Logger(subsystem: subsystem, category: "📈 Stats")
+	static let statistics = Logger(subsystem: subsystem, category: "📊 Stats")
 
 	/// Fetch from the logstore
 	static public func fetch(predicateFormat: String) async throws -> [OSLogEntryLog] {

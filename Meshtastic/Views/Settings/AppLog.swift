@@ -16,6 +16,7 @@ struct AppLog: View {
 	@State private var selection: OSLogEntry.ID?
 	@State private var selectedLog: OSLogEntryLog?
 	@State private var presentingErrorDetails: Bool = false
+	@State private var searchTerm = ""
 	@State var isExporting = false
 	@State var exportString = ""
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
@@ -24,10 +25,18 @@ struct AppLog: View {
 		.minute()
 		.second()
 		.secondFraction(.fractional(3))
+	
+	private var searchResults: [OSLogEntryLog] {
+		   if searchTerm.isEmpty {
+			   return logs.filter { _ in true }
+		   } else {
+			   return logs.filter { $0.composedMessage.lowercased().contains(searchTerm.lowercased) }
+		   }
+	   }
 
 	var body: some View {
 
-		Table(logs, selection: $selection, sortOrder: $sortOrder) {
+		Table(searchResults, selection: $selection, sortOrder: $sortOrder) {
 			if idiom != .phone {
 				TableColumn("log.time", value: \.date) { value in
 					Text(value.date.formatted(dateFormatStyle))
@@ -44,6 +53,7 @@ struct AppLog: View {
 				.width(ideal: 200, max: .infinity)
 
 		}
+		.searchable(text: $searchTerm, prompt: "Search")
 		.onChange(of: sortOrder) { _, sortOrder in
 			withAnimation {
 				logs.sort(using: sortOrder)
@@ -56,7 +66,7 @@ struct AppLog: View {
 			 }
 			selectedLog = log
 		}
-		.sheet(item: $selectedLog) { log in
+		.sheet(item: $selectedLog, onDismiss: didDismiss) { log in
 			LogDetail(log: log)
 				.padding()
 		}
@@ -89,6 +99,11 @@ struct AppLog: View {
 				}
 			}
 		}
+	}
+	
+	func didDismiss() {
+		selection = nil
+		selectedLog = nil
 	}
 }
 

@@ -621,6 +621,8 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 				if routingMessage.errorReason == Routing.Error.none {
 
 					fetchedMessage![0].receivedACK = true
+				} else {
+					Logger.statistics.error("❗ Routing Error: \(routingErrorString) for a text message packet from Node: \(packet.from)")
 				}
 				fetchedMessage![0].ackSNR = packet.rxSnr
 				fetchedMessage![0].ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
@@ -685,6 +687,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.voltage = telemetryMessage.deviceMetrics.voltage
 					telemetry.uptimeSeconds = Int32(telemetryMessage.deviceMetrics.uptimeSeconds)
 					telemetry.metricsType = 0
+					Logger.statistics.info("📈 Channel Utilization: \(telemetryMessage.deviceMetrics.channelUtilization) Airtime: \(telemetryMessage.deviceMetrics.airUtilTx) for Node: \(packet.from)")
 				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) {
 					// Environment Metrics
 					telemetry.barometricPressure = telemetryMessage.environmentMetrics.barometricPressure
