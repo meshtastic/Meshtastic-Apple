@@ -272,6 +272,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			newNode.channel = Int32(nodeInfo.channel)
 			newNode.favorite = nodeInfo.isFavorite
 			newNode.hopsAway = Int32(nodeInfo.hopsAway)
+			newNode.viaMqtt = nodeInfo.viaMqtt
 
 			if nodeInfo.hasDeviceMetrics {
 				let telemetry = TelemetryEntity(context: context)
@@ -350,6 +351,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			fetchedNode[0].channel = Int32(nodeInfo.channel)
 			fetchedNode[0].favorite = nodeInfo.isFavorite
 			fetchedNode[0].hopsAway = Int32(nodeInfo.hopsAway)
+			fetchedNode[0].viaMqtt = nodeInfo.viaMqtt
 
 			if nodeInfo.hasUser {
 				if fetchedNode[0].user == nil {
