@@ -13,6 +13,7 @@ import OSLog
 struct LogDetail: View {
 
 	@Environment(\.dismiss) private var dismiss
+	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	var log: OSLogEntryLog
 
 	var body: some View {
@@ -29,78 +30,78 @@ struct LogDetail: View {
 						/// Time
 						Label {
 							Text("time".localized + ":")
-								.font(.title)
+								.font(idiom == .phone ? .callout : .title)
 							LastHeardText(lastHeard: log.date)
-								.font(.title)
+								.font(idiom == .phone ? .callout : .title)
 						} icon: {
 							Image(systemName: "timer")
 								.symbolRenderingMode(.hierarchical)
-								.font(.title)
+								.font(idiom == .phone ? .callout : .title)
 								.frame(width: 35)
 						}
 						.padding(.bottom, 5)
 						/// Subsystem
 						Label {
 							Text("subsystem".localized + ":")
-								.font(.title)
+								.font(idiom == .phone ? .callout : .title)
 							Text(log.subsystem)
-								.font(.title)
+								.font(idiom == .phone ? .callout : .title)
 						} icon: {
 							Image(systemName: "gear")
 								.symbolRenderingMode(.hierarchical)
-								.font(.title)
+								.font(idiom == .phone ? .callout : .title)
 								.frame(width: 35)
 						}
 						.padding(.bottom, 5)
 						/// Process
 						Label {
 							Text("process".localized + ":")
-								.font(.title)
+								.font(idiom == .phone ? .callout : .title)
 							Text(log.process)
-								.font(.title)
+								.font(idiom == .phone ? .callout : .title)
 						} icon: {
 							Image(systemName: "tag")
 								.symbolRenderingMode(.hierarchical)
-								.font(.title)
+								.font(idiom == .phone ? .callout : .title)
 								.frame(width: 35)
 						}
 						.padding(.bottom, 5)
 						/// Category
 						Label {
 							Text("category".localized + ":")
-								.font(.title)
+								.font(idiom == .phone ? .callout : .title)
 							Text(log.category)
-								.font(.title)
+								.font(idiom == .phone ? .callout : .title)
 						} icon: {
 							Image(systemName: "rectangle.3.group")
 								.symbolRenderingMode(.hierarchical)
-								.font(.title)
+								.font(idiom == .phone ? .callout : .title)
 								.frame(width: 35)
 						}
 						.padding(.bottom, 5)
 						/// Level
 						Label {
 							Text("level".localized + ":")
-								.font(.title)
+								.font(idiom == .phone ? .callout : .title)
 							Text(log.level.description)
-								.font(.title)
+								.font(idiom == .phone ? .callout : .title)
 						} icon: {
 							Image(systemName: "shield")
 								.symbolRenderingMode(.hierarchical)
-								.font(.title)
+								.font(idiom == .phone ? .callout : .title)
 								.frame(width: 35)
 						}
 						.padding(.bottom, 5)
 						/// message
 						Label {
 							Text("message".localized + ":")
-								.font(.title)
+								.font(idiom == .phone ? .callout : .title)
 							Text(log.composedMessage)
-								.font(.title)
+								.font(idiom == .phone ? .callout : .title)
 						} icon: {
 							Image(systemName: "text.bubble")
 								.symbolRenderingMode(.hierarchical)
-								.font(.title)
+								.font(idiom == .phone ? .callout : .title)
 								.frame(width: 35)
 						}
 						.padding(.bottom, 5)
