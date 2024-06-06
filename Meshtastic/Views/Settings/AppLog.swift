@@ -99,11 +99,10 @@ extension AppLog {
 	@MainActor
 	private func fetchLogs() async -> [OSLogEntryLog] {
 		do {
-			let predicate = AppLog.template.withSubstitutionVariables(
-				[
-					"PREFIX": "gvh.MeshtasticClient",
-					"SYSTEM": ["com.apple.coredata"]
-				])
+			let predicate = NSPredicate(format: "subsystem IN %@", [
+			  "com.apple.coredata",
+			  "gvh.MeshtasticClient"
+			])
 			let logs = try await Logger.fetch(predicateFormat: predicate.predicateFormat)
 			return logs
 		} catch {

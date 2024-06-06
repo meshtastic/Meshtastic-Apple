@@ -1036,7 +1036,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				258EE1252C0E826E0025A5FB /* PBXTargetDependency */,
 			);
 			name = WidgetsExtension;
 			productName = WidgetsExtension;
@@ -1350,10 +1349,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		258EE1252C0E826E0025A5FB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = 258EE1242C0E826E0025A5FB /* SwiftLintBuildToolPlugin */;
-		};
 		DDDE5A0229AF163E00490C6C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			platformFilter = ios;
@@ -1709,11 +1704,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		258EE1242C0E826E0025A5FB /* SwiftLintBuildToolPlugin */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 258EE1212C0E81AE0025A5FB /* XCRemoteSwiftPackageReference "SwiftLint" */;
-			productName = "plugin:SwiftLintBuildToolPlugin";
-		};
 		C9697FA427933B8C00250207 /* SQLite */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C9697FA327933B8C00250207 /* XCRemoteSwiftPackageReference "SQLite.swift" */;
