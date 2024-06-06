@@ -54,6 +54,12 @@ struct AppLog: View {
 
 		}
 		.searchable(text: $searchTerm, prompt: "Search")
+			.disabled(selection != nil)
+		.overlay {
+			if logs.isEmpty {
+				ContentUnavailableView("Getting Logs . . .", systemImage: "scroll")
+			}
+		}
 		.onChange(of: sortOrder) { _, sortOrder in
 			withAnimation {
 				logs.sort(using: sortOrder)
@@ -90,12 +96,14 @@ struct AppLog: View {
 		)
 		.navigationBarTitle("Debug Logs", displayMode: .inline)
 		.toolbar {
-			ToolbarItem(placement: .navigationBarTrailing) {
-				Button(action: {
-					exportString = logToCsvFile(log: logs)
-					isExporting = true
-				}) {
-					Image(systemName: "square.and.arrow.down")
+			if !logs.isEmpty {
+				ToolbarItem(placement: .navigationBarTrailing) {
+					Button(action: {
+						exportString = logToCsvFile(log: logs)
+						isExporting = true
+					}) {
+						Image(systemName: "square.and.arrow.down")
+					}
 				}
 			}
 		}
