@@ -40,6 +40,7 @@ struct LogDetail: View {
 								.frame(width: 35)
 						}
 						.padding(.bottom, 5)
+						.listRowSeparator(.visible)
 						/// Subsystem
 						Label {
 							Text("subsystem".localized + ":")
@@ -53,6 +54,7 @@ struct LogDetail: View {
 								.frame(width: 35)
 						}
 						.padding(.bottom, 5)
+						.listRowSeparator(.visible)
 						/// Process
 						Label {
 							Text("process".localized + ":")
@@ -66,6 +68,7 @@ struct LogDetail: View {
 								.frame(width: 35)
 						}
 						.padding(.bottom, 5)
+						.listRowSeparator(.visible)
 						/// Category
 						Label {
 							Text("category".localized + ":")
@@ -79,6 +82,7 @@ struct LogDetail: View {
 								.frame(width: 35)
 						}
 						.padding(.bottom, 5)
+						.listRowSeparator(.visible)
 						/// Level
 						Label {
 							Text("level".localized + ":")
@@ -92,19 +96,22 @@ struct LogDetail: View {
 								.frame(width: 35)
 						}
 						.padding(.bottom, 5)
+						.listRowSeparator(.visible)
 						/// message
 						Label {
 							Text("message".localized + ":")
 								.font(idiom == .phone ? .callout : .title)
-							Text(log.composedMessage)
-								.font(idiom == .phone ? .callout : .title)
+						
 						} icon: {
 							Image(systemName: "text.bubble")
 								.symbolRenderingMode(.hierarchical)
 								.font(idiom == .phone ? .callout : .title)
 								.frame(width: 35)
 						}
-						.padding(.bottom, 5)
+						.listRowSeparator(.hidden)
+						Text(log.composedMessage)
+							.font(idiom == .phone ? .callout : .title)
+							.padding(.bottom, 5)
 					}
 					.listStyle(.plain)
 				}
