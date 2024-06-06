@@ -62,7 +62,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	func startScanning() {
 		if isSwitchedOn {
 			centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
-			Logger.services.info("✅ Scanning Started")
+			Logger.services.info("🟢 Started Scanning for BLE Devices")
 		}
 	}
 
@@ -70,7 +70,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	func stopScanning() {
 		if centralManager.isScanning {
 			centralManager.stopScan()
-			Logger.services.info("🛑 Stopped Scanning")
+			Logger.services.info("🛑 Stopped Scanning for BLE Devices")
 		}
 	}
 
@@ -492,7 +492,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	}
 
 	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
-		Logger.services.error("💥 didUpdateNotificationStateFor error: \(error?.localizedDescription ?? "Unknown")")
+		Logger.services.error("💥 BLE didUpdateNotificationStateFor error: \(error?.localizedDescription ?? "Unknown")")
 	}
 
 	// MARK: Data Read / Update Characteristic Event
@@ -500,14 +500,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		if let error {
 
-			Logger.services.error("🚫 didUpdateValueFor Characteristic error \(error.localizedDescription)")
+			Logger.services.error("🚫 BLE didUpdateValueFor Characteristic error \(error.localizedDescription)")
 			let errorCode = (error as NSError).code
 			if errorCode == 5 || errorCode == 15 {
 				// BLE PIN connection errors
 				// 5 CBATTErrorDomain Code=5 "Authentication is insufficient."
 				// 15 CBATTErrorDomain Code=15 "Encryption is insufficient."
 				lastConnectionError = "🚨" + String.localizedStringWithFormat("ble.errorcode.pin %@".localized, error.localizedDescription)
-				Logger.services.error("💥 \(error.localizedDescription) Please try connecting again and check the PIN carefully.")
 				self.disconnectPeripheral(reconnect: false)
 			}
 			return
@@ -803,7 +802,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			}
 
 		case FROMNUM_UUID:
-			Logger.services.info("🗞️ BLE (Notify) characteristic, value will be read next")
+			return
+			// Logger.services.info("🗞️ BLE (Notify) characteristic, value will be read next")
 		default:
 			Logger.services.error("Unhandled Characteristic UUID: \(characteristic.uuid)")
 		}
@@ -3013,7 +3013,7 @@ extension BLEManager: CBCentralManagerDelegate {
 		default:
 			status = "default"
 		}
-		Logger.services.debug("📜 BLEManager status: \(status)")
+		Logger.services.debug("📜 BLE status: \(status)")
 	}
 
 	// Called each time a peripheral is discovered

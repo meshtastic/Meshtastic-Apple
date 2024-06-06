@@ -431,7 +431,7 @@ struct Settings: View {
 								Label {
 									Text("Debug Logs")
 								} icon: {
-									Image(systemName: "ladybug")
+									Image(systemName: "stethoscope")
 								}
 							}
 							.tag(SettingsSidebar.appLog)

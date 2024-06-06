@@ -94,7 +94,7 @@ struct AppLog: View {
 				}
 			}
 		)
-		.navigationBarTitle("Debug Logs", displayMode: .inline)
+		.navigationBarTitle("Debug Logs\(logs.isEmpty ? "" : " (\(logs.count))")", displayMode: .inline)
 		.toolbar {
 			if !logs.isEmpty {
 				ToolbarItem(placement: .navigationBarTrailing) {
