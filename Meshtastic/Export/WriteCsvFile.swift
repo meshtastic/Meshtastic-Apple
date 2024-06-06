@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> String {
 	var csvString: String = ""
@@ -60,6 +61,27 @@ func detectionsToCsv(detections: [MessageEntity]) -> String {
 		csvString += d.messagePayload ?? "Detection"
 		csvString += ", "
 		csvString += d.timestamp.formattedDate(format: dateFormatString).localized
+	}
+	return csvString
+}
+
+func logToCsvFile(log: [OSLogEntryLog]) -> String {
+	var csvString: String = ""
+	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
+	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
+	// Create PAX Header
+	csvString = "Process, Category, Level, Message, \("timestamp".localized)"
+	for l in log {
+		csvString += "\n"
+		csvString += String(l.process)
+		csvString += ", "
+		csvString += String(l.category)
+		csvString += ", "
+		csvString += String(l.level.description)
+		csvString += ", "
+		csvString += String(l.composedMessage)
+		csvString += ", "
+		csvString += l.date.formattedDate(format: dateFormatString)
 	}
 	return csvString
 }

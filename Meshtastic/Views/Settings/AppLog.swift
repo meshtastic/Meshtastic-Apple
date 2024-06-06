@@ -16,6 +16,8 @@ struct AppLog: View {
 	@State private var selection: OSLogEntry.ID?
 	@State private var selectedLog: OSLogEntryLog?
 	@State private var presentingErrorDetails: Bool = false
+	@State var isExporting = false
+	@State var exportString = ""
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	private let dateFormatStyle = Date.FormatStyle()
 		.hour(.twoDigits(amPM: .omitted))
@@ -61,7 +63,32 @@ struct AppLog: View {
 		.task {
 			logs = await fetchLogs()
 		}
+		.fileExporter(
+			isPresented: $isExporting,
+			document: CsvDocument(emptyCsv: exportString),
+			contentType: .commaSeparatedText,
+			defaultFilename: String("Meshtastic Application Logs"),
+			onCompletion: { result in
+				switch result {
+				case .success:
+					self.isExporting = false
+					Logger.services.info("Application log download succeeded.")
+				case .failure(let error):
+					Logger.services.error("Application log download failed: \(error.localizedDescription)")
+				}
+			}
+		)
 		.navigationBarTitle("Debug Logs", displayMode: .inline)
+		.toolbar {
+			ToolbarItem(placement: .navigationBarTrailing) {
+				Button(action: {
+					exportString = logToCsvFile(log: logs)
+					isExporting = true
+				}) {
+					Image(systemName: "square.and.arrow.down")
+				}
+			}
+		}
 	}
 }
 

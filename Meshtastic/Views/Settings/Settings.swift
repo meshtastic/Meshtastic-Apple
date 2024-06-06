@@ -424,7 +424,6 @@ struct Settings: View {
 							}
 						}
 						.tag(SettingsSidebar.adminMessageLog)
-#if DEBUG
 						if #available (iOS 17.4, *) {
 							NavigationLink {
 								AppLog()
@@ -437,7 +436,6 @@ struct Settings: View {
 							}
 							.tag(SettingsSidebar.appLog)
 						}
-#endif
 					}
 					Section(header: Text("Firmware")) {
 						NavigationLink {
