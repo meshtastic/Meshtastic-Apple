@@ -11,7 +11,22 @@ import MapKit
 import SwiftUI
 
 extension PositionEntity {
-
+	convenience init(
+		context: NSManagedObjectContext,
+		nodeInfo: NodeInfo
+	) {
+		self.init(context: context)
+		self.latest = true
+		self.seqNo = Int32(nodeInfo.position.seqNumber)
+		self.latitudeI = nodeInfo.position.latitudeI
+		self.longitudeI = nodeInfo.position.longitudeI
+		self.altitude = nodeInfo.position.altitude
+		self.satsInView = Int32(nodeInfo.position.satsInView)
+		self.speed = Int32(nodeInfo.position.groundSpeed)
+		self.heading = Int32(nodeInfo.position.groundTrack)
+		self.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
+	}
+	
 	static func allPositionsFetchRequest() -> NSFetchRequest<PositionEntity> {
 		let request: NSFetchRequest<PositionEntity> = PositionEntity.fetchRequest()
 		request.fetchLimit = 1000

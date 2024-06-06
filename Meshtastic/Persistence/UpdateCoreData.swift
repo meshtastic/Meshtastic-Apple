@@ -166,20 +166,14 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 
 			if let newUserMessage = try? User(serializedData: packet.decoded.payload) {
 
-				if newUserMessage.id.isEmpty {
-					if packet.from > Int16.max {
-						let newUser = createUser(num: Int64(packet.from), context: context)
-						newNode.user = newUser
-					}
+				if newUserMessage.id.isEmpty, packet.from > Int16.max {
+					newNode.user = UserEntity(context: context, num: Int(packet.from))
 				} else {
-
-					let newUser = UserEntity(context: context)
-					newUser.userId = newUserMessage.id
-					newUser.num = Int64(packet.from)
-					newUser.longName = newUserMessage.longName
-					newUser.shortName = newUserMessage.shortName
-					newUser.role = Int32(newUserMessage.role.rawValue)
-					newUser.hwModel = String(describing: newUserMessage.hwModel).uppercased()
+					let newUser = UserEntity(
+						context: context,
+						user: newUserMessage,
+						num: Int(packet.from)
+					)
 					newNode.user = newUser
 
 					if UserDefaults.newNodeNotifications {
@@ -199,13 +193,13 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				}
 			} else {
 				if packet.from > Int16.max {
-					let newUser = createUser(num: Int64(packet.from), context: context)
+					let newUser = UserEntity(context: context, num: Int(packet.from))
 					fetchedNode[0].user = newUser
 				}
 			}
 
 			if newNode.user == nil && packet.from > Int16.max {
-				newNode.user = createUser(num: Int64(packet.from), context: context)
+				newNode.user = UserEntity(context: context, num: Int(packet.from))
 			}
 
 			let myInfoEntity = MyInfoEntity(context: context)
@@ -265,8 +259,8 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
 			}
 			if fetchedNode[0].user == nil {
-				let newUser = createUser(num: Int64(packet.from), context: context)
-				fetchedNode[0].user! = newUser
+				let newUser = UserEntity(context: context, num: Int(packet.from))
+				fetchedNode[0].user = newUser
 			}
 			do {
 				try context.save()

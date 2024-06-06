@@ -251,182 +251,111 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 
 func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObjectContext) -> NodeInfoEntity? {
 
-	let logString = String.localizedStringWithFormat("mesh.log.nodeinfo.received %@".localized, String(nodeInfo.num))
+	let logString = String.localizedStringWithFormat(
+		"mesh.log.nodeinfo.received %@ %@".localized,
+		String(nodeInfo.num),
+		String(nodeInfo.viaMqtt)
+	)
 	MeshLogger.log("📟 \(logString)")
 
-	guard nodeInfo.num > 0 else { return nil }
+	guard nodeInfo.num > 0 else {
+		Logger.data.error("nodeInfo \(nodeInfo.num) invalid")
+		return nil
+	}
 
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeInfo.num))
 
 	do {
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+		guard let fetchedNodes = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
 			return nil
 		}
-		// Not Found Insert
-		if fetchedNode.isEmpty && nodeInfo.num > 0 {
-
-			let newNode = NodeInfoEntity(context: context)
-			newNode.id = Int64(nodeInfo.num)
-			newNode.num = Int64(nodeInfo.num)
-			newNode.channel = Int32(nodeInfo.channel)
-			newNode.favorite = nodeInfo.isFavorite
-			newNode.hopsAway = Int32(nodeInfo.hopsAway)
-			newNode.viaMqtt = nodeInfo.viaMqtt
-
-			if nodeInfo.hasDeviceMetrics {
-				let telemetry = TelemetryEntity(context: context)
-				telemetry.batteryLevel = Int32(nodeInfo.deviceMetrics.batteryLevel)
-				telemetry.voltage = nodeInfo.deviceMetrics.voltage
-				telemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
-				telemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
-				var newTelemetries = [TelemetryEntity]()
-				newTelemetries.append(telemetry)
-				newNode.telemetries? = NSOrderedSet(array: newTelemetries)
+		let node: NodeInfoEntity
+		if let update = fetchedNodes.first {
+			node = update
+		} else {
+			node = NodeInfoEntity(context: context)
+		}
+		
+		node.id = Int64(nodeInfo.num)
+		node.num = Int64(nodeInfo.num)
+		node.channel = Int32(nodeInfo.channel)
+		node.favorite = nodeInfo.isFavorite
+		node.hopsAway = Int32(nodeInfo.hopsAway)
+		node.viaMqtt = nodeInfo.viaMqtt
+		
+		if nodeInfo.hasDeviceMetrics {
+			let newTelemetry = TelemetryEntity(context: context)
+			newTelemetry.batteryLevel = Int32(nodeInfo.deviceMetrics.batteryLevel)
+			newTelemetry.voltage = nodeInfo.deviceMetrics.voltage
+			newTelemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
+			newTelemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
+			
+			var telemetries: [TelemetryEntity]
+			if let tele = node.telemetries?.array as? [TelemetryEntity] {
+				telemetries = tele
+				telemetries.append(newTelemetry)
+			} else {
+				telemetries = [newTelemetry]
 			}
-
-			newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
-			newNode.snr = nodeInfo.snr
-			if nodeInfo.hasUser {
-
-				let newUser = UserEntity(context: context)
-				newUser.userId = nodeInfo.user.id
-				newUser.num = Int64(nodeInfo.num)
-				newUser.longName = nodeInfo.user.longName
-				newUser.shortName = nodeInfo.user.shortName
-				newUser.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
-				newUser.isLicensed = nodeInfo.user.isLicensed
-				newUser.role = Int32(nodeInfo.user.role.rawValue)
-				newNode.user = newUser
-			} else if nodeInfo.num > Int16.max {
-				let newUser = createUser(num: Int64(nodeInfo.num), context: context)
-				newNode.user = newUser
+			node.telemetries = NSOrderedSet(array: telemetries)
+		}
+		
+		
+		node.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
+		node.snr = nodeInfo.snr
+		
+		// User
+		var user: UserEntity?
+		if nodeInfo.hasUser {
+			user = UserEntity(
+				context: context,
+				user: nodeInfo.user,
+				num: Int(nodeInfo.num)
+			)
+		} else if nodeInfo.num > Int16.max {
+			user = UserEntity(
+				context: context,
+				num: Int(nodeInfo.num)
+			)
+		}
+		node.user = user
+		
+		// Position
+		if nodeInfo.isValidPosition {
+			let position = PositionEntity(
+				context: context,
+				nodeInfo: nodeInfo
+			)
+			
+			if let positions = node.positions?.mutableCopy() as? NSMutableOrderedSet {
+				positions.add(position)
+				node.positions = positions
+			} else {
+				node.positions = NSOrderedSet(object: position)
 			}
+		}
 
-			if (nodeInfo.position.longitudeI != 0 && nodeInfo.position.latitudeI != 0) && (nodeInfo.position.latitudeI != 373346000 && nodeInfo.position.longitudeI != -1220090000) {
-				let position = PositionEntity(context: context)
-				position.latest = true
-				position.seqNo = Int32(nodeInfo.position.seqNumber)
-				position.latitudeI = nodeInfo.position.latitudeI
-				position.longitudeI = nodeInfo.position.longitudeI
-				position.altitude = nodeInfo.position.altitude
-				position.satsInView = Int32(nodeInfo.position.satsInView)
-				position.speed = Int32(nodeInfo.position.groundSpeed)
-				position.heading = Int32(nodeInfo.position.groundTrack)
-				position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
-				var newPostions = [PositionEntity]()
-				newPostions.append(position)
-				newNode.positions? = NSOrderedSet(array: newPostions)
-			}
-
-			// Look for a MyInfo
-			let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
-			fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(nodeInfo.num))
-
-			do {
-				guard let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity] else {
-					return nil
-				}
-				if fetchedMyInfo.count > 0 {
-					newNode.myInfo = fetchedMyInfo[0]
-				}
+		// MyInfo
+		do {
+			let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
+			fetchMyInfoRequest.predicate = NSPredicate(
+				format: "myNodeNum == %lld", Int64(nodeInfo.num)
+			)
+			let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
+			if let myInfo = fetchedMyInfo.first {
+				node.myInfo = myInfo
 				do {
 					try context.save()
 					Logger.data.info("💾 Saved a new Node Info For: \(String(nodeInfo.num))")
-					return newNode
+					return node
 				} catch {
 					context.rollback()
-					let nsError = error as NSError
-					Logger.data.error("Error Saving Core Data NodeInfoEntity: \(nsError)")
-				}
-			} catch {
-				Logger.data.error("Fetch MyInfo Error")
-			}
-		} else if nodeInfo.num > 0 {
-
-			fetchedNode[0].id = Int64(nodeInfo.num)
-			fetchedNode[0].num = Int64(nodeInfo.num)
-			fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
-			fetchedNode[0].snr = nodeInfo.snr
-			fetchedNode[0].channel = Int32(nodeInfo.channel)
-			fetchedNode[0].favorite = nodeInfo.isFavorite
-			fetchedNode[0].hopsAway = Int32(nodeInfo.hopsAway)
-			fetchedNode[0].viaMqtt = nodeInfo.viaMqtt
-
-			if nodeInfo.hasUser {
-				if fetchedNode[0].user == nil {
-					fetchedNode[0].user = UserEntity(context: context)
-				}
-				fetchedNode[0].user!.userId = nodeInfo.user.id
-				fetchedNode[0].user!.num = Int64(nodeInfo.num)
-				fetchedNode[0].user!.numString = String(nodeInfo.num)
-				fetchedNode[0].user!.longName = nodeInfo.user.longName
-				fetchedNode[0].user!.shortName = nodeInfo.user.shortName
-				fetchedNode[0].user!.isLicensed = nodeInfo.user.isLicensed
-				fetchedNode[0].user!.role = Int32(nodeInfo.user.role.rawValue)
-				fetchedNode[0].user!.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
-			} else {
-				if fetchedNode[0].user == nil && nodeInfo.num > Int16.max {
-
-					let newUser = createUser(num: Int64(nodeInfo.num), context: context)
-					fetchedNode[0].user = newUser
+					Logger.data.error("Error Saving Core Data NodeInfoEntity: \(error.localizedDescription)")
 				}
 			}
-
-			if nodeInfo.hasDeviceMetrics {
-
-				let newTelemetry = TelemetryEntity(context: context)
-				newTelemetry.batteryLevel = Int32(nodeInfo.deviceMetrics.batteryLevel)
-				newTelemetry.voltage = nodeInfo.deviceMetrics.voltage
-				newTelemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
-				newTelemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
-				guard let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as? NSMutableOrderedSet else {
-					return nil
-				}
-				fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
-			}
-
-			if nodeInfo.hasPosition {
-
-				if (nodeInfo.position.longitudeI != 0 && nodeInfo.position.latitudeI != 0) && (nodeInfo.position.latitudeI != 373346000 && nodeInfo.position.longitudeI != -1220090000) {
-
-					let position = PositionEntity(context: context)
-					position.latitudeI = nodeInfo.position.latitudeI
-					position.longitudeI = nodeInfo.position.longitudeI
-					position.altitude = nodeInfo.position.altitude
-					position.satsInView = Int32(nodeInfo.position.satsInView)
-					position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
-					guard let mutablePositions = fetchedNode[0].positions!.mutableCopy() as? NSMutableOrderedSet else {
-						return nil
-					}
-					fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
-				}
-
-			}
-
-			// Look for a MyInfo
-			let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
-			fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(nodeInfo.num))
-
-			do {
-				guard let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity] else {
-					return nil
-				}
-				if fetchedMyInfo.count > 0 {
-					fetchedNode[0].myInfo = fetchedMyInfo[0]
-				}
-				do {
-					try context.save()
-					Logger.data.info("💾 NodeInfo saved for \(nodeInfo.num)")
-					return fetchedNode[0]
-				} catch {
-					context.rollback()
-					let nsError = error as NSError
-					Logger.data.error("Error Saving Core Data NodeInfoEntity: \(nsError)")
-				}
-			} catch {
-				Logger.data.error("Fetch MyInfo Error")
-			}
+		} catch {
+			Logger.data.error("Fetch MyInfo Error: \(error.localizedDescription)")
 		}
 	} catch {
 		Logger.data.error("Fetch NodeInfoEntity Error")
