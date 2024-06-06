@@ -98,17 +98,13 @@ extension AppLog {
 
 	@MainActor
 	private func fetchLogs() async -> [OSLogEntryLog] {
-		let calendar = Calendar.current
-		guard let dayAgo = calendar.date(byAdding: .day, value: -1, to: Date.now) else {
-			return []
-		}
 		do {
 			let predicate = AppLog.template.withSubstitutionVariables(
 				[
 					"PREFIX": "gvh.MeshtasticClient",
 					"SYSTEM": ["com.apple.coredata"]
 				])
-			let logs = try await Logger.fetch(since: dayAgo, predicateFormat: predicate.predicateFormat)
+			let logs = try await Logger.fetch(predicateFormat: predicate.predicateFormat)
 			return logs
 		} catch {
 			return []

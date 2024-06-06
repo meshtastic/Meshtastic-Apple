@@ -25,10 +25,10 @@ extension Logger {
 	static let statistics = Logger(subsystem: subsystem, category: "📈 Stats")
 
 	/// Fetch from the logstore
-	static public func fetch(since date: Date, predicateFormat: String) async throws -> [OSLogEntryLog] {
+	static public func fetch(predicateFormat: String) async throws -> [OSLogEntryLog] {
 
 		let store = try OSLogStore(scope: .currentProcessIdentifier)
-		let position = store.position(date: date)
+		let position = store.position(timeIntervalSinceLatestBoot: 0)
 		let predicate = NSPredicate(format: predicateFormat)
 		let entries = try store.getEntries(at: position, matching: predicate)
 
