@@ -29,7 +29,7 @@ struct LogDetail: View {
 					List {
 						/// Time
 						Label {
-							Text("time".localized + ":")
+							Text("log.time".localized + ":")
 								.font(idiom == .phone ? .callout : .title)
 							LastHeardText(lastHeard: log.date)
 								.font(idiom == .phone ? .callout : .title)
@@ -43,7 +43,7 @@ struct LogDetail: View {
 						.listRowSeparator(.visible)
 						/// Subsystem
 						Label {
-							Text("subsystem".localized + ":")
+							Text("log.subsystem".localized + ":")
 								.font(idiom == .phone ? .callout : .title)
 							Text(log.subsystem)
 								.font(idiom == .phone ? .callout : .title)
@@ -57,7 +57,7 @@ struct LogDetail: View {
 						.listRowSeparator(.visible)
 						/// Process
 						Label {
-							Text("process".localized + ":")
+							Text("log.process".localized + ":")
 								.font(idiom == .phone ? .callout : .title)
 							Text(log.process)
 								.font(idiom == .phone ? .callout : .title)
@@ -71,7 +71,7 @@ struct LogDetail: View {
 						.listRowSeparator(.visible)
 						/// Category
 						Label {
-							Text("category".localized + ":")
+							Text("log.category".localized + ":")
 								.font(idiom == .phone ? .callout : .title)
 							Text(log.category)
 								.font(idiom == .phone ? .callout : .title)
@@ -85,12 +85,12 @@ struct LogDetail: View {
 						.listRowSeparator(.visible)
 						/// Level
 						Label {
-							Text("level".localized + ":")
+							Text("log.level".localized + ":")
 								.font(idiom == .phone ? .callout : .title)
 							Text(log.level.description)
 								.font(idiom == .phone ? .callout : .title)
 						} icon: {
-							Image(systemName: "shield")
+							Image(systemName: "stairs")
 								.symbolRenderingMode(.hierarchical)
 								.font(idiom == .phone ? .callout : .title)
 								.frame(width: 35)
@@ -99,7 +99,7 @@ struct LogDetail: View {
 						.listRowSeparator(.visible)
 						/// message
 						Label {
-							Text("message".localized + ":")
+							Text("log.message".localized + ":")
 								.font(idiom == .phone ? .callout : .title)
 						
 						} icon: {

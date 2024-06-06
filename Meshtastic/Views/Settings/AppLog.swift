@@ -29,18 +29,18 @@ struct AppLog: View {
 
 		Table(logs, selection: $selection, sortOrder: $sortOrder) {
 			if idiom != .phone {
-				TableColumn("Time", value: \.date) { value in
+				TableColumn("log.time", value: \.date) { value in
 					Text(value.date.formatted(dateFormatStyle))
 				}
 				.width(min: 100, max: 125)
-				TableColumn("Category", value: \.category)
+				TableColumn("log.category", value: \.category)
 					.width(min: 100, max: 125)
-				TableColumn("Level") { value in
+				TableColumn("log.level") { value in
 					Text(value.level.description)
 				}
 				.width(min: 50, max: 100)
 			}
-			TableColumn("Message", value: \.composedMessage)
+			TableColumn("log.message", value: \.composedMessage)
 				.width(ideal: 200, max: .infinity)
 
 		}
