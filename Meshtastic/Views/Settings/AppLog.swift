@@ -12,7 +12,7 @@ import OSLog
 struct AppLog: View {
 
 	@State private var logs: [OSLogEntryLog] = []
-	@State private var sortOrder = [KeyPathComparator(\OSLogEntryLog.date)]
+	@State private var sortOrder = [KeyPathComparator(\OSLogEntryLog.date, order: .forward)]
 	@State private var selection: OSLogEntry.ID?
 	@State private var selectedLog: OSLogEntryLog?
 	@State private var presentingErrorDetails: Bool = false
@@ -53,7 +53,7 @@ struct AppLog: View {
 				.width(ideal: 200, max: .infinity)
 
 		}
-		.searchable(text: $searchTerm, prompt: "Search")
+		.searchable(text: $searchTerm, placement: .navigationBarDrawer, prompt: "Search")
 			.disabled(selection != nil)
 		.overlay {
 			if logs.isEmpty {

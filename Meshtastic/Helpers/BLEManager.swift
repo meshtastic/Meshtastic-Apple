@@ -2824,12 +2824,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			do {
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 				try context!.save()
-				Logger.mesh.debug("\(adminDescription)")
+				Logger.admin.debug("\(adminDescription)")
 				return true
 			} catch {
 				context!.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error inserting new core data MessageEntity: \(nsError)")
+				Logger.admin.error("Error inserting new core data admin MessageEntity: \(nsError)")
 			}
 		}
 		return false

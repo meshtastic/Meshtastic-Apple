@@ -413,17 +413,6 @@ struct Settings: View {
 							}
 						}
 						.tag(SettingsSidebar.meshLog)
-						NavigationLink {
-							let connectedNode = nodes.first(where: { $0.num == preferredNodeNum })
-							AdminMessageList(user: connectedNode?.user)
-						} label: {
-							Label {
-								Text("admin.log")
-							} icon: {
-								Image(systemName: "building.columns")
-							}
-						}
-						.tag(SettingsSidebar.adminMessageLog)
 						if #available (iOS 17.4, *) {
 							NavigationLink {
 								AppLog()
