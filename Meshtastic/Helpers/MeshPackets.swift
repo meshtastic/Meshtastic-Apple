@@ -156,30 +156,29 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				return
 			}
 			if fetchedMyInfo.count == 1 {
-				let newChannel = ChannelEntity(context: context)
-				newChannel.id = Int32(channel.index)
-				newChannel.index = Int32(channel.index)
-				newChannel.uplinkEnabled = channel.settings.uplinkEnabled
-				newChannel.downlinkEnabled = channel.settings.downlinkEnabled
-				newChannel.name = channel.settings.name
-				newChannel.role = Int32(channel.role.rawValue)
-				newChannel.psk = channel.settings.psk
-				if channel.settings.hasModuleSettings {
-					newChannel.positionPrecision = Int32(truncatingIfNeeded: channel.settings.moduleSettings.positionPrecision)
-					newChannel.mute = channel.settings.moduleSettings.isClientMuted
-				}
-				guard let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as? NSMutableOrderedSet else {
+				let newChannel = ChannelEntity(
+					context: context,
+					channel: channel
+				)
+				guard let mutableChannels = fetchedMyInfo.first?.channels?.mutableCopy() as? NSMutableOrderedSet else {
 					return
 				}
-				if let oldChannel = mutableChannels.first(where: {($0 as AnyObject).index == newChannel.index }) as? ChannelEntity {
-					let index = mutableChannels.index(of: oldChannel as Any)
+				let oldChannel = mutableChannels.first(where: {
+					if let channel = $0 as? ChannelEntity {
+						return channel.index == newChannel.index
+					}
+					return false
+				}) as? ChannelEntity
+				
+				if let oldChannel {
+					let index = mutableChannels.index(of: oldChannel)
 					mutableChannels.replaceObject(at: index, with: newChannel)
 				} else {
 					mutableChannels.add(newChannel)
 				}
-				fetchedMyInfo[0].channels = mutableChannels.copy() as? NSOrderedSet
+				fetchedMyInfo.first?.channels = mutableChannels.copy() as? NSOrderedSet
 				if newChannel.name?.lowercased() == "admin" {
-					fetchedMyInfo[0].adminIndex = newChannel.index
+					fetchedMyInfo.first?.adminIndex = newChannel.index
 				}
 				context.refresh(newChannel, mergeChanges: true)
 				do {
@@ -212,29 +211,18 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 			guard let fetchedNode = try context.fetch(fetchedNodeRequest) as? [NodeInfoEntity] else {
 				return
 			}
-			let newMetadata = DeviceMetadataEntity(context: context)
-			newMetadata.time = Date()
-			newMetadata.deviceStateVersion = Int32(metadata.deviceStateVersion)
-			newMetadata.canShutdown = metadata.canShutdown
-			newMetadata.hasWifi = metadata.hasWifi_p
-			newMetadata.hasBluetooth = metadata.hasBluetooth_p
-			newMetadata.hasEthernet	= metadata.hasEthernet_p
-			newMetadata.role = Int32(metadata.role.rawValue)
-			newMetadata.positionFlags = Int32(metadata.positionFlags)
-			// Swift does strings weird, this does work to get the version without the github hash
-			let lastDotIndex = metadata.firmwareVersion.lastIndex(of: ".")
-			var version = metadata.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: metadata.firmwareVersion))]
-			version = version.dropLast()
-			newMetadata.firmwareVersion = String(version)
-			if fetchedNode.count > 0 {
-				fetchedNode[0].metadata = newMetadata
-			} else {
-
-				if fromNum > 0 {
-					let newNode = createNodeInfo(num: Int64(fromNum), context: context)
-					newNode.metadata = newMetadata
-				}
+			let newMetadata = DeviceMetadataEntity(
+				context: context,
+				metadata: metadata
+			)
+			
+			if let node = fetchedNode.first {
+				node.metadata = newMetadata
+			} else if fromNum > 0 {
+				let node = NodeInfoEntity(context: context, num: Int(fromNum))
+				node.metadata = newMetadata
 			}
+			
 			do {
 				try context.save()
 			} catch {

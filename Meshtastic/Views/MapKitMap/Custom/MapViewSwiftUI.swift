@@ -183,7 +183,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			}
 			var lineIndex = 0
 			for position in latest {
-				let nodePositions = positions.filter { $0.nodeCoordinate != nil && $0.nodePosition?.num ?? 0 == position.nodePosition?.num ?? -1 }
+				let nodePositions = positions.filter {
+					$0.nodeCoordinate != nil &&
+					$0.nodePosition != nil &&
+					$0.nodePosition?.num == position.nodePosition?.num
+				}
 				let lineCoords = nodePositions.compactMap({(position) -> CLLocationCoordinate2D in
 					return position.nodeCoordinate ?? LocationHelper.DefaultLocation
 				})
