@@ -12,7 +12,7 @@ import OSLog
 struct AppLog: View {
 
 	@State private var logs: [OSLogEntryLog] = []
-	@State private var sortOrder = [KeyPathComparator(\OSLogEntryLog.date, order: .forward)]
+	@State private var sortOrder = [KeyPathComparator(\OSLogEntryLog.date, order: .reverse)]
 	@State private var selection: OSLogEntry.ID?
 	@State private var selectedLog: OSLogEntryLog?
 	@State private var presentingErrorDetails: Bool = false
@@ -41,18 +41,22 @@ struct AppLog: View {
 				TableColumn("log.time", value: \.date) { value in
 					Text(value.date.formatted(dateFormatStyle))
 				}
-				.width(min: 100, max: 125)
+				.width(min: 125, max: 150)
 				TableColumn("log.category", value: \.category)
-					.width(min: 100, max: 125)
+					.width(min: 125, max: 150)
 				TableColumn("log.level") { value in
 					Text(value.level.description)
 				}
-				.width(min: 50, max: 100)
+				.width(min: 75, max: 100)
 			}
-			TableColumn("log.message", value: \.composedMessage)
-				.width(ideal: 200, max: .infinity)
+			TableColumn("log.message", value: \.composedMessage) { value in
+				Text(value.composedMessage)
+			}
+			.width(ideal: 200, max: .infinity)
+			
 
 		}
+		.monospaced()
 		.searchable(text: $searchTerm, placement: .navigationBarDrawer, prompt: "Search")
 			.disabled(selection != nil)
 		.overlay {
@@ -78,6 +82,7 @@ struct AppLog: View {
 		}
 		.task {
 			logs = await fetchLogs()
+			logs.sort(using: sortOrder)
 		}
 		.fileExporter(
 			isPresented: $isExporting,

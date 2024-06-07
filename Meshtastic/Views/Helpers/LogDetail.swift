@@ -40,7 +40,8 @@ struct LogDetail: View {
 								.frame(width: 35)
 						}
 						.padding(.bottom, 5)
-						.listRowSeparator(.visible)
+						.listSectionSeparator(.hidden, edges: .top)
+						.listSectionSeparator(.visible, edges: .bottom)
 						/// Subsystem
 						Label {
 							Text("log.subsystem".localized + ":")
@@ -76,7 +77,7 @@ struct LogDetail: View {
 							Text(log.category)
 								.font(idiom == .phone ? .callout : .title)
 						} icon: {
-							Image(systemName: "rectangle.3.group")
+							Image(systemName: "square.grid.2x2")
 								.symbolRenderingMode(.hierarchical)
 								.font(idiom == .phone ? .callout : .title)
 								.frame(width: 35)
@@ -101,6 +102,10 @@ struct LogDetail: View {
 						Label {
 							Text("log.message".localized + ":")
 								.font(idiom == .phone ? .callout : .title)
+							Text(log.composedMessage)
+								.textSelection(.enabled)
+								.font(idiom == .phone ? .callout : .title)
+								.padding(.bottom, 5)
 						
 						} icon: {
 							Image(systemName: "text.bubble")
@@ -109,11 +114,10 @@ struct LogDetail: View {
 								.frame(width: 35)
 						}
 						.listRowSeparator(.hidden)
-						Text(log.composedMessage)
-							.font(idiom == .phone ? .callout : .title)
-							.padding(.bottom, 5)
+
 					}
 					.listStyle(.plain)
+					
 				}
 				Spacer()
 			}
@@ -131,6 +135,7 @@ struct LogDetail: View {
 			.padding(.bottom)
 #endif
 		}
+		.monospaced()
 		.presentationDetents([.fraction(0.65), .fraction(0.75), .fraction(0.85)])
 		.presentationDragIndicator(.visible)
 	}
