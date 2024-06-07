@@ -48,7 +48,7 @@ struct MeshtasticAppleApp: App {
 						Logger.services.debug("Add Channel \(self.addChannels)")
 					}
 					self.saveChannels = true
-					Logger.mesh.debug("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link")")
+					Logger.mesh.debug("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link", privacy: .private)")
 				}
 				if self.saveChannels {
 					Logger.mesh.debug("User wants to open Channel Settings URL: \(String(describing: self.incomingUrl!.relativeString))")
@@ -56,14 +56,14 @@ struct MeshtasticAppleApp: App {
 			}
 			.onOpenURL(perform: { (url) in
 
-				Logger.mesh.debug("Some sort of URL was received \(url)")
+				Logger.mesh.debug("Some sort of URL was received \(url, privacy: .private)")
 				self.incomingUrl = url
 				if url.absoluteString.lowercased().contains("meshtastic.org/e/#") {
 					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
 						self.channelSettings = components.last!
 					}
 					self.saveChannels = true
-					Logger.mesh.debug("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link")")
+					Logger.mesh.debug("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link", privacy: .private)")
 				} else if url.absoluteString.lowercased().contains("meshtastic://") {
 					appState.navigationPath = url.absoluteString
 					let path = appState.navigationPath ?? ""
@@ -140,7 +140,7 @@ struct MeshtasticAppleApp: App {
 		.onChange(of: scenePhase) { (newScenePhase) in
 			switch newScenePhase {
 			case .background:
-				Logger.services.info("🍏 Scene is in the background")
+				Logger.services.info("🎬 Scene is in the background")
 				do {
 
 					try persistenceController.container.viewContext.save()
@@ -151,9 +151,9 @@ struct MeshtasticAppleApp: App {
 					Logger.services.error("💥 Failed to save viewContext when the app goes to the background.")
 				}
 			case .inactive:
-				Logger.services.info("🍏 Scene is inactive")
+				Logger.services.info("🎬 Scene is inactive")
 			case .active:
-				Logger.services.info("🍏 Scene is active")
+				Logger.services.info("🎬 Scene is active")
 			@unknown default:
 				Logger.services.error("🍎 Apple must have changed something")
 			}

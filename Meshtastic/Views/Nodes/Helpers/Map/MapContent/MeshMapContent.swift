@@ -76,7 +76,7 @@ struct MeshMapContent: MapContent {
 						}
 					}
 				}
-				.onTapGesture { location in
+				.onTapGesture { _ in
 					selectedPosition = (selectedPosition == position ? nil : position)
 				}
 			}

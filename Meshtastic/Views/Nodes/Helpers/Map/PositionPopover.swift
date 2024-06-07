@@ -18,6 +18,7 @@ struct PositionPopover: View {
 	var popover: Bool = true
 	let distanceFormatter = MKDistanceFormatter()
 	var delay: Double = 0
+
 	@State private var scale: CGFloat = 0.5
 	var body: some View {
 		// Node Color from node.num
@@ -74,7 +75,8 @@ struct PositionPopover: View {
 					.padding(.bottom, 5)
 					/// Altitude
 					Label {
-						Text("Altitude: \(distanceFormatter.string(fromDistance: Double(position.altitude)))")
+						let altitude = Measurement(value: Double(position.altitude), unit: UnitLength.meters)
+						Text("Altitude: \(altitude.formatted())")
 							.foregroundColor(.primary)
 					} icon: {
 						Image(systemName: "mountain.2.fill")
@@ -193,7 +195,9 @@ struct PositionPopover: View {
 						}
 						BatteryGauge(node: position.nodePosition!)
 					}
-					LoRaSignalStrengthMeter(snr: position.nodePosition?.snr ?? 0.0, rssi: position.nodePosition?.rssi ?? 0, preset: ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast, compact: false)
+					if !(position.nodePosition?.viaMqtt ?? true) && position.nodePosition?.hopsAway == 0 {
+						LoRaSignalStrengthMeter(snr: position.nodePosition?.snr ?? 0.0, rssi: position.nodePosition?.rssi ?? 0, preset: ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast, compact: false)
+					}
 					Spacer()
 				}
 			}

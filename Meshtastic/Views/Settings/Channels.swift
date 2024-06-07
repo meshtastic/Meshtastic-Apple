@@ -259,18 +259,18 @@ struct Channels: View {
 					uplink = false
 					downlink = false
 					hasChanges = true
-
-					let newChannel = ChannelEntity(context: context)
-					newChannel.id = channelIndex
-					newChannel.index = channelIndex
-					newChannel.uplinkEnabled = uplink
-					newChannel.downlinkEnabled = downlink
-					newChannel.name = channelName
-					newChannel.role = Int32(channelRole)
-					newChannel.psk = Data(base64Encoded: channelKey) ?? Data()
-					newChannel.positionPrecision = Int32(positionPrecision)
-					selectedChannel = newChannel
-
+					
+					selectedChannel = ChannelEntity(
+						context: context,
+						id: channelIndex,
+						index: channelIndex,
+						uplinkEnabled: uplink,
+						downlinkEnabled: downlink,
+						name: channelName,
+						role: Int32(channelRole),
+						psk: Data(base64Encoded: channelKey) ?? Data(),
+						positionPrecision: Int32(positionPrecision)
+					)
 				} label: {
 					Label("Add Channel", systemImage: "plus.square")
 				}

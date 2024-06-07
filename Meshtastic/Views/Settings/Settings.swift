@@ -47,6 +47,7 @@ struct Settings: View {
 		case telemetryConfig
 		case meshLog
 		case adminMessageLog
+		case appLog
 		case about
 	}
 	var body: some View {
@@ -412,17 +413,18 @@ struct Settings: View {
 							}
 						}
 						.tag(SettingsSidebar.meshLog)
-						NavigationLink {
-							let connectedNode = nodes.first(where: { $0.num == preferredNodeNum })
-							AdminMessageList(user: connectedNode?.user)
-						} label: {
-							Label {
-								Text("admin.log")
-							} icon: {
-								Image(systemName: "building.columns")
+						if #available (iOS 17.4, *) {
+							NavigationLink {
+								AppLog()
+							} label: {
+								Label {
+									Text("Debug Logs")
+								} icon: {
+									Image(systemName: "stethoscope")
+								}
 							}
+							.tag(SettingsSidebar.appLog)
 						}
-						.tag(SettingsSidebar.adminMessageLog)
 					}
 					Section(header: Text("Firmware")) {
 						NavigationLink {

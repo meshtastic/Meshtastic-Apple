@@ -8,35 +8,41 @@
 
 SwiftUI client applications for iOS, iPadOS and macOS.
 
-## OS Requirements
+## Getting Started
 
-* iOS App Requires iOS 16 +
-* iPadOS App Requires iPadOS 16 +
-* Mac App Reguires macOS 13 +
+This project is currently using **Xcode 15.4**. 
 
-## Code Standards
+1. Clone the repo.
+2. Open `Meshtastic.xcodeproj`
+2. Build and run the `Meshtastic` target.
 
-- Use SwiftUI (Maps are the exception)
-- Use Hierarchical icons
+```sh
+git clone git@github.com:meshtastic/Meshtastic-Apple.git
+cd Meshtastic-Apple
+open Meshtastic.xcodeproj
+```
+
+## Technical Standards
+
+### Supported Operating Systems
+
+* iOS 16+
+* iPadOS 16+
+* macOS 13+
+
+### Code Standards
+
+- Use SwiftUI
+- Use SFSymbols for icons
 - Use Core Data for persistence
-- Requires SwiftLint - see https://github.com/realm/SwiftLint
 
-## To update protobufs:
-
-- install swift-protobuf:
-  ```bash
-  brew install swift-protobuf
-  ```
-- check out the latest protobuf commit from the master branch
-  ```bash
-  git submodule update --init
-  ```
+## Updating Protobufs:
 - run:
   ```bash
-  ./gen_protos.sh
+  .scripts/gen_protos.sh
   ```
 - build, test, commit changes
-- You may need to run:
-  ```bash
-  swiftlint --fix
-  ```
+
+## License
+
+This project is licensed under the GPL v3. See the [LICENSE](LICENSE) file for details.
