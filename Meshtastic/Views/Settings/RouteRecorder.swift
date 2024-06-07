@@ -284,29 +284,22 @@ struct RouteRecorder: View {
 				.onDisappear(perform: {
 					UIApplication.shared.isIdleTimerDisabled = false
 				})
-				.onChange(of: locationsHandler.locationsArray.last) { newLoc in
-					if locationsHandler.isRecording {
-						if let loc = newLoc {
-							if recording != nil {
-								let locationEntity = LocationEntity(context: context)
-								locationEntity.routeLocation = recording
-								locationEntity.id = Int32(locationsHandler.count)
-								locationEntity.altitude = Int32(loc.altitude)
-								locationEntity.heading = Int32(loc.course)
-								locationEntity.speed = Int32(loc.speed)
-								locationEntity.latitudeI = Int32(loc.coordinate.latitude * 1e7)
-								locationEntity.longitudeI = Int32(loc.coordinate.longitude * 1e7)
-								do {
-									try context.save()
-									Logger.data.info("💾 Saved a new route location")
-									// logger.info("💾 Updated Canned Messages Messages For: \(fetchedNode[0].num)")
-								} catch {
-									context.rollback()
-									let nsError = error as NSError
-									Logger.data.error("Error Saving LocationEntity from the Route Recorder \(nsError)")
-								}
-							}
-						}
+				.onChange(of: locationsHandler.locationsArray.last) { location in
+					guard locationsHandler.isRecording, let location, let recording else { return }
+					let locationEntity = LocationEntity(
+						context: context,
+						route: recording,
+						id: Int32(locationsHandler.count),
+						location: location
+					)
+					
+					do {
+						try context.save()
+						Logger.data.info("💾 Saved a new route location")
+					} catch {
+						context.rollback()
+						let nsError = error as NSError
+						Logger.data.error("Error Saving LocationEntity from the Route Recorder \(nsError)")
 					}
 				}
 			}

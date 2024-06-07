@@ -78,13 +78,10 @@ struct MeshMap: View {
 								}
 
 								newWaypointCoord = coordinate
-								editingWaypoint = WaypointEntity(context: context)
-								editingWaypoint!.name = "Waypoint Pin"
-								editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
-								editingWaypoint!.latitudeI = Int32((newWaypointCoord?.latitude ?? 0) * 1e7)
-								editingWaypoint!.longitudeI = Int32((newWaypointCoord?.longitude ?? 0) * 1e7)
-								editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
-								editingWaypoint!.id = 0
+								editingWaypoint = WaypointEntity(
+									context: context,
+									coordinate: coordinate
+								)
 								Logger.services.debug("Long press occured at Lat: \(coordinate.latitude) Long: \(coordinate.longitude)")
 							default: return
 							}
@@ -133,7 +130,7 @@ struct MeshMap: View {
 //					//position = .camera(MapCamera(centerCoordinate: waypoint.coordinate, distance: 1000, heading: 0, pitch: 60))
 //				}
 //			}
-			.onChange(of: (selectedMapLayer)) { newMapLayer in
+			.onChange(of: selectedMapLayer) { newMapLayer in
 				switch selectedMapLayer {
 				case .standard:
 					UserDefaults.mapLayer = newMapLayer

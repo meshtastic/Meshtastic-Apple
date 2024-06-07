@@ -10,6 +10,19 @@ import MapKit
 import SwiftUI
 
 extension WaypointEntity {
+	
+	convenience init(
+		context: NSManagedObjectContext,
+		coordinate: CLLocationCoordinate2D
+	) {
+		self.init(context: context)
+		self.id = 0
+		self.name = "Waypoint Pin"
+		self.expire = Date.now.addingTimeInterval(60 * 480)
+		self.latitudeI = Int32(coordinate.latitude * 1e7)
+		self.longitudeI = Int32(coordinate.longitude * 1e7)
+		self.expire = Date.now.addingTimeInterval(60 * 480)
+	}
 
 	static func allWaypointssFetchRequest() -> NSFetchRequest<WaypointEntity> {
 		let request: NSFetchRequest<WaypointEntity> = WaypointEntity.fetchRequest()
