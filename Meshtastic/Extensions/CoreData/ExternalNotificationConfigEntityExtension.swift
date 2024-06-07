@@ -5,7 +5,7 @@ extension ExternalNotificationConfigEntity {
 		context: NSManagedObjectContext,
 		config: ModuleConfig.ExternalNotificationConfig
 	) {
-		self.init()
+		self.init(context: context)
 		self.enabled = config.enabled
 		self.usePWM = config.usePwm
 		self.alertBell = config.alertBell
