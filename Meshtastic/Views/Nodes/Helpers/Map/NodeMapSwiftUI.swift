@@ -50,6 +50,7 @@ struct NodeMapSwiftUI: View {
 	
 	private var mostRecent: PositionEntity? {
 		node.positions?.lastObject as? PositionEntity
+		
 	}
 
 	
