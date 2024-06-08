@@ -5,8 +5,9 @@
 //  Copyright (c) Garth Vander Houwen 6/7/22.
 //
 
-import SwiftUI
+import MeshtasticProtobufs
 import OSLog
+import SwiftUI
 
 struct DisplayConfig: View {
 

@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreData
+import MeshtasticProtobufs
 import SwiftUI
 import RegexBuilder
 import OSLog

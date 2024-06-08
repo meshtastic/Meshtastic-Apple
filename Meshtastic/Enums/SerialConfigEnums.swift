@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 9/10/22.
 //
 import Foundation
+import MeshtasticProtobufs
 
 enum SerialBaudRates: Int, CaseIterable, Identifiable {
 

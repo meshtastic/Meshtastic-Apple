@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import MeshtasticProtobufs
 
 // Default of 0 is Client
 enum DeviceRoles: Int, CaseIterable, Identifiable {

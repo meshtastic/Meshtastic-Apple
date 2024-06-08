@@ -5,6 +5,7 @@
 //  Copyright Garth Vander Houwen 2/25/24.
 //
 
+import MeshtasticProtobufs
 import SwiftUI
 
 struct PaxCounterConfig: View {
