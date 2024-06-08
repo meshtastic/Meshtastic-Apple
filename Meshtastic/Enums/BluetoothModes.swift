@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 8/19/22.
 //
 import Foundation
+import MeshtasticProtobufs
 
 enum BluetoothModes: Int, CaseIterable, Identifiable {
 

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Charts
+import MeshtasticProtobufs
 import OSLog
 
 struct DetectionSensorLog: View {

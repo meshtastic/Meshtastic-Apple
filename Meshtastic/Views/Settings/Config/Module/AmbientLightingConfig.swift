@@ -4,8 +4,9 @@
 //
 //  Copyright(c) Garth Vander Houwen 11/26/23
 //
-
+import MeshtasticProtobufs
 import SwiftUI
+
 @available(iOS 17.0, macOS 14.0, *)
 struct AmbientLightingConfig: View {
 	@Environment(\.self) var environment

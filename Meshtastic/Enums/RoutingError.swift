@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 8/4/22.
 //
 import Foundation
+import MeshtasticProtobufs
 
 enum RoutingError: Int, CaseIterable, Identifiable {
 

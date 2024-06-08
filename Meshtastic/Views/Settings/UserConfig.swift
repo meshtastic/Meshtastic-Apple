@@ -4,8 +4,9 @@
 //
 //  Copyright (c) Garth Vander Houwen 6/27/22.
 //
-import SwiftUI
 import CoreData
+import MeshtasticProtobufs
+import SwiftUI
 
 struct UserConfig: View {
 

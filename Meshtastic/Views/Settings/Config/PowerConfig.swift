@@ -1,4 +1,5 @@
 import SwiftUI
+import MeshtasticProtobufs
 
 struct PowerConfig: View {
 	@Environment(\.managedObjectContext) private var context

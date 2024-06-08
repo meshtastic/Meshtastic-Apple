@@ -3,6 +3,7 @@ import CoreData
 import CoreBluetooth
 import SwiftUI
 import MapKit
+import MeshtasticProtobufs
 import CocoaMQTT
 import OSLog
 import RegexBuilder
