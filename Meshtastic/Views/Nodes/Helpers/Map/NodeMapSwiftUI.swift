@@ -210,6 +210,11 @@ struct NodeMapSwiftUI: View {
 
 	private func setupMapView() {
 		UIApplication.shared.isIdleTimerDisabled = true
+		if let coordinate = mostRecent?.coordinate {
+			position = .camera(MapCamera(centerCoordinate: coordinate, distance: 12000, heading: 0, pitch: 60))
+		} else {
+			position = .automatic
+		}
 		switch selectedMapLayer {
 		case .standard:
 			mapStyle = MapStyle.standard(elevation: .flat, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
@@ -220,11 +225,7 @@ struct NodeMapSwiftUI: View {
 		case .offline:
 			mapStyle = MapStyle.hybrid(elevation: .flat, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
 		}
-		if node.positions?.count ?? 0 > 1 {
-			position = .automatic
-		} else if let coordinate = mostRecent?.coordinate {
-			position = .camera(MapCamera(centerCoordinate: coordinate, distance: 8000, heading: 0, pitch: 60))
-		}
+	
 		if scene == nil, let coordinate = mostRecent?.coordinate {
 			Task {
 				scene = try await fetchScene(for: coordinate)
