@@ -22,8 +22,8 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 
 ///
 /// Supported I2C Sensors for telemetry in Meshtastic
-enum TelemetrySensorType: SwiftProtobuf.Enum {
-  typealias RawValue = Int
+public enum TelemetrySensorType: SwiftProtobuf.Enum {
+  public typealias RawValue = Int
 
   ///
   /// No external telemetry sensor explicitly set
@@ -122,11 +122,11 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
   case aht10 // = 23
   case UNRECOGNIZED(Int)
 
-  init() {
+  public init() {
     self = .sensorUnset
   }
 
-  init?(rawValue: Int) {
+  public init?(rawValue: Int) {
     switch rawValue {
     case 0: self = .sensorUnset
     case 1: self = .bme280
@@ -156,7 +156,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
     }
   }
 
-  var rawValue: Int {
+  public var rawValue: Int {
     switch self {
     case .sensorUnset: return 0
     case .bme280: return 1
@@ -192,7 +192,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
 
 extension TelemetrySensorType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [TelemetrySensorType] = [
+  public static let allCases: [TelemetrySensorType] = [
     .sensorUnset,
     .bme280,
     .bme680,
@@ -224,201 +224,201 @@ extension TelemetrySensorType: CaseIterable {
 
 ///
 /// Key native device metrics such as battery level
-struct DeviceMetrics {
+public struct DeviceMetrics {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// 0-100 (>100 means powered)
-  var batteryLevel: UInt32 = 0
+  public var batteryLevel: UInt32 = 0
 
   ///
   /// Voltage measured
-  var voltage: Float = 0
+  public var voltage: Float = 0
 
   ///
   /// Utilization for the current channel, including well formed TX, RX and malformed RX (aka noise).
-  var channelUtilization: Float = 0
+  public var channelUtilization: Float = 0
 
   ///
   /// Percent of airtime for transmission used within the last hour.
-  var airUtilTx: Float = 0
+  public var airUtilTx: Float = 0
 
   ///
   /// How long the device has been running since the last reboot (in seconds)
-  var uptimeSeconds: UInt32 = 0
+  public var uptimeSeconds: UInt32 = 0
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// Weather station or other environmental metrics
-struct EnvironmentMetrics {
+public struct EnvironmentMetrics {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Temperature measured
-  var temperature: Float = 0
+  public var temperature: Float = 0
 
   ///
   /// Relative humidity percent measured
-  var relativeHumidity: Float = 0
+  public var relativeHumidity: Float = 0
 
   ///
   /// Barometric pressure in hPA measured
-  var barometricPressure: Float = 0
+  public var barometricPressure: Float = 0
 
   ///
   /// Gas resistance in MOhm measured
-  var gasResistance: Float = 0
+  public var gasResistance: Float = 0
 
   ///
   /// Voltage measured (To be depreciated in favor of PowerMetrics in Meshtastic 3.x)
-  var voltage: Float = 0
+  public var voltage: Float = 0
 
   ///
   /// Current measured (To be depreciated in favor of PowerMetrics in Meshtastic 3.x)
-  var current: Float = 0
+  public var current: Float = 0
 
   /// 
   /// relative scale IAQ value as measured by Bosch BME680 . value 0-500.
   /// Belongs to Air Quality but is not particle but VOC measurement. Other VOC values can also be put in here.
-  var iaq: UInt32 = 0
+  public var iaq: UInt32 = 0
 
   ///
   /// RCWL9620 Doppler Radar Distance Sensor, used for water level detection. Float value in mm.
-  var distance: Float = 0
+  public var distance: Float = 0
 
   ///
   /// VEML7700 high accuracy ambient light(Lux) digital 16-bit resolution sensor.
-  var lux: Float = 0
+  public var lux: Float = 0
 
   ///
   /// VEML7700 high accuracy white light(irradiance) not calibrated digital 16-bit resolution sensor.
-  var whiteLux: Float = 0
+  public var whiteLux: Float = 0
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// Power Metrics (voltage / current / etc)
-struct PowerMetrics {
+public struct PowerMetrics {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Voltage (Ch1)
-  var ch1Voltage: Float = 0
+  public var ch1Voltage: Float = 0
 
   ///
   /// Current (Ch1)
-  var ch1Current: Float = 0
+  public var ch1Current: Float = 0
 
   ///
   /// Voltage (Ch2)
-  var ch2Voltage: Float = 0
+  public var ch2Voltage: Float = 0
 
   ///
   /// Current (Ch2)
-  var ch2Current: Float = 0
+  public var ch2Current: Float = 0
 
   ///
   /// Voltage (Ch3)
-  var ch3Voltage: Float = 0
+  public var ch3Voltage: Float = 0
 
   ///
   /// Current (Ch3)
-  var ch3Current: Float = 0
+  public var ch3Current: Float = 0
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// Air quality metrics
-struct AirQualityMetrics {
+public struct AirQualityMetrics {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Concentration Units Standard PM1.0
-  var pm10Standard: UInt32 = 0
+  public var pm10Standard: UInt32 = 0
 
   ///
   /// Concentration Units Standard PM2.5
-  var pm25Standard: UInt32 = 0
+  public var pm25Standard: UInt32 = 0
 
   ///
   /// Concentration Units Standard PM10.0
-  var pm100Standard: UInt32 = 0
+  public var pm100Standard: UInt32 = 0
 
   ///
   /// Concentration Units Environmental PM1.0
-  var pm10Environmental: UInt32 = 0
+  public var pm10Environmental: UInt32 = 0
 
   ///
   /// Concentration Units Environmental PM2.5
-  var pm25Environmental: UInt32 = 0
+  public var pm25Environmental: UInt32 = 0
 
   ///
   /// Concentration Units Environmental PM10.0
-  var pm100Environmental: UInt32 = 0
+  public var pm100Environmental: UInt32 = 0
 
   ///
   /// 0.3um Particle Count
-  var particles03Um: UInt32 = 0
+  public var particles03Um: UInt32 = 0
 
   ///
   /// 0.5um Particle Count
-  var particles05Um: UInt32 = 0
+  public var particles05Um: UInt32 = 0
 
   ///
   /// 1.0um Particle Count
-  var particles10Um: UInt32 = 0
+  public var particles10Um: UInt32 = 0
 
   ///
   /// 2.5um Particle Count
-  var particles25Um: UInt32 = 0
+  public var particles25Um: UInt32 = 0
 
   ///
   /// 5.0um Particle Count
-  var particles50Um: UInt32 = 0
+  public var particles50Um: UInt32 = 0
 
   ///
   /// 10.0um Particle Count
-  var particles100Um: UInt32 = 0
+  public var particles100Um: UInt32 = 0
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// Types of Measurements the telemetry module is equipped to handle
-struct Telemetry {
+public struct Telemetry {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Seconds since 1970 - or 0 for unknown/unset
-  var time: UInt32 = 0
+  public var time: UInt32 = 0
 
-  var variant: Telemetry.OneOf_Variant? = nil
+  public var variant: Telemetry.OneOf_Variant? = nil
 
   ///
   /// Key native device metrics such as battery level
-  var deviceMetrics: DeviceMetrics {
+  public var deviceMetrics: DeviceMetrics {
     get {
       if case .deviceMetrics(let v)? = variant {return v}
       return DeviceMetrics()
@@ -428,7 +428,7 @@ struct Telemetry {
 
   ///
   /// Weather station or other environmental metrics
-  var environmentMetrics: EnvironmentMetrics {
+  public var environmentMetrics: EnvironmentMetrics {
     get {
       if case .environmentMetrics(let v)? = variant {return v}
       return EnvironmentMetrics()
@@ -438,7 +438,7 @@ struct Telemetry {
 
   ///
   /// Air quality metrics
-  var airQualityMetrics: AirQualityMetrics {
+  public var airQualityMetrics: AirQualityMetrics {
     get {
       if case .airQualityMetrics(let v)? = variant {return v}
       return AirQualityMetrics()
@@ -448,7 +448,7 @@ struct Telemetry {
 
   ///
   /// Power Metrics
-  var powerMetrics: PowerMetrics {
+  public var powerMetrics: PowerMetrics {
     get {
       if case .powerMetrics(let v)? = variant {return v}
       return PowerMetrics()
@@ -456,9 +456,9 @@ struct Telemetry {
     set {variant = .powerMetrics(newValue)}
   }
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  enum OneOf_Variant: Equatable {
+  public enum OneOf_Variant: Equatable {
     ///
     /// Key native device metrics such as battery level
     case deviceMetrics(DeviceMetrics)
@@ -473,7 +473,7 @@ struct Telemetry {
     case powerMetrics(PowerMetrics)
 
   #if !swift(>=4.1)
-    static func ==(lhs: Telemetry.OneOf_Variant, rhs: Telemetry.OneOf_Variant) -> Bool {
+    public static func ==(lhs: Telemetry.OneOf_Variant, rhs: Telemetry.OneOf_Variant) -> Bool {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
@@ -500,7 +500,7 @@ struct Telemetry {
   #endif
   }
 
-  init() {}
+  public init() {}
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
@@ -518,7 +518,7 @@ extension Telemetry.OneOf_Variant: @unchecked Sendable {}
 fileprivate let _protobuf_package = "meshtastic"
 
 extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "SENSOR_UNSET"),
     1: .same(proto: "BME280"),
     2: .same(proto: "BME680"),
@@ -547,8 +547,8 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".DeviceMetrics"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".DeviceMetrics"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "battery_level"),
     2: .same(proto: "voltage"),
     3: .standard(proto: "channel_utilization"),
@@ -556,7 +556,7 @@ extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     5: .standard(proto: "uptime_seconds"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -572,7 +572,7 @@ extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.batteryLevel != 0 {
       try visitor.visitSingularUInt32Field(value: self.batteryLevel, fieldNumber: 1)
     }
@@ -591,7 +591,7 @@ extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: DeviceMetrics, rhs: DeviceMetrics) -> Bool {
+  public static func ==(lhs: DeviceMetrics, rhs: DeviceMetrics) -> Bool {
     if lhs.batteryLevel != rhs.batteryLevel {return false}
     if lhs.voltage != rhs.voltage {return false}
     if lhs.channelUtilization != rhs.channelUtilization {return false}
@@ -603,8 +603,8 @@ extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
 }
 
 extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".EnvironmentMetrics"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".EnvironmentMetrics"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "temperature"),
     2: .standard(proto: "relative_humidity"),
     3: .standard(proto: "barometric_pressure"),
@@ -617,7 +617,7 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     10: .standard(proto: "white_lux"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -638,7 +638,7 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.temperature != 0 {
       try visitor.visitSingularFloatField(value: self.temperature, fieldNumber: 1)
     }
@@ -672,7 +672,7 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: EnvironmentMetrics, rhs: EnvironmentMetrics) -> Bool {
+  public static func ==(lhs: EnvironmentMetrics, rhs: EnvironmentMetrics) -> Bool {
     if lhs.temperature != rhs.temperature {return false}
     if lhs.relativeHumidity != rhs.relativeHumidity {return false}
     if lhs.barometricPressure != rhs.barometricPressure {return false}
@@ -689,8 +689,8 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
 }
 
 extension PowerMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".PowerMetrics"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".PowerMetrics"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "ch1_voltage"),
     2: .standard(proto: "ch1_current"),
     3: .standard(proto: "ch2_voltage"),
@@ -699,7 +699,7 @@ extension PowerMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     6: .standard(proto: "ch3_current"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -716,7 +716,7 @@ extension PowerMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.ch1Voltage != 0 {
       try visitor.visitSingularFloatField(value: self.ch1Voltage, fieldNumber: 1)
     }
@@ -738,7 +738,7 @@ extension PowerMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: PowerMetrics, rhs: PowerMetrics) -> Bool {
+  public static func ==(lhs: PowerMetrics, rhs: PowerMetrics) -> Bool {
     if lhs.ch1Voltage != rhs.ch1Voltage {return false}
     if lhs.ch1Current != rhs.ch1Current {return false}
     if lhs.ch2Voltage != rhs.ch2Voltage {return false}
@@ -751,8 +751,8 @@ extension PowerMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
 }
 
 extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".AirQualityMetrics"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".AirQualityMetrics"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "pm10_standard"),
     2: .standard(proto: "pm25_standard"),
     3: .standard(proto: "pm100_standard"),
@@ -767,7 +767,7 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     12: .standard(proto: "particles_100um"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -790,7 +790,7 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.pm10Standard != 0 {
       try visitor.visitSingularUInt32Field(value: self.pm10Standard, fieldNumber: 1)
     }
@@ -830,7 +830,7 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: AirQualityMetrics, rhs: AirQualityMetrics) -> Bool {
+  public static func ==(lhs: AirQualityMetrics, rhs: AirQualityMetrics) -> Bool {
     if lhs.pm10Standard != rhs.pm10Standard {return false}
     if lhs.pm25Standard != rhs.pm25Standard {return false}
     if lhs.pm100Standard != rhs.pm100Standard {return false}
@@ -849,8 +849,8 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
 }
 
 extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".Telemetry"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".Telemetry"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "time"),
     2: .standard(proto: "device_metrics"),
     3: .standard(proto: "environment_metrics"),
@@ -858,7 +858,7 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     5: .standard(proto: "power_metrics"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -922,7 +922,7 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -952,7 +952,7 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Telemetry, rhs: Telemetry) -> Bool {
+  public static func ==(lhs: Telemetry, rhs: Telemetry) -> Bool {
     if lhs.time != rhs.time {return false}
     if lhs.variant != rhs.variant {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}

@@ -20,58 +20,58 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
-struct DeviceConnectionStatus {
+public struct DeviceConnectionStatus {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// WiFi Status
-  var wifi: WifiConnectionStatus {
+  public var wifi: WifiConnectionStatus {
     get {return _wifi ?? WifiConnectionStatus()}
     set {_wifi = newValue}
   }
   /// Returns true if `wifi` has been explicitly set.
-  var hasWifi: Bool {return self._wifi != nil}
+  public var hasWifi: Bool {return self._wifi != nil}
   /// Clears the value of `wifi`. Subsequent reads from it will return its default value.
-  mutating func clearWifi() {self._wifi = nil}
+  public mutating func clearWifi() {self._wifi = nil}
 
   ///
   /// WiFi Status
-  var ethernet: EthernetConnectionStatus {
+  public var ethernet: EthernetConnectionStatus {
     get {return _ethernet ?? EthernetConnectionStatus()}
     set {_ethernet = newValue}
   }
   /// Returns true if `ethernet` has been explicitly set.
-  var hasEthernet: Bool {return self._ethernet != nil}
+  public var hasEthernet: Bool {return self._ethernet != nil}
   /// Clears the value of `ethernet`. Subsequent reads from it will return its default value.
-  mutating func clearEthernet() {self._ethernet = nil}
+  public mutating func clearEthernet() {self._ethernet = nil}
 
   ///
   /// Bluetooth Status
-  var bluetooth: BluetoothConnectionStatus {
+  public var bluetooth: BluetoothConnectionStatus {
     get {return _bluetooth ?? BluetoothConnectionStatus()}
     set {_bluetooth = newValue}
   }
   /// Returns true if `bluetooth` has been explicitly set.
-  var hasBluetooth: Bool {return self._bluetooth != nil}
+  public var hasBluetooth: Bool {return self._bluetooth != nil}
   /// Clears the value of `bluetooth`. Subsequent reads from it will return its default value.
-  mutating func clearBluetooth() {self._bluetooth = nil}
+  public mutating func clearBluetooth() {self._bluetooth = nil}
 
   ///
   /// Serial Status
-  var serial: SerialConnectionStatus {
+  public var serial: SerialConnectionStatus {
     get {return _serial ?? SerialConnectionStatus()}
     set {_serial = newValue}
   }
   /// Returns true if `serial` has been explicitly set.
-  var hasSerial: Bool {return self._serial != nil}
+  public var hasSerial: Bool {return self._serial != nil}
   /// Clears the value of `serial`. Subsequent reads from it will return its default value.
-  mutating func clearSerial() {self._serial = nil}
+  public mutating func clearSerial() {self._serial = nil}
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 
   fileprivate var _wifi: WifiConnectionStatus? = nil
   fileprivate var _ethernet: EthernetConnectionStatus? = nil
@@ -81,132 +81,132 @@ struct DeviceConnectionStatus {
 
 ///
 /// WiFi connection status
-struct WifiConnectionStatus {
+public struct WifiConnectionStatus {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Connection status
-  var status: NetworkConnectionStatus {
+  public var status: NetworkConnectionStatus {
     get {return _status ?? NetworkConnectionStatus()}
     set {_status = newValue}
   }
   /// Returns true if `status` has been explicitly set.
-  var hasStatus: Bool {return self._status != nil}
+  public var hasStatus: Bool {return self._status != nil}
   /// Clears the value of `status`. Subsequent reads from it will return its default value.
-  mutating func clearStatus() {self._status = nil}
+  public mutating func clearStatus() {self._status = nil}
 
   ///
   /// WiFi access point SSID
-  var ssid: String = String()
+  public var ssid: String = String()
 
   ///
   /// RSSI of wireless connection
-  var rssi: Int32 = 0
+  public var rssi: Int32 = 0
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 
   fileprivate var _status: NetworkConnectionStatus? = nil
 }
 
 ///
 /// Ethernet connection status
-struct EthernetConnectionStatus {
+public struct EthernetConnectionStatus {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Connection status
-  var status: NetworkConnectionStatus {
+  public var status: NetworkConnectionStatus {
     get {return _status ?? NetworkConnectionStatus()}
     set {_status = newValue}
   }
   /// Returns true if `status` has been explicitly set.
-  var hasStatus: Bool {return self._status != nil}
+  public var hasStatus: Bool {return self._status != nil}
   /// Clears the value of `status`. Subsequent reads from it will return its default value.
-  mutating func clearStatus() {self._status = nil}
+  public mutating func clearStatus() {self._status = nil}
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 
   fileprivate var _status: NetworkConnectionStatus? = nil
 }
 
 ///
 /// Ethernet or WiFi connection status
-struct NetworkConnectionStatus {
+public struct NetworkConnectionStatus {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// IP address of device
-  var ipAddress: UInt32 = 0
+  public var ipAddress: UInt32 = 0
 
   ///
   /// Whether the device has an active connection or not
-  var isConnected: Bool = false
+  public var isConnected: Bool = false
 
   ///
   /// Whether the device has an active connection to an MQTT broker or not
-  var isMqttConnected: Bool = false
+  public var isMqttConnected: Bool = false
 
   ///
   /// Whether the device is actively remote syslogging or not
-  var isSyslogConnected: Bool = false
+  public var isSyslogConnected: Bool = false
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// Bluetooth connection status
-struct BluetoothConnectionStatus {
+public struct BluetoothConnectionStatus {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// The pairing PIN for bluetooth
-  var pin: UInt32 = 0
+  public var pin: UInt32 = 0
 
   ///
   /// RSSI of bluetooth connection
-  var rssi: Int32 = 0
+  public var rssi: Int32 = 0
 
   ///
   /// Whether the device has an active connection or not
-  var isConnected: Bool = false
+  public var isConnected: Bool = false
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// Serial connection status
-struct SerialConnectionStatus {
+public struct SerialConnectionStatus {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Serial baud rate
-  var baud: UInt32 = 0
+  public var baud: UInt32 = 0
 
   ///
   /// Whether the device has an active connection or not
-  var isConnected: Bool = false
+  public var isConnected: Bool = false
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
@@ -223,15 +223,15 @@ extension SerialConnectionStatus: @unchecked Sendable {}
 fileprivate let _protobuf_package = "meshtastic"
 
 extension DeviceConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".DeviceConnectionStatus"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".DeviceConnectionStatus"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "wifi"),
     2: .same(proto: "ethernet"),
     3: .same(proto: "bluetooth"),
     4: .same(proto: "serial"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -246,7 +246,7 @@ extension DeviceConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -266,7 +266,7 @@ extension DeviceConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: DeviceConnectionStatus, rhs: DeviceConnectionStatus) -> Bool {
+  public static func ==(lhs: DeviceConnectionStatus, rhs: DeviceConnectionStatus) -> Bool {
     if lhs._wifi != rhs._wifi {return false}
     if lhs._ethernet != rhs._ethernet {return false}
     if lhs._bluetooth != rhs._bluetooth {return false}
@@ -277,14 +277,14 @@ extension DeviceConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageI
 }
 
 extension WifiConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".WifiConnectionStatus"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".WifiConnectionStatus"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "status"),
     2: .same(proto: "ssid"),
     3: .same(proto: "rssi"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -298,7 +298,7 @@ extension WifiConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -315,7 +315,7 @@ extension WifiConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: WifiConnectionStatus, rhs: WifiConnectionStatus) -> Bool {
+  public static func ==(lhs: WifiConnectionStatus, rhs: WifiConnectionStatus) -> Bool {
     if lhs._status != rhs._status {return false}
     if lhs.ssid != rhs.ssid {return false}
     if lhs.rssi != rhs.rssi {return false}
@@ -325,12 +325,12 @@ extension WifiConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
 }
 
 extension EthernetConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".EthernetConnectionStatus"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".EthernetConnectionStatus"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "status"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -342,7 +342,7 @@ extension EthernetConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._Messag
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -353,7 +353,7 @@ extension EthernetConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._Messag
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: EthernetConnectionStatus, rhs: EthernetConnectionStatus) -> Bool {
+  public static func ==(lhs: EthernetConnectionStatus, rhs: EthernetConnectionStatus) -> Bool {
     if lhs._status != rhs._status {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
@@ -361,15 +361,15 @@ extension EthernetConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._Messag
 }
 
 extension NetworkConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".NetworkConnectionStatus"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".NetworkConnectionStatus"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "ip_address"),
     2: .standard(proto: "is_connected"),
     3: .standard(proto: "is_mqtt_connected"),
     4: .standard(proto: "is_syslog_connected"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -384,7 +384,7 @@ extension NetworkConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._Message
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.ipAddress != 0 {
       try visitor.visitSingularFixed32Field(value: self.ipAddress, fieldNumber: 1)
     }
@@ -400,7 +400,7 @@ extension NetworkConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._Message
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: NetworkConnectionStatus, rhs: NetworkConnectionStatus) -> Bool {
+  public static func ==(lhs: NetworkConnectionStatus, rhs: NetworkConnectionStatus) -> Bool {
     if lhs.ipAddress != rhs.ipAddress {return false}
     if lhs.isConnected != rhs.isConnected {return false}
     if lhs.isMqttConnected != rhs.isMqttConnected {return false}
@@ -411,14 +411,14 @@ extension NetworkConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._Message
 }
 
 extension BluetoothConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".BluetoothConnectionStatus"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".BluetoothConnectionStatus"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "pin"),
     2: .same(proto: "rssi"),
     3: .standard(proto: "is_connected"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -432,7 +432,7 @@ extension BluetoothConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._Messa
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.pin != 0 {
       try visitor.visitSingularUInt32Field(value: self.pin, fieldNumber: 1)
     }
@@ -445,7 +445,7 @@ extension BluetoothConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._Messa
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: BluetoothConnectionStatus, rhs: BluetoothConnectionStatus) -> Bool {
+  public static func ==(lhs: BluetoothConnectionStatus, rhs: BluetoothConnectionStatus) -> Bool {
     if lhs.pin != rhs.pin {return false}
     if lhs.rssi != rhs.rssi {return false}
     if lhs.isConnected != rhs.isConnected {return false}
@@ -455,13 +455,13 @@ extension BluetoothConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._Messa
 }
 
 extension SerialConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".SerialConnectionStatus"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".SerialConnectionStatus"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "baud"),
     2: .standard(proto: "is_connected"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -474,7 +474,7 @@ extension SerialConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.baud != 0 {
       try visitor.visitSingularUInt32Field(value: self.baud, fieldNumber: 1)
     }
@@ -484,7 +484,7 @@ extension SerialConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: SerialConnectionStatus, rhs: SerialConnectionStatus) -> Bool {
+  public static func ==(lhs: SerialConnectionStatus, rhs: SerialConnectionStatus) -> Bool {
     if lhs.baud != rhs.baud {return false}
     if lhs.isConnected != rhs.isConnected {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}

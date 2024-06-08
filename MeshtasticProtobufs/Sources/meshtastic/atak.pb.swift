@@ -20,8 +20,8 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
-enum Team: SwiftProtobuf.Enum {
-  typealias RawValue = Int
+public enum Team: SwiftProtobuf.Enum {
+  public typealias RawValue = Int
 
   ///
   /// Unspecifed
@@ -84,11 +84,11 @@ enum Team: SwiftProtobuf.Enum {
   case brown // = 14
   case UNRECOGNIZED(Int)
 
-  init() {
+  public init() {
     self = .unspecifedColor
   }
 
-  init?(rawValue: Int) {
+  public init?(rawValue: Int) {
     switch rawValue {
     case 0: self = .unspecifedColor
     case 1: self = .white
@@ -109,7 +109,7 @@ enum Team: SwiftProtobuf.Enum {
     }
   }
 
-  var rawValue: Int {
+  public var rawValue: Int {
     switch self {
     case .unspecifedColor: return 0
     case .white: return 1
@@ -136,7 +136,7 @@ enum Team: SwiftProtobuf.Enum {
 
 extension Team: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Team] = [
+  public static let allCases: [Team] = [
     .unspecifedColor,
     .white,
     .yellow,
@@ -159,8 +159,8 @@ extension Team: CaseIterable {
 
 ///
 /// Role of the group member
-enum MemberRole: SwiftProtobuf.Enum {
-  typealias RawValue = Int
+public enum MemberRole: SwiftProtobuf.Enum {
+  public typealias RawValue = Int
 
   ///
   /// Unspecifed
@@ -199,11 +199,11 @@ enum MemberRole: SwiftProtobuf.Enum {
   case k9 // = 8
   case UNRECOGNIZED(Int)
 
-  init() {
+  public init() {
     self = .unspecifed
   }
 
-  init?(rawValue: Int) {
+  public init?(rawValue: Int) {
     switch rawValue {
     case 0: self = .unspecifed
     case 1: self = .teamMember
@@ -218,7 +218,7 @@ enum MemberRole: SwiftProtobuf.Enum {
     }
   }
 
-  var rawValue: Int {
+  public var rawValue: Int {
     switch self {
     case .unspecifed: return 0
     case .teamMember: return 1
@@ -239,7 +239,7 @@ enum MemberRole: SwiftProtobuf.Enum {
 
 extension MemberRole: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [MemberRole] = [
+  public static let allCases: [MemberRole] = [
     .unspecifed,
     .teamMember,
     .teamLead,
@@ -256,55 +256,55 @@ extension MemberRole: CaseIterable {
 
 ///
 /// Packets for the official ATAK Plugin
-struct TAKPacket {
+public struct TAKPacket {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Are the payloads strings compressed for LoRA transport?
-  var isCompressed: Bool = false
+  public var isCompressed: Bool = false
 
   ///
   /// The contact / callsign for ATAK user
-  var contact: Contact {
+  public var contact: Contact {
     get {return _contact ?? Contact()}
     set {_contact = newValue}
   }
   /// Returns true if `contact` has been explicitly set.
-  var hasContact: Bool {return self._contact != nil}
+  public var hasContact: Bool {return self._contact != nil}
   /// Clears the value of `contact`. Subsequent reads from it will return its default value.
-  mutating func clearContact() {self._contact = nil}
+  public mutating func clearContact() {self._contact = nil}
 
   ///
   /// The group for ATAK user
-  var group: Group {
+  public var group: Group {
     get {return _group ?? Group()}
     set {_group = newValue}
   }
   /// Returns true if `group` has been explicitly set.
-  var hasGroup: Bool {return self._group != nil}
+  public var hasGroup: Bool {return self._group != nil}
   /// Clears the value of `group`. Subsequent reads from it will return its default value.
-  mutating func clearGroup() {self._group = nil}
+  public mutating func clearGroup() {self._group = nil}
 
   ///
   /// The status of the ATAK EUD
-  var status: Status {
+  public var status: Status {
     get {return _status ?? Status()}
     set {_status = newValue}
   }
   /// Returns true if `status` has been explicitly set.
-  var hasStatus: Bool {return self._status != nil}
+  public var hasStatus: Bool {return self._status != nil}
   /// Clears the value of `status`. Subsequent reads from it will return its default value.
-  mutating func clearStatus() {self._status = nil}
+  public mutating func clearStatus() {self._status = nil}
 
   ///
   /// The payload of the packet
-  var payloadVariant: TAKPacket.OneOf_PayloadVariant? = nil
+  public var payloadVariant: TAKPacket.OneOf_PayloadVariant? = nil
 
   ///
   /// TAK position report
-  var pli: PLI {
+  public var pli: PLI {
     get {
       if case .pli(let v)? = payloadVariant {return v}
       return PLI()
@@ -314,7 +314,7 @@ struct TAKPacket {
 
   ///
   /// ATAK GeoChat message
-  var chat: GeoChat {
+  public var chat: GeoChat {
     get {
       if case .chat(let v)? = payloadVariant {return v}
       return GeoChat()
@@ -322,11 +322,11 @@ struct TAKPacket {
     set {payloadVariant = .chat(newValue)}
   }
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
   /// The payload of the packet
-  enum OneOf_PayloadVariant: Equatable {
+  public enum OneOf_PayloadVariant: Equatable {
     ///
     /// TAK position report
     case pli(PLI)
@@ -335,7 +335,7 @@ struct TAKPacket {
     case chat(GeoChat)
 
   #if !swift(>=4.1)
-    static func ==(lhs: TAKPacket.OneOf_PayloadVariant, rhs: TAKPacket.OneOf_PayloadVariant) -> Bool {
+    public static func ==(lhs: TAKPacket.OneOf_PayloadVariant, rhs: TAKPacket.OneOf_PayloadVariant) -> Bool {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
@@ -354,7 +354,7 @@ struct TAKPacket {
   #endif
   }
 
-  init() {}
+  public init() {}
 
   fileprivate var _contact: Contact? = nil
   fileprivate var _group: Group? = nil
@@ -363,40 +363,40 @@ struct TAKPacket {
 
 ///
 /// ATAK GeoChat message
-struct GeoChat {
+public struct GeoChat {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// The text message
-  var message: String = String()
+  public var message: String = String()
 
   ///
   /// Uid recipient of the message
-  var to: String {
+  public var to: String {
     get {return _to ?? String()}
     set {_to = newValue}
   }
   /// Returns true if `to` has been explicitly set.
-  var hasTo: Bool {return self._to != nil}
+  public var hasTo: Bool {return self._to != nil}
   /// Clears the value of `to`. Subsequent reads from it will return its default value.
-  mutating func clearTo() {self._to = nil}
+  public mutating func clearTo() {self._to = nil}
 
   ///
   /// Callsign of the recipient for the message
-  var toCallsign: String {
+  public var toCallsign: String {
     get {return _toCallsign ?? String()}
     set {_toCallsign = newValue}
   }
   /// Returns true if `toCallsign` has been explicitly set.
-  var hasToCallsign: Bool {return self._toCallsign != nil}
+  public var hasToCallsign: Bool {return self._toCallsign != nil}
   /// Clears the value of `toCallsign`. Subsequent reads from it will return its default value.
-  mutating func clearToCallsign() {self._toCallsign = nil}
+  public mutating func clearToCallsign() {self._toCallsign = nil}
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 
   fileprivate var _to: String? = nil
   fileprivate var _toCallsign: String? = nil
@@ -405,66 +405,66 @@ struct GeoChat {
 ///
 /// ATAK Group
 /// <__group role='Team Member' name='Cyan'/>
-struct Group {
+public struct Group {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Role of the group member
-  var role: MemberRole = .unspecifed
+  public var role: MemberRole = .unspecifed
 
   ///
   /// Team (color)
   /// Default Cyan
-  var team: Team = .unspecifedColor
+  public var team: Team = .unspecifedColor
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// ATAK EUD Status
 /// <status battery='100' />
-struct Status {
+public struct Status {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Battery level
-  var battery: UInt32 = 0
+  public var battery: UInt32 = 0
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// ATAK Contact
 /// <contact endpoint='0.0.0.0:4242:tcp' phone='+12345678' callsign='FALKE'/>
-struct Contact {
+public struct Contact {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Callsign
-  var callsign: String = String()
+  public var callsign: String = String()
 
   ///
   /// Device callsign
-  var deviceCallsign: String = String()
+  public var deviceCallsign: String = String()
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// Position Location Information from ATAK
-struct PLI {
+public struct PLI {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -472,28 +472,28 @@ struct PLI {
   ///
   /// The new preferred location encoding, multiply by 1e-7 to get degrees
   /// in floating point
-  var latitudeI: Int32 = 0
+  public var latitudeI: Int32 = 0
 
   ///
   /// The new preferred location encoding, multiply by 1e-7 to get degrees
   /// in floating point
-  var longitudeI: Int32 = 0
+  public var longitudeI: Int32 = 0
 
   ///
   /// Altitude (ATAK prefers HAE)
-  var altitude: Int32 = 0
+  public var altitude: Int32 = 0
 
   ///
   /// Speed
-  var speed: UInt32 = 0
+  public var speed: UInt32 = 0
 
   ///
   /// Course in degrees
-  var course: UInt32 = 0
+  public var course: UInt32 = 0
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
@@ -513,7 +513,7 @@ extension PLI: @unchecked Sendable {}
 fileprivate let _protobuf_package = "meshtastic"
 
 extension Team: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "Unspecifed_Color"),
     1: .same(proto: "White"),
     2: .same(proto: "Yellow"),
@@ -533,7 +533,7 @@ extension Team: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension MemberRole: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "Unspecifed"),
     1: .same(proto: "TeamMember"),
     2: .same(proto: "TeamLead"),
@@ -547,8 +547,8 @@ extension MemberRole: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension TAKPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".TAKPacket"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".TAKPacket"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "is_compressed"),
     2: .same(proto: "contact"),
     3: .same(proto: "group"),
@@ -557,7 +557,7 @@ extension TAKPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     6: .same(proto: "chat"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -598,7 +598,7 @@ extension TAKPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -629,7 +629,7 @@ extension TAKPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: TAKPacket, rhs: TAKPacket) -> Bool {
+  public static func ==(lhs: TAKPacket, rhs: TAKPacket) -> Bool {
     if lhs.isCompressed != rhs.isCompressed {return false}
     if lhs._contact != rhs._contact {return false}
     if lhs._group != rhs._group {return false}
@@ -641,14 +641,14 @@ extension TAKPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
 }
 
 extension GeoChat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".GeoChat"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".GeoChat"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "message"),
     2: .same(proto: "to"),
     3: .standard(proto: "to_callsign"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -662,7 +662,7 @@ extension GeoChat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -679,7 +679,7 @@ extension GeoChat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: GeoChat, rhs: GeoChat) -> Bool {
+  public static func ==(lhs: GeoChat, rhs: GeoChat) -> Bool {
     if lhs.message != rhs.message {return false}
     if lhs._to != rhs._to {return false}
     if lhs._toCallsign != rhs._toCallsign {return false}
@@ -689,13 +689,13 @@ extension GeoChat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
 }
 
 extension Group: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".Group"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".Group"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "role"),
     2: .same(proto: "team"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -708,7 +708,7 @@ extension Group: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.role != .unspecifed {
       try visitor.visitSingularEnumField(value: self.role, fieldNumber: 1)
     }
@@ -718,7 +718,7 @@ extension Group: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Group, rhs: Group) -> Bool {
+  public static func ==(lhs: Group, rhs: Group) -> Bool {
     if lhs.role != rhs.role {return false}
     if lhs.team != rhs.team {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -727,12 +727,12 @@ extension Group: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase
 }
 
 extension Status: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".Status"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".Status"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "battery"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -744,14 +744,14 @@ extension Status: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.battery != 0 {
       try visitor.visitSingularUInt32Field(value: self.battery, fieldNumber: 1)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Status, rhs: Status) -> Bool {
+  public static func ==(lhs: Status, rhs: Status) -> Bool {
     if lhs.battery != rhs.battery {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
@@ -759,13 +759,13 @@ extension Status: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
 }
 
 extension Contact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".Contact"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".Contact"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "callsign"),
     2: .standard(proto: "device_callsign"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -778,7 +778,7 @@ extension Contact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if !self.callsign.isEmpty {
       try visitor.visitSingularStringField(value: self.callsign, fieldNumber: 1)
     }
@@ -788,7 +788,7 @@ extension Contact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Contact, rhs: Contact) -> Bool {
+  public static func ==(lhs: Contact, rhs: Contact) -> Bool {
     if lhs.callsign != rhs.callsign {return false}
     if lhs.deviceCallsign != rhs.deviceCallsign {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -797,8 +797,8 @@ extension Contact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
 }
 
 extension PLI: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".PLI"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".PLI"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "latitude_i"),
     2: .standard(proto: "longitude_i"),
     3: .same(proto: "altitude"),
@@ -806,7 +806,7 @@ extension PLI: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, 
     5: .same(proto: "course"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -822,7 +822,7 @@ extension PLI: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, 
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.latitudeI != 0 {
       try visitor.visitSingularSFixed32Field(value: self.latitudeI, fieldNumber: 1)
     }
@@ -841,7 +841,7 @@ extension PLI: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, 
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: PLI, rhs: PLI) -> Bool {
+  public static func ==(lhs: PLI, rhs: PLI) -> Bool {
     if lhs.latitudeI != rhs.latitudeI {return false}
     if lhs.longitudeI != rhs.longitudeI {return false}
     if lhs.altitude != rhs.altitude {return false}

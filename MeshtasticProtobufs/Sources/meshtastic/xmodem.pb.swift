@@ -20,23 +20,23 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
-struct XModem {
+public struct XModem {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var control: XModem.Control = .nul
+  public var control: XModem.Control = .nul
 
-  var seq: UInt32 = 0
+  public var seq: UInt32 = 0
 
-  var crc16: UInt32 = 0
+  public var crc16: UInt32 = 0
 
-  var buffer: Data = Data()
+  public var buffer: Data = Data()
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  enum Control: SwiftProtobuf.Enum {
-    typealias RawValue = Int
+  public enum Control: SwiftProtobuf.Enum {
+    public typealias RawValue = Int
     case nul // = 0
     case soh // = 1
     case stx // = 2
@@ -47,11 +47,11 @@ struct XModem {
     case ctrlz // = 26
     case UNRECOGNIZED(Int)
 
-    init() {
+    public init() {
       self = .nul
     }
 
-    init?(rawValue: Int) {
+    public init?(rawValue: Int) {
       switch rawValue {
       case 0: self = .nul
       case 1: self = .soh
@@ -65,7 +65,7 @@ struct XModem {
       }
     }
 
-    var rawValue: Int {
+    public var rawValue: Int {
       switch self {
       case .nul: return 0
       case .soh: return 1
@@ -81,14 +81,14 @@ struct XModem {
 
   }
 
-  init() {}
+  public init() {}
 }
 
 #if swift(>=4.2)
 
 extension XModem.Control: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [XModem.Control] = [
+  public static let allCases: [XModem.Control] = [
     .nul,
     .soh,
     .stx,
@@ -112,15 +112,15 @@ extension XModem.Control: @unchecked Sendable {}
 fileprivate let _protobuf_package = "meshtastic"
 
 extension XModem: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".XModem"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".XModem"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "control"),
     2: .same(proto: "seq"),
     3: .same(proto: "crc16"),
     4: .same(proto: "buffer"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -135,7 +135,7 @@ extension XModem: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.control != .nul {
       try visitor.visitSingularEnumField(value: self.control, fieldNumber: 1)
     }
@@ -151,7 +151,7 @@ extension XModem: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: XModem, rhs: XModem) -> Bool {
+  public static func ==(lhs: XModem, rhs: XModem) -> Bool {
     if lhs.control != rhs.control {return false}
     if lhs.seq != rhs.seq {return false}
     if lhs.crc16 != rhs.crc16 {return false}
@@ -162,7 +162,7 @@ extension XModem: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
 }
 
 extension XModem.Control: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "NUL"),
     1: .same(proto: "SOH"),
     2: .same(proto: "STX"),

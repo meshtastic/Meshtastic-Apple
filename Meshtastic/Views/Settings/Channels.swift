@@ -5,10 +5,11 @@
 //  Copyright(c) Garth Vander Houwen 4/8/22.
 //
 
-import SwiftUI
 import CoreData
 import MapKit
+import MeshtasticProtobufs
 import OSLog
+import SwiftUI
 #if canImport(TipKit)
 import TipKit
 #endif

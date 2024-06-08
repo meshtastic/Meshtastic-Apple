@@ -20,8 +20,8 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
-enum RemoteHardwarePinType: SwiftProtobuf.Enum {
-  typealias RawValue = Int
+public enum RemoteHardwarePinType: SwiftProtobuf.Enum {
+  public typealias RawValue = Int
 
   ///
   /// Unset/unused
@@ -36,11 +36,11 @@ enum RemoteHardwarePinType: SwiftProtobuf.Enum {
   case digitalWrite // = 2
   case UNRECOGNIZED(Int)
 
-  init() {
+  public init() {
     self = .unknown
   }
 
-  init?(rawValue: Int) {
+  public init?(rawValue: Int) {
     switch rawValue {
     case 0: self = .unknown
     case 1: self = .digitalRead
@@ -49,7 +49,7 @@ enum RemoteHardwarePinType: SwiftProtobuf.Enum {
     }
   }
 
-  var rawValue: Int {
+  public var rawValue: Int {
     switch self {
     case .unknown: return 0
     case .digitalRead: return 1
@@ -64,7 +64,7 @@ enum RemoteHardwarePinType: SwiftProtobuf.Enum {
 
 extension RemoteHardwarePinType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [RemoteHardwarePinType] = [
+  public static let allCases: [RemoteHardwarePinType] = [
     .unknown,
     .digitalRead,
     .digitalWrite,
@@ -75,18 +75,18 @@ extension RemoteHardwarePinType: CaseIterable {
 
 ///
 /// Module Config
-struct ModuleConfig {
+public struct ModuleConfig {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// TODO: REPLACE
-  var payloadVariant: ModuleConfig.OneOf_PayloadVariant? = nil
+  public var payloadVariant: ModuleConfig.OneOf_PayloadVariant? = nil
 
   ///
   /// TODO: REPLACE
-  var mqtt: ModuleConfig.MQTTConfig {
+  public var mqtt: ModuleConfig.MQTTConfig {
     get {
       if case .mqtt(let v)? = payloadVariant {return v}
       return ModuleConfig.MQTTConfig()
@@ -96,7 +96,7 @@ struct ModuleConfig {
 
   ///
   /// TODO: REPLACE
-  var serial: ModuleConfig.SerialConfig {
+  public var serial: ModuleConfig.SerialConfig {
     get {
       if case .serial(let v)? = payloadVariant {return v}
       return ModuleConfig.SerialConfig()
@@ -106,7 +106,7 @@ struct ModuleConfig {
 
   ///
   /// TODO: REPLACE
-  var externalNotification: ModuleConfig.ExternalNotificationConfig {
+  public var externalNotification: ModuleConfig.ExternalNotificationConfig {
     get {
       if case .externalNotification(let v)? = payloadVariant {return v}
       return ModuleConfig.ExternalNotificationConfig()
@@ -116,7 +116,7 @@ struct ModuleConfig {
 
   ///
   /// TODO: REPLACE
-  var storeForward: ModuleConfig.StoreForwardConfig {
+  public var storeForward: ModuleConfig.StoreForwardConfig {
     get {
       if case .storeForward(let v)? = payloadVariant {return v}
       return ModuleConfig.StoreForwardConfig()
@@ -126,7 +126,7 @@ struct ModuleConfig {
 
   ///
   /// TODO: REPLACE
-  var rangeTest: ModuleConfig.RangeTestConfig {
+  public var rangeTest: ModuleConfig.RangeTestConfig {
     get {
       if case .rangeTest(let v)? = payloadVariant {return v}
       return ModuleConfig.RangeTestConfig()
@@ -136,7 +136,7 @@ struct ModuleConfig {
 
   ///
   /// TODO: REPLACE
-  var telemetry: ModuleConfig.TelemetryConfig {
+  public var telemetry: ModuleConfig.TelemetryConfig {
     get {
       if case .telemetry(let v)? = payloadVariant {return v}
       return ModuleConfig.TelemetryConfig()
@@ -146,7 +146,7 @@ struct ModuleConfig {
 
   ///
   /// TODO: REPLACE
-  var cannedMessage: ModuleConfig.CannedMessageConfig {
+  public var cannedMessage: ModuleConfig.CannedMessageConfig {
     get {
       if case .cannedMessage(let v)? = payloadVariant {return v}
       return ModuleConfig.CannedMessageConfig()
@@ -156,7 +156,7 @@ struct ModuleConfig {
 
   ///
   /// TODO: REPLACE
-  var audio: ModuleConfig.AudioConfig {
+  public var audio: ModuleConfig.AudioConfig {
     get {
       if case .audio(let v)? = payloadVariant {return v}
       return ModuleConfig.AudioConfig()
@@ -166,7 +166,7 @@ struct ModuleConfig {
 
   ///
   /// TODO: REPLACE
-  var remoteHardware: ModuleConfig.RemoteHardwareConfig {
+  public var remoteHardware: ModuleConfig.RemoteHardwareConfig {
     get {
       if case .remoteHardware(let v)? = payloadVariant {return v}
       return ModuleConfig.RemoteHardwareConfig()
@@ -176,7 +176,7 @@ struct ModuleConfig {
 
   ///
   /// TODO: REPLACE
-  var neighborInfo: ModuleConfig.NeighborInfoConfig {
+  public var neighborInfo: ModuleConfig.NeighborInfoConfig {
     get {
       if case .neighborInfo(let v)? = payloadVariant {return v}
       return ModuleConfig.NeighborInfoConfig()
@@ -186,7 +186,7 @@ struct ModuleConfig {
 
   ///
   /// TODO: REPLACE
-  var ambientLighting: ModuleConfig.AmbientLightingConfig {
+  public var ambientLighting: ModuleConfig.AmbientLightingConfig {
     get {
       if case .ambientLighting(let v)? = payloadVariant {return v}
       return ModuleConfig.AmbientLightingConfig()
@@ -196,7 +196,7 @@ struct ModuleConfig {
 
   ///
   /// TODO: REPLACE
-  var detectionSensor: ModuleConfig.DetectionSensorConfig {
+  public var detectionSensor: ModuleConfig.DetectionSensorConfig {
     get {
       if case .detectionSensor(let v)? = payloadVariant {return v}
       return ModuleConfig.DetectionSensorConfig()
@@ -206,7 +206,7 @@ struct ModuleConfig {
 
   ///
   /// TODO: REPLACE
-  var paxcounter: ModuleConfig.PaxcounterConfig {
+  public var paxcounter: ModuleConfig.PaxcounterConfig {
     get {
       if case .paxcounter(let v)? = payloadVariant {return v}
       return ModuleConfig.PaxcounterConfig()
@@ -214,11 +214,11 @@ struct ModuleConfig {
     set {payloadVariant = .paxcounter(newValue)}
   }
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
   /// TODO: REPLACE
-  enum OneOf_PayloadVariant: Equatable {
+  public enum OneOf_PayloadVariant: Equatable {
     ///
     /// TODO: REPLACE
     case mqtt(ModuleConfig.MQTTConfig)
@@ -260,7 +260,7 @@ struct ModuleConfig {
     case paxcounter(ModuleConfig.PaxcounterConfig)
 
   #if !swift(>=4.1)
-    static func ==(lhs: ModuleConfig.OneOf_PayloadVariant, rhs: ModuleConfig.OneOf_PayloadVariant) -> Bool {
+    public static func ==(lhs: ModuleConfig.OneOf_PayloadVariant, rhs: ModuleConfig.OneOf_PayloadVariant) -> Bool {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
@@ -325,7 +325,7 @@ struct ModuleConfig {
 
   ///
   /// MQTT Client Config
-  struct MQTTConfig {
+  public struct MQTTConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -333,228 +333,228 @@ struct ModuleConfig {
     ///
     /// If a meshtastic node is able to reach the internet it will normally attempt to gateway any channels that are marked as
     /// is_uplink_enabled or is_downlink_enabled.
-    var enabled: Bool = false
+    public var enabled: Bool = false
 
     ///
     /// The server to use for our MQTT global message gateway feature.
     /// If not set, the default server will be used
-    var address: String = String()
+    public var address: String = String()
 
     ///
     /// MQTT username to use (most useful for a custom MQTT server).
     /// If using a custom server, this will be honoured even if empty.
     /// If using the default server, this will only be honoured if set, otherwise the device will use the default username
-    var username: String = String()
+    public var username: String = String()
 
     ///
     /// MQTT password to use (most useful for a custom MQTT server).
     /// If using a custom server, this will be honoured even if empty.
     /// If using the default server, this will only be honoured if set, otherwise the device will use the default password
-    var password: String = String()
+    public var password: String = String()
 
     ///
     /// Whether to send encrypted or decrypted packets to MQTT.
     /// This parameter is only honoured if you also set server
     /// (the default official mqtt.meshtastic.org server can handle encrypted packets)
     /// Decrypted packets may be useful for external systems that want to consume meshtastic packets
-    var encryptionEnabled: Bool = false
+    public var encryptionEnabled: Bool = false
 
     ///
     /// Whether to send / consume json packets on MQTT
-    var jsonEnabled: Bool = false
+    public var jsonEnabled: Bool = false
 
     ///
     /// If true, we attempt to establish a secure connection using TLS
-    var tlsEnabled: Bool = false
+    public var tlsEnabled: Bool = false
 
     ///
     /// The root topic to use for MQTT messages. Default is "msh".
     /// This is useful if you want to use a single MQTT server for multiple meshtastic networks and separate them via ACLs
-    var root: String = String()
+    public var root: String = String()
 
     ///
     /// If true, we can use the connected phone / client to proxy messages to MQTT instead of a direct connection
-    var proxyToClientEnabled: Bool = false
+    public var proxyToClientEnabled: Bool = false
 
     ///
     /// If true, we will periodically report unencrypted information about our node to a map via MQTT
-    var mapReportingEnabled: Bool = false
+    public var mapReportingEnabled: Bool = false
 
     ///
     /// Settings for reporting information about our node to a map via MQTT
-    var mapReportSettings: ModuleConfig.MapReportSettings {
+    public var mapReportSettings: ModuleConfig.MapReportSettings {
       get {return _mapReportSettings ?? ModuleConfig.MapReportSettings()}
       set {_mapReportSettings = newValue}
     }
     /// Returns true if `mapReportSettings` has been explicitly set.
-    var hasMapReportSettings: Bool {return self._mapReportSettings != nil}
+    public var hasMapReportSettings: Bool {return self._mapReportSettings != nil}
     /// Clears the value of `mapReportSettings`. Subsequent reads from it will return its default value.
-    mutating func clearMapReportSettings() {self._mapReportSettings = nil}
+    public mutating func clearMapReportSettings() {self._mapReportSettings = nil}
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    init() {}
+    public init() {}
 
     fileprivate var _mapReportSettings: ModuleConfig.MapReportSettings? = nil
   }
 
   ///
   /// Settings for reporting unencrypted information about our node to a map via MQTT
-  struct MapReportSettings {
+  public struct MapReportSettings {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     ///
     /// How often we should report our info to the map (in seconds)
-    var publishIntervalSecs: UInt32 = 0
+    public var publishIntervalSecs: UInt32 = 0
 
     ///
     /// Bits of precision for the location sent (default of 32 is full precision).
-    var positionPrecision: UInt32 = 0
+    public var positionPrecision: UInt32 = 0
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    init() {}
+    public init() {}
   }
 
   ///
   /// RemoteHardwareModule Config
-  struct RemoteHardwareConfig {
+  public struct RemoteHardwareConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     ///
     /// Whether the Module is enabled
-    var enabled: Bool = false
+    public var enabled: Bool = false
 
     ///
     /// Whether the Module allows consumers to read / write to pins not defined in available_pins
-    var allowUndefinedPinAccess: Bool = false
+    public var allowUndefinedPinAccess: Bool = false
 
     ///
     /// Exposes the available pins to the mesh for reading and writing
-    var availablePins: [RemoteHardwarePin] = []
+    public var availablePins: [RemoteHardwarePin] = []
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    init() {}
+    public init() {}
   }
 
   ///
   /// NeighborInfoModule Config
-  struct NeighborInfoConfig {
+  public struct NeighborInfoConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     ///
     /// Whether the Module is enabled
-    var enabled: Bool = false
+    public var enabled: Bool = false
 
     ///
     /// Interval in seconds of how often we should try to send our
     /// Neighbor Info to the mesh
-    var updateInterval: UInt32 = 0
+    public var updateInterval: UInt32 = 0
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    init() {}
+    public init() {}
   }
 
   ///
   /// Detection Sensor Module Config
-  struct DetectionSensorConfig {
+  public struct DetectionSensorConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     ///
     /// Whether the Module is enabled
-    var enabled: Bool = false
+    public var enabled: Bool = false
 
     ///
     /// Interval in seconds of how often we can send a message to the mesh when a state change is detected
-    var minimumBroadcastSecs: UInt32 = 0
+    public var minimumBroadcastSecs: UInt32 = 0
 
     ///
     /// Interval in seconds of how often we should send a message to the mesh with the current state regardless of changes
     /// When set to 0, only state changes will be broadcasted
     /// Works as a sort of status heartbeat for peace of mind
-    var stateBroadcastSecs: UInt32 = 0
+    public var stateBroadcastSecs: UInt32 = 0
 
     ///
     /// Send ASCII bell with alert message
     /// Useful for triggering ext. notification on bell
-    var sendBell: Bool = false
+    public var sendBell: Bool = false
 
     ///
     /// Friendly name used to format message sent to mesh
     /// Example: A name "Motion" would result in a message "Motion detected"
     /// Maximum length of 20 characters
-    var name: String = String()
+    public var name: String = String()
 
     ///
     /// GPIO pin to monitor for state changes
-    var monitorPin: UInt32 = 0
+    public var monitorPin: UInt32 = 0
 
     ///
     /// Whether or not the GPIO pin state detection is triggered on HIGH (1)
     /// Otherwise LOW (0)
-    var detectionTriggeredHigh: Bool = false
+    public var detectionTriggeredHigh: Bool = false
 
     ///
     /// Whether or not use INPUT_PULLUP mode for GPIO pin
     /// Only applicable if the board uses pull-up resistors on the pin
-    var usePullup: Bool = false
+    public var usePullup: Bool = false
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    init() {}
+    public init() {}
   }
 
   ///
   /// Audio Config for codec2 voice
-  struct AudioConfig {
+  public struct AudioConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     ///
     /// Whether Audio is enabled
-    var codec2Enabled: Bool = false
+    public var codec2Enabled: Bool = false
 
     ///
     /// PTT Pin
-    var pttPin: UInt32 = 0
+    public var pttPin: UInt32 = 0
 
     ///
     /// The audio sample rate to use for codec2
-    var bitrate: ModuleConfig.AudioConfig.Audio_Baud = .codec2Default
+    public var bitrate: ModuleConfig.AudioConfig.Audio_Baud = .codec2Default
 
     ///
     /// I2S Word Select
-    var i2SWs: UInt32 = 0
+    public var i2SWs: UInt32 = 0
 
     ///
     /// I2S Data IN
-    var i2SSd: UInt32 = 0
+    public var i2SSd: UInt32 = 0
 
     ///
     /// I2S Data OUT
-    var i2SDin: UInt32 = 0
+    public var i2SDin: UInt32 = 0
 
     ///
     /// I2S Clock
-    var i2SSck: UInt32 = 0
+    public var i2SSck: UInt32 = 0
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
     /// Baudrate for codec2 voice
-    enum Audio_Baud: SwiftProtobuf.Enum {
-      typealias RawValue = Int
+    public enum Audio_Baud: SwiftProtobuf.Enum {
+      public typealias RawValue = Int
       case codec2Default // = 0
       case codec23200 // = 1
       case codec22400 // = 2
@@ -566,11 +566,11 @@ struct ModuleConfig {
       case codec2700B // = 8
       case UNRECOGNIZED(Int)
 
-      init() {
+      public init() {
         self = .codec2Default
       }
 
-      init?(rawValue: Int) {
+      public init?(rawValue: Int) {
         switch rawValue {
         case 0: self = .codec2Default
         case 1: self = .codec23200
@@ -585,7 +585,7 @@ struct ModuleConfig {
         }
       }
 
-      var rawValue: Int {
+      public var rawValue: Int {
         switch self {
         case .codec2Default: return 0
         case .codec23200: return 1
@@ -602,82 +602,82 @@ struct ModuleConfig {
 
     }
 
-    init() {}
+    public init() {}
   }
 
   ///
   /// Config for the Paxcounter Module
-  struct PaxcounterConfig {
+  public struct PaxcounterConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     ///
     /// Enable the Paxcounter Module
-    var enabled: Bool = false
+    public var enabled: Bool = false
 
-    var paxcounterUpdateInterval: UInt32 = 0
+    public var paxcounterUpdateInterval: UInt32 = 0
 
     ///
     /// WiFi RSSI threshold. Defaults to -80
-    var wifiThreshold: Int32 = 0
+    public var wifiThreshold: Int32 = 0
 
     ///
     /// BLE RSSI threshold. Defaults to -80
-    var bleThreshold: Int32 = 0
+    public var bleThreshold: Int32 = 0
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    init() {}
+    public init() {}
   }
 
   ///
   /// Serial Config
-  struct SerialConfig {
+  public struct SerialConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     ///
     /// Preferences for the SerialModule
-    var enabled: Bool = false
+    public var enabled: Bool = false
 
     ///
     /// TODO: REPLACE
-    var echo: Bool = false
+    public var echo: Bool = false
 
     ///
     /// RX pin (should match Arduino gpio pin number)
-    var rxd: UInt32 = 0
+    public var rxd: UInt32 = 0
 
     ///
     /// TX pin (should match Arduino gpio pin number)
-    var txd: UInt32 = 0
+    public var txd: UInt32 = 0
 
     ///
     /// Serial baud rate
-    var baud: ModuleConfig.SerialConfig.Serial_Baud = .baudDefault
+    public var baud: ModuleConfig.SerialConfig.Serial_Baud = .baudDefault
 
     ///
     /// TODO: REPLACE
-    var timeout: UInt32 = 0
+    public var timeout: UInt32 = 0
 
     ///
     /// Mode for serial module operation
-    var mode: ModuleConfig.SerialConfig.Serial_Mode = .default
+    public var mode: ModuleConfig.SerialConfig.Serial_Mode = .default
 
     ///
     /// Overrides the platform's defacto Serial port instance to use with Serial module config settings
     /// This is currently only usable in output modes like NMEA / CalTopo and may behave strangely or not work at all in other modes
     /// Existing logging over the Serial Console will still be present
-    var overrideConsoleSerialPort: Bool = false
+    public var overrideConsoleSerialPort: Bool = false
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
     /// TODO: REPLACE
-    enum Serial_Baud: SwiftProtobuf.Enum {
-      typealias RawValue = Int
+    public enum Serial_Baud: SwiftProtobuf.Enum {
+      public typealias RawValue = Int
       case baudDefault // = 0
       case baud110 // = 1
       case baud300 // = 2
@@ -696,11 +696,11 @@ struct ModuleConfig {
       case baud921600 // = 15
       case UNRECOGNIZED(Int)
 
-      init() {
+      public init() {
         self = .baudDefault
       }
 
-      init?(rawValue: Int) {
+      public init?(rawValue: Int) {
         switch rawValue {
         case 0: self = .baudDefault
         case 1: self = .baud110
@@ -722,7 +722,7 @@ struct ModuleConfig {
         }
       }
 
-      var rawValue: Int {
+      public var rawValue: Int {
         switch self {
         case .baudDefault: return 0
         case .baud110: return 1
@@ -748,8 +748,8 @@ struct ModuleConfig {
 
     ///
     /// TODO: REPLACE
-    enum Serial_Mode: SwiftProtobuf.Enum {
-      typealias RawValue = Int
+    public enum Serial_Mode: SwiftProtobuf.Enum {
+      public typealias RawValue = Int
       case `default` // = 0
       case simple // = 1
       case proto // = 2
@@ -760,11 +760,11 @@ struct ModuleConfig {
       case caltopo // = 5
       case UNRECOGNIZED(Int)
 
-      init() {
+      public init() {
         self = .default
       }
 
-      init?(rawValue: Int) {
+      public init?(rawValue: Int) {
         switch rawValue {
         case 0: self = .default
         case 1: self = .simple
@@ -776,7 +776,7 @@ struct ModuleConfig {
         }
       }
 
-      var rawValue: Int {
+      public var rawValue: Int {
         switch self {
         case .default: return 0
         case .simple: return 1
@@ -790,152 +790,152 @@ struct ModuleConfig {
 
     }
 
-    init() {}
+    public init() {}
   }
 
   ///
   /// External Notifications Config
-  struct ExternalNotificationConfig {
+  public struct ExternalNotificationConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     ///
     /// Enable the ExternalNotificationModule
-    var enabled: Bool = false
+    public var enabled: Bool = false
 
     ///
     /// When using in On/Off mode, keep the output on for this many
     /// milliseconds. Default 1000ms (1 second).
-    var outputMs: UInt32 = 0
+    public var outputMs: UInt32 = 0
 
     ///
     /// Define the output pin GPIO setting Defaults to
     /// EXT_NOTIFY_OUT if set for the board.
     /// In standalone devices this pin should drive the LED to match the UI.
-    var output: UInt32 = 0
+    public var output: UInt32 = 0
 
     ///
     /// Optional: Define a secondary output pin for a vibra motor
     /// This is used in standalone devices to match the UI.
-    var outputVibra: UInt32 = 0
+    public var outputVibra: UInt32 = 0
 
     ///
     /// Optional: Define a tertiary output pin for an active buzzer
     /// This is used in standalone devices to to match the UI.
-    var outputBuzzer: UInt32 = 0
+    public var outputBuzzer: UInt32 = 0
 
     ///
     /// IF this is true, the 'output' Pin will be pulled active high, false
     /// means active low.
-    var active: Bool = false
+    public var active: Bool = false
 
     ///
     /// True: Alert when a text message arrives (output)
-    var alertMessage: Bool = false
+    public var alertMessage: Bool = false
 
     ///
     /// True: Alert when a text message arrives (output_vibra)
-    var alertMessageVibra: Bool = false
+    public var alertMessageVibra: Bool = false
 
     ///
     /// True: Alert when a text message arrives (output_buzzer)
-    var alertMessageBuzzer: Bool = false
+    public var alertMessageBuzzer: Bool = false
 
     ///
     /// True: Alert when the bell character is received (output)
-    var alertBell: Bool = false
+    public var alertBell: Bool = false
 
     ///
     /// True: Alert when the bell character is received (output_vibra)
-    var alertBellVibra: Bool = false
+    public var alertBellVibra: Bool = false
 
     ///
     /// True: Alert when the bell character is received (output_buzzer)
-    var alertBellBuzzer: Bool = false
+    public var alertBellBuzzer: Bool = false
 
     ///
     /// use a PWM output instead of a simple on/off output. This will ignore
     /// the 'output', 'output_ms' and 'active' settings and use the
     /// device.buzzer_gpio instead.
-    var usePwm: Bool = false
+    public var usePwm: Bool = false
 
     ///
     /// The notification will toggle with 'output_ms' for this time of seconds.
     /// Default is 0 which means don't repeat at all. 60 would mean blink
     /// and/or beep for 60 seconds
-    var nagTimeout: UInt32 = 0
+    public var nagTimeout: UInt32 = 0
 
     ///
     /// When true, enables devices with native I2S audio output to use the RTTTL over speaker like a buzzer
     /// T-Watch S3 and T-Deck for example have this capability
-    var useI2SAsBuzzer: Bool = false
+    public var useI2SAsBuzzer: Bool = false
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    init() {}
+    public init() {}
   }
 
   ///
   /// Store and Forward Module Config
-  struct StoreForwardConfig {
+  public struct StoreForwardConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     ///
     /// Enable the Store and Forward Module
-    var enabled: Bool = false
+    public var enabled: Bool = false
 
     ///
     /// TODO: REPLACE
-    var heartbeat: Bool = false
+    public var heartbeat: Bool = false
 
     ///
     /// TODO: REPLACE
-    var records: UInt32 = 0
+    public var records: UInt32 = 0
 
     ///
     /// TODO: REPLACE
-    var historyReturnMax: UInt32 = 0
+    public var historyReturnMax: UInt32 = 0
 
     ///
     /// TODO: REPLACE
-    var historyReturnWindow: UInt32 = 0
+    public var historyReturnWindow: UInt32 = 0
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    init() {}
+    public init() {}
   }
 
   ///
   /// Preferences for the RangeTestModule
-  struct RangeTestConfig {
+  public struct RangeTestConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     ///
     /// Enable the Range Test Module
-    var enabled: Bool = false
+    public var enabled: Bool = false
 
     ///
     /// Send out range test messages from this node
-    var sender: UInt32 = 0
+    public var sender: UInt32 = 0
 
     ///
     /// Bool value indicating that this node should save a RangeTest.csv file.
     /// ESP32 Only
-    var save: Bool = false
+    public var save: Bool = false
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    init() {}
+    public init() {}
   }
 
   ///
   /// Configuration for both device and environment metrics
-  struct TelemetryConfig {
+  public struct TelemetryConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -943,112 +943,112 @@ struct ModuleConfig {
     ///
     /// Interval in seconds of how often we should try to send our
     /// device metrics to the mesh
-    var deviceUpdateInterval: UInt32 = 0
+    public var deviceUpdateInterval: UInt32 = 0
 
-    var environmentUpdateInterval: UInt32 = 0
+    public var environmentUpdateInterval: UInt32 = 0
 
     ///
     /// Preferences for the Telemetry Module (Environment)
     /// Enable/Disable the telemetry measurement module measurement collection
-    var environmentMeasurementEnabled: Bool = false
+    public var environmentMeasurementEnabled: Bool = false
 
     ///
     /// Enable/Disable the telemetry measurement module on-device display
-    var environmentScreenEnabled: Bool = false
+    public var environmentScreenEnabled: Bool = false
 
     ///
     /// We'll always read the sensor in Celsius, but sometimes we might want to
     /// display the results in Fahrenheit as a "user preference".
-    var environmentDisplayFahrenheit: Bool = false
+    public var environmentDisplayFahrenheit: Bool = false
 
     ///
     /// Enable/Disable the air quality metrics
-    var airQualityEnabled: Bool = false
+    public var airQualityEnabled: Bool = false
 
     ///
     /// Interval in seconds of how often we should try to send our
     /// air quality metrics to the mesh
-    var airQualityInterval: UInt32 = 0
+    public var airQualityInterval: UInt32 = 0
 
     ///
     /// Interval in seconds of how often we should try to send our
     /// air quality metrics to the mesh
-    var powerMeasurementEnabled: Bool = false
+    public var powerMeasurementEnabled: Bool = false
 
     ///
     /// Interval in seconds of how often we should try to send our
     /// air quality metrics to the mesh
-    var powerUpdateInterval: UInt32 = 0
+    public var powerUpdateInterval: UInt32 = 0
 
     ///
     /// Interval in seconds of how often we should try to send our
     /// air quality metrics to the mesh
-    var powerScreenEnabled: Bool = false
+    public var powerScreenEnabled: Bool = false
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    init() {}
+    public init() {}
   }
 
   ///
   /// TODO: REPLACE
-  struct CannedMessageConfig {
+  public struct CannedMessageConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     ///
     /// Enable the rotary encoder #1. This is a 'dumb' encoder sending pulses on both A and B pins while rotating.
-    var rotary1Enabled: Bool = false
+    public var rotary1Enabled: Bool = false
 
     ///
     /// GPIO pin for rotary encoder A port.
-    var inputbrokerPinA: UInt32 = 0
+    public var inputbrokerPinA: UInt32 = 0
 
     ///
     /// GPIO pin for rotary encoder B port.
-    var inputbrokerPinB: UInt32 = 0
+    public var inputbrokerPinB: UInt32 = 0
 
     ///
     /// GPIO pin for rotary encoder Press port.
-    var inputbrokerPinPress: UInt32 = 0
+    public var inputbrokerPinPress: UInt32 = 0
 
     ///
     /// Generate input event on CW of this kind.
-    var inputbrokerEventCw: ModuleConfig.CannedMessageConfig.InputEventChar = .none
+    public var inputbrokerEventCw: ModuleConfig.CannedMessageConfig.InputEventChar = .none
 
     ///
     /// Generate input event on CCW of this kind.
-    var inputbrokerEventCcw: ModuleConfig.CannedMessageConfig.InputEventChar = .none
+    public var inputbrokerEventCcw: ModuleConfig.CannedMessageConfig.InputEventChar = .none
 
     ///
     /// Generate input event on Press of this kind.
-    var inputbrokerEventPress: ModuleConfig.CannedMessageConfig.InputEventChar = .none
+    public var inputbrokerEventPress: ModuleConfig.CannedMessageConfig.InputEventChar = .none
 
     ///
     /// Enable the Up/Down/Select input device. Can be RAK rotary encoder or 3 buttons. Uses the a/b/press definitions from inputbroker.
-    var updown1Enabled: Bool = false
+    public var updown1Enabled: Bool = false
 
     ///
     /// Enable/disable CannedMessageModule.
-    var enabled: Bool = false
+    public var enabled: Bool = false
 
     ///
     /// Input event origin accepted by the canned message module.
     /// Can be e.g. "rotEnc1", "upDownEnc1" or keyword "_any"
-    var allowInputSource: String = String()
+    public var allowInputSource: String = String()
 
     ///
     /// CannedMessageModule also sends a bell character with the messages.
     /// ExternalNotificationModule can benefit from this feature.
-    var sendBell: Bool = false
+    public var sendBell: Bool = false
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
     /// TODO: REPLACE
-    enum InputEventChar: SwiftProtobuf.Enum {
-      typealias RawValue = Int
+    public enum InputEventChar: SwiftProtobuf.Enum {
+      public typealias RawValue = Int
 
       ///
       /// TODO: REPLACE
@@ -1083,11 +1083,11 @@ struct ModuleConfig {
       case cancel // = 24
       case UNRECOGNIZED(Int)
 
-      init() {
+      public init() {
         self = .none
       }
 
-      init?(rawValue: Int) {
+      public init?(rawValue: Int) {
         switch rawValue {
         case 0: self = .none
         case 10: self = .select
@@ -1101,7 +1101,7 @@ struct ModuleConfig {
         }
       }
 
-      var rawValue: Int {
+      public var rawValue: Int {
         switch self {
         case .none: return 0
         case .select: return 10
@@ -1117,50 +1117,50 @@ struct ModuleConfig {
 
     }
 
-    init() {}
+    public init() {}
   }
 
   ///
   ///Ambient Lighting Module - Settings for control of onboard LEDs to allow users to adjust the brightness levels and respective color levels.
   ///Initially created for the RAK14001 RGB LED module.
-  struct AmbientLightingConfig {
+  public struct AmbientLightingConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     ///
     /// Sets LED to on or off.
-    var ledState: Bool = false
+    public var ledState: Bool = false
 
     ///
     /// Sets the current for the LED output. Default is 10.
-    var current: UInt32 = 0
+    public var current: UInt32 = 0
 
     ///
     /// Sets the red LED level. Values are 0-255.
-    var red: UInt32 = 0
+    public var red: UInt32 = 0
 
     ///
     /// Sets the green LED level. Values are 0-255.
-    var green: UInt32 = 0
+    public var green: UInt32 = 0
 
     ///
     /// Sets the blue LED level. Values are 0-255.
-    var blue: UInt32 = 0
+    public var blue: UInt32 = 0
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    init() {}
+    public init() {}
   }
 
-  init() {}
+  public init() {}
 }
 
 #if swift(>=4.2)
 
 extension ModuleConfig.AudioConfig.Audio_Baud: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [ModuleConfig.AudioConfig.Audio_Baud] = [
+  public static let allCases: [ModuleConfig.AudioConfig.Audio_Baud] = [
     .codec2Default,
     .codec23200,
     .codec22400,
@@ -1175,7 +1175,7 @@ extension ModuleConfig.AudioConfig.Audio_Baud: CaseIterable {
 
 extension ModuleConfig.SerialConfig.Serial_Baud: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [ModuleConfig.SerialConfig.Serial_Baud] = [
+  public static let allCases: [ModuleConfig.SerialConfig.Serial_Baud] = [
     .baudDefault,
     .baud110,
     .baud300,
@@ -1197,7 +1197,7 @@ extension ModuleConfig.SerialConfig.Serial_Baud: CaseIterable {
 
 extension ModuleConfig.SerialConfig.Serial_Mode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [ModuleConfig.SerialConfig.Serial_Mode] = [
+  public static let allCases: [ModuleConfig.SerialConfig.Serial_Mode] = [
     .default,
     .simple,
     .proto,
@@ -1209,7 +1209,7 @@ extension ModuleConfig.SerialConfig.Serial_Mode: CaseIterable {
 
 extension ModuleConfig.CannedMessageConfig.InputEventChar: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [ModuleConfig.CannedMessageConfig.InputEventChar] = [
+  public static let allCases: [ModuleConfig.CannedMessageConfig.InputEventChar] = [
     .none,
     .up,
     .down,
@@ -1225,26 +1225,26 @@ extension ModuleConfig.CannedMessageConfig.InputEventChar: CaseIterable {
 
 ///
 /// A GPIO pin definition for remote hardware module
-struct RemoteHardwarePin {
+public struct RemoteHardwarePin {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// GPIO Pin number (must match Arduino)
-  var gpioPin: UInt32 = 0
+  public var gpioPin: UInt32 = 0
 
   ///
   /// Name for the GPIO pin (i.e. Front gate, mailbox, etc)
-  var name: String = String()
+  public var name: String = String()
 
   ///
   /// Type of GPIO access available to consumers on the mesh
-  var type: RemoteHardwarePinType = .unknown
+  public var type: RemoteHardwarePinType = .unknown
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
@@ -1277,7 +1277,7 @@ extension RemoteHardwarePin: @unchecked Sendable {}
 fileprivate let _protobuf_package = "meshtastic"
 
 extension RemoteHardwarePinType: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "UNKNOWN"),
     1: .same(proto: "DIGITAL_READ"),
     2: .same(proto: "DIGITAL_WRITE"),
@@ -1285,8 +1285,8 @@ extension RemoteHardwarePinType: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".ModuleConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".ModuleConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "mqtt"),
     2: .same(proto: "serial"),
     3: .standard(proto: "external_notification"),
@@ -1302,7 +1302,7 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     13: .same(proto: "paxcounter"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -1482,7 +1482,7 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -1545,7 +1545,7 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ModuleConfig, rhs: ModuleConfig) -> Bool {
+  public static func ==(lhs: ModuleConfig, rhs: ModuleConfig) -> Bool {
     if lhs.payloadVariant != rhs.payloadVariant {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
@@ -1553,8 +1553,8 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
 }
 
 extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = ModuleConfig.protoMessageName + ".MQTTConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = ModuleConfig.protoMessageName + ".MQTTConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "enabled"),
     2: .same(proto: "address"),
     3: .same(proto: "username"),
@@ -1568,7 +1568,7 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
     11: .standard(proto: "map_report_settings"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -1590,7 +1590,7 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -1631,7 +1631,7 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ModuleConfig.MQTTConfig, rhs: ModuleConfig.MQTTConfig) -> Bool {
+  public static func ==(lhs: ModuleConfig.MQTTConfig, rhs: ModuleConfig.MQTTConfig) -> Bool {
     if lhs.enabled != rhs.enabled {return false}
     if lhs.address != rhs.address {return false}
     if lhs.username != rhs.username {return false}
@@ -1649,13 +1649,13 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
 }
 
 extension ModuleConfig.MapReportSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = ModuleConfig.protoMessageName + ".MapReportSettings"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = ModuleConfig.protoMessageName + ".MapReportSettings"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "publish_interval_secs"),
     2: .standard(proto: "position_precision"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -1668,7 +1668,7 @@ extension ModuleConfig.MapReportSettings: SwiftProtobuf.Message, SwiftProtobuf._
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.publishIntervalSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.publishIntervalSecs, fieldNumber: 1)
     }
@@ -1678,7 +1678,7 @@ extension ModuleConfig.MapReportSettings: SwiftProtobuf.Message, SwiftProtobuf._
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ModuleConfig.MapReportSettings, rhs: ModuleConfig.MapReportSettings) -> Bool {
+  public static func ==(lhs: ModuleConfig.MapReportSettings, rhs: ModuleConfig.MapReportSettings) -> Bool {
     if lhs.publishIntervalSecs != rhs.publishIntervalSecs {return false}
     if lhs.positionPrecision != rhs.positionPrecision {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -1687,14 +1687,14 @@ extension ModuleConfig.MapReportSettings: SwiftProtobuf.Message, SwiftProtobuf._
 }
 
 extension ModuleConfig.RemoteHardwareConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = ModuleConfig.protoMessageName + ".RemoteHardwareConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = ModuleConfig.protoMessageName + ".RemoteHardwareConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "enabled"),
     2: .standard(proto: "allow_undefined_pin_access"),
     3: .standard(proto: "available_pins"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -1708,7 +1708,7 @@ extension ModuleConfig.RemoteHardwareConfig: SwiftProtobuf.Message, SwiftProtobu
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.enabled != false {
       try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
     }
@@ -1721,7 +1721,7 @@ extension ModuleConfig.RemoteHardwareConfig: SwiftProtobuf.Message, SwiftProtobu
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ModuleConfig.RemoteHardwareConfig, rhs: ModuleConfig.RemoteHardwareConfig) -> Bool {
+  public static func ==(lhs: ModuleConfig.RemoteHardwareConfig, rhs: ModuleConfig.RemoteHardwareConfig) -> Bool {
     if lhs.enabled != rhs.enabled {return false}
     if lhs.allowUndefinedPinAccess != rhs.allowUndefinedPinAccess {return false}
     if lhs.availablePins != rhs.availablePins {return false}
@@ -1731,13 +1731,13 @@ extension ModuleConfig.RemoteHardwareConfig: SwiftProtobuf.Message, SwiftProtobu
 }
 
 extension ModuleConfig.NeighborInfoConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = ModuleConfig.protoMessageName + ".NeighborInfoConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = ModuleConfig.protoMessageName + ".NeighborInfoConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "enabled"),
     2: .standard(proto: "update_interval"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -1750,7 +1750,7 @@ extension ModuleConfig.NeighborInfoConfig: SwiftProtobuf.Message, SwiftProtobuf.
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.enabled != false {
       try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
     }
@@ -1760,7 +1760,7 @@ extension ModuleConfig.NeighborInfoConfig: SwiftProtobuf.Message, SwiftProtobuf.
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ModuleConfig.NeighborInfoConfig, rhs: ModuleConfig.NeighborInfoConfig) -> Bool {
+  public static func ==(lhs: ModuleConfig.NeighborInfoConfig, rhs: ModuleConfig.NeighborInfoConfig) -> Bool {
     if lhs.enabled != rhs.enabled {return false}
     if lhs.updateInterval != rhs.updateInterval {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -1769,8 +1769,8 @@ extension ModuleConfig.NeighborInfoConfig: SwiftProtobuf.Message, SwiftProtobuf.
 }
 
 extension ModuleConfig.DetectionSensorConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = ModuleConfig.protoMessageName + ".DetectionSensorConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = ModuleConfig.protoMessageName + ".DetectionSensorConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "enabled"),
     2: .standard(proto: "minimum_broadcast_secs"),
     3: .standard(proto: "state_broadcast_secs"),
@@ -1781,7 +1781,7 @@ extension ModuleConfig.DetectionSensorConfig: SwiftProtobuf.Message, SwiftProtob
     8: .standard(proto: "use_pullup"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -1800,7 +1800,7 @@ extension ModuleConfig.DetectionSensorConfig: SwiftProtobuf.Message, SwiftProtob
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.enabled != false {
       try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
     }
@@ -1828,7 +1828,7 @@ extension ModuleConfig.DetectionSensorConfig: SwiftProtobuf.Message, SwiftProtob
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ModuleConfig.DetectionSensorConfig, rhs: ModuleConfig.DetectionSensorConfig) -> Bool {
+  public static func ==(lhs: ModuleConfig.DetectionSensorConfig, rhs: ModuleConfig.DetectionSensorConfig) -> Bool {
     if lhs.enabled != rhs.enabled {return false}
     if lhs.minimumBroadcastSecs != rhs.minimumBroadcastSecs {return false}
     if lhs.stateBroadcastSecs != rhs.stateBroadcastSecs {return false}
@@ -1843,8 +1843,8 @@ extension ModuleConfig.DetectionSensorConfig: SwiftProtobuf.Message, SwiftProtob
 }
 
 extension ModuleConfig.AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = ModuleConfig.protoMessageName + ".AudioConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = ModuleConfig.protoMessageName + ".AudioConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "codec2_enabled"),
     2: .standard(proto: "ptt_pin"),
     3: .same(proto: "bitrate"),
@@ -1854,7 +1854,7 @@ extension ModuleConfig.AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._Messag
     7: .standard(proto: "i2s_sck"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -1872,7 +1872,7 @@ extension ModuleConfig.AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._Messag
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.codec2Enabled != false {
       try visitor.visitSingularBoolField(value: self.codec2Enabled, fieldNumber: 1)
     }
@@ -1897,7 +1897,7 @@ extension ModuleConfig.AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._Messag
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ModuleConfig.AudioConfig, rhs: ModuleConfig.AudioConfig) -> Bool {
+  public static func ==(lhs: ModuleConfig.AudioConfig, rhs: ModuleConfig.AudioConfig) -> Bool {
     if lhs.codec2Enabled != rhs.codec2Enabled {return false}
     if lhs.pttPin != rhs.pttPin {return false}
     if lhs.bitrate != rhs.bitrate {return false}
@@ -1911,7 +1911,7 @@ extension ModuleConfig.AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._Messag
 }
 
 extension ModuleConfig.AudioConfig.Audio_Baud: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "CODEC2_DEFAULT"),
     1: .same(proto: "CODEC2_3200"),
     2: .same(proto: "CODEC2_2400"),
@@ -1925,15 +1925,15 @@ extension ModuleConfig.AudioConfig.Audio_Baud: SwiftProtobuf._ProtoNameProviding
 }
 
 extension ModuleConfig.PaxcounterConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = ModuleConfig.protoMessageName + ".PaxcounterConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = ModuleConfig.protoMessageName + ".PaxcounterConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "enabled"),
     2: .standard(proto: "paxcounter_update_interval"),
     3: .standard(proto: "wifi_threshold"),
     4: .standard(proto: "ble_threshold"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -1948,7 +1948,7 @@ extension ModuleConfig.PaxcounterConfig: SwiftProtobuf.Message, SwiftProtobuf._M
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.enabled != false {
       try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
     }
@@ -1964,7 +1964,7 @@ extension ModuleConfig.PaxcounterConfig: SwiftProtobuf.Message, SwiftProtobuf._M
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ModuleConfig.PaxcounterConfig, rhs: ModuleConfig.PaxcounterConfig) -> Bool {
+  public static func ==(lhs: ModuleConfig.PaxcounterConfig, rhs: ModuleConfig.PaxcounterConfig) -> Bool {
     if lhs.enabled != rhs.enabled {return false}
     if lhs.paxcounterUpdateInterval != rhs.paxcounterUpdateInterval {return false}
     if lhs.wifiThreshold != rhs.wifiThreshold {return false}
@@ -1975,8 +1975,8 @@ extension ModuleConfig.PaxcounterConfig: SwiftProtobuf.Message, SwiftProtobuf._M
 }
 
 extension ModuleConfig.SerialConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = ModuleConfig.protoMessageName + ".SerialConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = ModuleConfig.protoMessageName + ".SerialConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "enabled"),
     2: .same(proto: "echo"),
     3: .same(proto: "rxd"),
@@ -1987,7 +1987,7 @@ extension ModuleConfig.SerialConfig: SwiftProtobuf.Message, SwiftProtobuf._Messa
     8: .standard(proto: "override_console_serial_port"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -2006,7 +2006,7 @@ extension ModuleConfig.SerialConfig: SwiftProtobuf.Message, SwiftProtobuf._Messa
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.enabled != false {
       try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
     }
@@ -2034,7 +2034,7 @@ extension ModuleConfig.SerialConfig: SwiftProtobuf.Message, SwiftProtobuf._Messa
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ModuleConfig.SerialConfig, rhs: ModuleConfig.SerialConfig) -> Bool {
+  public static func ==(lhs: ModuleConfig.SerialConfig, rhs: ModuleConfig.SerialConfig) -> Bool {
     if lhs.enabled != rhs.enabled {return false}
     if lhs.echo != rhs.echo {return false}
     if lhs.rxd != rhs.rxd {return false}
@@ -2049,7 +2049,7 @@ extension ModuleConfig.SerialConfig: SwiftProtobuf.Message, SwiftProtobuf._Messa
 }
 
 extension ModuleConfig.SerialConfig.Serial_Baud: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "BAUD_DEFAULT"),
     1: .same(proto: "BAUD_110"),
     2: .same(proto: "BAUD_300"),
@@ -2070,7 +2070,7 @@ extension ModuleConfig.SerialConfig.Serial_Baud: SwiftProtobuf._ProtoNameProvidi
 }
 
 extension ModuleConfig.SerialConfig.Serial_Mode: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "DEFAULT"),
     1: .same(proto: "SIMPLE"),
     2: .same(proto: "PROTO"),
@@ -2081,8 +2081,8 @@ extension ModuleConfig.SerialConfig.Serial_Mode: SwiftProtobuf._ProtoNameProvidi
 }
 
 extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = ModuleConfig.protoMessageName + ".ExternalNotificationConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = ModuleConfig.protoMessageName + ".ExternalNotificationConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "enabled"),
     2: .standard(proto: "output_ms"),
     3: .same(proto: "output"),
@@ -2100,7 +2100,7 @@ extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftP
     15: .standard(proto: "use_i2s_as_buzzer"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -2126,7 +2126,7 @@ extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftP
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.enabled != false {
       try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
     }
@@ -2175,7 +2175,7 @@ extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftP
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ModuleConfig.ExternalNotificationConfig, rhs: ModuleConfig.ExternalNotificationConfig) -> Bool {
+  public static func ==(lhs: ModuleConfig.ExternalNotificationConfig, rhs: ModuleConfig.ExternalNotificationConfig) -> Bool {
     if lhs.enabled != rhs.enabled {return false}
     if lhs.outputMs != rhs.outputMs {return false}
     if lhs.output != rhs.output {return false}
@@ -2197,8 +2197,8 @@ extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftP
 }
 
 extension ModuleConfig.StoreForwardConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = ModuleConfig.protoMessageName + ".StoreForwardConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = ModuleConfig.protoMessageName + ".StoreForwardConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "enabled"),
     2: .same(proto: "heartbeat"),
     3: .same(proto: "records"),
@@ -2206,7 +2206,7 @@ extension ModuleConfig.StoreForwardConfig: SwiftProtobuf.Message, SwiftProtobuf.
     5: .standard(proto: "history_return_window"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -2222,7 +2222,7 @@ extension ModuleConfig.StoreForwardConfig: SwiftProtobuf.Message, SwiftProtobuf.
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.enabled != false {
       try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
     }
@@ -2241,7 +2241,7 @@ extension ModuleConfig.StoreForwardConfig: SwiftProtobuf.Message, SwiftProtobuf.
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ModuleConfig.StoreForwardConfig, rhs: ModuleConfig.StoreForwardConfig) -> Bool {
+  public static func ==(lhs: ModuleConfig.StoreForwardConfig, rhs: ModuleConfig.StoreForwardConfig) -> Bool {
     if lhs.enabled != rhs.enabled {return false}
     if lhs.heartbeat != rhs.heartbeat {return false}
     if lhs.records != rhs.records {return false}
@@ -2253,14 +2253,14 @@ extension ModuleConfig.StoreForwardConfig: SwiftProtobuf.Message, SwiftProtobuf.
 }
 
 extension ModuleConfig.RangeTestConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = ModuleConfig.protoMessageName + ".RangeTestConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = ModuleConfig.protoMessageName + ".RangeTestConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "enabled"),
     2: .same(proto: "sender"),
     3: .same(proto: "save"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -2274,7 +2274,7 @@ extension ModuleConfig.RangeTestConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.enabled != false {
       try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
     }
@@ -2287,7 +2287,7 @@ extension ModuleConfig.RangeTestConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ModuleConfig.RangeTestConfig, rhs: ModuleConfig.RangeTestConfig) -> Bool {
+  public static func ==(lhs: ModuleConfig.RangeTestConfig, rhs: ModuleConfig.RangeTestConfig) -> Bool {
     if lhs.enabled != rhs.enabled {return false}
     if lhs.sender != rhs.sender {return false}
     if lhs.save != rhs.save {return false}
@@ -2297,8 +2297,8 @@ extension ModuleConfig.RangeTestConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
 }
 
 extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = ModuleConfig.protoMessageName + ".TelemetryConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = ModuleConfig.protoMessageName + ".TelemetryConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "device_update_interval"),
     2: .standard(proto: "environment_update_interval"),
     3: .standard(proto: "environment_measurement_enabled"),
@@ -2311,7 +2311,7 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     10: .standard(proto: "power_screen_enabled"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -2332,7 +2332,7 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.deviceUpdateInterval != 0 {
       try visitor.visitSingularUInt32Field(value: self.deviceUpdateInterval, fieldNumber: 1)
     }
@@ -2366,7 +2366,7 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ModuleConfig.TelemetryConfig, rhs: ModuleConfig.TelemetryConfig) -> Bool {
+  public static func ==(lhs: ModuleConfig.TelemetryConfig, rhs: ModuleConfig.TelemetryConfig) -> Bool {
     if lhs.deviceUpdateInterval != rhs.deviceUpdateInterval {return false}
     if lhs.environmentUpdateInterval != rhs.environmentUpdateInterval {return false}
     if lhs.environmentMeasurementEnabled != rhs.environmentMeasurementEnabled {return false}
@@ -2383,8 +2383,8 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
 }
 
 extension ModuleConfig.CannedMessageConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = ModuleConfig.protoMessageName + ".CannedMessageConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = ModuleConfig.protoMessageName + ".CannedMessageConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "rotary1_enabled"),
     2: .standard(proto: "inputbroker_pin_a"),
     3: .standard(proto: "inputbroker_pin_b"),
@@ -2398,7 +2398,7 @@ extension ModuleConfig.CannedMessageConfig: SwiftProtobuf.Message, SwiftProtobuf
     11: .standard(proto: "send_bell"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -2420,7 +2420,7 @@ extension ModuleConfig.CannedMessageConfig: SwiftProtobuf.Message, SwiftProtobuf
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.rotary1Enabled != false {
       try visitor.visitSingularBoolField(value: self.rotary1Enabled, fieldNumber: 1)
     }
@@ -2457,7 +2457,7 @@ extension ModuleConfig.CannedMessageConfig: SwiftProtobuf.Message, SwiftProtobuf
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ModuleConfig.CannedMessageConfig, rhs: ModuleConfig.CannedMessageConfig) -> Bool {
+  public static func ==(lhs: ModuleConfig.CannedMessageConfig, rhs: ModuleConfig.CannedMessageConfig) -> Bool {
     if lhs.rotary1Enabled != rhs.rotary1Enabled {return false}
     if lhs.inputbrokerPinA != rhs.inputbrokerPinA {return false}
     if lhs.inputbrokerPinB != rhs.inputbrokerPinB {return false}
@@ -2475,7 +2475,7 @@ extension ModuleConfig.CannedMessageConfig: SwiftProtobuf.Message, SwiftProtobuf
 }
 
 extension ModuleConfig.CannedMessageConfig.InputEventChar: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "NONE"),
     10: .same(proto: "SELECT"),
     17: .same(proto: "UP"),
@@ -2488,8 +2488,8 @@ extension ModuleConfig.CannedMessageConfig.InputEventChar: SwiftProtobuf._ProtoN
 }
 
 extension ModuleConfig.AmbientLightingConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = ModuleConfig.protoMessageName + ".AmbientLightingConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = ModuleConfig.protoMessageName + ".AmbientLightingConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "led_state"),
     2: .same(proto: "current"),
     3: .same(proto: "red"),
@@ -2497,7 +2497,7 @@ extension ModuleConfig.AmbientLightingConfig: SwiftProtobuf.Message, SwiftProtob
     5: .same(proto: "blue"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -2513,7 +2513,7 @@ extension ModuleConfig.AmbientLightingConfig: SwiftProtobuf.Message, SwiftProtob
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.ledState != false {
       try visitor.visitSingularBoolField(value: self.ledState, fieldNumber: 1)
     }
@@ -2532,7 +2532,7 @@ extension ModuleConfig.AmbientLightingConfig: SwiftProtobuf.Message, SwiftProtob
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ModuleConfig.AmbientLightingConfig, rhs: ModuleConfig.AmbientLightingConfig) -> Bool {
+  public static func ==(lhs: ModuleConfig.AmbientLightingConfig, rhs: ModuleConfig.AmbientLightingConfig) -> Bool {
     if lhs.ledState != rhs.ledState {return false}
     if lhs.current != rhs.current {return false}
     if lhs.red != rhs.red {return false}
@@ -2544,14 +2544,14 @@ extension ModuleConfig.AmbientLightingConfig: SwiftProtobuf.Message, SwiftProtob
 }
 
 extension RemoteHardwarePin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".RemoteHardwarePin"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".RemoteHardwarePin"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "gpio_pin"),
     2: .same(proto: "name"),
     3: .same(proto: "type"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -2565,7 +2565,7 @@ extension RemoteHardwarePin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.gpioPin != 0 {
       try visitor.visitSingularUInt32Field(value: self.gpioPin, fieldNumber: 1)
     }
@@ -2578,7 +2578,7 @@ extension RemoteHardwarePin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: RemoteHardwarePin, rhs: RemoteHardwarePin) -> Bool {
+  public static func ==(lhs: RemoteHardwarePin, rhs: RemoteHardwarePin) -> Bool {
     if lhs.gpioPin != rhs.gpioPin {return false}
     if lhs.name != rhs.name {return false}
     if lhs.type != rhs.type {return false}

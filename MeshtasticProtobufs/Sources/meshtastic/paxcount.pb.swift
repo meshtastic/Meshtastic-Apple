@@ -22,26 +22,26 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 
 ///
 /// TODO: REPLACE
-struct Paxcount {
+public struct Paxcount {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// seen Wifi devices
-  var wifi: UInt32 = 0
+  public var wifi: UInt32 = 0
 
   ///
   /// Seen BLE devices
-  var ble: UInt32 = 0
+  public var ble: UInt32 = 0
 
   ///
   /// Uptime in seconds
-  var uptime: UInt32 = 0
+  public var uptime: UInt32 = 0
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
@@ -53,14 +53,14 @@ extension Paxcount: @unchecked Sendable {}
 fileprivate let _protobuf_package = "meshtastic"
 
 extension Paxcount: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".Paxcount"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".Paxcount"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "wifi"),
     2: .same(proto: "ble"),
     3: .same(proto: "uptime"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -74,7 +74,7 @@ extension Paxcount: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.wifi != 0 {
       try visitor.visitSingularUInt32Field(value: self.wifi, fieldNumber: 1)
     }
@@ -87,7 +87,7 @@ extension Paxcount: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Paxcount, rhs: Paxcount) -> Bool {
+  public static func ==(lhs: Paxcount, rhs: Paxcount) -> Bool {
     if lhs.wifi != rhs.wifi {return false}
     if lhs.ble != rhs.ble {return false}
     if lhs.uptime != rhs.uptime {return false}

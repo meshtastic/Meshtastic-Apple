@@ -36,14 +36,14 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// FIXME: Add description of multi-channel support and how primary vs secondary channels are used.
 /// FIXME: explain how apps use channels for security.
 /// explain how remote settings and remote gpio are managed as an example
-struct ChannelSettings {
+public struct ChannelSettings {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Deprecated in favor of LoraConfig.channel_num
-  var channelNum: UInt32 = 0
+  public var channelNum: UInt32 = 0
 
   ///
   /// A simple pre-shared key for now for crypto.
@@ -56,7 +56,7 @@ struct ChannelSettings {
   /// `1` = The special "default" channel key: {0xd4, 0xf1, 0xbb, 0x3a, 0x20, 0x29, 0x07, 0x59, 0xf0, 0xbc, 0xff, 0xab, 0xcf, 0x4e, 0x69, 0x01}
   /// `2` through 10 = The default channel key, except with 1 through 9 added to the last byte.
   /// Shown to user as simple1 through 10
-  var psk: Data = Data()
+  public var psk: Data = Data()
 
   ///
   /// A SHORT name that will be packed into the URL.
@@ -67,7 +67,7 @@ struct ChannelSettings {
   /// In user interfaces it should be rendered as a local language translation of "X".
   /// For channel_num hashing empty string will be treated as "X".
   /// Where "X" is selected based on the English words listed above for ModemPreset
-  var name: String = String()
+  public var name: String = String()
 
   ///
   /// Used to construct a globally unique channel ID.
@@ -81,58 +81,58 @@ struct ChannelSettings {
   /// Those channels do not have a numeric id included in the settings, but instead it is pulled from
   /// a table of well known IDs.
   /// (see Well Known Channels FIXME)
-  var id: UInt32 = 0
+  public var id: UInt32 = 0
 
   ///
   /// If true, messages on the mesh will be sent to the *public* internet by any gateway ndoe
-  var uplinkEnabled: Bool = false
+  public var uplinkEnabled: Bool = false
 
   ///
   /// If true, messages seen on the internet will be forwarded to the local mesh.
-  var downlinkEnabled: Bool = false
+  public var downlinkEnabled: Bool = false
 
   ///
   /// Per-channel module settings.
-  var moduleSettings: ModuleSettings {
+  public var moduleSettings: ModuleSettings {
     get {return _moduleSettings ?? ModuleSettings()}
     set {_moduleSettings = newValue}
   }
   /// Returns true if `moduleSettings` has been explicitly set.
-  var hasModuleSettings: Bool {return self._moduleSettings != nil}
+  public var hasModuleSettings: Bool {return self._moduleSettings != nil}
   /// Clears the value of `moduleSettings`. Subsequent reads from it will return its default value.
-  mutating func clearModuleSettings() {self._moduleSettings = nil}
+  public mutating func clearModuleSettings() {self._moduleSettings = nil}
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 
   fileprivate var _moduleSettings: ModuleSettings? = nil
 }
 
 ///
 /// This message is specifically for modules to store per-channel configuration data.
-struct ModuleSettings {
+public struct ModuleSettings {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Bits of precision for the location sent in position packets.
-  var positionPrecision: UInt32 = 0
+  public var positionPrecision: UInt32 = 0
 
   ///
   /// Controls whether or not the phone / clients should mute the current channel
   /// Useful for noisy public channels you don't necessarily want to disable
-  var isClientMuted: Bool = false
+  public var isClientMuted: Bool = false
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// A pair of a channel number, mode and the (sharable) settings for that channel
-struct Channel {
+public struct Channel {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -141,24 +141,24 @@ struct Channel {
   /// The index of this channel in the channel table (from 0 to MAX_NUM_CHANNELS-1)
   /// (Someday - not currently implemented) An index of -1 could be used to mean "set by name",
   /// in which case the target node will find and set the channel by settings.name.
-  var index: Int32 = 0
+  public var index: Int32 = 0
 
   ///
   /// The new settings, or NULL to disable that channel
-  var settings: ChannelSettings {
+  public var settings: ChannelSettings {
     get {return _settings ?? ChannelSettings()}
     set {_settings = newValue}
   }
   /// Returns true if `settings` has been explicitly set.
-  var hasSettings: Bool {return self._settings != nil}
+  public var hasSettings: Bool {return self._settings != nil}
   /// Clears the value of `settings`. Subsequent reads from it will return its default value.
-  mutating func clearSettings() {self._settings = nil}
+  public mutating func clearSettings() {self._settings = nil}
 
   ///
   /// TODO: REPLACE
-  var role: Channel.Role = .disabled
+  public var role: Channel.Role = .disabled
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
   /// How this channel is being used (or not).
@@ -170,8 +170,8 @@ struct Channel {
   /// cross band routing as needed.
   /// If a device has only a single radio (the common case) only one channel can be PRIMARY at a time
   /// (but any number of SECONDARY channels can't be sent received on that common frequency)
-  enum Role: SwiftProtobuf.Enum {
-    typealias RawValue = Int
+  public enum Role: SwiftProtobuf.Enum {
+    public typealias RawValue = Int
 
     ///
     /// This channel is not in use right now
@@ -187,11 +187,11 @@ struct Channel {
     case secondary // = 2
     case UNRECOGNIZED(Int)
 
-    init() {
+    public init() {
       self = .disabled
     }
 
-    init?(rawValue: Int) {
+    public init?(rawValue: Int) {
       switch rawValue {
       case 0: self = .disabled
       case 1: self = .primary
@@ -200,7 +200,7 @@ struct Channel {
       }
     }
 
-    var rawValue: Int {
+    public var rawValue: Int {
       switch self {
       case .disabled: return 0
       case .primary: return 1
@@ -211,7 +211,7 @@ struct Channel {
 
   }
 
-  init() {}
+  public init() {}
 
   fileprivate var _settings: ChannelSettings? = nil
 }
@@ -220,7 +220,7 @@ struct Channel {
 
 extension Channel.Role: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Channel.Role] = [
+  public static let allCases: [Channel.Role] = [
     .disabled,
     .primary,
     .secondary,
@@ -241,8 +241,8 @@ extension Channel.Role: @unchecked Sendable {}
 fileprivate let _protobuf_package = "meshtastic"
 
 extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".ChannelSettings"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".ChannelSettings"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "channel_num"),
     2: .same(proto: "psk"),
     3: .same(proto: "name"),
@@ -252,7 +252,7 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     7: .standard(proto: "module_settings"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -270,7 +270,7 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -299,7 +299,7 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ChannelSettings, rhs: ChannelSettings) -> Bool {
+  public static func ==(lhs: ChannelSettings, rhs: ChannelSettings) -> Bool {
     if lhs.channelNum != rhs.channelNum {return false}
     if lhs.psk != rhs.psk {return false}
     if lhs.name != rhs.name {return false}
@@ -313,13 +313,13 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
 }
 
 extension ModuleSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".ModuleSettings"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".ModuleSettings"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "position_precision"),
     2: .standard(proto: "is_client_muted"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -332,7 +332,7 @@ extension ModuleSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.positionPrecision != 0 {
       try visitor.visitSingularUInt32Field(value: self.positionPrecision, fieldNumber: 1)
     }
@@ -342,7 +342,7 @@ extension ModuleSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ModuleSettings, rhs: ModuleSettings) -> Bool {
+  public static func ==(lhs: ModuleSettings, rhs: ModuleSettings) -> Bool {
     if lhs.positionPrecision != rhs.positionPrecision {return false}
     if lhs.isClientMuted != rhs.isClientMuted {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -351,14 +351,14 @@ extension ModuleSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
 }
 
 extension Channel: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".Channel"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".Channel"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "index"),
     2: .same(proto: "settings"),
     3: .same(proto: "role"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -372,7 +372,7 @@ extension Channel: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -389,7 +389,7 @@ extension Channel: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Channel, rhs: Channel) -> Bool {
+  public static func ==(lhs: Channel, rhs: Channel) -> Bool {
     if lhs.index != rhs.index {return false}
     if lhs._settings != rhs._settings {return false}
     if lhs.role != rhs.role {return false}
@@ -399,7 +399,7 @@ extension Channel: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
 }
 
 extension Channel.Role: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "DISABLED"),
     1: .same(proto: "PRIMARY"),
     2: .same(proto: "SECONDARY"),

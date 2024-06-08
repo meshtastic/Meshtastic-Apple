@@ -22,103 +22,103 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 
 ///
 /// This message wraps a MeshPacket with extra metadata about the sender and how it arrived.
-struct ServiceEnvelope {
+public struct ServiceEnvelope {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// The (probably encrypted) packet
-  var packet: MeshPacket {
+  public var packet: MeshPacket {
     get {return _packet ?? MeshPacket()}
     set {_packet = newValue}
   }
   /// Returns true if `packet` has been explicitly set.
-  var hasPacket: Bool {return self._packet != nil}
+  public var hasPacket: Bool {return self._packet != nil}
   /// Clears the value of `packet`. Subsequent reads from it will return its default value.
-  mutating func clearPacket() {self._packet = nil}
+  public mutating func clearPacket() {self._packet = nil}
 
   ///
   /// The global channel ID it was sent on
-  var channelID: String = String()
+  public var channelID: String = String()
 
   ///
   /// The sending gateway node ID. Can we use this to authenticate/prevent fake
   /// nodeid impersonation for senders? - i.e. use gateway/mesh id (which is authenticated) + local node id as
   /// the globally trusted nodenum
-  var gatewayID: String = String()
+  public var gatewayID: String = String()
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 
   fileprivate var _packet: MeshPacket? = nil
 }
 
 ///
 /// Information about a node intended to be reported unencrypted to a map using MQTT.
-struct MapReport {
+public struct MapReport {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// A full name for this user, i.e. "Kevin Hester"
-  var longName: String = String()
+  public var longName: String = String()
 
   ///
   /// A VERY short name, ideally two characters.
   /// Suitable for a tiny OLED screen
-  var shortName: String = String()
+  public var shortName: String = String()
 
   ///
   /// Role of the node that applies specific settings for a particular use-case
-  var role: Config.DeviceConfig.Role = .client
+  public var role: Config.DeviceConfig.Role = .client
 
   ///
   /// Hardware model of the node, i.e. T-Beam, Heltec V3, etc...
-  var hwModel: HardwareModel = .unset
+  public var hwModel: HardwareModel = .unset
 
   ///
   /// Device firmware version string
-  var firmwareVersion: String = String()
+  public var firmwareVersion: String = String()
 
   ///
   /// The region code for the radio (US, CN, EU433, etc...)
-  var region: Config.LoRaConfig.RegionCode = .unset
+  public var region: Config.LoRaConfig.RegionCode = .unset
 
   ///
   /// Modem preset used by the radio (LongFast, MediumSlow, etc...)
-  var modemPreset: Config.LoRaConfig.ModemPreset = .longFast
+  public var modemPreset: Config.LoRaConfig.ModemPreset = .longFast
 
   ///
   /// Whether the node has a channel with default PSK and name (LongFast, MediumSlow, etc...)
   /// and it uses the default frequency slot given the region and modem preset.
-  var hasDefaultChannel_p: Bool = false
+  public var hasDefaultChannel_p: Bool = false
 
   ///
   /// Latitude: multiply by 1e-7 to get degrees in floating point
-  var latitudeI: Int32 = 0
+  public var latitudeI: Int32 = 0
 
   ///
   /// Longitude: multiply by 1e-7 to get degrees in floating point
-  var longitudeI: Int32 = 0
+  public var longitudeI: Int32 = 0
 
   ///
   /// Altitude in meters above MSL
-  var altitude: Int32 = 0
+  public var altitude: Int32 = 0
 
   ///
   /// Indicates the bits of precision for latitude and longitude set by the sending node
-  var positionPrecision: UInt32 = 0
+  public var positionPrecision: UInt32 = 0
 
   ///
   /// Number of online nodes (heard in the last 2 hours) this node has in its list that were received locally (not via MQTT)
-  var numOnlineLocalNodes: UInt32 = 0
+  public var numOnlineLocalNodes: UInt32 = 0
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
@@ -131,14 +131,14 @@ extension MapReport: @unchecked Sendable {}
 fileprivate let _protobuf_package = "meshtastic"
 
 extension ServiceEnvelope: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".ServiceEnvelope"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".ServiceEnvelope"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "packet"),
     2: .standard(proto: "channel_id"),
     3: .standard(proto: "gateway_id"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -152,7 +152,7 @@ extension ServiceEnvelope: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -169,7 +169,7 @@ extension ServiceEnvelope: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ServiceEnvelope, rhs: ServiceEnvelope) -> Bool {
+  public static func ==(lhs: ServiceEnvelope, rhs: ServiceEnvelope) -> Bool {
     if lhs._packet != rhs._packet {return false}
     if lhs.channelID != rhs.channelID {return false}
     if lhs.gatewayID != rhs.gatewayID {return false}
@@ -179,8 +179,8 @@ extension ServiceEnvelope: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
 }
 
 extension MapReport: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".MapReport"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".MapReport"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "long_name"),
     2: .standard(proto: "short_name"),
     3: .same(proto: "role"),
@@ -196,7 +196,7 @@ extension MapReport: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     13: .standard(proto: "num_online_local_nodes"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -220,7 +220,7 @@ extension MapReport: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if !self.longName.isEmpty {
       try visitor.visitSingularStringField(value: self.longName, fieldNumber: 1)
     }
@@ -263,7 +263,7 @@ extension MapReport: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: MapReport, rhs: MapReport) -> Bool {
+  public static func ==(lhs: MapReport, rhs: MapReport) -> Bool {
     if lhs.longName != rhs.longName {return false}
     if lhs.shortName != rhs.shortName {return false}
     if lhs.role != rhs.role {return false}

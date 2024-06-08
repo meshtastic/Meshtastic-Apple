@@ -33,8 +33,8 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// Note: This was formerly a Type enum named 'typ' with the same id #
 /// We have change to this 'portnum' based scheme for specifying app handlers for particular payloads.
 /// This change is backwards compatible by treating the legacy OPAQUE/CLEAR_TEXT values identically.
-enum PortNum: SwiftProtobuf.Enum {
-  typealias RawValue = Int
+public enum PortNum: SwiftProtobuf.Enum {
+  public typealias RawValue = Int
 
   ///
   /// Deprecated: do not use in new code (formerly called OPAQUE)
@@ -201,11 +201,11 @@ enum PortNum: SwiftProtobuf.Enum {
   case max // = 511
   case UNRECOGNIZED(Int)
 
-  init() {
+  public init() {
     self = .unknownApp
   }
 
-  init?(rawValue: Int) {
+  public init?(rawValue: Int) {
     switch rawValue {
     case 0: self = .unknownApp
     case 1: self = .textMessageApp
@@ -238,7 +238,7 @@ enum PortNum: SwiftProtobuf.Enum {
     }
   }
 
-  var rawValue: Int {
+  public var rawValue: Int {
     switch self {
     case .unknownApp: return 0
     case .textMessageApp: return 1
@@ -277,7 +277,7 @@ enum PortNum: SwiftProtobuf.Enum {
 
 extension PortNum: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [PortNum] = [
+  public static let allCases: [PortNum] = [
     .unknownApp,
     .textMessageApp,
     .remoteHardwareApp,
@@ -317,7 +317,7 @@ extension PortNum: @unchecked Sendable {}
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 extension PortNum: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "UNKNOWN_APP"),
     1: .same(proto: "TEXT_MESSAGE_APP"),
     2: .same(proto: "REMOTE_HARDWARE_APP"),

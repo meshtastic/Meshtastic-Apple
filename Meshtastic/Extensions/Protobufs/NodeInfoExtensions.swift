@@ -1,4 +1,5 @@
 import Foundation
+import MeshtasticProtobufs
 
 extension NodeInfo {
 	var isValidPosition: Bool {

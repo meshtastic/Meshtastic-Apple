@@ -1,5 +1,6 @@
 import Foundation
 import CoreData
+import MeshtasticProtobufs
 
 extension DeviceMetadataEntity {
 	convenience init(

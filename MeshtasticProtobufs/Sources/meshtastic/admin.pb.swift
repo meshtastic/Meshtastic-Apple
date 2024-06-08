@@ -24,19 +24,19 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// This message is handled by the Admin module and is responsible for all settings/channel read/write operations.
 /// This message is used to do settings operations to both remote AND local nodes.
 /// (Prior to 1.2 these operations were done via special ToRadio operations)
-struct AdminMessage {
+public struct AdminMessage {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// TODO: REPLACE
-  var payloadVariant: AdminMessage.OneOf_PayloadVariant? = nil
+  public var payloadVariant: AdminMessage.OneOf_PayloadVariant? = nil
 
   ///
   /// Send the specified channel in the response to this message
   /// NOTE: This field is sent with the channel index + 1 (to ensure we never try to send 'zero' - which protobufs treats as not present)
-  var getChannelRequest: UInt32 {
+  public var getChannelRequest: UInt32 {
     get {
       if case .getChannelRequest(let v)? = payloadVariant {return v}
       return 0
@@ -46,7 +46,7 @@ struct AdminMessage {
 
   ///
   /// TODO: REPLACE
-  var getChannelResponse: Channel {
+  public var getChannelResponse: Channel {
     get {
       if case .getChannelResponse(let v)? = payloadVariant {return v}
       return Channel()
@@ -56,7 +56,7 @@ struct AdminMessage {
 
   ///
   /// Send the current owner data in the response to this message.
-  var getOwnerRequest: Bool {
+  public var getOwnerRequest: Bool {
     get {
       if case .getOwnerRequest(let v)? = payloadVariant {return v}
       return false
@@ -66,7 +66,7 @@ struct AdminMessage {
 
   ///
   /// TODO: REPLACE
-  var getOwnerResponse: User {
+  public var getOwnerResponse: User {
     get {
       if case .getOwnerResponse(let v)? = payloadVariant {return v}
       return User()
@@ -76,7 +76,7 @@ struct AdminMessage {
 
   ///
   /// Ask for the following config data to be sent
-  var getConfigRequest: AdminMessage.ConfigType {
+  public var getConfigRequest: AdminMessage.ConfigType {
     get {
       if case .getConfigRequest(let v)? = payloadVariant {return v}
       return .deviceConfig
@@ -86,7 +86,7 @@ struct AdminMessage {
 
   ///
   /// Send the current Config in the response to this message.
-  var getConfigResponse: Config {
+  public var getConfigResponse: Config {
     get {
       if case .getConfigResponse(let v)? = payloadVariant {return v}
       return Config()
@@ -96,7 +96,7 @@ struct AdminMessage {
 
   ///
   /// Ask for the following config data to be sent
-  var getModuleConfigRequest: AdminMessage.ModuleConfigType {
+  public var getModuleConfigRequest: AdminMessage.ModuleConfigType {
     get {
       if case .getModuleConfigRequest(let v)? = payloadVariant {return v}
       return .mqttConfig
@@ -106,7 +106,7 @@ struct AdminMessage {
 
   ///
   /// Send the current Config in the response to this message.
-  var getModuleConfigResponse: ModuleConfig {
+  public var getModuleConfigResponse: ModuleConfig {
     get {
       if case .getModuleConfigResponse(let v)? = payloadVariant {return v}
       return ModuleConfig()
@@ -116,7 +116,7 @@ struct AdminMessage {
 
   ///
   /// Get the Canned Message Module messages in the response to this message.
-  var getCannedMessageModuleMessagesRequest: Bool {
+  public var getCannedMessageModuleMessagesRequest: Bool {
     get {
       if case .getCannedMessageModuleMessagesRequest(let v)? = payloadVariant {return v}
       return false
@@ -126,7 +126,7 @@ struct AdminMessage {
 
   ///
   /// Get the Canned Message Module messages in the response to this message.
-  var getCannedMessageModuleMessagesResponse: String {
+  public var getCannedMessageModuleMessagesResponse: String {
     get {
       if case .getCannedMessageModuleMessagesResponse(let v)? = payloadVariant {return v}
       return String()
@@ -136,7 +136,7 @@ struct AdminMessage {
 
   ///
   /// Request the node to send device metadata (firmware, protobuf version, etc)
-  var getDeviceMetadataRequest: Bool {
+  public var getDeviceMetadataRequest: Bool {
     get {
       if case .getDeviceMetadataRequest(let v)? = payloadVariant {return v}
       return false
@@ -146,7 +146,7 @@ struct AdminMessage {
 
   ///
   /// Device metadata response
-  var getDeviceMetadataResponse: DeviceMetadata {
+  public var getDeviceMetadataResponse: DeviceMetadata {
     get {
       if case .getDeviceMetadataResponse(let v)? = payloadVariant {return v}
       return DeviceMetadata()
@@ -156,7 +156,7 @@ struct AdminMessage {
 
   ///
   /// Get the Ringtone in the response to this message.
-  var getRingtoneRequest: Bool {
+  public var getRingtoneRequest: Bool {
     get {
       if case .getRingtoneRequest(let v)? = payloadVariant {return v}
       return false
@@ -166,7 +166,7 @@ struct AdminMessage {
 
   ///
   /// Get the Ringtone in the response to this message.
-  var getRingtoneResponse: String {
+  public var getRingtoneResponse: String {
     get {
       if case .getRingtoneResponse(let v)? = payloadVariant {return v}
       return String()
@@ -176,7 +176,7 @@ struct AdminMessage {
 
   ///
   /// Request the node to send it's connection status
-  var getDeviceConnectionStatusRequest: Bool {
+  public var getDeviceConnectionStatusRequest: Bool {
     get {
       if case .getDeviceConnectionStatusRequest(let v)? = payloadVariant {return v}
       return false
@@ -186,7 +186,7 @@ struct AdminMessage {
 
   ///
   /// Device connection status response
-  var getDeviceConnectionStatusResponse: DeviceConnectionStatus {
+  public var getDeviceConnectionStatusResponse: DeviceConnectionStatus {
     get {
       if case .getDeviceConnectionStatusResponse(let v)? = payloadVariant {return v}
       return DeviceConnectionStatus()
@@ -196,7 +196,7 @@ struct AdminMessage {
 
   ///
   /// Setup a node for licensed amateur (ham) radio operation
-  var setHamMode: HamParameters {
+  public var setHamMode: HamParameters {
     get {
       if case .setHamMode(let v)? = payloadVariant {return v}
       return HamParameters()
@@ -206,7 +206,7 @@ struct AdminMessage {
 
   ///
   /// Get the mesh's nodes with their available gpio pins for RemoteHardware module use
-  var getNodeRemoteHardwarePinsRequest: Bool {
+  public var getNodeRemoteHardwarePinsRequest: Bool {
     get {
       if case .getNodeRemoteHardwarePinsRequest(let v)? = payloadVariant {return v}
       return false
@@ -216,7 +216,7 @@ struct AdminMessage {
 
   ///
   /// Respond with the mesh's nodes with their available gpio pins for RemoteHardware module use
-  var getNodeRemoteHardwarePinsResponse: NodeRemoteHardwarePinsResponse {
+  public var getNodeRemoteHardwarePinsResponse: NodeRemoteHardwarePinsResponse {
     get {
       if case .getNodeRemoteHardwarePinsResponse(let v)? = payloadVariant {return v}
       return NodeRemoteHardwarePinsResponse()
@@ -227,7 +227,7 @@ struct AdminMessage {
   ///
   /// Enter (UF2) DFU mode
   /// Only implemented on NRF52 currently
-  var enterDfuModeRequest: Bool {
+  public var enterDfuModeRequest: Bool {
     get {
       if case .enterDfuModeRequest(let v)? = payloadVariant {return v}
       return false
@@ -237,7 +237,7 @@ struct AdminMessage {
 
   ///
   /// Delete the file by the specified path from the device
-  var deleteFileRequest: String {
+  public var deleteFileRequest: String {
     get {
       if case .deleteFileRequest(let v)? = payloadVariant {return v}
       return String()
@@ -247,7 +247,7 @@ struct AdminMessage {
 
   ///
   /// Set the owner for this node
-  var setOwner: User {
+  public var setOwner: User {
     get {
       if case .setOwner(let v)? = payloadVariant {return v}
       return User()
@@ -261,7 +261,7 @@ struct AdminMessage {
   /// The other records are secondary channels.
   /// Note: only one channel can be marked as primary.
   /// If the client sets a particular channel to be primary, the previous channel will be set to SECONDARY automatically.
-  var setChannel: Channel {
+  public var setChannel: Channel {
     get {
       if case .setChannel(let v)? = payloadVariant {return v}
       return Channel()
@@ -271,7 +271,7 @@ struct AdminMessage {
 
   ///
   /// Set the current Config
-  var setConfig: Config {
+  public var setConfig: Config {
     get {
       if case .setConfig(let v)? = payloadVariant {return v}
       return Config()
@@ -281,7 +281,7 @@ struct AdminMessage {
 
   ///
   /// Set the current Config
-  var setModuleConfig: ModuleConfig {
+  public var setModuleConfig: ModuleConfig {
     get {
       if case .setModuleConfig(let v)? = payloadVariant {return v}
       return ModuleConfig()
@@ -291,7 +291,7 @@ struct AdminMessage {
 
   ///
   /// Set the Canned Message Module messages text.
-  var setCannedMessageModuleMessages: String {
+  public var setCannedMessageModuleMessages: String {
     get {
       if case .setCannedMessageModuleMessages(let v)? = payloadVariant {return v}
       return String()
@@ -301,7 +301,7 @@ struct AdminMessage {
 
   ///
   /// Set the ringtone for ExternalNotification.
-  var setRingtoneMessage: String {
+  public var setRingtoneMessage: String {
     get {
       if case .setRingtoneMessage(let v)? = payloadVariant {return v}
       return String()
@@ -311,7 +311,7 @@ struct AdminMessage {
 
   ///
   /// Remove the node by the specified node-num from the NodeDB on the device
-  var removeByNodenum: UInt32 {
+  public var removeByNodenum: UInt32 {
     get {
       if case .removeByNodenum(let v)? = payloadVariant {return v}
       return 0
@@ -321,7 +321,7 @@ struct AdminMessage {
 
   ///
   /// Set specified node-num to be favorited on the NodeDB on the device
-  var setFavoriteNode: UInt32 {
+  public var setFavoriteNode: UInt32 {
     get {
       if case .setFavoriteNode(let v)? = payloadVariant {return v}
       return 0
@@ -331,7 +331,7 @@ struct AdminMessage {
 
   ///
   /// Set specified node-num to be un-favorited on the NodeDB on the device
-  var removeFavoriteNode: UInt32 {
+  public var removeFavoriteNode: UInt32 {
     get {
       if case .removeFavoriteNode(let v)? = payloadVariant {return v}
       return 0
@@ -341,7 +341,7 @@ struct AdminMessage {
 
   ///
   /// Set fixed position data on the node and then set the position.fixed_position = true
-  var setFixedPosition: Position {
+  public var setFixedPosition: Position {
     get {
       if case .setFixedPosition(let v)? = payloadVariant {return v}
       return Position()
@@ -351,7 +351,7 @@ struct AdminMessage {
 
   ///
   /// Clear fixed position coordinates and then set position.fixed_position = false
-  var removeFixedPosition: Bool {
+  public var removeFixedPosition: Bool {
     get {
       if case .removeFixedPosition(let v)? = payloadVariant {return v}
       return false
@@ -362,7 +362,7 @@ struct AdminMessage {
   ///
   /// Begins an edit transaction for config, module config, owner, and channel settings changes
   /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
-  var beginEditSettings: Bool {
+  public var beginEditSettings: Bool {
     get {
       if case .beginEditSettings(let v)? = payloadVariant {return v}
       return false
@@ -372,7 +372,7 @@ struct AdminMessage {
 
   ///
   /// Commits an open transaction for any edits made to config, module config, owner, and channel settings
-  var commitEditSettings: Bool {
+  public var commitEditSettings: Bool {
     get {
       if case .commitEditSettings(let v)? = payloadVariant {return v}
       return false
@@ -383,7 +383,7 @@ struct AdminMessage {
   ///
   /// Tell the node to reboot into the OTA Firmware in this many seconds (or <0 to cancel reboot)
   /// Only Implemented for ESP32 Devices. This needs to be issued to send a new main firmware via bluetooth.
-  var rebootOtaSeconds: Int32 {
+  public var rebootOtaSeconds: Int32 {
     get {
       if case .rebootOtaSeconds(let v)? = payloadVariant {return v}
       return 0
@@ -394,7 +394,7 @@ struct AdminMessage {
   ///
   /// This message is only supported for the simulator Portduino build.
   /// If received the simulator will exit successfully.
-  var exitSimulator: Bool {
+  public var exitSimulator: Bool {
     get {
       if case .exitSimulator(let v)? = payloadVariant {return v}
       return false
@@ -404,7 +404,7 @@ struct AdminMessage {
 
   ///
   /// Tell the node to reboot in this many seconds (or <0 to cancel reboot)
-  var rebootSeconds: Int32 {
+  public var rebootSeconds: Int32 {
     get {
       if case .rebootSeconds(let v)? = payloadVariant {return v}
       return 0
@@ -414,7 +414,7 @@ struct AdminMessage {
 
   ///
   /// Tell the node to shutdown in this many seconds (or <0 to cancel shutdown)
-  var shutdownSeconds: Int32 {
+  public var shutdownSeconds: Int32 {
     get {
       if case .shutdownSeconds(let v)? = payloadVariant {return v}
       return 0
@@ -424,7 +424,7 @@ struct AdminMessage {
 
   ///
   /// Tell the node to factory reset, all device settings will be returned to factory defaults.
-  var factoryReset: Int32 {
+  public var factoryReset: Int32 {
     get {
       if case .factoryReset(let v)? = payloadVariant {return v}
       return 0
@@ -434,7 +434,7 @@ struct AdminMessage {
 
   ///
   /// Tell the node to reset the nodedb.
-  var nodedbReset: Int32 {
+  public var nodedbReset: Int32 {
     get {
       if case .nodedbReset(let v)? = payloadVariant {return v}
       return 0
@@ -442,11 +442,11 @@ struct AdminMessage {
     set {payloadVariant = .nodedbReset(newValue)}
   }
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
   /// TODO: REPLACE
-  enum OneOf_PayloadVariant: Equatable {
+  public enum OneOf_PayloadVariant: Equatable {
     ///
     /// Send the specified channel in the response to this message
     /// NOTE: This field is sent with the channel index + 1 (to ensure we never try to send 'zero' - which protobufs treats as not present)
@@ -578,7 +578,7 @@ struct AdminMessage {
     case nodedbReset(Int32)
 
   #if !swift(>=4.1)
-    static func ==(lhs: AdminMessage.OneOf_PayloadVariant, rhs: AdminMessage.OneOf_PayloadVariant) -> Bool {
+    public static func ==(lhs: AdminMessage.OneOf_PayloadVariant, rhs: AdminMessage.OneOf_PayloadVariant) -> Bool {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
@@ -751,8 +751,8 @@ struct AdminMessage {
 
   ///
   /// TODO: REPLACE
-  enum ConfigType: SwiftProtobuf.Enum {
-    typealias RawValue = Int
+  public enum ConfigType: SwiftProtobuf.Enum {
+    public typealias RawValue = Int
 
     ///
     /// TODO: REPLACE
@@ -783,11 +783,11 @@ struct AdminMessage {
     case bluetoothConfig // = 6
     case UNRECOGNIZED(Int)
 
-    init() {
+    public init() {
       self = .deviceConfig
     }
 
-    init?(rawValue: Int) {
+    public init?(rawValue: Int) {
       switch rawValue {
       case 0: self = .deviceConfig
       case 1: self = .positionConfig
@@ -800,7 +800,7 @@ struct AdminMessage {
       }
     }
 
-    var rawValue: Int {
+    public var rawValue: Int {
       switch self {
       case .deviceConfig: return 0
       case .positionConfig: return 1
@@ -817,8 +817,8 @@ struct AdminMessage {
 
   ///
   /// TODO: REPLACE
-  enum ModuleConfigType: SwiftProtobuf.Enum {
-    typealias RawValue = Int
+  public enum ModuleConfigType: SwiftProtobuf.Enum {
+    public typealias RawValue = Int
 
     ///
     /// TODO: REPLACE
@@ -873,11 +873,11 @@ struct AdminMessage {
     case paxcounterConfig // = 12
     case UNRECOGNIZED(Int)
 
-    init() {
+    public init() {
       self = .mqttConfig
     }
 
-    init?(rawValue: Int) {
+    public init?(rawValue: Int) {
       switch rawValue {
       case 0: self = .mqttConfig
       case 1: self = .serialConfig
@@ -896,7 +896,7 @@ struct AdminMessage {
       }
     }
 
-    var rawValue: Int {
+    public var rawValue: Int {
       switch self {
       case .mqttConfig: return 0
       case .serialConfig: return 1
@@ -917,14 +917,14 @@ struct AdminMessage {
 
   }
 
-  init() {}
+  public init() {}
 }
 
 #if swift(>=4.2)
 
 extension AdminMessage.ConfigType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [AdminMessage.ConfigType] = [
+  public static let allCases: [AdminMessage.ConfigType] = [
     .deviceConfig,
     .positionConfig,
     .powerConfig,
@@ -937,7 +937,7 @@ extension AdminMessage.ConfigType: CaseIterable {
 
 extension AdminMessage.ModuleConfigType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [AdminMessage.ModuleConfigType] = [
+  public static let allCases: [AdminMessage.ModuleConfigType] = [
     .mqttConfig,
     .serialConfig,
     .extnotifConfig,
@@ -958,48 +958,48 @@ extension AdminMessage.ModuleConfigType: CaseIterable {
 
 ///
 /// Parameters for setting up Meshtastic for ameteur radio usage
-struct HamParameters {
+public struct HamParameters {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Amateur radio call sign, eg. KD2ABC
-  var callSign: String = String()
+  public var callSign: String = String()
 
   ///
   /// Transmit power in dBm at the LoRA transceiver, not including any amplification
-  var txPower: Int32 = 0
+  public var txPower: Int32 = 0
 
   ///
   /// The selected frequency of LoRA operation
   /// Please respect your local laws, regulations, and band plans.
   /// Ensure your radio is capable of operating of the selected frequency before setting this.
-  var frequency: Float = 0
+  public var frequency: Float = 0
 
   ///
   /// Optional short name of user
-  var shortName: String = String()
+  public var shortName: String = String()
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// Response envelope for node_remote_hardware_pins
-struct NodeRemoteHardwarePinsResponse {
+public struct NodeRemoteHardwarePinsResponse {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Nodes and their respective remote hardware GPIO pins
-  var nodeRemoteHardwarePins: [NodeRemoteHardwarePin] = []
+  public var nodeRemoteHardwarePins: [NodeRemoteHardwarePin] = []
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
@@ -1016,8 +1016,8 @@ extension NodeRemoteHardwarePinsResponse: @unchecked Sendable {}
 fileprivate let _protobuf_package = "meshtastic"
 
 extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".AdminMessage"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".AdminMessage"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "get_channel_request"),
     2: .standard(proto: "get_channel_response"),
     3: .standard(proto: "get_owner_request"),
@@ -1060,7 +1060,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     100: .standard(proto: "nodedb_reset"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -1456,7 +1456,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -1627,7 +1627,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: AdminMessage, rhs: AdminMessage) -> Bool {
+  public static func ==(lhs: AdminMessage, rhs: AdminMessage) -> Bool {
     if lhs.payloadVariant != rhs.payloadVariant {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
@@ -1635,7 +1635,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
 }
 
 extension AdminMessage.ConfigType: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "DEVICE_CONFIG"),
     1: .same(proto: "POSITION_CONFIG"),
     2: .same(proto: "POWER_CONFIG"),
@@ -1647,7 +1647,7 @@ extension AdminMessage.ConfigType: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension AdminMessage.ModuleConfigType: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "MQTT_CONFIG"),
     1: .same(proto: "SERIAL_CONFIG"),
     2: .same(proto: "EXTNOTIF_CONFIG"),
@@ -1665,15 +1665,15 @@ extension AdminMessage.ModuleConfigType: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".HamParameters"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".HamParameters"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "call_sign"),
     2: .standard(proto: "tx_power"),
     3: .same(proto: "frequency"),
     4: .standard(proto: "short_name"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -1688,7 +1688,7 @@ extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if !self.callSign.isEmpty {
       try visitor.visitSingularStringField(value: self.callSign, fieldNumber: 1)
     }
@@ -1704,7 +1704,7 @@ extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: HamParameters, rhs: HamParameters) -> Bool {
+  public static func ==(lhs: HamParameters, rhs: HamParameters) -> Bool {
     if lhs.callSign != rhs.callSign {return false}
     if lhs.txPower != rhs.txPower {return false}
     if lhs.frequency != rhs.frequency {return false}
@@ -1715,12 +1715,12 @@ extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
 }
 
 extension NodeRemoteHardwarePinsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".NodeRemoteHardwarePinsResponse"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".NodeRemoteHardwarePinsResponse"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "node_remote_hardware_pins"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -1732,14 +1732,14 @@ extension NodeRemoteHardwarePinsResponse: SwiftProtobuf.Message, SwiftProtobuf._
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if !self.nodeRemoteHardwarePins.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.nodeRemoteHardwarePins, fieldNumber: 1)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: NodeRemoteHardwarePinsResponse, rhs: NodeRemoteHardwarePinsResponse) -> Bool {
+  public static func ==(lhs: NodeRemoteHardwarePinsResponse, rhs: NodeRemoteHardwarePinsResponse) -> Bool {
     if lhs.nodeRemoteHardwarePins != rhs.nodeRemoteHardwarePins {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

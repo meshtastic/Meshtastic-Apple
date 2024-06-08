@@ -26,32 +26,32 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// any SECONDARY channels.
 /// No DISABLED channels are included.
 /// This abstraction is used only on the the 'app side' of the world (ie python, javascript and android etc) to show a group of Channels as a (long) URL
-struct ChannelSet {
+public struct ChannelSet {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Channel list with settings
-  var settings: [ChannelSettings] {
+  public var settings: [ChannelSettings] {
     get {return _storage._settings}
     set {_uniqueStorage()._settings = newValue}
   }
 
   ///
   /// LoRa config
-  var loraConfig: Config.LoRaConfig {
+  public var loraConfig: Config.LoRaConfig {
     get {return _storage._loraConfig ?? Config.LoRaConfig()}
     set {_uniqueStorage()._loraConfig = newValue}
   }
   /// Returns true if `loraConfig` has been explicitly set.
-  var hasLoraConfig: Bool {return _storage._loraConfig != nil}
+  public var hasLoraConfig: Bool {return _storage._loraConfig != nil}
   /// Clears the value of `loraConfig`. Subsequent reads from it will return its default value.
-  mutating func clearLoraConfig() {_uniqueStorage()._loraConfig = nil}
+  public mutating func clearLoraConfig() {_uniqueStorage()._loraConfig = nil}
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
 }
@@ -65,8 +65,8 @@ extension ChannelSet: @unchecked Sendable {}
 fileprivate let _protobuf_package = "meshtastic"
 
 extension ChannelSet: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".ChannelSet"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".ChannelSet"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "settings"),
     2: .standard(proto: "lora_config"),
   ]
@@ -100,7 +100,7 @@ extension ChannelSet: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     return _storage
   }
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     _ = _uniqueStorage()
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
       while let fieldNumber = try decoder.nextFieldNumber() {
@@ -116,7 +116,7 @@ extension ChannelSet: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every if/case branch local when no optimizations
@@ -132,7 +132,7 @@ extension ChannelSet: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ChannelSet, rhs: ChannelSet) -> Bool {
+  public static func ==(lhs: ChannelSet, rhs: ChannelSet) -> Bool {
     if lhs._storage !== rhs._storage {
       let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
         let _storage = _args.0

@@ -1,4 +1,5 @@
 import CoreData
+import MeshtasticProtobufs
 
 extension StoreForwardConfigEntity {
 	convenience init(
