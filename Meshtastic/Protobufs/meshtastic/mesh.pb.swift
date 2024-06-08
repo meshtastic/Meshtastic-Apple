@@ -115,6 +115,10 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case wiphone // = 20
 
   ///
+  /// WIO Tracker WM1110 family from Seeed Studio. Includes wio-1110-tracker and wio-1110-sdk
+  case wioWm1110 // = 21
+
+  ///
   /// B&Q Consulting Station Edition G1: https://uniteng.com/wiki/doku.php?id=meshtastic:station
   case stationG1 // = 25
 
@@ -322,6 +326,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 18: self = .nanoG2Ultra
     case 19: self = .loraType
     case 20: self = .wiphone
+    case 21: self = .wioWm1110
     case 25: self = .stationG1
     case 26: self = .rak11310
     case 27: self = .senseloraRp2040
@@ -390,6 +395,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .nanoG2Ultra: return 18
     case .loraType: return 19
     case .wiphone: return 20
+    case .wioWm1110: return 21
     case .stationG1: return 25
     case .rak11310: return 26
     case .senseloraRp2040: return 27
@@ -463,6 +469,7 @@ extension HardwareModel: CaseIterable {
     .nanoG2Ultra,
     .loraType,
     .wiphone,
+    .wioWm1110,
     .stationG1,
     .rak11310,
     .senseloraRp2040,
@@ -2701,6 +2708,129 @@ struct NodeRemoteHardwarePin {
   fileprivate var _pin: RemoteHardwarePin? = nil
 }
 
+struct ChunkedPayload {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// The ID of the entire payload
+  var payloadID: UInt32 = 0
+
+  ///
+  /// The total number of chunks in the payload
+  var chunkCount: UInt32 = 0
+
+  ///
+  /// The current chunk index in the total
+  var chunkIndex: UInt32 = 0
+
+  ///
+  /// The binary data of the current chunk
+  var payloadChunk: Data = Data()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+///
+/// Wrapper message for broken repeated oneof support
+struct resend_chunks {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var chunks: [UInt32] = []
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+///
+/// Responses to a ChunkedPayload request
+struct ChunkedPayloadResponse {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// The ID of the entire payload
+  var payloadID: UInt32 = 0
+
+  var payloadVariant: ChunkedPayloadResponse.OneOf_PayloadVariant? = nil
+
+  ///
+  /// Request to transfer chunked payload
+  var requestTransfer: Bool {
+    get {
+      if case .requestTransfer(let v)? = payloadVariant {return v}
+      return false
+    }
+    set {payloadVariant = .requestTransfer(newValue)}
+  }
+
+  ///
+  /// Accept the transfer chunked payload
+  var acceptTransfer: Bool {
+    get {
+      if case .acceptTransfer(let v)? = payloadVariant {return v}
+      return false
+    }
+    set {payloadVariant = .acceptTransfer(newValue)}
+  }
+
+  ///
+  /// Request missing indexes in the chunked payload
+  var resendChunks: resend_chunks {
+    get {
+      if case .resendChunks(let v)? = payloadVariant {return v}
+      return resend_chunks()
+    }
+    set {payloadVariant = .resendChunks(newValue)}
+  }
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  enum OneOf_PayloadVariant: Equatable {
+    ///
+    /// Request to transfer chunked payload
+    case requestTransfer(Bool)
+    ///
+    /// Accept the transfer chunked payload
+    case acceptTransfer(Bool)
+    ///
+    /// Request missing indexes in the chunked payload
+    case resendChunks(resend_chunks)
+
+  #if !swift(>=4.1)
+    static func ==(lhs: ChunkedPayloadResponse.OneOf_PayloadVariant, rhs: ChunkedPayloadResponse.OneOf_PayloadVariant) -> Bool {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch (lhs, rhs) {
+      case (.requestTransfer, .requestTransfer): return {
+        guard case .requestTransfer(let l) = lhs, case .requestTransfer(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.acceptTransfer, .acceptTransfer): return {
+        guard case .acceptTransfer(let l) = lhs, case .acceptTransfer(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.resendChunks, .resendChunks): return {
+        guard case .resendChunks(let l) = lhs, case .resendChunks(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      default: return false
+      }
+    }
+  #endif
+  }
+
+  init() {}
+}
+
 #if swift(>=5.5) && canImport(_Concurrency)
 extension HardwareModel: @unchecked Sendable {}
 extension Constants: @unchecked Sendable {}
@@ -2736,6 +2866,10 @@ extension Neighbor: @unchecked Sendable {}
 extension DeviceMetadata: @unchecked Sendable {}
 extension Heartbeat: @unchecked Sendable {}
 extension NodeRemoteHardwarePin: @unchecked Sendable {}
+extension ChunkedPayload: @unchecked Sendable {}
+extension resend_chunks: @unchecked Sendable {}
+extension ChunkedPayloadResponse: @unchecked Sendable {}
+extension ChunkedPayloadResponse.OneOf_PayloadVariant: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -2765,6 +2899,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     18: .same(proto: "NANO_G2_ULTRA"),
     19: .same(proto: "LORA_TYPE"),
     20: .same(proto: "WIPHONE"),
+    21: .same(proto: "WIO_WM1110"),
     25: .same(proto: "STATION_G1"),
     26: .same(proto: "RAK11310"),
     27: .same(proto: "SENSELORA_RP2040"),
@@ -4771,6 +4906,172 @@ extension NodeRemoteHardwarePin: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
   static func ==(lhs: NodeRemoteHardwarePin, rhs: NodeRemoteHardwarePin) -> Bool {
     if lhs.nodeNum != rhs.nodeNum {return false}
     if lhs._pin != rhs._pin {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension ChunkedPayload: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".ChunkedPayload"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "payload_id"),
+    2: .standard(proto: "chunk_count"),
+    3: .standard(proto: "chunk_index"),
+    4: .standard(proto: "payload_chunk"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.payloadID) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.chunkCount) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.chunkIndex) }()
+      case 4: try { try decoder.decodeSingularBytesField(value: &self.payloadChunk) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.payloadID != 0 {
+      try visitor.visitSingularUInt32Field(value: self.payloadID, fieldNumber: 1)
+    }
+    if self.chunkCount != 0 {
+      try visitor.visitSingularUInt32Field(value: self.chunkCount, fieldNumber: 2)
+    }
+    if self.chunkIndex != 0 {
+      try visitor.visitSingularUInt32Field(value: self.chunkIndex, fieldNumber: 3)
+    }
+    if !self.payloadChunk.isEmpty {
+      try visitor.visitSingularBytesField(value: self.payloadChunk, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: ChunkedPayload, rhs: ChunkedPayload) -> Bool {
+    if lhs.payloadID != rhs.payloadID {return false}
+    if lhs.chunkCount != rhs.chunkCount {return false}
+    if lhs.chunkIndex != rhs.chunkIndex {return false}
+    if lhs.payloadChunk != rhs.payloadChunk {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension resend_chunks: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".resend_chunks"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "chunks"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedUInt32Field(value: &self.chunks) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.chunks.isEmpty {
+      try visitor.visitPackedUInt32Field(value: self.chunks, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: resend_chunks, rhs: resend_chunks) -> Bool {
+    if lhs.chunks != rhs.chunks {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension ChunkedPayloadResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".ChunkedPayloadResponse"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "payload_id"),
+    2: .standard(proto: "request_transfer"),
+    3: .standard(proto: "accept_transfer"),
+    4: .standard(proto: "resend_chunks"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.payloadID) }()
+      case 2: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .requestTransfer(v)
+        }
+      }()
+      case 3: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .acceptTransfer(v)
+        }
+      }()
+      case 4: try {
+        var v: resend_chunks?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .resendChunks(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .resendChunks(v)
+        }
+      }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.payloadID != 0 {
+      try visitor.visitSingularUInt32Field(value: self.payloadID, fieldNumber: 1)
+    }
+    switch self.payloadVariant {
+    case .requestTransfer?: try {
+      guard case .requestTransfer(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 2)
+    }()
+    case .acceptTransfer?: try {
+      guard case .acceptTransfer(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 3)
+    }()
+    case .resendChunks?: try {
+      guard case .resendChunks(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+    }()
+    case nil: break
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: ChunkedPayloadResponse, rhs: ChunkedPayloadResponse) -> Bool {
+    if lhs.payloadID != rhs.payloadID {return false}
+    if lhs.payloadVariant != rhs.payloadVariant {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

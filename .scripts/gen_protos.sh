@@ -6,7 +6,7 @@ if [ ! -d "./../protobufs" ]; then
 fi
 
 # simple sanity checking for executable
-if [ ! -x "$(which protoc)" ]; then
+if [ ! -x "$(which protoc-gen-swift)" ]; then
   brew install swift-protobuf
 fi
 

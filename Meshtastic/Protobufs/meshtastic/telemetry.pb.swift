@@ -120,6 +120,10 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
   ///
   /// AHT10 Integrated temperature and humidity sensor
   case aht10 // = 23
+
+  ///
+  /// DFRobot Lark Weather station (temperature, humidity, pressure, wind speed and direction) 
+  case dfrobotLark // = 24
   case UNRECOGNIZED(Int)
 
   init() {
@@ -152,6 +156,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
     case 21: self = .ltr390Uv
     case 22: self = .tsl25911Fn
     case 23: self = .aht10
+    case 24: self = .dfrobotLark
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -182,6 +187,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
     case .ltr390Uv: return 21
     case .tsl25911Fn: return 22
     case .aht10: return 23
+    case .dfrobotLark: return 24
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -217,6 +223,7 @@ extension TelemetrySensorType: CaseIterable {
     .ltr390Uv,
     .tsl25911Fn,
     .aht10,
+    .dfrobotLark,
   ]
 }
 
@@ -301,6 +308,23 @@ struct EnvironmentMetrics {
   ///
   /// VEML7700 high accuracy white light(irradiance) not calibrated digital 16-bit resolution sensor.
   var whiteLux: Float = 0
+
+  ///
+  /// Infrared lux
+  var irLux: Float = 0
+
+  ///
+  /// Ultraviolet lux
+  var uvLux: Float = 0
+
+  ///
+  /// Wind direction in degrees
+  /// 0 degrees = North, 90 = East, etc...
+  var windDirection: UInt32 = 0
+
+  ///
+  /// Wind speed in m/s
+  var windSpeed: Float = 0
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -543,6 +567,7 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     21: .same(proto: "LTR390UV"),
     22: .same(proto: "TSL25911FN"),
     23: .same(proto: "AHT10"),
+    24: .same(proto: "DFROBOT_LARK"),
   ]
 }
 
@@ -615,6 +640,10 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     8: .same(proto: "distance"),
     9: .same(proto: "lux"),
     10: .standard(proto: "white_lux"),
+    11: .standard(proto: "ir_lux"),
+    12: .standard(proto: "uv_lux"),
+    13: .standard(proto: "wind_direction"),
+    14: .standard(proto: "wind_speed"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -633,6 +662,10 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       case 8: try { try decoder.decodeSingularFloatField(value: &self.distance) }()
       case 9: try { try decoder.decodeSingularFloatField(value: &self.lux) }()
       case 10: try { try decoder.decodeSingularFloatField(value: &self.whiteLux) }()
+      case 11: try { try decoder.decodeSingularFloatField(value: &self.irLux) }()
+      case 12: try { try decoder.decodeSingularFloatField(value: &self.uvLux) }()
+      case 13: try { try decoder.decodeSingularUInt32Field(value: &self.windDirection) }()
+      case 14: try { try decoder.decodeSingularFloatField(value: &self.windSpeed) }()
       default: break
       }
     }
@@ -669,6 +702,18 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if self.whiteLux != 0 {
       try visitor.visitSingularFloatField(value: self.whiteLux, fieldNumber: 10)
     }
+    if self.irLux != 0 {
+      try visitor.visitSingularFloatField(value: self.irLux, fieldNumber: 11)
+    }
+    if self.uvLux != 0 {
+      try visitor.visitSingularFloatField(value: self.uvLux, fieldNumber: 12)
+    }
+    if self.windDirection != 0 {
+      try visitor.visitSingularUInt32Field(value: self.windDirection, fieldNumber: 13)
+    }
+    if self.windSpeed != 0 {
+      try visitor.visitSingularFloatField(value: self.windSpeed, fieldNumber: 14)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -683,6 +728,10 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if lhs.distance != rhs.distance {return false}
     if lhs.lux != rhs.lux {return false}
     if lhs.whiteLux != rhs.whiteLux {return false}
+    if lhs.irLux != rhs.irLux {return false}
+    if lhs.uvLux != rhs.uvLux {return false}
+    if lhs.windDirection != rhs.windDirection {return false}
+    if lhs.windSpeed != rhs.windSpeed {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

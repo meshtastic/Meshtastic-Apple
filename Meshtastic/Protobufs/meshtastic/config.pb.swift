@@ -1183,6 +1183,10 @@ struct Config {
       ///
       /// Singapore 923mhz
       case sg923 // = 18
+
+      ///
+      /// Israel AS923-4 (917-920mhz)
+      case il // = 19
       case UNRECOGNIZED(Int)
 
       init() {
@@ -1210,6 +1214,7 @@ struct Config {
         case 16: self = .my433
         case 17: self = .my919
         case 18: self = .sg923
+        case 19: self = .il
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -1235,6 +1240,7 @@ struct Config {
         case .my433: return 16
         case .my919: return 17
         case .sg923: return 18
+        case .il: return 19
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1507,6 +1513,7 @@ extension Config.LoRaConfig.RegionCode: CaseIterable {
     .my433,
     .my919,
     .sg923,
+    .il,
   ]
 }
 
@@ -2449,6 +2456,7 @@ extension Config.LoRaConfig.RegionCode: SwiftProtobuf._ProtoNameProviding {
     16: .same(proto: "MY_433"),
     17: .same(proto: "MY_919"),
     18: .same(proto: "SG_923"),
+    19: .same(proto: "IL"),
   ]
 }
 
