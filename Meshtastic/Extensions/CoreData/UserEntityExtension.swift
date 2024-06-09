@@ -39,10 +39,6 @@ extension UserEntity {
 		self.value(forKey: "allMessages") as? [MessageEntity] ?? [MessageEntity]()
 	}
 
-	var adminMessageList: [MessageEntity] {
-		self.value(forKey: "adminMessages") as? [MessageEntity] ?? [MessageEntity]()
-	}
-
 	var sensorMessageList: [MessageEntity] {
 		self.value(forKey: "detectionSensorMessages") as? [MessageEntity] ?? [MessageEntity]()
 	}

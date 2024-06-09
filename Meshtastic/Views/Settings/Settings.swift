@@ -402,7 +402,7 @@ struct Settings: View {
 						}
 						.tag(SettingsSidebar.telemetryConfig)
 					}
-					Section(header: Text("logging")) {
+					Section(header: Text("debug")) {
 						NavigationLink {
 							MeshLog()
 						} label: {
@@ -425,6 +425,18 @@ struct Settings: View {
 							}
 							.tag(SettingsSidebar.appLog)
 						}
+#if DEBUG
+						NavigationLink {
+							BackupData()
+						} label: {
+							Label {
+								Text("Core Data")
+							} icon: {
+								Image(systemName: "cylinder.split.1x2")
+							}
+						}
+						.tag(SettingsSidebar.appLog)
+#endif
 					}
 					Section(header: Text("Firmware")) {
 						NavigationLink {

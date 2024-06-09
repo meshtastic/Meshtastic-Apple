@@ -45,7 +45,6 @@
 		DD0E20FD2B87090400F2D100 /* clientonly.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0E20FA2B87090400F2D100 /* clientonly.pb.swift */; };
 		DD0E20FE2B87090400F2D100 /* paxcount.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0E20FB2B87090400F2D100 /* paxcount.pb.swift */; };
 		DD0E21012B8A6F1300F2D100 /* DeviceHardware.json in Resources */ = {isa = PBXBuildFile; fileRef = DD0E21002B8A6BC500F2D100 /* DeviceHardware.json */; };
-		DD0F791B28713C8A00A6FDAD /* AdminMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */; };
 		DD13AA492AB73BF400BA0C98 /* PositionPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */; };
 		DD15E4F32B8BA56E00654F61 /* PaxCounterConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD15E4F22B8BA56E00654F61 /* PaxCounterConfig.swift */; };
 		DD15E4F52B8BFC8E00654F61 /* PaxCounterLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */; };
@@ -62,6 +61,8 @@
 		DD268D8E2BCC90E2008073AE /* RouteEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD268D8D2BCC90E2008073AE /* RouteEnums.swift */; };
 		DD2AD8A8296D2DF9001FF0E7 /* MapViewSwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */; };
 		DD33DB622B3D27C7003E1EA0 /* FirmwareApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD33DB612B3D27C7003E1EA0 /* FirmwareApi.swift */; };
+		DD34A1182C14BC8D0028B3E3 /* BackupData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD34A1172C14BC8D0028B3E3 /* BackupData.swift */; };
+		DD34A11A2C15098A0028B3E3 /* NSPersistentContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD34A1192C15098A0028B3E3 /* NSPersistentContainer.swift */; };
 		DD3501892852FC3B000FC853 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3501882852FC3B000FC853 /* Settings.swift */; };
 		DD354FD92BD96A0B0061A25F /* IAQScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD354FD82BD96A0B0061A25F /* IAQScale.swift */; };
 		DD3619152B1EF9F900C41C8C /* LocationsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */; };
@@ -288,7 +289,6 @@
 		DD0E20FF2B892E1300F2D100 /* MeshtasticDataModelV 28.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 28.xcdatamodel"; sourceTree = "<group>"; };
 		DD0E21002B8A6BC500F2D100 /* DeviceHardware.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = DeviceHardware.json; sourceTree = "<group>"; };
 		DD0E9C222A30CE3A00580CBB /* MeshtasticDataModelV14.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV14.xcdatamodel; sourceTree = "<group>"; };
-		DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminMessageList.swift; sourceTree = "<group>"; };
 		DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionPopover.swift; sourceTree = "<group>"; };
 		DD14E72C2A80738F006E39BC /* MeshtasticDataModelV15.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV15.xcdatamodel; sourceTree = "<group>"; };
 		DD15E4F22B8BA56E00654F61 /* PaxCounterConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaxCounterConfig.swift; sourceTree = "<group>"; };
@@ -313,6 +313,8 @@
 		DD31EC492B7F18B7006A3995 /* he */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = he; path = he.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DD33DB602B3D1ECC003E1EA0 /* MeshtasticDataModelV 23.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 23.xcdatamodel"; sourceTree = "<group>"; };
 		DD33DB612B3D27C7003E1EA0 /* FirmwareApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareApi.swift; sourceTree = "<group>"; };
+		DD34A1172C14BC8D0028B3E3 /* BackupData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupData.swift; sourceTree = "<group>"; };
+		DD34A1192C15098A0028B3E3 /* NSPersistentContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSPersistentContainer.swift; sourceTree = "<group>"; };
 		DD3501882852FC3B000FC853 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		DD354FD82BD96A0B0061A25F /* IAQScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IAQScale.swift; sourceTree = "<group>"; };
 		DD3619132B1EE20700C41C8C /* MeshtasticDataModelV21.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV21.xcdatamodel; sourceTree = "<group>"; };
@@ -621,7 +623,6 @@
 			children = (
 				DD93800C2BA74CE3008BEC06 /* Channels */,
 				DD97E96728EFE9A00056DDA4 /* About.swift */,
-				DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */,
 				DDF8E1F32C10125B0019C87E /* AppLog.swift */,
 				DD4A911D2708C65400501B7E /* AppSettings.swift */,
 				DDAB580C2B0DAA9E00147258 /* Routes.swift */,
@@ -636,6 +637,7 @@
 				DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */,
 				DD61937A2863876A00E59241 /* Config */,
 				DD1B8F3F2B35E2F10022AABC /* GPSStatus.swift */,
+				DD34A1172C14BC8D0028B3E3 /* BackupData.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -999,6 +1001,7 @@
 				DDDB444F29F8AC9C00EE2349 /* UIImage.swift */,
 				DDDB443F29F79AB000EE2349 /* UserDefaults.swift */,
 				DDB75A102A059258006ED576 /* Url.swift */,
+				DD34A1192C15098A0028B3E3 /* NSPersistentContainer.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -1195,6 +1198,7 @@
 				DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */,
 				DD77093D2AA1AFA3007A8BF0 /* ChannelTips.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
+				DD34A11A2C15098A0028B3E3 /* NSPersistentContainer.swift in Sources */,
 				DDDB444C29F8AAA600EE2349 /* Color.swift in Sources */,
 				DDB8F4122A9EE5DD00230ECE /* UserList.swift in Sources */,
 				DDB75A0F2A05920E006ED576 /* FileManager.swift in Sources */,
@@ -1316,6 +1320,7 @@
 				DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */,
 				DDB75A142A0593E2006ED576 /* OfflineTileManager.swift in Sources */,
 				DDB75A1E2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift in Sources */,
+				DD34A1182C14BC8D0028B3E3 /* BackupData.swift in Sources */,
 				DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */,
 				DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */,
 				DDB75A212A12B954006ED576 /* LoRaSignalStrength.swift in Sources */,
@@ -1346,7 +1351,6 @@
 				D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */,
 				DDA9515E2BC6F56F00CEA535 /* IndoorAirQuality.swift in Sources */,
 				DDDB444E29F8AB0E00EE2349 /* Int.swift in Sources */,
-				DD0F791B28713C8A00A6FDAD /* AdminMessageList.swift in Sources */,
 				DD3CC6BC28E366DF00FA9159 /* Meshtastic.xcdatamodeld in Sources */,
 				DDC4C9FF2A8D982900CE201C /* DetectionSensorConfig.swift in Sources */,
 				25A978592C124FA70003AAE7 /* NodeInfoExtensions.swift in Sources */,
