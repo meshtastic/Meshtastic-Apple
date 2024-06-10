@@ -5,6 +5,17 @@
   Copyright(c) Garth Vander Houwen on 12/12/22.
  
 */
+"user.config" = "User Config";
+"user.details" = "User Details";
+"call_sign" = "Call Sign";
+"long_name" = "Long Name";
+"long_name_placeholder" = "Enter Long Name";
+"short_name_label" = "Short Name";
+"short_name_placeholder" = "Short Name"; // This can be the same or different, depending on context
+"info_message" = "%@ can be up to %d bytes long.";
+"device_mac_info" = "The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name. Short name can be up to 4 bytes long.";
+
+
 "about"="About";
 "about.meshtastic"="About Meshtastic";
 "activity"="Activity";

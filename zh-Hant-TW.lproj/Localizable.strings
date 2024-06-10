@@ -6,6 +6,17 @@
   Updated by Oliver on 2024/6/10
 
 */
+"user.config" = "使用者設定";
+"user.details" = "使用者資訊";
+"call_sign" = "呼號";
+"long_name" = "長名稱";
+"long_name_placeholder" = "輸入長名稱";
+"short_name_label" = "簡稱";
+"short_name_placeholder" = "輸入簡稱"; // Adapted for clarity in the UI
+"info_message" = "%@ 最多可至 %d 位元組長。";
+"device_mac_info" = "裝置的 MAC 地址最後四位將添加到簡稱以設置裝置的 BLE 名稱。簡稱最多可長達4個位元組。";
+
+
 "about"="關於";
 "about.meshtastic"="關於 Meshtastic";
 "activity"="活動";
