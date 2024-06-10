@@ -8,10 +8,10 @@
 */
 "about"="關於";
 "about.meshtastic"="關於 Meshtastic";
-"activity"="Activity";
+"activity"="活動";
 "admin"="管理員";
 "admin.log"="管理員消息紀錄檔";
-"ago"="ago";
+"ago"="之前";
 "airtime"="廣播時間";
 "always.on"="常亮";
 "ambient.lighting"="環境照明";
@@ -133,7 +133,7 @@
 "hybrid"="混合";
 "hybrid.flyover"="混合視圖";
 "include"="包含";
-"incomplete"="Incomplete";
+"incomplete"="未完成";
 "inputevent.none"="無";
 "inputevent.up"="上";
 "inputevent.down"="下";
@@ -173,12 +173,12 @@
 "interval.eventytwo.hours"="七十二小時";
 "keyboard.type"="鍵盤類型";
 "logging"="加載中";
-"log.time"="Time";
-"log.subsystem"="Subsystem";
-"log.process"="Process";
-"log.category"="Category";
-"log.level"="Level";
-"log.message"="Message";
+"log.time"="時間";
+"log.subsystem"="子系統";
+"log.process"="處理";
+"log.category"="分類";
+"log.level"="等級";
+"log.message"="訊息";
 "lora"="LoRa";
 "lora.config"="LoRa 設定";
 "map"="Mesh 地圖";
@@ -238,10 +238,10 @@
 "mode"="模式";
 "module.configuration"="模塊設定";
 "mqtt"="MQTT";
-"mqtt.connect"="連線到 MQTT";
+"mqtt.connect"="已連線到MQTT";
 "mqtt.config"="MQTT 設定";
 "mqtt.clientproxy"="MQTT 客户端代理";
-"mqtt.disconnect"="是否與 MQTT 連接";
+"mqtt.disconnect"="已斷開MQTT連線";
 "mqtt.username"="用戶名稱";
 "name"="名稱";
 "network"="網路";
