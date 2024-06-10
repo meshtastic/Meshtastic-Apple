@@ -5,6 +5,8 @@
   Copyright(c) Garth Vander Houwen on 12/12/22.
  
 */
+
+//User Config
 "user.config" = "User Config";
 "user.details" = "User Details";
 "call_sign" = "Call Sign";
@@ -14,6 +16,13 @@
 "short_name_placeholder" = "Short Name"; // This can be the same or different, depending on context
 "info_message" = "%@ can be up to %d bytes long.";
 "device_mac_info" = "The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name. Short name can be up to 4 bytes long.";
+//ConfigHeader
+"no_metadata_response" = "There has been no response to a request for device metadata over the admin channel for this node.";
+"config_data_requested" = "%@ config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.";
+"remote_administration_for" = "Remote administration for: %@";
+"configuration_for" = "Configuration for: %@";
+"connect_to_radio" = "Please connect to a radio to configure settings.";
+
 
 
 "about"="About";

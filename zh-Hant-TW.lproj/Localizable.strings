@@ -6,6 +6,8 @@
   Updated by Oliver on 2024/6/10
 
 */
+
+//User config
 "user.config" = "使用者設定";
 "user.details" = "使用者資訊";
 "call_sign" = "呼號";
@@ -15,6 +17,14 @@
 "short_name_placeholder" = "輸入短名稱"; // Adapted for clarity in the UI
 "info_message" = "%@ 最多可至 %d 位元組長。";
 "device_mac_info" = "裝置的 MAC 地址最後四位將添加到簡稱以設置裝置的 BLE 名稱。簡稱最多可長達4個位元組。";
+//ConfigHeader
+"no_metadata_response" = "未收到此節點通過管理頻道請求的設備元數據回應。";
+"config_data_requested" = "%@ 配置數據已透過管理頻道請求，但尚未收到遠端節點的回應。您可以在管理消息日誌中檢查請求狀態。";
+"remote_administration_for" = "遠程管理：%@";
+"configuration_for" = "配置：%@";
+"connect_to_radio" = "請連接到無線電設備以配置設定。";
+
+
 "about"="關於";
 "about.meshtastic"="關於 Meshtastic";
 "activity"="活動";
@@ -39,7 +49,7 @@
 "ble.errorcode.14 %@"="%@ 這個錯誤通常無法自動修復，你需要在系統設定的藍牙選項中『忘記此裝置設定』並重新配對。";
 "ble.errorcode.pin %@"="%@ 請再次嘗試連接並仔細檢查 PIN 碼。";
 "bluetooth"="藍牙";
-"bluetooth.off"="藍牙已關閉";
+"bluetooth.off"="藍牙未連接";
 "bluetooth.config"="藍牙設置";
 "bluetooth.mode.randompin"="隨機 PIN 碼";
 "bluetooth.mode.fixedpin"="固定 PIN 碼";
