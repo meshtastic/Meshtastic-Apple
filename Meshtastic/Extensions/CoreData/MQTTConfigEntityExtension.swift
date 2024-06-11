@@ -1,4 +1,5 @@
 import CoreData
+import MeshtasticProtobufs
 
 extension MQTTConfigEntity {
 	convenience init(

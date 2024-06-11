@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 9/10/22.
 //
 import Foundation
+import MeshtasticProtobufs
 
 // Default of 0 is unset
 enum ConfigPresets: Int, CaseIterable, Identifiable {

@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 10/3/22.
 
 import CoreData
+import MeshtasticProtobufs
 import OSLog
 
 public func clearPax(destNum: Int64, context: NSManagedObjectContext) -> Bool {
@@ -377,7 +378,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 	}
 }
 
-func upsertBluetoothConfigPacket(config: Meshtastic.Config.BluetoothConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertBluetoothConfigPacket(config: Config.BluetoothConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.bluetooth.config %@".localized, String(nodeNum))
 	MeshLogger.log("📶 \(logString)")
@@ -419,7 +420,7 @@ func upsertBluetoothConfigPacket(config: Meshtastic.Config.BluetoothConfig, node
 	}
 }
 
-func upsertDeviceConfigPacket(config: Meshtastic.Config.DeviceConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.device.config %@".localized, String(nodeNum))
 	MeshLogger.log("📟 \(logString)")
@@ -474,7 +475,7 @@ func upsertDeviceConfigPacket(config: Meshtastic.Config.DeviceConfig, nodeNum: I
 	}
 }
 
-func upsertDisplayConfigPacket(config: Meshtastic.Config.DisplayConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.display.config %@".localized, String(nodeNum))
 	MeshLogger.log("🖥️ \(logString)")
@@ -540,7 +541,7 @@ func upsertDisplayConfigPacket(config: Meshtastic.Config.DisplayConfig, nodeNum:
 	}
 }
 
-func upsertLoRaConfigPacket(config: Meshtastic.Config.LoRaConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertLoRaConfigPacket(config: Config.LoRaConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.lora.config %@".localized, String(nodeNum))
 	MeshLogger.log("📻 \(logString)")
@@ -607,7 +608,7 @@ func upsertLoRaConfigPacket(config: Meshtastic.Config.LoRaConfig, nodeNum: Int64
 	}
 }
 
-func upsertNetworkConfigPacket(config: Meshtastic.Config.NetworkConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertNetworkConfigPacket(config: Config.NetworkConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.network.config %@".localized, String(nodeNum))
 	MeshLogger.log("🌐 \(logString)")
@@ -654,7 +655,7 @@ func upsertNetworkConfigPacket(config: Meshtastic.Config.NetworkConfig, nodeNum:
 	}
 }
 
-func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertPositionConfigPacket(config: Config.PositionConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.position.config %@".localized, String(nodeNum))
 	MeshLogger.log("🗺️ \(logString)")
@@ -717,7 +718,7 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 	}
 }
 
-func upsertPowerConfigPacket(config: Meshtastic.Config.PowerConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertPowerConfigPacket(config: Config.PowerConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 	let logString = String.localizedStringWithFormat("mesh.log.power.config %@".localized, String(nodeNum))
 	MeshLogger.log("🗺️ \(logString)")
 
@@ -766,7 +767,7 @@ func upsertPowerConfigPacket(config: Meshtastic.Config.PowerConfig, nodeNum: Int
 	}
 }
 
-func upsertAmbientLightingModuleConfigPacket(config: Meshtastic.ModuleConfig.AmbientLightingConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertAmbientLightingModuleConfigPacket(config: ModuleConfig.AmbientLightingConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.ambientlighting.config %@".localized, String(nodeNum))
 	MeshLogger.log("🏮 \(logString)")
@@ -822,7 +823,7 @@ func upsertAmbientLightingModuleConfigPacket(config: Meshtastic.ModuleConfig.Amb
 	}
 }
 
-func upsertCannedMessagesModuleConfigPacket(config: Meshtastic.ModuleConfig.CannedMessageConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertCannedMessagesModuleConfigPacket(config: ModuleConfig.CannedMessageConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.cannedmessage.config %@".localized, String(nodeNum))
 	MeshLogger.log("🥫 \(logString)")
@@ -886,7 +887,7 @@ func upsertCannedMessagesModuleConfigPacket(config: Meshtastic.ModuleConfig.Cann
 	}
 }
 
-func upsertDetectionSensorModuleConfigPacket(config: Meshtastic.ModuleConfig.DetectionSensorConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSensorConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.detectionsensor.config %@".localized, String(nodeNum))
 	MeshLogger.log("🕵️ \(logString)")
@@ -947,7 +948,7 @@ func upsertDetectionSensorModuleConfigPacket(config: Meshtastic.ModuleConfig.Det
 	}
 }
 
-func upsertExternalNotificationModuleConfigPacket(config: Meshtastic.ModuleConfig.ExternalNotificationConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertExternalNotificationModuleConfigPacket(config: ModuleConfig.ExternalNotificationConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.externalnotification.config %@".localized, String(nodeNum))
 	MeshLogger.log("📣 \(logString)")
@@ -989,7 +990,7 @@ func upsertExternalNotificationModuleConfigPacket(config: Meshtastic.ModuleConfi
 	}
 }
 
-func upsertPaxCounterModuleConfigPacket(config: Meshtastic.ModuleConfig.PaxcounterConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertPaxCounterModuleConfigPacket(config: ModuleConfig.PaxcounterConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.paxcounter.config %@".localized, String(nodeNum))
 	MeshLogger.log("🧑‍🤝‍🧑 \(logString)")
@@ -1073,7 +1074,7 @@ func upsertRtttlConfigPacket(ringtone: String, nodeNum: Int64, context: NSManage
 	}
 }
 
-func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertMqttModuleConfigPacket(config: ModuleConfig.MQTTConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.mqtt.config %@".localized, String(nodeNum))
 	MeshLogger.log("🌉 \(logString)")
@@ -1116,7 +1117,7 @@ func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, no
 	}
 }
 
-func upsertRangeTestModuleConfigPacket(config: Meshtastic.ModuleConfig.RangeTestConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertRangeTestModuleConfigPacket(config: ModuleConfig.RangeTestConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.rangetest.config %@".localized, String(nodeNum))
 	MeshLogger.log("⛰️ \(logString)")
@@ -1155,7 +1156,7 @@ func upsertRangeTestModuleConfigPacket(config: Meshtastic.ModuleConfig.RangeTest
 	}
 }
 
-func upsertSerialModuleConfigPacket(config: Meshtastic.ModuleConfig.SerialConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertSerialModuleConfigPacket(config: ModuleConfig.SerialConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.serial.config %@".localized, String(nodeNum))
 	MeshLogger.log("🤖 \(logString)")
@@ -1195,7 +1196,7 @@ func upsertSerialModuleConfigPacket(config: Meshtastic.ModuleConfig.SerialConfig
 	}
 }
 
-func upsertStoreForwardModuleConfigPacket(config: Meshtastic.ModuleConfig.StoreForwardConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertStoreForwardModuleConfigPacket(config: ModuleConfig.StoreForwardConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.storeforward.config %@".localized, String(nodeNum))
 	MeshLogger.log("📬 \(logString)")
@@ -1235,7 +1236,7 @@ func upsertStoreForwardModuleConfigPacket(config: Meshtastic.ModuleConfig.StoreF
 	}
 }
 
-func upsertTelemetryModuleConfigPacket(config: Meshtastic.ModuleConfig.TelemetryConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.telemetry.config %@".localized, String(nodeNum))
 	MeshLogger.log("📈 \(logString)")

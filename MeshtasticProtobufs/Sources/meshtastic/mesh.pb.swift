@@ -25,8 +25,8 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// bin/build-all.sh script.
 /// Because they will be used to find firmware filenames in the android app for OTA updates.
 /// To match the old style filenames, _ is converted to -, p is converted to .
-enum HardwareModel: SwiftProtobuf.Enum {
-  typealias RawValue = Int
+public enum HardwareModel: SwiftProtobuf.Enum {
+  public typealias RawValue = Int
 
   ///
   /// TODO: REPLACE
@@ -295,11 +295,11 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case privateHw // = 255
   case UNRECOGNIZED(Int)
 
-  init() {
+  public init() {
     self = .unset
   }
 
-  init?(rawValue: Int) {
+  public init?(rawValue: Int) {
     switch rawValue {
     case 0: self = .unset
     case 1: self = .tloraV2
@@ -367,7 +367,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     }
   }
 
-  var rawValue: Int {
+  public var rawValue: Int {
     switch self {
     case .unset: return 0
     case .tloraV2: return 1
@@ -441,7 +441,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
 
 extension HardwareModel: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [HardwareModel] = [
+  public static let allCases: [HardwareModel] = [
     .unset,
     .tloraV2,
     .tloraV1,
@@ -511,8 +511,8 @@ extension HardwareModel: CaseIterable {
 
 ///
 /// Shared constants between device and phone
-enum Constants: SwiftProtobuf.Enum {
-  typealias RawValue = Int
+public enum Constants: SwiftProtobuf.Enum {
+  public typealias RawValue = Int
 
   ///
   /// First enum must be zero, and we are just using this enum to
@@ -526,11 +526,11 @@ enum Constants: SwiftProtobuf.Enum {
   case dataPayloadLen // = 237
   case UNRECOGNIZED(Int)
 
-  init() {
+  public init() {
     self = .zero
   }
 
-  init?(rawValue: Int) {
+  public init?(rawValue: Int) {
     switch rawValue {
     case 0: self = .zero
     case 237: self = .dataPayloadLen
@@ -538,7 +538,7 @@ enum Constants: SwiftProtobuf.Enum {
     }
   }
 
-  var rawValue: Int {
+  public var rawValue: Int {
     switch self {
     case .zero: return 0
     case .dataPayloadLen: return 237
@@ -552,7 +552,7 @@ enum Constants: SwiftProtobuf.Enum {
 
 extension Constants: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Constants] = [
+  public static let allCases: [Constants] = [
     .zero,
     .dataPayloadLen,
   ]
@@ -565,8 +565,8 @@ extension Constants: CaseIterable {
 /// The device might report these fault codes on the screen.
 /// If you encounter a fault code, please post on the meshtastic.discourse.group
 /// and we'll try to help.
-enum CriticalErrorCode: SwiftProtobuf.Enum {
-  typealias RawValue = Int
+public enum CriticalErrorCode: SwiftProtobuf.Enum {
+  public typealias RawValue = Int
 
   ///
   /// TODO: REPLACE
@@ -619,11 +619,11 @@ enum CriticalErrorCode: SwiftProtobuf.Enum {
   case radioSpiBug // = 11
   case UNRECOGNIZED(Int)
 
-  init() {
+  public init() {
     self = .none
   }
 
-  init?(rawValue: Int) {
+  public init?(rawValue: Int) {
     switch rawValue {
     case 0: self = .none
     case 1: self = .txWatchdog
@@ -641,7 +641,7 @@ enum CriticalErrorCode: SwiftProtobuf.Enum {
     }
   }
 
-  var rawValue: Int {
+  public var rawValue: Int {
     switch self {
     case .none: return 0
     case .txWatchdog: return 1
@@ -665,7 +665,7 @@ enum CriticalErrorCode: SwiftProtobuf.Enum {
 
 extension CriticalErrorCode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [CriticalErrorCode] = [
+  public static let allCases: [CriticalErrorCode] = [
     .none,
     .txWatchdog,
     .sleepEnterWait,
@@ -685,7 +685,7 @@ extension CriticalErrorCode: CaseIterable {
 
 ///
 /// a gps position
-struct Position {
+public struct Position {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -693,21 +693,21 @@ struct Position {
   ///
   /// The new preferred location encoding, multiply by 1e-7 to get degrees
   /// in floating point
-  var latitudeI: Int32 {
+  public var latitudeI: Int32 {
     get {return _storage._latitudeI}
     set {_uniqueStorage()._latitudeI = newValue}
   }
 
   ///
   /// TODO: REPLACE
-  var longitudeI: Int32 {
+  public var longitudeI: Int32 {
     get {return _storage._longitudeI}
     set {_uniqueStorage()._longitudeI = newValue}
   }
 
   ///
   /// In meters above MSL (but see issue #359)
-  var altitude: Int32 {
+  public var altitude: Int32 {
     get {return _storage._altitude}
     set {_uniqueStorage()._altitude = newValue}
   }
@@ -717,49 +717,49 @@ struct Position {
   /// from the phone so that the local device can set its time if it is sent over
   /// the mesh (because there are devices on the mesh without GPS or RTC).
   /// seconds since 1970
-  var time: UInt32 {
+  public var time: UInt32 {
     get {return _storage._time}
     set {_uniqueStorage()._time = newValue}
   }
 
   ///
   /// TODO: REPLACE
-  var locationSource: Position.LocSource {
+  public var locationSource: Position.LocSource {
     get {return _storage._locationSource}
     set {_uniqueStorage()._locationSource = newValue}
   }
 
   ///
   /// TODO: REPLACE
-  var altitudeSource: Position.AltSource {
+  public var altitudeSource: Position.AltSource {
     get {return _storage._altitudeSource}
     set {_uniqueStorage()._altitudeSource = newValue}
   }
 
   ///
   /// Positional timestamp (actual timestamp of GPS solution) in integer epoch seconds
-  var timestamp: UInt32 {
+  public var timestamp: UInt32 {
     get {return _storage._timestamp}
     set {_uniqueStorage()._timestamp = newValue}
   }
 
   ///
   /// Pos. timestamp milliseconds adjustment (rarely available or required)
-  var timestampMillisAdjust: Int32 {
+  public var timestampMillisAdjust: Int32 {
     get {return _storage._timestampMillisAdjust}
     set {_uniqueStorage()._timestampMillisAdjust = newValue}
   }
 
   ///
   /// HAE altitude in meters - can be used instead of MSL altitude
-  var altitudeHae: Int32 {
+  public var altitudeHae: Int32 {
     get {return _storage._altitudeHae}
     set {_uniqueStorage()._altitudeHae = newValue}
   }
 
   ///
   /// Geoidal separation in meters
-  var altitudeGeoidalSeparation: Int32 {
+  public var altitudeGeoidalSeparation: Int32 {
     get {return _storage._altitudeGeoidalSeparation}
     set {_uniqueStorage()._altitudeGeoidalSeparation = newValue}
   }
@@ -770,21 +770,21 @@ struct Position {
   /// - for higher precision scenarios, HDOP and VDOP can be used instead,
   ///   in which case PDOP becomes redundant (PDOP=sqrt(HDOP^2 + VDOP^2))
   /// TODO: REMOVE/INTEGRATE
-  var pdop: UInt32 {
+  public var pdop: UInt32 {
     get {return _storage._pdop}
     set {_uniqueStorage()._pdop = newValue}
   }
 
   ///
   /// TODO: REPLACE
-  var hdop: UInt32 {
+  public var hdop: UInt32 {
     get {return _storage._hdop}
     set {_uniqueStorage()._hdop = newValue}
   }
 
   ///
   /// TODO: REPLACE
-  var vdop: UInt32 {
+  public var vdop: UInt32 {
     get {return _storage._vdop}
     set {_uniqueStorage()._vdop = newValue}
   }
@@ -793,7 +793,7 @@ struct Position {
   /// GPS accuracy (a hardware specific constant) in mm
   ///   multiplied with DOP to calculate positional accuracy
   /// Default: "'bout three meters-ish" :)
-  var gpsAccuracy: UInt32 {
+  public var gpsAccuracy: UInt32 {
     get {return _storage._gpsAccuracy}
     set {_uniqueStorage()._gpsAccuracy = newValue}
   }
@@ -805,42 +805,42 @@ struct Position {
   /// - "heading" is where the fuselage points (measured in horizontal plane)
   /// - "yaw" indicates a relative rotation about the vertical axis
   /// TODO: REMOVE/INTEGRATE
-  var groundSpeed: UInt32 {
+  public var groundSpeed: UInt32 {
     get {return _storage._groundSpeed}
     set {_uniqueStorage()._groundSpeed = newValue}
   }
 
   ///
   /// TODO: REPLACE
-  var groundTrack: UInt32 {
+  public var groundTrack: UInt32 {
     get {return _storage._groundTrack}
     set {_uniqueStorage()._groundTrack = newValue}
   }
 
   ///
   /// GPS fix quality (from NMEA GxGGA statement or similar)
-  var fixQuality: UInt32 {
+  public var fixQuality: UInt32 {
     get {return _storage._fixQuality}
     set {_uniqueStorage()._fixQuality = newValue}
   }
 
   ///
   /// GPS fix type 2D/3D (from NMEA GxGSA statement)
-  var fixType: UInt32 {
+  public var fixType: UInt32 {
     get {return _storage._fixType}
     set {_uniqueStorage()._fixType = newValue}
   }
 
   ///
   /// GPS "Satellites in View" number
-  var satsInView: UInt32 {
+  public var satsInView: UInt32 {
     get {return _storage._satsInView}
     set {_uniqueStorage()._satsInView = newValue}
   }
 
   ///
   /// Sensor ID - in case multiple positioning sensors are being used
-  var sensorID: UInt32 {
+  public var sensorID: UInt32 {
     get {return _storage._sensorID}
     set {_uniqueStorage()._sensorID = newValue}
   }
@@ -850,7 +850,7 @@ struct Position {
   /// - if we update at fixed intervals of X seconds, use X
   /// - if we update at dynamic intervals (based on relative movement etc),
   ///   but "AT LEAST every Y seconds", use Y
-  var nextUpdate: UInt32 {
+  public var nextUpdate: UInt32 {
     get {return _storage._nextUpdate}
     set {_uniqueStorage()._nextUpdate = newValue}
   }
@@ -858,24 +858,24 @@ struct Position {
   ///
   /// A sequence number, incremented with each Position message to help
   ///   detect lost updates if needed
-  var seqNumber: UInt32 {
+  public var seqNumber: UInt32 {
     get {return _storage._seqNumber}
     set {_uniqueStorage()._seqNumber = newValue}
   }
 
   ///
   /// Indicates the bits of precision set by the sending node
-  var precisionBits: UInt32 {
+  public var precisionBits: UInt32 {
     get {return _storage._precisionBits}
     set {_uniqueStorage()._precisionBits = newValue}
   }
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
   /// How the location was acquired: manual, onboard GPS, external (EUD) GPS
-  enum LocSource: SwiftProtobuf.Enum {
-    typealias RawValue = Int
+  public enum LocSource: SwiftProtobuf.Enum {
+    public typealias RawValue = Int
 
     ///
     /// TODO: REPLACE
@@ -894,11 +894,11 @@ struct Position {
     case locExternal // = 3
     case UNRECOGNIZED(Int)
 
-    init() {
+    public init() {
       self = .locUnset
     }
 
-    init?(rawValue: Int) {
+    public init?(rawValue: Int) {
       switch rawValue {
       case 0: self = .locUnset
       case 1: self = .locManual
@@ -908,7 +908,7 @@ struct Position {
       }
     }
 
-    var rawValue: Int {
+    public var rawValue: Int {
       switch self {
       case .locUnset: return 0
       case .locManual: return 1
@@ -923,8 +923,8 @@ struct Position {
   ///
   /// How the altitude was acquired: manual, GPS int/ext, etc
   /// Default: same as location_source if present
-  enum AltSource: SwiftProtobuf.Enum {
-    typealias RawValue = Int
+  public enum AltSource: SwiftProtobuf.Enum {
+    public typealias RawValue = Int
 
     ///
     /// TODO: REPLACE
@@ -947,11 +947,11 @@ struct Position {
     case altBarometric // = 4
     case UNRECOGNIZED(Int)
 
-    init() {
+    public init() {
       self = .altUnset
     }
 
-    init?(rawValue: Int) {
+    public init?(rawValue: Int) {
       switch rawValue {
       case 0: self = .altUnset
       case 1: self = .altManual
@@ -962,7 +962,7 @@ struct Position {
       }
     }
 
-    var rawValue: Int {
+    public var rawValue: Int {
       switch self {
       case .altUnset: return 0
       case .altManual: return 1
@@ -975,7 +975,7 @@ struct Position {
 
   }
 
-  init() {}
+  public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
 }
@@ -984,7 +984,7 @@ struct Position {
 
 extension Position.LocSource: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Position.LocSource] = [
+  public static let allCases: [Position.LocSource] = [
     .locUnset,
     .locManual,
     .locInternal,
@@ -994,7 +994,7 @@ extension Position.LocSource: CaseIterable {
 
 extension Position.AltSource: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Position.AltSource] = [
+  public static let allCases: [Position.AltSource] = [
     .altUnset,
     .altManual,
     .altInternal,
@@ -1026,7 +1026,7 @@ extension Position.AltSource: CaseIterable {
 /// A few nodenums are reserved and will never be requested:
 /// 0xff - broadcast
 /// 0 through 3 - for future use
-struct User {
+public struct User {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1036,73 +1036,73 @@ struct User {
   /// In the case of Signal that would mean +16504442323, for the default macaddr derived id it would be !<8 hexidecimal bytes>.
   /// Note: app developers are encouraged to also use the following standard
   /// node IDs "^all" (for broadcast), "^local" (for the locally connected node)
-  var id: String = String()
+  public var id: String = String()
 
   ///
   /// A full name for this user, i.e. "Kevin Hester"
-  var longName: String = String()
+  public var longName: String = String()
 
   ///
   /// A VERY short name, ideally two characters.
   /// Suitable for a tiny OLED screen
-  var shortName: String = String()
+  public var shortName: String = String()
 
   ///
   /// Deprecated in Meshtastic 2.1.x
   /// This is the addr of the radio.
   /// Not populated by the phone, but added by the esp32 when broadcasting
-  var macaddr: Data = Data()
+  public var macaddr: Data = Data()
 
   ///
   /// TBEAM, HELTEC, etc...
   /// Starting in 1.2.11 moved to hw_model enum in the NodeInfo object.
   /// Apps will still need the string here for older builds
   /// (so OTA update can find the right image), but if the enum is available it will be used instead.
-  var hwModel: HardwareModel = .unset
+  public var hwModel: HardwareModel = .unset
 
   ///
   /// In some regions Ham radio operators have different bandwidth limitations than others.
   /// If this user is a licensed operator, set this flag.
   /// Also, "long_name" should be their licence number.
-  var isLicensed: Bool = false
+  public var isLicensed: Bool = false
 
   ///
   /// Indicates that the user's role in the mesh
-  var role: Config.DeviceConfig.Role = .client
+  public var role: Config.DeviceConfig.Role = .client
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// A message used in our Dynamic Source Routing protocol (RFC 4728 based)
-struct RouteDiscovery {
+public struct RouteDiscovery {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// The list of nodenums this packet has visited so far
-  var route: [UInt32] = []
+  public var route: [UInt32] = []
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// A Routing control Data packet handled by the routing module
-struct Routing {
+public struct Routing {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var variant: Routing.OneOf_Variant? = nil
+  public var variant: Routing.OneOf_Variant? = nil
 
   ///
   /// A route request going from the requester
-  var routeRequest: RouteDiscovery {
+  public var routeRequest: RouteDiscovery {
     get {
       if case .routeRequest(let v)? = variant {return v}
       return RouteDiscovery()
@@ -1112,7 +1112,7 @@ struct Routing {
 
   ///
   /// A route reply
-  var routeReply: RouteDiscovery {
+  public var routeReply: RouteDiscovery {
     get {
       if case .routeReply(let v)? = variant {return v}
       return RouteDiscovery()
@@ -1123,7 +1123,7 @@ struct Routing {
   ///
   /// A failure in delivering a message (usually used for routing control messages, but might be provided
   /// in addition to ack.fail_id to provide details on the type of failure).
-  var errorReason: Routing.Error {
+  public var errorReason: Routing.Error {
     get {
       if case .errorReason(let v)? = variant {return v}
       return .none
@@ -1131,9 +1131,9 @@ struct Routing {
     set {variant = .errorReason(newValue)}
   }
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  enum OneOf_Variant: Equatable {
+  public enum OneOf_Variant: Equatable {
     ///
     /// A route request going from the requester
     case routeRequest(RouteDiscovery)
@@ -1146,7 +1146,7 @@ struct Routing {
     case errorReason(Routing.Error)
 
   #if !swift(>=4.1)
-    static func ==(lhs: Routing.OneOf_Variant, rhs: Routing.OneOf_Variant) -> Bool {
+    public static func ==(lhs: Routing.OneOf_Variant, rhs: Routing.OneOf_Variant) -> Bool {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
@@ -1172,8 +1172,8 @@ struct Routing {
   ///
   /// A failure in delivering a message (usually used for routing control messages, but might be provided in addition to ack.fail_id to provide
   /// details on the type of failure).
-  enum Error: SwiftProtobuf.Enum {
-    typealias RawValue = Int
+  public enum Error: SwiftProtobuf.Enum {
+    public typealias RawValue = Int
 
     ///
     /// This message is not a failure
@@ -1226,11 +1226,11 @@ struct Routing {
     case notAuthorized // = 33
     case UNRECOGNIZED(Int)
 
-    init() {
+    public init() {
       self = .none
     }
 
-    init?(rawValue: Int) {
+    public init?(rawValue: Int) {
       switch rawValue {
       case 0: self = .none
       case 1: self = .noRoute
@@ -1248,7 +1248,7 @@ struct Routing {
       }
     }
 
-    var rawValue: Int {
+    public var rawValue: Int {
       switch self {
       case .none: return 0
       case .noRoute: return 1
@@ -1268,14 +1268,14 @@ struct Routing {
 
   }
 
-  init() {}
+  public init() {}
 }
 
 #if swift(>=4.2)
 
 extension Routing.Error: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Routing.Error] = [
+  public static let allCases: [Routing.Error] = [
     .none,
     .noRoute,
     .gotNak,
@@ -1297,24 +1297,24 @@ extension Routing.Error: CaseIterable {
 /// (Formerly called SubPacket)
 /// The payload portion fo a packet, this is the actual bytes that are sent
 /// inside a radio packet (because from/to are broken out by the comms library)
-struct DataMessage {
+public struct DataMessage {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Formerly named typ and of type Type
-  var portnum: PortNum = .unknownApp
+  public var portnum: PortNum = .unknownApp
 
   ///
   /// TODO: REPLACE
-  var payload: Data = Data()
+  public var payload: Data = Data()
 
   ///
   /// Not normally used, but for testing a sender can request that recipient
   /// responds in kind (i.e. if it received a position, it should unicast back it's position).
   /// Note: that if you set this on a broadcast you will receive many replies.
-  var wantResponse: Bool = false
+  public var wantResponse: Bool = false
 
   ///
   /// The address of the destination node.
@@ -1322,96 +1322,96 @@ struct DataMessage {
   /// layer software should never need it.
   /// RouteDiscovery messages _must_ populate this.
   /// Other message types might need to if they are doing multihop routing.
-  var dest: UInt32 = 0
+  public var dest: UInt32 = 0
 
   ///
   /// The address of the original sender for this message.
   /// This field should _only_ be populated for reliable multihop packets (to keep
   /// packets small).
-  var source: UInt32 = 0
+  public var source: UInt32 = 0
 
   ///
   /// Only used in routing or response messages.
   /// Indicates the original message ID that this message is reporting failure on. (formerly called original_id)
-  var requestID: UInt32 = 0
+  public var requestID: UInt32 = 0
 
   ///
   /// If set, this message is intened to be a reply to a previously sent message with the defined id.
-  var replyID: UInt32 = 0
+  public var replyID: UInt32 = 0
 
   ///
   /// Defaults to false. If true, then what is in the payload should be treated as an emoji like giving
   /// a message a heart or poop emoji.
-  var emoji: UInt32 = 0
+  public var emoji: UInt32 = 0
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// Waypoint message, used to share arbitrary locations across the mesh
-struct Waypoint {
+public struct Waypoint {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Id of the waypoint
-  var id: UInt32 = 0
+  public var id: UInt32 = 0
 
   ///
   /// latitude_i
-  var latitudeI: Int32 = 0
+  public var latitudeI: Int32 = 0
 
   ///
   /// longitude_i
-  var longitudeI: Int32 = 0
+  public var longitudeI: Int32 = 0
 
   ///
   /// Time the waypoint is to expire (epoch)
-  var expire: UInt32 = 0
+  public var expire: UInt32 = 0
 
   ///
   /// If greater than zero, treat the value as a nodenum only allowing them to update the waypoint.
   /// If zero, the waypoint is open to be edited by any member of the mesh.
-  var lockedTo: UInt32 = 0
+  public var lockedTo: UInt32 = 0
 
   ///
   /// Name of the waypoint - max 30 chars
-  var name: String = String()
+  public var name: String = String()
 
   ///
   /// Description of the waypoint - max 100 chars
-  var description_p: String = String()
+  public var description_p: String = String()
 
   ///
   /// Designator icon for the waypoint in the form of a unicode emoji
-  var icon: UInt32 = 0
+  public var icon: UInt32 = 0
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// This message will be proxied over the PhoneAPI for the client to deliver to the MQTT server
-struct MqttClientProxyMessage {
+public struct MqttClientProxyMessage {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// The MQTT topic this message will be sent /received on
-  var topic: String = String()
+  public var topic: String = String()
 
   ///
   /// The actual service envelope payload or text for mqtt pub / sub
-  var payloadVariant: MqttClientProxyMessage.OneOf_PayloadVariant? = nil
+  public var payloadVariant: MqttClientProxyMessage.OneOf_PayloadVariant? = nil
 
   ///
   /// Bytes
-  var data: Data {
+  public var data: Data {
     get {
       if case .data(let v)? = payloadVariant {return v}
       return Data()
@@ -1421,7 +1421,7 @@ struct MqttClientProxyMessage {
 
   ///
   /// Text
-  var text: String {
+  public var text: String {
     get {
       if case .text(let v)? = payloadVariant {return v}
       return String()
@@ -1431,13 +1431,13 @@ struct MqttClientProxyMessage {
 
   ///
   /// Whether the message should be retained (or not)
-  var retained: Bool = false
+  public var retained: Bool = false
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
   /// The actual service envelope payload or text for mqtt pub / sub
-  enum OneOf_PayloadVariant: Equatable {
+  public enum OneOf_PayloadVariant: Equatable {
     ///
     /// Bytes
     case data(Data)
@@ -1446,7 +1446,7 @@ struct MqttClientProxyMessage {
     case text(String)
 
   #if !swift(>=4.1)
-    static func ==(lhs: MqttClientProxyMessage.OneOf_PayloadVariant, rhs: MqttClientProxyMessage.OneOf_PayloadVariant) -> Bool {
+    public static func ==(lhs: MqttClientProxyMessage.OneOf_PayloadVariant, rhs: MqttClientProxyMessage.OneOf_PayloadVariant) -> Bool {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
@@ -1465,14 +1465,14 @@ struct MqttClientProxyMessage {
   #endif
   }
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// A packet envelope sent/received over the mesh
 /// only payload_variant is sent in the payload portion of the LORA packet.
 /// The other fields are either not sent at all, or sent in the special 16 byte LORA header.
-struct MeshPacket {
+public struct MeshPacket {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1481,14 +1481,14 @@ struct MeshPacket {
   /// The sending node number.
   /// Note: Our crypto implementation uses this field as well.
   /// See [crypto](/docs/overview/encryption) for details.
-  var from: UInt32 {
+  public var from: UInt32 {
     get {return _storage._from}
     set {_uniqueStorage()._from = newValue}
   }
 
   ///
   /// The (immediate) destination for this packet
-  var to: UInt32 {
+  public var to: UInt32 {
     get {return _storage._to}
     set {_uniqueStorage()._to = newValue}
   }
@@ -1501,19 +1501,19 @@ struct MeshPacket {
   /// Very briefly, while sending and receiving deep inside the device Router code, this field instead
   /// contains the 'channel hash' instead of the index.
   /// This 'trick' is only used while the payload_variant is an 'encrypted'.
-  var channel: UInt32 {
+  public var channel: UInt32 {
     get {return _storage._channel}
     set {_uniqueStorage()._channel = newValue}
   }
 
-  var payloadVariant: OneOf_PayloadVariant? {
+  public var payloadVariant: OneOf_PayloadVariant? {
     get {return _storage._payloadVariant}
     set {_uniqueStorage()._payloadVariant = newValue}
   }
 
   ///
   /// TODO: REPLACE
-  var decoded: DataMessage {
+  public var decoded: DataMessage {
     get {
       if case .decoded(let v)? = _storage._payloadVariant {return v}
       return DataMessage()
@@ -1523,7 +1523,7 @@ struct MeshPacket {
 
   ///
   /// TODO: REPLACE
-  var encrypted: Data {
+  public var encrypted: Data {
     get {
       if case .encrypted(let v)? = _storage._payloadVariant {return v}
       return Data()
@@ -1540,7 +1540,7 @@ struct MeshPacket {
   /// any ACK or the completion of a mesh broadcast flood).
   /// Note: Our crypto implementation uses this id as well.
   /// See [crypto](/docs/overview/encryption) for details.
-  var id: UInt32 {
+  public var id: UInt32 {
     get {return _storage._id}
     set {_uniqueStorage()._id = newValue}
   }
@@ -1550,7 +1550,7 @@ struct MeshPacket {
   /// Note: this field is _never_ sent on the radio link itself (to save space) Times
   /// are typically not sent over the mesh, but they will be added to any Packet
   /// (chain of SubPacket) sent to the phone (so the phone can know exact time of reception)
-  var rxTime: UInt32 {
+  public var rxTime: UInt32 {
     get {return _storage._rxTime}
     set {_uniqueStorage()._rxTime = newValue}
   }
@@ -1559,7 +1559,7 @@ struct MeshPacket {
   /// *Never* sent over the radio links.
   /// Set during reception to indicate the SNR of this packet.
   /// Used to collect statistics on current link quality.
-  var rxSnr: Float {
+  public var rxSnr: Float {
     get {return _storage._rxSnr}
     set {_uniqueStorage()._rxSnr = newValue}
   }
@@ -1569,7 +1569,7 @@ struct MeshPacket {
   /// if 1, allow hopping through one node, etc...
   /// For our usecase real world topologies probably have a max of about 3.
   /// This field is normally placed into a few of bits in the header.
-  var hopLimit: UInt32 {
+  public var hopLimit: UInt32 {
     get {return _storage._hopLimit}
     set {_uniqueStorage()._hopLimit = newValue}
   }
@@ -1584,7 +1584,7 @@ struct MeshPacket {
   /// So FloodingRouter.cpp generates an implicit ack which is delivered to the original sender.
   /// If after some time we don't hear anyone rebroadcast our packet, we will timeout and retransmit, using the regular resend logic.
   /// Note: This flag is normally sent in a flag bit in the header when sent over the wire
-  var wantAck: Bool {
+  public var wantAck: Bool {
     get {return _storage._wantAck}
     set {_uniqueStorage()._wantAck = newValue}
   }
@@ -1592,28 +1592,28 @@ struct MeshPacket {
   ///
   /// The priority of this message for sending.
   /// See MeshPacket.Priority description for more details.
-  var priority: MeshPacket.Priority {
+  public var priority: MeshPacket.Priority {
     get {return _storage._priority}
     set {_uniqueStorage()._priority = newValue}
   }
 
   ///
   /// rssi of received packet. Only sent to phone for dispay purposes.
-  var rxRssi: Int32 {
+  public var rxRssi: Int32 {
     get {return _storage._rxRssi}
     set {_uniqueStorage()._rxRssi = newValue}
   }
 
   ///
   /// Describe if this message is delayed
-  var delayed: MeshPacket.Delayed {
+  public var delayed: MeshPacket.Delayed {
     get {return _storage._delayed}
     set {_uniqueStorage()._delayed = newValue}
   }
 
   ///
   /// Describes whether this packet passed via MQTT somewhere along the path it currently took.
-  var viaMqtt: Bool {
+  public var viaMqtt: Bool {
     get {return _storage._viaMqtt}
     set {_uniqueStorage()._viaMqtt = newValue}
   }
@@ -1621,14 +1621,14 @@ struct MeshPacket {
   ///
   /// Hop limit with which the original packet started. Sent via LoRa using three bits in the unencrypted header.
   /// When receiving a packet, the difference between hop_start and hop_limit gives how many hops it traveled.
-  var hopStart: UInt32 {
+  public var hopStart: UInt32 {
     get {return _storage._hopStart}
     set {_uniqueStorage()._hopStart = newValue}
   }
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  enum OneOf_PayloadVariant: Equatable {
+  public enum OneOf_PayloadVariant: Equatable {
     ///
     /// TODO: REPLACE
     case decoded(DataMessage)
@@ -1637,7 +1637,7 @@ struct MeshPacket {
     case encrypted(Data)
 
   #if !swift(>=4.1)
-    static func ==(lhs: MeshPacket.OneOf_PayloadVariant, rhs: MeshPacket.OneOf_PayloadVariant) -> Bool {
+    public static func ==(lhs: MeshPacket.OneOf_PayloadVariant, rhs: MeshPacket.OneOf_PayloadVariant) -> Bool {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
@@ -1675,8 +1675,8 @@ struct MeshPacket {
   /// So I bit the bullet and implemented a new (internal - not sent over the air)
   /// field in MeshPacket called 'priority'.
   /// And the transmission queue in the router object is now a priority queue.
-  enum Priority: SwiftProtobuf.Enum {
-    typealias RawValue = Int
+  public enum Priority: SwiftProtobuf.Enum {
+    public typealias RawValue = Int
 
     ///
     /// Treated as Priority.DEFAULT
@@ -1710,11 +1710,11 @@ struct MeshPacket {
     case max // = 127
     case UNRECOGNIZED(Int)
 
-    init() {
+    public init() {
       self = .unset
     }
 
-    init?(rawValue: Int) {
+    public init?(rawValue: Int) {
       switch rawValue {
       case 0: self = .unset
       case 1: self = .min
@@ -1727,7 +1727,7 @@ struct MeshPacket {
       }
     }
 
-    var rawValue: Int {
+    public var rawValue: Int {
       switch self {
       case .unset: return 0
       case .min: return 1
@@ -1744,8 +1744,8 @@ struct MeshPacket {
 
   ///
   /// Identify if this is a delayed packet
-  enum Delayed: SwiftProtobuf.Enum {
-    typealias RawValue = Int
+  public enum Delayed: SwiftProtobuf.Enum {
+    public typealias RawValue = Int
 
     ///
     /// If unset, the message is being sent in real time.
@@ -1760,11 +1760,11 @@ struct MeshPacket {
     case direct // = 2
     case UNRECOGNIZED(Int)
 
-    init() {
+    public init() {
       self = .noDelay
     }
 
-    init?(rawValue: Int) {
+    public init?(rawValue: Int) {
       switch rawValue {
       case 0: self = .noDelay
       case 1: self = .broadcast
@@ -1773,7 +1773,7 @@ struct MeshPacket {
       }
     }
 
-    var rawValue: Int {
+    public var rawValue: Int {
       switch self {
       case .noDelay: return 0
       case .broadcast: return 1
@@ -1784,7 +1784,7 @@ struct MeshPacket {
 
   }
 
-  init() {}
+  public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
 }
@@ -1793,7 +1793,7 @@ struct MeshPacket {
 
 extension MeshPacket.Priority: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [MeshPacket.Priority] = [
+  public static let allCases: [MeshPacket.Priority] = [
     .unset,
     .min,
     .background,
@@ -1806,7 +1806,7 @@ extension MeshPacket.Priority: CaseIterable {
 
 extension MeshPacket.Delayed: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [MeshPacket.Delayed] = [
+  public static let allCases: [MeshPacket.Delayed] = [
     .noDelay,
     .broadcast,
     .direct,
@@ -1832,84 +1832,84 @@ extension MeshPacket.Delayed: CaseIterable {
 /// level etc) SET_CONFIG (switches device to a new set of radio params and
 /// preshared key, drops all existing nodes, force our node to rejoin this new group)
 /// Full information about a node on the mesh
-struct NodeInfo {
+public struct NodeInfo {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// The node number
-  var num: UInt32 {
+  public var num: UInt32 {
     get {return _storage._num}
     set {_uniqueStorage()._num = newValue}
   }
 
   ///
   /// The user info for this node
-  var user: User {
+  public var user: User {
     get {return _storage._user ?? User()}
     set {_uniqueStorage()._user = newValue}
   }
   /// Returns true if `user` has been explicitly set.
-  var hasUser: Bool {return _storage._user != nil}
+  public var hasUser: Bool {return _storage._user != nil}
   /// Clears the value of `user`. Subsequent reads from it will return its default value.
-  mutating func clearUser() {_uniqueStorage()._user = nil}
+  public mutating func clearUser() {_uniqueStorage()._user = nil}
 
   ///
   /// This position data. Note: before 1.2.14 we would also store the last time we've heard from this node in position.time, that is no longer true.
   /// Position.time now indicates the last time we received a POSITION from that node.
-  var position: Position {
+  public var position: Position {
     get {return _storage._position ?? Position()}
     set {_uniqueStorage()._position = newValue}
   }
   /// Returns true if `position` has been explicitly set.
-  var hasPosition: Bool {return _storage._position != nil}
+  public var hasPosition: Bool {return _storage._position != nil}
   /// Clears the value of `position`. Subsequent reads from it will return its default value.
-  mutating func clearPosition() {_uniqueStorage()._position = nil}
+  public mutating func clearPosition() {_uniqueStorage()._position = nil}
 
   ///
   /// Returns the Signal-to-noise ratio (SNR) of the last received message,
   /// as measured by the receiver. Return SNR of the last received message in dB
-  var snr: Float {
+  public var snr: Float {
     get {return _storage._snr}
     set {_uniqueStorage()._snr = newValue}
   }
 
   ///
   /// Set to indicate the last time we received a packet from this node
-  var lastHeard: UInt32 {
+  public var lastHeard: UInt32 {
     get {return _storage._lastHeard}
     set {_uniqueStorage()._lastHeard = newValue}
   }
 
   ///
   /// The latest device metrics for the node.
-  var deviceMetrics: DeviceMetrics {
+  public var deviceMetrics: DeviceMetrics {
     get {return _storage._deviceMetrics ?? DeviceMetrics()}
     set {_uniqueStorage()._deviceMetrics = newValue}
   }
   /// Returns true if `deviceMetrics` has been explicitly set.
-  var hasDeviceMetrics: Bool {return _storage._deviceMetrics != nil}
+  public var hasDeviceMetrics: Bool {return _storage._deviceMetrics != nil}
   /// Clears the value of `deviceMetrics`. Subsequent reads from it will return its default value.
-  mutating func clearDeviceMetrics() {_uniqueStorage()._deviceMetrics = nil}
+  public mutating func clearDeviceMetrics() {_uniqueStorage()._deviceMetrics = nil}
 
   ///
   /// local channel index we heard that node on. Only populated if its not the default channel.
-  var channel: UInt32 {
+  public var channel: UInt32 {
     get {return _storage._channel}
     set {_uniqueStorage()._channel = newValue}
   }
 
   ///
   /// True if we witnessed the node over MQTT instead of LoRA transport
-  var viaMqtt: Bool {
+  public var viaMqtt: Bool {
     get {return _storage._viaMqtt}
     set {_uniqueStorage()._viaMqtt = newValue}
   }
 
   ///
   /// Number of hops away from us this node is (0 if adjacent)
-  var hopsAway: UInt32 {
+  public var hopsAway: UInt32 {
     get {return _storage._hopsAway}
     set {_uniqueStorage()._hopsAway = newValue}
   }
@@ -1917,14 +1917,14 @@ struct NodeInfo {
   ///
   /// True if node is in our favorites list
   /// Persists between NodeDB internal clean ups
-  var isFavorite: Bool {
+  public var isFavorite: Bool {
     get {return _storage._isFavorite}
     set {_uniqueStorage()._isFavorite = newValue}
   }
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
 }
@@ -1933,7 +1933,7 @@ struct NodeInfo {
 /// Unique local debugging info for this node
 /// Note: we don't include position or the user info, because that will come in the
 /// Sent to the phone in response to WantNodes.
-struct MyNodeInfo {
+public struct MyNodeInfo {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1941,21 +1941,21 @@ struct MyNodeInfo {
   ///
   /// Tells the phone what our node number is, default starting value is
   /// lowbyte of macaddr, but it will be fixed if that is already in use
-  var myNodeNum: UInt32 = 0
+  public var myNodeNum: UInt32 = 0
 
   ///
   /// The total number of reboots this node has ever encountered
   /// (well - since the last time we discarded preferences)
-  var rebootCount: UInt32 = 0
+  public var rebootCount: UInt32 = 0
 
   ///
   /// The minimum app version that can talk to this device.
   /// Phone/PC apps should compare this to their build number and if too low tell the user they must update their app
-  var minAppVersion: UInt32 = 0
+  public var minAppVersion: UInt32 = 0
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
@@ -1964,33 +1964,33 @@ struct MyNodeInfo {
 /// on the message it is assumed to be a continuation of the previously sent message.
 /// This allows the device code to use fixed maxlen 64 byte strings for messages,
 /// and then extend as needed by emitting multiple records.
-struct LogRecord {
+public struct LogRecord {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Log levels, chosen to match python logging conventions.
-  var message: String = String()
+  public var message: String = String()
 
   ///
   /// Seconds since 1970 - or 0 for unknown/unset
-  var time: UInt32 = 0
+  public var time: UInt32 = 0
 
   ///
   /// Usually based on thread name - if known
-  var source: String = String()
+  public var source: String = String()
 
   ///
   /// Not yet set
-  var level: LogRecord.Level = .unset
+  public var level: LogRecord.Level = .unset
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
   /// Log levels, chosen to match python logging conventions.
-  enum Level: SwiftProtobuf.Enum {
-    typealias RawValue = Int
+  public enum Level: SwiftProtobuf.Enum {
+    public typealias RawValue = Int
 
     ///
     /// Log levels, chosen to match python logging conventions.
@@ -2021,11 +2021,11 @@ struct LogRecord {
     case trace // = 5
     case UNRECOGNIZED(Int)
 
-    init() {
+    public init() {
       self = .unset
     }
 
-    init?(rawValue: Int) {
+    public init?(rawValue: Int) {
       switch rawValue {
       case 0: self = .unset
       case 5: self = .trace
@@ -2038,7 +2038,7 @@ struct LogRecord {
       }
     }
 
-    var rawValue: Int {
+    public var rawValue: Int {
       switch self {
       case .unset: return 0
       case .trace: return 5
@@ -2053,14 +2053,14 @@ struct LogRecord {
 
   }
 
-  init() {}
+  public init() {}
 }
 
 #if swift(>=4.2)
 
 extension LogRecord.Level: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [LogRecord.Level] = [
+  public static let allCases: [LogRecord.Level] = [
     .unset,
     .critical,
     .error,
@@ -2073,26 +2073,26 @@ extension LogRecord.Level: CaseIterable {
 
 #endif  // swift(>=4.2)
 
-struct QueueStatus {
+public struct QueueStatus {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   /// Last attempt to queue status, ErrorCode 
-  var res: Int32 = 0
+  public var res: Int32 = 0
 
   /// Free entries in the outgoing queue 
-  var free: UInt32 = 0
+  public var free: UInt32 = 0
 
   /// Maximum entries in the outgoing queue 
-  var maxlen: UInt32 = 0
+  public var maxlen: UInt32 = 0
 
   /// What was mesh packet id that generated this response? 
-  var meshPacketID: UInt32 = 0
+  public var meshPacketID: UInt32 = 0
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
@@ -2100,7 +2100,7 @@ struct QueueStatus {
 /// It will support READ and NOTIFY. When a new packet arrives the device will BLE notify?
 /// It will sit in that descriptor until consumed by the phone,
 /// at which point the next item in the FIFO will be populated.
-struct FromRadio {
+public struct FromRadio {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2108,21 +2108,21 @@ struct FromRadio {
   ///
   /// The packet id, used to allow the phone to request missing read packets from the FIFO,
   /// see our bluetooth docs
-  var id: UInt32 {
+  public var id: UInt32 {
     get {return _storage._id}
     set {_uniqueStorage()._id = newValue}
   }
 
   ///
   /// Log levels, chosen to match python logging conventions.
-  var payloadVariant: OneOf_PayloadVariant? {
+  public var payloadVariant: OneOf_PayloadVariant? {
     get {return _storage._payloadVariant}
     set {_uniqueStorage()._payloadVariant = newValue}
   }
 
   ///
   /// Log levels, chosen to match python logging conventions.
-  var packet: MeshPacket {
+  public var packet: MeshPacket {
     get {
       if case .packet(let v)? = _storage._payloadVariant {return v}
       return MeshPacket()
@@ -2133,7 +2133,7 @@ struct FromRadio {
   ///
   /// Tells the phone what our node number is, can be -1 if we've not yet joined a mesh.
   /// NOTE: This ID must not change - to keep (minimal) compatibility with <1.2 version of android apps.
-  var myInfo: MyNodeInfo {
+  public var myInfo: MyNodeInfo {
     get {
       if case .myInfo(let v)? = _storage._payloadVariant {return v}
       return MyNodeInfo()
@@ -2144,7 +2144,7 @@ struct FromRadio {
   ///
   /// One packet is sent for each node in the on radio DB
   /// starts over with the first node in our DB
-  var nodeInfo: NodeInfo {
+  public var nodeInfo: NodeInfo {
     get {
       if case .nodeInfo(let v)? = _storage._payloadVariant {return v}
       return NodeInfo()
@@ -2154,7 +2154,7 @@ struct FromRadio {
 
   ///
   /// Include a part of the config (was: RadioConfig radio)
-  var config: Config {
+  public var config: Config {
     get {
       if case .config(let v)? = _storage._payloadVariant {return v}
       return Config()
@@ -2164,7 +2164,7 @@ struct FromRadio {
 
   ///
   /// Set to send debug console output over our protobuf stream
-  var logRecord: LogRecord {
+  public var logRecord: LogRecord {
     get {
       if case .logRecord(let v)? = _storage._payloadVariant {return v}
       return LogRecord()
@@ -2177,7 +2177,7 @@ struct FromRadio {
   /// recipient should check if this ID matches our original request nonce, if
   /// not, it means your config responses haven't started yet.
   /// NOTE: This ID must not change - to keep (minimal) compatibility with <1.2 version of android apps.
-  var configCompleteID: UInt32 {
+  public var configCompleteID: UInt32 {
     get {
       if case .configCompleteID(let v)? = _storage._payloadVariant {return v}
       return 0
@@ -2190,7 +2190,7 @@ struct FromRadio {
   /// Set to true if present.
   /// Not used on all transports, currently just used for the serial console.
   /// NOTE: This ID must not change - to keep (minimal) compatibility with <1.2 version of android apps.
-  var rebooted: Bool {
+  public var rebooted: Bool {
     get {
       if case .rebooted(let v)? = _storage._payloadVariant {return v}
       return false
@@ -2200,7 +2200,7 @@ struct FromRadio {
 
   ///
   /// Include module config
-  var moduleConfig: ModuleConfig {
+  public var moduleConfig: ModuleConfig {
     get {
       if case .moduleConfig(let v)? = _storage._payloadVariant {return v}
       return ModuleConfig()
@@ -2210,7 +2210,7 @@ struct FromRadio {
 
   ///
   /// One packet is sent for each channel
-  var channel: Channel {
+  public var channel: Channel {
     get {
       if case .channel(let v)? = _storage._payloadVariant {return v}
       return Channel()
@@ -2220,7 +2220,7 @@ struct FromRadio {
 
   ///
   /// Queue status info
-  var queueStatus: QueueStatus {
+  public var queueStatus: QueueStatus {
     get {
       if case .queueStatus(let v)? = _storage._payloadVariant {return v}
       return QueueStatus()
@@ -2230,7 +2230,7 @@ struct FromRadio {
 
   ///
   /// File Transfer Chunk
-  var xmodemPacket: XModem {
+  public var xmodemPacket: XModem {
     get {
       if case .xmodemPacket(let v)? = _storage._payloadVariant {return v}
       return XModem()
@@ -2240,7 +2240,7 @@ struct FromRadio {
 
   ///
   /// Device metadata message
-  var metadata: DeviceMetadata {
+  public var metadata: DeviceMetadata {
     get {
       if case .metadata(let v)? = _storage._payloadVariant {return v}
       return DeviceMetadata()
@@ -2250,7 +2250,7 @@ struct FromRadio {
 
   ///
   /// MQTT Client Proxy Message (device sending to client / phone for publishing to MQTT)
-  var mqttClientProxyMessage: MqttClientProxyMessage {
+  public var mqttClientProxyMessage: MqttClientProxyMessage {
     get {
       if case .mqttClientProxyMessage(let v)? = _storage._payloadVariant {return v}
       return MqttClientProxyMessage()
@@ -2258,11 +2258,11 @@ struct FromRadio {
     set {_uniqueStorage()._payloadVariant = .mqttClientProxyMessage(newValue)}
   }
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
   /// Log levels, chosen to match python logging conventions.
-  enum OneOf_PayloadVariant: Equatable {
+  public enum OneOf_PayloadVariant: Equatable {
     ///
     /// Log levels, chosen to match python logging conventions.
     case packet(MeshPacket)
@@ -2312,7 +2312,7 @@ struct FromRadio {
     case mqttClientProxyMessage(MqttClientProxyMessage)
 
   #if !swift(>=4.1)
-    static func ==(lhs: FromRadio.OneOf_PayloadVariant, rhs: FromRadio.OneOf_PayloadVariant) -> Bool {
+    public static func ==(lhs: FromRadio.OneOf_PayloadVariant, rhs: FromRadio.OneOf_PayloadVariant) -> Bool {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
@@ -2375,7 +2375,7 @@ struct FromRadio {
   #endif
   }
 
-  init() {}
+  public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
 }
@@ -2383,18 +2383,18 @@ struct FromRadio {
 ///
 /// Packets/commands to the radio will be written (reliably) to the toRadio characteristic.
 /// Once the write completes the phone can assume it is handled.
-struct ToRadio {
+public struct ToRadio {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Log levels, chosen to match python logging conventions.
-  var payloadVariant: ToRadio.OneOf_PayloadVariant? = nil
+  public var payloadVariant: ToRadio.OneOf_PayloadVariant? = nil
 
   ///
   /// Send this packet on the mesh
-  var packet: MeshPacket {
+  public var packet: MeshPacket {
     get {
       if case .packet(let v)? = payloadVariant {return v}
       return MeshPacket()
@@ -2411,7 +2411,7 @@ struct ToRadio {
   /// the integer you write into this field will be reported back in the
   /// config_complete_id response this allows clients to never be confused by
   /// a stale old partially sent config.
-  var wantConfigID: UInt32 {
+  public var wantConfigID: UInt32 {
     get {
       if case .wantConfigID(let v)? = payloadVariant {return v}
       return 0
@@ -2423,7 +2423,7 @@ struct ToRadio {
   /// Tell API server we are disconnecting now.
   /// This is useful for serial links where there is no hardware/protocol based notification that the client has dropped the link.
   /// (Sending this message is optional for clients)
-  var disconnect: Bool {
+  public var disconnect: Bool {
     get {
       if case .disconnect(let v)? = payloadVariant {return v}
       return false
@@ -2431,7 +2431,7 @@ struct ToRadio {
     set {payloadVariant = .disconnect(newValue)}
   }
 
-  var xmodemPacket: XModem {
+  public var xmodemPacket: XModem {
     get {
       if case .xmodemPacket(let v)? = payloadVariant {return v}
       return XModem()
@@ -2441,7 +2441,7 @@ struct ToRadio {
 
   ///
   /// MQTT Client Proxy Message (for client / phone subscribed to MQTT sending to device)
-  var mqttClientProxyMessage: MqttClientProxyMessage {
+  public var mqttClientProxyMessage: MqttClientProxyMessage {
     get {
       if case .mqttClientProxyMessage(let v)? = payloadVariant {return v}
       return MqttClientProxyMessage()
@@ -2451,7 +2451,7 @@ struct ToRadio {
 
   ///
   /// Heartbeat message (used to keep the device connection awake on serial)
-  var heartbeat: Heartbeat {
+  public var heartbeat: Heartbeat {
     get {
       if case .heartbeat(let v)? = payloadVariant {return v}
       return Heartbeat()
@@ -2459,11 +2459,11 @@ struct ToRadio {
     set {payloadVariant = .heartbeat(newValue)}
   }
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
   /// Log levels, chosen to match python logging conventions.
-  enum OneOf_PayloadVariant: Equatable {
+  public enum OneOf_PayloadVariant: Equatable {
     ///
     /// Send this packet on the mesh
     case packet(MeshPacket)
@@ -2491,7 +2491,7 @@ struct ToRadio {
     case heartbeat(Heartbeat)
 
   #if !swift(>=4.1)
-    static func ==(lhs: ToRadio.OneOf_PayloadVariant, rhs: ToRadio.OneOf_PayloadVariant) -> Bool {
+    public static func ==(lhs: ToRadio.OneOf_PayloadVariant, rhs: ToRadio.OneOf_PayloadVariant) -> Bool {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
@@ -2526,177 +2526,177 @@ struct ToRadio {
   #endif
   }
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// Compressed message payload
-struct Compressed {
+public struct Compressed {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// PortNum to determine the how to handle the compressed payload.
-  var portnum: PortNum = .unknownApp
+  public var portnum: PortNum = .unknownApp
 
   ///
   /// Compressed data.
-  var data: Data = Data()
+  public var data: Data = Data()
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// Full info on edges for a single node
-struct NeighborInfo {
+public struct NeighborInfo {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// The node ID of the node sending info on its neighbors
-  var nodeID: UInt32 = 0
+  public var nodeID: UInt32 = 0
 
   ///
   /// Field to pass neighbor info for the next sending cycle
-  var lastSentByID: UInt32 = 0
+  public var lastSentByID: UInt32 = 0
 
   ///
   /// Broadcast interval of the represented node (in seconds)
-  var nodeBroadcastIntervalSecs: UInt32 = 0
+  public var nodeBroadcastIntervalSecs: UInt32 = 0
 
   ///
   /// The list of out edges from this node
-  var neighbors: [Neighbor] = []
+  public var neighbors: [Neighbor] = []
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// A single edge in the mesh
-struct Neighbor {
+public struct Neighbor {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Node ID of neighbor
-  var nodeID: UInt32 = 0
+  public var nodeID: UInt32 = 0
 
   ///
   /// SNR of last heard message
-  var snr: Float = 0
+  public var snr: Float = 0
 
   ///
   /// Reception time (in secs since 1970) of last message that was last sent by this ID.
   /// Note: this is for local storage only and will not be sent out over the mesh.
-  var lastRxTime: UInt32 = 0
+  public var lastRxTime: UInt32 = 0
 
   ///
   /// Broadcast interval of this neighbor (in seconds).
   /// Note: this is for local storage only and will not be sent out over the mesh.
-  var nodeBroadcastIntervalSecs: UInt32 = 0
+  public var nodeBroadcastIntervalSecs: UInt32 = 0
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// Device metadata response
-struct DeviceMetadata {
+public struct DeviceMetadata {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Device firmware version string
-  var firmwareVersion: String = String()
+  public var firmwareVersion: String = String()
 
   ///
   /// Device state version
-  var deviceStateVersion: UInt32 = 0
+  public var deviceStateVersion: UInt32 = 0
 
   ///
   /// Indicates whether the device can shutdown CPU natively or via power management chip
-  var canShutdown: Bool = false
+  public var canShutdown: Bool = false
 
   ///
   /// Indicates that the device has native wifi capability
-  var hasWifi_p: Bool = false
+  public var hasWifi_p: Bool = false
 
   ///
   /// Indicates that the device has native bluetooth capability
-  var hasBluetooth_p: Bool = false
+  public var hasBluetooth_p: Bool = false
 
   ///
   /// Indicates that the device has an ethernet peripheral
-  var hasEthernet_p: Bool = false
+  public var hasEthernet_p: Bool = false
 
   ///
   /// Indicates that the device's role in the mesh
-  var role: Config.DeviceConfig.Role = .client
+  public var role: Config.DeviceConfig.Role = .client
 
   ///
   /// Indicates the device's current enabled position flags
-  var positionFlags: UInt32 = 0
+  public var positionFlags: UInt32 = 0
 
   ///
   /// Device hardware model
-  var hwModel: HardwareModel = .unset
+  public var hwModel: HardwareModel = .unset
 
   ///
   /// Has Remote Hardware enabled
-  var hasRemoteHardware_p: Bool = false
+  public var hasRemoteHardware_p: Bool = false
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// A heartbeat message is sent to the node from the client to keep the connection alive.
 /// This is currently only needed to keep serial connections alive, but can be used by any PhoneAPI.
-struct Heartbeat {
+public struct Heartbeat {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 ///
 /// RemoteHardwarePins associated with a node
-struct NodeRemoteHardwarePin {
+public struct NodeRemoteHardwarePin {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// The node_num exposing the available gpio pin
-  var nodeNum: UInt32 = 0
+  public var nodeNum: UInt32 = 0
 
   ///
   /// The the available gpio pin for usage with RemoteHardware module
-  var pin: RemoteHardwarePin {
+  public var pin: RemoteHardwarePin {
     get {return _pin ?? RemoteHardwarePin()}
     set {_pin = newValue}
   }
   /// Returns true if `pin` has been explicitly set.
-  var hasPin: Bool {return self._pin != nil}
+  public var hasPin: Bool {return self._pin != nil}
   /// Clears the value of `pin`. Subsequent reads from it will return its default value.
-  mutating func clearPin() {self._pin = nil}
+  public mutating func clearPin() {self._pin = nil}
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 
   fileprivate var _pin: RemoteHardwarePin? = nil
 }
@@ -2743,7 +2743,7 @@ extension NodeRemoteHardwarePin: @unchecked Sendable {}
 fileprivate let _protobuf_package = "meshtastic"
 
 extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "UNSET"),
     1: .same(proto: "TLORA_V2"),
     2: .same(proto: "TLORA_V1"),
@@ -2810,14 +2810,14 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension Constants: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "ZERO"),
     237: .same(proto: "DATA_PAYLOAD_LEN"),
   ]
 }
 
 extension CriticalErrorCode: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "NONE"),
     1: .same(proto: "TX_WATCHDOG"),
     2: .same(proto: "SLEEP_ENTER_WAIT"),
@@ -2834,8 +2834,8 @@ extension CriticalErrorCode: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".Position"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".Position"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "latitude_i"),
     2: .standard(proto: "longitude_i"),
     3: .same(proto: "altitude"),
@@ -2932,7 +2932,7 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     return _storage
   }
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     _ = _uniqueStorage()
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
       while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2969,7 +2969,7 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
       if _storage._latitudeI != 0 {
         try visitor.visitSingularSFixed32Field(value: _storage._latitudeI, fieldNumber: 1)
@@ -3044,7 +3044,7 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Position, rhs: Position) -> Bool {
+  public static func ==(lhs: Position, rhs: Position) -> Bool {
     if lhs._storage !== rhs._storage {
       let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
         let _storage = _args.0
@@ -3082,7 +3082,7 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
 }
 
 extension Position.LocSource: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "LOC_UNSET"),
     1: .same(proto: "LOC_MANUAL"),
     2: .same(proto: "LOC_INTERNAL"),
@@ -3091,7 +3091,7 @@ extension Position.LocSource: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension Position.AltSource: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "ALT_UNSET"),
     1: .same(proto: "ALT_MANUAL"),
     2: .same(proto: "ALT_INTERNAL"),
@@ -3101,8 +3101,8 @@ extension Position.AltSource: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".User"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".User"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "id"),
     2: .standard(proto: "long_name"),
     3: .standard(proto: "short_name"),
@@ -3112,7 +3112,7 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     7: .same(proto: "role"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -3130,7 +3130,7 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if !self.id.isEmpty {
       try visitor.visitSingularStringField(value: self.id, fieldNumber: 1)
     }
@@ -3155,7 +3155,7 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: User, rhs: User) -> Bool {
+  public static func ==(lhs: User, rhs: User) -> Bool {
     if lhs.id != rhs.id {return false}
     if lhs.longName != rhs.longName {return false}
     if lhs.shortName != rhs.shortName {return false}
@@ -3169,12 +3169,12 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
 }
 
 extension RouteDiscovery: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".RouteDiscovery"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".RouteDiscovery"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "route"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -3186,14 +3186,14 @@ extension RouteDiscovery: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if !self.route.isEmpty {
       try visitor.visitPackedFixed32Field(value: self.route, fieldNumber: 1)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: RouteDiscovery, rhs: RouteDiscovery) -> Bool {
+  public static func ==(lhs: RouteDiscovery, rhs: RouteDiscovery) -> Bool {
     if lhs.route != rhs.route {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
@@ -3201,14 +3201,14 @@ extension RouteDiscovery: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
 }
 
 extension Routing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".Routing"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".Routing"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "route_request"),
     2: .standard(proto: "route_reply"),
     3: .standard(proto: "error_reason"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -3253,7 +3253,7 @@ extension Routing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -3276,7 +3276,7 @@ extension Routing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Routing, rhs: Routing) -> Bool {
+  public static func ==(lhs: Routing, rhs: Routing) -> Bool {
     if lhs.variant != rhs.variant {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
@@ -3284,7 +3284,7 @@ extension Routing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
 }
 
 extension Routing.Error: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "NONE"),
     1: .same(proto: "NO_ROUTE"),
     2: .same(proto: "GOT_NAK"),
@@ -3301,8 +3301,8 @@ extension Routing.Error: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".Data"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".Data"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "portnum"),
     2: .same(proto: "payload"),
     3: .standard(proto: "want_response"),
@@ -3313,7 +3313,7 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     8: .same(proto: "emoji"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -3332,7 +3332,7 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.portnum != .unknownApp {
       try visitor.visitSingularEnumField(value: self.portnum, fieldNumber: 1)
     }
@@ -3360,7 +3360,7 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: DataMessage, rhs: DataMessage) -> Bool {
+  public static func ==(lhs: DataMessage, rhs: DataMessage) -> Bool {
     if lhs.portnum != rhs.portnum {return false}
     if lhs.payload != rhs.payload {return false}
     if lhs.wantResponse != rhs.wantResponse {return false}
@@ -3375,8 +3375,8 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 }
 
 extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".Waypoint"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".Waypoint"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "id"),
     2: .standard(proto: "latitude_i"),
     3: .standard(proto: "longitude_i"),
@@ -3387,7 +3387,7 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     8: .same(proto: "icon"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -3406,7 +3406,7 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.id != 0 {
       try visitor.visitSingularUInt32Field(value: self.id, fieldNumber: 1)
     }
@@ -3434,7 +3434,7 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Waypoint, rhs: Waypoint) -> Bool {
+  public static func ==(lhs: Waypoint, rhs: Waypoint) -> Bool {
     if lhs.id != rhs.id {return false}
     if lhs.latitudeI != rhs.latitudeI {return false}
     if lhs.longitudeI != rhs.longitudeI {return false}
@@ -3449,15 +3449,15 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
 }
 
 extension MqttClientProxyMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".MqttClientProxyMessage"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".MqttClientProxyMessage"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "topic"),
     2: .same(proto: "data"),
     3: .same(proto: "text"),
     4: .same(proto: "retained"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -3486,7 +3486,7 @@ extension MqttClientProxyMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -3511,7 +3511,7 @@ extension MqttClientProxyMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: MqttClientProxyMessage, rhs: MqttClientProxyMessage) -> Bool {
+  public static func ==(lhs: MqttClientProxyMessage, rhs: MqttClientProxyMessage) -> Bool {
     if lhs.topic != rhs.topic {return false}
     if lhs.payloadVariant != rhs.payloadVariant {return false}
     if lhs.retained != rhs.retained {return false}
@@ -3521,8 +3521,8 @@ extension MqttClientProxyMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageI
 }
 
 extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".MeshPacket"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".MeshPacket"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "from"),
     2: .same(proto: "to"),
     3: .same(proto: "channel"),
@@ -3593,7 +3593,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     return _storage
   }
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     _ = _uniqueStorage()
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
       while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3641,7 +3641,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every if/case branch local when no optimizations
@@ -3701,7 +3701,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: MeshPacket, rhs: MeshPacket) -> Bool {
+  public static func ==(lhs: MeshPacket, rhs: MeshPacket) -> Bool {
     if lhs._storage !== rhs._storage {
       let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
         let _storage = _args.0
@@ -3730,7 +3730,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
 }
 
 extension MeshPacket.Priority: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "UNSET"),
     1: .same(proto: "MIN"),
     10: .same(proto: "BACKGROUND"),
@@ -3742,7 +3742,7 @@ extension MeshPacket.Priority: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension MeshPacket.Delayed: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "NO_DELAY"),
     1: .same(proto: "DELAYED_BROADCAST"),
     2: .same(proto: "DELAYED_DIRECT"),
@@ -3750,8 +3750,8 @@ extension MeshPacket.Delayed: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".NodeInfo"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".NodeInfo"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "num"),
     2: .same(proto: "user"),
     3: .same(proto: "position"),
@@ -3809,7 +3809,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     return _storage
   }
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     _ = _uniqueStorage()
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
       while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3833,7 +3833,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every if/case branch local when no optimizations
@@ -3873,7 +3873,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: NodeInfo, rhs: NodeInfo) -> Bool {
+  public static func ==(lhs: NodeInfo, rhs: NodeInfo) -> Bool {
     if lhs._storage !== rhs._storage {
       let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
         let _storage = _args.0
@@ -3898,14 +3898,14 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
 }
 
 extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".MyNodeInfo"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".MyNodeInfo"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "my_node_num"),
     8: .standard(proto: "reboot_count"),
     11: .standard(proto: "min_app_version"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -3919,7 +3919,7 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.myNodeNum != 0 {
       try visitor.visitSingularUInt32Field(value: self.myNodeNum, fieldNumber: 1)
     }
@@ -3932,7 +3932,7 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: MyNodeInfo, rhs: MyNodeInfo) -> Bool {
+  public static func ==(lhs: MyNodeInfo, rhs: MyNodeInfo) -> Bool {
     if lhs.myNodeNum != rhs.myNodeNum {return false}
     if lhs.rebootCount != rhs.rebootCount {return false}
     if lhs.minAppVersion != rhs.minAppVersion {return false}
@@ -3942,15 +3942,15 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
 }
 
 extension LogRecord: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".LogRecord"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".LogRecord"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "message"),
     2: .same(proto: "time"),
     3: .same(proto: "source"),
     4: .same(proto: "level"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -3965,7 +3965,7 @@ extension LogRecord: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if !self.message.isEmpty {
       try visitor.visitSingularStringField(value: self.message, fieldNumber: 1)
     }
@@ -3981,7 +3981,7 @@ extension LogRecord: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: LogRecord, rhs: LogRecord) -> Bool {
+  public static func ==(lhs: LogRecord, rhs: LogRecord) -> Bool {
     if lhs.message != rhs.message {return false}
     if lhs.time != rhs.time {return false}
     if lhs.source != rhs.source {return false}
@@ -3992,7 +3992,7 @@ extension LogRecord: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
 }
 
 extension LogRecord.Level: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "UNSET"),
     5: .same(proto: "TRACE"),
     10: .same(proto: "DEBUG"),
@@ -4004,15 +4004,15 @@ extension LogRecord.Level: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension QueueStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".QueueStatus"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".QueueStatus"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "res"),
     2: .same(proto: "free"),
     3: .same(proto: "maxlen"),
     4: .standard(proto: "mesh_packet_id"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -4027,7 +4027,7 @@ extension QueueStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.res != 0 {
       try visitor.visitSingularInt32Field(value: self.res, fieldNumber: 1)
     }
@@ -4043,7 +4043,7 @@ extension QueueStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: QueueStatus, rhs: QueueStatus) -> Bool {
+  public static func ==(lhs: QueueStatus, rhs: QueueStatus) -> Bool {
     if lhs.res != rhs.res {return false}
     if lhs.free != rhs.free {return false}
     if lhs.maxlen != rhs.maxlen {return false}
@@ -4054,8 +4054,8 @@ extension QueueStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 }
 
 extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".FromRadio"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".FromRadio"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "id"),
     2: .same(proto: "packet"),
     3: .standard(proto: "my_info"),
@@ -4101,7 +4101,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     return _storage
   }
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     _ = _uniqueStorage()
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
       while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4275,7 +4275,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every if/case branch local when no optimizations
@@ -4343,7 +4343,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: FromRadio, rhs: FromRadio) -> Bool {
+  public static func ==(lhs: FromRadio, rhs: FromRadio) -> Bool {
     if lhs._storage !== rhs._storage {
       let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
         let _storage = _args.0
@@ -4360,8 +4360,8 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
 }
 
 extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".ToRadio"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".ToRadio"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "packet"),
     3: .standard(proto: "want_config_id"),
     4: .same(proto: "disconnect"),
@@ -4370,7 +4370,7 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     7: .same(proto: "heartbeat"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -4449,7 +4449,7 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -4484,7 +4484,7 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ToRadio, rhs: ToRadio) -> Bool {
+  public static func ==(lhs: ToRadio, rhs: ToRadio) -> Bool {
     if lhs.payloadVariant != rhs.payloadVariant {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
@@ -4492,13 +4492,13 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
 }
 
 extension Compressed: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".Compressed"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".Compressed"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "portnum"),
     2: .same(proto: "data"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -4511,7 +4511,7 @@ extension Compressed: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.portnum != .unknownApp {
       try visitor.visitSingularEnumField(value: self.portnum, fieldNumber: 1)
     }
@@ -4521,7 +4521,7 @@ extension Compressed: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Compressed, rhs: Compressed) -> Bool {
+  public static func ==(lhs: Compressed, rhs: Compressed) -> Bool {
     if lhs.portnum != rhs.portnum {return false}
     if lhs.data != rhs.data {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -4530,15 +4530,15 @@ extension Compressed: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
 }
 
 extension NeighborInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".NeighborInfo"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".NeighborInfo"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "node_id"),
     2: .standard(proto: "last_sent_by_id"),
     3: .standard(proto: "node_broadcast_interval_secs"),
     4: .same(proto: "neighbors"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -4553,7 +4553,7 @@ extension NeighborInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.nodeID != 0 {
       try visitor.visitSingularUInt32Field(value: self.nodeID, fieldNumber: 1)
     }
@@ -4569,7 +4569,7 @@ extension NeighborInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: NeighborInfo, rhs: NeighborInfo) -> Bool {
+  public static func ==(lhs: NeighborInfo, rhs: NeighborInfo) -> Bool {
     if lhs.nodeID != rhs.nodeID {return false}
     if lhs.lastSentByID != rhs.lastSentByID {return false}
     if lhs.nodeBroadcastIntervalSecs != rhs.nodeBroadcastIntervalSecs {return false}
@@ -4580,15 +4580,15 @@ extension NeighborInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
 }
 
 extension Neighbor: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".Neighbor"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".Neighbor"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "node_id"),
     2: .same(proto: "snr"),
     3: .standard(proto: "last_rx_time"),
     4: .standard(proto: "node_broadcast_interval_secs"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -4603,7 +4603,7 @@ extension Neighbor: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.nodeID != 0 {
       try visitor.visitSingularUInt32Field(value: self.nodeID, fieldNumber: 1)
     }
@@ -4619,7 +4619,7 @@ extension Neighbor: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Neighbor, rhs: Neighbor) -> Bool {
+  public static func ==(lhs: Neighbor, rhs: Neighbor) -> Bool {
     if lhs.nodeID != rhs.nodeID {return false}
     if lhs.snr != rhs.snr {return false}
     if lhs.lastRxTime != rhs.lastRxTime {return false}
@@ -4630,8 +4630,8 @@ extension Neighbor: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
 }
 
 extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".DeviceMetadata"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".DeviceMetadata"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "firmware_version"),
     2: .standard(proto: "device_state_version"),
     3: .same(proto: "canShutdown"),
@@ -4644,7 +4644,7 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     10: .same(proto: "hasRemoteHardware"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -4665,7 +4665,7 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if !self.firmwareVersion.isEmpty {
       try visitor.visitSingularStringField(value: self.firmwareVersion, fieldNumber: 1)
     }
@@ -4699,7 +4699,7 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: DeviceMetadata, rhs: DeviceMetadata) -> Bool {
+  public static func ==(lhs: DeviceMetadata, rhs: DeviceMetadata) -> Bool {
     if lhs.firmwareVersion != rhs.firmwareVersion {return false}
     if lhs.deviceStateVersion != rhs.deviceStateVersion {return false}
     if lhs.canShutdown != rhs.canShutdown {return false}
@@ -4716,32 +4716,32 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
 }
 
 extension Heartbeat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".Heartbeat"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+  public static let protoMessageName: String = _protobuf_package + ".Heartbeat"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let _ = try decoder.nextFieldNumber() {
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Heartbeat, rhs: Heartbeat) -> Bool {
+  public static func ==(lhs: Heartbeat, rhs: Heartbeat) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
 extension NodeRemoteHardwarePin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".NodeRemoteHardwarePin"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".NodeRemoteHardwarePin"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "node_num"),
     2: .same(proto: "pin"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -4754,7 +4754,7 @@ extension NodeRemoteHardwarePin: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -4768,7 +4768,7 @@ extension NodeRemoteHardwarePin: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: NodeRemoteHardwarePin, rhs: NodeRemoteHardwarePin) -> Bool {
+  public static func ==(lhs: NodeRemoteHardwarePin, rhs: NodeRemoteHardwarePin) -> Bool {
     if lhs.nodeNum != rhs.nodeNum {return false}
     if lhs._pin != rhs._pin {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}

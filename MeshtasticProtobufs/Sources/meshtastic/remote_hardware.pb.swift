@@ -30,30 +30,30 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// because no security yet (beyond the channel mechanism).
 /// It should be off by default and then protected based on some TBD mechanism
 /// (a special channel once multichannel support is included?)
-struct HardwareMessage {
+public struct HardwareMessage {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// What type of HardwareMessage is this?
-  var type: HardwareMessage.TypeEnum = .unset
+  public var type: HardwareMessage.TypeEnum = .unset
 
   ///
   /// What gpios are we changing. Not used for all MessageTypes, see MessageType for details
-  var gpioMask: UInt64 = 0
+  public var gpioMask: UInt64 = 0
 
   ///
   /// For gpios that were listed in gpio_mask as valid, what are the signal levels for those gpios.
   /// Not used for all MessageTypes, see MessageType for details
-  var gpioValue: UInt64 = 0
+  public var gpioValue: UInt64 = 0
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
   /// TODO: REPLACE
-  enum TypeEnum: SwiftProtobuf.Enum {
-    typealias RawValue = Int
+  public enum TypeEnum: SwiftProtobuf.Enum {
+    public typealias RawValue = Int
 
     ///
     /// Unset/unused
@@ -82,11 +82,11 @@ struct HardwareMessage {
     case readGpiosReply // = 5
     case UNRECOGNIZED(Int)
 
-    init() {
+    public init() {
       self = .unset
     }
 
-    init?(rawValue: Int) {
+    public init?(rawValue: Int) {
       switch rawValue {
       case 0: self = .unset
       case 1: self = .writeGpios
@@ -98,7 +98,7 @@ struct HardwareMessage {
       }
     }
 
-    var rawValue: Int {
+    public var rawValue: Int {
       switch self {
       case .unset: return 0
       case .writeGpios: return 1
@@ -112,14 +112,14 @@ struct HardwareMessage {
 
   }
 
-  init() {}
+  public init() {}
 }
 
 #if swift(>=4.2)
 
 extension HardwareMessage.TypeEnum: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [HardwareMessage.TypeEnum] = [
+  public static let allCases: [HardwareMessage.TypeEnum] = [
     .unset,
     .writeGpios,
     .watchGpios,
@@ -141,14 +141,14 @@ extension HardwareMessage.TypeEnum: @unchecked Sendable {}
 fileprivate let _protobuf_package = "meshtastic"
 
 extension HardwareMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".HardwareMessage"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".HardwareMessage"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "type"),
     2: .standard(proto: "gpio_mask"),
     3: .standard(proto: "gpio_value"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -162,7 +162,7 @@ extension HardwareMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.type != .unset {
       try visitor.visitSingularEnumField(value: self.type, fieldNumber: 1)
     }
@@ -175,7 +175,7 @@ extension HardwareMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: HardwareMessage, rhs: HardwareMessage) -> Bool {
+  public static func ==(lhs: HardwareMessage, rhs: HardwareMessage) -> Bool {
     if lhs.type != rhs.type {return false}
     if lhs.gpioMask != rhs.gpioMask {return false}
     if lhs.gpioValue != rhs.gpioValue {return false}
@@ -185,7 +185,7 @@ extension HardwareMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
 }
 
 extension HardwareMessage.TypeEnum: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "UNSET"),
     1: .same(proto: "WRITE_GPIOS"),
     2: .same(proto: "WATCH_GPIOS"),

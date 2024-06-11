@@ -20,16 +20,16 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
-struct Config {
+public struct Config {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Payload Variant
-  var payloadVariant: Config.OneOf_PayloadVariant? = nil
+  public var payloadVariant: Config.OneOf_PayloadVariant? = nil
 
-  var device: Config.DeviceConfig {
+  public var device: Config.DeviceConfig {
     get {
       if case .device(let v)? = payloadVariant {return v}
       return Config.DeviceConfig()
@@ -37,7 +37,7 @@ struct Config {
     set {payloadVariant = .device(newValue)}
   }
 
-  var position: Config.PositionConfig {
+  public var position: Config.PositionConfig {
     get {
       if case .position(let v)? = payloadVariant {return v}
       return Config.PositionConfig()
@@ -45,7 +45,7 @@ struct Config {
     set {payloadVariant = .position(newValue)}
   }
 
-  var power: Config.PowerConfig {
+  public var power: Config.PowerConfig {
     get {
       if case .power(let v)? = payloadVariant {return v}
       return Config.PowerConfig()
@@ -53,7 +53,7 @@ struct Config {
     set {payloadVariant = .power(newValue)}
   }
 
-  var network: Config.NetworkConfig {
+  public var network: Config.NetworkConfig {
     get {
       if case .network(let v)? = payloadVariant {return v}
       return Config.NetworkConfig()
@@ -61,7 +61,7 @@ struct Config {
     set {payloadVariant = .network(newValue)}
   }
 
-  var display: Config.DisplayConfig {
+  public var display: Config.DisplayConfig {
     get {
       if case .display(let v)? = payloadVariant {return v}
       return Config.DisplayConfig()
@@ -69,7 +69,7 @@ struct Config {
     set {payloadVariant = .display(newValue)}
   }
 
-  var lora: Config.LoRaConfig {
+  public var lora: Config.LoRaConfig {
     get {
       if case .lora(let v)? = payloadVariant {return v}
       return Config.LoRaConfig()
@@ -77,7 +77,7 @@ struct Config {
     set {payloadVariant = .lora(newValue)}
   }
 
-  var bluetooth: Config.BluetoothConfig {
+  public var bluetooth: Config.BluetoothConfig {
     get {
       if case .bluetooth(let v)? = payloadVariant {return v}
       return Config.BluetoothConfig()
@@ -85,11 +85,11 @@ struct Config {
     set {payloadVariant = .bluetooth(newValue)}
   }
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
   /// Payload Variant
-  enum OneOf_PayloadVariant: Equatable {
+  public enum OneOf_PayloadVariant: Equatable {
     case device(Config.DeviceConfig)
     case position(Config.PositionConfig)
     case power(Config.PowerConfig)
@@ -99,7 +99,7 @@ struct Config {
     case bluetooth(Config.BluetoothConfig)
 
   #if !swift(>=4.1)
-    static func ==(lhs: Config.OneOf_PayloadVariant, rhs: Config.OneOf_PayloadVariant) -> Bool {
+    public static func ==(lhs: Config.OneOf_PayloadVariant, rhs: Config.OneOf_PayloadVariant) -> Bool {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
@@ -140,70 +140,70 @@ struct Config {
 
   ///
   /// Configuration
-  struct DeviceConfig {
+  public struct DeviceConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     ///
     /// Sets the role of node
-    var role: Config.DeviceConfig.Role = .client
+    public var role: Config.DeviceConfig.Role = .client
 
     ///
     /// Disabling this will disable the SerialConsole by not initilizing the StreamAPI
-    var serialEnabled: Bool = false
+    public var serialEnabled: Bool = false
 
     ///
     /// By default we turn off logging as soon as an API client connects (to keep shared serial link quiet).
     /// Set this to true to leave the debug log outputting even when API is active.
-    var debugLogEnabled: Bool = false
+    public var debugLogEnabled: Bool = false
 
     ///
     /// For boards without a hard wired button, this is the pin number that will be used
     /// Boards that have more than one button can swap the function with this one. defaults to BUTTON_PIN if defined.
-    var buttonGpio: UInt32 = 0
+    public var buttonGpio: UInt32 = 0
 
     ///
     /// For boards without a PWM buzzer, this is the pin number that will be used
     /// Defaults to PIN_BUZZER if defined.
-    var buzzerGpio: UInt32 = 0
+    public var buzzerGpio: UInt32 = 0
 
     ///
     /// Sets the role of node
-    var rebroadcastMode: Config.DeviceConfig.RebroadcastMode = .all
+    public var rebroadcastMode: Config.DeviceConfig.RebroadcastMode = .all
 
     ///
     /// Send our nodeinfo this often
     /// Defaults to 900 Seconds (15 minutes)
-    var nodeInfoBroadcastSecs: UInt32 = 0
+    public var nodeInfoBroadcastSecs: UInt32 = 0
 
     ///
     /// Treat double tap interrupt on supported accelerometers as a button press if set to true
-    var doubleTapAsButtonPress: Bool = false
+    public var doubleTapAsButtonPress: Bool = false
 
     ///
     /// If true, device is considered to be "managed" by a mesh administrator
     /// Clients should then limit available configuration and administrative options inside the user interface
-    var isManaged: Bool = false
+    public var isManaged: Bool = false
 
     ///
     /// Disables the triple-press of user button to enable or disable GPS
-    var disableTripleClick: Bool = false
+    public var disableTripleClick: Bool = false
 
     ///
     /// POSIX Timezone definition string from https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv.
-    var tzdef: String = String()
+    public var tzdef: String = String()
 
     ///
     /// If true, disable the default blinking LED (LED_PIN) behavior on the device 
-    var ledHeartbeatDisabled: Bool = false
+    public var ledHeartbeatDisabled: Bool = false
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
     /// Defines the device's role on the Mesh network
-    enum Role: SwiftProtobuf.Enum {
-      typealias RawValue = Int
+    public enum Role: SwiftProtobuf.Enum {
+      public typealias RawValue = Int
 
       ///
       /// Description: App connected or stand alone messaging device.
@@ -275,11 +275,11 @@ struct Config {
       case takTracker // = 10
       case UNRECOGNIZED(Int)
 
-      init() {
+      public init() {
         self = .client
       }
 
-      init?(rawValue: Int) {
+      public init?(rawValue: Int) {
         switch rawValue {
         case 0: self = .client
         case 1: self = .clientMute
@@ -296,7 +296,7 @@ struct Config {
         }
       }
 
-      var rawValue: Int {
+      public var rawValue: Int {
         switch self {
         case .client: return 0
         case .clientMute: return 1
@@ -317,8 +317,8 @@ struct Config {
 
     ///
     /// Defines the device's behavior for how messages are rebroadcast
-    enum RebroadcastMode: SwiftProtobuf.Enum {
-      typealias RawValue = Int
+    public enum RebroadcastMode: SwiftProtobuf.Enum {
+      public typealias RawValue = Int
 
       ///
       /// Default behavior.
@@ -341,11 +341,11 @@ struct Config {
       case knownOnly // = 3
       case UNRECOGNIZED(Int)
 
-      init() {
+      public init() {
         self = .all
       }
 
-      init?(rawValue: Int) {
+      public init?(rawValue: Int) {
         switch rawValue {
         case 0: self = .all
         case 1: self = .allSkipDecoding
@@ -355,7 +355,7 @@ struct Config {
         }
       }
 
-      var rawValue: Int {
+      public var rawValue: Int {
         switch self {
         case .all: return 0
         case .allSkipDecoding: return 1
@@ -367,12 +367,12 @@ struct Config {
 
     }
 
-    init() {}
+    public init() {}
   }
 
   ///
   /// Position Config
-  struct PositionConfig {
+  public struct PositionConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -380,62 +380,62 @@ struct Config {
     ///
     /// We should send our position this often (but only if it has changed significantly)
     /// Defaults to 15 minutes
-    var positionBroadcastSecs: UInt32 = 0
+    public var positionBroadcastSecs: UInt32 = 0
 
     ///
     /// Adaptive position braoadcast, which is now the default.
-    var positionBroadcastSmartEnabled: Bool = false
+    public var positionBroadcastSmartEnabled: Bool = false
 
     ///
     /// If set, this node is at a fixed position.
     /// We will generate GPS position updates at the regular interval, but use whatever the last lat/lon/alt we have for the node.
     /// The lat/lon/alt can be set by an internal GPS or with the help of the app.
-    var fixedPosition: Bool = false
+    public var fixedPosition: Bool = false
 
     ///
     /// Is GPS enabled for this node?
-    var gpsEnabled: Bool = false
+    public var gpsEnabled: Bool = false
 
     ///
     /// How often should we try to get GPS position (in seconds)
     /// or zero for the default of once every 30 seconds
     /// or a very large value (maxint) to update only once at boot.
-    var gpsUpdateInterval: UInt32 = 0
+    public var gpsUpdateInterval: UInt32 = 0
 
     ///
     /// Deprecated in favor of using smart / regular broadcast intervals as implicit attempt time
-    var gpsAttemptTime: UInt32 = 0
+    public var gpsAttemptTime: UInt32 = 0
 
     ///
     /// Bit field of boolean configuration options for POSITION messages
     /// (bitwise OR of PositionFlags)
-    var positionFlags: UInt32 = 0
+    public var positionFlags: UInt32 = 0
 
     ///
     /// (Re)define GPS_RX_PIN for your board.
-    var rxGpio: UInt32 = 0
+    public var rxGpio: UInt32 = 0
 
     ///
     /// (Re)define GPS_TX_PIN for your board.
-    var txGpio: UInt32 = 0
+    public var txGpio: UInt32 = 0
 
     ///
     /// The minimum distance in meters traveled (since the last send) before we can send a position to the mesh if position_broadcast_smart_enabled
-    var broadcastSmartMinimumDistance: UInt32 = 0
+    public var broadcastSmartMinimumDistance: UInt32 = 0
 
     ///
     /// The minimum number of seconds (since the last send) before we can send a position to the mesh if position_broadcast_smart_enabled
-    var broadcastSmartMinimumIntervalSecs: UInt32 = 0
+    public var broadcastSmartMinimumIntervalSecs: UInt32 = 0
 
     ///
     /// (Re)define PIN_GPS_EN for your board.
-    var gpsEnGpio: UInt32 = 0
+    public var gpsEnGpio: UInt32 = 0
 
     ///
     /// Set where GPS is enabled, disabled, or not present
-    var gpsMode: Config.PositionConfig.GpsMode = .disabled
+    public var gpsMode: Config.PositionConfig.GpsMode = .disabled
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
     /// Bit field of boolean configuration options, indicating which optional
@@ -444,8 +444,8 @@ struct Config {
     /// are always included (also time if GPS-synced)
     /// NOTE: the more fields are included, the larger the message will be -
     ///   leading to longer airtime and a higher risk of packet loss
-    enum PositionFlags: SwiftProtobuf.Enum {
-      typealias RawValue = Int
+    public enum PositionFlags: SwiftProtobuf.Enum {
+      public typealias RawValue = Int
 
       ///
       /// Required for compilation
@@ -496,11 +496,11 @@ struct Config {
       case speed // = 512
       case UNRECOGNIZED(Int)
 
-      init() {
+      public init() {
         self = .unset
       }
 
-      init?(rawValue: Int) {
+      public init?(rawValue: Int) {
         switch rawValue {
         case 0: self = .unset
         case 1: self = .altitude
@@ -517,7 +517,7 @@ struct Config {
         }
       }
 
-      var rawValue: Int {
+      public var rawValue: Int {
         switch self {
         case .unset: return 0
         case .altitude: return 1
@@ -536,8 +536,8 @@ struct Config {
 
     }
 
-    enum GpsMode: SwiftProtobuf.Enum {
-      typealias RawValue = Int
+    public enum GpsMode: SwiftProtobuf.Enum {
+      public typealias RawValue = Int
 
       ///
       /// GPS is present but disabled
@@ -552,11 +552,11 @@ struct Config {
       case notPresent // = 2
       case UNRECOGNIZED(Int)
 
-      init() {
+      public init() {
         self = .disabled
       }
 
-      init?(rawValue: Int) {
+      public init?(rawValue: Int) {
         switch rawValue {
         case 0: self = .disabled
         case 1: self = .enabled
@@ -565,7 +565,7 @@ struct Config {
         }
       }
 
-      var rawValue: Int {
+      public var rawValue: Int {
         switch self {
         case .disabled: return 0
         case .enabled: return 1
@@ -576,13 +576,13 @@ struct Config {
 
     }
 
-    init() {}
+    public init() {}
   }
 
   ///
   /// Power Config\
   /// See [Power Config](/docs/settings/config/power) for additional power config details.
-  struct PowerConfig {
+  public struct PowerConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -591,101 +591,101 @@ struct Config {
     /// Description: Will sleep everything as much as possible, for the tracker and sensor role this will also include the lora radio. 
     /// Don't use this setting if you want to use your device with the phone apps or are using a device without a user button.
     /// Technical Details: Works for ESP32 devices and NRF52 devices in the Sensor or Tracker roles
-    var isPowerSaving: Bool = false
+    public var isPowerSaving: Bool = false
 
     ///
     ///  Description: If non-zero, the device will fully power off this many seconds after external power is removed.
-    var onBatteryShutdownAfterSecs: UInt32 = 0
+    public var onBatteryShutdownAfterSecs: UInt32 = 0
 
     ///
     /// Ratio of voltage divider for battery pin eg. 3.20 (R1=100k, R2=220k)
     /// Overrides the ADC_MULTIPLIER defined in variant for battery voltage calculation.
     /// https://meshtastic.org/docs/configuration/radio/power/#adc-multiplier-override
     /// Should be set to floating point value between 2 and 6
-    var adcMultiplierOverride: Float = 0
+    public var adcMultiplierOverride: Float = 0
 
     ///
     ///  Description: The number of seconds for to wait before turning off BLE in No Bluetooth states
     ///  Technical Details: ESP32 Only 0 for default of 1 minute
-    var waitBluetoothSecs: UInt32 = 0
+    public var waitBluetoothSecs: UInt32 = 0
 
     ///
     /// Super Deep Sleep Seconds
     /// While in Light Sleep if mesh_sds_timeout_secs is exceeded we will lower into super deep sleep
     /// for this value (default 1 year) or a button press
     /// 0 for default of one year
-    var sdsSecs: UInt32 = 0
+    public var sdsSecs: UInt32 = 0
 
     ///
     /// Description: In light sleep the CPU is suspended, LoRa radio is on, BLE is off an GPS is on
     /// Technical Details: ESP32 Only 0 for default of 300
-    var lsSecs: UInt32 = 0
+    public var lsSecs: UInt32 = 0
 
     ///
     /// Description: While in light sleep when we receive packets on the LoRa radio we will wake and handle them and stay awake in no BLE mode for this value
     /// Technical Details: ESP32 Only 0 for default of 10 seconds
-    var minWakeSecs: UInt32 = 0
+    public var minWakeSecs: UInt32 = 0
 
     ///
     /// I2C address of INA_2XX to use for reading device battery voltage
-    var deviceBatteryInaAddress: UInt32 = 0
+    public var deviceBatteryInaAddress: UInt32 = 0
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    init() {}
+    public init() {}
   }
 
   ///
   /// Network Config
-  struct NetworkConfig {
+  public struct NetworkConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     ///
     /// Enable WiFi (disables Bluetooth)
-    var wifiEnabled: Bool = false
+    public var wifiEnabled: Bool = false
 
     ///
     /// If set, this node will try to join the specified wifi network and
     /// acquire an address via DHCP
-    var wifiSsid: String = String()
+    public var wifiSsid: String = String()
 
     ///
     /// If set, will be use to authenticate to the named wifi
-    var wifiPsk: String = String()
+    public var wifiPsk: String = String()
 
     ///
     /// NTP server to use if WiFi is conneced, defaults to `0.pool.ntp.org`
-    var ntpServer: String = String()
+    public var ntpServer: String = String()
 
     ///
     /// Enable Ethernet
-    var ethEnabled: Bool = false
+    public var ethEnabled: Bool = false
 
     ///
     /// acquire an address via DHCP or assign static
-    var addressMode: Config.NetworkConfig.AddressMode = .dhcp
+    public var addressMode: Config.NetworkConfig.AddressMode = .dhcp
 
     ///
     /// struct to keep static address
-    var ipv4Config: Config.NetworkConfig.IpV4Config {
+    public var ipv4Config: Config.NetworkConfig.IpV4Config {
       get {return _ipv4Config ?? Config.NetworkConfig.IpV4Config()}
       set {_ipv4Config = newValue}
     }
     /// Returns true if `ipv4Config` has been explicitly set.
-    var hasIpv4Config: Bool {return self._ipv4Config != nil}
+    public var hasIpv4Config: Bool {return self._ipv4Config != nil}
     /// Clears the value of `ipv4Config`. Subsequent reads from it will return its default value.
-    mutating func clearIpv4Config() {self._ipv4Config = nil}
+    public mutating func clearIpv4Config() {self._ipv4Config = nil}
 
     ///
     /// rsyslog Server and Port
-    var rsyslogServer: String = String()
+    public var rsyslogServer: String = String()
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    enum AddressMode: SwiftProtobuf.Enum {
-      typealias RawValue = Int
+    public enum AddressMode: SwiftProtobuf.Enum {
+      public typealias RawValue = Int
 
       ///
       /// obtain ip address via DHCP
@@ -696,11 +696,11 @@ struct Config {
       case `static` // = 1
       case UNRECOGNIZED(Int)
 
-      init() {
+      public init() {
         self = .dhcp
       }
 
-      init?(rawValue: Int) {
+      public init?(rawValue: Int) {
         switch rawValue {
         case 0: self = .dhcp
         case 1: self = .static
@@ -708,7 +708,7 @@ struct Config {
         }
       }
 
-      var rawValue: Int {
+      public var rawValue: Int {
         switch self {
         case .dhcp: return 0
         case .static: return 1
@@ -718,40 +718,40 @@ struct Config {
 
     }
 
-    struct IpV4Config {
+    public struct IpV4Config {
       // SwiftProtobuf.Message conformance is added in an extension below. See the
       // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
       // methods supported on all messages.
 
       ///
       /// Static IP address
-      var ip: UInt32 = 0
+      public var ip: UInt32 = 0
 
       ///
       /// Static gateway address
-      var gateway: UInt32 = 0
+      public var gateway: UInt32 = 0
 
       ///
       /// Static subnet mask
-      var subnet: UInt32 = 0
+      public var subnet: UInt32 = 0
 
       ///
       /// Static DNS server address
-      var dns: UInt32 = 0
+      public var dns: UInt32 = 0
 
-      var unknownFields = SwiftProtobuf.UnknownStorage()
+      public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-      init() {}
+      public init() {}
     }
 
-    init() {}
+    public init() {}
 
     fileprivate var _ipv4Config: Config.NetworkConfig.IpV4Config? = nil
   }
 
   ///
   /// Display Config
-  struct DisplayConfig {
+  public struct DisplayConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -759,52 +759,52 @@ struct Config {
     ///
     /// Number of seconds the screen stays on after pressing the user button or receiving a message
     /// 0 for default of one minute MAXUINT for always on
-    var screenOnSecs: UInt32 = 0
+    public var screenOnSecs: UInt32 = 0
 
     ///
     /// How the GPS coordinates are formatted on the OLED screen.
-    var gpsFormat: Config.DisplayConfig.GpsCoordinateFormat = .dec
+    public var gpsFormat: Config.DisplayConfig.GpsCoordinateFormat = .dec
 
     ///
     /// Automatically toggles to the next page on the screen like a carousel, based the specified interval in seconds.
     /// Potentially useful for devices without user buttons.
-    var autoScreenCarouselSecs: UInt32 = 0
+    public var autoScreenCarouselSecs: UInt32 = 0
 
     ///
     /// If this is set, the displayed compass will always point north. if unset, the old behaviour
     /// (top of display is heading direction) is used.
-    var compassNorthTop: Bool = false
+    public var compassNorthTop: Bool = false
 
     ///
     /// Flip screen vertically, for cases that mount the screen upside down
-    var flipScreen: Bool = false
+    public var flipScreen: Bool = false
 
     ///
     /// Perferred display units
-    var units: Config.DisplayConfig.DisplayUnits = .metric
+    public var units: Config.DisplayConfig.DisplayUnits = .metric
 
     ///
     /// Override auto-detect in screen
-    var oled: Config.DisplayConfig.OledType = .oledAuto
+    public var oled: Config.DisplayConfig.OledType = .oledAuto
 
     ///
     /// Display Mode
-    var displaymode: Config.DisplayConfig.DisplayMode = .default
+    public var displaymode: Config.DisplayConfig.DisplayMode = .default
 
     ///
     /// Print first line in pseudo-bold? FALSE is original style, TRUE is bold
-    var headingBold: Bool = false
+    public var headingBold: Bool = false
 
     ///
     /// Should we wake the screen up on accelerometer detected motion or tap
-    var wakeOnTapOrMotion: Bool = false
+    public var wakeOnTapOrMotion: Bool = false
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
     /// How the GPS coordinates are displayed on the OLED screen.
-    enum GpsCoordinateFormat: SwiftProtobuf.Enum {
-      typealias RawValue = Int
+    public enum GpsCoordinateFormat: SwiftProtobuf.Enum {
+      public typealias RawValue = Int
 
       ///
       /// GPS coordinates are displayed in the normal decimal degrees format:
@@ -838,11 +838,11 @@ struct Config {
       case osgr // = 5
       case UNRECOGNIZED(Int)
 
-      init() {
+      public init() {
         self = .dec
       }
 
-      init?(rawValue: Int) {
+      public init?(rawValue: Int) {
         switch rawValue {
         case 0: self = .dec
         case 1: self = .dms
@@ -854,7 +854,7 @@ struct Config {
         }
       }
 
-      var rawValue: Int {
+      public var rawValue: Int {
         switch self {
         case .dec: return 0
         case .dms: return 1
@@ -870,8 +870,8 @@ struct Config {
 
     ///
     /// Unit display preference
-    enum DisplayUnits: SwiftProtobuf.Enum {
-      typealias RawValue = Int
+    public enum DisplayUnits: SwiftProtobuf.Enum {
+      public typealias RawValue = Int
 
       ///
       /// Metric (Default)
@@ -882,11 +882,11 @@ struct Config {
       case imperial // = 1
       case UNRECOGNIZED(Int)
 
-      init() {
+      public init() {
         self = .metric
       }
 
-      init?(rawValue: Int) {
+      public init?(rawValue: Int) {
         switch rawValue {
         case 0: self = .metric
         case 1: self = .imperial
@@ -894,7 +894,7 @@ struct Config {
         }
       }
 
-      var rawValue: Int {
+      public var rawValue: Int {
         switch self {
         case .metric: return 0
         case .imperial: return 1
@@ -906,8 +906,8 @@ struct Config {
 
     ///
     /// Override OLED outo detect with this if it fails.
-    enum OledType: SwiftProtobuf.Enum {
-      typealias RawValue = Int
+    public enum OledType: SwiftProtobuf.Enum {
+      public typealias RawValue = Int
 
       ///
       /// Default / Auto
@@ -926,11 +926,11 @@ struct Config {
       case oledSh1107 // = 3
       case UNRECOGNIZED(Int)
 
-      init() {
+      public init() {
         self = .oledAuto
       }
 
-      init?(rawValue: Int) {
+      public init?(rawValue: Int) {
         switch rawValue {
         case 0: self = .oledAuto
         case 1: self = .oledSsd1306
@@ -940,7 +940,7 @@ struct Config {
         }
       }
 
-      var rawValue: Int {
+      public var rawValue: Int {
         switch self {
         case .oledAuto: return 0
         case .oledSsd1306: return 1
@@ -952,8 +952,8 @@ struct Config {
 
     }
 
-    enum DisplayMode: SwiftProtobuf.Enum {
-      typealias RawValue = Int
+    public enum DisplayMode: SwiftProtobuf.Enum {
+      public typealias RawValue = Int
 
       ///
       /// Default. The old style for the 128x64 OLED screen
@@ -972,11 +972,11 @@ struct Config {
       case color // = 3
       case UNRECOGNIZED(Int)
 
-      init() {
+      public init() {
         self = .default
       }
 
-      init?(rawValue: Int) {
+      public init?(rawValue: Int) {
         switch rawValue {
         case 0: self = .default
         case 1: self = .twocolor
@@ -986,7 +986,7 @@ struct Config {
         }
       }
 
-      var rawValue: Int {
+      public var rawValue: Int {
         switch self {
         case .default: return 0
         case .twocolor: return 1
@@ -998,12 +998,12 @@ struct Config {
 
     }
 
-    init() {}
+    public init() {}
   }
 
   ///
   /// Lora Config
-  struct LoRaConfig {
+  public struct LoRaConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1011,7 +1011,7 @@ struct Config {
     ///
     /// When enabled, the `modem_preset` fields will be adhered to, else the `bandwidth`/`spread_factor`/`coding_rate`
     /// will be taked from their respective manually defined fields
-    var usePreset: Bool = false
+    public var usePreset: Bool = false
 
     ///
     /// Either modem_config or bandwidth/spreading/coding will be specified - NOT BOTH.
@@ -1019,51 +1019,51 @@ struct Config {
     /// Because protobufs take ZERO space when the value is zero this works out nicely.
     /// This value is replaced by bandwidth/spread_factor/coding_rate.
     /// If you'd like to experiment with other options add them to MeshRadio.cpp in the device code.
-    var modemPreset: Config.LoRaConfig.ModemPreset = .longFast
+    public var modemPreset: Config.LoRaConfig.ModemPreset = .longFast
 
     ///
     /// Bandwidth in MHz
     /// Certain bandwidth numbers are 'special' and will be converted to the
     /// appropriate floating point value: 31 -> 31.25MHz
-    var bandwidth: UInt32 = 0
+    public var bandwidth: UInt32 = 0
 
     ///
     /// A number from 7 to 12.
     /// Indicates number of chirps per symbol as 1<<spread_factor.
-    var spreadFactor: UInt32 = 0
+    public var spreadFactor: UInt32 = 0
 
     ///
     /// The denominator of the coding rate.
     /// ie for 4/5, the value is 5. 4/8 the value is 8.
-    var codingRate: UInt32 = 0
+    public var codingRate: UInt32 = 0
 
     ///
     /// This parameter is for advanced users with advanced test equipment, we do not recommend most users use it.
     /// A frequency offset that is added to to the calculated band center frequency.
     /// Used to correct for crystal calibration errors.
-    var frequencyOffset: Float = 0
+    public var frequencyOffset: Float = 0
 
     ///
     /// The region code for the radio (US, CN, EU433, etc...)
-    var region: Config.LoRaConfig.RegionCode = .unset
+    public var region: Config.LoRaConfig.RegionCode = .unset
 
     ///
     /// Maximum number of hops. This can't be greater than 7.
     /// Default of 3
     /// Attempting to set a value > 7 results in the default
-    var hopLimit: UInt32 = 0
+    public var hopLimit: UInt32 = 0
 
     ///
     /// Disable TX from the LoRa radio. Useful for hot-swapping antennas and other tests.
     /// Defaults to false
-    var txEnabled: Bool = false
+    public var txEnabled: Bool = false
 
     ///
     /// If zero, then use default max legal continuous power (ie. something that won't
     /// burn out the radio hardware)
     /// In most cases you should use zero here.
     /// Units are in dBm.
-    var txPower: Int32 = 0
+    public var txPower: Int32 = 0
 
     ///
     /// This controls the actual hardware frequency the radio transmits on.
@@ -1073,17 +1073,17 @@ struct Config {
     /// algorithm to derive the channel number")
     /// If using the hash algorithm the channel number will be: hash(channel_name) %
     /// NUM_CHANNELS (Where num channels depends on the regulatory region).
-    var channelNum: UInt32 = 0
+    public var channelNum: UInt32 = 0
 
     ///
     /// If true, duty cycle limits will be exceeded and thus you're possibly not following
     /// the local regulations if you're not a HAM.
     /// Has no effect if the duty cycle of the used region is 100%.
-    var overrideDutyCycle: Bool = false
+    public var overrideDutyCycle: Bool = false
 
     ///
     /// If true, sets RX boosted gain mode on SX126X based radios
-    var sx126XRxBoostedGain: Bool = false
+    public var sx126XRxBoostedGain: Bool = false
 
     ///
     /// This parameter is for advanced users and licensed HAM radio operators.
@@ -1091,22 +1091,22 @@ struct Config {
     /// will still be applied. This will allow you to use out-of-band frequencies.
     /// Please respect your local laws and regulations. If you are a HAM, make sure you
     /// enable HAM mode and turn off encryption.
-    var overrideFrequency: Float = 0
+    public var overrideFrequency: Float = 0
 
     ///
     /// For testing it is useful sometimes to force a node to never listen to
     /// particular other nodes (simulating radio out of range). All nodenums listed
     /// in ignore_incoming will have packets they send dropped on receive (by router.cpp)
-    var ignoreIncoming: [UInt32] = []
+    public var ignoreIncoming: [UInt32] = []
 
     ///
     /// If true, the device will not process any packets received via LoRa that passed via MQTT anywhere on the path towards it.
-    var ignoreMqtt: Bool = false
+    public var ignoreMqtt: Bool = false
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    enum RegionCode: SwiftProtobuf.Enum {
-      typealias RawValue = Int
+    public enum RegionCode: SwiftProtobuf.Enum {
+      public typealias RawValue = Int
 
       ///
       /// Region is not set
@@ -1185,11 +1185,11 @@ struct Config {
       case sg923 // = 18
       case UNRECOGNIZED(Int)
 
-      init() {
+      public init() {
         self = .unset
       }
 
-      init?(rawValue: Int) {
+      public init?(rawValue: Int) {
         switch rawValue {
         case 0: self = .unset
         case 1: self = .us
@@ -1214,7 +1214,7 @@ struct Config {
         }
       }
 
-      var rawValue: Int {
+      public var rawValue: Int {
         switch self {
         case .unset: return 0
         case .us: return 1
@@ -1244,8 +1244,8 @@ struct Config {
     ///
     /// Standard predefined channel settings
     /// Note: these mappings must match ModemPreset Choice in the device code.
-    enum ModemPreset: SwiftProtobuf.Enum {
-      typealias RawValue = Int
+    public enum ModemPreset: SwiftProtobuf.Enum {
+      public typealias RawValue = Int
 
       ///
       /// Long Range - Fast
@@ -1280,11 +1280,11 @@ struct Config {
       case longModerate // = 7
       case UNRECOGNIZED(Int)
 
-      init() {
+      public init() {
         self = .longFast
       }
 
-      init?(rawValue: Int) {
+      public init?(rawValue: Int) {
         switch rawValue {
         case 0: self = .longFast
         case 1: self = .longSlow
@@ -1298,7 +1298,7 @@ struct Config {
         }
       }
 
-      var rawValue: Int {
+      public var rawValue: Int {
         switch self {
         case .longFast: return 0
         case .longSlow: return 1
@@ -1314,30 +1314,30 @@ struct Config {
 
     }
 
-    init() {}
+    public init() {}
   }
 
-  struct BluetoothConfig {
+  public struct BluetoothConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     ///
     /// Enable Bluetooth on the device
-    var enabled: Bool = false
+    public var enabled: Bool = false
 
     ///
     /// Determines the pairing strategy for the device
-    var mode: Config.BluetoothConfig.PairingMode = .randomPin
+    public var mode: Config.BluetoothConfig.PairingMode = .randomPin
 
     ///
     /// Specified PIN for PairingMode.FixedPin
-    var fixedPin: UInt32 = 0
+    public var fixedPin: UInt32 = 0
 
-    var unknownFields = SwiftProtobuf.UnknownStorage()
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    enum PairingMode: SwiftProtobuf.Enum {
-      typealias RawValue = Int
+    public enum PairingMode: SwiftProtobuf.Enum {
+      public typealias RawValue = Int
 
       ///
       /// Device generates a random PIN that will be shown on the screen of the device for pairing
@@ -1352,11 +1352,11 @@ struct Config {
       case noPin // = 2
       case UNRECOGNIZED(Int)
 
-      init() {
+      public init() {
         self = .randomPin
       }
 
-      init?(rawValue: Int) {
+      public init?(rawValue: Int) {
         switch rawValue {
         case 0: self = .randomPin
         case 1: self = .fixedPin
@@ -1365,7 +1365,7 @@ struct Config {
         }
       }
 
-      var rawValue: Int {
+      public var rawValue: Int {
         switch self {
         case .randomPin: return 0
         case .fixedPin: return 1
@@ -1376,17 +1376,17 @@ struct Config {
 
     }
 
-    init() {}
+    public init() {}
   }
 
-  init() {}
+  public init() {}
 }
 
 #if swift(>=4.2)
 
 extension Config.DeviceConfig.Role: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.DeviceConfig.Role] = [
+  public static let allCases: [Config.DeviceConfig.Role] = [
     .client,
     .clientMute,
     .router,
@@ -1403,7 +1403,7 @@ extension Config.DeviceConfig.Role: CaseIterable {
 
 extension Config.DeviceConfig.RebroadcastMode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.DeviceConfig.RebroadcastMode] = [
+  public static let allCases: [Config.DeviceConfig.RebroadcastMode] = [
     .all,
     .allSkipDecoding,
     .localOnly,
@@ -1413,7 +1413,7 @@ extension Config.DeviceConfig.RebroadcastMode: CaseIterable {
 
 extension Config.PositionConfig.PositionFlags: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.PositionConfig.PositionFlags] = [
+  public static let allCases: [Config.PositionConfig.PositionFlags] = [
     .unset,
     .altitude,
     .altitudeMsl,
@@ -1430,7 +1430,7 @@ extension Config.PositionConfig.PositionFlags: CaseIterable {
 
 extension Config.PositionConfig.GpsMode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.PositionConfig.GpsMode] = [
+  public static let allCases: [Config.PositionConfig.GpsMode] = [
     .disabled,
     .enabled,
     .notPresent,
@@ -1439,7 +1439,7 @@ extension Config.PositionConfig.GpsMode: CaseIterable {
 
 extension Config.NetworkConfig.AddressMode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.NetworkConfig.AddressMode] = [
+  public static let allCases: [Config.NetworkConfig.AddressMode] = [
     .dhcp,
     .static,
   ]
@@ -1447,7 +1447,7 @@ extension Config.NetworkConfig.AddressMode: CaseIterable {
 
 extension Config.DisplayConfig.GpsCoordinateFormat: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.DisplayConfig.GpsCoordinateFormat] = [
+  public static let allCases: [Config.DisplayConfig.GpsCoordinateFormat] = [
     .dec,
     .dms,
     .utm,
@@ -1459,7 +1459,7 @@ extension Config.DisplayConfig.GpsCoordinateFormat: CaseIterable {
 
 extension Config.DisplayConfig.DisplayUnits: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.DisplayConfig.DisplayUnits] = [
+  public static let allCases: [Config.DisplayConfig.DisplayUnits] = [
     .metric,
     .imperial,
   ]
@@ -1467,7 +1467,7 @@ extension Config.DisplayConfig.DisplayUnits: CaseIterable {
 
 extension Config.DisplayConfig.OledType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.DisplayConfig.OledType] = [
+  public static let allCases: [Config.DisplayConfig.OledType] = [
     .oledAuto,
     .oledSsd1306,
     .oledSh1106,
@@ -1477,7 +1477,7 @@ extension Config.DisplayConfig.OledType: CaseIterable {
 
 extension Config.DisplayConfig.DisplayMode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.DisplayConfig.DisplayMode] = [
+  public static let allCases: [Config.DisplayConfig.DisplayMode] = [
     .default,
     .twocolor,
     .inverted,
@@ -1487,7 +1487,7 @@ extension Config.DisplayConfig.DisplayMode: CaseIterable {
 
 extension Config.LoRaConfig.RegionCode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.LoRaConfig.RegionCode] = [
+  public static let allCases: [Config.LoRaConfig.RegionCode] = [
     .unset,
     .us,
     .eu433,
@@ -1512,7 +1512,7 @@ extension Config.LoRaConfig.RegionCode: CaseIterable {
 
 extension Config.LoRaConfig.ModemPreset: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.LoRaConfig.ModemPreset] = [
+  public static let allCases: [Config.LoRaConfig.ModemPreset] = [
     .longFast,
     .longSlow,
     .veryLongSlow,
@@ -1526,7 +1526,7 @@ extension Config.LoRaConfig.ModemPreset: CaseIterable {
 
 extension Config.BluetoothConfig.PairingMode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.BluetoothConfig.PairingMode] = [
+  public static let allCases: [Config.BluetoothConfig.PairingMode] = [
     .randomPin,
     .fixedPin,
     .noPin,
@@ -1565,8 +1565,8 @@ extension Config.BluetoothConfig.PairingMode: @unchecked Sendable {}
 fileprivate let _protobuf_package = "meshtastic"
 
 extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".Config"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".Config"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "device"),
     2: .same(proto: "position"),
     3: .same(proto: "power"),
@@ -1576,7 +1576,7 @@ extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
     7: .same(proto: "bluetooth"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -1678,7 +1678,7 @@ extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -1717,7 +1717,7 @@ extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Config, rhs: Config) -> Bool {
+  public static func ==(lhs: Config, rhs: Config) -> Bool {
     if lhs.payloadVariant != rhs.payloadVariant {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
@@ -1725,8 +1725,8 @@ extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
 }
 
 extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = Config.protoMessageName + ".DeviceConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = Config.protoMessageName + ".DeviceConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "role"),
     2: .standard(proto: "serial_enabled"),
     3: .standard(proto: "debug_log_enabled"),
@@ -1741,7 +1741,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     12: .standard(proto: "led_heartbeat_disabled"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -1764,7 +1764,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.role != .client {
       try visitor.visitSingularEnumField(value: self.role, fieldNumber: 1)
     }
@@ -1804,7 +1804,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Config.DeviceConfig, rhs: Config.DeviceConfig) -> Bool {
+  public static func ==(lhs: Config.DeviceConfig, rhs: Config.DeviceConfig) -> Bool {
     if lhs.role != rhs.role {return false}
     if lhs.serialEnabled != rhs.serialEnabled {return false}
     if lhs.debugLogEnabled != rhs.debugLogEnabled {return false}
@@ -1823,7 +1823,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
 }
 
 extension Config.DeviceConfig.Role: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "CLIENT"),
     1: .same(proto: "CLIENT_MUTE"),
     2: .same(proto: "ROUTER"),
@@ -1839,7 +1839,7 @@ extension Config.DeviceConfig.Role: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension Config.DeviceConfig.RebroadcastMode: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "ALL"),
     1: .same(proto: "ALL_SKIP_DECODING"),
     2: .same(proto: "LOCAL_ONLY"),
@@ -1848,8 +1848,8 @@ extension Config.DeviceConfig.RebroadcastMode: SwiftProtobuf._ProtoNameProviding
 }
 
 extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = Config.protoMessageName + ".PositionConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = Config.protoMessageName + ".PositionConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "position_broadcast_secs"),
     2: .standard(proto: "position_broadcast_smart_enabled"),
     3: .standard(proto: "fixed_position"),
@@ -1865,7 +1865,7 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     13: .standard(proto: "gps_mode"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -1889,7 +1889,7 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.positionBroadcastSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.positionBroadcastSecs, fieldNumber: 1)
     }
@@ -1932,7 +1932,7 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Config.PositionConfig, rhs: Config.PositionConfig) -> Bool {
+  public static func ==(lhs: Config.PositionConfig, rhs: Config.PositionConfig) -> Bool {
     if lhs.positionBroadcastSecs != rhs.positionBroadcastSecs {return false}
     if lhs.positionBroadcastSmartEnabled != rhs.positionBroadcastSmartEnabled {return false}
     if lhs.fixedPosition != rhs.fixedPosition {return false}
@@ -1952,7 +1952,7 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
 }
 
 extension Config.PositionConfig.PositionFlags: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "UNSET"),
     1: .same(proto: "ALTITUDE"),
     2: .same(proto: "ALTITUDE_MSL"),
@@ -1968,7 +1968,7 @@ extension Config.PositionConfig.PositionFlags: SwiftProtobuf._ProtoNameProviding
 }
 
 extension Config.PositionConfig.GpsMode: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "DISABLED"),
     1: .same(proto: "ENABLED"),
     2: .same(proto: "NOT_PRESENT"),
@@ -1976,8 +1976,8 @@ extension Config.PositionConfig.GpsMode: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = Config.protoMessageName + ".PowerConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = Config.protoMessageName + ".PowerConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "is_power_saving"),
     2: .standard(proto: "on_battery_shutdown_after_secs"),
     3: .standard(proto: "adc_multiplier_override"),
@@ -1988,7 +1988,7 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     9: .standard(proto: "device_battery_ina_address"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -2007,7 +2007,7 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.isPowerSaving != false {
       try visitor.visitSingularBoolField(value: self.isPowerSaving, fieldNumber: 1)
     }
@@ -2035,7 +2035,7 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Config.PowerConfig, rhs: Config.PowerConfig) -> Bool {
+  public static func ==(lhs: Config.PowerConfig, rhs: Config.PowerConfig) -> Bool {
     if lhs.isPowerSaving != rhs.isPowerSaving {return false}
     if lhs.onBatteryShutdownAfterSecs != rhs.onBatteryShutdownAfterSecs {return false}
     if lhs.adcMultiplierOverride != rhs.adcMultiplierOverride {return false}
@@ -2050,8 +2050,8 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
 }
 
 extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = Config.protoMessageName + ".NetworkConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = Config.protoMessageName + ".NetworkConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "wifi_enabled"),
     3: .standard(proto: "wifi_ssid"),
     4: .standard(proto: "wifi_psk"),
@@ -2062,7 +2062,7 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     9: .standard(proto: "rsyslog_server"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -2081,7 +2081,7 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -2113,7 +2113,7 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Config.NetworkConfig, rhs: Config.NetworkConfig) -> Bool {
+  public static func ==(lhs: Config.NetworkConfig, rhs: Config.NetworkConfig) -> Bool {
     if lhs.wifiEnabled != rhs.wifiEnabled {return false}
     if lhs.wifiSsid != rhs.wifiSsid {return false}
     if lhs.wifiPsk != rhs.wifiPsk {return false}
@@ -2128,22 +2128,22 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
 }
 
 extension Config.NetworkConfig.AddressMode: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "DHCP"),
     1: .same(proto: "STATIC"),
   ]
 }
 
 extension Config.NetworkConfig.IpV4Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = Config.NetworkConfig.protoMessageName + ".IpV4Config"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = Config.NetworkConfig.protoMessageName + ".IpV4Config"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "ip"),
     2: .same(proto: "gateway"),
     3: .same(proto: "subnet"),
     4: .same(proto: "dns"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -2158,7 +2158,7 @@ extension Config.NetworkConfig.IpV4Config: SwiftProtobuf.Message, SwiftProtobuf.
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.ip != 0 {
       try visitor.visitSingularFixed32Field(value: self.ip, fieldNumber: 1)
     }
@@ -2174,7 +2174,7 @@ extension Config.NetworkConfig.IpV4Config: SwiftProtobuf.Message, SwiftProtobuf.
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Config.NetworkConfig.IpV4Config, rhs: Config.NetworkConfig.IpV4Config) -> Bool {
+  public static func ==(lhs: Config.NetworkConfig.IpV4Config, rhs: Config.NetworkConfig.IpV4Config) -> Bool {
     if lhs.ip != rhs.ip {return false}
     if lhs.gateway != rhs.gateway {return false}
     if lhs.subnet != rhs.subnet {return false}
@@ -2185,8 +2185,8 @@ extension Config.NetworkConfig.IpV4Config: SwiftProtobuf.Message, SwiftProtobuf.
 }
 
 extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = Config.protoMessageName + ".DisplayConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = Config.protoMessageName + ".DisplayConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "screen_on_secs"),
     2: .standard(proto: "gps_format"),
     3: .standard(proto: "auto_screen_carousel_secs"),
@@ -2199,7 +2199,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     10: .standard(proto: "wake_on_tap_or_motion"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -2220,7 +2220,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.screenOnSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.screenOnSecs, fieldNumber: 1)
     }
@@ -2254,7 +2254,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Config.DisplayConfig, rhs: Config.DisplayConfig) -> Bool {
+  public static func ==(lhs: Config.DisplayConfig, rhs: Config.DisplayConfig) -> Bool {
     if lhs.screenOnSecs != rhs.screenOnSecs {return false}
     if lhs.gpsFormat != rhs.gpsFormat {return false}
     if lhs.autoScreenCarouselSecs != rhs.autoScreenCarouselSecs {return false}
@@ -2271,7 +2271,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
 }
 
 extension Config.DisplayConfig.GpsCoordinateFormat: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "DEC"),
     1: .same(proto: "DMS"),
     2: .same(proto: "UTM"),
@@ -2282,14 +2282,14 @@ extension Config.DisplayConfig.GpsCoordinateFormat: SwiftProtobuf._ProtoNameProv
 }
 
 extension Config.DisplayConfig.DisplayUnits: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "METRIC"),
     1: .same(proto: "IMPERIAL"),
   ]
 }
 
 extension Config.DisplayConfig.OledType: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "OLED_AUTO"),
     1: .same(proto: "OLED_SSD1306"),
     2: .same(proto: "OLED_SH1106"),
@@ -2298,7 +2298,7 @@ extension Config.DisplayConfig.OledType: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension Config.DisplayConfig.DisplayMode: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "DEFAULT"),
     1: .same(proto: "TWOCOLOR"),
     2: .same(proto: "INVERTED"),
@@ -2307,8 +2307,8 @@ extension Config.DisplayConfig.DisplayMode: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = Config.protoMessageName + ".LoRaConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = Config.protoMessageName + ".LoRaConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "use_preset"),
     2: .standard(proto: "modem_preset"),
     3: .same(proto: "bandwidth"),
@@ -2327,7 +2327,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     104: .standard(proto: "ignore_mqtt"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -2354,7 +2354,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.usePreset != false {
       try visitor.visitSingularBoolField(value: self.usePreset, fieldNumber: 1)
     }
@@ -2406,7 +2406,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Config.LoRaConfig, rhs: Config.LoRaConfig) -> Bool {
+  public static func ==(lhs: Config.LoRaConfig, rhs: Config.LoRaConfig) -> Bool {
     if lhs.usePreset != rhs.usePreset {return false}
     if lhs.modemPreset != rhs.modemPreset {return false}
     if lhs.bandwidth != rhs.bandwidth {return false}
@@ -2429,7 +2429,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
 }
 
 extension Config.LoRaConfig.RegionCode: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "UNSET"),
     1: .same(proto: "US"),
     2: .same(proto: "EU_433"),
@@ -2453,7 +2453,7 @@ extension Config.LoRaConfig.RegionCode: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension Config.LoRaConfig.ModemPreset: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "LONG_FAST"),
     1: .same(proto: "LONG_SLOW"),
     2: .same(proto: "VERY_LONG_SLOW"),
@@ -2466,14 +2466,14 @@ extension Config.LoRaConfig.ModemPreset: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension Config.BluetoothConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = Config.protoMessageName + ".BluetoothConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = Config.protoMessageName + ".BluetoothConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "enabled"),
     2: .same(proto: "mode"),
     3: .standard(proto: "fixed_pin"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -2487,7 +2487,7 @@ extension Config.BluetoothConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.enabled != false {
       try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
     }
@@ -2500,7 +2500,7 @@ extension Config.BluetoothConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Config.BluetoothConfig, rhs: Config.BluetoothConfig) -> Bool {
+  public static func ==(lhs: Config.BluetoothConfig, rhs: Config.BluetoothConfig) -> Bool {
     if lhs.enabled != rhs.enabled {return false}
     if lhs.mode != rhs.mode {return false}
     if lhs.fixedPin != rhs.fixedPin {return false}
@@ -2510,7 +2510,7 @@ extension Config.BluetoothConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageI
 }
 
 extension Config.BluetoothConfig.PairingMode: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "RANDOM_PIN"),
     1: .same(proto: "FIXED_PIN"),
     2: .same(proto: "NO_PIN"),

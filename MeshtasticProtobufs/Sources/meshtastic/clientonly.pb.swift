@@ -23,69 +23,69 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 ///
 /// This abstraction is used to contain any configuration for provisioning a node on any client.
 /// It is useful for importing and exporting configurations.
-struct DeviceProfile {
+public struct DeviceProfile {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Long name for the node
-  var longName: String {
+  public var longName: String {
     get {return _longName ?? String()}
     set {_longName = newValue}
   }
   /// Returns true if `longName` has been explicitly set.
-  var hasLongName: Bool {return self._longName != nil}
+  public var hasLongName: Bool {return self._longName != nil}
   /// Clears the value of `longName`. Subsequent reads from it will return its default value.
-  mutating func clearLongName() {self._longName = nil}
+  public mutating func clearLongName() {self._longName = nil}
 
   ///
   /// Short name of the node
-  var shortName: String {
+  public var shortName: String {
     get {return _shortName ?? String()}
     set {_shortName = newValue}
   }
   /// Returns true if `shortName` has been explicitly set.
-  var hasShortName: Bool {return self._shortName != nil}
+  public var hasShortName: Bool {return self._shortName != nil}
   /// Clears the value of `shortName`. Subsequent reads from it will return its default value.
-  mutating func clearShortName() {self._shortName = nil}
+  public mutating func clearShortName() {self._shortName = nil}
 
   ///
   /// The url of the channels from our node
-  var channelURL: String {
+  public var channelURL: String {
     get {return _channelURL ?? String()}
     set {_channelURL = newValue}
   }
   /// Returns true if `channelURL` has been explicitly set.
-  var hasChannelURL: Bool {return self._channelURL != nil}
+  public var hasChannelURL: Bool {return self._channelURL != nil}
   /// Clears the value of `channelURL`. Subsequent reads from it will return its default value.
-  mutating func clearChannelURL() {self._channelURL = nil}
+  public mutating func clearChannelURL() {self._channelURL = nil}
 
   ///
   /// The Config of the node
-  var config: LocalConfig {
+  public var config: LocalConfig {
     get {return _config ?? LocalConfig()}
     set {_config = newValue}
   }
   /// Returns true if `config` has been explicitly set.
-  var hasConfig: Bool {return self._config != nil}
+  public var hasConfig: Bool {return self._config != nil}
   /// Clears the value of `config`. Subsequent reads from it will return its default value.
-  mutating func clearConfig() {self._config = nil}
+  public mutating func clearConfig() {self._config = nil}
 
   ///
   /// The ModuleConfig of the node
-  var moduleConfig: LocalModuleConfig {
+  public var moduleConfig: LocalModuleConfig {
     get {return _moduleConfig ?? LocalModuleConfig()}
     set {_moduleConfig = newValue}
   }
   /// Returns true if `moduleConfig` has been explicitly set.
-  var hasModuleConfig: Bool {return self._moduleConfig != nil}
+  public var hasModuleConfig: Bool {return self._moduleConfig != nil}
   /// Clears the value of `moduleConfig`. Subsequent reads from it will return its default value.
-  mutating func clearModuleConfig() {self._moduleConfig = nil}
+  public mutating func clearModuleConfig() {self._moduleConfig = nil}
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 
   fileprivate var _longName: String? = nil
   fileprivate var _shortName: String? = nil
@@ -103,8 +103,8 @@ extension DeviceProfile: @unchecked Sendable {}
 fileprivate let _protobuf_package = "meshtastic"
 
 extension DeviceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".DeviceProfile"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".DeviceProfile"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "long_name"),
     2: .standard(proto: "short_name"),
     3: .standard(proto: "channel_url"),
@@ -112,7 +112,7 @@ extension DeviceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     5: .standard(proto: "module_config"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -128,7 +128,7 @@ extension DeviceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -151,7 +151,7 @@ extension DeviceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: DeviceProfile, rhs: DeviceProfile) -> Bool {
+  public static func ==(lhs: DeviceProfile, rhs: DeviceProfile) -> Bool {
     if lhs._longName != rhs._longName {return false}
     if lhs._shortName != rhs._shortName {return false}
     if lhs._channelURL != rhs._channelURL {return false}

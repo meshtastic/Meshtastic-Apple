@@ -5,8 +5,9 @@
 //  Copyright (c) Garth Vander Houwen 8/18/22.
 //
 
-import SwiftUI
+import MeshtasticProtobufs
 import OSLog
+import SwiftUI
 
 struct BluetoothConfig: View {
 	@Environment(\.managedObjectContext) var context
