@@ -42,49 +42,50 @@ struct UserConfig: View {
 
 		VStack {
 			Form {
-				Section(header: Text("User Details")) {
+				Section(header: Text("user.details")) {
 
 					VStack(alignment: .leading) {
 						HStack {
-							Label(isLicensed ? "Call Sign" : "Long Name", systemImage: "person.crop.rectangle.fill")
+								   Label(isLicensed ? "call_sign".localized : "long_name".localized, systemImage: "person.crop.rectangle.fill")
 
-							TextField("Long Name", text: $longName)
-								.onChange(of: longName, perform: { _ in
-									let totalBytes = longName.utf8.count
-									// Only mess with the value if it is too big
-									if totalBytes > (isLicensed ? 8 : 36) {
-										longName = String(longName.dropLast())
-									}
-								})
-						}
+								   TextField("long_name_placeholder".localized, text: $longName)
+									   .onChange(of: longName) { _ in
+										   let maxBytes = isLicensed ? 8 : 36
+										   while longName.utf8.count > maxBytes {
+											   longName.removeLast()
+										   }
+									   }
+							   }
 						.keyboardType(.default)
 						.disableAutocorrection(true)
 						if longName.isEmpty && isLicensed {
 							Label("Call Sign must not be empty", systemImage: "exclamationmark.square")
 								.foregroundColor(.red)
 						}
-						Text("\(String(isLicensed ? "Call Sign" : "Long Name")) can be up to \(isLicensed ? "8" : "36") bytes long.")
+						let label = isLicensed ? "call_sign".localized : "long_name".localized
+						let maxBytes = isLicensed ? 8 : 36
+						let message = String(format: "info_message".localized, label, maxBytes)
+
+						Text(message)
 							.foregroundColor(.gray)
 							.font(.callout)
 
 					}
 					VStack(alignment: .leading) {
 						HStack {
-							Label("Short Name", systemImage: "circlebadge.fill")
-							TextField("Short Name", text: $shortName)
+							Label("short_name_label".localized, systemImage: "circlebadge.fill")
+							TextField("short_name_placeholder".localized, text: $shortName)
 								.foregroundColor(.gray)
-								.onChange(of: shortName, perform: { _ in
-									let totalBytes = shortName.utf8.count
-									// Only mess with the value if it is too big
-									if totalBytes > 4 {
-										shortName = String(shortName.dropLast())
+								.onChange(of: shortName) { _ in
+									// Ensure the 'shortName' stays within 4 bytes to meet backend or protocol requirements
+									while shortName.utf8.count > 4 {
+										shortName.removeLast() // Correct method to remove the last character
 									}
-								})
-								.foregroundColor(.gray)
-						}
-						.keyboardType(.default)
+								}
+								.foregroundColor(.gray) // This might be redundant
+						}						.keyboardType(.default)
 						.disableAutocorrection(true)
-						Text("The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long.")
+						Text("device_mac_info".localized)
 							.foregroundColor(.gray)
 							.font(.callout)
 					}
@@ -182,7 +183,7 @@ struct UserConfig: View {
 			}
 			Spacer()
 		}
-		.navigationTitle("User Config")
+		.navigationTitle("user.config")
 		.navigationBarItems(trailing:
 								ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")

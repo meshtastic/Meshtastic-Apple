@@ -15,6 +15,16 @@ struct LogDetail: View {
 	@Environment(\.dismiss) private var dismiss
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	var log: OSLogEntryLog
+	var font: Font = .title2
+	
+	private let dateFormatStyle = Date.FormatStyle()
+		.day(.defaultDigits)
+		.month(.defaultDigits)
+		.year(.twoDigits)
+		.hour(.twoDigits(amPM: .abbreviated))
+		.minute()
+		.second()
+		.secondFraction(.fractional(3))
 
 	var body: some View {
 
@@ -30,9 +40,10 @@ struct LogDetail: View {
 						/// Time
 						Label {
 							Text("log.time".localized + ":")
-								.font(idiom == .phone ? .callout : .title)
-							LastHeardText(lastHeard: log.date)
-								.font(idiom == .phone ? .callout : .title)
+								.font(idiom == .phone ? .caption : .title)
+								.frame(width: idiom == .phone ? 90 : 190, alignment: .trailing)
+							Text(log.date.formatted(dateFormatStyle))
+								.font(idiom == .phone ? .caption : .title)
 						} icon: {
 							Image(systemName: "timer")
 								.symbolRenderingMode(.hierarchical)
@@ -45,13 +56,14 @@ struct LogDetail: View {
 						/// Subsystem
 						Label {
 							Text("log.subsystem".localized + ":")
-								.font(idiom == .phone ? .callout : .title)
+								.font(idiom == .phone ? .caption : .title)
+								.frame(width: idiom == .phone ? 90 : 190, alignment: .trailing)
 							Text(log.subsystem)
-								.font(idiom == .phone ? .callout : .title)
+								.font(idiom == .phone ? .caption : .title)
 						} icon: {
 							Image(systemName: "gear")
 								.symbolRenderingMode(.hierarchical)
-								.font(idiom == .phone ? .callout : .title)
+								.font(idiom == .phone ? .caption : .title)
 								.frame(width: 35)
 						}
 						.padding(.bottom, 5)
@@ -59,13 +71,14 @@ struct LogDetail: View {
 						/// Process
 						Label {
 							Text("log.process".localized + ":")
-								.font(idiom == .phone ? .callout : .title)
+								.font(idiom == .phone ? .caption : .title)
+								.frame(width: idiom == .phone ? 90 : 190, alignment: .trailing)
 							Text(log.process)
-								.font(idiom == .phone ? .callout : .title)
+								.font(idiom == .phone ? .caption : .title)
 						} icon: {
 							Image(systemName: "tag")
 								.symbolRenderingMode(.hierarchical)
-								.font(idiom == .phone ? .callout : .title)
+								.font(idiom == .phone ? .caption : .title)
 								.frame(width: 35)
 						}
 						.padding(.bottom, 5)
@@ -73,13 +86,14 @@ struct LogDetail: View {
 						/// Category
 						Label {
 							Text("log.category".localized + ":")
-								.font(idiom == .phone ? .callout : .title)
+								.font(idiom == .phone ? .caption : .title)
+								.frame(width: idiom == .phone ? 90 : 190, alignment: .trailing)
 							Text(log.category)
-								.font(idiom == .phone ? .callout : .title)
+								.font(idiom == .phone ? .caption : .title)
 						} icon: {
 							Image(systemName: "square.grid.2x2")
 								.symbolRenderingMode(.hierarchical)
-								.font(idiom == .phone ? .callout : .title)
+								.font(idiom == .phone ? .caption : .title)
 								.frame(width: 35)
 						}
 						.padding(.bottom, 5)
@@ -87,13 +101,14 @@ struct LogDetail: View {
 						/// Level
 						Label {
 							Text("log.level".localized + ":")
-								.font(idiom == .phone ? .callout : .title)
+								.font(idiom == .phone ? .caption : .title)
+								.frame(width: idiom == .phone ? 90 : 190, alignment: .trailing)
 							Text(log.level.description)
-								.font(idiom == .phone ? .callout : .title)
+								.font(idiom == .phone ? .caption : .title)
 						} icon: {
 							Image(systemName: "stairs")
 								.symbolRenderingMode(.hierarchical)
-								.font(idiom == .phone ? .callout : .title)
+								.font(idiom == .phone ? .caption : .title)
 								.frame(width: 35)
 						}
 						.padding(.bottom, 5)
@@ -101,10 +116,11 @@ struct LogDetail: View {
 						/// message
 						Label {
 							Text("log.message".localized + ":")
-								.font(idiom == .phone ? .callout : .title)
+								.font(idiom == .phone ? .caption : .title)
+								.frame(width: idiom == .phone ? 90 : 190, alignment: .trailing)
 							Text(log.composedMessage)
 								.textSelection(.enabled)
-								.font(idiom == .phone ? .callout : .title)
+								.font(idiom == .phone ? .body : .title)
 								.padding(.bottom, 5)
 						
 						} icon: {
