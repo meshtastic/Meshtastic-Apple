@@ -443,6 +443,11 @@
         <fetchedProperty name="detectionSensorMessages" optional="YES">
             <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="(fromUser.num == $FETCH_SOURCE.num) AND portNum = 10"/>
         </fetchedProperty>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="num"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
     </entity>
     <entity name="WaypointEntity" representedClassName="WaypointEntity" syncable="YES" codeGenerationType="class">
         <attribute name="created" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
