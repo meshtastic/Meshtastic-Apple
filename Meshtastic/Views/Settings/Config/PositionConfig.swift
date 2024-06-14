@@ -164,7 +164,7 @@ struct PositionConfig: View {
 								.font(.callout)
 						}
 					}
-					if gpsMode != 1 && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? -1 {
+					if node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? -1 {
 						VStack(alignment: .leading) {
 							Toggle(isOn: $fixedPosition) {
 								Label("Fixed Position", systemImage: "location.square.fill")
