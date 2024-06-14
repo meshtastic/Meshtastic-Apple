@@ -10,6 +10,7 @@ import Foundation
 import CoreData
 
 extension NSPersistentContainer {
+	
 	enum CopyPersistentStoreErrors: Error {
 		case invalidDestination(String)
 		case destinationError(String)
@@ -29,38 +30,23 @@ extension NSPersistentContainer {
 			throw CopyPersistentStoreErrors.invalidSource("Backup URL must be a file URL")
 		}
 		
-		var isDirectory: ObjCBool = false
-		if FileManager.default.fileExists(atPath: backupURL.path, isDirectory: &isDirectory) {
-			if !isDirectory.boolValue {
-				throw CopyPersistentStoreErrors.invalidSource("Source URL must be a directory")
-			}
-		} else {
-			throw CopyPersistentStoreErrors.invalidSource("Source URL must exist")
-		}
-		
-		for persistentStore in persistentStoreCoordinator.persistentStores {
-			guard let loadedStoreURL = persistentStore.url else {
+		for persistentStoreDescription in persistentStoreDescriptions {
+			guard let loadedStoreURL = persistentStoreDescription.url else {
 				continue
 			}
-			let backupStoreURL = backupURL.appendingPathComponent(loadedStoreURL.lastPathComponent)
-			guard FileManager.default.fileExists(atPath: backupStoreURL.path) else {
-				throw CopyPersistentStoreErrors.invalidSource("Missing backup store for \(backupStoreURL)")
+			guard FileManager.default.fileExists(atPath: backupURL.path) else {
+				throw CopyPersistentStoreErrors.invalidSource("Missing backup store for \(backupURL)")
 			}
 			do {
-				// Remove the existing persistent store first
-				try persistentStoreCoordinator.remove(persistentStore)
-			} catch {
-				print("Error removing store: \(error)")
-				throw CopyPersistentStoreErrors.copyStoreError("Could not remove persistent store before restore")
-			}
-			do {
-				// Clear out the existing persistent store so that we'll have a clean slate for restoring.
-				try persistentStoreCoordinator.destroyPersistentStore(at: loadedStoreURL, ofType: persistentStore.type, options: persistentStore.options)
-				// Add the backup store at its current location
-				let backupStore = try persistentStoreCoordinator.addPersistentStore(ofType: persistentStore.type, configurationName: persistentStore.configurationName, at: backupStoreURL, options: persistentStore.options)
-				// Migrate the backup store to the non-backup location. This leaves the backup copy in place in case it's needed in the future, but backupStore won't be useful anymore.
-				let restoredTemporaryStore = try persistentStoreCoordinator.migratePersistentStore(backupStore, to: loadedStoreURL, options: persistentStore.options, withType: persistentStore.type)
-				print("Restored temp store: \(restoredTemporaryStore)")
+				let storeOptions = persistentStoreDescription.options
+				let configurationName = persistentStoreDescription.configuration
+				let storeType = persistentStoreDescription.type
+				
+				// Replace the current store with the backup copy. This has a side effect of removing the current store from the Core Data stack.
+				// When restoring, it's necessary to use the current persistent store coordinator.
+				try persistentStoreCoordinator.replacePersistentStore(at: loadedStoreURL, destinationOptions: storeOptions, withPersistentStoreFrom: backupURL, sourceOptions: storeOptions, ofType: storeType)
+				// Add the persistent store at the same location we've been using, because it was removed in the previous step.
+				try persistentStoreCoordinator.addPersistentStore(ofType: storeType, configurationName: configurationName, at: loadedStoreURL, options: storeOptions)
 			} catch {
 				throw CopyPersistentStoreErrors.copyStoreError("Could not restore: \(error.localizedDescription)")
 			}
@@ -74,6 +60,7 @@ extension NSPersistentContainer {
 	/// - Throws: `CopyPersistentStoreError`
 	/// - Returns: Nothing. If no errors are thrown, all loaded persistent stores will be copied to the destination directory.
 	func copyPersistentStores(to destinationURL: URL, overwriting: Bool = false) throws -> Void {
+		print(destinationURL)
 		guard destinationURL.isFileURL else {
 			throw CopyPersistentStoreErrors.invalidDestination("Destination URL must be a file URL")
 		}
@@ -101,7 +88,6 @@ extension NSPersistentContainer {
 		} catch {
 			throw CopyPersistentStoreErrors.destinationError("Could not create destination directory at \(destinationURL)")
 		}
-		
 		
 		for persistentStoreDescription in persistentStoreDescriptions {
 			guard let storeURL = persistentStoreDescription.url else {

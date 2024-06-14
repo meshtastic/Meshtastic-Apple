@@ -12,6 +12,8 @@ import Foundation
 
 struct BackupData: View {
 	
+	@Environment(\.managedObjectContext) var context
+	@EnvironmentObject var bleManager: BLEManager
 	@State private var files = [URL]()
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 
@@ -55,6 +57,31 @@ struct BackupData: View {
 				Label {
 					Text("\(file.pathComponents[10])/\(file.lastPathComponent)")
 						.swipeActions {
+							Button(role: .none) {
+								bleManager.disconnectPeripheral(reconnect: false)
+								
+								let container = NSPersistentContainer(name : "Meshtastic")
+								guard let storeUrl = container.persistentStoreDescriptions.first?.url else {
+									return
+								}
+								print(container.persistentStoreDescriptions.first?.url)
+								guard let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+									Logger.data.error("nil File path for back")
+									return
+								}
+								do {
+									context.reset()
+									try container.restorePersistentStore(from: file.absoluteURL)
+									
+									UserDefaults.preferredPeripheralId = ""
+									UserDefaults.preferredPeripheralNum = Int(file.pathComponents[10]) ?? 0
+									Logger.data.notice("🗂️ Restored a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
+								} catch {
+									print("Copy error: \(error)")
+								}
+							} label: {
+								Label("restore", systemImage: "arrow.counterclockwise")
+							}
 							Button(role: .destructive) {
 								do {
 									try FileManager.default.removeItem(at: file)

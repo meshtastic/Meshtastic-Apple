@@ -247,6 +247,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					newTelemetries.append(telemetry)
 					fetchedNode[0].telemetries? = NSOrderedSet(array: newTelemetries)
 				}
+				
 				if nodeInfoMessage.hasUser {
 					/// Seeing Some crashes here ?
 					fetchedNode[0].user!.userId = nodeInfoMessage.user.id

@@ -302,13 +302,15 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				user: nodeInfo.user,
 				num: Int(nodeInfo.num)
 			)
+			node.user = user
 		} else if nodeInfo.num > Int16.max {
 			user = UserEntity(
 				context: context,
 				num: Int(nodeInfo.num)
 			)
+			node.user = user
 		}
-		node.user = user
+		
 		
 		// Position
 		if nodeInfo.isValidPosition {
@@ -324,31 +326,18 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				node.positions = NSOrderedSet(object: position)
 			}
 		}
-
-		// MyInfo
+		/// Final Save
 		do {
-			let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
-			fetchMyInfoRequest.predicate = NSPredicate(
-				format: "myNodeNum == %lld", Int64(nodeInfo.num)
-			)
-			let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
-			if let myInfo = fetchedMyInfo.first {
-				node.myInfo = myInfo
-				do {
-					try context.save()
-					Logger.data.info("💾 Saved a new Node Info For: \(String(nodeInfo.num))")
-					return node
-				} catch {
-					context.rollback()
-					Logger.data.error("Error Saving Core Data NodeInfoEntity: \(error.localizedDescription)")
-				}
-			}
+			try context.save()
+					 Logger.data.info("💾 Saved a new Node Info For: \(String(nodeInfo.num))")
+					 return node
+				 } catch {
+					 context.rollback()
+					 Logger.data.error("Error Saving Core Data NodeInfoEntity: \(error.localizedDescription)")
+				 }
 		} catch {
-			Logger.data.error("Fetch MyInfo Error: \(error.localizedDescription)")
+			Logger.data.error("Save NodeInfoEntity Error")
 		}
-	} catch {
-		Logger.data.error("Fetch NodeInfoEntity Error")
-	}
 	return nil
 }
 
