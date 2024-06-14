@@ -143,11 +143,13 @@ struct PositionConfig: View {
 						ForEach(GpsMode.allCases, id: \.self) { at in
 							Text(at.description)
 								.tag(at.id)
+								
 						}
 					}
 					.pickerStyle(SegmentedPickerStyle())
 					.padding(.top, 5)
 					.padding(.bottom, 5)
+					.disabled(fixedPosition && !(gpsMode == 1))
 					if gpsMode == 1 {
 
 					Text("Positions will be provided by your device GPS, if you select disabled or not present you can set a fixed position.")
@@ -164,7 +166,7 @@ struct PositionConfig: View {
 								.font(.callout)
 						}
 					}
-					if node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? -1 {
+					if gpsMode != 1 && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? -1 {
 						VStack(alignment: .leading) {
 							Toggle(isOn: $fixedPosition) {
 								Label("Fixed Position", systemImage: "location.square.fill")

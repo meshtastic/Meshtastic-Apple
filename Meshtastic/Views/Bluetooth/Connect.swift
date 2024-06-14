@@ -26,7 +26,6 @@ struct Connect: View {
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
 	@State var liveActivityStarted = false
-	@State var presentingSwitchPreferredPeripheral = false
 	@State var selectedPeripherialId = ""
 
 	init () {
@@ -210,8 +209,28 @@ struct Connect: View {
 										}
 										Button(action: {
 											if UserDefaults.preferredPeripheralId.count > 0 && peripheral.peripheral.identifier.uuidString != UserDefaults.preferredPeripheralId {
-												presentingSwitchPreferredPeripheral = true
-												selectedPeripherialId = peripheral.peripheral.identifier.uuidString
+												if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
+													bleManager.disconnectPeripheral()
+												}
+												//clearCoreDataDatabase(context: context, includeRoutes: false)
+												let container = NSPersistentContainer(name : "Meshtastic")
+												guard let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+													Logger.data.error("nil File path for back")
+													return
+												}
+												do {
+													try container.copyPersistentStores(to: url.appendingPathComponent("backups").appendingPathComponent("\(UserDefaults.preferredPeripheralNum)"), overwriting: true)
+				
+													Logger.data.notice("🗂️ Made a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
+												} catch {
+													print("Copy error: \(error)")
+												}
+												UserDefaults.preferredPeripheralId = selectedPeripherialId
+												UserDefaults.preferredPeripheralNum = 0
+												let radio = bleManager.peripherals.first(where: { $0.peripheral.identifier.uuidString == selectedPeripherialId })
+												if radio != nil {
+													bleManager.connectTo(peripheral: radio!.peripheral)
+												}
 											} else {
 												self.bleManager.connectTo(peripheral: peripheral.peripheral)
 											}
@@ -225,35 +244,6 @@ struct Connect: View {
 									}.padding([.bottom, .top])
 								}
 							}
-							.confirmationDialog("Connecting to a new radio will clear all local app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
-
-								Button("Connect to new radio?", role: .destructive) {
-							
-									if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
-										bleManager.disconnectPeripheral()
-									}
-									//clearCoreDataDatabase(context: context, includeRoutes: false)
-									let container = NSPersistentContainer(name : "Meshtastic")
-									guard let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-										Logger.data.error("nil File path for back")
-										return
-									}
-									do {
-										try container.copyPersistentStores(to: url.appendingPathComponent("backups").appendingPathComponent("\(UserDefaults.preferredPeripheralNum)"), overwriting: true)
-	
-										Logger.data.notice("🗂️ Made a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
-									} catch {
-										print("Copy error: \(error)")
-									}
-									UserDefaults.preferredPeripheralId = selectedPeripherialId
-									UserDefaults.preferredPeripheralNum = 0
-									let radio = bleManager.peripherals.first(where: { $0.peripheral.identifier.uuidString == selectedPeripherialId })
-									if radio != nil {
-										bleManager.connectTo(peripheral: radio!.peripheral)
-									}
-								}
-							}
-							.textCase(nil)
 						}
 
 					} else {
