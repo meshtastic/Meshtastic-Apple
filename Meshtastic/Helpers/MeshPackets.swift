@@ -113,12 +113,12 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 			myInfoEntity.rebootCount = Int32(myInfo.rebootCount)
 			do {
 				try context.save()
-				Logger.data.info("💾 Saved a new myInfo for node number: \(String(myInfo.myNodeNum))")
+				Logger.data.info("💾 Saved a new myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
 				return myInfoEntity
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Inserting New Core Data MyInfoEntity: \(nsError)")
+				Logger.data.error("Error Inserting New Core Data MyInfoEntity: \(nsError, privacy: .public)")
 			}
 		} else {
 
@@ -128,12 +128,12 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated myInfo for node number: \(String(myInfo.myNodeNum))")
+				Logger.data.info("💾 Updated MyInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
 				return fetchedMyInfo[0]
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data MyInfoEntity: \(nsError)")
+				Logger.data.error("Error Updating Core Data MyInfoEntity: \(nsError, privacy: .public)")
 			}
 		}
 	} catch {
@@ -187,7 +187,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				} catch {
 					Logger.data.error("Failed to save channel: \(error.localizedDescription)")
 				}
-				Logger.data.info("💾 Updated MyInfo channel \(channel.index) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
+				Logger.data.info("💾 Updated MyInfo channel \(channel.index) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum.toHex())")
 			} else if channel.role.rawValue > 0 {
 				Logger.data.error("Trying to save a channel to a MyInfo that does not exist: \(fromNum)")
 			}
@@ -329,7 +329,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 		/// Final Save
 		do {
 			try context.save()
-					 Logger.data.info("💾 Saved a new Node Info For: \(String(nodeInfo.num))")
+			Logger.data.info("💾 Saved Node Info for: \(nodeInfo.num.toHex(), privacy: .public)")
 					 return node
 				 } catch {
 					 context.rollback()
@@ -594,7 +594,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.voltage = telemetryMessage.deviceMetrics.voltage
 					telemetry.uptimeSeconds = Int32(telemetryMessage.deviceMetrics.uptimeSeconds)
 					telemetry.metricsType = 0
-					Logger.statistics.info("📈 Channel Utilization: \(telemetryMessage.deviceMetrics.channelUtilization) Airtime: \(telemetryMessage.deviceMetrics.airUtilTx) for Node: \(packet.from)")
+					Logger.statistics.info("📈 Channel Utilization: \(telemetryMessage.deviceMetrics.channelUtilization) Airtime: \(telemetryMessage.deviceMetrics.airUtilTx) for Node: \(packet.from.toHex())")
 				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) {
 					// Environment Metrics
 					telemetry.barometricPressure = telemetryMessage.environmentMetrics.barometricPressure
@@ -620,7 +620,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 			try context.save()
 			// Only log telemetry from the mesh not the connected device
 			if connectedNode != Int64(packet.from) {
-				Logger.data.info("💾 Telemetry Saved for Node: \(packet.from)")
+				Logger.data.info("💾 Telemetry Saved for Node: \(packet.from.toHex())")
 			} else if telemetry.metricsType == 0 {
 				// Connected Device Metrics
 				// ------------------------

@@ -44,9 +44,11 @@ struct AppLog: View {
 					Text(value.level.description)
 				}
 				.width(min: 75, max: 100)
+				
 			}
 			TableColumn("log.message", value: \.composedMessage) { value in
 				Text(value.composedMessage)
+					.font(idiom == .phone ? .caption : .body)
 			}
 			.width(ideal: 200, max: .infinity)
 		}
@@ -92,6 +94,11 @@ struct AppLog: View {
 			}
 		}
 		.onChange(of: category) { _ in
+			Task {
+				await logs = searchAppLogs()
+			}
+		}
+		.onChange(of: level) { _ in
 			Task {
 				await logs = searchAppLogs()
 			}
@@ -171,7 +178,7 @@ extension AppLog {
 				predicates.append(categoryPredicate)
 			}
 			if level > -1 {
-				let levelPredicate = NSPredicate(format: "type == %@", "info")
+				let levelPredicate = NSPredicate(format: "type == %@", "debug")
 				predicates.append(levelPredicate)
 			}
 			
