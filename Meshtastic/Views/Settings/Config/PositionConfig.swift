@@ -234,7 +234,7 @@ struct PositionConfig: View {
 
 					if includeDop {
 						Toggle(isOn: $includeHvdop) {
-							Text("If DOP is set use, HDOP / VDOP values instead of PDOP")
+							Text("If DOP is set, use HDOP / VDOP values instead of PDOP")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
