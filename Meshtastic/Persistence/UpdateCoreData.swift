@@ -413,7 +413,7 @@ func upsertBluetoothConfigPacket(config: Config.BluetoothConfig, nodeNum: Int64,
 				Logger.data.error("Error Updating Core Data BluetoothConfigEntity: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum.toHex(), privacy: .public) unable to save Bluetooth Config")
+			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Bluetooth Config")
 		}
 	} catch {
 		let nsError = error as NSError
@@ -601,7 +601,7 @@ func upsertLoRaConfigPacket(config: Config.LoRaConfig, nodeNum: Int64, context: 
 				Logger.data.error("Error Updating Core Data LoRaConfigEntity: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum.toHex(), privacy: .public) unable to save Lora Config")
+			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Lora Config")
 		}
 	} catch {
 		let nsError = error as NSError
@@ -648,7 +648,7 @@ func upsertNetworkConfigPacket(config: Config.NetworkConfig, nodeNum: Int64, con
 				Logger.data.error("Error Updating Core Data WiFiConfigEntity: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum.toHex(), privacy: .public) unable to save Network Config")
+			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Network Config")
 		}
 	} catch {
 		let nsError = error as NSError
@@ -704,14 +704,14 @@ func upsertPositionConfigPacket(config: Config.PositionConfig, nodeNum: Int64, c
 			}
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated Position Config for node number: \(nodeNum.toHex(), privacy: .public)")
+				Logger.data.info("💾 Updated Position Config for node: \(nodeNum.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
 				Logger.data.error("Error Updating Core Data PositionConfigEntity: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum.toHex(), privacy: .public) unable to save Position Config")
+			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Position Config")
 		}
 	} catch {
 		let nsError = error as NSError
@@ -880,7 +880,7 @@ func upsertCannedMessagesModuleConfigPacket(config: ModuleConfig.CannedMessageCo
 				Logger.data.error("Error Updating Core Data CannedMessageConfigEntity: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum.toHex(), privacy: .public) unable to save Canned Message Module Config")
+			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Canned Message Module Config")
 		}
 	} catch {
 		let nsError = error as NSError
@@ -964,7 +964,7 @@ func upsertExternalNotificationModuleConfigPacket(config: ModuleConfig.ExternalN
 		}
 		
 		guard let node = fetchedNode.first else {
-			return Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save External Notification Module Config")
+			return Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex()) unable to save External Notification Module Config")
 		}
 		
 		// Found a node, save External Notificaitone Config
@@ -1028,7 +1028,7 @@ func upsertPaxCounterModuleConfigPacket(config: ModuleConfig.PaxcounterConfig, n
 				Logger.data.error("Error Updating Core Data ExternalNotificationConfigEntity: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum.toHex(), privacy: .public) unable to save PAX Counter Module Config")
+			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save PAX Counter Module Config")
 		}
 	} catch {
 		let nsError = error as NSError
@@ -1090,7 +1090,7 @@ func upsertMqttModuleConfigPacket(config: ModuleConfig.MQTTConfig, nodeNum: Int6
 		}
 		
 		guard let node = fetchedNode.first else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum.toHex(), privacy: .public) unable to save MQTT Module Config")
+			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save MQTT Module Config")
 			return
 		}
 		// Found a node, save MQTT Config
@@ -1106,7 +1106,7 @@ func upsertMqttModuleConfigPacket(config: ModuleConfig.MQTTConfig, nodeNum: Int6
 		
 		do {
 			try context.save()
-			Logger.data.info("💾 Updated MQTT Config for node number: \(nodeNum.toHex(), privacy: .public)")
+			Logger.data.info("💾 Updated MQTT Config for node: \(nodeNum.toHex(), privacy: .public)")
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
@@ -1170,7 +1170,7 @@ func upsertSerialModuleConfigPacket(config: ModuleConfig.SerialConfig, nodeNum: 
 			return
 		}
 		guard let node = fetchedNode.first else {
-			return Logger.data.error("No Nodes found in local database matching node number \(nodeNum.toHex(), privacy: .public) unable to save Serial Module Config")
+			return Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Serial Module Config")
 		}
 		
 		// Found a node, save Device Config
@@ -1211,7 +1211,7 @@ func upsertStoreForwardModuleConfigPacket(config: ModuleConfig.StoreForwardConfi
 			return
 		}
 		guard let node = fetchedNode.first else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Store & Forward Module Config")
+			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex()) unable to save Store & Forward Module Config")
 			return
 		}
 		// Found a node, save Store & Forward Sensor Config
@@ -1225,7 +1225,7 @@ func upsertStoreForwardModuleConfigPacket(config: ModuleConfig.StoreForwardConfi
 		}
 		do {
 			try context.save()
-			Logger.data.info("💾 Updated Store & Forward Module Config for node number: \(nodeNum.toHex(), privacy: .public)")
+			Logger.data.info("💾 Updated Store & Forward Module Config for node: \(nodeNum.toHex(), privacy: .public)")
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
@@ -1279,7 +1279,7 @@ func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nod
 
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated Telemetry Module Config for node number: \(nodeNum.toHex(), privacy: .public)")
+				Logger.data.info("💾 Updated Telemetry Module Config for node: \(nodeNum.toHex(), privacy: .public)")
 
 			} catch {
 				context.rollback()
@@ -1288,7 +1288,7 @@ func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nod
 			}
 
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum.toHex(), privacy: .public) unable to save Telemetry Module Config")
+			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Telemetry Module Config")
 		}
 
 	} catch {

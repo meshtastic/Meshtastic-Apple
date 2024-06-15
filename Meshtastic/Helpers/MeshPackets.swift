@@ -229,7 +229,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 			} catch {
 				Logger.data.error("Failed to save device metadata: \(error.localizedDescription)")
 			}
-			Logger.data.info("💾 Updated Device Metadata from Admin App Packet For: \(fromNum)")
+			Logger.data.info("💾 Updated Device Metadata from Admin App Packet For: \(fromNum.toHex(), privacy: .public)")
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
@@ -242,13 +242,13 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 
 	let logString = String.localizedStringWithFormat(
 		"mesh.log.nodeinfo.received %@ %@".localized,
-		String(nodeInfo.num),
+		nodeInfo.num.toHex(),
 		String(nodeInfo.viaMqtt)
 	)
 	MeshLogger.log("📟 \(logString)")
 
 	guard nodeInfo.num > 0 else {
-		Logger.data.error("nodeInfo \(nodeInfo.num) invalid")
+		Logger.data.error("Node Info \(nodeInfo.num.toHex()) is invalid")
 		return nil
 	}
 
@@ -351,7 +351,7 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 				if !cmmc.messages.isEmpty {
 
-					let logString = String.localizedStringWithFormat("mesh.log.cannedmessages.messages.received %@".localized, String(packet.from))
+					let logString = String.localizedStringWithFormat("mesh.log.cannedmessages.messages.received %@".localized, packet.from.toHex())
 					MeshLogger.log("🥫 \(logString)")
 
 					let fetchNodeRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -369,11 +369,11 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 							fetchedNode[0].cannedMessageConfig?.messages = messages
 							do {
 								try context.save()
-								Logger.data.info("💾 Updated Canned Messages Messages For: \(fetchedNode[0].num)")
+								Logger.data.info("💾 Updated Canned Messages Messages For: \(fetchedNode[0].num.toHex(), privacy: .public)")
 							} catch {
 								context.rollback()
 								let nsError = error as NSError
-								Logger.data.error("Error Saving NodeInfoEntity from POSITION_APP \(nsError)")
+								Logger.data.error("Error Saving NodeInfoEntity from POSITION_APP \(nsError, privacy: .public)")
 							}
 						}
 					} catch {
