@@ -64,7 +64,6 @@ struct BackupData: View {
 								guard let storeUrl = container.persistentStoreDescriptions.first?.url else {
 									return
 								}
-								print(container.persistentStoreDescriptions.first?.url)
 								guard let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
 									Logger.data.error("nil File path for back")
 									return

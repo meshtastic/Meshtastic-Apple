@@ -61,7 +61,6 @@
 		DD2AD8A8296D2DF9001FF0E7 /* MapViewSwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */; };
 		DD33DB622B3D27C7003E1EA0 /* FirmwareApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD33DB612B3D27C7003E1EA0 /* FirmwareApi.swift */; };
 		DD34A1182C14BC8D0028B3E3 /* BackupData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD34A1172C14BC8D0028B3E3 /* BackupData.swift */; };
-		DD34A11A2C15098A0028B3E3 /* NSPersistentContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD34A1192C15098A0028B3E3 /* NSPersistentContainer.swift */; };
 		DD3501892852FC3B000FC853 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3501882852FC3B000FC853 /* Settings.swift */; };
 		DD354FD92BD96A0B0061A25F /* IAQScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD354FD82BD96A0B0061A25F /* IAQScale.swift */; };
 		DD3619152B1EF9F900C41C8C /* LocationsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */; };
@@ -192,6 +191,7 @@
 		DDDE5A1429AFEAB900490C6C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDDE5A1229AFEAB900490C6C /* Assets.xcassets */; };
 		DDE0F7C5295F77B700B8AAB3 /* AppSettingsEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE0F7C4295F77B700B8AAB3 /* AppSettingsEnums.swift */; };
 		DDE5B4042B2279A700FCDD05 /* TraceRouteLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE5B4032B2279A700FCDD05 /* TraceRouteLog.swift */; };
+		DDE884EC2C1D78F600C88B17 /* AppLogFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE884EB2C1D78F600C88B17 /* AppLogFilter.swift */; };
 		DDE9659C2B1C3B6A00531070 /* RouteRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE9659B2B1C3B6A00531070 /* RouteRecorder.swift */; };
 		DDF45C342BC1A48E005ED5F2 /* MQTTIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF45C332BC1A48E005ED5F2 /* MQTTIcon.swift */; };
 		DDF45C372BC46A5A005ED5F2 /* TimeZone.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF45C362BC46A5A005ED5F2 /* TimeZone.swift */; };
@@ -292,7 +292,6 @@
 		DD33DB602B3D1ECC003E1EA0 /* MeshtasticDataModelV 23.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 23.xcdatamodel"; sourceTree = "<group>"; };
 		DD33DB612B3D27C7003E1EA0 /* FirmwareApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareApi.swift; sourceTree = "<group>"; };
 		DD34A1172C14BC8D0028B3E3 /* BackupData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupData.swift; sourceTree = "<group>"; };
-		DD34A1192C15098A0028B3E3 /* NSPersistentContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSPersistentContainer.swift; sourceTree = "<group>"; };
 		DD3501882852FC3B000FC853 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		DD354FD82BD96A0B0061A25F /* IAQScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IAQScale.swift; sourceTree = "<group>"; };
 		DD3619132B1EE20700C41C8C /* MeshtasticDataModelV21.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV21.xcdatamodel; sourceTree = "<group>"; };
@@ -451,6 +450,7 @@
 		DDDEE5E229DBE43E00A8E078 /* MeshtasticDataModelV11.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV11.xcdatamodel; sourceTree = "<group>"; };
 		DDE0F7C4295F77B700B8AAB3 /* AppSettingsEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsEnums.swift; sourceTree = "<group>"; };
 		DDE5B4032B2279A700FCDD05 /* TraceRouteLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRouteLog.swift; sourceTree = "<group>"; };
+		DDE884EB2C1D78F600C88B17 /* AppLogFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogFilter.swift; sourceTree = "<group>"; };
 		DDE9659B2B1C3B6A00531070 /* RouteRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteRecorder.swift; sourceTree = "<group>"; };
 		DDEE03EC29544A1000FCAD57 /* MeshtasticDataModelV4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV4.xcdatamodel; sourceTree = "<group>"; };
 		DDF45C332BC1A48E005ED5F2 /* MQTTIcon.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MQTTIcon.swift; sourceTree = "<group>"; };
@@ -583,10 +583,12 @@
 		DD4A911C2708C57100501B7E /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				DDE884EA2C1D78CD00C88B17 /* Logs */,
 				DD93800C2BA74CE3008BEC06 /* Channels */,
 				DD97E96728EFE9A00056DDA4 /* About.swift */,
 				DDF8E1F32C10125B0019C87E /* AppLog.swift */,
 				DD4A911D2708C65400501B7E /* AppSettings.swift */,
+				DD34A1172C14BC8D0028B3E3 /* BackupData.swift */,
 				DDAB580C2B0DAA9E00147258 /* Routes.swift */,
 				DDE9659B2B1C3B6A00531070 /* RouteRecorder.swift */,
 				DDA0B6B1294CDC55001356EC /* Channels.swift */,
@@ -599,7 +601,6 @@
 				DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */,
 				DD61937A2863876A00E59241 /* Config */,
 				DD1B8F3F2B35E2F10022AABC /* GPSStatus.swift */,
-				DD34A1172C14BC8D0028B3E3 /* BackupData.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -927,7 +928,6 @@
 				DDDB444F29F8AC9C00EE2349 /* UIImage.swift */,
 				DDDB443F29F79AB000EE2349 /* UserDefaults.swift */,
 				DDB75A102A059258006ED576 /* Url.swift */,
-				DD34A1192C15098A0028B3E3 /* NSPersistentContainer.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -953,6 +953,14 @@
 				DDC94FC029CE063B0082EA6E /* BatteryLevel.swift */,
 			);
 			path = Widgets;
+			sourceTree = "<group>";
+		};
+		DDE884EA2C1D78CD00C88B17 /* Logs */ = {
+			isa = PBXGroup;
+			children = (
+				DDE884EB2C1D78F600C88B17 /* AppLogFilter.swift */,
+			);
+			path = Logs;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1124,7 +1132,6 @@
 				DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */,
 				DD77093D2AA1AFA3007A8BF0 /* ChannelTips.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
-				DD34A11A2C15098A0028B3E3 /* NSPersistentContainer.swift in Sources */,
 				DDDB444C29F8AAA600EE2349 /* Color.swift in Sources */,
 				DDB8F4122A9EE5DD00230ECE /* UserList.swift in Sources */,
 				DDB75A0F2A05920E006ED576 /* FileManager.swift in Sources */,
@@ -1217,6 +1224,7 @@
 				D9BC22DB2B7DE8E2006A37D5 /* TileDownloadStatus.swift in Sources */,
 				DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */,
 				DDC1B81A2AB5377B00C71E39 /* MessagesTips.swift in Sources */,
+				DDE884EC2C1D78F600C88B17 /* AppLogFilter.swift in Sources */,
 				DDF8E1F42C10125B0019C87E /* AppLog.swift in Sources */,
 				DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */,
 				DDB75A112A059258006ED576 /* Url.swift in Sources */,

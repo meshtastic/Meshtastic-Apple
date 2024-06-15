@@ -16,27 +16,23 @@ struct AppLog: View {
 	@State private var selection: OSLogEntry.ID?
 	@State private var selectedLog: OSLogEntryLog?
 	@State private var presentingErrorDetails: Bool = false
-	@State private var searchTerm = ""
+	@State private var searchText = ""
+	@State private var category: Int = -1
+	@State private var level: Int = -1
 	@State var isExporting = false
 	@State var exportString = ""
+	@State var isEditingFilters = false
+	
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	private let dateFormatStyle = Date.FormatStyle()
 		.hour(.twoDigits(amPM: .omitted))
 		.minute()
 		.second()
 		.secondFraction(.fractional(3))
-	
-	private var searchResults: [OSLogEntryLog] {
-		   if searchTerm.isEmpty {
-			   return logs.filter { _ in true }
-		   } else {
-			   return logs.filter { $0.composedMessage.lowercased().contains(searchTerm.lowercased) }
-		   }
-	   }
 
 	var body: some View {
 
-		Table(searchResults, selection: $selection, sortOrder: $sortOrder) {
+		Table(logs, selection: $selection, sortOrder: $sortOrder) {
 			if idiom != .phone {
 				TableColumn("log.time", value: \.date) { value in
 					Text(value.date.formatted(dateFormatStyle))
@@ -53,11 +49,32 @@ struct AppLog: View {
 				Text(value.composedMessage)
 			}
 			.width(ideal: 200, max: .infinity)
-			
-
 		}
 		.monospaced()
-		.searchable(text: $searchTerm, placement: .navigationBarDrawer, prompt: "Search")
+		.sheet(isPresented: $isEditingFilters) {
+			AppLogFilter(category: $category, level: $level)
+		}
+		.safeAreaInset(edge: .bottom, alignment: .trailing) {
+			HStack {
+				Button(action: {
+					withAnimation {
+						isEditingFilters = !isEditingFilters
+					}
+				}) {
+					Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+						.padding(.vertical, 5)
+				}
+				.tint(Color(UIColor.secondarySystemBackground))
+				.foregroundColor(.accentColor)
+				.buttonStyle(.borderedProminent)
+
+			}
+			.controlSize(.regular)
+			.padding(5)
+		}
+		.padding(.bottom, 5)
+		.padding(.trailing, 5)
+		.searchable(text: $searchText, placement: .navigationBarDrawer, prompt: "Search")
 			.disabled(selection != nil)
 		.overlay {
 			if logs.isEmpty {
@@ -67,6 +84,16 @@ struct AppLog: View {
 		.onChange(of: sortOrder) { _, sortOrder in
 			withAnimation {
 				logs.sort(using: sortOrder)
+			}
+		}
+		.onChange(of: searchText) { _ in
+			Task {
+				await logs = searchAppLogs()
+			}
+		}
+		.onChange(of: category) { _ in
+			Task {
+				await logs = searchAppLogs()
 			}
 		}
 		.onChange(of: selection) { newSelection in
@@ -81,7 +108,7 @@ struct AppLog: View {
 				.padding()
 		}
 		.task {
-			logs = await fetchLogs()
+			logs = await searchAppLogs()
 			logs.sort(using: sortOrder)
 		}
 		.fileExporter(
@@ -122,17 +149,49 @@ struct AppLog: View {
 
 @available(iOS 17.4, *)
 extension AppLog {
-	static private let template = NSPredicate(format: "(subsystem BEGINSWITH $PREFIX) || ((subsystem IN $SYSTEM) && ((messageType == error) || (messageType == fault)))")
+	//static private let template = NSPredicate(format: "(subsystem BEGINSWITH $PREFIX) || ((subsystem IN $SYSTEM) && ((messageType == error) || (messageType == fault)))")
 
 	@MainActor
-	private func fetchLogs() async -> [OSLogEntryLog] {
+	private func searchAppLogs() async -> [OSLogEntryLog] {
 		do {
-			let predicate = NSPredicate(format: "subsystem IN %@", [
-			  "com.apple.coredata",
-			  "gvh.MeshtasticClient"
-			])
-			let logs = try await Logger.fetch(predicateFormat: predicate.predicateFormat)
-			return logs
+			/// Case Insensitive Search Text Predicates
+			let searchPredicates = ["composedMessage", "category", "subsystem", "process"].map { property in
+				return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
+			}
+			/// Create a compound predicate using each text search preicate as an OR
+			let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
+			/// Create an array of predicates to hold our AND predicates
+			var predicates: [NSPredicate] = []
+			/// Subsystem Predicate
+			let subsystemPredicate = NSPredicate(format: "subsystem IN %@", ["com.apple.coredata", "gvh.MeshtasticClient"])
+			predicates.append(subsystemPredicate)
+			/// Category
+			if category > -1 {
+				let categoryPredicate = NSPredicate(format: "category == %@", LogCategories(rawValue: category)!.description)
+				predicates.append(categoryPredicate)
+			}
+			if level > -1 {
+				let levelPredicate = NSPredicate(format: "type == %@", "info")
+				predicates.append(levelPredicate)
+			}
+			
+			if predicates.count > 0 || !searchText.isEmpty {
+				if !searchText.isEmpty {
+					let filterPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)
+					let compoundPredicate = NSCompoundPredicate(type: .and, subpredicates: [textSearchPredicate, filterPredicates])
+					let logs = try await Logger.fetch(predicateFormat: compoundPredicate.predicateFormat)
+					return logs
+				} else {
+					let filterPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)
+					let logs = try await Logger.fetch(predicateFormat: filterPredicates.predicateFormat)
+					return logs
+				}
+			} else {
+				let logs = try await Logger.fetch(predicateFormat: subsystemPredicate.predicateFormat)
+				
+				return logs
+			}
+			
 		} catch {
 			return []
 		}
