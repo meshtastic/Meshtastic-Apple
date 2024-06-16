@@ -80,7 +80,13 @@ struct AppLog: View {
 			.disabled(selection != nil)
 		.overlay {
 			if logs.isEmpty {
-				ContentUnavailableView("Getting Logs . . .", systemImage: "scroll")
+				ContentUnavailableView("No Logs Available", systemImage: "scroll")
+			}
+		}
+		.refreshable {
+			Task {
+				await logs = searchAppLogs()
+				logs.sort(using: sortOrder)
 			}
 		}
 		.onChange(of: sortOrder) { _, sortOrder in
@@ -91,16 +97,19 @@ struct AppLog: View {
 		.onChange(of: searchText) { _ in
 			Task {
 				await logs = searchAppLogs()
+				logs.sort(using: sortOrder)
 			}
 		}
 		.onChange(of: category) { _ in
 			Task {
 				await logs = searchAppLogs()
+				logs.sort(using: sortOrder)
 			}
 		}
 		.onChange(of: level) { _ in
 			Task {
 				await logs = searchAppLogs()
+				logs.sort(using: sortOrder)
 			}
 		}
 		.onChange(of: selection) { newSelection in
