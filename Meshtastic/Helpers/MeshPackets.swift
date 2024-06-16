@@ -260,71 +260,10 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			return nil
 		}
 		let node: NodeInfoEntity
-		if let update = fetchedNodes.first {
-			node = update
+		if let existing = fetchedNodes.first {
+			node = existing.updated(context: context, nodeInfo: nodeInfo)
 		} else {
-			node = NodeInfoEntity(context: context)
-		}
-		
-		node.id = Int64(nodeInfo.num)
-		node.num = Int64(nodeInfo.num)
-		node.channel = Int32(nodeInfo.channel)
-		node.favorite = nodeInfo.isFavorite
-		node.hopsAway = Int32(nodeInfo.hopsAway)
-		node.viaMqtt = nodeInfo.viaMqtt
-		
-		if nodeInfo.hasDeviceMetrics {
-			let newTelemetry = TelemetryEntity(context: context)
-			newTelemetry.batteryLevel = Int32(nodeInfo.deviceMetrics.batteryLevel)
-			newTelemetry.voltage = nodeInfo.deviceMetrics.voltage
-			newTelemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
-			newTelemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
-			
-			var telemetries: [TelemetryEntity]
-			if let tele = node.telemetries?.array as? [TelemetryEntity] {
-				telemetries = tele
-				telemetries.append(newTelemetry)
-			} else {
-				telemetries = [newTelemetry]
-			}
-			node.telemetries = NSOrderedSet(array: telemetries)
-		}
-		
-		
-		node.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
-		node.snr = nodeInfo.snr
-		
-		// User
-		var user: UserEntity?
-		if nodeInfo.hasUser {
-			user = UserEntity(
-				context: context,
-				user: nodeInfo.user,
-				num: Int(nodeInfo.num)
-			)
-			node.user = user
-		} else if nodeInfo.num > Int16.max {
-			user = UserEntity(
-				context: context,
-				num: Int(nodeInfo.num)
-			)
-			node.user = user
-		}
-		
-		
-		// Position
-		if nodeInfo.isValidPosition {
-			let position = PositionEntity(
-				context: context,
-				nodeInfo: nodeInfo
-			)
-			
-			if let positions = node.positions?.mutableCopy() as? NSMutableOrderedSet {
-				positions.add(position)
-				node.positions = positions
-			} else {
-				node.positions = NSOrderedSet(object: position)
-			}
+			node = NodeInfoEntity(context: context, nodeInfo: nodeInfo)
 		}
 		/// Final Save
 		do {
