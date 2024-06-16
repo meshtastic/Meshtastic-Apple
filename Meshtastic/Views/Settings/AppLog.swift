@@ -84,10 +84,8 @@ struct AppLog: View {
 			}
 		}
 		.refreshable {
-			Task {
-				await logs = searchAppLogs()
-				logs.sort(using: sortOrder)
-			}
+			await logs = searchAppLogs()
+			logs.sort(using: sortOrder)
 		}
 		.onChange(of: sortOrder) { _, sortOrder in
 			withAnimation {
@@ -144,6 +142,18 @@ struct AppLog: View {
 		)
 		.navigationBarTitle("Debug Logs\(logs.isEmpty ? "" : " (\(logs.count))")", displayMode: .inline)
 		.toolbar {
+#if targetEnvironment(macCatalyst)
+			ToolbarItem(placement: .topBarLeading) {
+				Button(action: {
+					Task {
+						await logs = searchAppLogs()
+						logs.sort(using: sortOrder)
+					}
+				}) {
+					Image(systemName: "arrow.clockwise.circle")
+				}
+			}
+#endif
 			if !logs.isEmpty {
 				ToolbarItem(placement: .navigationBarTrailing) {
 					Button(action: {
