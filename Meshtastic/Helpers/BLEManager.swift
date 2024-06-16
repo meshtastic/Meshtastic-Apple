@@ -553,7 +553,26 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, peripheralId: self.connectedPeripheral.id, context: ctx)
 
 					if myInfo != nil {
-						UserDefaults.preferredPeripheralNum = Int(myInfo?.myNodeNum ?? 0)
+						let newConnection = UserDefaults.preferredPeripheralNum != Int(myInfo?.myNodeNum ?? 0)
+											
+						if newConnection {
+							let container = NSPersistentContainer(name : "Meshtastic")
+							guard let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+								Logger.data.error("nil File path for back")
+								return
+							}
+							do {
+								disconnectPeripheral(reconnect: false)
+								try container.restorePersistentStore(from: url.appendingPathComponent("backups").appendingPathComponent("\(UserDefaults.preferredPeripheralNum)").appendingPathComponent("Meshtastic.sqlite"))
+								UserDefaults.preferredPeripheralNum = Int(myInfo?.myNodeNum ?? 0)
+								context?.reset()
+								connectTo(peripheral: peripheral)
+								Logger.data.notice("🗂️ Restored Core data for /\(UserDefaults.preferredPeripheralNum)")
+							} catch {
+								Logger.data.error("Copy error: \(error)")
+							}
+						}
+						
 						connectedPeripheral.num = myInfo?.myNodeNum ?? 0
 						connectedPeripheral.name = myInfo?.bleName ?? "unknown".localized
 						connectedPeripheral.longName = myInfo?.bleName ?? "unknown".localized

@@ -152,7 +152,7 @@ struct LogDetail: View {
 #endif
 		}
 		.monospaced()
-		.presentationDetents([.fraction(0.65), .fraction(0.75), .fraction(0.85)])
+		.presentationDetents([.fraction(0.75), .fraction(0.85), .fraction(1.0)])
 		.presentationDragIndicator(.visible)
 	}
 }

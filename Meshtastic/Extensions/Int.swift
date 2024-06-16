@@ -15,3 +15,15 @@ extension Int {
 		}
 	}
 }
+
+extension UInt32 {
+	func toHex() -> String {
+		return String(format: "!%2X", self)
+	}
+}
+
+extension Int64 {
+	func toHex() -> String {
+		return String(format: "!%2X", self)
+	}
+}

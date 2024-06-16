@@ -143,16 +143,17 @@ struct PositionConfig: View {
 						ForEach(GpsMode.allCases, id: \.self) { at in
 							Text(at.description)
 								.tag(at.id)
+								
 						}
 					}
 					.pickerStyle(SegmentedPickerStyle())
 					.padding(.top, 5)
 					.padding(.bottom, 5)
+					.disabled(fixedPosition && !(gpsMode == 1))
 					if gpsMode == 1 {
-
-					Text("Positions will be provided by your device GPS, if you select disabled or not present you can set a fixed position.")
-						.foregroundColor(.gray)
-						.font(.callout)
+						Text("Positions will be provided by your device GPS, if you select disabled or not present you can set a fixed position.")
+							.foregroundColor(.gray)
+							.font(.callout)
 						VStack(alignment: .leading) {
 							Picker("Update Interval", selection: $gpsUpdateInterval) {
 								ForEach(GpsUpdateIntervals.allCases) { ui in
@@ -164,7 +165,7 @@ struct PositionConfig: View {
 								.font(.callout)
 						}
 					}
-					if gpsMode != 1 && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? -1 {
+					if (gpsMode != 1 && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? -1) || fixedPosition {
 						VStack(alignment: .leading) {
 							Toggle(isOn: $fixedPosition) {
 								Label("Fixed Position", systemImage: "location.square.fill")
@@ -285,35 +286,39 @@ struct PositionConfig: View {
 				}
 				if node?.positionConfig?.fixedPosition ?? false {
 					Button("Remove", role: .destructive) {
-						if !bleManager.removeFixedPosition(fromUser: node!.user!, channel: 0) {
-							Logger.mesh.error("Remove Fixed Position Failed")
-						}
-						let mutablePositions = node?.positions?.mutableCopy() as? NSMutableOrderedSet
-						mutablePositions?.removeAllObjects()
-						node?.positions = mutablePositions
-						node?.positionConfig?.fixedPosition = false
-						do {
-							try context.save()
-							Logger.data.info("💾 Updated Position Config with Fixed Position = false")
-						} catch {
-							context.rollback()
-							let nsError = error as NSError
-							Logger.data.error("Error Saving Position Config Entity \(nsError)")
+						if bleManager.connectedPeripheral.num > 0 {
+							if !bleManager.removeFixedPosition(fromUser: node!.user!, channel: 0) {
+								Logger.mesh.error("Remove Fixed Position Failed")
+							}
+							let mutablePositions = node?.positions?.mutableCopy() as? NSMutableOrderedSet
+							mutablePositions?.removeAllObjects()
+							node?.positions = mutablePositions
+							node?.positionConfig?.fixedPosition = false
+							do {
+								try context.save()
+								Logger.data.info("💾 Updated Position Config with Fixed Position = false")
+							} catch {
+								context.rollback()
+								let nsError = error as NSError
+								Logger.data.error("Error Saving Position Config Entity \(nsError)")
+							}
 						}
 					}
 				} else {
 					Button("Set") {
-						if !bleManager.setFixedPosition(fromUser: node!.user!, channel: 0) {
-							Logger.mesh.error("Set Position Failed")
-						}
-						node?.positionConfig?.fixedPosition = true
-						do {
-							try context.save()
-							Logger.data.info("💾 Updated Position Config with Fixed Position = true")
-						} catch {
-							context.rollback()
-							let nsError = error as NSError
-							Logger.data.error("Error Saving Position Config Entity \(nsError)")
+						if bleManager.connectedPeripheral.num > 0 {
+							if !bleManager.setFixedPosition(fromUser: node!.user!, channel: 0) {
+								Logger.mesh.error("Set Position Failed")
+							}
+							node?.positionConfig?.fixedPosition = true
+							do {
+								try context.save()
+								Logger.data.info("💾 Updated Position Config with Fixed Position = true")
+							} catch {
+								context.rollback()
+								let nsError = error as NSError
+								Logger.data.error("Error Saving Position Config Entity \(nsError)")
+							}
 						}
 					}
 				}
