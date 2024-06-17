@@ -60,7 +60,7 @@ struct MessageContextMenuItems: View {
 				}
 			} else if !isCurrentUser && !(message.fromUser?.userNode?.viaMqtt ?? false) {
 				VStack {
-					Text("Hops Away \(message.fromUser?.userNode?.hopsAway ?? 0)) dB")
+					Text("Hops Away: \(message.fromUser?.userNode?.hopsAway ?? 0)")
 				}
 			}
 			if isCurrentUser && message.receivedACK {
