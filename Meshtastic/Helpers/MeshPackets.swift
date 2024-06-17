@@ -267,6 +267,18 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 		}
 		/// Final Save
 		do {
+			if node.num == UserDefaults.preferredPeripheralNum {
+				let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
+				fetchMyInfoRequest.predicate = NSPredicate(
+					format: "myNodeNum == %lld", Int64(nodeInfo.num)
+				)
+				let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
+				if let myInfo = fetchedMyInfo.first {
+					node.myInfo = myInfo
+				}
+				
+			}
+			
 			try context.save()
 			Logger.data.info("💾 Saved Node Info for: \(nodeInfo.num.toHex(), privacy: .public)")
 					 return node

@@ -88,14 +88,18 @@ extension NodeInfoEntity {
 				user: nodeInfo.user,
 				num: Int(nodeInfo.num)
 			)
+			self.user = user
 		} else if nodeInfo.num > Int16.max {
 			user = UserEntity(
 				context: context,
 				num: Int(nodeInfo.num)
 			)
+			self.user = user
 		}
-		self.user = user
-		
+		if user == nil && self.num <= 0 {
+			return
+		}
+			
 		// Position
 		if nodeInfo.isValidPosition {
 			let position = PositionEntity(
