@@ -556,20 +556,23 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						let newConnection = UserDefaults.preferredPeripheralNum != Int(myInfo?.myNodeNum ?? 0)
 											
 						if newConnection {
-							let container = NSPersistentContainer(name : "Meshtastic")
-							guard let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-								Logger.data.error("nil File path for back")
-								return
-							}
-							do {
-								disconnectPeripheral(reconnect: false)
-								try container.restorePersistentStore(from: url.appendingPathComponent("backups").appendingPathComponent("\(UserDefaults.preferredPeripheralNum)").appendingPathComponent("Meshtastic.sqlite"))
-								UserDefaults.preferredPeripheralNum = Int(myInfo?.myNodeNum ?? 0)
-								context?.reset()
-								connectTo(peripheral: peripheral)
-								Logger.data.notice("🗂️ Restored Core data for /\(UserDefaults.preferredPeripheralNum)")
-							} catch {
-								Logger.data.error("Copy error: \(error)")
+							let container = NSPersistentContainer(name: "Meshtastic")
+							if let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+								let databasePath = url.appendingPathComponent("backups")
+									.appendingPathComponent("\(UserDefaults.preferredPeripheralNum)")
+									.appendingPathComponent("Meshtastic.sqlite")
+								if FileManager.default.fileExists(atPath: databasePath.path) {
+									do {
+										disconnectPeripheral(reconnect: false)
+										try container.restorePersistentStore(from: databasePath)
+										UserDefaults.preferredPeripheralNum = Int(myInfo?.myNodeNum ?? 0)
+										context?.reset()
+										connectTo(peripheral: peripheral)
+										Logger.data.notice("🗂️ Restored Core data for /\(UserDefaults.preferredPeripheralNum)")
+									} catch {
+										Logger.data.error("Copy error: \(error)")
+									}
+								}
 							}
 						}
 						
