@@ -402,7 +402,7 @@ struct Settings: View {
 						}
 						.tag(SettingsSidebar.telemetryConfig)
 					}
-					Section(header: Text("debug")) {
+					Section(header: Text("logging")) {
 						NavigationLink {
 							MeshLog()
 						} label: {

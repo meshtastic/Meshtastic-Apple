@@ -196,8 +196,9 @@ extension AppLog {
 				let categoryPredicate = NSPredicate(format: "category == %@", LogCategories(rawValue: category)!.description)
 				predicates.append(categoryPredicate)
 			}
+			/// Log Level 
 			if level > -1 {
-				let levelPredicate = NSPredicate(format: "type == %@", "debug")
+				let levelPredicate = NSPredicate(format: "messageType == %@", LogLevels(rawValue: level)?.level ?? "info")
 				predicates.append(levelPredicate)
 			}
 			

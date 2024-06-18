@@ -52,9 +52,22 @@ enum LogLevels: Int, CaseIterable, Identifiable {
 	case fault = 4
 
 	var id: Int { self.rawValue }
+	var level: String {
+		switch self {
+		case .debug:
+			return  "debug"
+		case .info:
+			return "info"
+		case .notice:
+			return "notice"
+		case .error:
+			return "error"
+		case .fault:
+			return "fault"
+		}
+	}
 	var description: String {
 		switch self {
-
 		case .debug:
 			return  "🩺 Debug"
 		case .info:
@@ -96,19 +109,19 @@ struct AppLogFilter: View {
 						.pickerStyle(DefaultPickerStyle())
 					}
 					
-//					HStack {
-//						Label("Level", systemImage: "stairs")
-//						Picker("", selection: $level) {
-//							Text("All Levels")
-//								.tag(-1)
-//							ForEach(LogLevels.allCases) { ll in
-//								Text("\(ll.description)")
-//									//.tag(ll.rawValue)
-//								
-//							}
-//						}
-//						.pickerStyle(DefaultPickerStyle())
-//					}
+					HStack {
+						Label("Level", systemImage: "stairs")
+						Picker("", selection: $level) {
+							Text("All Levels")
+								.tag(-1)
+							ForEach(LogLevels.allCases) { ll in
+								Text("\(ll.description)")
+									//.tag(ll.rawValue)
+								
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
+					}
 				}
 			}
 #if targetEnvironment(macCatalyst)
