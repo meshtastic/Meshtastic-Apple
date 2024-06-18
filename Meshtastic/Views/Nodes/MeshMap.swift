@@ -163,9 +163,16 @@ struct MeshMap: View {
 				.padding(5)
 			}
 		}
-		.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
+		.navigationBarItems(
+			leading: MeshtasticLogo(),
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
 		.onAppear {
 			UIApplication.shared.isIdleTimerDisabled = true
 

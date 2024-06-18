@@ -54,7 +54,7 @@ struct PaxCounterConfig: View {
 			ConnectedDevice(
 				bluetoothOn: bleManager.isSwitchedOn,
 				deviceConnected: bleManager.connectedPeripheral != nil,
-				name: "\(bleManager.connectedPeripheral?.shortName ?? "?")"
+				name: bleManager.connectedPeripheral?.shortName ?? "?"
 			)
 		})
 		.onAppear {
@@ -64,7 +64,7 @@ struct PaxCounterConfig: View {
 
 			setPaxValues()
 			// Need to request a PAX Counter module config from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.paxCounterConfig == nil {
+			if let connectedPeripheral = bleManager.connectedPeripheral, node?.paxCounterConfig == nil {
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestPaxCounterModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
@@ -83,7 +83,8 @@ struct PaxCounterConfig: View {
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			guard let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context),
+			guard let connectedPeripheral = bleManager.connectedPeripheral,
+			      let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context),
 				  let fromUser = connectedNode.user,
 				  let toUser = node?.user else {
 				return

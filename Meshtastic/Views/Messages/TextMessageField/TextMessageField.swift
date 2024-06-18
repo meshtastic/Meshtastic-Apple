@@ -83,7 +83,7 @@ struct TextMessageField: View {
 	}
 
 	private func requestPosition() {
-		let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
+		let userLongName = bleManager.connectedPeripheral?.longName ?? "Unknown"
 		sendPositionWithMessage = true
 		typingMessage =  "📍 " + userLongName + " \(destination.positionShareMessage)."
 	}

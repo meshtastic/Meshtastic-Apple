@@ -74,13 +74,13 @@ struct BluetoothConfig: View {
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.bluetoothConfig == nil)
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-			if connectedNode != nil {
+			if let myNodeNum = bleManager.connectedPeripheral?.num,
+				let connectedNode = getNodeInfo(id: myNodeNum, context: context) {
 				var bc = Config.BluetoothConfig()
 				bc.enabled = enabled
 				bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
 				bc.fixedPin = UInt32(fixedPin) ?? 123456
-				let adminMessageId =  bleManager.saveBluetoothConfig(config: bc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				let adminMessageId =  bleManager.saveBluetoothConfig(config: bc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 				if adminMessageId > 0 {
 					// Should show a saved successfully alert once I know that to be true
 					// for now just disable the button after a successful save
@@ -91,21 +91,26 @@ struct BluetoothConfig: View {
 		}
 
 		.navigationTitle("bluetooth.config")
-		.navigationBarItems(trailing:
-			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
 		.onAppear {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
 			setBluetoothValues()
 			// Need to request a BluetoothConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.bluetoothConfig == nil {
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node, node.bluetoothConfig == nil {
 				Logger.mesh.info("empty bluetooth config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestBluetoothConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let connectedNode {
+					_ = bleManager.requestBluetoothConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}

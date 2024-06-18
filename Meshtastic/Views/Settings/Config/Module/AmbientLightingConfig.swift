@@ -59,8 +59,8 @@ struct AmbientLightingConfig: View {
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.ambientLightingConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode != nil {
+				if let connectedPeripheral = bleManager.connectedPeripheral,
+					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context) {
 					var al = ModuleConfig.AmbientLightingConfig()
 					al.ledState = ledState
 					al.current = UInt32(current)
@@ -70,7 +70,12 @@ struct AmbientLightingConfig: View {
 						al.blue = UInt32(components.blue * 255)
 					}
 
-					let adminMessageId =  bleManager.saveAmbientLightingModuleConfig(config: al, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					let adminMessageId =  bleManager.saveAmbientLightingModuleConfig(
+						config: al,
+						fromUser: connectedNode.user!,
+						toUser: node!.user!,
+						adminIndex: connectedNode.myInfo?.adminIndex ?? 0
+					)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
@@ -82,19 +87,28 @@ struct AmbientLightingConfig: View {
 			.navigationTitle("ambient.lighting.config")
 			.navigationBarItems(trailing:
 				ZStack {
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-			})
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: bleManager.connectedPeripheral?.shortName ?? "?"
+					)
+				}
+			)
 			.onAppear {
 				if self.bleManager.context == nil {
 					self.bleManager.context = context
 				}
 				setAmbientLightingConfigValue()
 				// Need to request a Ambient Lighting Config from the remote node before allowing changes
-				if bleManager.connectedPeripheral != nil && node?.ambientLightingConfig == nil {
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if node != nil && connectedNode != nil {
-						_ = bleManager.requestAmbientLightingConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-					}
+				if let connectedPeripheral = bleManager.connectedPeripheral, 
+					node?.ambientLightingConfig == nil,
+				    let node,
+				    let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context) {
+					_ = bleManager.requestAmbientLightingConfig(
+						fromUser: connectedNode.user!,
+						toUser: node.user!,
+						adminIndex: connectedNode.myInfo?.adminIndex ?? 0
+					)
 				}
 			}
 			.onChange(of: ledState) { newLedState in

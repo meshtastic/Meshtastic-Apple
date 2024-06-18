@@ -89,8 +89,9 @@ struct NetworkConfig: View {
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.networkConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode != nil {
+				
+				if let connectedPeripheral = bleManager.connectedPeripheral,
+					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context) {
 					var network = Config.NetworkConfig()
 					network.wifiEnabled = self.wifiEnabled
 					network.wifiSsid = self.wifiSsid
@@ -98,7 +99,7 @@ struct NetworkConfig: View {
 					network.ethEnabled = self.ethEnabled
 					// network.addressMode = Config.NetworkConfig.AddressMode.dhcp
 
-					let adminMessageId =  bleManager.saveNetworkConfig(config: network, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					let adminMessageId = bleManager.saveNetworkConfig(config: network, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
@@ -109,21 +110,26 @@ struct NetworkConfig: View {
 			}
 		}
 		.navigationTitle("network.config")
-		.navigationBarItems(trailing:
-			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
 		.onAppear {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
 			setNetworkValues()
 			// Need to request a NetworkConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.networkConfig == nil {
+			if let connectedPeripheral = bleManager.connectedPeripheral, node?.networkConfig == nil {
 				Logger.mesh.info("empty network config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestNetworkConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let node, let connectedNode {
+					_ = bleManager.requestNetworkConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}
