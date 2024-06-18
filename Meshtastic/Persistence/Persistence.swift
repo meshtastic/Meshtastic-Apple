@@ -146,7 +146,7 @@ extension NSPersistentContainer {
 	/// - Throws: `CopyPersistentStoreError`
 	/// - Returns: Nothing. If no errors are thrown, all loaded persistent stores will be copied to the destination directory.
 	func copyPersistentStores(to destinationURL: URL, overwriting: Bool = false) throws -> Void {
-		print(destinationURL)
+		Logger.data.info("Copying persistent stores: \(destinationURL.absoluteString)")
 		guard destinationURL.isFileURL else {
 			throw CopyPersistentStoreErrors.invalidDestination("Destination URL must be a file URL")
 		}

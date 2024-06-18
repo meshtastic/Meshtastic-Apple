@@ -30,7 +30,7 @@ struct BackupData: View {
 					loadFiles()
 					Logger.data.notice("🗂️ Made a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
 				} catch {
-					print("Copy error: \(error)")
+					Logger.data.error("Copy error: \(error.localizedDescription)")
 				}
 				
 			}) {
@@ -76,7 +76,7 @@ struct BackupData: View {
 									UserDefaults.preferredPeripheralNum = Int(file.pathComponents[10]) ?? 0
 									Logger.data.notice("🗂️ Restored a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
 								} catch {
-									print("Copy error: \(error)")
+									Logger.data.error("Copy error: \(error.localizedDescription)")
 								}
 							} label: {
 								Label("restore", systemImage: "arrow.counterclockwise")
@@ -85,7 +85,7 @@ struct BackupData: View {
 								do {
 									try FileManager.default.removeItem(at: file)
 								} catch {
-									print(error)
+									Logger.data.error("Error deleting backup file: \(error.localizedDescription)")
 								}
 							} label: {
 								Label("delete", systemImage: "trash")
@@ -107,7 +107,7 @@ struct BackupData: View {
 								do {
 									try FileManager.default.removeItem(at: file)
 								} catch {
-									print(error)
+									Logger.data.error("Error deleting backup file: \(error.localizedDescription)")
 								}
 							} label: {
 								Label("delete", systemImage: "trash")
@@ -142,7 +142,9 @@ struct BackupData: View {
 					if fileAttributes.isRegularFile! {
 						files.append(fileURL)
 					}
-				} catch { print(error, fileURL) }
+				} catch {
+					Logger.data.error("Error loading backup files at \(fileURL.absoluteString) \(error.localizedDescription)")
+				}
 			}
 		}
 	}
