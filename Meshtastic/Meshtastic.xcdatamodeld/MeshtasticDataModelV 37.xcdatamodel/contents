@@ -195,8 +195,6 @@
         <relationship name="mqttConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="mqttConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
     <entity name="MyInfoEntity" representedClassName="MyInfoEntity" syncable="YES" codeGenerationType="class">
-        <attribute name="adminIndex" optional="YES" attributeType="Integer 32" defaultValueString="NO" usesScalarValueType="YES"/>
-        <attribute name="bleName" optional="YES" attributeType="String"/>
         <attribute name="minAppVersion" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="myNodeNum" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="peripheralId" optional="YES" attributeType="String"/>
@@ -262,7 +260,7 @@
         <relationship name="telemetries" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="TelemetryEntity" inverseName="nodeTelemetry" inverseEntity="TelemetryEntity"/>
         <relationship name="telemetryConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TelemetryConfigEntity" inverseName="telemetryConfigNode" inverseEntity="TelemetryConfigEntity"/>
         <relationship name="traceRoutes" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="TraceRouteEntity" inverseName="node" inverseEntity="TraceRouteEntity"/>
-        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserEntity" inverseName="userNode" inverseEntity="UserEntity"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="UserEntity" inverseName="userNode" inverseEntity="UserEntity"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="num"/>

@@ -92,52 +92,27 @@ func moduleConfig (config: ModuleConfig, context: NSManagedObjectContext, nodeNu
 	}
 }
 
-func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedObjectContext) -> MyInfoEntity? {
-
+func myInfoPacket(
+	myInfo: MyNodeInfo,
+	peripheralId: String,
+	context: NSManagedObjectContext
+) -> MyInfoEntity? {
 	let logString = String.localizedStringWithFormat("mesh.log.myinfo %@".localized, String(myInfo.myNodeNum))
 	MeshLogger.log("ℹ️ \(logString)")
-
-	let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
-	fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(myInfo.myNodeNum))
-
+	
+	let myInfoEntity = MyInfoEntity(
+		context: context,
+		myInfo: myInfo,
+		peripheralId: peripheralId
+	)
 	do {
-		guard let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity] else {
-			return nil
-		}
-		// Not Found Insert
-		if fetchedMyInfo.isEmpty {
-
-			let myInfoEntity = MyInfoEntity(context: context)
-			myInfoEntity.peripheralId = peripheralId
-			myInfoEntity.myNodeNum = Int64(myInfo.myNodeNum)
-			myInfoEntity.rebootCount = Int32(myInfo.rebootCount)
-			do {
-				try context.save()
-				Logger.data.info("💾 Saved a new myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
-				return myInfoEntity
-			} catch {
-				context.rollback()
-				let nsError = error as NSError
-				Logger.data.error("Error Inserting New Core Data MyInfoEntity: \(nsError, privacy: .public)")
-			}
-		} else {
-
-			fetchedMyInfo[0].peripheralId = peripheralId
-			fetchedMyInfo[0].myNodeNum = Int64(myInfo.myNodeNum)
-			fetchedMyInfo[0].rebootCount = Int32(myInfo.rebootCount)
-
-			do {
-				try context.save()
-				Logger.data.info("💾 Updated MyInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
-				return fetchedMyInfo[0]
-			} catch {
-				context.rollback()
-				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data MyInfoEntity: \(nsError, privacy: .public)")
-			}
-		}
+		try context.save()
+		Logger.data.info("💾 Upserted MyInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
+		return myInfoEntity
 	} catch {
-		Logger.data.error("Fetch MyInfo Error")
+		context.rollback()
+		let nsError = error as NSError
+		Logger.data.error("Error Upserting New Core Data MyInfoEntity: \(nsError, privacy: .public)")
 	}
 	return nil
 }
@@ -178,9 +153,6 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 					mutableChannels.add(newChannel)
 				}
 				fetchedMyInfo.first?.channels = mutableChannels.copy() as? NSOrderedSet
-				if newChannel.name?.lowercased() == "admin" {
-					fetchedMyInfo.first?.adminIndex = newChannel.index
-				}
 				context.refresh(newChannel, mergeChanges: true)
 				do {
 					try context.save()
@@ -252,92 +224,68 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 		return nil
 	}
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeInfo.num))
-
-	do {
-		guard let fetchedNodes = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return nil
-		}
-		let node: NodeInfoEntity
-		if let update = fetchedNodes.first {
-			node = update
+	let node = NodeInfoEntity(context: context)
+	node.id = Int64(nodeInfo.num)
+	node.num = Int64(nodeInfo.num)
+	node.channel = Int32(nodeInfo.channel)
+	node.favorite = nodeInfo.isFavorite
+	node.hopsAway = Int32(nodeInfo.hopsAway)
+	node.viaMqtt = nodeInfo.viaMqtt
+	
+	if nodeInfo.hasDeviceMetrics {
+		let newTelemetry = TelemetryEntity(context: context)
+		newTelemetry.batteryLevel = Int32(nodeInfo.deviceMetrics.batteryLevel)
+		newTelemetry.voltage = nodeInfo.deviceMetrics.voltage
+		newTelemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
+		newTelemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
+		
+		var telemetries: [TelemetryEntity]
+		if let tele = node.telemetries?.array as? [TelemetryEntity] {
+			telemetries = tele
+			telemetries.append(newTelemetry)
 		} else {
-			node = NodeInfoEntity(context: context)
+			telemetries = [newTelemetry]
 		}
+		node.telemetries = NSOrderedSet(array: telemetries)
+	}
+	
+	
+	node.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
+	node.snr = nodeInfo.snr
+	
+	// User
+	if nodeInfo.hasUser, !nodeInfo.user.id.isEmpty {
+		node.user = UserEntity(
+			context: context,
+			user: nodeInfo.user,
+			num: Int(nodeInfo.num)
+		)
+	}
+	
+	// Position
+	if nodeInfo.isValidPosition {
+		let position = PositionEntity(
+			context: context,
+			nodeInfo: nodeInfo
+		)
 		
-		node.id = Int64(nodeInfo.num)
-		node.num = Int64(nodeInfo.num)
-		node.channel = Int32(nodeInfo.channel)
-		node.favorite = nodeInfo.isFavorite
-		node.hopsAway = Int32(nodeInfo.hopsAway)
-		node.viaMqtt = nodeInfo.viaMqtt
-		
-		if nodeInfo.hasDeviceMetrics {
-			let newTelemetry = TelemetryEntity(context: context)
-			newTelemetry.batteryLevel = Int32(nodeInfo.deviceMetrics.batteryLevel)
-			newTelemetry.voltage = nodeInfo.deviceMetrics.voltage
-			newTelemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
-			newTelemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
-			
-			var telemetries: [TelemetryEntity]
-			if let tele = node.telemetries?.array as? [TelemetryEntity] {
-				telemetries = tele
-				telemetries.append(newTelemetry)
-			} else {
-				telemetries = [newTelemetry]
-			}
-			node.telemetries = NSOrderedSet(array: telemetries)
+		if let positions = node.positions?.mutableCopy() as? NSMutableOrderedSet {
+			positions.add(position)
+			node.positions = positions
+		} else {
+			node.positions = NSOrderedSet(object: position)
 		}
-		
-		
-		node.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
-		node.snr = nodeInfo.snr
-		
-		// User
-		var user: UserEntity?
-		if nodeInfo.hasUser {
-			user = UserEntity(
-				context: context,
-				user: nodeInfo.user,
-				num: Int(nodeInfo.num)
-			)
-			node.user = user
-		} else if nodeInfo.num > Int16.max {
-			user = UserEntity(
-				context: context,
-				num: Int(nodeInfo.num)
-			)
-			node.user = user
-		}
-		
-		
-		// Position
-		if nodeInfo.isValidPosition {
-			let position = PositionEntity(
-				context: context,
-				nodeInfo: nodeInfo
-			)
-			
-			if let positions = node.positions?.mutableCopy() as? NSMutableOrderedSet {
-				positions.add(position)
-				node.positions = positions
-			} else {
-				node.positions = NSOrderedSet(object: position)
-			}
-		}
-		/// Final Save
-		do {
-			try context.save()
-			Logger.data.info("💾 Saved Node Info for: \(nodeInfo.num.toHex(), privacy: .public)")
-					 return node
-				 } catch {
-					 context.rollback()
-					 Logger.data.error("Error Saving Core Data NodeInfoEntity: \(error.localizedDescription)")
-				 }
-		} catch {
-			Logger.data.error("Save NodeInfoEntity Error")
-		}
+	}
+	/// Final Save
+	do {
+		try context.save()
+		Logger.data.info("💾 Saved Node Info for: \(nodeInfo.num.toHex(), privacy: .public)")
+		return node
+	} catch {
+		context.rollback()
+		Logger.data.error("Error Saving Core Data NodeInfoEntity: \(error.localizedDescription)")
+	}
+	
 	return nil
 }
 

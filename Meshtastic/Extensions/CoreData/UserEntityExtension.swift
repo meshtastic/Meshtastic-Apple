@@ -15,6 +15,7 @@ extension UserEntity {
 		user: User,
 		num: Int
 	) {
+		print("MARK: Creating User \(user)")
 		self.init(context: context)
 		self.userId = user.id
 		self.num = Int64(num)
@@ -27,6 +28,7 @@ extension UserEntity {
 	
 	convenience init(context: NSManagedObjectContext, num: Int) {
 		self.init(context: context)
+		print("MARK: Creating Empty User From Node \(num)")
 		self.num = Int64(num)
 		let userId = String(format: "!%2X", num)
 		self.userId = userId

@@ -549,11 +549,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 
 				// MyInfo from initial connection
-				if decodedInfo.myInfo.isInitialized && decodedInfo.myInfo.myNodeNum > 0 {
-					let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, peripheralId: self.connectedPeripheral.id, context: ctx)
-
-					if myInfo != nil {
-						let newConnection = UserDefaults.preferredPeripheralNum != Int(myInfo?.myNodeNum ?? 0)
+				if decodedInfo.myInfo.isInitialized, decodedInfo.myInfo.myNodeNum > 0 {
+					if let myInfo = myInfoPacket(
+						myInfo: decodedInfo.myInfo,
+						peripheralId: self.connectedPeripheral.id,
+						context: ctx
+					) {
+						let newConnection = UserDefaults.preferredPeripheralNum != myInfo.myNodeNum
 											
 						if newConnection {
 							let container = NSPersistentContainer(name : "Meshtastic")
@@ -562,20 +564,21 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								return
 							}
 							do {
-								disconnectPeripheral(reconnect: false)
 								try container.restorePersistentStore(from: url.appendingPathComponent("backups").appendingPathComponent("\(UserDefaults.preferredPeripheralNum)").appendingPathComponent("Meshtastic.sqlite"))
-								UserDefaults.preferredPeripheralNum = Int(myInfo?.myNodeNum ?? 0)
+								Logger.data.notice("🗂️ Restored Core data for /\(UserDefaults.preferredPeripheralNum)")
+								disconnectPeripheral(reconnect: false)
+								UserDefaults.preferredPeripheralNum = Int(myInfo.myNodeNum)
 								context?.reset()
 								connectTo(peripheral: peripheral)
-								Logger.data.notice("🗂️ Restored Core data for /\(UserDefaults.preferredPeripheralNum)")
 							} catch {
 								Logger.data.error("Copy error: \(error)")
+								return
 							}
 						}
 						
-						connectedPeripheral.num = myInfo?.myNodeNum ?? 0
-						connectedPeripheral.name = myInfo?.bleName ?? "unknown".localized
-						connectedPeripheral.longName = myInfo?.bleName ?? "unknown".localized
+						connectedPeripheral.num = myInfo.myNodeNum
+						connectedPeripheral.name = myInfo.bleName ?? "unknown".localized
+						connectedPeripheral.longName = myInfo.bleName ?? "unknown".localized
 					}
 					tryClearExistingChannels()
 				}

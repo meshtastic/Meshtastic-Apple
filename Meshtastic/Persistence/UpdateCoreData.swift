@@ -192,15 +192,9 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 						manager.schedule()
 					}
 				}
-			} else {
-				if packet.from > Int16.max {
-					let newUser = UserEntity(context: context, num: Int(packet.from))
-					fetchedNode[0].user = newUser
-				}
-			}
-
-			if newNode.user == nil && packet.from > Int16.max {
-				newNode.user = UserEntity(context: context, num: Int(packet.from))
+			} else if packet.from > Int16.max {
+				let newUser = UserEntity(context: context, num: Int(packet.from))
+				fetchedNode[0].user = newUser
 			}
 
 			let myInfoEntity = MyInfoEntity(context: context)
@@ -1175,7 +1169,7 @@ func upsertSerialModuleConfigPacket(config: ModuleConfig.SerialConfig, nodeNum: 
 		
 		// Found a node, save Device Config
 		if let serialConfig = node.serialConfig {
-			node.serialConfig?.update(with: config)
+			serialConfig.update(with: config)
 		} else {
 			node.serialConfig = SerialConfigEntity(
 				context: context,

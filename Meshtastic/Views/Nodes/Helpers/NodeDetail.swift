@@ -57,7 +57,12 @@ struct NodeDetail: View {
 									.foregroundColor(Color.gray)
 								if connectedNode != nil && connectedNode?.myInfo?.hasAdmin ?? false && node.metadata?.time != nil && !Calendar.current.isDateInToday(node.metadata!.time!) {
 									Button {
-										let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
+										let adminMessageId = bleManager.requestDeviceMetadata(
+											fromUser: connectedNode!.user!,
+											toUser: node.user!,
+											adminIndex: connectedNode?.myInfo?.adminIndex ?? 0,
+											context: context
+										)
 										if adminMessageId > 0 {
 											Logger.mesh.info("Sent node metadata request from node details")
 										}

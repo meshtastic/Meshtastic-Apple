@@ -58,8 +58,9 @@ struct Connect: View {
 									}
 									.padding(.trailing)
 									VStack(alignment: .leading) {
-										if node != nil {
-											Text(bleManager.connectedPeripheral.longName).font(.title2)
+										if let name = node?.user?.longName {
+											Text(name)
+												.font(.title2)
 										}
 										Text("ble.name").font(.callout)+Text(": \(bleManager.connectedPeripheral.peripheral.name ?? "unknown".localized)")
 											.font(.callout).foregroundColor(Color.gray)
@@ -312,16 +313,16 @@ struct Connect: View {
 						return
 					}
 					// Found a node, check it for a region
-					if !fetchedNode.isEmpty {
-						node = fetchedNode[0]
-						if node!.loRaConfig != nil && node!.loRaConfig?.regionCode ?? 0 == RegionCodes.unset.rawValue {
+					if let fetched = fetchedNode.first {
+						node = fetched
+						if fetched.loRaConfig != nil && fetched.loRaConfig?.regionCode ?? 0 == RegionCodes.unset.rawValue {
 							isUnsetRegion = true
 						} else {
 							isUnsetRegion = false
 						}
 					}
 				} catch {
-
+					Logger.data.warning("Failed to fetch node for \(bleManager.connectedPeripheral?.num ?? -1)")
 				}
 			}
 		}

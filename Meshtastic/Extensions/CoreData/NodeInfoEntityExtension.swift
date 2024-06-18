@@ -16,6 +16,7 @@ extension NodeInfoEntity {
 		self.init(context: context)
 		self.id = Int64(num)
 		self.num = Int64(num)
+		print("MARK: Creating Emtpy User")
 		self.user = UserEntity(context: context, num: num)
 	}
 
