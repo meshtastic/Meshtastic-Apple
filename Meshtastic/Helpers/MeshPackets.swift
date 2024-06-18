@@ -251,44 +251,28 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 		Logger.data.error("Node Info \(nodeInfo.num.toHex()) is invalid")
 		return nil
 	}
-
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeInfo.num))
+	
+	let node = NodeInfoEntity(context: context, nodeInfo: nodeInfo)
 
 	do {
-		guard let fetchedNodes = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return nil
-		}
-		let node: NodeInfoEntity
-		if let existing = fetchedNodes.first {
-			node = existing.updated(context: context, nodeInfo: nodeInfo)
-		} else {
-			node = NodeInfoEntity(context: context, nodeInfo: nodeInfo)
-		}
-		/// Final Save
-		do {
-			if node.num == UserDefaults.preferredPeripheralNum {
-				let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
-				fetchMyInfoRequest.predicate = NSPredicate(
-					format: "myNodeNum == %lld", Int64(nodeInfo.num)
-				)
-				let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
-				if let myInfo = fetchedMyInfo.first {
-					node.myInfo = myInfo
-				}
-				
+		if node.num == UserDefaults.preferredPeripheralNum {
+			let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
+			fetchMyInfoRequest.predicate = NSPredicate(
+				format: "myNodeNum == %lld", Int64(nodeInfo.num)
+			)
+			let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
+			if let myInfo = fetchedMyInfo.first {
+				node.myInfo = myInfo
 			}
-			
-			try context.save()
-			Logger.data.info("💾 Saved Node Info for: \(nodeInfo.num.toHex(), privacy: .public)")
-					 return node
-				 } catch {
-					 context.rollback()
-					 Logger.data.error("Error Saving Core Data NodeInfoEntity: \(error.localizedDescription)")
-				 }
-		} catch {
-			Logger.data.error("Save NodeInfoEntity Error")
 		}
+		
+		try context.save()
+		Logger.data.info("💾 Saved Node Info for: \(nodeInfo.num.toHex(), privacy: .public)")
+		return node
+	} catch {
+		context.rollback()
+		Logger.data.error("Error Saving Core Data NodeInfoEntity: \(error.localizedDescription)")
+	}
 	return nil
 }
 
