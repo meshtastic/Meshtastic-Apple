@@ -577,8 +577,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						}
 						
 						connectedPeripheral.num = myInfo?.myNodeNum ?? 0
-						connectedPeripheral.name = myInfo?.bleName ?? "unknown".localized
-						connectedPeripheral.longName = myInfo?.bleName ?? "unknown".localized
+						if myInfo?.bleName != nil {
+							connectedPeripheral.name = myInfo?.bleName ?? "unknown".localized
+						}
 					}
 					tryClearExistingChannels()
 				}
@@ -797,6 +798,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							appState.unreadDirectMessages = fetchedNodeInfo[0].user?.unreadMessages ?? 0
 							// appState.connectedNode = fetchedNodeInfo[0]
 							UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
+							
+							connectedPeripheral.name = fetchedNodeInfo[0].myInfo?.bleName ?? "unknown".localized
+							connectedPeripheral.longName = fetchedNodeInfo[0].user?.longName ?? "unknown".localized
+							
 
 						}
 						if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].rangeTestConfig?.enabled == true {
