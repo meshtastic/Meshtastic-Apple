@@ -799,6 +799,10 @@ public struct Config {
     /// Should we wake the screen up on accelerometer detected motion or tap
     public var wakeOnTapOrMotion: Bool = false
 
+    ///
+    /// Indicates how to rotate or invert the compass output to accurate display on the display.
+    public var compassOrientation: Config.DisplayConfig.CompassOrientation = .degrees0
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
@@ -992,6 +996,76 @@ public struct Config {
         case .twocolor: return 1
         case .inverted: return 2
         case .color: return 3
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+    }
+
+    public enum CompassOrientation: SwiftProtobuf.Enum {
+      public typealias RawValue = Int
+
+      ///
+      /// The compass and the display are in the same orientation.
+      case degrees0 // = 0
+
+      ///
+      /// Rotate the compass by 90 degrees.
+      case degrees90 // = 1
+
+      ///
+      /// Rotate the compass by 180 degrees.
+      case degrees180 // = 2
+
+      ///
+      /// Rotate the compass by 270 degrees.
+      case degrees270 // = 3
+
+      ///
+      /// Don't rotate the compass, but invert the result.
+      case degrees0Inverted // = 4
+
+      ///
+      /// Rotate the compass by 90 degrees and invert.
+      case degrees90Inverted // = 5
+
+      ///
+      /// Rotate the compass by 180 degrees and invert.
+      case degrees180Inverted // = 6
+
+      ///
+      /// Rotate the compass by 270 degrees and invert.
+      case degrees270Inverted // = 7
+      case UNRECOGNIZED(Int)
+
+      public init() {
+        self = .degrees0
+      }
+
+      public init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .degrees0
+        case 1: self = .degrees90
+        case 2: self = .degrees180
+        case 3: self = .degrees270
+        case 4: self = .degrees0Inverted
+        case 5: self = .degrees90Inverted
+        case 6: self = .degrees180Inverted
+        case 7: self = .degrees270Inverted
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      public var rawValue: Int {
+        switch self {
+        case .degrees0: return 0
+        case .degrees90: return 1
+        case .degrees180: return 2
+        case .degrees270: return 3
+        case .degrees0Inverted: return 4
+        case .degrees90Inverted: return 5
+        case .degrees180Inverted: return 6
+        case .degrees270Inverted: return 7
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1334,6 +1408,10 @@ public struct Config {
     /// Specified PIN for PairingMode.FixedPin
     public var fixedPin: UInt32 = 0
 
+    ///
+    /// Enables device (serial style logs) over Bluetooth
+    public var deviceLoggingEnabled: Bool = false
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public enum PairingMode: SwiftProtobuf.Enum {
@@ -1485,6 +1563,20 @@ extension Config.DisplayConfig.DisplayMode: CaseIterable {
   ]
 }
 
+extension Config.DisplayConfig.CompassOrientation: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Config.DisplayConfig.CompassOrientation] = [
+    .degrees0,
+    .degrees90,
+    .degrees180,
+    .degrees270,
+    .degrees0Inverted,
+    .degrees90Inverted,
+    .degrees180Inverted,
+    .degrees270Inverted,
+  ]
+}
+
 extension Config.LoRaConfig.RegionCode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   public static let allCases: [Config.LoRaConfig.RegionCode] = [
@@ -1553,6 +1645,7 @@ extension Config.DisplayConfig.GpsCoordinateFormat: @unchecked Sendable {}
 extension Config.DisplayConfig.DisplayUnits: @unchecked Sendable {}
 extension Config.DisplayConfig.OledType: @unchecked Sendable {}
 extension Config.DisplayConfig.DisplayMode: @unchecked Sendable {}
+extension Config.DisplayConfig.CompassOrientation: @unchecked Sendable {}
 extension Config.LoRaConfig: @unchecked Sendable {}
 extension Config.LoRaConfig.RegionCode: @unchecked Sendable {}
 extension Config.LoRaConfig.ModemPreset: @unchecked Sendable {}
@@ -2197,6 +2290,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     8: .same(proto: "displaymode"),
     9: .standard(proto: "heading_bold"),
     10: .standard(proto: "wake_on_tap_or_motion"),
+    11: .standard(proto: "compass_orientation"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2215,6 +2309,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       case 8: try { try decoder.decodeSingularEnumField(value: &self.displaymode) }()
       case 9: try { try decoder.decodeSingularBoolField(value: &self.headingBold) }()
       case 10: try { try decoder.decodeSingularBoolField(value: &self.wakeOnTapOrMotion) }()
+      case 11: try { try decoder.decodeSingularEnumField(value: &self.compassOrientation) }()
       default: break
       }
     }
@@ -2251,6 +2346,9 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if self.wakeOnTapOrMotion != false {
       try visitor.visitSingularBoolField(value: self.wakeOnTapOrMotion, fieldNumber: 10)
     }
+    if self.compassOrientation != .degrees0 {
+      try visitor.visitSingularEnumField(value: self.compassOrientation, fieldNumber: 11)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2265,6 +2363,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if lhs.displaymode != rhs.displaymode {return false}
     if lhs.headingBold != rhs.headingBold {return false}
     if lhs.wakeOnTapOrMotion != rhs.wakeOnTapOrMotion {return false}
+    if lhs.compassOrientation != rhs.compassOrientation {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2303,6 +2402,19 @@ extension Config.DisplayConfig.DisplayMode: SwiftProtobuf._ProtoNameProviding {
     1: .same(proto: "TWOCOLOR"),
     2: .same(proto: "INVERTED"),
     3: .same(proto: "COLOR"),
+  ]
+}
+
+extension Config.DisplayConfig.CompassOrientation: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "DEGREES_0"),
+    1: .same(proto: "DEGREES_90"),
+    2: .same(proto: "DEGREES_180"),
+    3: .same(proto: "DEGREES_270"),
+    4: .same(proto: "DEGREES_0_INVERTED"),
+    5: .same(proto: "DEGREES_90_INVERTED"),
+    6: .same(proto: "DEGREES_180_INVERTED"),
+    7: .same(proto: "DEGREES_270_INVERTED"),
   ]
 }
 
@@ -2471,6 +2583,7 @@ extension Config.BluetoothConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     1: .same(proto: "enabled"),
     2: .same(proto: "mode"),
     3: .standard(proto: "fixed_pin"),
+    4: .standard(proto: "device_logging_enabled"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2482,6 +2595,7 @@ extension Config.BluetoothConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageI
       case 1: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
       case 2: try { try decoder.decodeSingularEnumField(value: &self.mode) }()
       case 3: try { try decoder.decodeSingularUInt32Field(value: &self.fixedPin) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self.deviceLoggingEnabled) }()
       default: break
       }
     }
@@ -2497,6 +2611,9 @@ extension Config.BluetoothConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     if self.fixedPin != 0 {
       try visitor.visitSingularUInt32Field(value: self.fixedPin, fieldNumber: 3)
     }
+    if self.deviceLoggingEnabled != false {
+      try visitor.visitSingularBoolField(value: self.deviceLoggingEnabled, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2504,6 +2621,7 @@ extension Config.BluetoothConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     if lhs.enabled != rhs.enabled {return false}
     if lhs.mode != rhs.mode {return false}
     if lhs.fixedPin != rhs.fixedPin {return false}
+    if lhs.deviceLoggingEnabled != rhs.deviceLoggingEnabled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

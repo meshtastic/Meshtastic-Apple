@@ -19,6 +19,7 @@ struct BluetoothConfig: View {
 	@State var mode = 0
 	@State var fixedPin = "123456"
 	@State var shortPin = false
+	@State var deviceLoggingEnabled = false
 	var pinLength: Int = 6
 	let numberFormatter: NumberFormatter = {
 		let formatter = NumberFormatter()
@@ -69,6 +70,11 @@ struct BluetoothConfig: View {
 							.foregroundColor(.red)
 					}
 				}
+				
+				Toggle(isOn: $deviceLoggingEnabled) {
+					Label("Device Logging Enabled", systemImage: "ladybug")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 			}
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.bluetoothConfig == nil)
@@ -80,6 +86,7 @@ struct BluetoothConfig: View {
 				bc.enabled = enabled
 				bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
 				bc.fixedPin = UInt32(fixedPin) ?? 123456
+				bc.deviceLoggingEnabled	= deviceLoggingEnabled
 				let adminMessageId =  bleManager.saveBluetoothConfig(config: bc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 				if adminMessageId > 0 {
 					// Should show a saved successfully alert once I know that to be true
@@ -129,11 +136,17 @@ struct BluetoothConfig: View {
 				if newFixedPin != String(node!.bluetoothConfig!.fixedPin) { hasChanges = true }
 			}
 		}
+		.onChange(of: deviceLoggingEnabled) { newDeviceLogging in
+			if node != nil && node!.bluetoothConfig != nil {
+				if newDeviceLogging != node!.bluetoothConfig!.deviceLoggingEnabled { hasChanges = true }
+			}
+		}
 	}
 	func setBluetoothValues() {
 		self.enabled = node?.bluetoothConfig?.enabled ?? true
 		self.mode = Int(node?.bluetoothConfig?.mode ?? 0)
 		self.fixedPin = String(node?.bluetoothConfig?.fixedPin ?? 123456)
+		self.deviceLoggingEnabled = node?.bluetoothConfig?.deviceLoggingEnabled ?? false
 		self.hasChanges = false
 	}
 }

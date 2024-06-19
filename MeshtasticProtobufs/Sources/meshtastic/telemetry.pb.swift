@@ -120,6 +120,14 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
   ///
   /// AHT10 Integrated temperature and humidity sensor
   case aht10 // = 23
+
+  ///
+  /// DFRobot Lark Weather station (temperature, humidity, pressure, wind speed and direction) 
+  case dfrobotLark // = 24
+
+  ///
+  /// NAU7802 Scale Chip or compatible
+  case nau7802 // = 25
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -152,6 +160,8 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
     case 21: self = .ltr390Uv
     case 22: self = .tsl25911Fn
     case 23: self = .aht10
+    case 24: self = .dfrobotLark
+    case 25: self = .nau7802
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -182,6 +192,8 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
     case .ltr390Uv: return 21
     case .tsl25911Fn: return 22
     case .aht10: return 23
+    case .dfrobotLark: return 24
+    case .nau7802: return 25
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -217,6 +229,8 @@ extension TelemetrySensorType: CaseIterable {
     .ltr390Uv,
     .tsl25911Fn,
     .aht10,
+    .dfrobotLark,
+    .nau7802,
   ]
 }
 
@@ -301,6 +315,27 @@ public struct EnvironmentMetrics {
   ///
   /// VEML7700 high accuracy white light(irradiance) not calibrated digital 16-bit resolution sensor.
   public var whiteLux: Float = 0
+
+  ///
+  /// Infrared lux
+  public var irLux: Float = 0
+
+  ///
+  /// Ultraviolet lux
+  public var uvLux: Float = 0
+
+  ///
+  /// Wind direction in degrees
+  /// 0 degrees = North, 90 = East, etc...
+  public var windDirection: UInt32 = 0
+
+  ///
+  /// Wind speed in m/s
+  public var windSpeed: Float = 0
+
+  ///
+  /// Weight in KG
+  public var weight: Float = 0
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -503,6 +538,26 @@ public struct Telemetry {
   public init() {}
 }
 
+///
+/// NAU7802 Telemetry configuration, for saving to flash
+public struct Nau7802Config {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// The offset setting for the NAU7802
+  public var zeroOffset: Int32 = 0
+
+  ///
+  /// The calibration factor for the NAU7802
+  public var calibrationFactor: Float = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
 #if swift(>=5.5) && canImport(_Concurrency)
 extension TelemetrySensorType: @unchecked Sendable {}
 extension DeviceMetrics: @unchecked Sendable {}
@@ -511,6 +566,7 @@ extension PowerMetrics: @unchecked Sendable {}
 extension AirQualityMetrics: @unchecked Sendable {}
 extension Telemetry: @unchecked Sendable {}
 extension Telemetry.OneOf_Variant: @unchecked Sendable {}
+extension Nau7802Config: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -543,6 +599,8 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     21: .same(proto: "LTR390UV"),
     22: .same(proto: "TSL25911FN"),
     23: .same(proto: "AHT10"),
+    24: .same(proto: "DFROBOT_LARK"),
+    25: .same(proto: "NAU7802"),
   ]
 }
 
@@ -615,6 +673,11 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     8: .same(proto: "distance"),
     9: .same(proto: "lux"),
     10: .standard(proto: "white_lux"),
+    11: .standard(proto: "ir_lux"),
+    12: .standard(proto: "uv_lux"),
+    13: .standard(proto: "wind_direction"),
+    14: .standard(proto: "wind_speed"),
+    15: .same(proto: "weight"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -633,6 +696,11 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       case 8: try { try decoder.decodeSingularFloatField(value: &self.distance) }()
       case 9: try { try decoder.decodeSingularFloatField(value: &self.lux) }()
       case 10: try { try decoder.decodeSingularFloatField(value: &self.whiteLux) }()
+      case 11: try { try decoder.decodeSingularFloatField(value: &self.irLux) }()
+      case 12: try { try decoder.decodeSingularFloatField(value: &self.uvLux) }()
+      case 13: try { try decoder.decodeSingularUInt32Field(value: &self.windDirection) }()
+      case 14: try { try decoder.decodeSingularFloatField(value: &self.windSpeed) }()
+      case 15: try { try decoder.decodeSingularFloatField(value: &self.weight) }()
       default: break
       }
     }
@@ -669,6 +737,21 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if self.whiteLux != 0 {
       try visitor.visitSingularFloatField(value: self.whiteLux, fieldNumber: 10)
     }
+    if self.irLux != 0 {
+      try visitor.visitSingularFloatField(value: self.irLux, fieldNumber: 11)
+    }
+    if self.uvLux != 0 {
+      try visitor.visitSingularFloatField(value: self.uvLux, fieldNumber: 12)
+    }
+    if self.windDirection != 0 {
+      try visitor.visitSingularUInt32Field(value: self.windDirection, fieldNumber: 13)
+    }
+    if self.windSpeed != 0 {
+      try visitor.visitSingularFloatField(value: self.windSpeed, fieldNumber: 14)
+    }
+    if self.weight != 0 {
+      try visitor.visitSingularFloatField(value: self.weight, fieldNumber: 15)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -683,6 +766,11 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if lhs.distance != rhs.distance {return false}
     if lhs.lux != rhs.lux {return false}
     if lhs.whiteLux != rhs.whiteLux {return false}
+    if lhs.irLux != rhs.irLux {return false}
+    if lhs.uvLux != rhs.uvLux {return false}
+    if lhs.windDirection != rhs.windDirection {return false}
+    if lhs.windSpeed != rhs.windSpeed {return false}
+    if lhs.weight != rhs.weight {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -955,6 +1043,44 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
   public static func ==(lhs: Telemetry, rhs: Telemetry) -> Bool {
     if lhs.time != rhs.time {return false}
     if lhs.variant != rhs.variant {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Nau7802Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".Nau7802Config"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "zeroOffset"),
+    2: .same(proto: "calibrationFactor"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularInt32Field(value: &self.zeroOffset) }()
+      case 2: try { try decoder.decodeSingularFloatField(value: &self.calibrationFactor) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.zeroOffset != 0 {
+      try visitor.visitSingularInt32Field(value: self.zeroOffset, fieldNumber: 1)
+    }
+    if self.calibrationFactor != 0 {
+      try visitor.visitSingularFloatField(value: self.calibrationFactor, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Nau7802Config, rhs: Nau7802Config) -> Bool {
+    if lhs.zeroOffset != rhs.zeroOffset {return false}
+    if lhs.calibrationFactor != rhs.calibrationFactor {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

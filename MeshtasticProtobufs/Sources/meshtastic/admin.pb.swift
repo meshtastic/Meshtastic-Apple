@@ -246,6 +246,16 @@ public struct AdminMessage {
   }
 
   ///
+  /// Set zero and offset for scale chips
+  public var setScale: UInt32 {
+    get {
+      if case .setScale(let v)? = payloadVariant {return v}
+      return 0
+    }
+    set {payloadVariant = .setScale(newValue)}
+  }
+
+  ///
   /// Set the owner for this node
   public var setOwner: User {
     get {
@@ -513,6 +523,9 @@ public struct AdminMessage {
     /// Delete the file by the specified path from the device
     case deleteFileRequest(String)
     ///
+    /// Set zero and offset for scale chips
+    case setScale(UInt32)
+    ///
     /// Set the owner for this node
     case setOwner(User)
     ///
@@ -665,6 +678,10 @@ public struct AdminMessage {
       }()
       case (.deleteFileRequest, .deleteFileRequest): return {
         guard case .deleteFileRequest(let l) = lhs, case .deleteFileRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setScale, .setScale): return {
+        guard case .setScale(let l) = lhs, case .setScale(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       case (.setOwner, .setOwner): return {
@@ -1039,6 +1056,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     20: .standard(proto: "get_node_remote_hardware_pins_response"),
     21: .standard(proto: "enter_dfu_mode_request"),
     22: .standard(proto: "delete_file_request"),
+    23: .standard(proto: "set_scale"),
     32: .standard(proto: "set_owner"),
     33: .standard(proto: "set_channel"),
     34: .standard(proto: "set_config"),
@@ -1272,6 +1290,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         if let v = v {
           if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
           self.payloadVariant = .deleteFileRequest(v)
+        }
+      }()
+      case 23: try {
+        var v: UInt32?
+        try decoder.decodeSingularUInt32Field(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .setScale(v)
         }
       }()
       case 32: try {
@@ -1545,6 +1571,10 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .deleteFileRequest?: try {
       guard case .deleteFileRequest(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularStringField(value: v, fieldNumber: 22)
+    }()
+    case .setScale?: try {
+      guard case .setScale(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 23)
     }()
     case .setOwner?: try {
       guard case .setOwner(let v)? = self.payloadVariant else { preconditionFailure() }

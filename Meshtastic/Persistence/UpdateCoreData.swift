@@ -398,11 +398,13 @@ func upsertBluetoothConfigPacket(config: Config.BluetoothConfig, nodeNum: Int64,
 				newBluetoothConfig.enabled = config.enabled
 				newBluetoothConfig.mode = Int32(config.mode.rawValue)
 				newBluetoothConfig.fixedPin = Int32(config.fixedPin)
+				newBluetoothConfig.deviceLoggingEnabled = config.deviceLoggingEnabled
 				fetchedNode[0].bluetoothConfig = newBluetoothConfig
 			} else {
 				fetchedNode[0].bluetoothConfig?.enabled = config.enabled
 				fetchedNode[0].bluetoothConfig?.mode = Int32(config.mode.rawValue)
 				fetchedNode[0].bluetoothConfig?.fixedPin = Int32(config.fixedPin)
+				fetchedNode[0].bluetoothConfig?.deviceLoggingEnabled = config.deviceLoggingEnabled
 			}
 			do {
 				try context.save()
