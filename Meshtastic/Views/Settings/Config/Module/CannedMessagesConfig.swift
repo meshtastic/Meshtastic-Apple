@@ -37,34 +37,186 @@ struct CannedMessagesConfig: View {
 	/// Generate input event on Press of this kind.
 	@State var inputbrokerEventPress = 0
 	@State var messages = ""
+	
+	@ViewBuilder
+	var optionsSection: some View {
+		Section(header: Text("options")) {
+			Toggle(isOn: $enabled) {
+				Label("enabled", systemImage: "list.bullet.rectangle.fill")
+			}
+			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+
+			Toggle(isOn: $sendBell) {
+				Label("Send Bell", systemImage: "bell")
+			}
+			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+
+			Picker("Configuration Presets", selection: $configPreset ) {
+				ForEach(ConfigPresets.allCases) { cp in
+					Text(cp.description)
+				}
+			}
+			.pickerStyle(DefaultPickerStyle())
+			.padding(.top, 10)
+			.padding(.bottom, 10)
+		}
+	}
+	
+	@ViewBuilder
+	var controlTypeSection: some View {
+		Section(header: Text("Control Type")) {
+			Toggle(isOn: $rotary1Enabled) {
+				Label("Rotary 1", systemImage: "dial.min")
+			}
+			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.disabled(updown1Enabled)
+			
+			Toggle(isOn: $updown1Enabled) {
+				Label("Up Down 1", systemImage: "arrow.up.arrow.down")
+			}
+			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.disabled(rotary1Enabled)
+		}
+		.disabled(configPreset > 0)
+	}
+	
+	@ViewBuilder
+	var inputsSection: some View {
+		Section(header: Text("Inputs")) {
+			VStack(alignment: .leading) {
+				Picker("Pin A", selection: $inputbrokerPinA) {
+					ForEach(0..<49) {
+						if $0 == 0 {
+							Text("unset")
+						} else {
+							Text("Pin \($0)")
+						}
+					}
+				}
+				.pickerStyle(DefaultPickerStyle())
+				Text("GPIO pin for rotary encoder A port.")
+					.foregroundColor(.gray)
+					.font(.callout)
+			}
+			VStack(alignment: .leading) {
+				Picker("Pin B", selection: $inputbrokerPinB) {
+					ForEach(0..<49) {
+						if $0 == 0 {
+							Text("unset")
+						} else {
+							Text("Pin \($0)")
+						}
+					}
+				}
+				.pickerStyle(DefaultPickerStyle())
+				Text("GPIO pin for rotary encoder B port.")
+					.foregroundColor(.gray)
+					.font(.callout)
+			}
+			VStack(alignment: .leading) {
+				Picker("Press Pin", selection: $inputbrokerPinPress) {
+					ForEach(0..<49) {
+						if $0 == 0 {
+							Text("unset")
+						} else {
+							Text("Pin \($0)")
+						}
+					}
+				}
+				.pickerStyle(DefaultPickerStyle())
+				Text("GPIO pin for rotary encoder Press port.")
+					.foregroundColor(.gray)
+					.font(.callout)
+			}
+		}.disabled(configPreset > 0)
+	}
+	
+	@ViewBuilder
+	var keyMappingSection: some View {
+		Section(header: Text("Key Mapping")) {
+			Picker("Clockwise Rotary Event", selection: $inputbrokerEventCw ) {
+				ForEach(InputEventChars.allCases) { iec in
+					Text(iec.description)
+				}
+			}
+			.pickerStyle(DefaultPickerStyle())
+			.padding(.top, 10)
+			.padding(.bottom, 10)
+			Picker("Counter Clockwise Rotary Event", selection: $inputbrokerEventCcw ) {
+				ForEach(InputEventChars.allCases) { iec in
+					Text(iec.description)
+				}
+			}
+			.pickerStyle(DefaultPickerStyle())
+			.padding(.top, 10)
+			.padding(.bottom, 10)
+			Picker("Encoder Press Event", selection: $inputbrokerEventPress ) {
+				ForEach(InputEventChars.allCases) { iec in
+					Text(iec.description)
+				}
+			}
+			.pickerStyle(DefaultPickerStyle())
+			.padding(.top, 10)
+			.padding(.bottom, 10)
+		}.disabled(configPreset > 0)
+	}
+	
+	@ViewBuilder
+	var saveConfigButton: some View {
+		SaveConfigButton(node: node, hasChanges: $hasChanges) {
+			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
+			if hasChanges {
+				if connectedNode != nil {
+					var cmc = ModuleConfig.CannedMessageConfig()
+					cmc.enabled = enabled
+					cmc.sendBell = sendBell
+					cmc.rotary1Enabled = rotary1Enabled
+					cmc.updown1Enabled = updown1Enabled
+					if rotary1Enabled {
+						/// Input event origin accepted by the canned messages
+						/// Can be e.g. "rotEnc1", "upDownEnc1",  "cardkb",  or keyword "_any"
+						cmc.allowInputSource = "rotEnc1"
+					} else if updown1Enabled {
+						cmc.allowInputSource = "upDown1"
+					} else {
+						cmc.allowInputSource = "_any"
+					}
+					cmc.inputbrokerPinA = UInt32(inputbrokerPinA)
+					cmc.inputbrokerPinB = UInt32(inputbrokerPinB)
+					cmc.inputbrokerPinPress = UInt32(inputbrokerPinPress)
+					cmc.inputbrokerEventCw = InputEventChars(rawValue: inputbrokerEventCw)!.protoEnumValue()
+					cmc.inputbrokerEventCcw = InputEventChars(rawValue: inputbrokerEventCcw)!.protoEnumValue()
+					cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
+					let adminMessageId =  bleManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					if adminMessageId > 0 {
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						goBack()
+					}
+				}
+			}
+			if hasMessagesChanges {
+				let adminMessageId =  bleManager.saveCannedMessageModuleMessages(messages: messages, fromUser: node!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				if adminMessageId > 0 {
+					// Should show a saved successfully alert once I know that to be true
+					// for now just disable the button after a successful save
+					hasMessagesChanges = false
+					if !hasChanges {
+						bleManager.sendWantConfig()
+						goBack()
+					}
+				}
+			}
+		}
+	}
+	
 	var body: some View {
 		VStack {
 			Form {
 				ConfigHeader(title: "Canned messages", config: \.cannedMessageConfig, node: node, onAppear: setCannedMessagesValues)
 
-				Section(header: Text("options")) {
-
-					Toggle(isOn: $enabled) {
-
-						Label("enabled", systemImage: "list.bullet.rectangle.fill")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-					Toggle(isOn: $sendBell) {
-
-						Label("Send Bell", systemImage: "bell")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-					Picker("Configuration Presets", selection: $configPreset ) {
-						ForEach(ConfigPresets.allCases) { cp in
-							Text(cp.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					.padding(.top, 10)
-					.padding(.bottom, 10)
-				}
+				optionsSection
 				HStack {
 					Label("Messages", systemImage: "message.fill")
 					TextField("Messages separate with |", text: $messages, axis: .vertical)
@@ -83,162 +235,39 @@ struct CannedMessagesConfig: View {
 						.foregroundColor(.gray)
 				}
 				.keyboardType(.default)
-				Section(header: Text("Control Type")) {
-					Toggle(isOn: $rotary1Enabled) {
-
-						Label("Rotary 1", systemImage: "dial.min")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.disabled(updown1Enabled)
-					Toggle(isOn: $updown1Enabled) {
-
-						Label("Up Down 1", systemImage: "arrow.up.arrow.down")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.disabled(rotary1Enabled)
-				}
-				.disabled(configPreset > 0)
-				Section(header: Text("Inputs")) {
-					VStack(alignment: .leading) {
-						Picker("Pin A", selection: $inputbrokerPinA) {
-							ForEach(0..<49) {
-								if $0 == 0 {
-									Text("unset")
-								} else {
-									Text("Pin \($0)")
-								}
-							}
-						}
-						.pickerStyle(DefaultPickerStyle())
-						Text("GPIO pin for rotary encoder A port.")
-							.foregroundColor(.gray)
-							.font(.callout)
-					}
-					VStack(alignment: .leading) {
-						Picker("Pin B", selection: $inputbrokerPinB) {
-							ForEach(0..<49) {
-								if $0 == 0 {
-									Text("unset")
-								} else {
-									Text("Pin \($0)")
-								}
-							}
-						}
-						.pickerStyle(DefaultPickerStyle())
-						Text("GPIO pin for rotary encoder B port.")
-							.foregroundColor(.gray)
-							.font(.callout)
-					}
-					VStack(alignment: .leading) {
-						Picker("Press Pin", selection: $inputbrokerPinPress) {
-							ForEach(0..<49) {
-								if $0 == 0 {
-									Text("unset")
-								} else {
-									Text("Pin \($0)")
-								}
-							}
-						}
-						.pickerStyle(DefaultPickerStyle())
-						Text("GPIO pin for rotary encoder Press port.")
-							.foregroundColor(.gray)
-							.font(.callout)
-					}
-				}
-				.disabled(configPreset > 0)
-				Section(header: Text("Key Mapping")) {
-					Picker("Clockwise Rotary Event", selection: $inputbrokerEventCw ) {
-						ForEach(InputEventChars.allCases) { iec in
-							Text(iec.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					.padding(.top, 10)
-					.padding(.bottom, 10)
-					Picker("Counter Clockwise Rotary Event", selection: $inputbrokerEventCcw ) {
-						ForEach(InputEventChars.allCases) { iec in
-							Text(iec.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					.padding(.top, 10)
-					.padding(.bottom, 10)
-					Picker("Encoder Press Event", selection: $inputbrokerEventPress ) {
-						ForEach(InputEventChars.allCases) { iec in
-							Text(iec.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					.padding(.top, 10)
-					.padding(.bottom, 10)
-				}
-				.disabled(configPreset > 0)
+				controlTypeSection
+				inputsSection
+				keyMappingSection
 			}
 			.scrollDismissesKeyboard(.immediately)
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.cannedMessageConfig == nil)
 
-			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
-				if hasChanges {
-					if connectedNode != nil {
-						var cmc = ModuleConfig.CannedMessageConfig()
-						cmc.enabled = enabled
-						cmc.sendBell = sendBell
-						cmc.rotary1Enabled = rotary1Enabled
-						cmc.updown1Enabled = updown1Enabled
-						if rotary1Enabled {
-							/// Input event origin accepted by the canned messages
-							/// Can be e.g. "rotEnc1", "upDownEnc1",  "cardkb",  or keyword "_any"
-							cmc.allowInputSource = "rotEnc1"
-						} else if updown1Enabled {
-							cmc.allowInputSource = "upDown1"
-						} else {
-							cmc.allowInputSource = "_any"
-						}
-						cmc.inputbrokerPinA = UInt32(inputbrokerPinA)
-						cmc.inputbrokerPinB = UInt32(inputbrokerPinB)
-						cmc.inputbrokerPinPress = UInt32(inputbrokerPinPress)
-						cmc.inputbrokerEventCw = InputEventChars(rawValue: inputbrokerEventCw)!.protoEnumValue()
-						cmc.inputbrokerEventCcw = InputEventChars(rawValue: inputbrokerEventCcw)!.protoEnumValue()
-						cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
-						let adminMessageId =  bleManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-						if adminMessageId > 0 {
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							hasChanges = false
-							goBack()
-						}
-					}
-				}
-				if hasMessagesChanges {
-					let adminMessageId =  bleManager.saveCannedMessageModuleMessages(messages: messages, fromUser: node!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasMessagesChanges = false
-						if !hasChanges {
-							bleManager.sendWantConfig()
-							goBack()
-						}
-					}
-				}
-			}
+			saveConfigButton
 			.navigationTitle("canned.messages.config")
-			.navigationBarItems(trailing:
-				ZStack {
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-			})
+			.navigationBarItems(
+				trailing: ZStack {
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: bleManager.connectedPeripheral?.shortName ?? "?"
+					)
+				}
+			)
 			.onAppear {
 				if self.bleManager.context == nil {
 					self.bleManager.context = context
 				}
 				setCannedMessagesValues()
 				// Need to request a CannedMessagesModuleConfig from the remote node before allowing changes
-				if bleManager.connectedPeripheral != nil && node?.cannedMessageConfig == nil {
+				if let connectedPeripheral = bleManager.connectedPeripheral, let node, node.cannedMessageConfig == nil {
 					Logger.mesh.info("empty canned messages module config")
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if node != nil && connectedNode != nil {
-						_ = bleManager.requestCannedMessagesModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+					if let connectedNode {
+						_ = bleManager.requestCannedMessagesModuleConfig(
+							fromUser: connectedNode.user!,
+							toUser: node.user!,
+							adminIndex: connectedNode.myInfo?.adminIndex ?? 0
+						)
 					}
 				}
 			}
@@ -271,58 +300,36 @@ struct CannedMessagesConfig: View {
 
 				hasChanges = true
 			}
-			.onChange(of: enabled) { newEnabled in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newEnabled != node!.cannedMessageConfig!.enabled { hasChanges = true }
-				}
-			}
-			.onChange(of: sendBell) { newBell in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newBell != node!.cannedMessageConfig!.sendBell { hasChanges = true }
-				}
-			}
-			.onChange(of: rotary1Enabled) { newRot1 in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newRot1 != node!.cannedMessageConfig!.rotary1Enabled { hasChanges = true	}
-				}
-			}
-			.onChange(of: updown1Enabled) { newUpDown in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newUpDown != node!.cannedMessageConfig!.updown1Enabled { hasChanges = true }
-				}
-			}
-			.onChange(of: inputbrokerPinA) { newPinA in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newPinA != node!.cannedMessageConfig!.inputbrokerPinA { hasChanges = true }
-				}
-			}
-			.onChange(of: inputbrokerPinB) { newPinB in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newPinB != node!.cannedMessageConfig!.inputbrokerPinB { hasChanges = true }
-				}
-			}
-			.onChange(of: inputbrokerPinPress) { newPinPress in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newPinPress != node!.cannedMessageConfig!.inputbrokerPinPress { hasChanges = true }
-				}
-			}
-			.onChange(of: inputbrokerEventCw) { newKeyA in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newKeyA != node!.cannedMessageConfig!.inputbrokerEventCw { hasChanges = true	}
-				}
-			}
-			.onChange(of: inputbrokerEventCcw) { newKeyB in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newKeyB != node!.cannedMessageConfig!.inputbrokerEventCcw { hasChanges = true }
-				}
-			}
-			.onChange(of: inputbrokerEventPress) { newKeyPress in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newKeyPress != node!.cannedMessageConfig!.inputbrokerEventPress { hasChanges = true }
-				}
-			}
+			.onChange(of: enabled) { _ in handleChanges() }
+			.onChange(of: sendBell) { _ in handleChanges() }
+			.onChange(of: rotary1Enabled) { _ in handleChanges() }
+			.onChange(of: updown1Enabled) { _ in handleChanges() }
+			.onChange(of: inputbrokerPinA) { _ in handleChanges() }
+			.onChange(of: inputbrokerPinB) { _ in handleChanges() }
+			.onChange(of: inputbrokerPinPress) { _ in handleChanges() }
+			.onChange(of: inputbrokerEventCw) { _ in handleChanges() }
+			.onChange(of: inputbrokerEventCcw) { _ in handleChanges() }
+			.onChange(of: inputbrokerEventPress) { _ in handleChanges() }
 		}
 	}
+	
+	func handleChanges() {
+		guard let cannedMessageConfig = node?.cannedMessageConfig else { return }
+		let changes = enabled != cannedMessageConfig.enabled ||
+			sendBell != cannedMessageConfig.sendBell ||
+			rotary1Enabled != cannedMessageConfig.rotary1Enabled ||
+			updown1Enabled != cannedMessageConfig.updown1Enabled ||
+			inputbrokerPinA != cannedMessageConfig.inputbrokerPinA ||
+			inputbrokerPinB != cannedMessageConfig.inputbrokerPinB ||
+			inputbrokerPinPress != cannedMessageConfig.inputbrokerPinPress ||
+			inputbrokerEventCw != cannedMessageConfig.inputbrokerEventCw ||
+			inputbrokerEventCcw != cannedMessageConfig.inputbrokerEventCcw ||
+			inputbrokerEventPress != cannedMessageConfig.inputbrokerEventPress
+		if changes {
+			hasChanges = true
+		}
+	}
+
 	func setCannedMessagesValues() {
 		self.enabled = node?.cannedMessageConfig?.enabled ?? false
 		self.sendBell = node?.cannedMessageConfig?.sendBell ?? false

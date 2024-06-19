@@ -101,7 +101,7 @@ struct Settings: View {
 				let hasAdmin = node?.myInfo?.adminIndex ?? 0 > 0 ? true : false
 
 				if !(node?.deviceConfig?.isManaged ?? false) {
-					if bleManager.connectedPeripheral != nil {
+					if let connectedPeripheral = bleManager.connectedPeripheral{
 						Section("Configure") {
 							if hasAdmin {
 								Picker("Configuring Node", selection: $selectedNode) {
@@ -110,7 +110,7 @@ struct Settings: View {
 									}
 
 									ForEach(nodes) { node in
-										if node.num == bleManager.connectedPeripheral?.num ?? 0 {
+										if node.num == connectedPeripheral.num {
 											Label {
 												Text("BLE: \(node.user?.longName ?? "unknown".localized)")
 											} icon: {
@@ -477,9 +477,7 @@ struct Settings: View {
 			}
 			.listStyle(GroupedListStyle())
 			.navigationTitle("settings")
-			.navigationBarItems(leading:
-				MeshtasticLogo()
-			)
+			.navigationBarItems(leading: MeshtasticLogo())
 		}
 		detail: {
 			if #available (iOS 17, *) {

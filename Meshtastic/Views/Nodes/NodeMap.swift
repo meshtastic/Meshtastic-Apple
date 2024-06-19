@@ -229,15 +229,16 @@ struct NodeMap: View {
 				.presentationDragIndicator(.visible)
 			}
 		}
-		.navigationBarItems(leading:
-								MeshtasticLogo(), trailing:
-								ZStack {
-			ConnectedDevice(
-				bluetoothOn: bleManager.isSwitchedOn,
-				deviceConnected: bleManager.connectedPeripheral != nil,
-				name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName :
-					"?")
-		})
+		.navigationBarItems(
+			leading: MeshtasticLogo(),
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
 		.onAppear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = true
 			if self.bleManager.context == nil {

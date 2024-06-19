@@ -54,15 +54,14 @@ struct NodeList: View {
 //				}
 //			}
 
-			let connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
+			let connectedNodeNum = Int(bleManager.connectedPeripheral?.num ?? 0)
 			let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
 			List(nodes, id: \.self, selection: $selectedNode) { node in
 
 				NodeListItem(node: node,
-							 connected: bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num,
-							 connectedNode: (bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? -1 : -1))
+							 connected: (bleManager.connectedPeripheral?.num ?? -1) == node.num,
+							 connectedNode: bleManager.connectedPeripheral?.num ?? -1)
 				.contextMenu {
-
 					Button {
 						if !node.favorite {
 
@@ -107,7 +106,7 @@ struct NodeList: View {
 						} label: {
 							Label(node.user!.mute ? "Show Alerts" : "Hide Alerts", systemImage: node.user!.mute ? "bell" : "bell.slash")
 						}
-						if bleManager.connectedPeripheral != nil && node.num != connectedNodeNum {
+						if bleManager.connectedPeripheral != nil, node.num != connectedNodeNum {
 							Button {
 								let positionSent = bleManager.sendPosition(
 									channel: node.channel,
@@ -123,8 +122,7 @@ struct NodeList: View {
 							} label: {
 								Label("Exchange Positions", systemImage: "arrow.triangle.2.circlepath")
 							}
-						}
-						if bleManager.connectedPeripheral != nil && connectedNodeNum != node.num {
+							
 							Button {
 								let success = bleManager.sendTraceRouteRequest(destNum: node.user?.num ?? 0, wantResponse: true)
 								if success {
@@ -234,15 +232,17 @@ struct NodeList: View {
 				}
 			}
 			.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
-			.navigationBarItems(leading:
-				MeshtasticLogo(),
-				trailing:
-					ZStack {
+			.navigationBarItems(
+				leading: MeshtasticLogo(),
+				trailing: ZStack {
 					ConnectedDevice(
 						bluetoothOn: bleManager.isSwitchedOn,
 						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", phoneOnly: true)
-				})
+						name: bleManager.connectedPeripheral?.shortName ?? "?",
+						phoneOnly: true
+					)
+				}
+			)
 		} content: {
 			if let node = selectedNode {
 				NavigationStack {
@@ -250,8 +250,7 @@ struct NodeList: View {
 						.edgesIgnoringSafeArea([.leading, .trailing])
 						.navigationBarTitle(String(node.user?.longName ?? "unknown".localized), displayMode: .inline)
 						.navigationBarItems(
-							trailing:
-							ZStack {
+							trailing: ZStack {
 								if UIDevice.current.userInterfaceIdiom != .phone {
 									Button {
 										columnVisibility = .detailOnly
@@ -262,8 +261,11 @@ struct NodeList: View {
 								ConnectedDevice(
 									bluetoothOn: bleManager.isSwitchedOn,
 									deviceConnected: bleManager.connectedPeripheral != nil,
-									name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", phoneOnly: true)
-						})
+									name: bleManager.connectedPeripheral?.shortName ?? "?",
+									phoneOnly: true
+								)
+							}
+						)
 				}
 
 			 } else {
