@@ -555,7 +555,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 			try context.save()
 			// Only log telemetry from the mesh not the connected device
 			if connectedNode != Int64(packet.from) {
-				Logger.data.info("💾 Telemetry Saved for Node: \(packet.from.toHex())")
+				Logger.data.info("💾 [Telemetry] Saved for Node: \(packet.from.toHex())")
 			} else if telemetry.metricsType == 0 {
 				// Connected Device Metrics
 				// ------------------------
