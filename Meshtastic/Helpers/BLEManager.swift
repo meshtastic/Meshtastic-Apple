@@ -584,18 +584,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 					tryClearExistingChannels()
 				}
-				// NodeInfo
-				if decodedInfo.nodeInfo.num > 0 {
-					nowKnown = true
-					if let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, channel: decodedInfo.packet.channel, context: ctx) {
-						if self.connectedPeripheral != nil && self.connectedPeripheral.num == nodeInfo.num {
-							if nodeInfo.user != nil {
-								connectedPeripheral.shortName = nodeInfo.user?.shortName ?? "?"
-								connectedPeripheral.longName = nodeInfo.user?.longName ?? "unknown".localized
-							}
-						}
-					}
-				}
 				// Channels
 				if decodedInfo.channel.isInitialized && connectedPeripheral != nil {
 					nowKnown = true
