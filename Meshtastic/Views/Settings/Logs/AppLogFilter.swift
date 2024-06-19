@@ -26,6 +26,7 @@ enum LogCategories: Int, CaseIterable, Identifiable {
 	case serial = 4
 	case services = 5
 	case stats = 6
+	case radio = 7
 
 	var id: Int { self.rawValue }
 	var description: String {
@@ -45,6 +46,8 @@ enum LogCategories: Int, CaseIterable, Identifiable {
 			return "🍏 Services"
 		case .stats:
 			return "📊 Stats"
+		case .radio:
+			return "📟 Radio"
 		}
 	}
 }
