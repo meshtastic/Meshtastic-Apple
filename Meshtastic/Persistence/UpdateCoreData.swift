@@ -133,7 +133,7 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes
 	}
 }
 
-func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) {
+func upsertNodeInfoPacket(packet: MeshPacket, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.nodeinfo.received %@".localized, String(packet.from))
 	MeshLogger.log("📟 \(logString)")
@@ -274,7 +274,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			}
 		}
 	} catch {
-		Logger.data.error("💥 Error Fetching NodeInfoEntity for NODEINFO_APP")
+		Logger.data.error("💥 Error Fetching NodeInfoEntity for NODEINFO_APP: \(error.localizedDescription)")
 	}
 }
 

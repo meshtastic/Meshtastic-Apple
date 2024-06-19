@@ -5,10 +5,22 @@
 //  Copyright(c) Garth Vander Houwen 9/3/23.
 //
 
-import Foundation
+import CoreData
+import MeshtasticProtobufs
 
 extension MyInfoEntity {
 
+	convenience init(
+		context: NSManagedObjectContext,
+		myInfo: MyNodeInfo,
+		peripheralId: String
+	) {
+		self.init(context: context)
+		self.peripheralId = peripheralId
+		self.myNodeNum = Int64(myInfo.myNodeNum)
+		self.rebootCount = Int32(myInfo.rebootCount)
+	}
+	
 	var messageList: [MessageEntity] {
 		self.value(forKey: "allMessages") as? [MessageEntity] ?? [MessageEntity]()
 	}
