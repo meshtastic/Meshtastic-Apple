@@ -92,52 +92,24 @@ func moduleConfig (config: ModuleConfig, context: NSManagedObjectContext, nodeNu
 	}
 }
 
-func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedObjectContext) -> MyInfoEntity? {
-
+func myInfoPacket(myInfo: MyNodeInfo, peripheralId: String, context: NSManagedObjectContext) -> MyInfoEntity? {
 	let logString = String.localizedStringWithFormat("mesh.log.myinfo %@".localized, String(myInfo.myNodeNum))
 	MeshLogger.log("ℹ️ \(logString)")
 
-	let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
-	fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(myInfo.myNodeNum))
+	let myInfoEntity = MyInfoEntity(
+		context: context,
+		myInfo: myInfo,
+		peripheralId: peripheralId
+	)
 
 	do {
-		guard let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity] else {
-			return nil
-		}
-		// Not Found Insert
-		if fetchedMyInfo.isEmpty {
-
-			let myInfoEntity = MyInfoEntity(context: context)
-			myInfoEntity.peripheralId = peripheralId
-			myInfoEntity.myNodeNum = Int64(myInfo.myNodeNum)
-			myInfoEntity.rebootCount = Int32(myInfo.rebootCount)
-			do {
-				try context.save()
-				Logger.data.info("💾 Saved a new myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
-				return myInfoEntity
-			} catch {
-				context.rollback()
-				let nsError = error as NSError
-				Logger.data.error("Error Inserting New Core Data MyInfoEntity: \(nsError, privacy: .public)")
-			}
-		} else {
-
-			fetchedMyInfo[0].peripheralId = peripheralId
-			fetchedMyInfo[0].myNodeNum = Int64(myInfo.myNodeNum)
-			fetchedMyInfo[0].rebootCount = Int32(myInfo.rebootCount)
-
-			do {
-				try context.save()
-				Logger.data.info("💾 Updated MyInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
-				return fetchedMyInfo[0]
-			} catch {
-				context.rollback()
-				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data MyInfoEntity: \(nsError, privacy: .public)")
-			}
-		}
+		try context.save()
+		Logger.data.info("💾 Saved a new myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
+		return myInfoEntity
 	} catch {
-		Logger.data.error("Fetch MyInfo Error")
+		context.rollback()
+		let nsError = error as NSError
+		Logger.data.error("Error Inserting New Core Data MyInfoEntity: \(nsError, privacy: .public)")
 	}
 	return nil
 }
@@ -200,42 +172,46 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 }
 
 func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NSManagedObjectContext) {
+	guard metadata.isInitialized else {
+		Logger.data.warning("⚠️ Device Metadata Packet not initialized: \(fromNum)")
+		return
+	}
+	let logString = String.localizedStringWithFormat("mesh.log.device.metadata.received %@".localized, String(fromNum))
+	MeshLogger.log("🏷️ \(logString)")
 
-	if metadata.isInitialized {
-		let logString = String.localizedStringWithFormat("mesh.log.device.metadata.received %@".localized, String(fromNum))
-		MeshLogger.log("🏷️ \(logString)")
+	let fetchedNodeRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	fetchedNodeRequest.predicate = NSPredicate(format: "num == %lld", fromNum)
 
-		let fetchedNodeRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-		fetchedNodeRequest.predicate = NSPredicate(format: "num == %lld", fromNum)
-
+	do {
+		guard let fetchedNode = try context.fetch(fetchedNodeRequest) as? [NodeInfoEntity] else {
+			return
+		}
+		let newMetadata = DeviceMetadataEntity(
+			context: context,
+			metadata: metadata
+		)
+		
+		if let node = fetchedNode.first {
+			node.metadata = newMetadata
+		} else if fromNum > 0 {
+			let node = NodeInfoEntity(context: context, num: Int(fromNum))
+			node.metadata = newMetadata
+		}
+		
 		do {
-			guard let fetchedNode = try context.fetch(fetchedNodeRequest) as? [NodeInfoEntity] else {
-				return
-			}
-			let newMetadata = DeviceMetadataEntity(
-				context: context,
-				metadata: metadata
-			)
-			
-			if let node = fetchedNode.first {
-				node.metadata = newMetadata
-			} else if fromNum > 0 {
-				let node = NodeInfoEntity(context: context, num: Int(fromNum))
-				node.metadata = newMetadata
-			}
-			
-			do {
-				try context.save()
-			} catch {
-				Logger.data.error("💥 Failed to save device metadata: \(error.localizedDescription)")
-			}
+			try context.save()
 			Logger.data.info("💾 Updated Device Metadata from Admin App Packet For: \(fromNum.toHex(), privacy: .public)")
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
 			Logger.data.error("💥 Error Saving MyInfo Channel from ADMIN_APP \(nsError)")
 		}
+	} catch {
+		context.rollback()
+		let nsError = error as NSError
+		Logger.data.error("Error Saving MyInfo Channel from ADMIN_APP \(nsError)")
 	}
+	
 }
 
 func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObjectContext) -> NodeInfoEntity? {
