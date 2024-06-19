@@ -21,7 +21,7 @@ struct LogDetail: View {
 		.day(.defaultDigits)
 		.month(.defaultDigits)
 		.year(.twoDigits)
-		.hour(.twoDigits(amPM: .abbreviated))
+		.hour(.twoDigits(amPM: .omitted))
 		.minute()
 		.second()
 		.secondFraction(.fractional(3))
