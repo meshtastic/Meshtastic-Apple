@@ -24,14 +24,15 @@ extension Logger {
 	/// All logs related to MQTT
 	static let mqtt = Logger(subsystem: subsystem, category: "📱 MQTT")
 	
-	/// All logs related to serial logs
-	static let serial = Logger(subsystem: subsystem, category: "😱 Serial")
-
+	/// All detailed logs originating from the device (radio).
+	static let radio = Logger(subsystem: subsystem, category: "📟 Radio")
+	
 	/// All logs related to services such as network calls, location, etc.
 	static let services = Logger(subsystem: subsystem, category: "🍏 Services")
 
 	/// All logs related to tracking and analytics.
 	static let statistics = Logger(subsystem: subsystem, category: "📊 Stats")
+	
 
 	/// Fetch from the logstore
 	static public func fetch(predicateFormat: String) async throws -> [OSLogEntryLog] {

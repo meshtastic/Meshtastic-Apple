@@ -42,11 +42,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	var TORADIO_characteristic: CBCharacteristic!
 	var FROMRADIO_characteristic: CBCharacteristic!
 	var FROMNUM_characteristic: CBCharacteristic!
+	var LOGRADIO_characteristic: CBCharacteristic!
 	let meshtasticServiceCBUUID = CBUUID(string: "0x6BA1B218-15A8-461F-9FA8-5DCAE273EAFD")
 	let TORADIO_UUID = CBUUID(string: "0xF75C76D2-129E-4DAD-A1DD-7866124401E7")
 	let FROMRADIO_UUID = CBUUID(string: "0x2C55E69E-4993-11ED-B878-0242AC120002")
 	let EOL_FROMRADIO_UUID = CBUUID(string: "0x8BA2BCC2-EE02-4A55-A531-C525C5E454D5")
 	let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
+	let LOGRADIO_UUID = CBUUID(string: "0x6C6FD238-78FA-436B-AACF-15C5BE1EF2E2")
 
 	// MARK: init BLEManager
 	override init() {
@@ -278,7 +280,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		guard let services = peripheral.services else { return }
 		for service in services where service.uuid == meshtasticServiceCBUUID {
-			peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID], for: service)
+			peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID, LOGRADIO_UUID], for: service)
 			Logger.services.info("✅ BLE Service for Meshtastic discovered by \(peripheral.name ?? "Unknown")")
 		}
 	}
@@ -311,6 +313,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				Logger.services.info("✅ BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
 				FROMNUM_characteristic = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
+				
+			case LOGRADIO_UUID:
+				Logger.services.info("✅ BLE did discover LOGRADIO (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
+				LOGRADIO_characteristic = characteristic
+				peripheral.setNotifyValue(true, for: characteristic)
+
 
 			default:
 				break
@@ -495,6 +503,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	}
 
 	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+		
 		Logger.services.error("💥 BLE didUpdateNotificationStateFor error: \(error?.localizedDescription ?? "Unknown")")
 	}
 
@@ -519,6 +528,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		
 		switch characteristic.uuid {
+		case LOGRADIO_UUID:
+			if (characteristic.value == nil || characteristic.value!.isEmpty) {
+				return
+			}
+			if let log = String(data: characteristic.value!, encoding: .utf8) {
+				Logger.radio.debug("📟 \(log)")
+			}
 
 		case FROMRADIO_UUID:
 
