@@ -503,8 +503,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	}
 
 	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
-		
-		Logger.services.error("💥 BLE didUpdateNotificationStateFor error: \(error?.localizedDescription ?? "Unknown")")
+		if let error {
+			Logger.services.error("💥 BLE didUpdateNotificationStateFor error: \(characteristic) \(error.localizedDescription)")
+		} else {
+			Logger.services.info("ℹ️ peripheral didUpdateNotificationStateFor \(characteristic)")
+		}
 	}
 
 	// MARK: Data Read / Update Characteristic Event
@@ -573,8 +576,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			}
 
 			switch decodedInfo.packet.decoded.portnum {
-
-				// Handle Any local only packets we get over BLE
+			// Handle Any local only packets we get over BLE
 			case .unknownApp:
 				var nowKnown = false
 
@@ -585,8 +587,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						peripheralId: connectedPeripheral.id,
 						context: context
 					) {
+						// Update Connected Peripheral Info
+						connectedPeripheral.num = Int64(decodedInfo.myInfo.myNodeNum)
+						self.updateConnectedPeripheral(to: Int64(decodedInfo.myInfo.myNodeNum))
+						
+						// Attempt restore of DB from connected node
 						let newConnection = UserDefaults.preferredPeripheralNum != myInfo.myNodeNum
-											
 						if newConnection {
 							let container = NSPersistentContainer(name: "Meshtastic")
 							if let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
@@ -611,17 +617,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					tryClearExistingChannels()
 				}
 				// NodeInfo
-//				if decodedInfo.nodeInfo.num > 0 {
-//					nowKnown = true
-//					if let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, channel: decodedInfo.packet.channel, context: context) {
-//						if connectedPeripheral.num == nodeInfo.num {
-//							if let user = nodeInfo.user {
-//								self.connectedPeripheral?.shortName = user.shortName ?? "?"
-//								self.connectedPeripheral?.longName = user.longName ?? "unknown".localized
-//							}
-//						}
-//					}
-//				}
+				if decodedInfo.nodeInfo.isInitialized, decodedInfo.nodeInfo.num > 0 {
+					nowKnown = true
+					if let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, channel: decodedInfo.packet.channel, context: context) {
+						if connectedPeripheral.num == nodeInfo.num {
+							self.updateConnectedPeripheral(to: nodeInfo.num)
+						}
+					}
+				}
 				// Channels
 				if decodedInfo.channel.isInitialized {
 					nowKnown = true
@@ -953,7 +956,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		
 		// Don't send an empty message
-		guard message.isEmpty else {
+		guard !message.isEmpty else {
 			Logger.mesh.info("🚫 Don't Send an Empty Message")
 			return false
 		}
@@ -3081,6 +3084,18 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		} catch {
 			Logger.data.error("Failed to find a node MyInfo to save these channels to: \(error.localizedDescription)")
 		}
+	}
+	
+	private func updateConnectedPeripheral(to myNodeNum: Int64) {
+		guard let context, let node = getNodeInfo(id: myNodeNum, context: context) else {
+			Logger.data.error("Failed to fetch stored node info for bluetooth peripheral: \(myNodeNum)")
+			return
+		}
+		
+		self.connectedPeripheral?.num = node.num
+		self.connectedPeripheral?.name = node.user?.shortName ?? "unknown".localized
+		self.connectedPeripheral?.shortName = node.user?.shortName ?? "unknown".localized
+		self.connectedPeripheral?.longName = node.user?.longName ?? "unknown".localized
 	}
 }
 
