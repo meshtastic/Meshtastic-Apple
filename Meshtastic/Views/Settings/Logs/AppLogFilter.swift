@@ -23,11 +23,10 @@ enum LogCategories: Int, CaseIterable, Identifiable {
 	case data = 1
 	case mesh = 2
 	case mqtt = 3
-	case serial = 4
+	case radio = 4
 	case services = 5
 	case stats = 6
-	case radio = 7
-
+	
 	var id: Int { self.rawValue }
 	var description: String {
 		switch self {
@@ -40,14 +39,12 @@ enum LogCategories: Int, CaseIterable, Identifiable {
 			return "🕸️ Mesh"
 		case .mqtt:
 			return "📱 MQTT"
-		case .serial:
-			return "😱 Serial"
+		case .radio:
+			return "📟 Radio"
 		case .services:
 			return "🍏 Services"
 		case .stats:
 			return "📊 Stats"
-		case .radio:
-			return "📟 Radio"
 		}
 	}
 }
