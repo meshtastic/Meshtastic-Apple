@@ -850,7 +850,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				invalidVersion = false
 				lastConnectionError = ""
 				isSubscribed = true
-				Logger.mesh.info("🤜 Want Config Complete. ID:\(decodedInfo.configCompleteID)")
+				Logger.data.info("🤜 Want Config Complete. ID:\(decodedInfo.configCompleteID)")
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again
 

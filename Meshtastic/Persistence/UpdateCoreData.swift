@@ -28,7 +28,7 @@ public func clearPax(destNum: Int64, context: NSManagedObjectContext) -> Bool {
 			return false
 		}
 	} catch {
-		Logger.data.error("Fetch NodeInfoEntity Error")
+		Logger.data.error("💥 Fetch NodeInfoEntity Error")
 		return false
 	}
 }
@@ -53,7 +53,7 @@ public func clearPositions(destNum: Int64, context: NSManagedObjectContext) -> B
 			return false
 		}
 	} catch {
-		Logger.data.error("Fetch NodeInfoEntity Error")
+		Logger.data.error("💥 Fetch NodeInfoEntity Error")
 		return false
 	}
 }
@@ -78,7 +78,7 @@ public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManage
 			return false
 		}
 	} catch {
-		Logger.data.error("Fetch NodeInfoEntity Error")
+		Logger.data.error("💥 Fetch NodeInfoEntity Error")
 		return false
 	}
 }
@@ -212,7 +212,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Inserting New Core Data MyInfoEntity: \(nsError)")
+				Logger.data.error("💥 Error Inserting New Core Data MyInfoEntity: \(nsError)")
 			}
 			newNode.myInfo = myInfoEntity
 
@@ -270,11 +270,11 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Saving NodeInfoEntity from NODEINFO_APP \(nsError, privacy: .public)")
+				Logger.data.error("💥 Error Saving NodeInfoEntity from NODEINFO_APP \(nsError, privacy: .public)")
 			}
 		}
 	} catch {
-		Logger.data.error("Error Fetching NodeInfoEntity for NODEINFO_APP")
+		Logger.data.error("💥 Error Fetching NodeInfoEntity for NODEINFO_APP")
 	}
 }
 
@@ -362,7 +362,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					} catch {
 						context.rollback()
 						let nsError = error as NSError
-						Logger.data.error("Error Saving NodeInfoEntity from POSITION_APP \(nsError, privacy: .public)")
+						Logger.data.error("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError, privacy: .public)")
 					}
 				}
 			} else {
@@ -370,12 +370,12 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				if (try? NodeInfo(serializedData: packet.decoded.payload)) != nil {
 					upsertNodeInfoPacket(packet: packet, context: context)
 				} else {
-					Logger.data.error("Empty POSITION_APP Packet: \((try? packet.jsonString()) ?? "JSON Decode Failure")")
+					Logger.data.error("💥 Empty POSITION_APP Packet: \((try? packet.jsonString()) ?? "JSON Decode Failure")")
 				}
 			}
 		}
 	} catch {
-		Logger.data.error("Error Deserializing POSITION_APP packet.")
+		Logger.data.error("💥 Error Deserializing POSITION_APP packet.")
 	}
 }
 
@@ -410,14 +410,14 @@ func upsertBluetoothConfigPacket(config: Config.BluetoothConfig, nodeNum: Int64,
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data BluetoothConfigEntity: \(nsError, privacy: .public)")
+				Logger.data.error("💥 Error Updating Core Data BluetoothConfigEntity: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Bluetooth Config")
+			Logger.data.error("💥 No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Bluetooth Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data BluetoothConfigEntity failed: \(nsError, privacy: .public)")
+		Logger.data.error("💥 Fetching node for core data BluetoothConfigEntity failed: \(nsError, privacy: .public)")
 	}
 }
 
@@ -467,12 +467,12 @@ func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, conte
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data DeviceConfigEntity: \(nsError, privacy: .public)")
+				Logger.data.error("💥 Error Updating Core Data DeviceConfigEntity: \(nsError, privacy: .public)")
 			}
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data DeviceConfigEntity failed: \(nsError, privacy: .public)")
+		Logger.data.error("💥 Fetching node for core data DeviceConfigEntity failed: \(nsError, privacy: .public)")
 	}
 }
 
@@ -528,17 +528,17 @@ func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, con
 				context.rollback()
 
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data DisplayConfigEntity: \(nsError, privacy: .public)")
+				Logger.data.error("💥 Error Updating Core Data DisplayConfigEntity: \(nsError, privacy: .public)")
 			}
 		} else {
 
-			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Display Config")
+			Logger.data.error("💥 No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Display Config")
 		}
 
 	} catch {
 
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data DisplayConfigEntity failed: \(nsError)")
+		Logger.data.error("💥 Fetching node for core data DisplayConfigEntity failed: \(nsError)")
 	}
 }
 
@@ -598,14 +598,14 @@ func upsertLoRaConfigPacket(config: Config.LoRaConfig, nodeNum: Int64, context: 
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data LoRaConfigEntity: \(nsError, privacy: .public)")
+				Logger.data.error("💥 Error Updating Core Data LoRaConfigEntity: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Lora Config")
+			Logger.data.error("💥 No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Lora Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data LoRaConfigEntity failed: \(nsError, privacy: .public)")
+		Logger.data.error("💥 Fetching node for core data LoRaConfigEntity failed: \(nsError, privacy: .public)")
 	}
 }
 
@@ -645,14 +645,14 @@ func upsertNetworkConfigPacket(config: Config.NetworkConfig, nodeNum: Int64, con
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data WiFiConfigEntity: \(nsError, privacy: .public)")
+				Logger.data.error("💥 Error Updating Core Data WiFiConfigEntity: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Network Config")
+			Logger.data.error("💥 No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Network Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data NetworkConfigEntity failed: \(nsError, privacy: .public)")
+		Logger.data.error("💥 Fetching node for core data NetworkConfigEntity failed: \(nsError, privacy: .public)")
 	}
 }
 
@@ -708,14 +708,14 @@ func upsertPositionConfigPacket(config: Config.PositionConfig, nodeNum: Int64, c
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data PositionConfigEntity: \(nsError, privacy: .public)")
+				Logger.data.error("💥 Error Updating Core Data PositionConfigEntity: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Position Config")
+			Logger.data.error("💥 No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Position Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data PositionConfigEntity failed: \(nsError, privacy: .public)")
+		Logger.data.error("💥 Fetching node for core data PositionConfigEntity failed: \(nsError, privacy: .public)")
 	}
 }
 
@@ -757,14 +757,14 @@ func upsertPowerConfigPacket(config: Config.PowerConfig, nodeNum: Int64, context
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data PowerConfigEntity: \(nsError, privacy: .public)")
+				Logger.data.error("💥 Error Updating Core Data PowerConfigEntity: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Power Config")
+			Logger.data.error("💥 No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Power Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data PowerConfigEntity failed: \(nsError, privacy: .public)")
+		Logger.data.error("💥 Fetching node for core data PowerConfigEntity failed: \(nsError, privacy: .public)")
 	}
 }
 
@@ -813,14 +813,14 @@ func upsertAmbientLightingModuleConfigPacket(config: ModuleConfig.AmbientLightin
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data AmbientLightingConfigEntity: \(nsError, privacy: .public)")
+				Logger.data.error("💥 Error Updating Core Data AmbientLightingConfigEntity: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Ambient Lighting Module Config")
+			Logger.data.error("💥 No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Ambient Lighting Module Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data AmbientLightingConfigEntity failed: \(nsError, privacy: .public)")
+		Logger.data.error("💥 Fetching node for core data AmbientLightingConfigEntity failed: \(nsError, privacy: .public)")
 	}
 }
 
@@ -877,14 +877,14 @@ func upsertCannedMessagesModuleConfigPacket(config: ModuleConfig.CannedMessageCo
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data CannedMessageConfigEntity: \(nsError, privacy: .public)")
+				Logger.data.error("💥 Error Updating Core Data CannedMessageConfigEntity: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Canned Message Module Config")
+			Logger.data.error("💥 No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Canned Message Module Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data CannedMessageConfigEntity failed: \(nsError, privacy: .public)")
+		Logger.data.error("💥 Fetching node for core data CannedMessageConfigEntity failed: \(nsError, privacy: .public)")
 	}
 }
 
@@ -936,16 +936,16 @@ func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSenso
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data DetectionSensorConfigEntity: \(nsError, privacy: .public)")
+				Logger.data.error("💥 Error Updating Core Data DetectionSensorConfigEntity: \(nsError, privacy: .public)")
 			}
 
 		} else {
-			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Detection Sensor Module Config")
+			Logger.data.error("💥 No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Detection Sensor Module Config")
 		}
 
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data DetectionSensorConfigEntity failed: \(nsError, privacy: .public)")
+		Logger.data.error("💥 Fetching node for core data DetectionSensorConfigEntity failed: \(nsError, privacy: .public)")
 	}
 }
 
@@ -964,7 +964,7 @@ func upsertExternalNotificationModuleConfigPacket(config: ModuleConfig.ExternalN
 		}
 		
 		guard let node = fetchedNode.first else {
-			return Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex()) unable to save External Notification Module Config")
+			return Logger.data.error("💥 No Nodes found in local database matching node \(nodeNum.toHex()) unable to save External Notification Module Config")
 		}
 		
 		// Found a node, save External Notificaitone Config
@@ -983,11 +983,11 @@ func upsertExternalNotificationModuleConfigPacket(config: ModuleConfig.ExternalN
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
-			Logger.data.error("Error Updating Core Data ExternalNotificationConfigEntity: \(nsError, privacy: .public)")
+			Logger.data.error("💥 Error Updating Core Data ExternalNotificationConfigEntity: \(nsError, privacy: .public)")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data ExternalNotificationConfigEntity failed: \(nsError, privacy: .public)")
+		Logger.data.error("💥 Fetching node for core data ExternalNotificationConfigEntity failed: \(nsError, privacy: .public)")
 	}
 }
 
@@ -1025,14 +1025,14 @@ func upsertPaxCounterModuleConfigPacket(config: ModuleConfig.PaxcounterConfig, n
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data ExternalNotificationConfigEntity: \(nsError, privacy: .public)")
+				Logger.data.error("💥 Error Updating Core Data ExternalNotificationConfigEntity: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save PAX Counter Module Config")
+			Logger.data.error("💥 No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save PAX Counter Module Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data PaxCounterConfigEntity failed: \(nsError, privacy: .public)")
+		Logger.data.error("💥 Fetching node for core data PaxCounterConfigEntity failed: \(nsError, privacy: .public)")
 	}
 }
 
@@ -1064,14 +1064,14 @@ func upsertRtttlConfigPacket(ringtone: String, nodeNum: Int64, context: NSManage
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data RtttlConfigEntity: \(nsError, privacy: .public)")
+				Logger.data.error("💥 Error Updating Core Data RtttlConfigEntity: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save RTTTL Ringtone Config")
+			Logger.data.error("💥 No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save RTTTL Ringtone Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data RtttlConfigEntity failed: \(nsError, privacy: .public)")
+		Logger.data.error("💥 Fetching node for core data RtttlConfigEntity failed: \(nsError, privacy: .public)")
 	}
 }
 
@@ -1110,11 +1110,11 @@ func upsertMqttModuleConfigPacket(config: ModuleConfig.MQTTConfig, nodeNum: Int6
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
-			Logger.data.error("Error Updating Core Data MQTTConfigEntity: \(nsError, privacy: .public)")
+			Logger.data.error("💥 Error Updating Core Data MQTTConfigEntity: \(nsError, privacy: .public)")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data MQTTConfigEntity failed: \(nsError, privacy: .public)")
+		Logger.data.error("💥 Fetching node for core data MQTTConfigEntity failed: \(nsError, privacy: .public)")
 	}
 }
 
@@ -1147,13 +1147,13 @@ func upsertRangeTestModuleConfigPacket(config: ModuleConfig.RangeTestConfig, nod
 				Logger.data.info("💾 Updated Range Test Config for node: \(nodeNum.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
-				Logger.data.error("Error Updating Core Data RangeTestConfigEntity: \(error.localizedDescription, privacy: .public)")
+				Logger.data.error("💥 Error Updating Core Data RangeTestConfigEntity: \(error.localizedDescription, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Range Test Module Config")
+			Logger.data.error("💥 No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Range Test Module Config")
 		}
 	} catch {
-		Logger.data.error("Fetching node for core data RangeTestConfigEntity failed: \(error.localizedDescription, privacy: .public)")
+		Logger.data.error("💥 Fetching node for core data RangeTestConfigEntity failed: \(error.localizedDescription, privacy: .public)")
 	}
 }
 
@@ -1170,7 +1170,7 @@ func upsertSerialModuleConfigPacket(config: ModuleConfig.SerialConfig, nodeNum: 
 			return
 		}
 		guard let node = fetchedNode.first else {
-			return Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Serial Module Config")
+			return Logger.data.error("💥 No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Serial Module Config")
 		}
 		
 		// Found a node, save Device Config
@@ -1189,11 +1189,11 @@ func upsertSerialModuleConfigPacket(config: ModuleConfig.SerialConfig, nodeNum: 
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
-			Logger.data.error("Error Updating Core Data SerialConfigEntity: \(nsError, privacy: .public)")
+			Logger.data.error("💥 Error Updating Core Data SerialConfigEntity: \(nsError, privacy: .public)")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data SerialConfigEntity failed: \(nsError, privacy: .public)")
+		Logger.data.error("💥 Fetching node for core data SerialConfigEntity failed: \(nsError, privacy: .public)")
 	}
 }
 
@@ -1211,7 +1211,7 @@ func upsertStoreForwardModuleConfigPacket(config: ModuleConfig.StoreForwardConfi
 			return
 		}
 		guard let node = fetchedNode.first else {
-			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex()) unable to save Store & Forward Module Config")
+			Logger.data.error("💥 No Nodes found in local database matching node \(nodeNum.toHex()) unable to save Store & Forward Module Config")
 			return
 		}
 		// Found a node, save Store & Forward Sensor Config
@@ -1229,11 +1229,11 @@ func upsertStoreForwardModuleConfigPacket(config: ModuleConfig.StoreForwardConfi
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
-			Logger.data.error("Error Updating Core Data StoreForwardConfigEntity: \(nsError, privacy: .public)")
+			Logger.data.error("💥 Error Updating Core Data StoreForwardConfigEntity: \(nsError, privacy: .public)")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data DetectionSensorConfigEntity failed: \(nsError, privacy: .public)")
+		Logger.data.error("💥 Fetching node for core data DetectionSensorConfigEntity failed: \(nsError, privacy: .public)")
 	}
 }
 
@@ -1284,15 +1284,15 @@ func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nod
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data TelemetryConfigEntity: \(nsError, privacy: .public)")
+				Logger.data.error("💥 Error Updating Core Data TelemetryConfigEntity: \(nsError, privacy: .public)")
 			}
 
 		} else {
-			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Telemetry Module Config")
+			Logger.data.error("💥 No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Telemetry Module Config")
 		}
 
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data TelemetryConfigEntity failed: \(nsError, privacy: .public)")
+		Logger.data.error("💥 Fetching node for core data TelemetryConfigEntity failed: \(nsError, privacy: .public)")
 	}
 }
