@@ -10,13 +10,11 @@ import OSLog
 
 public func clearPax(destNum: Int64, context: NSManagedObjectContext) -> Bool {
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(destNum))
 
 	do {
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return false
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		let newPax = [PaxCounterLog]()
 		fetchedNode[0].pax? = NSOrderedSet(array: newPax)
 		do {
@@ -35,13 +33,11 @@ public func clearPax(destNum: Int64, context: NSManagedObjectContext) -> Bool {
 
 public func clearPositions(destNum: Int64, context: NSManagedObjectContext) -> Bool {
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(destNum))
 
 	do {
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return false
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		let newPostions = [PositionEntity]()
 		fetchedNode[0].positions? = NSOrderedSet(array: newPostions)
 		do {
@@ -60,13 +56,11 @@ public func clearPositions(destNum: Int64, context: NSManagedObjectContext) -> B
 
 public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManagedObjectContext) -> Bool {
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(destNum))
 
 	do {
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return false
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		let emptyTelemetry = [TelemetryEntity]()
 		fetchedNode[0].telemetries? = NSOrderedSet(array: emptyTelemetry)
 		do {
@@ -140,12 +134,12 @@ func upsertNodeInfoPacket(packet: MeshPacket, context: NSManagedObjectContext) {
 
 	guard packet.from > 0 else { return }
 
-	let fetchNodeInfoAppRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoAppRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoAppRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
 
 	do {
 
-		let fetchedNode = try context.fetch(fetchNodeInfoAppRequest) as? [NodeInfoEntity] ?? []
+		let fetchedNode = try context.fetch(fetchNodeInfoAppRequest)
 		if fetchedNode.count == 0 {
 			// Not Found Insert
 			let newNode = NodeInfoEntity(context: context)
@@ -283,7 +277,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 	let logString = String.localizedStringWithFormat("mesh.log.position.received %@".localized, packet.from.toHex())
 	MeshLogger.log("📍 \(logString)")
 
-	let fetchNodePositionRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodePositionRequest = NodeInfoEntity.fetchRequest()
 	fetchNodePositionRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
 
 	do {
@@ -292,18 +286,14 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 
 			/// Don't save empty position packets from null island or apple park
 			if (positionMessage.longitudeI != 0 && positionMessage.latitudeI != 0) && (positionMessage.latitudeI != 373346000 && positionMessage.longitudeI != -1220090000) {
-				guard let fetchedNode = try context.fetch(fetchNodePositionRequest) as? [NodeInfoEntity] else {
-					return
-				}
+				let fetchedNode = try context.fetch(fetchNodePositionRequest)
 				if fetchedNode.count == 1 {
 
 					// Unset the current latest position for this node
-					let fetchCurrentLatestPositionsRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "PositionEntity")
+					let fetchCurrentLatestPositionsRequest = PositionEntity.fetchRequest()
 					fetchCurrentLatestPositionsRequest.predicate = NSPredicate(format: "nodePosition.num == %lld && latest = true", Int64(packet.from))
 
-					guard let fetchedPositions = try context.fetch(fetchCurrentLatestPositionsRequest) as? [PositionEntity] else {
-						return
-					}
+					let fetchedPositions = try context.fetch(fetchCurrentLatestPositionsRequest)
 					if fetchedPositions.count > 0 {
 						for position in fetchedPositions {
 							position.latest = false
@@ -384,13 +374,11 @@ func upsertBluetoothConfigPacket(config: Config.BluetoothConfig, nodeNum: Int64,
 	let logString = String.localizedStringWithFormat("mesh.log.bluetooth.config %@".localized, String(nodeNum))
 	MeshLogger.log("📶 \(logString)")
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
 	do {
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save Device Config
 		if !fetchedNode.isEmpty {
 			if fetchedNode[0].bluetoothConfig == nil {
@@ -427,13 +415,11 @@ func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, conte
 
 	let logString = String.localizedStringWithFormat("mesh.log.device.config %@".localized, nodeNum.toHex())
 	MeshLogger.log("📟 \(logString)")
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
 	do {
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save Device Config
 		if !fetchedNode.isEmpty {
 			if fetchedNode[0].deviceConfig == nil {
@@ -483,13 +469,11 @@ func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, con
 	let logString = String.localizedStringWithFormat("mesh.log.display.config %@".localized, nodeNum.toHex())
 	MeshLogger.log("🖥️ \(logString)")
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
 	do {
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save Device Config
 		if !fetchedNode.isEmpty {
 
@@ -549,12 +533,10 @@ func upsertLoRaConfigPacket(config: Config.LoRaConfig, nodeNum: Int64, context: 
 	let logString = String.localizedStringWithFormat("mesh.log.lora.config %@".localized, nodeNum.toHex())
 	MeshLogger.log("📻 \(logString)")
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", nodeNum)
 	do {
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save LoRa Config
 		if fetchedNode.count > 0 {
 			if fetchedNode[0].loRaConfig == nil {
@@ -616,14 +598,11 @@ func upsertNetworkConfigPacket(config: Config.NetworkConfig, nodeNum: Int64, con
 	let logString = String.localizedStringWithFormat("mesh.log.network.config %@".localized, String(nodeNum))
 	MeshLogger.log("🌐 \(logString)")
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
 	do {
-
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save WiFi Config
 		if !fetchedNode.isEmpty {
 			if fetchedNode[0].networkConfig == nil {
@@ -663,14 +642,12 @@ func upsertPositionConfigPacket(config: Config.PositionConfig, nodeNum: Int64, c
 	let logString = String.localizedStringWithFormat("mesh.log.position.config %@".localized, nodeNum.toHex())
 	MeshLogger.log("🗺️ \(logString)")
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
 	do {
 
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save LoRa Config
 		if !fetchedNode.isEmpty {
 			if fetchedNode[0].positionConfig == nil {
@@ -725,13 +702,11 @@ func upsertPowerConfigPacket(config: Config.PowerConfig, nodeNum: Int64, context
 	let logString = String.localizedStringWithFormat("mesh.log.power.config %@".localized, nodeNum.toHex())
 	MeshLogger.log("🗺️ \(logString)")
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
 	do {
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save Power Config
 		if !fetchedNode.isEmpty {
 			if fetchedNode[0].powerConfig == nil {
@@ -775,14 +750,11 @@ func upsertAmbientLightingModuleConfigPacket(config: ModuleConfig.AmbientLightin
 	let logString = String.localizedStringWithFormat("mesh.log.ambientlighting.config %@".localized, String(nodeNum))
 	MeshLogger.log("🏮 \(logString)")
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
 	do {
-
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save Ambient Lighting Config
 		if !fetchedNode.isEmpty {
 
@@ -831,14 +803,11 @@ func upsertCannedMessagesModuleConfigPacket(config: ModuleConfig.CannedMessageCo
 	let logString = String.localizedStringWithFormat("mesh.log.cannedmessage.config %@".localized, nodeNum.toHex())
 	MeshLogger.log("🥫 \(logString)")
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
 	do {
-
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save Canned Message Config
 		if !fetchedNode.isEmpty {
 
@@ -895,14 +864,11 @@ func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSenso
 	let logString = String.localizedStringWithFormat("mesh.log.detectionsensor.config %@".localized, String(nodeNum))
 	MeshLogger.log("🕵️ \(logString)")
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
 	do {
-
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save Detection Sensor Config
 		if !fetchedNode.isEmpty {
 
@@ -956,14 +922,11 @@ func upsertExternalNotificationModuleConfigPacket(config: ModuleConfig.ExternalN
 	let logString = String.localizedStringWithFormat("mesh.log.externalnotification.config %@".localized, String(nodeNum))
 	MeshLogger.log("📣 \(logString)")
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
 	do {
-
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		
 		guard let node = fetchedNode.first else {
 			return Logger.data.error("💥 No Nodes found in local database matching node \(nodeNum.toHex()) unable to save External Notification Module Config")
@@ -998,14 +961,11 @@ func upsertPaxCounterModuleConfigPacket(config: ModuleConfig.PaxcounterConfig, n
 	let logString = String.localizedStringWithFormat("mesh.log.paxcounter.config %@".localized, String(nodeNum))
 	MeshLogger.log("🧑‍🤝‍🧑 \(logString)")
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
 	do {
-
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save PAX Counter Config
 		if !fetchedNode.isEmpty {
 
@@ -1043,14 +1003,11 @@ func upsertRtttlConfigPacket(ringtone: String, nodeNum: Int64, context: NSManage
 	let logString = String.localizedStringWithFormat("mesh.log.ringtone.config %@".localized, nodeNum.toHex())
 	MeshLogger.log("⛰️ \(logString)")
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
 	do {
-
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save RTTTL Config
 		if !fetchedNode.isEmpty {
 			if fetchedNode[0].rtttlConfig == nil {
@@ -1082,14 +1039,11 @@ func upsertMqttModuleConfigPacket(config: ModuleConfig.MQTTConfig, nodeNum: Int6
 	let logString = String.localizedStringWithFormat("mesh.log.mqtt.config %@".localized, nodeNum.toHex())
 	MeshLogger.log("🌉 \(logString)")
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
 	do {
-
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		
 		guard let node = fetchedNode.first else {
 			Logger.data.error("No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save MQTT Module Config")
@@ -1125,14 +1079,11 @@ func upsertRangeTestModuleConfigPacket(config: ModuleConfig.RangeTestConfig, nod
 	let logString = String.localizedStringWithFormat("mesh.log.rangetest.config %@".localized, nodeNum.toHex())
 	MeshLogger.log("⛰️ \(logString)")
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
 	do {
-
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save Device Config
 		if let node = fetchedNode.first {
 			if let rangeTestConfig = node.rangeTestConfig {
@@ -1164,19 +1115,17 @@ func upsertSerialModuleConfigPacket(config: ModuleConfig.SerialConfig, nodeNum: 
 	let logString = String.localizedStringWithFormat("mesh.log.serial.config %@".localized, nodeNum.toHex())
 	MeshLogger.log("🤖 \(logString)")
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
 	do {
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		guard let node = fetchedNode.first else {
 			return Logger.data.error("💥 No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Serial Module Config")
 		}
 		
 		// Found a node, save Device Config
-		if let serialConfig = node.serialConfig {
+		if node.serialConfig != nil {
 			node.serialConfig?.update(with: config)
 		} else {
 			node.serialConfig = SerialConfigEntity(
@@ -1204,14 +1153,11 @@ func upsertStoreForwardModuleConfigPacket(config: ModuleConfig.StoreForwardConfi
 	let logString = String.localizedStringWithFormat("mesh.log.storeforward.config %@".localized, nodeNum.toHex())
 	MeshLogger.log("📬 \(logString)")
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
 	do {
-
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		guard let node = fetchedNode.first else {
 			Logger.data.error("💥 No Nodes found in local database matching node \(nodeNum.toHex()) unable to save Store & Forward Module Config")
 			return
@@ -1244,14 +1190,11 @@ func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nod
 	let logString = String.localizedStringWithFormat("mesh.log.telemetry.config %@".localized, nodeNum.toHex())
 	MeshLogger.log("📈 \(logString)")
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", nodeNum)
 
 	do {
-
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save Telemetry Config
 		if !fetchedNode.isEmpty {
 

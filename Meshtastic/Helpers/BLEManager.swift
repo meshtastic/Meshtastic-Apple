@@ -437,10 +437,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			success = true
 
 			let traceRoute = TraceRouteEntity(context: context!)
-			let nodes: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+			let nodes = NodeInfoEntity.fetchRequest()
 			nodes.predicate = NSPredicate(format: "num IN %@", [destNum, connectedPeripheral.num])
 			do {
-				guard let fetchedNodes = try context!.fetch(nodes) as? [NodeInfoEntity] else {
+				guard let fetchedNodes = try context?.fetch(nodes) else {
 					return false
 				}
 				let receivingNode = fetchedNodes.first(where: { $0.num == destNum })
@@ -872,10 +872,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				/// MQTT Client Proxy and RangeTest and Store and Forward interest
 				if connectedPeripheral.num > 0 {
 
-					let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+					let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(connectedPeripheral.num))
 					do {
-						let fetchedNodeInfo = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] ?? []
+						let fetchedNodeInfo = try context.fetch(fetchNodeInfoRequest)
 						if fetchedNodeInfo.count == 1 {
 							// Subscribe to Mqtt Client Proxy if enabled
 							if fetchedNodeInfo[0].mqttConfig != nil && fetchedNodeInfo[0].mqttConfig?.enabled ?? false && fetchedNodeInfo[0].mqttConfig?.proxyToClientEnabled ?? false {
@@ -963,7 +963,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	
 
 		let fromUserNum: Int64 = connectedPeripheral.num
-		let messageUsers: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
+		let messageUsers = UserEntity.fetchRequest()
 		messageUsers.predicate = NSPredicate(format: "num IN %@", [fromUserNum, Int64(toUserNum)])
 
 		do {
@@ -1497,7 +1497,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					for cs in channelSet.settings {
 						if addChannels {
 							// We are trying to add a channel so lets get the last index
-							let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+							let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
 							fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", connectedPeripheral.num)
 							do {
 								let fetchedMyInfo = try context?.fetch(fetchMyInfoRequest) as? [MyInfoEntity] ?? []
@@ -3066,7 +3066,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		guard let connectedPeripheral else { return }
 		let myNodeNum = Int64(connectedPeripheral.num)
 		// Before we get started delete the existing channels from the myNodeInfo
-		let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+		let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
 		fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", myNodeNum)
 
 		do {

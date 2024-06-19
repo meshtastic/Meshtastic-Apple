@@ -121,13 +121,11 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 		let logString = String.localizedStringWithFormat("mesh.log.channel.received %d %@".localized, channel.index, String(fromNum))
 		MeshLogger.log("🎛️ \(logString)")
 
-		let fetchedMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+		let fetchedMyInfoRequest = MyInfoEntity.fetchRequest()
 		fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", fromNum)
 
 		do {
-			guard let fetchedMyInfo = try context.fetch(fetchedMyInfoRequest) as? [MyInfoEntity] else {
-				return
-			}
+			let fetchedMyInfo = try context.fetch(fetchedMyInfoRequest)
 			if fetchedMyInfo.count == 1 {
 				let newChannel = ChannelEntity(
 					context: context,
@@ -179,13 +177,11 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 	let logString = String.localizedStringWithFormat("mesh.log.device.metadata.received %@".localized, String(fromNum))
 	MeshLogger.log("🏷️ \(logString)")
 
-	let fetchedNodeRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchedNodeRequest = NodeInfoEntity.fetchRequest()
 	fetchedNodeRequest.predicate = NSPredicate(format: "num == %lld", fromNum)
 
 	do {
-		guard let fetchedNode = try context.fetch(fetchedNodeRequest) as? [NodeInfoEntity] else {
-			return
-		}
+		let fetchedNode = try context.fetch(fetchedNodeRequest)
 		let newMetadata = DeviceMetadataEntity(
 			context: context,
 			metadata: metadata
@@ -265,13 +261,11 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 					let logString = String.localizedStringWithFormat("mesh.log.cannedmessages.messages.received %@".localized, packet.from.toHex())
 					MeshLogger.log("🥫 \(logString)")
 
-					let fetchNodeRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+					let fetchNodeRequest = NodeInfoEntity.fetchRequest()
 					fetchNodeRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
 
 					do {
-						guard let fetchedNode = try context.fetch(fetchNodeRequest) as? [NodeInfoEntity] else {
-							return
-						}
+						let fetchedNode = try context.fetch(fetchNodeRequest)
 						if fetchedNode.count == 1 {
 							let messages =  String(cmmc.textFormatString())
 								.replacingOccurrences(of: "11: ", with: "")
@@ -347,12 +341,10 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 func adminResponseAck (packet: MeshPacket, context: NSManagedObjectContext) {
 
-	let fetchedAdminMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
+	let fetchedAdminMessageRequest = MessageEntity.fetchRequest()
 	fetchedAdminMessageRequest.predicate = NSPredicate(format: "messageId == %lld", packet.decoded.requestID)
 	do {
-		guard let fetchedMessage = try context.fetch(fetchedAdminMessageRequest) as? [MessageEntity] else {
-			return
-		}
+		let fetchedMessage = try context.fetch(fetchedAdminMessageRequest)
 		if fetchedMessage.count > 0 {
 			fetchedMessage[0].ackTimestamp = Int32(Date().timeIntervalSince1970)
 			fetchedMessage[0].ackError = Int32(RoutingError.none.rawValue)
@@ -377,11 +369,11 @@ func paxCounterPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	let logString = String.localizedStringWithFormat("mesh.log.paxcounter %@".localized, String(packet.from))
 	MeshLogger.log("🧑‍🤝‍🧑 \(logString)")
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
 
 	do {
-		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity]
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 
 		if let paxMessage = try? Paxcount(serializedData: packet.decoded.payload) {
 
@@ -391,12 +383,12 @@ func paxCounterPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			newPax.uptime = Int32(truncatingIfNeeded: paxMessage.uptime)
 			newPax.time = Date()
 
-			if fetchedNode?.count ?? 0 > 0 {
-				guard let mutablePax = fetchedNode?[0].pax!.mutableCopy() as? NSMutableOrderedSet else {
+			if fetchedNode.count > 0 {
+				guard let mutablePax = fetchedNode[0].pax!.mutableCopy() as? NSMutableOrderedSet else {
 					return
 				}
 				mutablePax.add(newPax)
-				fetchedNode![0].pax = mutablePax
+				fetchedNode[0].pax = mutablePax
 				do {
 					try context.save()
 				} catch {
@@ -421,40 +413,40 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 		let logString = String.localizedStringWithFormat("mesh.log.routing.message %@ %@".localized, String(packet.decoded.requestID), routingErrorString)
 		MeshLogger.log("🕸️ \(logString)")
 
-		let fetchMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
+		let fetchMessageRequest = MessageEntity.fetchRequest()
 		fetchMessageRequest.predicate = NSPredicate(format: "messageId == %lld", Int64(packet.decoded.requestID))
 
 		do {
-			let fetchedMessage = try context.fetch(fetchMessageRequest) as? [MessageEntity]
-			if fetchedMessage?.count ?? 0 > 0 {
+			let fetchedMessage = try context.fetch(fetchMessageRequest)
+			if fetchedMessage.count > 0 {
 
-				if fetchedMessage![0].toUser != nil {
+				if fetchedMessage[0].toUser != nil {
 					// Real ACK from DM Recipient
 					if packet.to != packet.from {
-						fetchedMessage![0].realACK = true
+						fetchedMessage[0].realACK = true
 					}
 				}
-				fetchedMessage![0].ackError = Int32(routingMessage.errorReason.rawValue)
+				fetchedMessage[0].ackError = Int32(routingMessage.errorReason.rawValue)
 
 				if routingMessage.errorReason == Routing.Error.none {
 
-					fetchedMessage![0].receivedACK = true
+					fetchedMessage[0].receivedACK = true
 				} else {
 					Logger.statistics.error("❗ Routing Error: \(routingErrorString) for a text message packet from Node: \(packet.from)")
 				}
-				fetchedMessage![0].ackSNR = packet.rxSnr
-				fetchedMessage![0].ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
+				fetchedMessage[0].ackSNR = packet.rxSnr
+				fetchedMessage[0].ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
 
-				if fetchedMessage![0].toUser != nil {
-					fetchedMessage![0].toUser!.objectWillChange.send()
+				if fetchedMessage[0].toUser != nil {
+					fetchedMessage[0].toUser!.objectWillChange.send()
 				} else {
-					let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+					let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
 					fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", connectedNodeNum)
 					do {
-						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity]
-						if fetchedMyInfo?.count ?? 0 > 0 {
+						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
+						if fetchedMyInfo.count > 0 {
 
-							for ch in fetchedMyInfo![0].channels!.array as? [ChannelEntity] ?? [] where ch.index == packet.channel {
+							for ch in fetchedMyInfo[0].channels!.array as? [ChannelEntity] ?? [] where ch.index == packet.channel {
 								ch.objectWillChange.send()
 							}
 						}
@@ -488,14 +480,11 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 
 		let telemetry = TelemetryEntity(context: context)
 
-		let fetchNodeTelemetryRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		let fetchNodeTelemetryRequest = NodeInfoEntity.fetchRequest()
 		fetchNodeTelemetryRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
 
 		do {
-
-			guard let fetchedNode = try context.fetch(fetchNodeTelemetryRequest) as? [NodeInfoEntity] else {
-				return
-			}
+			let fetchedNode = try context.fetch(fetchNodeTelemetryRequest)
 			if fetchedNode.count == 1 {
 				if telemetryMessage.variant == Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) {
 					// Device Metrics
@@ -611,12 +600,10 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 
 		MeshLogger.log("💬 \("mesh.log.textmessage.received".localized)")
 
-		let messageUsers: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
+		let messageUsers = UserEntity.fetchRequest()
 		messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
 		do {
-			guard let fetchedUsers = try context.fetch(messageUsers) as? [UserEntity] else {
-				return
-			}
+			let fetchedUsers = try context.fetch(messageUsers)
 			let newMessage = MessageEntity(context: context)
 			newMessage.messageId = Int64(packet.id)
 			newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
@@ -687,13 +674,11 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 						}
 					} else if newMessage.fromUser != nil && newMessage.toUser == nil {
 
-						let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+						let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
 						fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedNode))
 
 						do {
-							guard let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity] else {
-								return
-							}
+							let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
 							if !fetchedMyInfo.isEmpty {
 								appState.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
 								UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
@@ -740,15 +725,13 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	let logString = String.localizedStringWithFormat("mesh.log.waypoint.received %@".localized, String(packet.from))
 	MeshLogger.log("📍 \(logString)")
 
-	let fetchWaypointRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "WaypointEntity")
+	let fetchWaypointRequest = WaypointEntity.fetchRequest()
 	fetchWaypointRequest.predicate = NSPredicate(format: "id == %lld", Int64(packet.id))
 
 	do {
 
 		if let waypointMessage = try? Waypoint(serializedData: packet.decoded.payload) {
-			guard let fetchedWaypoint = try context.fetch(fetchWaypointRequest) as? [WaypointEntity] else {
-				return
-			}
+			let fetchedWaypoint = try context.fetch(fetchWaypointRequest)
 			if fetchedWaypoint.isEmpty {
 				let waypoint = WaypointEntity(context: context)
 

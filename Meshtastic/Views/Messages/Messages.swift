@@ -90,7 +90,7 @@ struct Messages: View {
 					self.bleManager.context = context
 				}
 				if UserDefaults.preferredPeripheralId.count > 0 {
-					let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+					let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(UserDefaults.preferredPeripheralNum))
 					do {
 						guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
