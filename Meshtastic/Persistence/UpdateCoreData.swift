@@ -1243,7 +1243,7 @@ func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nod
 	MeshLogger.log("📈 \(logString)")
 
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", nodeNum.toHex())
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", nodeNum)
 
 	do {
 

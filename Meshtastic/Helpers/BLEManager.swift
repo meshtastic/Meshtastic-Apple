@@ -575,10 +575,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								}
 							}
 						}
-						
-						connectedPeripheral.num = myInfo?.myNodeNum ?? 0
-						if myInfo?.bleName != nil {
-							connectedPeripheral.name = myInfo?.bleName ?? "unknown".localized
+						if myInfo?.myNodeNum ?? 0 > 0 {
+							connectedPeripheral.num = myInfo?.myNodeNum ?? 0
+							if myInfo?.bleName != nil {
+								connectedPeripheral.name = myInfo?.bleName ?? "unknown".localized
+							}
 						}
 					}
 					tryClearExistingChannels()
