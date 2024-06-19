@@ -127,19 +127,24 @@ struct TelemetryConfig: View {
 			.navigationTitle("telemetry.config")
 			.navigationBarItems(trailing:
 				ZStack {
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-			})
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: bleManager.connectedPeripheral?.shortName ?? "?"
+					)
+				}
+			)
 			.onAppear {
 				if self.bleManager.context == nil {
 					self.bleManager.context = context
 				}
 				setTelemetryValues()
 				// Need to request a TelemetryModuleConfig from the remote node before allowing changes
-				if bleManager.connectedPeripheral != nil && node?.telemetryConfig == nil {
+				if let connectedPeripheral = bleManager.connectedPeripheral, node?.telemetryConfig == nil {
 					Logger.mesh.info("empty telemetry module config")
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if node != nil && connectedNode != nil {
-						_ = bleManager.requestTelemetryModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+					if let node, let connectedNode {
+						_ = bleManager.requestTelemetryModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 					}
 				}
 			}

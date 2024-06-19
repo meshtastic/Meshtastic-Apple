@@ -358,7 +358,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 
 					do {
 						try context.save()
-						Logger.data.info("💾 Updated Node Position Coordinates, SNR and Time from Position App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
+						Logger.data.info("💾 Updated Node Position Coordinates SNR and Time from Position App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
 					} catch {
 						context.rollback()
 						let nsError = error as NSError
@@ -1243,7 +1243,7 @@ func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nod
 	MeshLogger.log("📈 \(logString)")
 
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", nodeNum.toHex())
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", nodeNum)
 
 	do {
 

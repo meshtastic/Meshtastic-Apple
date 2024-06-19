@@ -11,6 +11,9 @@ extension Logger {
 
 	/// The logger's subsystem.
 	private static var subsystem = Bundle.main.bundleIdentifier!
+	
+	/// All admin messages
+	static let admin = Logger(subsystem: subsystem, category: "🏛 Admin")
 
 	/// All logs related to data such as decoding error, parsing issues, etc.
 	static let data = Logger(subsystem: subsystem, category: "🗄️ Data")
@@ -18,8 +21,11 @@ extension Logger {
 	/// All logs related to the mesh
 	static let mesh = Logger(subsystem: subsystem, category: "🕸️ Mesh")
 	
-	/// All admin messages
-	static let admin = Logger(subsystem: subsystem, category: "🏛 Admin")
+	/// All logs related to MQTT
+	static let mqtt = Logger(subsystem: subsystem, category: "📱 MQTT")
+	
+	/// All logs related to serial logs
+	static let serial = Logger(subsystem: subsystem, category: "😱 Serial")
 
 	/// All logs related to services such as network calls, location, etc.
 	static let services = Logger(subsystem: subsystem, category: "🍏 Services")

@@ -40,13 +40,14 @@ struct MQTTConfig: View {
 	var body: some View {
 		VStack {
 			Form {
-				if node != nil && node?.loRaConfig != nil {
-					let rc = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))
-					if rc?.dutyCycle ?? 0 > 0 && rc?.dutyCycle ?? 0 < 100 {
-						Text("Your region has a \(rc?.dutyCycle ?? 0)% duty cycle. MQTT is not advised when you are duty cycle restricted, the extra traffic will quickly overwhelm your LoRa mesh.")
-							.font(.callout)
-							.foregroundColor(.red)
-					}
+				if let node, 
+					let loRaConfig = node.loRaConfig,
+				    let rc = RegionCodes(rawValue: Int(loRaConfig.regionCode)),
+					rc.dutyCycle > 0,
+					rc.dutyCycle < 100 {
+					Text("Your region has a \(rc.dutyCycle)% duty cycle. MQTT is not advised when you are duty cycle restricted, the extra traffic will quickly overwhelm your LoRa mesh.")
+						.font(.callout)
+						.foregroundColor(.red)
 				}
 
 				ConfigHeader(title: "MQTT", config: \.mqttConfig, node: node, onAppear: setMqttValues)
@@ -246,8 +247,11 @@ struct MQTTConfig: View {
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
-			if connectedNode != nil {
+			
+			if let node,
+				let connectedPeripheral = bleManager.connectedPeripheral,
+			    let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context) {
+				
 				var mqtt = ModuleConfig.MQTTConfig()
 				mqtt.enabled = self.enabled
 				mqtt.proxyToClientEnabled = self.proxyToClientEnabled
@@ -261,7 +265,12 @@ struct MQTTConfig: View {
 				mqtt.mapReportingEnabled = self.mapReportingEnabled
 				mqtt.mapReportSettings.positionPrecision = UInt32(self.mapPositionPrecision)
 				mqtt.mapReportSettings.publishIntervalSecs = UInt32(self.mapPublishIntervalSecs)
-				let adminMessageId =  bleManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				let adminMessageId = bleManager.saveMQTTConfig(
+					config: mqtt,
+					fromUser: connectedNode.user!,
+					toUser: node.user!,
+					adminIndex: connectedNode.myInfo?.adminIndex ?? 0
+				)
 				if adminMessageId > 0 {
 					// Should show a saved successfully alert once I know that to be true
 					// for now just disable the button after a successful save
@@ -271,10 +280,16 @@ struct MQTTConfig: View {
 			}
 		}
 		.navigationTitle("mqtt.config")
-		.navigationBarItems(trailing:
-			ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", mqttProxyConnected: bleManager.mqttProxyConnected)
-		})
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?",
+					mqttProxyConnected: bleManager.mqttProxyConnected
+				)
+			}
+		)
 		.onChange(of: address) { newAddress in
 			if node != nil && node?.mqttConfig != nil {
 				if newAddress != node!.mqttConfig!.address { hasChanges = true }
@@ -362,11 +377,15 @@ struct MQTTConfig: View {
 			}
 			setMqttValues()
 			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.mqttConfig == nil {
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node, node.mqttConfig == nil {
 				Logger.mesh.info("empty mqtt module config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let connectedNode {
+					_ = bleManager.requestMqttModuleConfig(
+						fromUser: connectedNode.user!,
+						toUser: node.user!,
+						adminIndex: connectedNode.myInfo?.adminIndex ?? 0
+					)
 				}
 			}
 		}

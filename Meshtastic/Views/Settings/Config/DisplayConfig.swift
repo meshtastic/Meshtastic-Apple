@@ -129,8 +129,9 @@ struct DisplayConfig: View {
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.displayConfig == nil)
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-			if connectedNode != nil {
+			if let node,
+			    let peripheralNum = bleManager.connectedPeripheral?.num,
+				let connectedNode = getNodeInfo(id: peripheralNum, context: context) {
 				var dc = Config.DisplayConfig()
 				dc.gpsFormat = GpsFormats(rawValue: gpsFormat)!.protoEnumValue()
 				dc.screenOnSecs = UInt32(screenOnSeconds)
@@ -142,7 +143,12 @@ struct DisplayConfig: View {
 				dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
 				dc.units = Units(rawValue: units)!.protoEnumValue()
 
-				let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				let adminMessageId =  bleManager.saveDisplayConfig(
+					config: dc,
+					fromUser: connectedNode.user!,
+					toUser: node.user!,
+					adminIndex: connectedNode.myInfo?.adminIndex ?? 0
+				)
 				if adminMessageId > 0 {
 
 					// Should show a saved successfully alert once I know that to be true
@@ -154,10 +160,15 @@ struct DisplayConfig: View {
 		}
 
 		.navigationTitle("display.config")
-		.navigationBarItems(trailing:
-			ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
 		.onAppear {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
@@ -165,7 +176,7 @@ struct DisplayConfig: View {
 			setDisplayValues()
 
 			// Need to request a LoRaConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.displayConfig == nil {
+			if let connectedPeripheral = bleManager.connectedPeripheral,  node?.displayConfig == nil {
 				Logger.mesh.info("empty display config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
 				if node != nil && connectedNode != nil {

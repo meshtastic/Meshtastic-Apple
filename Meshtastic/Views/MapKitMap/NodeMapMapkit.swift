@@ -150,13 +150,15 @@ struct NodeMapMapkit: View {
 						.presentationDragIndicator(.automatic)
 				})
 				.navigationBarTitle(String(node.user?.longName ?? "unknown".localized), displayMode: .inline)
-				.navigationBarItems(trailing:
-					ZStack {
-					ConnectedDevice(
-						bluetoothOn: bleManager.isSwitchedOn,
-						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-				})
+				.navigationBarItems(
+					trailing: ZStack {
+						ConnectedDevice(
+							bluetoothOn: bleManager.isSwitchedOn,
+							deviceConnected: bleManager.connectedPeripheral != nil,
+							name: bleManager.connectedPeripheral?.shortName ?? "?"
+						)
+					}
+				)
 			}
 			.padding(.bottom, 2)
 		}

@@ -21,7 +21,7 @@ struct LogDetail: View {
 		.day(.defaultDigits)
 		.month(.defaultDigits)
 		.year(.twoDigits)
-		.hour(.twoDigits(amPM: .abbreviated))
+		.hour(.twoDigits(amPM: .omitted))
 		.minute()
 		.second()
 		.secondFraction(.fractional(3))
@@ -41,7 +41,7 @@ struct LogDetail: View {
 						Label {
 							Text("log.time".localized + ":")
 								.font(idiom == .phone ? .caption : .title)
-								.frame(width: idiom == .phone ? 90 : 190, alignment: .trailing)
+								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
 							Text(log.date.formatted(dateFormatStyle))
 								.font(idiom == .phone ? .caption : .title)
 						} icon: {
@@ -57,7 +57,7 @@ struct LogDetail: View {
 						Label {
 							Text("log.subsystem".localized + ":")
 								.font(idiom == .phone ? .caption : .title)
-								.frame(width: idiom == .phone ? 90 : 190, alignment: .trailing)
+								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
 							Text(log.subsystem)
 								.font(idiom == .phone ? .caption : .title)
 						} icon: {
@@ -72,7 +72,7 @@ struct LogDetail: View {
 						Label {
 							Text("log.process".localized + ":")
 								.font(idiom == .phone ? .caption : .title)
-								.frame(width: idiom == .phone ? 90 : 190, alignment: .trailing)
+								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
 							Text(log.process)
 								.font(idiom == .phone ? .caption : .title)
 						} icon: {
@@ -87,7 +87,7 @@ struct LogDetail: View {
 						Label {
 							Text("log.category".localized + ":")
 								.font(idiom == .phone ? .caption : .title)
-								.frame(width: idiom == .phone ? 90 : 190, alignment: .trailing)
+								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
 							Text(log.category)
 								.font(idiom == .phone ? .caption : .title)
 						} icon: {
@@ -102,7 +102,7 @@ struct LogDetail: View {
 						Label {
 							Text("log.level".localized + ":")
 								.font(idiom == .phone ? .caption : .title)
-								.frame(width: idiom == .phone ? 90 : 190, alignment: .trailing)
+								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
 							Text(log.level.description)
 								.font(idiom == .phone ? .caption : .title)
 						} icon: {
@@ -117,7 +117,7 @@ struct LogDetail: View {
 						Label {
 							Text("log.message".localized + ":")
 								.font(idiom == .phone ? .caption : .title)
-								.frame(width: idiom == .phone ? 90 : 190, alignment: .trailing)
+								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
 							Text(log.composedMessage)
 								.textSelection(.enabled)
 								.font(idiom == .phone ? .body : .title)
