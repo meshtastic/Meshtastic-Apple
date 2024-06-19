@@ -9,13 +9,11 @@ import CoreData
 
 public func getNodeInfo(id: Int64, context: NSManagedObjectContext) -> NodeInfoEntity? {
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(id))
 
 	do {
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return nil
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		if fetchedNode.count == 1 {
 			return fetchedNode[0]
 		}
@@ -28,15 +26,13 @@ public func getNodeInfo(id: Int64, context: NSManagedObjectContext) -> NodeInfoE
 public func getStoreAndForwardMessageIds(seconds: Int, context: NSManagedObjectContext) -> [UInt32] {
 
 	let time = seconds * -1
-	let fetchMessagesRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
+	let fetchMessagesRequest = MessageEntity.fetchRequest()
 	let timeRange = Calendar.current.date(byAdding: .minute, value: time, to: Date())
 	let milleseconds = Int32(timeRange?.timeIntervalSince1970 ?? 0)
 	fetchMessagesRequest.predicate =  NSPredicate(format: "receivedTimestamp >= %d", milleseconds)
 
 	do {
-		guard let fetchedMessages = try context.fetch(fetchMessagesRequest) as? [MessageEntity] else {
-			return []
-		}
+		let fetchedMessages = try context.fetch(fetchMessagesRequest)
 		if fetchedMessages.count == 1 {
 			return fetchedMessages.map { UInt32($0.messageId) }
 		}
@@ -48,13 +44,11 @@ public func getStoreAndForwardMessageIds(seconds: Int, context: NSManagedObjectC
 
 public func getTraceRoute(id: Int64, context: NSManagedObjectContext) -> TraceRouteEntity? {
 
-	let fetchTraceRouteRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "TraceRouteEntity")
+	let fetchTraceRouteRequest = TraceRouteEntity.fetchRequest()
 	fetchTraceRouteRequest.predicate = NSPredicate(format: "id == %lld", Int64(id))
 
 	do {
-		guard let fetchedTraceRoute = try context.fetch(fetchTraceRouteRequest) as? [TraceRouteEntity] else {
-			return nil
-		}
+		let fetchedTraceRoute = try context.fetch(fetchTraceRouteRequest)
 		if fetchedTraceRoute.count == 1 {
 			return fetchedTraceRoute[0]
 		}
@@ -66,13 +60,11 @@ public func getTraceRoute(id: Int64, context: NSManagedObjectContext) -> TraceRo
 
 public func getUser(id: Int64, context: NSManagedObjectContext) -> UserEntity {
 
-	let fetchUserRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
+	let fetchUserRequest = UserEntity.fetchRequest()
 	fetchUserRequest.predicate = NSPredicate(format: "num == %lld", Int64(id))
 
 	do {
-		guard let fetchedUser = try context.fetch(fetchUserRequest) as? [UserEntity] else {
-			return UserEntity(context: context)
-		}
+		let fetchedUser = try context.fetch(fetchUserRequest)
 		if fetchedUser.count == 1 {
 			return fetchedUser[0]
 		}
@@ -84,13 +76,11 @@ public func getUser(id: Int64, context: NSManagedObjectContext) -> UserEntity {
 
 public func getWaypoint(id: Int64, context: NSManagedObjectContext) -> WaypointEntity {
 
-	let fetchWaypointRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "WaypointEntity")
+	let fetchWaypointRequest = WaypointEntity.fetchRequest()
 	fetchWaypointRequest.predicate = NSPredicate(format: "id == %lld", Int64(id))
 
 	do {
-		guard let fetchedWaypoint = try context.fetch(fetchWaypointRequest) as? [WaypointEntity] else {
-			return WaypointEntity(context: context)
-		}
+		let fetchedWaypoint = try context.fetch(fetchWaypointRequest)
 		if fetchedWaypoint.count == 1 {
 			return fetchedWaypoint[0]
 		}
