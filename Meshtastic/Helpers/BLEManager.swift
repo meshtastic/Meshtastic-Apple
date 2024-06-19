@@ -514,7 +514,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			return
 		}
 
-		guard let context, let connectedPeripheral else {
+		guard let context, var connectedPeripheral else {
 			return
 		}
 		
@@ -579,27 +579,21 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								}
 							}
 						}
-						if myInfo?.myNodeNum ?? 0 > 0 {
-							connectedPeripheral.num = myInfo?.myNodeNum ?? 0
-							if myInfo?.bleName != nil {
-								connectedPeripheral.name = myInfo?.bleName ?? "unknown".localized
-							}
-						}
 					}
 					tryClearExistingChannels()
 				}
 				// NodeInfo
-				if decodedInfo.nodeInfo.num > 0 {
-					nowKnown = true
-					if let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, channel: decodedInfo.packet.channel, context: context) {
-						if connectedPeripheral.num == nodeInfo.num {
-							if let user = nodeInfo.user {
-								self.connectedPeripheral?.shortName = user.shortName ?? "?"
-								self.connectedPeripheral?.longName = user.longName ?? "unknown".localized
-							}
-						}
-					}
-				}
+//				if decodedInfo.nodeInfo.num > 0 {
+//					nowKnown = true
+//					if let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, channel: decodedInfo.packet.channel, context: context) {
+//						if connectedPeripheral.num == nodeInfo.num {
+//							if let user = nodeInfo.user {
+//								self.connectedPeripheral?.shortName = user.shortName ?? "?"
+//								self.connectedPeripheral?.longName = user.longName ?? "unknown".localized
+//							}
+//						}
+//					}
+//				}
 				// Channels
 				if decodedInfo.channel.isInitialized {
 					nowKnown = true
