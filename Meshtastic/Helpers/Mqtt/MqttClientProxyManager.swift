@@ -151,7 +151,7 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 		Logger.mqtt.debug("📲 MQTT client proxy subscribed to topics: \(success.allKeys.count) topics. failed: \(failed.count) topics")
 	}
 	func mqtt(_ mqtt: CocoaMQTT, didUnsubscribeTopics topics: [String]) {
-		Logger.mqtt.debug("📲 MQTT client proxy unsubscribed from topics: \(topics.joined(separator: ", "))")
+		Logger.mqtt.debug("📲 MQTT client proxy unsubscribed from topics: \(topics.joined(separator: "- "))")
 	}
 	func mqttDidPing(_ mqtt: CocoaMQTT) {
 		Logger.mqtt.debug("📲 MQTT client proxy ping")
