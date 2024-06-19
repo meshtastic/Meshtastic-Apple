@@ -48,7 +48,7 @@ struct Connect: View {
 				List {
 					if bleManager.isSwitchedOn {
 						Section(header: Text("connected.radio").font(.title)) {
-							if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
+							if let connectedPeripheral = bleManager.connectedPeripheral, connectedPeripheral.peripheral.state == .connected {
 								if #available(iOS 17.0, macOS 14.0, *) {
 									TipView(BluetoothConnectionTip(), arrowEdge: .bottom)
 								}
@@ -59,9 +59,9 @@ struct Connect: View {
 									.padding(.trailing)
 									VStack(alignment: .leading) {
 										if node != nil {
-											Text(bleManager.connectedPeripheral.longName).font(.title2)
+											Text(connectedPeripheral.longName).font(.title2)
 										}
-										Text("ble.name").font(.callout)+Text(": \(bleManager.connectedPeripheral.peripheral.name ?? "unknown".localized)")
+										Text("ble.name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name ?? "unknown".localized)")
 											.font(.callout).foregroundColor(Color.gray)
 										if node != nil {
 											Text("firmware.version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "unknown".localized)")
@@ -90,7 +90,8 @@ struct Connect: View {
 								.padding([.top, .bottom])
 								.swipeActions {
 									Button(role: .destructive) {
-										if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
+										if let connectedPeripheral = bleManager.connectedPeripheral,
+										   connectedPeripheral.peripheral.state == .connected {
 											bleManager.disconnectPeripheral(reconnect: false)
 										}
 									} label: {
@@ -120,7 +121,8 @@ struct Connect: View {
 										Text("Num: \(String(node!.num))")
 										Text("Short Name: \(node?.user?.shortName ?? "?")")
 										Text("Long Name: \(node?.user?.longName ?? "unknown".localized)")
-										Text("BLE RSSI: \(bleManager.connectedPeripheral.rssi)")
+										Text("BLE RSSI: \(connectedPeripheral.rssi)")
+										
 										Button {
 											if !bleManager.sendShutdown(fromUser: node!.user!, toUser: node!.user!, adminIndex: node!.myInfo!.adminIndex) {
 												Logger.mesh.error("Shutdown Failed")
@@ -209,7 +211,7 @@ struct Connect: View {
 										}
 										Button(action: {
 											if UserDefaults.preferredPeripheralId.count > 0 && peripheral.peripheral.identifier.uuidString != UserDefaults.preferredPeripheralId {
-												if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
+												if let connectedPeripheral = bleManager.connectedPeripheral, connectedPeripheral.peripheral.state == CBPeripheralState.connected {
 													bleManager.disconnectPeripheral()
 												}
 												//clearCoreDataDatabase(context: context, includeRoutes: false)
@@ -256,9 +258,9 @@ struct Connect: View {
 				HStack(alignment: .center) {
 					Spacer()
 					#if targetEnvironment(macCatalyst)
-					if bleManager.connectedPeripheral != nil {
+					if let connectedPeripheral = bleManager.connectedPeripheral {
 						Button(role: .destructive, action: {
-							if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
+							if connectedPeripheral.peripheral.state == CBPeripheralState.connected {
 								bleManager.disconnectPeripheral(reconnect: false)
 							}
 						}) {
@@ -287,10 +289,18 @@ struct Connect: View {
 				.padding(.bottom, 10)
 			}
 			.navigationTitle("bluetooth")
-			.navigationBarItems(leading: MeshtasticLogo(), trailing:
-									ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", mqttProxyConnected: bleManager.mqttProxyConnected, mqttTopic: bleManager.mqttManager.topic)
-			})
+			.navigationBarItems(
+				leading: MeshtasticLogo(),
+				trailing: ZStack {
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: bleManager.connectedPeripheral?.shortName ?? "?",
+						mqttProxyConnected: bleManager.mqttProxyConnected,
+						mqttTopic: bleManager.mqttManager.topic
+					)
+				}
+			)
 		}
 		.sheet(isPresented: $invalidFirmwareVersion, onDismiss: didDismissSheet) {
 			InvalidVersion(minimumVersion: self.bleManager.minimumVersion, version: self.bleManager.connectedVersion)

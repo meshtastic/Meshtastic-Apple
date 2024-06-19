@@ -104,8 +104,14 @@ struct SerialConfig: View {
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.serialConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode != nil {
+				
+				if let node,
+					let connectedPeripheral = bleManager.connectedPeripheral,
+					let connectedNode = getNodeInfo(
+						id: connectedPeripheral.num,
+						context: context
+					) {
+					
 					var sc = ModuleConfig.SerialConfig()
 					sc.enabled = enabled
 					sc.echo = echo
@@ -116,7 +122,12 @@ struct SerialConfig: View {
 					sc.overrideConsoleSerialPort = overrideConsoleSerialPort
 					sc.mode	= SerialModeTypes(rawValue: mode)!.protoEnumValue()
 
-					let adminMessageId =  bleManager.saveSerialModuleConfig(config: sc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					let adminMessageId = bleManager.saveSerialModuleConfig(
+						config: sc,
+						fromUser: connectedNode.user!,
+						toUser: node.user!,
+						adminIndex: connectedNode.myInfo?.adminIndex ?? 0
+					)
 
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
@@ -127,22 +138,30 @@ struct SerialConfig: View {
 				}
 			}
 			.navigationTitle("serial.config")
-			.navigationBarItems(trailing:
-
-				ZStack {
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-			})
+			.navigationBarItems(
+				trailing: ZStack {
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: bleManager.connectedPeripheral?.shortName ?? "?"
+					)
+				}
+			)
 			.onAppear {
 				if self.bleManager.context == nil {
 					self.bleManager.context = context
 				}
 				setSerialValues()
 				// Need to request a SerialModuleConfig from the remote node before allowing changes
-				if bleManager.connectedPeripheral != nil && node?.serialConfig == nil {
+				if let connectedPeripheral = bleManager.connectedPeripheral, node?.serialConfig == nil {
 					Logger.mesh.debug("empty serial module config")
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if node != nil && connectedNode != nil {
-						_ = bleManager.requestSerialModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+					if let node, let connectedNode {
+						_ = bleManager.requestSerialModuleConfig(
+							fromUser: connectedNode.user!,
+							toUser: node.user!,
+							adminIndex: connectedNode.myInfo?.adminIndex ?? 0
+						)
 					}
 				}
 

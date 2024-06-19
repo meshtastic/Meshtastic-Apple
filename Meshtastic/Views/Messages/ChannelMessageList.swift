@@ -28,8 +28,8 @@ struct ChannelMessageList: View {
 			ScrollViewReader { scrollView in
 				ScrollView {
 					LazyVStack {
-						ForEach( channel.allPrivateMessages ) { (message: MessageEntity) in
-							let currentUser: Bool = (Int64(preferredPeripheralNum) == message.fromUser?.num ? true : false)
+						ForEach(channel.allPrivateMessages) { (message: MessageEntity) in
+							let currentUser: Bool = Int64(preferredPeripheralNum) == message.fromUser?.num
 							if message.replyID > 0 {
 								let messageReply = channel.allPrivateMessages.first(where: { $0.messageId == message.replyID })
 								HStack {
@@ -46,8 +46,9 @@ struct ChannelMessageList: View {
 								}
 							}
 							HStack(alignment: .bottom) {
-								if currentUser { Spacer(minLength: 50) }
-								if !currentUser {
+								if currentUser {
+									Spacer(minLength: 50)
+								} else {
 									CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 44)
 										.padding(.all, 5)
 										.offset(y: -7)
@@ -56,8 +57,8 @@ struct ChannelMessageList: View {
 								VStack(alignment: currentUser ? .trailing : .leading) {
 									let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
 
-									if !currentUser && message.fromUser != nil {
-										Text("\(message.fromUser?.longName ?? "unknown".localized ) (\(message.fromUser?.userId ?? "?"))")
+									if !currentUser, let fromUser = message.fromUser {
+										Text("\(fromUser.longName ?? "unknown".localized) (\(fromUser.userId ?? "?"))")
 											.font(.caption)
 											.foregroundColor(.gray)
 											.offset(y: 8)
@@ -166,8 +167,7 @@ struct ChannelMessageList: View {
 					ConnectedDevice(
 						bluetoothOn: bleManager.isSwitchedOn,
 						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?",
-
+						name: bleManager.connectedPeripheral?.shortName ?? "?",
 						// mqttProxyConnected defaults to false, so if it's not enabled it will still be false
 						mqttProxyConnected: bleManager.mqttProxyConnected && (channel.uplinkEnabled || channel.downlinkEnabled),
 						mqttUplinkEnabled: channel.uplinkEnabled,
