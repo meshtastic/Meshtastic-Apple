@@ -26,6 +26,9 @@ extension Logger {
 
 	/// All logs related to tracking and analytics.
 	static let statistics = Logger(subsystem: subsystem, category: "📊 Stats")
+	
+	/// All detailed logs originating from the device (radio).
+	static let radio = Logger(subsystem: subsystem, category: "📟 Radio")
 
 	/// Fetch from the logstore
 	static public func fetch(predicateFormat: String) async throws -> [OSLogEntryLog] {
