@@ -266,7 +266,7 @@ func upsertNodeInfoPacket(packet: MeshPacket, context: NSManagedObjectContext) {
 			}
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated NodeInfo from Node Info App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
+				Logger.data.info("💾 [NodeInfo] Updated from Node Info App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError

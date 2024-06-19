@@ -537,15 +537,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			}
 			if let log = String(data: characteristic.value!, encoding: .utf8) {
 				if (log.starts(with: "DEBUG |")) {
-					Logger.radio.debug("📟 \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces)))")
+					Logger.radio.debug("🐞 \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces)))")
 				} else if (log.starts(with: "INFO  |")) {
-					Logger.radio.info("📟 \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces))")
+					Logger.radio.info("✅ \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces))")
 				} else if (log.starts(with: "WARN  |")) {
-					Logger.radio.warning("📟 \(log.replacingOccurrences(of: "WARN  |", with: "").trimmingCharacters(in: .whitespaces))")
+					Logger.radio.warning("⚠️ \(log.replacingOccurrences(of: "WARN  |", with: "").trimmingCharacters(in: .whitespaces))")
 				} else if (log.starts(with: "ERROR |")) {
-					Logger.radio.error("📟 \(log.replacingOccurrences(of: "ERROR |", with: "").trimmingCharacters(in: .whitespaces))")
+					Logger.radio.error("💥 \(log.replacingOccurrences(of: "ERROR |", with: "").trimmingCharacters(in: .whitespaces))")
 				} else if (log.starts(with: "CRIT  |")) {
-					Logger.radio.critical("📟 \(log.replacingOccurrences(of: "CRIT  |", with: "").trimmingCharacters(in: .whitespaces))")
+					Logger.radio.critical("💥 \(log.replacingOccurrences(of: "CRIT  |", with: "").trimmingCharacters(in: .whitespaces))")
 				} else {
 					Logger.radio.debug("📟 \(log)")
 				}
