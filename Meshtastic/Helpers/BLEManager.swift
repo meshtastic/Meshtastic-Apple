@@ -936,8 +936,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	}
 
 	public func sendMessage(message: String, toUserNum: Int64, channel: Int32, isEmoji: Bool, replyID: Int64) -> Bool {
-		var success = false
-
 		// Return false if we are not properly connected to a device, handle retry logic in the view for now
 		guard let connectedPeripheral, connectedPeripheral.peripheral.state == .connected else {
 			self.disconnectPeripheral()
@@ -1055,7 +1053,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		if waypoint.latitudeI == 373346000 && waypoint.longitudeI == -1220090000 {
 			return false
 		}
-		var success = false
 		let fromNodeNum = UInt32(connectedPeripheral.num)
 		var meshPacket = MeshPacket()
 		meshPacket.to = Self.emptyNodeNum
@@ -1081,7 +1078,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		MeshLogger.log("📍 \(logString)")
 		if connectedPeripheral.peripheral.state == .connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			success = true
 			let wayPointEntity = getWaypoint(id: Int64(waypoint.id), context: context!)
 			wayPointEntity.id = Int64(waypoint.id)
 			wayPointEntity.name = waypoint.name.count >= 1 ? waypoint.name : "Dropped Pin"

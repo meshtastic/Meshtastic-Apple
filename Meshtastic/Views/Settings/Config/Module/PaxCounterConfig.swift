@@ -64,10 +64,13 @@ struct PaxCounterConfig: View {
 
 			setPaxValues()
 			// Need to request a PAX Counter module config from the remote node before allowing changes
-			if let connectedPeripheral = bleManager.connectedPeripheral, node?.paxCounterConfig == nil {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestPaxCounterModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node, node.paxCounterConfig == nil {
+				if let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context) {
+					_ = bleManager.requestPaxCounterModuleConfig(
+						fromUser: connectedNode.user!,
+						toUser: node.user!,
+						adminIndex: connectedNode.myInfo?.adminIndex ?? 0
+					)
 				}
 			}
 		}
