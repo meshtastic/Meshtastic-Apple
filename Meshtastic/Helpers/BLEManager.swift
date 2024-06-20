@@ -543,16 +543,16 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						let coordstring = "\(log.replacingOccurrences(of: "DEBUG | [GPS] Setting local position:", with: "").trimmingCharacters(in: .whitespaces))"
 						Logger.radio.debug("🛰️ [GPS] Setting local position: \(coordstring, privacy: .private)")
 					} else {
-						Logger.radio.debug("🐞 \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces))")
+						Logger.radio.debug("🐞 \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
 					}
 				} else if (log.starts(with: "INFO  |")) {
-					Logger.radio.info("✅ \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces))")
+					Logger.radio.info("✅ \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
 				} else if (log.starts(with: "WARN  |")) {
-					Logger.radio.warning("⚠️ \(log.replacingOccurrences(of: "WARN  |", with: "").trimmingCharacters(in: .whitespaces))")
+					Logger.radio.warning("⚠️ \(log.replacingOccurrences(of: "WARN  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
 				} else if (log.starts(with: "ERROR |")) {
-					Logger.radio.error("💥 \(log.replacingOccurrences(of: "ERROR |", with: "").trimmingCharacters(in: .whitespaces))")
+					Logger.radio.error("💥 \(log.replacingOccurrences(of: "ERROR |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
 				} else if (log.starts(with: "CRIT  |")) {
-					Logger.radio.critical("💥 \(log.replacingOccurrences(of: "CRIT  |", with: "").trimmingCharacters(in: .whitespaces))")
+					Logger.radio.critical("💥 \(log.replacingOccurrences(of: "CRIT  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
 				} else {
 					Logger.radio.debug("📟 \(log)")
 				}
