@@ -535,7 +535,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			if (characteristic.value == nil || characteristic.value!.isEmpty) {
 				return
 			}
-			if let log = String(data: characteristic.value!, encoding: .utf8) {
+			if var log = String(data: characteristic.value!, encoding: .utf8) {
+				/// Get rid of any commas for export
+				log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
 				if (log.starts(with: "DEBUG |")) {
 					if log.starts(with: "DEBUG | [GPS] Setting local position:") {
 						let coordstring = "\(log.replacingOccurrences(of: "DEBUG | [GPS] Setting local position:", with: "").trimmingCharacters(in: .whitespaces))"
