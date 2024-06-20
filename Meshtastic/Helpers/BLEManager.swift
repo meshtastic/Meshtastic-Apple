@@ -537,7 +537,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			}
 			if let log = String(data: characteristic.value!, encoding: .utf8) {
 				if (log.starts(with: "DEBUG |")) {
-					Logger.radio.debug("🐞 \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces))")
+					if log.starts(with: "DEBUG | [GPS] Setting local position:") {
+						let coordstring = "\(log.replacingOccurrences(of: "DEBUG | [GPS] Setting local position:", with: "").trimmingCharacters(in: .whitespaces))"
+						Logger.radio.debug("🛰️ [GPS] Setting local position: \(coordstring, privacy: .private)")
+					} else {
+						Logger.radio.debug("🐞 \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces))")
+					}
 				} else if (log.starts(with: "INFO  |")) {
 					Logger.radio.info("✅ \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces))")
 				} else if (log.starts(with: "WARN  |")) {
