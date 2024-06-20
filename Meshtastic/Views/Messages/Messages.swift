@@ -93,15 +93,9 @@ struct Messages: View {
 					let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(UserDefaults.preferredPeripheralNum))
 					do {
-						guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-							return
-						}
-						// Found a node, check it for a region
-						if !fetchedNode.isEmpty {
-							node = fetchedNode[0]
-						}
+						node = try context.fetch(fetchNodeInfoRequest).first
 					} catch {
-
+						Logger.data.error("💥 Error fetching Node Info: \(error.localizedDescription)")
 					}
 				}
 			}

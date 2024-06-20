@@ -318,20 +318,14 @@ struct Connect: View {
 				fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(bleManager.connectedPeripheral?.num ?? -1))
 
 				do {
-					guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-						return
-					}
-					// Found a node, check it for a region
-					if !fetchedNode.isEmpty {
-						node = fetchedNode[0]
-						if node!.loRaConfig != nil && node!.loRaConfig?.regionCode ?? 0 == RegionCodes.unset.rawValue {
-							isUnsetRegion = true
-						} else {
-							isUnsetRegion = false
-						}
+					node = try context.fetch(fetchNodeInfoRequest).first
+					if let loRaConfig = node?.loRaConfig, loRaConfig.regionCode == RegionCodes.unset.rawValue {
+						isUnsetRegion = true
+					} else {
+						isUnsetRegion = false
 					}
 				} catch {
-
+					Logger.data.error("💥 Error fetching node info: \(error.localizedDescription)")
 				}
 			}
 		}

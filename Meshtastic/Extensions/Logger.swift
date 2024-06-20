@@ -39,7 +39,7 @@ extension Logger {
 
 		let store = try OSLogStore(scope: .currentProcessIdentifier)
 		let position = store.position(timeIntervalSinceLatestBoot: 0)
-		let calendar = Calendar.current
+		//let calendar = Calendar.current
 		//let dayAgo = calendar.date(byAdding: .day, value: -1, to: Date.now)
 		//let position = store.position(date: dayAgo!)
 		let predicate = NSPredicate(format: predicateFormat)

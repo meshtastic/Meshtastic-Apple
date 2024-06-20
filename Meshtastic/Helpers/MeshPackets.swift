@@ -705,7 +705,7 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 								}
 							}
 						} catch {
-
+							Logger.data.error("💥 Error fetching myInfo: \(error.localizedDescription)")
 						}
 					}
 				}

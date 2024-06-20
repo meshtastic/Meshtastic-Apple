@@ -135,8 +135,8 @@ struct PowerConfig: View {
 			setPowerValues()
 
 			// Need to request a Power config from the remote node before allowing changes
-			if let connectedPeripheral = bleManager.connectedPeripheral,  node?.powerConfig == nil {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
+			if let connectedPeripheral = bleManager.connectedPeripheral, node?.powerConfig == nil {
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestPowerConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
