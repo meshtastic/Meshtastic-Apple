@@ -191,6 +191,22 @@ extension NSPersistentContainer {
 			do {
 				let newStore = try temporaryPSC.addPersistentStore(ofType: persistentStoreDescription.type, configurationName: persistentStoreDescription.configuration, at: persistentStoreDescription.url, options: persistentStoreDescription.options)
 				let _ = try temporaryPSC.migratePersistentStore(newStore, to: destinationStoreURL, options: persistentStoreDescription.options, withType: persistentStoreDescription.type)
+				
+				/// Cleanup extra files
+				let directory = destinationStoreURL.deletingLastPathComponent()
+				/// Delete -wal file
+				do {
+					try FileManager.default.removeItem(at: directory.appendingPathComponent("Meshtastic.sqlite-wal"))
+					/// Delete -shm file
+					do {
+						try FileManager.default.removeItem(at: directory.appendingPathComponent("Meshtastic.sqlite-shm"))
+					} catch {
+						print(error)
+					}
+				} catch {
+					print(error)
+				}
+				
 			} catch {
 				throw CopyPersistentStoreErrors.copyStoreError("\(error.localizedDescription)")
 			}

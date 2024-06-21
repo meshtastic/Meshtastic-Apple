@@ -53,9 +53,9 @@ struct BackupData: View {
 			.font(.title)
 		List(files, id: \.self) { file in
 			if file.pathExtension.contains("sqlite") { //} == "sqlite" {
-				//Text(file.absoluteString)
+				/// Text(file.absoluteString)
 				Label {
-					Text("\(file.pathComponents[10])/\(file.lastPathComponent)")
+					Text("\(file.pathComponents[9])/\(file.lastPathComponent)")
 						.swipeActions {
 							Button(role: .none) {
 								bleManager.disconnectPeripheral(reconnect: false)
@@ -98,6 +98,19 @@ struct BackupData: View {
 						.font(idiom == .phone ? .callout : .title)
 						.frame(width: 35)
 				}
+				
+#if targetEnvironment(macCatalyst)
+				Button(role: .destructive) {
+					do {
+						try FileManager.default.removeItem(at: file)
+						loadFiles()
+					} catch {
+						print(error)
+					}
+				} label: {
+					Label("delete", systemImage: "trash")
+				}
+#endif
 			}
 			else {
 				Label {
