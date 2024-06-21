@@ -632,9 +632,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						// Update Connected Peripheral Info
 						connectedPeripheral.num = Int64(decodedInfo.myInfo.myNodeNum)
 						self.updateConnectedPeripheral(to: Int64(decodedInfo.myInfo.myNodeNum))
-						
 						// Attempt restore of DB from connected node
-						let newConnection = UserDefaults.preferredPeripheralNum != myInfo.myNodeNum
+						let newConnection = Int64(UserDefaults.preferredPeripheralNum) != Int64(decodedInfo.myInfo.myNodeNum)
 						if newConnection {
 							let container = NSPersistentContainer(name: "Meshtastic")
 							if let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {

@@ -147,6 +147,10 @@ extension NSPersistentContainer {
 	/// - Returns: Nothing. If no errors are thrown, all loaded persistent stores will be copied to the destination directory.
 	func copyPersistentStores(to destinationURL: URL, overwriting: Bool = false) throws -> Void {
 		print(destinationURL)
+		guard !destinationURL.relativeString.contains("/0/") else {
+			throw CopyPersistentStoreErrors.invalidDestination("Invalid 0 Node Id")
+		}
+		
 		guard destinationURL.isFileURL else {
 			throw CopyPersistentStoreErrors.invalidDestination("Destination URL must be a file URL")
 		}

@@ -228,7 +228,6 @@ struct Connect: View {
 													print("Copy error: \(error)")
 												}
 												UserDefaults.preferredPeripheralId = selectedPeripherialId
-												UserDefaults.preferredPeripheralNum = 0
 												let radio = bleManager.peripherals.first(where: { $0.peripheral.identifier.uuidString == selectedPeripherialId })
 												if radio != nil {
 													bleManager.connectTo(peripheral: radio!.peripheral)
