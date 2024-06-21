@@ -52,87 +52,83 @@ struct BackupData: View {
 		Text("Files")
 			.font(.title)
 		List(files, id: \.self) { file in
-			if file.pathExtension.contains("sqlite") { //} == "sqlite" {
-				/// Text(file.absoluteString)
-				Label {
-					Text("\(file.pathComponents[9])/\(file.lastPathComponent)")
-						.swipeActions {
-							Button(role: .none) {
-								bleManager.disconnectPeripheral(reconnect: false)
-								
-								let container = NSPersistentContainer(name : "Meshtastic")
-								guard let storeUrl = container.persistentStoreDescriptions.first?.url else {
-									return
+			HStack {
+				VStack (alignment: .leading ) {
+					if file.pathExtension.contains("sqlite") { //} == "sqlite" {
+						Label {
+							Text("\(file.pathComponents[9])/\(file.lastPathComponent) - \(file.fileSizeString)")
+								.swipeActions {
+									Button(role: .none) {
+										bleManager.disconnectPeripheral(reconnect: false)
+										let container = NSPersistentContainer(name : "Meshtastic")
+										do {
+											context.reset()
+											try container.restorePersistentStore(from: file.absoluteURL)
+											
+											UserDefaults.preferredPeripheralId = ""
+											UserDefaults.preferredPeripheralNum = Int(file.pathComponents[10]) ?? 0
+											Logger.data.notice("🗂️ Restored a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
+										} catch {
+											print("Copy error: \(error)")
+										}
+									} label: {
+										Label("restore", systemImage: "arrow.counterclockwise")
+									}
+									Button(role: .destructive) {
+										do {
+											try FileManager.default.removeItem(at: file)
+										} catch {
+											print(error)
+										}
+									} label: {
+										Label("delete", systemImage: "trash")
+									}
 								}
-								guard let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-									Logger.data.error("nil File path for back")
-									return
-								}
-								do {
-									context.reset()
-									try container.restorePersistentStore(from: file.absoluteURL)
-									
-									UserDefaults.preferredPeripheralId = ""
-									UserDefaults.preferredPeripheralNum = Int(file.pathComponents[10]) ?? 0
-									Logger.data.notice("🗂️ Restored a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
-								} catch {
-									print("Copy error: \(error)")
-								}
-							} label: {
-								Label("restore", systemImage: "arrow.counterclockwise")
-							}
-							Button(role: .destructive) {
-								do {
-									try FileManager.default.removeItem(at: file)
-								} catch {
-									print(error)
-								}
-							} label: {
-								Label("delete", systemImage: "trash")
-							}
+						} icon: {
+							Image(systemName: "cylinder.split.1x2")
+								.symbolRenderingMode(.hierarchical)
+								.font(idiom == .phone ? .callout : .title)
+								.frame(width: 35)
 						}
-						
-				} icon: {
-					Image(systemName: "cylinder.split.1x2")
-						.symbolRenderingMode(.hierarchical)
-						.font(idiom == .phone ? .callout : .title)
-						.frame(width: 35)
-				}
-				
-#if targetEnvironment(macCatalyst)
-				Button(role: .destructive) {
-					do {
-						try FileManager.default.removeItem(at: file)
-						loadFiles()
-					} catch {
-						print(error)
 					}
-				} label: {
-					Label("delete", systemImage: "trash")
+					else {
+						Label {
+							Text("\(file.lastPathComponent) - \(file.fileSizeString)")
+								.swipeActions {
+									Button(role: .destructive) {
+										do {
+											try FileManager.default.removeItem(at: file)
+										} catch {
+											print(error)
+										}
+									} label: {
+										Label("delete", systemImage: "trash")
+									}
+								}
+							
+						} icon: {
+							Image(systemName: "doc.text")
+								.symbolRenderingMode(.hierarchical)
+								.font(idiom == .phone ? .callout : .title)
+								.frame(width: 35)
+						}
+					}
+				}
+#if targetEnvironment(macCatalyst)
+				Spacer()
+				VStack (alignment: .trailing) {
+					Button(role: .destructive) {
+						do {
+							try FileManager.default.removeItem(at: file)
+							loadFiles()
+						} catch {
+							print(error)
+						}
+					} label: {
+						Label("", systemImage: "trash")
+					}
 				}
 #endif
-			}
-			else {
-				Label {
-					Text("\(file.lastPathComponent)")
-						.swipeActions {
-							Button(role: .destructive) {
-								do {
-									try FileManager.default.removeItem(at: file)
-								} catch {
-									print(error)
-								}
-							} label: {
-								Label("delete", systemImage: "trash")
-							}
-						}
-						
-				} icon: {
-					Image(systemName: "doc.text")
-						.symbolRenderingMode(.hierarchical)
-						.font(idiom == .phone ? .callout : .title)
-						.frame(width: 35)
-				}
 			}
 		}
 		.navigationBarTitle("Data", displayMode: .inline)
