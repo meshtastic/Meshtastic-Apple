@@ -6,6 +6,7 @@ import MapKit
 import MeshtasticProtobufs
 import CocoaMQTT
 import OSLog
+import RegexBuilder
 
 // ---------------------------------------------------------------------------------------
 // Meshtastic BLE Device Manager
@@ -536,12 +537,36 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				return
 			}
 			if var log = String(data: characteristic.value!, encoding: .utf8) {
-				/// Get rid of any commas for export
-				log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+								
+				/// Debug Log Level
 				if (log.starts(with: "DEBUG |")) {
-					if log.starts(with: "DEBUG | [GPS] Setting local position:") {
-						let coordstring = "\(log.replacingOccurrences(of: "DEBUG | [GPS] Setting local position:", with: "").trimmingCharacters(in: .whitespaces))"
-						Logger.radio.debug("🛰️ [GPS] Setting local position: \(coordstring, privacy: .private)")
+					if log.starts(with: "DEBUG | [GPS]") {
+						let coordsSearch = Regex {
+							Capture {
+								Regex {
+									"latitude="
+									OneOrMore(.digit)
+								}
+							}
+							Capture {", "}
+							Capture {
+								Regex {
+									"longitude="
+									OneOrMore(.digit)
+								}
+							}
+							Capture {","}
+						}
+						.anchorsMatchLineEndings()
+						do {
+							let logString = "\(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces))"
+							if let coordsMatch = try coordsSearch.firstMatch(in: logString) {
+								Logger.radio.debug("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0, privacy: .private) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
+							}
+
+						} catch {
+							Logger.radio.debug("🛰️ \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+						}
 					} else {
 						Logger.radio.debug("🐞 \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
 					}
@@ -556,6 +581,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				} else {
 					Logger.radio.debug("📟 \(log)")
 				}
+				
+				/// Get rid of any commas for export at the end
+				log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
 			}
 
 		case FROMRADIO_UUID:
