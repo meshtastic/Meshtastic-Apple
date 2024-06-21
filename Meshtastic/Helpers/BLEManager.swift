@@ -558,11 +558,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 					.anchorsMatchLineEndings()
 					do {
-						let logString = "\(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces))"
+						let logString = log//"\(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces))"
 						if let coordsMatch = try coordsSearch.firstMatch(in: logString) {
 							/// Get rid of any commas for export at the end
+							log = "\(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces))"
 							log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-							Logger.radio.debug("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0, privacy: .private) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
+							Logger.radio.debug("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0.replacingOccurrences(of: "[,]", with: "", options: .regularExpression), privacy: .private) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
 						}
 					} catch {
 						/// Get rid of any commas for export at the end
