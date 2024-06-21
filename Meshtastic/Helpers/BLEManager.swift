@@ -536,58 +536,66 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			if (characteristic.value == nil || characteristic.value!.isEmpty) {
 				return
 			}
+			let coordsSearch = Regex {
+				Capture {
+					Regex {
+						"lat="
+						OneOrMore(.digit)
+					}
+				}
+				Capture {" "}
+				Capture {
+					Regex {
+						"long="
+						OneOrMore(.digit)
+					}
+				}
+			}
+			.anchorsMatchLineEndings()
 			if var log = String(data: characteristic.value!, encoding: .utf8) {
 								
 				/// Debug Log Level
 				if (log.starts(with: "DEBUG |")) {
-					let coordsSearch = Regex {
-						Capture {
-							Regex {
-								"latitude="
-								OneOrMore(.digit)
-							}
-						}
-						Capture {", "}
-						Capture {
-							Regex {
-								"longitude="
-								OneOrMore(.digit)
-							}
-						}
-						Capture {","}
-					}
-					.anchorsMatchLineEndings()
 					do {
-						let logString = log//"\(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces))"
+						let logString = log
 						if let coordsMatch = try coordsSearch.firstMatch(in: logString) {
-							/// Get rid of any commas for export at the end
 							log = "\(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces))"
 							log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
 							Logger.radio.debug("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0.replacingOccurrences(of: "[,]", with: "", options: .regularExpression), privacy: .private) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
-						}
+						}else  {
+						   log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+						   Logger.radio.debug("🐞 \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+					   }
+
 					} catch {
-						/// Get rid of any commas for export at the end
 						log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
 						Logger.radio.debug("🐞 \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
 					}
 				} else if (log.starts(with: "INFO  |")) {
-					/// Get rid of any commas for export at the end
-					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-					Logger.radio.info("✅ \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+					do {
+						let logString = log
+						if let coordsMatch = try coordsSearch.firstMatch(in: logString) {
+							log = "\(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces))"
+							log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+							Logger.radio.info("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0.replacingOccurrences(of: "[,]", with: "", options: .regularExpression), privacy: .private) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
+						}  else  {
+							log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+							Logger.radio.debug("🐞 \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+						}
+					} catch {
+						log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+						Logger.radio.info("✅ \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+					}
 				} else if (log.starts(with: "WARN  |")) {
-					/// Get rid of any commas for export at the end
 					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
 					Logger.radio.warning("⚠️ \(log.replacingOccurrences(of: "WARN  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
 				} else if (log.starts(with: "ERROR |")) {
-					/// Get rid of any commas for export at the end
 					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
 					Logger.radio.error("💥 \(log.replacingOccurrences(of: "ERROR |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
 				} else if (log.starts(with: "CRIT  |")) {
-					/// Get rid of any commas for export at the end
 					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
 					Logger.radio.critical("💥 \(log.replacingOccurrences(of: "CRIT  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
 				} else {
-					/// Get rid of any commas for export at the end
 					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
 					Logger.radio.debug("📟 \(log)")
 				}

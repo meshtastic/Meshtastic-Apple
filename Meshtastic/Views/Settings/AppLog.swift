@@ -8,6 +8,7 @@
 import SwiftUI
 import OSLog
 
+/// Needed for TableColumnForEach
 @available(iOS 17.4, *)
 struct AppLog: View {
 
