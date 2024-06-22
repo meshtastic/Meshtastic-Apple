@@ -176,8 +176,6 @@ struct AppLog: View {
 
 @available(iOS 17.4, *)
 extension AppLog {
-	//static private let template = NSPredicate(format: "(subsystem BEGINSWITH $PREFIX) || ((subsystem IN $SYSTEM) && ((messageType == error) || (messageType == fault)))")
-
 	@MainActor
 	private func searchAppLogs() async -> [OSLogEntryLog] {
 		do {
@@ -190,7 +188,7 @@ extension AppLog {
 			/// Create an array of predicates to hold our AND predicates
 			var predicates: [NSPredicate] = []
 			/// Subsystem Predicate
-			let subsystemPredicate = NSPredicate(format: "subsystem IN %@", ["com.apple.coredata", "gvh.MeshtasticClient"])
+			let subsystemPredicate = NSPredicate(format: "subsystem IN %@", ["com.apple.SwiftUI", "com.apple.coredata", "gvh.MeshtasticClient"])
 			predicates.append(subsystemPredicate)
 			/// Category
 			if category > -1 {
