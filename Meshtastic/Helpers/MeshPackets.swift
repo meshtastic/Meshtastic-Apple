@@ -450,7 +450,10 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 								ch.objectWillChange.send()
 							}
 						}
-					} catch { }
+					} catch { 
+						let nsError = error as NSError
+						Logger.data.error("💥 Error Saving Routing Packer \(packet.id, privacy: .public) Error: \(nsError, privacy: .public)")
+					}
 				}
 
 			} else {
@@ -461,7 +464,7 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
-			Logger.data.error("💥 Error Saving ACK for message: \(packet.id) Error: \(nsError)")
+			Logger.data.error("💥 Error Saving ACK for message: \(packet.id, privacy: .public) Error: \(nsError, privacy: .public)")
 		}
 	}
 }
