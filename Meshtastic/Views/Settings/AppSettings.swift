@@ -78,7 +78,7 @@ struct AppSettings: View {
 							bleManager.disconnectPeripheral()
 							/// Delete any database backups too
 							if var url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-								url = url.appendingPathComponent("backups").appendingPathComponent(String(UserDefaults.preferredPeripheralNum))
+								url = url.appendingPathComponent("backup").appendingPathComponent(String(UserDefaults.preferredPeripheralNum))
 								do {
 									try FileManager.default.removeItem(at: url.appendingPathComponent("Meshtastic.sqlite"))
 									/// Delete -shm file

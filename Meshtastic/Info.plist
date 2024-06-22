@@ -116,7 +116,7 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportsDocumentBrowser</key>
-	<false/>
+	<true/>
 	<key>UTImportedTypeDeclarations</key>
 	<array>
 		<dict>

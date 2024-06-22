@@ -18,6 +18,8 @@ struct BackupData: View {
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 
 	var body: some View {
+
+		
 		VStack {
 			Button(action: {
 				let container = NSPersistentContainer(name : "Meshtastic")
@@ -26,7 +28,7 @@ struct BackupData: View {
 					return
 				}
 				do {
-					try container.copyPersistentStores(to: url.appendingPathComponent("backups").appendingPathComponent("\(UserDefaults.preferredPeripheralNum)"), overwriting: true)
+					try container.copyPersistentStores(to: url.appendingPathComponent("backup").appendingPathComponent("\(UserDefaults.preferredPeripheralNum)"), overwriting: true)
 					loadFiles()
 					Logger.data.notice("🗂️ Made a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
 				} catch {
@@ -49,14 +51,12 @@ struct BackupData: View {
 			.controlSize(.large)
 			
 		}
-		Text("Files")
-			.font(.title)
 		List(files, id: \.self) { file in
 			HStack {
 				VStack (alignment: .leading ) {
 					if file.pathExtension.contains("sqlite") { //} == "sqlite" {
 						Label {
-							Text("\(file.pathComponents[9])/\(file.lastPathComponent) - \(file.fileSizeString)")
+							Text("Node Core Data Backup \(file.pathComponents[9])/\(file.lastPathComponent) - \(file.creationDate?.formatted() ?? "") - \(file.fileSizeString)")
 								.swipeActions {
 									Button(role: .none) {
 										bleManager.disconnectPeripheral(reconnect: false)
@@ -64,7 +64,6 @@ struct BackupData: View {
 										do {
 											context.reset()
 											try container.restorePersistentStore(from: file.absoluteURL)
-											
 											UserDefaults.preferredPeripheralId = ""
 											UserDefaults.preferredPeripheralNum = Int(file.pathComponents[10]) ?? 0
 											Logger.data.notice("🗂️ Restored a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
@@ -93,7 +92,7 @@ struct BackupData: View {
 					}
 					else {
 						Label {
-							Text("\(file.lastPathComponent) - \(file.fileSizeString)")
+							Text("\(file.lastPathComponent) - \(file.creationDate?.formatted() ?? "") - \(file.fileSizeString)")
 								.swipeActions {
 									Button(role: .destructive) {
 										do {
@@ -117,7 +116,7 @@ struct BackupData: View {
 #if targetEnvironment(macCatalyst)
 				Spacer()
 				VStack (alignment: .trailing) {
-					Button(role: .destructive) {
+					Button() {
 						do {
 							try FileManager.default.removeItem(at: file)
 							loadFiles()
@@ -131,7 +130,7 @@ struct BackupData: View {
 #endif
 			}
 		}
-		.navigationBarTitle("Data", displayMode: .inline)
+		.navigationBarTitle("File Storage", displayMode: .inline)
 		.onAppear(perform: {
 			loadFiles()
 		})

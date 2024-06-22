@@ -645,7 +645,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						if newConnection {
 							let container = NSPersistentContainer(name: "Meshtastic")
 							if let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-								let databasePath = url.appendingPathComponent("backups")
+								let databasePath = url.appendingPathComponent("backup")
 									.appendingPathComponent("\(UserDefaults.preferredPeripheralNum)")
 									.appendingPathComponent("Meshtastic.sqlite")
 								if FileManager.default.fileExists(atPath: databasePath.path) {
