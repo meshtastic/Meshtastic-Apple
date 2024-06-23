@@ -383,18 +383,16 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 	}
 }
 
-func upsertBluetoothConfigPacket(config: Meshtastic.Config.BluetoothConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertBluetoothConfigPacket(config: Config.BluetoothConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.bluetooth.config %@".localized, String(nodeNum))
 	MeshLogger.log("📶 \(logString)")
 
-	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
 	do {
-		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-			return
-		}
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save Device Config
 		if !fetchedNode.isEmpty {
 			if fetchedNode[0].bluetoothConfig == nil {
@@ -402,26 +400,28 @@ func upsertBluetoothConfigPacket(config: Meshtastic.Config.BluetoothConfig, node
 				newBluetoothConfig.enabled = config.enabled
 				newBluetoothConfig.mode = Int32(config.mode.rawValue)
 				newBluetoothConfig.fixedPin = Int32(config.fixedPin)
+				newBluetoothConfig.deviceLoggingEnabled = config.deviceLoggingEnabled
 				fetchedNode[0].bluetoothConfig = newBluetoothConfig
 			} else {
 				fetchedNode[0].bluetoothConfig?.enabled = config.enabled
 				fetchedNode[0].bluetoothConfig?.mode = Int32(config.mode.rawValue)
 				fetchedNode[0].bluetoothConfig?.fixedPin = Int32(config.fixedPin)
+				fetchedNode[0].bluetoothConfig?.deviceLoggingEnabled = config.deviceLoggingEnabled
 			}
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated Bluetooth Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 Updated Bluetooth Config for node: \(nodeNum.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data BluetoothConfigEntity: \(nsError)")
+				Logger.data.error("💥 Error Updating Core Data BluetoothConfigEntity: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Bluetooth Config")
+			Logger.data.error("💥 No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Bluetooth Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data BluetoothConfigEntity failed: \(nsError)")
+		Logger.data.error("💥 Fetching node for core data BluetoothConfigEntity failed: \(nsError, privacy: .public)")
 	}
 }
 

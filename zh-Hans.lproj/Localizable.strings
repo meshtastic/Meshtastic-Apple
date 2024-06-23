@@ -173,6 +173,12 @@
 "interval.eventytwo.hours"="七十二小时";
 "keyboard.type"="键盘类型";
 "logging"="加载中";
+"log.time"="Time";
+"log.subsystem"="Subsystem";
+"log.process"="Process";
+"log.category"="Category";
+"log.level"="Level";
+"log.message"="Message";
 "lora"="LoRa";
 "lora.config"="LoRa 配置";
 "map"="Mesh 地图";
