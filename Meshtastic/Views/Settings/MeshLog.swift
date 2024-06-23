@@ -41,6 +41,7 @@ struct MeshLog: View {
 					// Stop adding logs when an error is thrown
 				}
 		}
+		.listStyle(.plain)
 		.fileExporter(
 			isPresented: $isExporting,
 			document: document,

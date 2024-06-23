@@ -134,7 +134,7 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes
 
 func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("mesh.log.nodeinfo.received %@".localized, String(packet.from))
+	let logString = String.localizedStringWithFormat("mesh.log.nodeinfo.received %@".localized, packet.from.toHex())
 	MeshLogger.log("📟 \(logString)")
 
 	guard packet.from > 0 else { return }
