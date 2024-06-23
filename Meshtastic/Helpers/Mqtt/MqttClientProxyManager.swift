@@ -81,16 +81,16 @@ class MqttClientProxyManager {
 		}
 	}
 	func subscribe(topic: String, qos: CocoaMQTTQoS) {
-		Logger.mqtt.info("📲 [MQTT Client Proxy] subscribed to: \(topic)")
+		Logger.mqtt.info("📲 [MQTT Client Proxy] subscribed to: \(topic, privacy: .public)")
 		mqttClientProxy?.subscribe(topic, qos: qos)
 	}
 	func unsubscribe(topic: String) {
 		mqttClientProxy?.unsubscribe(topic)
-		Logger.mqtt.info("📲 [MQTT Client Proxy] unsubscribe to topic: \(topic)")
+		Logger.mqtt.info("📲 [MQTT Client Proxy] unsubscribe to topic: \(topic, privacy: .public)")
 	}
 	func publish(message: String, topic: String, qos: CocoaMQTTQoS) {
 		mqttClientProxy?.publish(topic, withString: message, qos: qos)
-		Logger.mqtt.debug("📲 [MQTT Client Proxy] publish for: \(topic)")
+		Logger.mqtt.debug("📲 [MQTT Client Proxy] publish for: \(topic, privacy: .public)")
 	}
 	func disconnect() {
 		if let client = mqttClientProxy {
@@ -137,21 +137,21 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 		delegate?.onMqttDisconnected()
 	}
 	func mqtt(_ mqtt: CocoaMQTT, didPublishMessage message: CocoaMQTTMessage, id: UInt16) {
-		Logger.mqtt.info("📲 [MQTT Client Proxy] published messsage from MqttClientProxyManager: \(message)")
+		Logger.mqtt.info("📲 [MQTT Client Proxy] published messsage from MqttClientProxyManager: \(message, privacy: .public)")
 	}
 	func mqtt(_ mqtt: CocoaMQTT, didPublishAck id: UInt16) {
-		Logger.mqtt.info("📲 [MQTT Client Proxy] published Ack from MqttClientProxyManager: \(id)")
+		Logger.mqtt.info("📲 [MQTT Client Proxy] published Ack from MqttClientProxyManager: \(id, privacy: .public)")
 	}
 
 	public func mqtt(_ mqtt: CocoaMQTT, didReceiveMessage message: CocoaMQTTMessage, id: UInt16) {
 		delegate?.onMqttMessageReceived(message: message)
-		Logger.mqtt.info("📲 [MQTT Client Proxy] message received on topic: \(message.topic)")
+		Logger.mqtt.info("📲 [MQTT Client Proxy] message received on topic: \(message.topic, privacy: .public)")
 	}
 	func mqtt(_ mqtt: CocoaMQTT, didSubscribeTopics success: NSDictionary, failed: [String]) {
-		Logger.mqtt.debug("📲 [MQTT Client Proxy] subscribed to topics: \(success.allKeys.count) topics. failed: \(failed.count) topics")
+		Logger.mqtt.debug("📲 [MQTT Client Proxy] subscribed to topics: \(success.allKeys.count, privacy: .public) topics. failed: \(failed.count, privacy: .public) topics")
 	}
 	func mqtt(_ mqtt: CocoaMQTT, didUnsubscribeTopics topics: [String]) {
-		Logger.mqtt.debug("📲 [MQTT Client Proxy] unsubscribed from topics: \(topics.joined(separator: "- "))")
+		Logger.mqtt.debug("📲 [MQTT Client Proxy] unsubscribed from topics: \(topics.joined(separator: "- "), privacy: .public)")
 	}
 	func mqttDidPing(_ mqtt: CocoaMQTT) {
 		Logger.mqtt.debug("📲 [MQTT Client Proxy] ping")

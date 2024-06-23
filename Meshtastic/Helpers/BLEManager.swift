@@ -301,21 +301,21 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			switch characteristic.uuid {
 
 			case TORADIO_UUID:
-				Logger.services.info("✅ BLE did discover TORADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
+				Logger.services.info("✅ [BLE] did discover TORADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown", privacy: .public)")
 				TORADIO_characteristic = characteristic
 
 			case FROMRADIO_UUID:
-				Logger.services.info("✅ BLE did discover FROMRADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
+				Logger.services.info("✅ [BLE] did discover FROMRADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown", privacy: .public)")
 				FROMRADIO_characteristic = characteristic
 				peripheral.readValue(for: FROMRADIO_characteristic)
 
 			case FROMNUM_UUID:
-				Logger.services.info("✅ BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
+				Logger.services.info("✅ [BLE] did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown", privacy: .public)")
 				FROMNUM_characteristic = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
-				
+			
 			case LOGRADIO_UUID:
-				Logger.services.info("✅ BLE did discover LOGRADIO (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
+				Logger.services.info("✅ [BLE] did discover LOGRADIO (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown", privacy: .public)")
 				LOGRADIO_characteristic = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
 
@@ -335,7 +335,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	func onMqttConnected() {
 		mqttProxyConnected = true
 		mqttError = ""
-		Logger.services.info("📲 Mqtt Client Proxy onMqttConnected now subscribing to \(self.mqttManager.topic).")
+		Logger.services.info("📲 [MQTT Client Proxy] onMqttConnected now subscribing to \(self.mqttManager.topic, privacy: .public).")
 		mqttManager.mqttClientProxy?.subscribe(mqttManager.topic)
 	}
 
@@ -368,7 +368,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	func onMqttError(message: String) {
 		mqttProxyConnected = false
 		mqttError = message
-		Logger.services.info("📲 Mqtt Client Proxy onMqttError: \(message)")
+		Logger.services.info("📲 [MQTT Client Proxy] onMqttError: \(message, privacy: .public)")
 	}
 
 	// MARK: Protobuf Methods
@@ -395,7 +395,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			return 0
 		}
 
-		let messageDescription = "🛎️ Requested Device Metadata for node \(toUser.longName ?? "unknown".localized) by \(fromUser.longName ?? "unknown".localized)"
+		let messageDescription = "🛎️ [Device Metadata] Requested for node \(toUser.longName ?? "unknown".localized) by \(fromUser.longName ?? "unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return Int64(meshPacket.id)
 		}
@@ -637,6 +637,27 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						connectedPeripheral.num = myInfo?.myNodeNum ?? 0
 						connectedPeripheral.name = myInfo?.bleName ?? "unknown".localized
 						connectedPeripheral.longName = myInfo?.bleName ?? "unknown".localized
+						let newConnection = Int64(UserDefaults.preferredPeripheralNum) != Int64(decodedInfo.myInfo.myNodeNum)
+						if newConnection {
+							let container = NSPersistentContainer(name: "Meshtastic")
+							if let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+								let databasePath = url.appendingPathComponent("backup")
+									.appendingPathComponent("\(UserDefaults.preferredPeripheralNum)")
+									.appendingPathComponent("Meshtastic.sqlite")
+								if FileManager.default.fileExists(atPath: databasePath.path) {
+									do {
+										disconnectPeripheral(reconnect: false)
+										try container.restorePersistentStore(from: databasePath)
+										UserDefaults.preferredPeripheralNum = Int(myInfo?.myNodeNum ?? 0)
+										context!.reset()
+										connectTo(peripheral: peripheral)
+										Logger.data.notice("🗂️ Restored Core data for /\(UserDefaults.preferredPeripheralNum)")
+									} catch {
+										Logger.data.error("Copy error: \(error)")
+									}
+								}
+							}
+						}
 					}
 					tryClearExistingChannels()
 				}
