@@ -76,6 +76,26 @@ struct AppSettings: View {
 					) {
 						Button("Erase all app data?", role: .destructive) {
 							bleManager.disconnectPeripheral()
+							/// Delete any database backups too
+							if var url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+								url = url.appendingPathComponent("backup").appendingPathComponent(String(UserDefaults.preferredPeripheralNum))
+								do {
+									try FileManager.default.removeItem(at: url.appendingPathComponent("Meshtastic.sqlite"))
+									/// Delete -shm file
+									do {
+										try FileManager.default.removeItem(at: url.appendingPathComponent("Meshtastic.sqlite-wal"))
+										do {
+											try FileManager.default.removeItem(at: url.appendingPathComponent("Meshtastic.sqlite-shm"))
+										} catch {
+											Logger.services.error("Error Deleting Meshtastic.sqlite-shm file \(error)")
+										}
+									} catch {
+										Logger.services.error("Error Deleting Meshtastic.sqlite-wal file \(error)")
+									}
+								} catch {
+									Logger.services.error("Error Deleting Meshtastic.sqlite file \(error)")
+								}
+							}
 							clearCoreDataDatabase(context: context, includeRoutes: true)
 							context.refreshAllObjects()
 							UserDefaults.standard.reset()
