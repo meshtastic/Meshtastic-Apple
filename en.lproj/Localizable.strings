@@ -177,7 +177,7 @@
 "interval.seventytwo.hours"="Seventy Two Hours";
 "keyboard.type"="Keyboard Type";
 "logging"="Logging";
-"log.time"="Timestamp";
+"log.time"="Time";
 "log.subsystem"="Subsystem";
 "log.process"="Process";
 "log.category"="Category";
