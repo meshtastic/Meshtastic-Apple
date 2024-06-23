@@ -683,6 +683,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.voltage = telemetryMessage.deviceMetrics.voltage
 					telemetry.uptimeSeconds = Int32(telemetryMessage.deviceMetrics.uptimeSeconds)
 					telemetry.metricsType = 0
+					Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.deviceMetrics.channelUtilization) Airtime: \(telemetryMessage.deviceMetrics.airUtilTx) for Node: \(packet.from.toHex())")
 				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) {
 					// Environment Metrics
 					telemetry.barometricPressure = telemetryMessage.environmentMetrics.barometricPressure
@@ -708,7 +709,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 			try context.save()
 			// Only log telemetry from the mesh not the connected device
 			if connectedNode != Int64(packet.from) {
-				Logger.data.info("💾 Telemetry Saved for Node: \(packet.from)")
+				Logger.data.info("💾 [Telemetry] Saved for Node: \(packet.from.toHex())")
 			} else if telemetry.metricsType == 0 {
 				// Connected Device Metrics
 				// ------------------------
@@ -749,10 +750,10 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
-			Logger.data.error("Error Saving Telemetry for Node \(packet.from) Error: \(nsError)")
+			Logger.data.error("💥 Error Saving Telemetry for Node \(packet.from, privacy: .public) Error: \(nsError, privacy: .public)")
 		}
 	} else {
-		Logger.data.error("Error Fetching NodeInfoEntity for Node \(packet.from)")
+		Logger.data.error("💥 Error Fetching NodeInfoEntity for Node \(packet.from.toHex(), privacy: .public)")
 	}
 }
 
