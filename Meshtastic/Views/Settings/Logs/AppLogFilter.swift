@@ -5,6 +5,14 @@
 //  Created by Garth Vander Houwen on 6/15/24.
 //
 
+
+//
+//  NodeListFilter.swift
+//  Meshtastic
+//
+//  Created by Garth Vander Houwen on 3/25/24.
+//
+
 import Foundation
 import OSLog
 import SwiftUI
