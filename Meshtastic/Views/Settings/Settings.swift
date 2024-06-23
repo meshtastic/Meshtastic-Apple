@@ -49,6 +49,7 @@ struct Settings: View {
 		case adminMessageLog
 		case appLog
 		case about
+		case backupData
 	}
 	var body: some View {
 		NavigationSplitView {
@@ -426,6 +427,20 @@ struct Settings: View {
 							.tag(SettingsSidebar.appLog)
 						}
 					}
+#if DEBUG
+					Section(header: Text("Developers")) {
+						NavigationLink {
+							BackupData()
+						} label: {
+							Label {
+								Text("App Files")
+							} icon: {
+								Image(systemName: "folder")
+							}
+						}
+						.tag(SettingsSidebar.backupData)
+					}
+#endif
 					Section(header: Text("Firmware")) {
 						NavigationLink {
 							Firmware(node: nodes.first(where: { $0.num == preferredNodeNum }))

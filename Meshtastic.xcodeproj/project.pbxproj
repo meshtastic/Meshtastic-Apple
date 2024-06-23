@@ -219,6 +219,8 @@
 		DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF924C926FBB953009FE055 /* ConnectedDevice.swift */; };
 		DDFEB3BB29900C1200EE7472 /* CurrentConditionsCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */; };
 		DDFFA7472B3A7F3C004730DB /* Bundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFFA7462B3A7F3C004730DB /* Bundle.swift */; };
+		DDFFEE7C2C27B28700540B42 /* BackupData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFFEE7B2C27B28700540B42 /* BackupData.swift */; };
+		DDFFEE7F2C27B52E00540B42 /* AppLogFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFFEE7E2C27B52E00540B42 /* AppLogFilter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -502,6 +504,8 @@
 		DDF924C926FBB953009FE055 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
 		DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentConditionsCompact.swift; sourceTree = "<group>"; };
 		DDFFA7462B3A7F3C004730DB /* Bundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
+		DDFFEE7B2C27B28700540B42 /* BackupData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupData.swift; sourceTree = "<group>"; };
+		DDFFEE7E2C27B52E00540B42 /* AppLogFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogFilter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -619,6 +623,7 @@
 		DD4A911C2708C57100501B7E /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				DDFFEE7D2C27B51900540B42 /* Logs */,
 				DD93800C2BA74CE3008BEC06 /* Channels */,
 				DD97E96728EFE9A00056DDA4 /* About.swift */,
 				DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */,
@@ -636,6 +641,7 @@
 				DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */,
 				DD61937A2863876A00E59241 /* Config */,
 				DD1B8F3F2B35E2F10022AABC /* GPSStatus.swift */,
+				DDFFEE7B2C27B28700540B42 /* BackupData.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -1026,6 +1032,14 @@
 			path = Widgets;
 			sourceTree = "<group>";
 		};
+		DDFFEE7D2C27B51900540B42 /* Logs */ = {
+			isa = PBXGroup;
+			children = (
+				DDFFEE7E2C27B52E00540B42 /* AppLogFilter.swift */,
+			);
+			path = Logs;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -1228,6 +1242,7 @@
 				DDE5B4042B2279A700FCDD05 /* TraceRouteLog.swift in Sources */,
 				25A978B02C12BD3F0003AAE7 /* ExternalNotificationConfigEntityExtension.swift in Sources */,
 				25A978AA2C12BD3F0003AAE7 /* ChannelEntityExtension.swift in Sources */,
+				DDFFEE7F2C27B52E00540B42 /* AppLogFilter.swift in Sources */,
 				DD5E5208298EE33B00D21B61 /* rtttl.pb.swift in Sources */,
 				DD6193792863875F00E59241 /* SerialConfig.swift in Sources */,
 				DDDB263F2AABEE20003AFCB7 /* NodeList.swift in Sources */,
@@ -1316,6 +1331,7 @@
 				DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */,
 				DDB75A142A0593E2006ED576 /* OfflineTileManager.swift in Sources */,
 				DDB75A1E2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift in Sources */,
+				DDFFEE7C2C27B28700540B42 /* BackupData.swift in Sources */,
 				DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */,
 				DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */,
 				DDB75A212A12B954006ED576 /* LoRaSignalStrength.swift in Sources */,
