@@ -9,14 +9,12 @@ import SwiftUI
 import MapKit
 import OSLog
 
-//@available(iOS 17.0, macOS 14.0, *)
 struct LogDetail: View {
 
 	@Environment(\.dismiss) private var dismiss
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	var log: OSLogEntryLog
 	var font: Font = .title2
-	
 	private let dateFormatStyle = Date.FormatStyle()
 		.day(.defaultDigits)
 		.month(.defaultDigits)
@@ -122,7 +120,6 @@ struct LogDetail: View {
 								.textSelection(.enabled)
 								.font(idiom == .phone ? .body : .title)
 								.padding(.bottom, 5)
-						
 						} icon: {
 							Image(systemName: "text.bubble")
 								.symbolRenderingMode(.hierarchical)
@@ -133,7 +130,6 @@ struct LogDetail: View {
 
 					}
 					.listStyle(.plain)
-					
 				}
 				Spacer()
 			}
