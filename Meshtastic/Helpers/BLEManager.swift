@@ -5,6 +5,7 @@ import SwiftUI
 import MapKit
 import CocoaMQTT
 import OSLog
+import RegexBuilder
 
 // ---------------------------------------------------------------------------------------
 // Meshtastic BLE Device Manager
@@ -41,11 +42,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	var TORADIO_characteristic: CBCharacteristic!
 	var FROMRADIO_characteristic: CBCharacteristic!
 	var FROMNUM_characteristic: CBCharacteristic!
+	var LOGRADIO_characteristic: CBCharacteristic!
 	let meshtasticServiceCBUUID = CBUUID(string: "0x6BA1B218-15A8-461F-9FA8-5DCAE273EAFD")
 	let TORADIO_UUID = CBUUID(string: "0xF75C76D2-129E-4DAD-A1DD-7866124401E7")
 	let FROMRADIO_UUID = CBUUID(string: "0x2C55E69E-4993-11ED-B878-0242AC120002")
 	let EOL_FROMRADIO_UUID = CBUUID(string: "0x8BA2BCC2-EE02-4A55-A531-C525C5E454D5")
 	let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
+	let LOGRADIO_UUID = CBUUID(string: "0x6C6FD238-78FA-436B-AACF-15C5BE1EF2E2")
 
 	// MARK: init BLEManager
 	override init() {
@@ -277,7 +280,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		guard let services = peripheral.services else { return }
 		for service in services where service.uuid == meshtasticServiceCBUUID {
-			peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID], for: service)
+			peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID, LOGRADIO_UUID], for: service)
 			Logger.services.info("✅ BLE Service for Meshtastic discovered by \(peripheral.name ?? "Unknown")")
 		}
 	}
@@ -309,6 +312,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case FROMNUM_UUID:
 				Logger.services.info("✅ BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
 				FROMNUM_characteristic = characteristic
+				peripheral.setNotifyValue(true, for: characteristic)
+				
+			case LOGRADIO_UUID:
+				Logger.services.info("✅ BLE did discover LOGRADIO (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
+				LOGRADIO_characteristic = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
 
 			default:
@@ -514,6 +522,74 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 
 		switch characteristic.uuid {
+		case LOGRADIO_UUID:
+			if (characteristic.value == nil || characteristic.value!.isEmpty) {
+				return
+			}
+			let coordsSearch = Regex {
+				Capture {
+					Regex {
+						"lat="
+						OneOrMore(.digit)
+					}
+				}
+				Capture {" "}
+				Capture {
+					Regex {
+						"long="
+						OneOrMore(.digit)
+					}
+				}
+			}
+				.anchorsMatchLineEndings()
+			if var log = String(data: characteristic.value!, encoding: .utf8) {
+				
+				/// Debug Log Level
+				if (log.starts(with: "DEBUG |")) {
+					do {
+						let logString = log
+						if let coordsMatch = try coordsSearch.firstMatch(in: logString) {
+							log = "\(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces))"
+							log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+							Logger.radio.debug("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0.replacingOccurrences(of: "[,]", with: "", options: .regularExpression), privacy: .private) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
+						}else  {
+							log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+							Logger.radio.debug("🐞 \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+						}
+						
+					} catch {
+						log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+						Logger.radio.debug("🐞 \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+					}
+				} else if (log.starts(with: "INFO  |")) {
+					do {
+						let logString = log
+						if let coordsMatch = try coordsSearch.firstMatch(in: logString) {
+							log = "\(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces))"
+							log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+							Logger.radio.info("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0.replacingOccurrences(of: "[,]", with: "", options: .regularExpression), privacy: .private) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
+						}  else  {
+							log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+							Logger.radio.debug("🐞 \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+						}
+					} catch {
+						log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+						Logger.radio.info("✅ \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+					}
+				} else if (log.starts(with: "WARN  |")) {
+					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+					Logger.radio.warning("⚠️ \(log.replacingOccurrences(of: "WARN  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+				} else if (log.starts(with: "ERROR |")) {
+					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+					Logger.radio.error("💥 \(log.replacingOccurrences(of: "ERROR |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+				} else if (log.starts(with: "CRIT  |")) {
+					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+					Logger.radio.critical("💥 \(log.replacingOccurrences(of: "CRIT  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+				} else {
+					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+					Logger.radio.debug("📟 \(log)")
+				}
+			}
 
 		case FROMRADIO_UUID:
 
