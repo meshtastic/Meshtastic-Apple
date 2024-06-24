@@ -902,7 +902,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			}
 
 		case FROMNUM_UUID:
-			Logger.services.info("🗞️ [BLE] (Notify) characteristic, value will be read next")
+			Logger.services.info("🗞️ [BLE] (Notify) characteristic value will be read next")
 		default:
 			Logger.services.error("🚫 Unhandled Characteristic UUID: \(characteristic.uuid, privacy: .public)")
 		}
