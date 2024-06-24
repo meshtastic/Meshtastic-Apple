@@ -52,6 +52,8 @@ struct Settings: View {
 		case appData
 	}
 	var body: some View {
+		let node = nodes.first(where: { $0.num == preferredNodeNum })
+
 		NavigationSplitView {
 			List {
 				NavigationLink {
@@ -98,7 +100,6 @@ struct Settings: View {
 					.tag(SettingsSidebar.routeRecorder)
 				}
 
-				let node = nodes.first(where: { $0.num == preferredNodeNum })
 				let hasAdmin = node?.myInfo?.adminIndex ?? 0 > 0 ? true : false
 
 				if !(node?.deviceConfig?.isManaged ?? false) {
@@ -163,21 +164,24 @@ struct Settings: View {
 					Section("radio.configuration") {
 						if node != nil && node?.loRaConfig != nil {
 							let rc = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))
-							if rc?.dutyCycle ?? 0 > 0 && rc?.dutyCycle ?? 0 < 100 {
-
-								Label {
-									Text("Hourly Duty Cycle")
-								} icon: {
-									Image(systemName: "clock.arrow.circlepath")
-										.symbolRenderingMode(.hierarchical)
-										.foregroundColor(.red)
+							
+							if  (node?.user?.isLicensed == false) {
+								if rc?.dutyCycle ?? 0 > 0 && rc?.dutyCycle ?? 0 < 100 {
+									
+									Label {
+										Text("Hourly Duty Cycle")
+									} icon: {
+										Image(systemName: "clock.arrow.circlepath")
+											.symbolRenderingMode(.hierarchical)
+											.foregroundColor(.red)
+									}
+									Text("Your region has a \(rc?.dutyCycle ?? 0)% hourly duty cycle, your radio will stop sending packets when it reaches the hourly limit.")
+										.foregroundColor(.orange)
+										.font(.caption)
+									Text("Limit all periodic broadcast intervals especially telemetry and position. If you need to increase hops, do it on nodes at the edges, not the ones in the middle. MQTT is not advised when you are duty cycle restricted because the gateway node is then doing all the work.")
+										.font(.caption2)
+										.foregroundColor(.gray)
 								}
-								Text("Your region has a \(rc?.dutyCycle ?? 0)% hourly duty cycle, your radio will stop sending packets when it reaches the hourly limit.")
-									.foregroundColor(.orange)
-									.font(.caption)
-								Text("Limit all periodic broadcast intervals especially telemetry and position. If you need to increase hops, do it on nodes at the edges, not the ones in the middle. MQTT is not advised when you are duty cycle restricted because the gateway node is then doing all the work.")
-									.font(.caption2)
-									.foregroundColor(.gray)
 							}
 						}
 						NavigationLink {
