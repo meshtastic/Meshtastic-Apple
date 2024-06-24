@@ -645,6 +645,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								if FileManager.default.fileExists(atPath: databasePath.path) {
 									do {
 										disconnectPeripheral(reconnect: false)
+										clearCoreDataDatabase(context: context!, includeRoutes: true)
 										try container.restorePersistentStore(from: databasePath)
 										UserDefaults.preferredPeripheralNum = Int(myInfo?.myNodeNum ?? 0)
 										context!.reset()
@@ -3071,7 +3072,7 @@ extension BLEManager: CBCentralManagerDelegate {
 	// MARK: Bluetooth enabled/disabled
 	func centralManagerDidUpdateState(_ central: CBCentralManager) {
 		if central.state == CBManagerState.poweredOn {
-			Logger.services.debug("🔌 BLE powered on")
+			Logger.services.info("✅ [BLE] powered on")
 			isSwitchedOn = true
 			startScanning()
 		} else {
@@ -3096,7 +3097,7 @@ extension BLEManager: CBCentralManagerDelegate {
 		default:
 			status = "default"
 		}
-		Logger.services.debug("📜 [BLE] Bluetooth status: \(status)")
+		Logger.services.info("📜 [BLE] Bluetooth status: \(status)")
 	}
 
 	// Called each time a peripheral is discovered
