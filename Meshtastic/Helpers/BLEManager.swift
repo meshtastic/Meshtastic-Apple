@@ -572,11 +572,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							Logger.radio.info("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0.replacingOccurrences(of: "[,]", with: "", options: .regularExpression), privacy: .private) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
 						} else {
 							log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-							Logger.radio.info("✅ \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+							Logger.radio.info("📢 \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
 						}
 					} catch {
 						log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-						Logger.radio.info("✅ \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+						Logger.radio.info("📢 \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
 					}
 				} else if log.starts(with: "WARN  |") {
 					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)

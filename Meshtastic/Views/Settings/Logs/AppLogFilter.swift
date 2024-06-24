@@ -67,7 +67,7 @@ enum LogLevels: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .debug:
-			return  "🩺 Debug"
+			return  "🪲 Debug"
 		case .info:
 			return "ℹ️ Info"
 		case .notice:

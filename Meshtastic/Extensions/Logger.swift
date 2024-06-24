@@ -63,7 +63,7 @@ extension OSLogEntryLog.Level {
 	var description: String {
 		switch self {
 		case .undefined: "undefined"
-		case .debug: "🩺 Debug"
+		case .debug: "🪲 Debug"
 		case .info: "ℹ️ Info"
 		case .notice: "⚠️ Notice"
 		case .error: "🚨 Error"
