@@ -115,7 +115,7 @@ struct ChannelMessageList: View {
 									message.read = true
 									do {
 										try context.save()
-										Logger.data.info("📖 Read message \(message.messageId) ")
+										Logger.data.info("📖 [App] Read message \(message.messageId) ")
 										appState.unreadChannelMessages = myInfo.unreadMessages
 										UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 										context.refresh(myInfo, mergeChanges: true)
