@@ -65,7 +65,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	func startScanning() {
 		if isSwitchedOn {
 			centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
-			Logger.services.info("✅ Scanning Started")
+			Logger.services.info("✅ [BLE] Scanning Started")
 		}
 	}
 
@@ -73,7 +73,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	func stopScanning() {
 		if centralManager.isScanning {
 			centralManager.stopScan()
-			Logger.services.info("🛑 Stopped Scanning")
+			Logger.services.info("🛑 [BLE] Stopped Scanning")
 		}
 	}
 
@@ -106,7 +106,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			self.timeoutTimerCount = 0
 			self.startScanning()
 		} else {
-			Logger.services.info("🚨 BLE Connecting 2 Second Timeout Timer Fired \(self.timeoutTimerCount) Time(s): \(name)")
+			Logger.services.info("🚨 [BLE] Connecting 2 Second Timeout Timer Fired \(self.timeoutTimerCount, privacy: .public) Time(s): \(name, privacy: .public)")
 		}
 	}
 
@@ -119,7 +119,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			self.automaticallyReconnect = true
 		}
 		if connectedPeripheral != nil {
-			Logger.services.info("ℹ️ BLE Disconnecting from: \(self.connectedPeripheral.name) to connect to \(peripheral.name ?? "Unknown")")
+			Logger.services.info("ℹ️ [BLE] Disconnecting from: \(self.connectedPeripheral.name, privacy: .public) to connect to \(peripheral.name ?? "Unknown", privacy: .public)")
 			disconnectPeripheral()
 		}
 
@@ -133,7 +133,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		let context = ["name": "\(peripheral.name ?? "Unknown")"]
 		timeoutTimer = Timer.scheduledTimer(timeInterval: 1.5, target: self, selector: #selector(timeoutTimerFired), userInfo: context, repeats: true)
 		RunLoop.current.add(timeoutTimer!, forMode: .common)
-		Logger.services.info("ℹ️ BLE Connecting: \(peripheral.name ?? "Unknown")")
+		Logger.services.info("ℹ️ BLE Connecting: \(peripheral.name ?? "Unknown", privacy: .public)")
 	}
 
 	// Disconnect Connected Peripheral
@@ -203,13 +203,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		// Discover Services
 		peripheral.discoverServices([meshtasticServiceCBUUID])
-		Logger.services.info("✅ BLE Connected: \(peripheral.name ?? "Unknown")")
+		Logger.services.info("✅ [BLE] Connected: \(peripheral.name ?? "Unknown", privacy: .public)")
 	}
 
 	// Called when a Peripheral fails to connect
 	func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
 		cancelPeripheralConnection()
-		Logger.services.error("🚫 BLE Failed to Connect: \(peripheral.name ?? "Unknown")")
+		Logger.services.error("🚫 [BLE] Failed to Connect: \(peripheral.name ?? "Unknown", privacy: .public)")
 	}
 
 	// Disconnect Peripheral Event
@@ -225,7 +225,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			if errorCode == 6 { // CBError.Code.connectionTimeout The connection has timed out unexpectedly.
 				// Happens when device is manually reset / powered off
 				lastConnectionError = "🚨" + String.localizedStringWithFormat("ble.errorcode.6 %@".localized, e.localizedDescription)
-				Logger.services.error("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
+				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown", privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(e.localizedDescription, privacy: .public)")
 			} else if errorCode == 7 { // CBError.Code.peripheralDisconnected The specified device has disconnected from us.
 				// Seems to be what is received when a tbeam sleeps, immediately recconnecting does not work.
 				if UserDefaults.preferredPeripheralId == peripheral.identifier.uuidString {
@@ -242,11 +242,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					manager.schedule()
 				}
 				lastConnectionError = "🚨 \(e.localizedDescription)"
-				Logger.services.error("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
+				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown", privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(e.localizedDescription, privacy: .public)")
 			} else if errorCode == 14 { // Peer removed pairing information
 				// Forgetting and reconnecting seems to be necessary so we need to show the user an error telling them to do that
 				lastConnectionError = "🚨 " + String.localizedStringWithFormat("ble.errorcode.14 %@".localized, e.localizedDescription)
-				Logger.services.error("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(self.lastConnectionError)")
+				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode, privacy: .public) Error: \(self.lastConnectionError, privacy: .public)")
 			} else {
 				if UserDefaults.preferredPeripheralId == peripheral.identifier.uuidString {
 					manager.notifications = [
@@ -262,12 +262,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					manager.schedule()
 				}
 				lastConnectionError = "🚨 \(e.localizedDescription)"
-				Logger.services.error("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
+				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown", privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(e.localizedDescription, privacy: .public)")
 			}
 		} else {
 			// Disconnected without error which indicates user intent to disconnect
 			// Happens when swiping to disconnect
-			Logger.services.info("ℹ️ BLE Disconnected: \(peripheral.name ?? "Unknown"): User Initiated Disconnect")
+			Logger.services.info("ℹ️ [BLE] Disconnected: \(peripheral.name ?? "Unknown", privacy: .public): User Initiated Disconnect")
 		}
 		// Start a scan so the disconnected peripheral is moved to the peripherals[] if it is awake
 		self.startScanning()
@@ -276,12 +276,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	// MARK: Peripheral Services functions
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
 		if let error {
-			Logger.services.error("🚫 Discover Services error \(error.localizedDescription)")
+			Logger.services.error("🚫 [BLE] Discover Services error \(error.localizedDescription, privacy: .public)")
 		}
 		guard let services = peripheral.services else { return }
 		for service in services where service.uuid == meshtasticServiceCBUUID {
 			peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID, LOGRADIO_UUID], for: service)
-			Logger.services.info("✅ BLE Service for Meshtastic discovered by \(peripheral.name ?? "Unknown")")
+			Logger.services.info("✅ [BLE] Service for Meshtastic discovered by \(peripheral.name ?? "Unknown", privacy: .public)")
 		}
 	}
 
@@ -289,7 +289,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
 
 		if let error {
-			Logger.services.error("🚫 BLE Discover Characteristics error for \(peripheral.name ?? "Unknown") \(error.localizedDescription) disconnecting device")
+			Logger.services.error("🚫 [BLE] Discover Characteristics error for \(peripheral.name ?? "Unknown", privacy: .public) \(error.localizedDescription, privacy: .public) disconnecting device")
 			// Try and stop crashes when this error occurs
 			disconnectPeripheral()
 			return
@@ -313,7 +313,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				Logger.services.info("✅ [BLE] did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown", privacy: .public)")
 				FROMNUM_characteristic = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
-			
+
 			case LOGRADIO_UUID:
 				Logger.services.info("✅ [BLE] did discover LOGRADIO (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown", privacy: .public)")
 				LOGRADIO_characteristic = characteristic
@@ -341,7 +341,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 	func onMqttDisconnected() {
 		mqttProxyConnected = false
-		Logger.services.info("MQTT Disconnected")
+		Logger.services.info("📲 MQTT Disconnected")
 	}
 
 	func onMqttMessageReceived(message: CocoaMQTTMessage) {
@@ -456,14 +456,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 				do {
 					try context!.save()
-					Logger.data.info("💾 Saved TraceRoute sent to node: \(String(receivingNode?.user?.longName ?? "unknown".localized))")
+					Logger.data.info("💾 Saved TraceRoute sent to node: \(String(receivingNode?.user?.longName ?? "unknown".localized), privacy: .public)")
 				} catch {
 					context!.rollback()
 					let nsError = error as NSError
-					Logger.data.error("Error Updating Core Data BluetoothConfigEntity: \(nsError)")
+					Logger.data.error("Error Updating Core Data BluetoothConfigEntity: \(nsError, privacy: .public)")
 				}
 
-				let logString = String.localizedStringWithFormat("mesh.log.traceroute.sent %@".localized, String(destNum))
+				let logString = String.localizedStringWithFormat("mesh.log.traceroute.sent %@".localized, destNum.toHex())
 				MeshLogger.log("🪧 \(logString)")
 
 			} catch {
@@ -512,14 +512,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		if let error {
 
-			Logger.services.error("🚫 didUpdateValueFor Characteristic error \(error.localizedDescription)")
+			Logger.services.error("🚫 [BLE] didUpdateValueFor Characteristic error \(error.localizedDescription, privacy: .public)")
 			let errorCode = (error as NSError).code
 			if errorCode == 5 || errorCode == 15 {
 				// BLE PIN connection errors
 				// 5 CBATTErrorDomain Code=5 "Authentication is insufficient."
 				// 15 CBATTErrorDomain Code=15 "Encryption is insufficient."
 				lastConnectionError = "🚨" + String.localizedStringWithFormat("ble.errorcode.pin %@".localized, error.localizedDescription)
-				Logger.services.error("\(error.localizedDescription) Please try connecting again and check the PIN carefully.")
+				Logger.services.error("\(error.localizedDescription, privacy: .public) Please try connecting again and check the PIN carefully.")
 				self.disconnectPeripheral(reconnect: false)
 			}
 			return
@@ -527,7 +527,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		switch characteristic.uuid {
 		case LOGRADIO_UUID:
-			if (characteristic.value == nil || characteristic.value!.isEmpty) {
+			if characteristic.value == nil || characteristic.value!.isEmpty {
 				return
 			}
 			let coordsSearch = Regex {
@@ -547,51 +547,49 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			}
 				.anchorsMatchLineEndings()
 			if var log = String(data: characteristic.value!, encoding: .utf8) {
-				
 				/// Debug Log Level
-				if (log.starts(with: "DEBUG |")) {
+				if log.starts(with: "DEBUG |") {
 					do {
 						let logString = log
 						if let coordsMatch = try coordsSearch.firstMatch(in: logString) {
 							log = "\(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces))"
 							log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
 							Logger.radio.debug("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0.replacingOccurrences(of: "[,]", with: "", options: .regularExpression), privacy: .private) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
-						}else  {
+						} else {
 							log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-							Logger.radio.debug("🐞 \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+							Logger.radio.debug("🕵🏻‍♂️ \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
 						}
-						
 					} catch {
 						log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-						Logger.radio.debug("🐞 \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+						Logger.radio.debug("🕵🏻‍♂️ \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
 					}
-				} else if (log.starts(with: "INFO  |")) {
+				} else if log.starts(with: "INFO  |") {
 					do {
 						let logString = log
 						if let coordsMatch = try coordsSearch.firstMatch(in: logString) {
 							log = "\(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces))"
 							log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
 							Logger.radio.info("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0.replacingOccurrences(of: "[,]", with: "", options: .regularExpression), privacy: .private) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
-						}  else  {
+						} else {
 							log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-							Logger.radio.debug("🐞 \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+							Logger.radio.info("📢 \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
 						}
 					} catch {
 						log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-						Logger.radio.info("✅ \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+						Logger.radio.info("📢 \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
 					}
-				} else if (log.starts(with: "WARN  |")) {
+				} else if log.starts(with: "WARN  |") {
 					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
 					Logger.radio.warning("⚠️ \(log.replacingOccurrences(of: "WARN  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
-				} else if (log.starts(with: "ERROR |")) {
+				} else if log.starts(with: "ERROR |") {
 					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
 					Logger.radio.error("💥 \(log.replacingOccurrences(of: "ERROR |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
-				} else if (log.starts(with: "CRIT  |")) {
+				} else if log.starts(with: "CRIT  |") {
 					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-					Logger.radio.critical("💥 \(log.replacingOccurrences(of: "CRIT  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+					Logger.radio.critical("🧨 \(log.replacingOccurrences(of: "CRIT  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
 				} else {
 					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-					Logger.radio.debug("📟 \(log)")
+					Logger.radio.debug("📟 \(log, privacy: .public)")
 				}
 			}
 
@@ -606,7 +604,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				decodedInfo = try FromRadio(serializedData: characteristic.value!)
 
 			} catch {
-				Logger.services.error("\(error.localizedDescription) \(characteristic.value!)")
+				Logger.services.error("💥 \(error.localizedDescription, privacy: .public) \(characteristic.value!, privacy: .public)")
 			}
 
 			// Publish mqttClientProxyMessages received on the from radio
@@ -647,13 +645,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								if FileManager.default.fileExists(atPath: databasePath.path) {
 									do {
 										disconnectPeripheral(reconnect: false)
+										clearCoreDataDatabase(context: context!, includeRoutes: true)
 										try container.restorePersistentStore(from: databasePath)
 										UserDefaults.preferredPeripheralNum = Int(myInfo?.myNodeNum ?? 0)
 										context!.reset()
 										connectTo(peripheral: peripheral)
-										Logger.data.notice("🗂️ Restored Core data for /\(UserDefaults.preferredPeripheralNum)")
+										Logger.data.notice("🗂️ Restored Core data for /\(UserDefaults.preferredPeripheralNum, privacy: .public)")
 									} catch {
-										Logger.data.error("Copy error: \(error)")
+										Logger.data.error("🗂️ Restore Core data copy error: \(error, privacy: .public)")
 									}
 								}
 							}
@@ -823,7 +822,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						} catch {
 							context!.rollback()
 							let nsError = error as NSError
-							Logger.data.error("Error Updating Core Data TraceRouteHOp: \(nsError)")
+							Logger.data.error("Error Updating Core Data TraceRouteHOp: \(nsError, privacy: .public)")
 						}
 						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.route %@".localized, routeString)
 						MeshLogger.log("🪧 \(logString)")
@@ -850,7 +849,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				invalidVersion = false
 				lastConnectionError = ""
 				isSubscribed = true
-				Logger.mesh.info("🤜 Want Config Complete. ID:\(decodedInfo.configCompleteID)")
+				Logger.mesh.info("[BLE] 🤜 Want Config Complete. ID:\(decodedInfo.configCompleteID)")
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again
 
@@ -904,9 +903,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			}
 
 		case FROMNUM_UUID:
-			Logger.services.info("🗞️ BLE (Notify) characteristic, value will be read next")
+			Logger.services.info("🗞️ [BLE] (Notify) characteristic value will be read next")
 		default:
-			Logger.services.error("Unhandled Characteristic UUID: \(characteristic.uuid)")
+			Logger.services.error("🚫 Unhandled Characteristic UUID: \(characteristic.uuid, privacy: .public)")
 		}
 		if FROMRADIO_characteristic != nil {
 			// Either Read the config complete value or from num notify value
@@ -1010,18 +1009,18 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 					if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 						connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-						let logString = String.localizedStringWithFormat("mesh.log.textmessage.sent %@ %@ %@".localized, String(newMessage.messageId), String(fromUserNum), String(toUserNum))
+						let logString = String.localizedStringWithFormat("mesh.log.textmessage.sent %@ %@ %@".localized, String(newMessage.messageId), fromUserNum.toHex(), toUserNum.toHex())
 
 						MeshLogger.log("💬 \(logString)")
 						do {
 							try context!.save()
-							Logger.data.info("💾 Saved a new sent message from \(self.connectedPeripheral.num) to \(toUserNum)")
+							Logger.data.info("💾 Saved a new sent message from \(self.connectedPeripheral.num.toHex(), privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
 							success = true
 
 						} catch {
 							context!.rollback()
 							let nsError = error as NSError
-							Logger.data.error("Unresolved Core Data error in Send Message Function your database is corrupted running a node db reset should clean up the data. Error: \(nsError)")
+							Logger.data.error("Unresolved Core Data error in Send Message Function your database is corrupted running a node db reset should clean up the data. Error: \(nsError, privacy: .public)")
 						}
 					}
 				}
@@ -1088,11 +1087,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			}
 			do {
 				try context!.save()
-				Logger.data.info("💾 Updated Waypoint from Waypoint App Packet From: \(fromNodeNum)")
+				Logger.data.info("💾 Updated Waypoint from Waypoint App Packet From: \(fromNodeNum.toHex(), privacy: .public)")
 			} catch {
 				context!.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Saving NodeInfoEntity from WAYPOINT_APP \(nsError)")
+				Logger.data.error("Error Saving NodeInfoEntity from WAYPOINT_APP \(nsError, privacy: .public)")
 			}
 		}
 		return success
@@ -2950,7 +2949,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			Logger.mesh.debug("📮 Sent a request for a Store & Forward Client History to \(toUser.num) for the last \(120) minutes.")
+			Logger.mesh.debug("📮 Sent a request for a Store & Forward Client History to \(toUser.num.toHex(), privacy: .public) for the last \(120, privacy: .public) minutes.")
 			return true
 		}
 		return false
@@ -2961,9 +2960,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			// Handle each of the store and forward request / response messages
 			switch storeAndForwardMessage.rr {
 			case .unset:
-				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
+				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
 			case .routerError:
-				MeshLogger.log("☠️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
+				MeshLogger.log("☠️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
 			case .routerHeartbeat:
 				/// When we get a router heartbeat we know there is a store and forward node on the network
 				/// Check if it is the primary S&F Router and save the timestamp of the last heartbeat so that we can show the request message history menu item on node long press if the router has been seen recently
@@ -2991,13 +2990,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						Logger.data.error("Save Store and Forward Router Error")
 					}
 				}
-				MeshLogger.log("💓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
+				MeshLogger.log("💓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
 			case .routerPing:
-				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
+				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
 			case .routerPong:
-				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
+				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
 			case .routerBusy:
-				MeshLogger.log("🐝 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
+				MeshLogger.log("🐝 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
 			case .routerHistory:
 				/// Set the Router History Last Request Value
 				guard let routerNode = getNodeInfo(id: Int64(packet.from), context: context) else {
@@ -3017,28 +3016,28 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					context.rollback()
 					Logger.data.error("Save Store and Forward Router Error")
 				}
-				MeshLogger.log("📜 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
+				MeshLogger.log("📜 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
 			case .routerStats:
-				MeshLogger.log("📊 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
+				MeshLogger.log("📊 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
 			case .clientError:
-				MeshLogger.log("☠️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
+				MeshLogger.log("☠️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
 			case .clientHistory:
-				MeshLogger.log("📜 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
+				MeshLogger.log("📜 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
 			case .clientStats:
-				MeshLogger.log("📊 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
+				MeshLogger.log("📊 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
 			case .clientPing:
-				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
+				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
 			case .clientPong:
-				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
+				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
 			case .clientAbort:
-				MeshLogger.log("🛑 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
+				MeshLogger.log("🛑 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
 			case .UNRECOGNIZED:
-				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
+				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
 			case .routerTextDirect:
-				MeshLogger.log("💬 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
+				MeshLogger.log("💬 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
 				textMessageAppPacket(packet: packet, wantRangeTestPackets: false, connectedNode: connectedNodeNum, storeForward: true, context: context)
 			case .routerTextBroadcast:
-				MeshLogger.log("✉️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
+				MeshLogger.log("✉️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
 				textMessageAppPacket(packet: packet, wantRangeTestPackets: false, connectedNode: connectedNodeNum, storeForward: true, context: context)
 			}
 		}
@@ -3058,11 +3057,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				do {
 					try context!.save()
 				} catch {
-					Logger.data.error("Failed to clear existing channels from local app database: \(error.localizedDescription)")
+					Logger.data.error("Failed to clear existing channels from local app database: \(error.localizedDescription, privacy: .public)")
 				}
 			}
 		} catch {
-			Logger.data.error("Failed to find a node MyInfo to save these channels to: \(error.localizedDescription)")
+			Logger.data.error("Failed to find a node MyInfo to save these channels to: \(error.localizedDescription, privacy: .public)")
 		}
 	}
 }
@@ -3073,7 +3072,7 @@ extension BLEManager: CBCentralManagerDelegate {
 	// MARK: Bluetooth enabled/disabled
 	func centralManagerDidUpdateState(_ central: CBCentralManager) {
 		if central.state == CBManagerState.poweredOn {
-			Logger.services.debug("🔌 BLE powered on")
+			Logger.services.info("✅ [BLE] powered on")
 			isSwitchedOn = true
 			startScanning()
 		} else {
@@ -3098,7 +3097,7 @@ extension BLEManager: CBCentralManagerDelegate {
 		default:
 			status = "default"
 		}
-		Logger.services.debug("📜 BLEManager status: \(status)")
+		Logger.services.info("📜 [BLE] Bluetooth status: \(status)")
 	}
 
 	// Called each time a peripheral is discovered
@@ -3106,7 +3105,7 @@ extension BLEManager: CBCentralManagerDelegate {
 
 		if self.automaticallyReconnect && peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" {
 			self.connectTo(peripheral: peripheral)
-			Logger.services.info("BLE Reconnecting to prefered peripheral: \(peripheral.name ?? "Unknown")")
+			Logger.services.info("✅ [BLE] Reconnecting to prefered peripheral: \(peripheral.name ?? "Unknown", privacy: .public)")
 		}
 		let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String
 		let device = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: name ?? "Unknown", shortName: "?", longName: name ?? "Unknown", firmwareVersion: "Unknown", rssi: RSSI.intValue, lastUpdate: Date(), peripheral: peripheral)

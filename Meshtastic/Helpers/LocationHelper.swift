@@ -71,6 +71,6 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 
 	}
 	func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-		Logger.services.error("Location manager error: \(error.localizedDescription)")
+		Logger.services.error("Location manager error: \(error.localizedDescription, privacy: .public)")
 	}
 }

@@ -112,12 +112,12 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 			myInfoEntity.rebootCount = Int32(myInfo.rebootCount)
 			do {
 				try context.save()
-				Logger.data.info("💾 Saved a new myInfo for node number: \(String(myInfo.myNodeNum))")
+				Logger.data.info("💾 Saved a new myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
 				return myInfoEntity
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Inserting New Core Data MyInfoEntity: \(nsError)")
+				Logger.data.error("💥 Error Inserting New Core Data MyInfoEntity: \(nsError, privacy: .public)")
 			}
 		} else {
 
@@ -127,16 +127,16 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated myInfo for node number: \(String(myInfo.myNodeNum))")
+				Logger.data.info("💾 Updated myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
 				return fetchedMyInfo[0]
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data MyInfoEntity: \(nsError)")
+				Logger.data.error("💥 Error Updating Core Data MyInfoEntity: \(nsError, privacy: .public)")
 			}
 		}
 	} catch {
-		Logger.data.error("Fetch MyInfo Error")
+		Logger.data.error("💥 Fetch MyInfo Error")
 	}
 	return nil
 }
@@ -185,16 +185,16 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				do {
 					try context.save()
 				} catch {
-					Logger.data.error("Failed to save channel: \(error.localizedDescription)")
+					Logger.data.error("💥 Failed to save channel: \(error.localizedDescription, privacy: .public)")
 				}
 				Logger.data.info("💾 Updated MyInfo channel \(channel.index) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
 			} else if channel.role.rawValue > 0 {
-				Logger.data.error("Trying to save a channel to a MyInfo that does not exist: \(fromNum)")
+				Logger.data.error("💥Trying to save a channel to a MyInfo that does not exist: \(fromNum.toHex(), privacy: .public)")
 			}
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
-			Logger.data.error("Error Saving MyInfo Channel from ADMIN_APP \(nsError)")
+			Logger.data.error("💥 Error Saving MyInfo Channel from ADMIN_APP \(nsError, privacy: .public)")
 		}
 	}
 }
@@ -202,7 +202,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NSManagedObjectContext) {
 
 	if metadata.isInitialized {
-		let logString = String.localizedStringWithFormat("mesh.log.device.metadata.received %@".localized, String(fromNum))
+		let logString = String.localizedStringWithFormat("mesh.log.device.metadata.received %@".localized, fromNum.toHex())
 		MeshLogger.log("🏷️ \(logString)")
 
 		let fetchedNodeRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -238,13 +238,13 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 			do {
 				try context.save()
 			} catch {
-				Logger.data.error("Failed to save device metadata: \(error.localizedDescription)")
+				Logger.data.error("💥 Failed to save device metadata: \(error.localizedDescription, privacy: .public)")
 			}
-			Logger.data.info("💾 Updated Device Metadata from Admin App Packet For: \(fromNum)")
+			Logger.data.info("💾 Updated Device Metadata from Admin App Packet For: \(fromNum.toHex(), privacy: .public)")
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
-			Logger.data.error("Error Saving MyInfo Channel from ADMIN_APP \(nsError)")
+			Logger.data.error("Error Saving MyInfo Channel from ADMIN_APP \(nsError, privacy: .public)")
 		}
 	}
 }
@@ -415,19 +415,19 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				}
 				do {
 					try context.save()
-					Logger.data.info("💾 NodeInfo saved for \(nodeInfo.num)")
+					Logger.data.info("💾 [NodeInfo] saved for \(nodeInfo.num.toHex(), privacy: .public)")
 					return fetchedNode[0]
 				} catch {
 					context.rollback()
 					let nsError = error as NSError
-					Logger.data.error("Error Saving Core Data NodeInfoEntity: \(nsError)")
+					Logger.data.error("💥 Error Saving Core Data NodeInfoEntity: \(nsError, privacy: .public)")
 				}
 			} catch {
-				Logger.data.error("Fetch MyInfo Error")
+				Logger.data.error("💥 Fetch MyInfo Error")
 			}
 		}
 	} catch {
-		Logger.data.error("Fetch NodeInfoEntity Error")
+		Logger.data.error("💥 Fetch NodeInfoEntity Error")
 	}
 	return nil
 }
@@ -442,7 +442,7 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 				if !cmmc.messages.isEmpty {
 
-					let logString = String.localizedStringWithFormat("mesh.log.cannedmessages.messages.received %@".localized, String(packet.from))
+					let logString = String.localizedStringWithFormat("mesh.log.cannedmessages.messages.received %@".localized, packet.from.toHex())
 					MeshLogger.log("🥫 \(logString)")
 
 					let fetchNodeRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -460,15 +460,15 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 							fetchedNode[0].cannedMessageConfig?.messages = messages
 							do {
 								try context.save()
-								Logger.data.info("💾 Updated Canned Messages Messages For: \(fetchedNode[0].num)")
+								Logger.data.info("💾 Updated Canned Messages Messages For: \(fetchedNode[0].num.toHex(), privacy: .public)")
 							} catch {
 								context.rollback()
 								let nsError = error as NSError
-								Logger.data.error("Error Saving NodeInfoEntity from POSITION_APP \(nsError)")
+								Logger.data.error("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError, privacy: .public)")
 							}
 						}
 					} catch {
-						Logger.data.error("Error Deserializing ADMIN_APP packet.")
+						Logger.data.error("💥 Error Deserializing ADMIN_APP packet.")
 					}
 				}
 			}

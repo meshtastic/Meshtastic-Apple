@@ -90,13 +90,11 @@ extension NSManagedObjectContext {
 	}
 }
 
-
 //  Created by Tom Harrington on 5/12/20.
 //  Copyright © 2020 Atomic Bird LLC. All rights reserved.
 //  Gist from https://atomicbird.com/blog/core-data-back-up-store/
 //
 extension NSPersistentContainer {
-	
 	enum CopyPersistentStoreErrors: Error {
 		case invalidDestination(String)
 		case destinationError(String)
@@ -104,9 +102,8 @@ extension NSPersistentContainer {
 		case copyStoreError(String)
 		case invalidSource(String)
 	}
-	
+
 	/// Restore a persistent store for a URL `backupURL`.
-	///
 	/// **Be very careful with this**. To restore a persistent store, the current persistent store must be removed from the container. When that happens, **all currently loaded Core Data objects** will become invalid. Using them after restoring will cause your app to crash. When calling this method you **must** ensure that you do not continue to use any previously fetched managed objects or existing fetched results controllers. **If this method does not throw, that does not mean your app is safe.** You need to take extra steps to prevent crashes. The details vary depending on the nature of your app.
 	/// - Parameter backupURL: A file URL containing backup copies of all currently loaded persistent stores.
 	/// - Throws: `CopyPersistentStoreError` in various situations.
@@ -115,7 +112,7 @@ extension NSPersistentContainer {
 		guard backupURL.isFileURL else {
 			throw CopyPersistentStoreErrors.invalidSource("Backup URL must be a file URL")
 		}
-		
+
 		for persistentStoreDescription in persistentStoreDescriptions {
 			guard let loadedStoreURL = persistentStoreDescription.url else {
 				continue
@@ -127,7 +124,7 @@ extension NSPersistentContainer {
 				let storeOptions = persistentStoreDescription.options
 				let configurationName = persistentStoreDescription.configuration
 				let storeType = persistentStoreDescription.type
-				
+
 				// Replace the current store with the backup copy. This has a side effect of removing the current store from the Core Data stack.
 				// When restoring, it's necessary to use the current persistent store coordinator.
 				try persistentStoreCoordinator.replacePersistentStore(at: loadedStoreURL, destinationOptions: storeOptions, withPersistentStoreFrom: backupURL, sourceOptions: storeOptions, ofType: storeType)
@@ -138,7 +135,7 @@ extension NSPersistentContainer {
 			}
 		}
 	}
-	
+
 	/// Copy all loaded persistent stores to a new directory. Each currently loaded file-based persistent store will be copied (including journal files, external binary storage, and anything else Core Data needs) into the destination directory to a persistent store with the same name and type as the existing store. In-memory stores, if any, are skipped.
 	/// - Parameters:
 	///   - destinationURL: Destination for new persistent store files. Must be a file URL. If `overwriting` is `false` and `destinationURL` exists, it must be a directory.
@@ -146,15 +143,15 @@ extension NSPersistentContainer {
 	/// - Throws: `CopyPersistentStoreError`
 	/// - Returns: Nothing. If no errors are thrown, all loaded persistent stores will be copied to the destination directory.
 	func copyPersistentStores(to destinationURL: URL, overwriting: Bool = false) throws -> Void {
-		print(destinationURL)
+
 		guard !destinationURL.relativeString.contains("/0/") else {
 			throw CopyPersistentStoreErrors.invalidDestination("Invalid 0 Node Id")
 		}
-		
+
 		guard destinationURL.isFileURL else {
 			throw CopyPersistentStoreErrors.invalidDestination("Destination URL must be a file URL")
 		}
-		
+
 		// If the destination exists and we aren't overwriting it, then it must be a directory. (If we are overwriting, we'll remove it anyway, so it doesn't matter whether it's a directory).
 		var isDirectory: ObjCBool = false
 		if !overwriting && FileManager.default.fileExists(atPath: destinationURL.path, isDirectory: &isDirectory) {
@@ -171,14 +168,14 @@ extension NSPersistentContainer {
 				throw CopyPersistentStoreErrors.destinationNotRemoved("Can't overwrite destination at \(destinationURL)")
 			}
 		}
-		
+
 		// Create the destination directory
 		do {
 			try FileManager.default.createDirectory(at: destinationURL, withIntermediateDirectories: true, attributes: nil)
 		} catch {
 			throw CopyPersistentStoreErrors.destinationError("Could not create destination directory at \(destinationURL)")
 		}
-		
+
 		for persistentStoreDescription in persistentStoreDescriptions {
 			guard let storeURL = persistentStoreDescription.url else {
 				continue
@@ -195,7 +192,7 @@ extension NSPersistentContainer {
 			do {
 				let newStore = try temporaryPSC.addPersistentStore(ofType: persistentStoreDescription.type, configurationName: persistentStoreDescription.configuration, at: persistentStoreDescription.url, options: persistentStoreDescription.options)
 				let _ = try temporaryPSC.migratePersistentStore(newStore, to: destinationStoreURL, options: persistentStoreDescription.options, withType: persistentStoreDescription.type)
-				
+
 				/// Cleanup extra files
 				let directory = destinationStoreURL.deletingLastPathComponent()
 				/// Delete -wal file
@@ -205,13 +202,13 @@ extension NSPersistentContainer {
 					do {
 						try FileManager.default.removeItem(at: directory.appendingPathComponent("Meshtastic.sqlite-shm"))
 					} catch {
-						print(error)
+						Logger.services.error("Error Deleting Meshtastic.sqlite-shm file \(error, privacy: .public)")
 					}
 				} catch {
-					print(error)
+					Logger.services.error("Error Deleting Meshtastic.sqlite-wal file \(error, privacy: .public)")
 				}
-				
 			} catch {
+				Logger.services.error("Error Deleting Meshtastic.sqlite file \(error, privacy: .public)")
 				throw CopyPersistentStoreErrors.copyStoreError("\(error.localizedDescription)")
 			}
 		}

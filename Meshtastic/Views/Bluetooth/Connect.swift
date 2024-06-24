@@ -122,7 +122,7 @@ struct Connect: View {
 										Text("Short Name: \(node?.user?.shortName ?? "?")")
 										Text("Long Name: \(node?.user?.longName ?? "unknown".localized)")
 										Text("BLE RSSI: \(connectedPeripheral.rssi)")
-										
+
 										Button {
 											if !bleManager.sendShutdown(fromUser: node!.user!, toUser: node!.user!, adminIndex: node!.myInfo!.adminIndex) {
 												Logger.mesh.error("Shutdown Failed")
@@ -214,18 +214,17 @@ struct Connect: View {
 												if let connectedPeripheral = bleManager.connectedPeripheral, connectedPeripheral.peripheral.state == CBPeripheralState.connected {
 													bleManager.disconnectPeripheral()
 												}
-												//clearCoreDataDatabase(context: context, includeRoutes: false)
-												let container = NSPersistentContainer(name : "Meshtastic")
+												// clearCoreDataDatabase(context: context, includeRoutes: false)
+												let container = NSPersistentContainer(name: "Meshtastic")
 												guard let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
 													Logger.data.error("nil File path for back")
 													return
 												}
 												do {
 													try container.copyPersistentStores(to: url.appendingPathComponent("backup").appendingPathComponent("\(UserDefaults.preferredPeripheralNum)"), overwriting: true)
-				
 													Logger.data.notice("🗂️ Made a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
 												} catch {
-													print("Copy error: \(error)")
+													Logger.data.error("🗂️ Core data backup copy error: \(error, privacy: .public)")
 												}
 												UserDefaults.preferredPeripheralId = selectedPeripherialId
 												let radio = bleManager.peripherals.first(where: { $0.peripheral.identifier.uuidString == selectedPeripherialId })

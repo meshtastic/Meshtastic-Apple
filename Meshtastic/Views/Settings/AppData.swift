@@ -1,5 +1,5 @@
 //
-//  BackupData.swift
+//  AppData.swift
 //  Meshtastic
 //
 //  Copyright(c) Garth Vander Houwen 6/8/24.
@@ -11,7 +11,7 @@ import CoreData
 import Foundation
 
 struct AppData: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@State private var files = [URL]()
@@ -19,10 +19,9 @@ struct AppData: View {
 
 	var body: some View {
 
-		
 		VStack {
 			Button(action: {
-				let container = NSPersistentContainer(name : "Meshtastic")
+				let container = NSPersistentContainer(name: "Meshtastic")
 				guard let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
 					Logger.data.error("nil File path for back")
 					return
@@ -32,9 +31,8 @@ struct AppData: View {
 					loadFiles()
 					Logger.data.notice("🗂️ Made a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
 				} catch {
-					print("Copy error: \(error)")
+					Logger.data.error("🗂️ Core data backup copy error: \(error, privacy: .public)")
 				}
-				
 			}) {
 				Label {
 					Text("Backup Database")
@@ -49,26 +47,25 @@ struct AppData: View {
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
-			
 		}
 		List(files, id: \.self) { file in
 			HStack {
-				VStack (alignment: .leading ) {
-					if file.pathExtension.contains("sqlite") { //} == "sqlite" {
+				VStack(alignment: .leading ) {
+					if file.pathExtension.contains("sqlite") {
 						Label {
-							Text("Node Core Data Backup \(file.pathComponents[9])/\(file.lastPathComponent) - \(file.creationDate?.formatted() ?? "") - \(file.fileSizeString)")
+							Text("Node Core Data Backup \(file.pathComponents[10])/\(file.lastPathComponent) - \(file.creationDate?.formatted() ?? "") - \(file.fileSizeString)")
 								.swipeActions {
 									Button(role: .none) {
 										bleManager.disconnectPeripheral(reconnect: false)
-										let container = NSPersistentContainer(name : "Meshtastic")
+										let container = NSPersistentContainer(name: "Meshtastic")
 										do {
 											context.reset()
 											try container.restorePersistentStore(from: file.absoluteURL)
 											UserDefaults.preferredPeripheralId = ""
 											UserDefaults.preferredPeripheralNum = Int(file.pathComponents[10]) ?? 0
-											Logger.data.notice("🗂️ Restored a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
+											Logger.data.notice("🗂️ Restored a core data backup to backup/\(UserDefaults.preferredPeripheralNum, privacy: .public)")
 										} catch {
-											print("Copy error: \(error)")
+											Logger.data.error("🗂️ Core data restore copy error: \(error, privacy: .public)")
 										}
 									} label: {
 										Label("restore", systemImage: "arrow.counterclockwise")
@@ -77,7 +74,7 @@ struct AppData: View {
 										do {
 											try FileManager.default.removeItem(at: file)
 										} catch {
-											print(error)
+											Logger.services.error("🗑️ Delete file error: \(error, privacy: .public)")
 										}
 									} label: {
 										Label("delete", systemImage: "trash")
@@ -89,8 +86,7 @@ struct AppData: View {
 								.font(idiom == .phone ? .callout : .title)
 								.frame(width: 35)
 						}
-					}
-					else {
+					} else {
 						Label {
 							Text("\(file.lastPathComponent) - \(file.creationDate?.formatted() ?? "") - \(file.fileSizeString)")
 								.swipeActions {
@@ -98,13 +94,12 @@ struct AppData: View {
 										do {
 											try FileManager.default.removeItem(at: file)
 										} catch {
-											print(error)
+											Logger.services.error("🗑️ Delete file error: \(error, privacy: .public)")
 										}
 									} label: {
 										Label("delete", systemImage: "trash")
 									}
 								}
-							
 						} icon: {
 							Image(systemName: "doc.text")
 								.symbolRenderingMode(.hierarchical)
@@ -115,13 +110,13 @@ struct AppData: View {
 				}
 #if targetEnvironment(macCatalyst)
 				Spacer()
-				VStack (alignment: .trailing) {
-					Button() {
+				VStack(alignment: .trailing) {
+					Button {
 						do {
 							try FileManager.default.removeItem(at: file)
 							loadFiles()
 						} catch {
-							print(error)
+							Logger.services.error("🗑️ Delete file error: \(error, privacy: .public)")
 						}
 					} label: {
 						Label("", systemImage: "trash")
@@ -136,7 +131,7 @@ struct AppData: View {
 		})
 		.listStyle(.inset)
 	}
-	
+
 	private func loadFiles() {
 		files = []
 		guard let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
@@ -146,11 +141,13 @@ struct AppData: View {
 		if let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles, .skipsPackageDescendants]) {
 			for case let fileURL as URL in enumerator {
 				do {
-					let fileAttributes = try fileURL.resourceValues(forKeys:[.isRegularFileKey])
+					let fileAttributes = try fileURL.resourceValues(forKeys: [.isRegularFileKey])
 					if fileAttributes.isRegularFile! {
 						files.append(fileURL)
 					}
-				} catch { print(error, fileURL) }
+				} catch {
+					Logger.services.error("📁 Load file: \(fileURL, privacy: .public) error: \(error, privacy: .public)")
+				}
 			}
 		}
 	}

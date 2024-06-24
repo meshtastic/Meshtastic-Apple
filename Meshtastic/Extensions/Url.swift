@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 extension URL {
 
@@ -34,7 +35,7 @@ extension URL {
 		do {
 			return try FileManager.default.attributesOfItem(atPath: path)
 		} catch let error as NSError {
-			print("FileAttribute error: \(error)")
+			Logger.services.error("FileAttribute error: \(error, privacy: . public)")
 		}
 		return nil
 	}

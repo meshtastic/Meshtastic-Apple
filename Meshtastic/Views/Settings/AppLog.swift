@@ -23,7 +23,7 @@ struct AppLog: View {
 	@State var isExporting = false
 	@State var exportString = ""
 	@State var isEditingFilters = false
-	
+
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	private let dateFormatStyle = Date.FormatStyle()
 		.hour(.twoDigits(amPM: .omitted))
@@ -45,7 +45,6 @@ struct AppLog: View {
 					Text(value.level.description)
 				}
 				.width(min: 75, max: 100)
-				
 			}
 			TableColumn("log.message", value: \.composedMessage) { value in
 				Text(value.composedMessage)
@@ -167,7 +166,6 @@ struct AppLog: View {
 			}
 		}
 	}
-	
 	func didDismiss() {
 		selection = nil
 		selectedLog = nil
@@ -200,7 +198,6 @@ extension AppLog {
 				let levelPredicate = NSPredicate(format: "messageType == %@", LogLevels(rawValue: level)?.level ?? "info")
 				predicates.append(levelPredicate)
 			}
-			
 			if predicates.count > 0 || !searchText.isEmpty {
 				if !searchText.isEmpty {
 					let filterPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)
@@ -214,10 +211,8 @@ extension AppLog {
 				}
 			} else {
 				let logs = try await Logger.fetch(predicateFormat: subsystemPredicate.predicateFormat)
-				
 				return logs
 			}
-			
 		} catch {
 			return []
 		}

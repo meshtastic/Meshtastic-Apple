@@ -69,7 +69,6 @@ struct BluetoothConfig: View {
 							.foregroundColor(.red)
 					}
 				}
-				
 				Toggle(isOn: $deviceLoggingEnabled) {
 					Label("Device Logging Enabled", systemImage: "ladybug")
 				}

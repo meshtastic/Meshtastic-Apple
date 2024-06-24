@@ -102,7 +102,7 @@ class MqttClientProxyManager {
 
 extension MqttClientProxyManager: CocoaMQTTDelegate {
 	func mqtt(_ mqtt: CocoaMQTT, didConnectAck ack: CocoaMQTTConnAck) {
-		Logger.mqtt.info("📲 MQTT Client Proxy didConnectAck: \(ack)")
+		Logger.mqtt.info("📲 [MQTT Client Proxy] didConnectAck: \(ack, privacy: .public)")
 		if ack == .accept {
 			delegate?.onMqttConnected()
 		} else {
@@ -112,7 +112,7 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 			case .accept:
 				errorDescription = "No Error"
 			case .unacceptableProtocolVersion:
-				errorDescription = "Proto ver"
+				errorDescription = "Unacceptable Protocol version"
 			case .identifierRejected:
 				errorDescription = "Invalid Id"
 			case .serverUnavailable:
@@ -124,13 +124,13 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 			default:
 				errorDescription = "Unknown Error"
 			}
-			Logger.services.error("\(errorDescription)")
+			Logger.services.error("📲 [MQTT Client Proxy] \(errorDescription, privacy: .public)")
 			delegate?.onMqttError(message: errorDescription)
 			self.disconnect()
 		}
 	}
 	func mqttDidDisconnect(_ mqtt: CocoaMQTT, withError err: Error?) {
-		Logger.mqtt.debug("📲 [MQTT Client Proxy] disconnected: \(err?.localizedDescription ?? "")")
+		Logger.mqtt.debug("📲 [MQTT Client Proxy] disconnected: \(err?.localizedDescription ?? "", privacy: .public)")
 		if let error = err {
 			delegate?.onMqttError(message: error.localizedDescription)
 		}

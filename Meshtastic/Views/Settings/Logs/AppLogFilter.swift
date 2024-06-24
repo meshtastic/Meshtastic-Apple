@@ -18,7 +18,7 @@ enum LogCategories: Int, CaseIterable, Identifiable {
 	case radio = 4
 	case services = 5
 	case stats = 6
-	
+
 	var id: Int { self.rawValue }
 	var description: String {
 		switch self {
@@ -67,7 +67,7 @@ enum LogLevels: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .debug:
-			return  "🩺 Debug"
+			return  "🪲 Debug"
 		case .info:
 			return "ℹ️ Info"
 		case .notice:
@@ -81,16 +81,15 @@ enum LogLevels: Int, CaseIterable, Identifiable {
 }
 
 struct AppLogFilter: View {
-	
+
 	@Environment(\.dismiss) private var dismiss
 	/// Filters
 	var filterTitle = "App Log Filters"
-	//@Binding
 	@Binding var category: Int
 	@Binding var level: Int
-	
+
 	var body: some View {
-		
+
 		NavigationStack {
 			Form {
 				Section(header: Text(filterTitle)) {
@@ -100,13 +99,12 @@ struct AppLogFilter: View {
 							Text("All Categories")
 								.tag(-1)
 							ForEach(LogCategories.allCases) { lc in
-									Text("\(lc.description)")
-								
+								Text("\(lc.description)")
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
 					}
-					
+
 					HStack {
 						Label("Level", systemImage: "stairs")
 						Picker("", selection: $level) {
@@ -114,8 +112,6 @@ struct AppLogFilter: View {
 								.tag(-1)
 							ForEach(LogLevels.allCases) { ll in
 								Text("\(ll.description)")
-									//.tag(ll.rawValue)
-								
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
