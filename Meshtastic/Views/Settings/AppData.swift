@@ -1,5 +1,5 @@
 //
-//  BackupData.swift
+//  AppData.swift
 //  Meshtastic
 //
 //  Copyright(c) Garth Vander Houwen 6/8/24.
