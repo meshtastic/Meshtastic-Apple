@@ -197,7 +197,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			connectedPeripheral.peripheral.delegate = self
 		} else {
 			// we are null just disconnect and start over
-			lastConnectionError = "Bluetooth connection error, please try again."
+			lastConnectionError = "🚫 [BLE] Bluetooth connection error, please try again."
 			disconnectPeripheral()
 			return
 		}
@@ -501,9 +501,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
 		if let error {
-			Logger.services.error("💥 BLE didUpdateNotificationStateFor error: \(characteristic.uuid, privacy: .public) \(error.localizedDescription, privacy: .public)")
+			Logger.services.error("💥 [BLE] didUpdateNotificationStateFor error: \(characteristic.uuid, privacy: .public) \(error.localizedDescription, privacy: .public)")
 		} else {
-			Logger.services.info("ℹ️ peripheral didUpdateNotificationStateFor \(characteristic.uuid, privacy: .public)")
+			Logger.services.info("ℹ️ [BLE] peripheral didUpdateNotificationStateFor \(characteristic.uuid, privacy: .public)")
 		}
 	}
 
@@ -519,7 +519,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// 5 CBATTErrorDomain Code=5 "Authentication is insufficient."
 				// 15 CBATTErrorDomain Code=15 "Encryption is insufficient."
 				lastConnectionError = "🚨" + String.localizedStringWithFormat("ble.errorcode.pin %@".localized, error.localizedDescription)
-				Logger.services.error("\(error.localizedDescription, privacy: .public) Please try connecting again and check the PIN carefully.")
+				Logger.services.error("🚫 [BLE] \(error.localizedDescription, privacy: .public) Please try connecting again and check the PIN carefully.")
 				self.disconnectPeripheral(reconnect: false)
 			}
 			return
