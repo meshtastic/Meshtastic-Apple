@@ -221,6 +221,7 @@ struct Connect: View {
 												}
 												do {
 													try container.copyPersistentStores(to: url.appendingPathComponent("backup").appendingPathComponent("\(UserDefaults.preferredPeripheralNum)"), overwriting: true)
+													clearCoreDataDatabase(context: context, includeRoutes: true)
 													Logger.data.notice("🗂️ Made a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
 
 												} catch {

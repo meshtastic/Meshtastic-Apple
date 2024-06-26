@@ -200,7 +200,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			} else {
 				if packet.from > Int16.max {
 					let newUser = createUser(num: Int64(packet.from), context: context)
-					fetchedNode[0].user = newUser
+					newNode.user = newUser
 				}
 			}
 
