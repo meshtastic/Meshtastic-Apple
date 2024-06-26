@@ -54,9 +54,7 @@ struct AppLog: View {
 			.width(ideal: 200, max: .infinity)
 		}
 		.monospaced()
-		.sheet(isPresented: $isEditingFilters) {
-			AppLogFilter(categories: $categories, levels: $levels)
-		}
+
 		.safeAreaInset(edge: .bottom, alignment: .trailing) {
 			HStack {
 				Button(action: {
@@ -117,6 +115,9 @@ struct AppLog: View {
 			   $0.id == newSelection
 			 }
 			selectedLog = log
+		}
+		.sheet(isPresented: $isEditingFilters) {
+			AppLogFilter(categories: $categories, levels: $levels)
 		}
 		.sheet(item: $selectedLog, onDismiss: didDismiss) { log in
 			LogDetail(log: log)
