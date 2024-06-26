@@ -85,39 +85,36 @@ struct AppLogFilter: View {
 	@Environment(\.dismiss) private var dismiss
 	/// Filters
 	var filterTitle = "App Log Filters"
-	@Binding var category: Int
-	@Binding var level: Int
+	@Binding var categories: Set<Int>
+	@Binding var levels: Set<Int>
+	@State var editMode = EditMode.active /// the edit mode
 
 	var body: some View {
 
 		NavigationStack {
 			Form {
-				Section(header: Text(filterTitle)) {
-					HStack {
-						Label("Category", systemImage: "square.grid.2x2")
-						Picker("", selection: $category) {
-							Text("All Categories")
-								.tag(-1)
-							ForEach(LogCategories.allCases) { lc in
-								Text("\(lc.description)")
-							}
+				Section(header: Text("Categories")) {
+					VStack {
+						List(LogCategories.allCases, selection: $categories) { cat in
+							Text(cat.description)
 						}
-						.pickerStyle(DefaultPickerStyle())
+						.listStyle(.plain)
+						.environment(\.editMode, $editMode) /// bind it here!
+						.frame(minHeight: 300, maxHeight: .infinity)
 					}
-
-					HStack {
-						Label("Level", systemImage: "stairs")
-						Picker("", selection: $level) {
-							Text("All Levels")
-								.tag(-1)
-							ForEach(LogLevels.allCases) { ll in
-								Text("\(ll.description)")
-							}
+				}
+				Section(header: Text("Log Levels")) {
+					VStack {
+						List(LogLevels.allCases, selection: $levels) { level in
+							Text(level.description)
 						}
-						.pickerStyle(DefaultPickerStyle())
+						.listStyle(.plain)
+						.environment(\.editMode, $editMode) /// bind it here!
+						.frame(minHeight: 210, maxHeight: .infinity)
 					}
 				}
 			}
+
 #if targetEnvironment(macCatalyst)
 			Spacer()
 			Button {
@@ -131,7 +128,7 @@ struct AppLogFilter: View {
 			.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.fraction(0.6), .fraction(0.75)])
+		.presentationDetents([.fraction(1.0)])
 		.presentationDragIndicator(.visible)
 	}
 }

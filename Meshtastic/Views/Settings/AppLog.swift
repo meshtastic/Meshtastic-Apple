@@ -15,11 +15,12 @@ struct AppLog: View {
 	@State private var logs: [OSLogEntryLog] = []
 	@State private var sortOrder = [KeyPathComparator(\OSLogEntryLog.date, order: .reverse)]
 	@State private var selection: OSLogEntry.ID?
+
 	@State private var selectedLog: OSLogEntryLog?
 	@State private var presentingErrorDetails: Bool = false
 	@State private var searchText = ""
-	@State private var category: Int = -1
-	@State private var level: Int = -1
+	@State private var categories: Set<Int> = [0, 1, 2, 3, 4, 5, 6]
+	@State private var levels: Set<Int> =  [0, 1, 2, 3, 4]
 	@State var isExporting = false
 	@State var exportString = ""
 	@State var isEditingFilters = false
@@ -54,7 +55,7 @@ struct AppLog: View {
 		}
 		.monospaced()
 		.sheet(isPresented: $isEditingFilters) {
-			AppLogFilter(category: $category, level: $level)
+			AppLogFilter(categories: $categories, levels: $levels)
 		}
 		.safeAreaInset(edge: .bottom, alignment: .trailing) {
 			HStack {
@@ -98,13 +99,13 @@ struct AppLog: View {
 				logs.sort(using: sortOrder)
 			}
 		}
-		.onChange(of: category) { _ in
+		.onChange(of: [categories]) { _ in
 			Task {
 				await logs = searchAppLogs()
 				logs.sort(using: sortOrder)
 			}
 		}
-		.onChange(of: level) { _ in
+		.onChange(of: [levels]) { _ in
 			Task {
 				await logs = searchAppLogs()
 				logs.sort(using: sortOrder)
@@ -188,15 +189,25 @@ extension AppLog {
 			/// Subsystem Predicate
 			let subsystemPredicate = NSPredicate(format: "subsystem IN %@", ["com.apple.SwiftUI", "com.apple.coredata", "gvh.MeshtasticClient"])
 			predicates.append(subsystemPredicate)
-			/// Category
-			if category > -1 {
-				let categoryPredicate = NSPredicate(format: "category == %@", LogCategories(rawValue: category)!.description)
-				predicates.append(categoryPredicate)
+			/// Categories
+			if categories.count > 0 {
+				var categoriesArray: [NSPredicate] = []
+				for c in categories {
+					let categoriesPredicate = NSPredicate(format: "category == %@", LogCategories(rawValue: c)?.description ?? "services")
+					categoriesArray.append(categoriesPredicate)
+				}
+				let compoundPredicate = NSCompoundPredicate(type: .or, subpredicates: categoriesArray)
+				predicates.append(compoundPredicate)
 			}
-			/// Log Level
-			if level > -1 {
-				let levelPredicate = NSPredicate(format: "messageType == %@", LogLevels(rawValue: level)?.level ?? "info")
-				predicates.append(levelPredicate)
+			/// Log Levels
+			if levels.count > 0 {
+				var levelsArray: [NSPredicate] = []
+				for l in levels {
+					let levelsPredicate = NSPredicate(format: "messageType == %@", LogLevels(rawValue: l)?.level ?? "info")
+					levelsArray.append(levelsPredicate)
+				}
+				let compoundPredicate = NSCompoundPredicate(type: .or, subpredicates: levelsArray)
+				predicates.append(compoundPredicate)
 			}
 			if predicates.count > 0 || !searchText.isEmpty {
 				if !searchText.isEmpty {
