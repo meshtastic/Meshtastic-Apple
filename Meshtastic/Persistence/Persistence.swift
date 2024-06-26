@@ -108,33 +108,76 @@ extension NSPersistentContainer {
 	/// - Parameter backupURL: A file URL containing backup copies of all currently loaded persistent stores.
 	/// - Throws: `CopyPersistentStoreError` in various situations.
 	/// - Returns: Nothing. If no errors are thrown, the restore is complete.
-	func restorePersistentStore(from backupURL: URL) throws -> Void {
-		guard backupURL.isFileURL else {
-			throw CopyPersistentStoreErrors.invalidSource("Backup URL must be a file URL")
-		}
+//	func restorePersistentStore(from backupURL: URL) throws -> Void {
+//		guard backupURL.isFileURL else {
+//			throw CopyPersistentStoreErrors.invalidSource("Backup URL must be a file URL")
+//		}
+//
+//		for persistentStoreDescription in persistentStoreDescriptions {
+//			guard let loadedStoreURL = persistentStoreDescription.url else {
+//				continue
+//			}
+//			guard FileManager.default.fileExists(atPath: backupURL.path) else {
+//				throw CopyPersistentStoreErrors.invalidSource("Missing backup store for \(backupURL)")
+//			}
+//			do {
+//				let storeOptions = persistentStoreDescription.options
+//				let configurationName = persistentStoreDescription.configuration
+//				let storeType = persistentStoreDescription.type
+//
+//				// Replace the current store with the backup copy. This has a side effect of removing the current store from the Core Data stack.
+//				// When restoring, it's necessary to use the current persistent store coordinator.
+//				try persistentStoreCoordinator.replacePersistentStore(at: loadedStoreURL, destinationOptions: storeOptions, withPersistentStoreFrom: backupURL, sourceOptions: storeOptions, ofType: storeType)
+//				// Add the persistent store at the same location we've been using, because it was removed in the previous step.
+//				try persistentStoreCoordinator.addPersistentStore(ofType: storeType, configurationName: configurationName, at: loadedStoreURL, options: storeOptions)
+//			} catch {
+//				throw CopyPersistentStoreErrors.copyStoreError("Could not restore: \(error.localizedDescription)")
+//			}
+//		}
+//	}
+//	
+	/// Restore backup persistent stores located in the directory referenced by `backupURL`.
+	 ///
+	 /// **Be very careful with this**. To restore a persistent store, the current persistent store must be removed from the container. When that happens, **all currently loaded Core Data objects** will become invalid. Using them after restoring will cause your app to crash. When calling this method you **must** ensure that you do not continue to use any previously fetched managed objects or existing fetched results controllers. **If this method does not throw, that does not mean your app is safe.** You need to take extra steps to prevent crashes. The details vary depending on the nature of your app.
+	 /// - Parameter backupURL: A file URL containing backup copies of all currently loaded persistent stores.
+	 /// - Throws: `CopyPersistentStoreError` in various situations.
+	 /// - Returns: Nothing. If no errors are thrown, the restore is complete.
+	 func restorePersistentStore(from backupURL: URL) throws -> Void {
+		 guard backupURL.isFileURL else {
+			 throw CopyPersistentStoreErrors.invalidSource("Backup URL must be a file URL")
+		 }
+		 
+		 var isDirectory: ObjCBool = false
+		 if FileManager.default.fileExists(atPath: backupURL.path, isDirectory: &isDirectory) {
+			 if !isDirectory.boolValue {
+				 throw CopyPersistentStoreErrors.invalidSource("Source URL must be a directory")
+			 }
+		 } else {
+			 throw CopyPersistentStoreErrors.invalidSource("Source URL must exist")
+		 }
 
-		for persistentStoreDescription in persistentStoreDescriptions {
-			guard let loadedStoreURL = persistentStoreDescription.url else {
-				continue
-			}
-			guard FileManager.default.fileExists(atPath: backupURL.path) else {
-				throw CopyPersistentStoreErrors.invalidSource("Missing backup store for \(backupURL)")
-			}
-			do {
-				let storeOptions = persistentStoreDescription.options
-				let configurationName = persistentStoreDescription.configuration
-				let storeType = persistentStoreDescription.type
-
-				// Replace the current store with the backup copy. This has a side effect of removing the current store from the Core Data stack.
-				// When restoring, it's necessary to use the current persistent store coordinator.
-				try persistentStoreCoordinator.replacePersistentStore(at: loadedStoreURL, destinationOptions: storeOptions, withPersistentStoreFrom: backupURL, sourceOptions: storeOptions, ofType: storeType)
-				// Add the persistent store at the same location we've been using, because it was removed in the previous step.
-				try persistentStoreCoordinator.addPersistentStore(ofType: storeType, configurationName: configurationName, at: loadedStoreURL, options: storeOptions)
-			} catch {
-				throw CopyPersistentStoreErrors.copyStoreError("Could not restore: \(error.localizedDescription)")
-			}
-		}
-	}
+		 for persistentStoreDescription in persistentStoreDescriptions {
+			 guard let loadedStoreURL = persistentStoreDescription.url else {
+				 continue
+			 }
+			 let backupStoreURL = backupURL.appendingPathComponent(loadedStoreURL.lastPathComponent)
+			 guard FileManager.default.fileExists(atPath: backupStoreURL.path) else {
+				 throw CopyPersistentStoreErrors.invalidSource("Missing backup store for \(backupStoreURL)")
+			 }
+			 do {
+				 let storeOptions = persistentStoreDescription.options
+				 let configurationName = persistentStoreDescription.configuration
+				 let storeType = persistentStoreDescription.type
+				 // Replace the current store with the backup copy. This has a side effect of removing the current store from the Core Data stack.
+				 // When restoring, it's necessary to use the current persistent store coordinator.
+				 try persistentStoreCoordinator.replacePersistentStore(at: loadedStoreURL, destinationOptions: storeOptions, withPersistentStoreFrom: backupStoreURL, sourceOptions: storeOptions, ofType: storeType)
+				 // Add the persistent store at the same location we've been using, because it was removed in the previous step.
+				 try persistentStoreCoordinator.addPersistentStore(ofType: storeType, configurationName: configurationName, at: loadedStoreURL, options: storeOptions)
+			 } catch {
+				 throw CopyPersistentStoreErrors.copyStoreError("Could not restore: \(error.localizedDescription)")
+			 }
+		 }
+	 }
 
 	/// Copy all loaded persistent stores to a new directory. Each currently loaded file-based persistent store will be copied (including journal files, external binary storage, and anything else Core Data needs) into the destination directory to a persistent store with the same name and type as the existing store. In-memory stores, if any, are skipped.
 	/// - Parameters:
@@ -151,7 +194,6 @@ extension NSPersistentContainer {
 		guard destinationURL.isFileURL else {
 			throw CopyPersistentStoreErrors.invalidDestination("Destination URL must be a file URL")
 		}
-
 		// If the destination exists and we aren't overwriting it, then it must be a directory. (If we are overwriting, we'll remove it anyway, so it doesn't matter whether it's a directory).
 		var isDirectory: ObjCBool = false
 		if !overwriting && FileManager.default.fileExists(atPath: destinationURL.path, isDirectory: &isDirectory) {
@@ -168,7 +210,6 @@ extension NSPersistentContainer {
 				throw CopyPersistentStoreErrors.destinationNotRemoved("Can't overwrite destination at \(destinationURL)")
 			}
 		}
-
 		// Create the destination directory
 		do {
 			try FileManager.default.createDirectory(at: destinationURL, withIntermediateDirectories: true, attributes: nil)
@@ -183,16 +224,17 @@ extension NSPersistentContainer {
 			guard persistentStoreDescription.type != NSInMemoryStoreType else {
 				continue
 			}
-			let temporaryPSC = NSPersistentStoreCoordinator(managedObjectModel: persistentStoreCoordinator.managedObjectModel)
 			let destinationStoreURL = destinationURL.appendingPathComponent(storeURL.lastPathComponent)
+
 			if !overwriting && FileManager.default.fileExists(atPath: destinationStoreURL.path) {
-				// If the destination exists, the migratePersistentStore call will update it in place. That's fine unless we're not overwriting.
+				// If the destination exists, the replacePersistentStore call will update it in place. That's fine unless we're not overwriting.
 				throw CopyPersistentStoreErrors.destinationError("Destination already exists at \(destinationStoreURL)")
 			}
 			do {
-				let newStore = try temporaryPSC.addPersistentStore(ofType: persistentStoreDescription.type, configurationName: persistentStoreDescription.configuration, at: persistentStoreDescription.url, options: persistentStoreDescription.options)
-				let _ = try temporaryPSC.migratePersistentStore(newStore, to: destinationStoreURL, options: persistentStoreDescription.options, withType: persistentStoreDescription.type)
-
+				// Replace an existing backup, if any, with a new one with the same options and type. This doesn't affect the current Core Data stack.
+				// The function name says "replace", but it works if there's nothing at the destination yet. In that case it creates a new persistent store.
+				// Note that for backup, it doesn't matter if the persistent store coordinator is the one currently in use or a different one. It could be a class function, for this use.
+				try persistentStoreCoordinator.replacePersistentStore(at: destinationStoreURL, destinationOptions: persistentStoreDescription.options, withPersistentStoreFrom: storeURL, sourceOptions: persistentStoreDescription.options, ofType: persistentStoreDescription.type)
 				/// Cleanup extra files
 				let directory = destinationStoreURL.deletingLastPathComponent()
 				/// Delete -wal file

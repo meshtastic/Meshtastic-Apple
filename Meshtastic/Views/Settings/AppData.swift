@@ -53,7 +53,7 @@ struct AppData: View {
 				VStack(alignment: .leading ) {
 					if file.pathExtension.contains("sqlite") {
 						Label {
-							Text("Node Core Data Backup \(file.pathComponents[10])/\(file.lastPathComponent) - \(file.creationDate?.formatted() ?? "") - \(file.fileSizeString)")
+							Text("Node Core Data Backup \(file.pathComponents[9])/\(file.lastPathComponent) - \(file.creationDate?.formatted() ?? "") - \(file.fileSizeString)")
 								.swipeActions {
 									Button(role: .none) {
 										bleManager.disconnectPeripheral(reconnect: false)
