@@ -53,14 +53,15 @@ struct AppData: View {
 				VStack(alignment: .leading ) {
 					if file.pathExtension.contains("sqlite") {
 						Label {
-							Text("Node Core Data Backup \(file.pathComponents[9])/\(file.lastPathComponent) - \(file.creationDate?.formatted() ?? "") - \(file.fileSizeString)")
+							Text("Node Core Data Backup \(file.pathComponents[10])/\(file.lastPathComponent) - \(file.creationDate?.formatted() ?? "") - \(file.fileSizeString)")
 								.swipeActions {
 									Button(role: .none) {
 										bleManager.disconnectPeripheral(reconnect: false)
 										let container = NSPersistentContainer(name: "Meshtastic")
 										do {
-											context.reset()
+											clearCoreDataDatabase(context: context, includeRoutes: true)
 											try container.restorePersistentStore(from: file.absoluteURL)
+											context.reset()
 											UserDefaults.preferredPeripheralId = ""
 											UserDefaults.preferredPeripheralNum = Int(file.pathComponents[10]) ?? 0
 											Logger.data.notice("🗂️ Restored a core data backup to backup/\(UserDefaults.preferredPeripheralNum, privacy: .public)")

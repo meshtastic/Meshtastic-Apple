@@ -645,10 +645,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								if FileManager.default.fileExists(atPath: databasePath.path) {
 									do {
 										disconnectPeripheral(reconnect: false)
-										clearCoreDataDatabase(context: context!, includeRoutes: true)
 										try container.restorePersistentStore(from: databasePath)
 										UserDefaults.preferredPeripheralNum = Int(myInfo?.myNodeNum ?? 0)
-										context!.reset()
 										connectTo(peripheral: peripheral)
 										Logger.data.notice("🗂️ Restored Core data for /\(UserDefaults.preferredPeripheralNum, privacy: .public)")
 									} catch {

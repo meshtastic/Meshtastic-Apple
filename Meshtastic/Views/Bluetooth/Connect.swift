@@ -221,8 +221,9 @@ struct Connect: View {
 												}
 												do {
 													try container.copyPersistentStores(to: url.appendingPathComponent("backup").appendingPathComponent("\(UserDefaults.preferredPeripheralNum)"), overwriting: true)
-													Logger.data.notice("🗂️ Made a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
 													clearCoreDataDatabase(context: context, includeRoutes: true)
+													Logger.data.notice("🗂️ Made a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
+
 												} catch {
 													Logger.data.error("🗂️ Core data backup copy error: \(error, privacy: .public)")
 												}
