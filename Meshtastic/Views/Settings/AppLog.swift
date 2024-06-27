@@ -19,8 +19,8 @@ struct AppLog: View {
 	@State private var selectedLog: OSLogEntryLog?
 	@State private var presentingErrorDetails: Bool = false
 	@State private var searchText = ""
-	@State private var categories: Set<Int> = [0, 1, 2, 3, 4, 5, 6]
-	@State private var levels: Set<Int> =  [0, 1, 2, 3, 4]
+	@State private var categories: Set<Int> = []
+	@State private var levels: Set<Int> =  []
 	@State var isExporting = false
 	@State var exportString = ""
 	@State var isEditingFilters = false
