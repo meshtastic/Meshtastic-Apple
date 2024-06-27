@@ -51,7 +51,7 @@ struct UserConfig: View {
 								.onChange(of: longName, perform: { _ in
 									let totalBytes = longName.utf8.count
 									// Only mess with the value if it is too big
-									if totalBytes > (isLicensed ? 8 : 36) {
+									if totalBytes > (isLicensed ? 6 : 36) {
 										longName = String(longName.dropLast())
 									}
 								})
