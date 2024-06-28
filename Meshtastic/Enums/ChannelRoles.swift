@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 9/21/22.
 //
 import Foundation
+import MeshtasticProtobufs
 
 // Default of 0 is Client
 enum ChannelRoles: Int, CaseIterable, Identifiable {

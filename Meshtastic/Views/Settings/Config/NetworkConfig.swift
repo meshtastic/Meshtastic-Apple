@@ -4,9 +4,9 @@
 //
 //  Copyright (c) Garth Vander Houwen 8/1/2022
 //
-
-import SwiftUI
+import MeshtasticProtobufs
 import OSLog
+import SwiftUI
 
 struct NetworkConfig: View {
 

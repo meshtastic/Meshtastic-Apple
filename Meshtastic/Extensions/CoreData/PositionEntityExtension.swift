@@ -8,6 +8,7 @@
 import CoreData
 import CoreLocation
 import MapKit
+import MeshtasticProtobufs
 import SwiftUI
 
 extension PositionEntity {

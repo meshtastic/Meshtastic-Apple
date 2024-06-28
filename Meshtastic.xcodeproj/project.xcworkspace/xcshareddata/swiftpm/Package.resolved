@@ -1,5 +1,5 @@
 {
-  "originHash" : "e9855e3a299c14a10f11ee0b8f29e4170b09548533939361223a0f50e7caac8c",
+  "originHash" : "2d0b85469585b0d6079eac292d63864096062c24848a49380b9d9727f0ceb96c",
   "pins" : [
     {
       "identity" : "cocoamqtt",
@@ -42,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-protobuf.git",
       "state" : {
-        "revision" : "ce20dc083ee485524b802669890291c0d8090170",
-        "version" : "1.22.1"
+        "revision" : "9f0c76544701845ad98716f3f6a774a892152bcb",
+        "version" : "1.26.0"
       }
     }
   ],

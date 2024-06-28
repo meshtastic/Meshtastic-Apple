@@ -5,9 +5,10 @@
 //  Created by Garth Vander Houwen on 12/24/21.
 //
 
-import SwiftUI
 import CoreData
+import MeshtasticProtobufs
 import OSLog
+import SwiftUI
 
 struct ChannelMessageList: View {
 	@StateObject var appState = AppState.shared

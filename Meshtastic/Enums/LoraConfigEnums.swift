@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import MeshtasticProtobufs
 
 enum RegionCodes: Int, CaseIterable, Identifiable {
 

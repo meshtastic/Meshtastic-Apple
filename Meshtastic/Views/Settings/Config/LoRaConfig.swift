@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreData
+import MeshtasticProtobufs
 import OSLog
 
 struct LoRaConfig: View {

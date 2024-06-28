@@ -4,9 +4,10 @@
 //
 //  Copyright (c) Garth Vander Houwen 9/4/22.
 //
-import SwiftUI
 import CoreLocation
+import MeshtasticProtobufs
 import OSLog
+import SwiftUI
 
 struct MQTTConfig: View {
 

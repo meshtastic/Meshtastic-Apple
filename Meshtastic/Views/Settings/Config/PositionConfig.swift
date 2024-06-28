@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import MeshtasticProtobufs
 import OSLog
 
 struct PositionFlags: OptionSet {

@@ -5,6 +5,7 @@
 //  Copyright (c) Garth Vander Houwen 8/18/22.
 //
 
+import MeshtasticProtobufs
 import OSLog
 import SwiftUI
 

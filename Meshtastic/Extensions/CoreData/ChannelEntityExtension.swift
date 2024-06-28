@@ -5,6 +5,8 @@
 //  Copyright(c) Garth Vander Houwen 11/7/22.
 //
 import Foundation
+import CoreData
+import MeshtasticProtobufs
 
 extension ChannelEntity {
 
