@@ -558,26 +558,6 @@ public struct Nau7802Config {
   public init() {}
 }
 
-///
-/// NAU7802 Telemetry configuration, for saving to flash
-struct Nau7802Config {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
-
-  ///
-  /// The offset setting for the NAU7802
-  var zeroOffset: Int32 = 0
-
-  ///
-  /// The calibration factor for the NAU7802
-  var calibrationFactor: Float = 0
-
-  var unknownFields = SwiftProtobuf.UnknownStorage()
-
-  init() {}
-}
-
 #if swift(>=5.5) && canImport(_Concurrency)
 extension TelemetrySensorType: @unchecked Sendable {}
 extension DeviceMetrics: @unchecked Sendable {}

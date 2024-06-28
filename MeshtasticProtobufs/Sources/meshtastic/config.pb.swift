@@ -2079,7 +2079,6 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     7: .standard(proto: "ls_secs"),
     8: .standard(proto: "min_wake_secs"),
     9: .standard(proto: "device_battery_ina_address"),
-    32: .standard(proto: "powermon_enables"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2096,7 +2095,6 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.lsSecs) }()
       case 8: try { try decoder.decodeSingularUInt32Field(value: &self.minWakeSecs) }()
       case 9: try { try decoder.decodeSingularUInt32Field(value: &self.deviceBatteryInaAddress) }()
-      case 32: try { try decoder.decodeSingularUInt64Field(value: &self.powermonEnables) }()
       default: break
       }
     }
@@ -2127,9 +2125,6 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if self.deviceBatteryInaAddress != 0 {
       try visitor.visitSingularUInt32Field(value: self.deviceBatteryInaAddress, fieldNumber: 9)
     }
-    if self.powermonEnables != 0 {
-      try visitor.visitSingularUInt64Field(value: self.powermonEnables, fieldNumber: 32)
-    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2142,7 +2137,6 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if lhs.lsSecs != rhs.lsSecs {return false}
     if lhs.minWakeSecs != rhs.minWakeSecs {return false}
     if lhs.deviceBatteryInaAddress != rhs.deviceBatteryInaAddress {return false}
-    if lhs.powermonEnables != rhs.powermonEnables {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
