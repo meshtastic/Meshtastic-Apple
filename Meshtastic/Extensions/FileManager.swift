@@ -53,12 +53,12 @@ public extension FileManager {
 	  do {
 		accumulatedSize += try contentItemURL.regularFileAllocatedSize()
 	  } catch {
-		  Logger.services.error("💥 File Manager Error: \(error.localizedDescription)")
+		  Logger.services.error("💥 File Manager Error: \(error.localizedDescription, privacy: .public)")
 	  }
 
 	}
 	if let error = enumeratorError {
-		Logger.services.error("💥 AllocatedSizeOfDirectory enumeratorError = \(error.localizedDescription)")
+		Logger.services.error("💥 AllocatedSizeOfDirectory enumeratorError = \(error.localizedDescription, privacy: .public)")
 	}
 
 	return Double(accumulatedSize).toBytes

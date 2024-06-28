@@ -5,9 +5,10 @@
 //  Created by Garth Vander Houwen on 12/24/21.
 //
 
-import SwiftUI
 import CoreData
+import MeshtasticProtobufs
 import OSLog
+import SwiftUI
 
 struct ChannelMessageList: View {
 	@StateObject var appState = AppState.shared
@@ -115,7 +116,7 @@ struct ChannelMessageList: View {
 									message.read = true
 									do {
 										try context.save()
-										Logger.data.info("📖 Read message \(message.messageId) ")
+										Logger.data.info("📖 [App] Read message \(message.messageId) ")
 										appState.unreadChannelMessages = myInfo.unreadMessages
 										UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 										context.refresh(myInfo, mergeChanges: true)

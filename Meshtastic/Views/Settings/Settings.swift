@@ -48,6 +48,8 @@ struct Settings: View {
 		case meshLog
 		case adminMessageLog
 		case about
+		case appLog
+		case appData
 	}
 	var body: some View {
 		NavigationSplitView {
@@ -412,18 +414,33 @@ struct Settings: View {
 							}
 						}
 						.tag(SettingsSidebar.meshLog)
+						if #available (iOS 17.4, *) {
+							NavigationLink {
+								AppLog()
+							} label: {
+								Label {
+									Text("Debug Logs")
+								} icon: {
+									Image(systemName: "stethoscope")
+								}
+							}
+							.tag(SettingsSidebar.appLog)
+						}
+					}
+#if DEBUG
+					Section(header: Text("Developers")) {
 						NavigationLink {
-							let connectedNode = nodes.first(where: { $0.num == preferredNodeNum })
-							AdminMessageList(user: connectedNode?.user)
+							AppData()
 						} label: {
 							Label {
-								Text("admin.log")
+								Text("App Files")
 							} icon: {
-								Image(systemName: "building.columns")
+								Image(systemName: "folder")
 							}
 						}
-						.tag(SettingsSidebar.adminMessageLog)
+						.tag(SettingsSidebar.appData)
 					}
+#endif
 					Section(header: Text("Firmware")) {
 						NavigationLink {
 							Firmware(node: nodes.first(where: { $0.num == preferredNodeNum }))

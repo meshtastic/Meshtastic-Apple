@@ -26,7 +26,6 @@ struct Connect: View {
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
 	@State var liveActivityStarted = false
-	@State var presentingSwitchPreferredPeripheral = false
 	@State var selectedPeripherialId = ""
 
 	init () {
@@ -49,7 +48,7 @@ struct Connect: View {
 				List {
 					if bleManager.isSwitchedOn {
 						Section(header: Text("connected.radio").font(.title)) {
-							if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
+							if let connectedPeripheral = bleManager.connectedPeripheral, connectedPeripheral.peripheral.state == .connected {
 								if #available(iOS 17.0, macOS 14.0, *) {
 									TipView(BluetoothConnectionTip(), arrowEdge: .bottom)
 								}
@@ -60,9 +59,9 @@ struct Connect: View {
 									.padding(.trailing)
 									VStack(alignment: .leading) {
 										if node != nil {
-											Text(bleManager.connectedPeripheral.longName).font(.title2)
+											Text(connectedPeripheral.longName).font(.title2)
 										}
-										Text("ble.name").font(.callout)+Text(": \(bleManager.connectedPeripheral.peripheral.name ?? "unknown".localized)")
+										Text("ble.name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name ?? "unknown".localized)")
 											.font(.callout).foregroundColor(Color.gray)
 										if node != nil {
 											Text("firmware.version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "unknown".localized)")
@@ -91,7 +90,8 @@ struct Connect: View {
 								.padding([.top, .bottom])
 								.swipeActions {
 									Button(role: .destructive) {
-										if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
+										if let connectedPeripheral = bleManager.connectedPeripheral,
+										   connectedPeripheral.peripheral.state == .connected {
 											bleManager.disconnectPeripheral(reconnect: false)
 										}
 									} label: {
@@ -121,7 +121,8 @@ struct Connect: View {
 										Text("Num: \(String(node!.num))")
 										Text("Short Name: \(node?.user?.shortName ?? "?")")
 										Text("Long Name: \(node?.user?.longName ?? "unknown".localized)")
-										Text("BLE RSSI: \(bleManager.connectedPeripheral.rssi)")
+										Text("BLE RSSI: \(connectedPeripheral.rssi)")
+
 										Button {
 											if !bleManager.sendShutdown(fromUser: node!.user!, toUser: node!.user!, adminIndex: node!.myInfo!.adminIndex) {
 												Logger.mesh.error("Shutdown Failed")
@@ -210,11 +211,25 @@ struct Connect: View {
 										}
 										Button(action: {
 											if UserDefaults.preferredPeripheralId.count > 0 && peripheral.peripheral.identifier.uuidString != UserDefaults.preferredPeripheralId {
-												presentingSwitchPreferredPeripheral = true
-												selectedPeripherialId = peripheral.peripheral.identifier.uuidString
-											} else {
-												self.bleManager.connectTo(peripheral: peripheral.peripheral)
+												if let connectedPeripheral = bleManager.connectedPeripheral, connectedPeripheral.peripheral.state == CBPeripheralState.connected {
+													bleManager.disconnectPeripheral()
+												}
+												let container = NSPersistentContainer(name: "Meshtastic")
+												guard let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+													Logger.data.error("nil File path for back")
+													return
+												}
+												do {
+													try container.copyPersistentStores(to: url.appendingPathComponent("backup").appendingPathComponent("\(UserDefaults.preferredPeripheralNum)"), overwriting: true)
+													clearCoreDataDatabase(context: context, includeRoutes: true)
+													Logger.data.notice("🗂️ Made a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
+
+												} catch {
+													Logger.data.error("🗂️ Core data backup copy error: \(error, privacy: .public)")
+												}
 											}
+											UserDefaults.preferredPeripheralId = selectedPeripherialId
+											self.bleManager.connectTo(peripheral: peripheral.peripheral)
 										}) {
 											Text(peripheral.name).font(.callout)
 										}
@@ -225,23 +240,6 @@ struct Connect: View {
 									}.padding([.bottom, .top])
 								}
 							}
-							.confirmationDialog("Connecting to a new radio will clear all local app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
-
-								Button("Connect to new radio?", role: .destructive) {
-									UserDefaults.preferredPeripheralId = selectedPeripherialId
-									UserDefaults.preferredPeripheralNum = 0
-									if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
-										bleManager.disconnectPeripheral()
-									}
-									clearCoreDataDatabase(context: context, includeRoutes: false)
-
-									let radio = bleManager.peripherals.first(where: { $0.peripheral.identifier.uuidString == selectedPeripherialId })
-									if radio != nil {
-										bleManager.connectTo(peripheral: radio!.peripheral)
-									}
-								}
-							}
-							.textCase(nil)
 						}
 
 					} else {
@@ -254,9 +252,9 @@ struct Connect: View {
 				HStack(alignment: .center) {
 					Spacer()
 					#if targetEnvironment(macCatalyst)
-					if bleManager.connectedPeripheral != nil {
+					if let connectedPeripheral = bleManager.connectedPeripheral {
 						Button(role: .destructive, action: {
-							if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
+							if connectedPeripheral.peripheral.state == CBPeripheralState.connected {
 								bleManager.disconnectPeripheral(reconnect: false)
 							}
 						}) {
@@ -285,10 +283,18 @@ struct Connect: View {
 				.padding(.bottom, 10)
 			}
 			.navigationTitle("bluetooth")
-			.navigationBarItems(leading: MeshtasticLogo(), trailing:
-									ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", mqttProxyConnected: bleManager.mqttProxyConnected, mqttTopic: bleManager.mqttManager.topic)
-			})
+			.navigationBarItems(
+				leading: MeshtasticLogo(),
+				trailing: ZStack {
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: bleManager.connectedPeripheral?.shortName ?? "?",
+						mqttProxyConnected: bleManager.mqttProxyConnected,
+						mqttTopic: bleManager.mqttManager.topic
+					)
+				}
+			)
 		}
 		.sheet(isPresented: $invalidFirmwareVersion, onDismiss: didDismissSheet) {
 			InvalidVersion(minimumVersion: self.bleManager.minimumVersion, version: self.bleManager.connectedVersion)
@@ -306,18 +312,14 @@ struct Connect: View {
 				fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(bleManager.connectedPeripheral?.num ?? -1))
 
 				do {
-					let fetchedNode = try context.fetch(fetchNodeInfoRequest)
-					// Found a node, check it for a region
-					if !fetchedNode.isEmpty {
-						node = fetchedNode[0]
-						if node!.loRaConfig != nil && node!.loRaConfig?.regionCode ?? 0 == RegionCodes.unset.rawValue {
-							isUnsetRegion = true
-						} else {
-							isUnsetRegion = false
-						}
+					node = try context.fetch(fetchNodeInfoRequest).first
+					if let loRaConfig = node?.loRaConfig, loRaConfig.regionCode == RegionCodes.unset.rawValue {
+						isUnsetRegion = true
+					} else {
+						isUnsetRegion = false
 					}
 				} catch {
-
+					Logger.data.error("💥 Error fetching node info: \(error.localizedDescription)")
 				}
 			}
 		}

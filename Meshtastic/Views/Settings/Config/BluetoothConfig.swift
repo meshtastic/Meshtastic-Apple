@@ -5,8 +5,9 @@
 //  Copyright (c) Garth Vander Houwen 8/18/22.
 //
 
-import SwiftUI
+import MeshtasticProtobufs
 import OSLog
+import SwiftUI
 
 struct BluetoothConfig: View {
 	@Environment(\.managedObjectContext) var context
@@ -18,6 +19,7 @@ struct BluetoothConfig: View {
 	@State var mode = 0
 	@State var fixedPin = "123456"
 	@State var shortPin = false
+	@State var deviceLoggingEnabled = false
 	var pinLength: Int = 6
 	let numberFormatter: NumberFormatter = {
 		let formatter = NumberFormatter()
@@ -68,18 +70,23 @@ struct BluetoothConfig: View {
 							.foregroundColor(.red)
 					}
 				}
+				Toggle(isOn: $deviceLoggingEnabled) {
+					Label("Device Logging Enabled", systemImage: "ladybug")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 			}
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.bluetoothConfig == nil)
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-			if connectedNode != nil {
+			if let myNodeNum = bleManager.connectedPeripheral?.num,
+				let connectedNode = getNodeInfo(id: myNodeNum, context: context) {
 				var bc = Config.BluetoothConfig()
 				bc.enabled = enabled
 				bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
 				bc.fixedPin = UInt32(fixedPin) ?? 123456
-				let adminMessageId =  bleManager.saveBluetoothConfig(config: bc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				bc.deviceLoggingEnabled	= deviceLoggingEnabled
+				let adminMessageId =  bleManager.saveBluetoothConfig(config: bc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 				if adminMessageId > 0 {
 					// Should show a saved successfully alert once I know that to be true
 					// for now just disable the button after a successful save
@@ -90,21 +97,26 @@ struct BluetoothConfig: View {
 		}
 
 		.navigationTitle("bluetooth.config")
-		.navigationBarItems(trailing:
-			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
 		.onAppear {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
 			setBluetoothValues()
 			// Need to request a BluetoothConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.bluetoothConfig == nil {
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node, node.bluetoothConfig == nil {
 				Logger.mesh.info("empty bluetooth config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestBluetoothConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let connectedNode {
+					_ = bleManager.requestBluetoothConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}
@@ -123,11 +135,17 @@ struct BluetoothConfig: View {
 				if newFixedPin != String(node!.bluetoothConfig!.fixedPin) { hasChanges = true }
 			}
 		}
+		.onChange(of: deviceLoggingEnabled) { newDeviceLogging in
+			if node != nil && node!.bluetoothConfig != nil {
+				if newDeviceLogging != node!.bluetoothConfig!.deviceLoggingEnabled { hasChanges = true }
+			}
+		}
 	}
 	func setBluetoothValues() {
 		self.enabled = node?.bluetoothConfig?.enabled ?? true
 		self.mode = Int(node?.bluetoothConfig?.mode ?? 0)
 		self.fixedPin = String(node?.bluetoothConfig?.fixedPin ?? 123456)
+		self.deviceLoggingEnabled = node?.bluetoothConfig?.deviceLoggingEnabled ?? false
 		self.hasChanges = false
 	}
 }

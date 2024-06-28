@@ -175,6 +175,12 @@
 "interval.seventytwo.hours"="Siedemdziesiąt Dwie Godziny";
 "keyboard.type"="Typ Klawiatury";
 "logging"="Rejestracja";
+"log.time"="Time";
+"log.subsystem"="Subsystem";
+"log.process"="Process";
+"log.category"="Category";
+"log.level"="Level";
+"log.message"="Message";
 "lora"="LoRa";
 "lora.config"="Konfiguracja LoRa";
 "map"="Mapa Sieci";

@@ -61,7 +61,7 @@ class LocalNotificationManager {
         UNUserNotificationCenter.current().getPendingNotificationRequests { notifications in
 
             for notification in notifications {
-				Logger.services.debug("\(notification)")
+				Logger.services.debug("\(notification, privacy: .public)")
             }
         }
     }

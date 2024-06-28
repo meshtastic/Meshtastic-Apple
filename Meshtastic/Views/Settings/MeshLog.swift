@@ -18,7 +18,7 @@ struct MeshLog: View {
 					let url = logFile!
 					logs.removeAll()
 					var lineCount = 0
-					let lineLimit = 5000
+					let lineLimit = 1000
 					// Get the number of lines
 					for try await _ in url.lines {
 						lineCount += 1
@@ -41,6 +41,7 @@ struct MeshLog: View {
 					// Stop adding logs when an error is thrown
 				}
 		}
+		.listStyle(.plain)
 		.fileExporter(
 			isPresented: $isExporting,
 			document: document,

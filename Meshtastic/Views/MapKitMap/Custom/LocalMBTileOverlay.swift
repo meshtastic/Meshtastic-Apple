@@ -89,25 +89,25 @@ class LocalMBTileOverlay: MKTileOverlay {
 		}
 	}
 
-	override func loadTile(at path: MKTileOverlayPath, result: @escaping (Data?, Error?) -> Void) {
-
-		let tileX = Int64(path.x)
-		let tileY = Int64(path.y)
-		let tileZ = Int64(path.z)
-		let tileData = Expression<SQLite.Blob>("tile_data")
-		let zoomLevel = Expression<Int64>("zoom_level")
-		let tileColumn = Expression<Int64>("tile_column")
-		let tileRow = Expression<Int64>("tile_row")
-
-		if let dataQuery = try? self.mb.pluck(Table("tiles").select(tileData).filter(zoomLevel == tileZ).filter(tileColumn == tileX).filter(tileRow == tileY)) {
-			let data = Data(bytes: dataQuery[tileData].bytes, count: dataQuery[tileData].bytes.count)// dataQuery![tileData].bytes
-			result(data, nil)
-		} else {
-			Logger.services.error("No tile here: x:\(tileX) y:\(tileY) z:\(tileZ)")
-			let error = NSError(domain: "LocalMBTileOverlay", code: 1, userInfo: ["reason": "no_tile"])
-			result(nil, error)
-		}
-	}
+//	override func loadTile(at path: MKTileOverlayPath, result: @escaping (Data?, Error?) -> Void) {
+//
+//		let tileX = Int64(path.x)
+//		let tileY = Int64(path.y)
+//		let tileZ = Int64(path.z)
+//		let tileData = Expression<SQLite.Blob>("tile_data")
+//		let zoomLevel = Expression<Int64>("zoom_level")
+//		let tileColumn = Expression<Int64>("tile_column")
+//		let tileRow = Expression<Int64>("tile_row")
+//
+//		if let dataQuery = try? self.mb.pluck(Table("tiles").select(tileData).filter(zoomLevel == tileZ).filter(tileColumn == tileX).filter(tileRow == tileY)) {
+//			let data = Data(bytes: dataQuery[tileData].bytes, count: dataQuery[tileData].bytes.count)// dataQuery![tileData].bytes
+//			result(data, nil)
+//		} else {
+//			Logger.services.error("No tile here: x:\(tileX) y:\(tileY) z:\(tileZ)")
+//			let error = NSError(domain: "LocalMBTileOverlay", code: 1, userInfo: ["reason": "no_tile"])
+//			result(nil, error)
+//		}
+//	}
 }
 
 // public class CustomMapOverlaySource: MKTileOverlay {

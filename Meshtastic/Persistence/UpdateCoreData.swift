@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 10/3/22.
 
 import CoreData
+import MeshtasticProtobufs
 import OSLog
 
 public func clearPax(destNum: Int64, context: NSManagedObjectContext) -> Bool {
@@ -25,7 +26,7 @@ public func clearPax(destNum: Int64, context: NSManagedObjectContext) -> Bool {
 			return false
 		}
 	} catch {
-		Logger.data.error("Fetch NodeInfoEntity Error")
+		Logger.data.error("💥 [NodeInfoEntity] fetch data error")
 		return false
 	}
 }
@@ -48,7 +49,7 @@ public func clearPositions(destNum: Int64, context: NSManagedObjectContext) -> B
 			return false
 		}
 	} catch {
-		Logger.data.error("Fetch NodeInfoEntity Error")
+		Logger.data.error("💥 [NodeInfoEntity] fetch data error")
 		return false
 	}
 }
@@ -71,7 +72,7 @@ public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManage
 			return false
 		}
 	} catch {
-		Logger.data.error("Fetch NodeInfoEntity Error")
+		Logger.data.error("💥 [NodeInfoEntity] fetch data error")
 		return false
 	}
 }
@@ -128,7 +129,7 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes
 
 func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("mesh.log.nodeinfo.received %@".localized, String(packet.from))
+	let logString = String.localizedStringWithFormat("mesh.log.nodeinfo.received %@".localized, packet.from.toHex())
 	MeshLogger.log("📟 \(logString)")
 
 	guard packet.from > 0 else { return }
@@ -194,7 +195,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			} else {
 				if packet.from > Int16.max {
 					let newUser = createUser(num: Int64(packet.from), context: context)
-					fetchedNode[0].user = newUser
+					newNode.user = newUser
 				}
 			}
 
@@ -207,11 +208,11 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			myInfoEntity.rebootCount = 0
 			do {
 				try context.save()
-				Logger.data.info("💾 Saved a new myInfo for node number: \(String(packet.from))")
+				Logger.data.info("💾 [MyInfoEntity] Saved a new myInfo for node number: \(packet.from.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Inserting New Core Data MyInfoEntity: \(nsError)")
+				Logger.data.error("💥 [MyInfoEntity] Error Inserting New Core Data: \(nsError, privacy: .public)")
 			}
 			newNode.myInfo = myInfoEntity
 
@@ -264,15 +265,15 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			}
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated NodeInfo from Node Info App Packet For: \(fetchedNode[0].num)")
+				Logger.data.info("💾 [NodeInfoEntity] Updated from Node Info App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Saving NodeInfoEntity from NODEINFO_APP \(nsError)")
+				Logger.data.error("💥 [NodeInfoEntity] Error Saving from NODEINFO_APP \(nsError, privacy: .public)")
 			}
 		}
 	} catch {
-		Logger.data.error("Error Fetching NodeInfoEntity for NODEINFO_APP")
+		Logger.data.error("💥 [NodeInfoEntity] fetch data error for NODEINFO_APP")
 	}
 }
 
@@ -352,11 +353,11 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 
 					do {
 						try context.save()
-						Logger.data.info("💾 Updated Node Position Coordinates, SNR and Time from Position App Packet For: \(fetchedNode[0].num)")
+						Logger.data.info("💾 Updated Node Position Coordinates from Position App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
 					} catch {
 						context.rollback()
 						let nsError = error as NSError
-						Logger.data.error("Error Saving NodeInfoEntity from POSITION_APP \(nsError)")
+						Logger.data.error("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError, privacy: .public)")
 					}
 				}
 			} else {
@@ -364,16 +365,16 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				if (try? NodeInfo(serializedData: packet.decoded.payload)) != nil {
 					upsertNodeInfoPacket(packet: packet, context: context)
 				} else {
-					Logger.data.error("Empty POSITION_APP Packet: \((try? packet.jsonString()) ?? "JSON Decode Failure")")
+					Logger.data.error("💥 Empty POSITION_APP Packet: \((try? packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				}
 			}
 		}
 	} catch {
-		Logger.data.error("Error Deserializing POSITION_APP packet.")
+		Logger.data.error("💥 Error Deserializing POSITION_APP packet.")
 	}
 }
 
-func upsertBluetoothConfigPacket(config: Meshtastic.Config.BluetoothConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertBluetoothConfigPacket(config: Config.BluetoothConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.bluetooth.config %@".localized, String(nodeNum))
 	MeshLogger.log("📶 \(logString)")
@@ -390,30 +391,32 @@ func upsertBluetoothConfigPacket(config: Meshtastic.Config.BluetoothConfig, node
 				newBluetoothConfig.enabled = config.enabled
 				newBluetoothConfig.mode = Int32(config.mode.rawValue)
 				newBluetoothConfig.fixedPin = Int32(config.fixedPin)
+				newBluetoothConfig.deviceLoggingEnabled = config.deviceLoggingEnabled
 				fetchedNode[0].bluetoothConfig = newBluetoothConfig
 			} else {
 				fetchedNode[0].bluetoothConfig?.enabled = config.enabled
 				fetchedNode[0].bluetoothConfig?.mode = Int32(config.mode.rawValue)
 				fetchedNode[0].bluetoothConfig?.fixedPin = Int32(config.fixedPin)
+				fetchedNode[0].bluetoothConfig?.deviceLoggingEnabled = config.deviceLoggingEnabled
 			}
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated Bluetooth Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 [BluetoothConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data BluetoothConfigEntity: \(nsError)")
+				Logger.data.error("💥 [BluetoothConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Bluetooth Config")
+			Logger.data.error("💥 [BluetoothConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Bluetooth Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data BluetoothConfigEntity failed: \(nsError)")
+		Logger.data.error("💥 [BluetoothConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 	}
 }
 
-func upsertDeviceConfigPacket(config: Meshtastic.Config.DeviceConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.device.config %@".localized, String(nodeNum))
 	MeshLogger.log("📟 \(logString)")
@@ -453,22 +456,22 @@ func upsertDeviceConfigPacket(config: Meshtastic.Config.DeviceConfig, nodeNum: I
 			}
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated Device Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 [DeviceConfigEntity] Updated Device Config for node number: \(nodeNum.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data DeviceConfigEntity: \(nsError)")
+				Logger.data.error("💥 [DeviceConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 			}
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data DeviceConfigEntity failed: \(nsError)")
+		Logger.data.error("💥 [DeviceConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 	}
 }
 
-func upsertDisplayConfigPacket(config: Meshtastic.Config.DisplayConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("mesh.log.display.config %@".localized, String(nodeNum))
+	let logString = String.localizedStringWithFormat("mesh.log.display.config %@".localized, nodeNum.toHex())
 	MeshLogger.log("🖥️ \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
@@ -509,30 +512,30 @@ func upsertDisplayConfigPacket(config: Meshtastic.Config.DisplayConfig, nodeNum:
 			do {
 
 				try context.save()
-				Logger.data.info("💾 Updated Display Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 [DisplayConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 
 			} catch {
 
 				context.rollback()
 
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data DisplayConfigEntity: \(nsError)")
+				Logger.data.error("💥 [DisplayConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 			}
 		} else {
 
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Display Config")
+			Logger.data.error("💥 [DisplayConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex()) unable to save Display Config")
 		}
 
 	} catch {
 
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data DisplayConfigEntity failed: \(nsError)")
+		Logger.data.error("💥 [DisplayConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 	}
 }
 
-func upsertLoRaConfigPacket(config: Meshtastic.Config.LoRaConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertLoRaConfigPacket(config: Config.LoRaConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("mesh.log.lora.config %@".localized, String(nodeNum))
+	let logString = String.localizedStringWithFormat("mesh.log.lora.config %@".localized, nodeNum.toHex())
 	MeshLogger.log("📻 \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
@@ -580,22 +583,22 @@ func upsertLoRaConfigPacket(config: Meshtastic.Config.LoRaConfig, nodeNum: Int64
 			}
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated LoRa Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 [LoRaConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data LoRaConfigEntity: \(nsError)")
+				Logger.data.error("💥 [LoRaConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Lora Config")
+			Logger.data.error("💥 [LoRaConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Lora Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data LoRaConfigEntity failed: \(nsError)")
+		Logger.data.error("💥 [LoRaConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 	}
 }
 
-func upsertNetworkConfigPacket(config: Meshtastic.Config.NetworkConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertNetworkConfigPacket(config: Config.NetworkConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.network.config %@".localized, String(nodeNum))
 	MeshLogger.log("🌐 \(logString)")
@@ -623,23 +626,23 @@ func upsertNetworkConfigPacket(config: Meshtastic.Config.NetworkConfig, nodeNum:
 
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated Network Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 [NetworkConfigEntity] Updated Network Config for node: \(nodeNum.toHex(), privacy: .public)")
 
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data WiFiConfigEntity: \(nsError)")
+				Logger.data.error("💥 [NetworkConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Network Config")
+			Logger.data.error("💥 [NetworkConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Network Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data NetworkConfigEntity failed: \(nsError)")
+		Logger.data.error("💥 [NetworkConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 	}
 }
 
-func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertPositionConfigPacket(config: Config.PositionConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.position.config %@".localized, String(nodeNum))
 	MeshLogger.log("🗺️ \(logString)")
@@ -684,22 +687,22 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 			}
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated Position Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 [PositionConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data PositionConfigEntity: \(nsError)")
+				Logger.data.error("💥 [PositionConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Position Config")
+			Logger.data.error("💥 [PositionConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Position Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data PositionConfigEntity failed: \(nsError)")
+		Logger.data.error("💥 [PositionConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 	}
 }
 
-func upsertPowerConfigPacket(config: Meshtastic.Config.PowerConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertPowerConfigPacket(config: Config.PowerConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 	let logString = String.localizedStringWithFormat("mesh.log.power.config %@".localized, String(nodeNum))
 	MeshLogger.log("🗺️ \(logString)")
 
@@ -731,22 +734,22 @@ func upsertPowerConfigPacket(config: Meshtastic.Config.PowerConfig, nodeNum: Int
 			}
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated Power Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 [PowerConfigEntity] Updated Power Config for node: \(nodeNum.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data PowerConfigEntity: \(nsError)")
+				Logger.data.error("💥 [PowerConfigEntity] Error Updating Core Data PowerConfigEntity: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Power Config")
+			Logger.data.error("💥 [PowerConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Power Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data PowerConfigEntity failed: \(nsError)")
+		Logger.data.error("💥 [PowerConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 	}
 }
 
-func upsertAmbientLightingModuleConfigPacket(config: Meshtastic.ModuleConfig.AmbientLightingConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertAmbientLightingModuleConfigPacket(config: ModuleConfig.AmbientLightingConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.ambientlighting.config %@".localized, String(nodeNum))
 	MeshLogger.log("🏮 \(logString)")
@@ -784,22 +787,22 @@ func upsertAmbientLightingModuleConfigPacket(config: Meshtastic.ModuleConfig.Amb
 
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated Ambient Lighting Module Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 [AmbientLightingConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data AmbientLightingConfigEntity: \(nsError)")
+				Logger.data.error("💥 [AmbientLightingConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Ambient Lighting Module Config")
+			Logger.data.error("💥 [AmbientLightingConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Ambient Lighting Module Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data AmbientLightingConfigEntity failed: \(nsError)")
+		Logger.data.error("💥 [AmbientLightingConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 	}
 }
 
-func upsertCannedMessagesModuleConfigPacket(config: Meshtastic.ModuleConfig.CannedMessageConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertCannedMessagesModuleConfigPacket(config: ModuleConfig.CannedMessageConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.cannedmessage.config %@".localized, String(nodeNum))
 	MeshLogger.log("🥫 \(logString)")
@@ -845,22 +848,22 @@ func upsertCannedMessagesModuleConfigPacket(config: Meshtastic.ModuleConfig.Cann
 
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated Canned Message Module Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 [CannedMessageConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data CannedMessageConfigEntity: \(nsError)")
+				Logger.data.error("💥 [CannedMessageConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Canned Message Module Config")
+			Logger.data.error("💥 [CannedMessageConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Canned Message Module Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data CannedMessageConfigEntity failed: \(nsError)")
+		Logger.data.error("💥 [CannedMessageConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 	}
 }
 
-func upsertDetectionSensorModuleConfigPacket(config: Meshtastic.ModuleConfig.DetectionSensorConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSensorConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.detectionsensor.config %@".localized, String(nodeNum))
 	MeshLogger.log("🕵️ \(logString)")
@@ -900,25 +903,25 @@ func upsertDetectionSensorModuleConfigPacket(config: Meshtastic.ModuleConfig.Det
 
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated Detection Sensor Module Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 [DetectionSensorConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data DetectionSensorConfigEntity: \(nsError)")
+				Logger.data.error("💥 [DetectionSensorConfigEntity] Error Updating Core Data : \(nsError, privacy: .public)")
 			}
 
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Detection Sensor Module Config")
+			Logger.data.error("💥 [DetectionSensorConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Detection Sensor Module Config")
 		}
 
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data DetectionSensorConfigEntity failed: \(nsError)")
+		Logger.data.error("💥 [DetectionSensorConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 	}
 }
 
-func upsertExternalNotificationModuleConfigPacket(config: Meshtastic.ModuleConfig.ExternalNotificationConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertExternalNotificationModuleConfigPacket(config: ModuleConfig.ExternalNotificationConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.externalnotification.config %@".localized, String(nodeNum))
 	MeshLogger.log("📣 \(logString)")
@@ -970,22 +973,22 @@ func upsertExternalNotificationModuleConfigPacket(config: Meshtastic.ModuleConfi
 
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated External Notification Module Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 [ExternalNotificationConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data ExternalNotificationConfigEntity: \(nsError)")
+				Logger.data.error("💥 [ExternalNotificationConfigEntity] Error Updating Core Data : \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save External Notification Module Config")
+			Logger.data.error("💥 [ExternalNotificationConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save External Notification Module Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data ExternalNotificationConfigEntity failed: \(nsError)")
+		Logger.data.error("💥 [ExternalNotificationConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 	}
 }
 
-func upsertPaxCounterModuleConfigPacket(config: Meshtastic.ModuleConfig.PaxcounterConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertPaxCounterModuleConfigPacket(config: ModuleConfig.PaxcounterConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.paxcounter.config %@".localized, String(nodeNum))
 	MeshLogger.log("🧑‍🤝‍🧑 \(logString)")
@@ -1012,18 +1015,18 @@ func upsertPaxCounterModuleConfigPacket(config: Meshtastic.ModuleConfig.Paxcount
 
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated PAX Counter Module Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 [PaxCounterConfigEntity] Updated for node number: \(nodeNum.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data ExternalNotificationConfigEntity: \(nsError)")
+				Logger.data.error("💥 [PaxCounterConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save PAX Counter Module Config")
+			Logger.data.error("💥 [PaxCounterConfigEntity] No Nodes found in local database matching node number \(nodeNum.toHex(), privacy: .public) unable to save PAX Counter Module Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data PaxCounterConfigEntity failed: \(nsError)")
+		Logger.data.error("💥 [PaxCounterConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 	}
 }
 
@@ -1048,22 +1051,22 @@ func upsertRtttlConfigPacket(ringtone: String, nodeNum: Int64, context: NSManage
 			}
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated RTTTL Ringtone Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 [RtttlConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data RtttlConfigEntity: \(nsError)")
+				Logger.data.error("💥 [RtttlConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save RTTTL Ringtone Config")
+			Logger.data.error("💥 [RtttlConfigEntity] No nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save RTTTL Ringtone Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data RtttlConfigEntity failed: \(nsError)")
+		Logger.data.error("💥 [RtttlConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 	}
 }
 
-func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertMqttModuleConfigPacket(config: ModuleConfig.MQTTConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.mqtt.config %@".localized, String(nodeNum))
 	MeshLogger.log("🌉 \(logString)")
@@ -1107,22 +1110,22 @@ func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, no
 			}
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated MQTT Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 [MQTTConfigEntity] Updated for node number: \(nodeNum.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data MQTTConfigEntity: \(nsError)")
+				Logger.data.error("💥 [MQTTConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save MQTT Module Config")
+			Logger.data.error("💥 [MQTTConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save MQTT Module Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data MQTTConfigEntity failed: \(nsError)")
+		Logger.data.error("💥 [MQTTConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 	}
 }
 
-func upsertRangeTestModuleConfigPacket(config: Meshtastic.ModuleConfig.RangeTestConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertRangeTestModuleConfigPacket(config: ModuleConfig.RangeTestConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.rangetest.config %@".localized, String(nodeNum))
 	MeshLogger.log("⛰️ \(logString)")
@@ -1147,22 +1150,22 @@ func upsertRangeTestModuleConfigPacket(config: Meshtastic.ModuleConfig.RangeTest
 			}
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated Range Test Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 [RangeTestConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data RangeTestConfigEntity: \(nsError)")
+				Logger.data.error("💥 [RangeTestConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Range Test Module Config")
+			Logger.data.error("💥 [RangeTestConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Range Test Module Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data RangeTestConfigEntity failed: \(nsError)")
+		Logger.data.error("💥 [RangeTestConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 	}
 }
 
-func upsertSerialModuleConfigPacket(config: Meshtastic.ModuleConfig.SerialConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertSerialModuleConfigPacket(config: ModuleConfig.SerialConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.serial.config %@".localized, String(nodeNum))
 	MeshLogger.log("🤖 \(logString)")
@@ -1199,29 +1202,25 @@ func upsertSerialModuleConfigPacket(config: Meshtastic.ModuleConfig.SerialConfig
 
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated Serial Module Config for node number: \(String(nodeNum))")
-
+				Logger.data.info("💾 [SerialConfigEntity]Updated Serial Module Config for node: \(nodeNum.toHex(), privacy: .public)")
 			} catch {
 
 				context.rollback()
 
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data SerialConfigEntity: \(nsError)")
+				Logger.data.error("💥 [SerialConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 			}
-
 		} else {
-
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Serial Module Config")
+			Logger.data.error("💥 [SerialConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Serial Module Config")
 		}
-
 	} catch {
 
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data SerialConfigEntity failed: \(nsError)")
+		Logger.data.error("💥 [SerialConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 	}
 }
 
-func upsertStoreForwardModuleConfigPacket(config: Meshtastic.ModuleConfig.StoreForwardConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertStoreForwardModuleConfigPacket(config: ModuleConfig.StoreForwardConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.storeforward.config %@".localized, String(nodeNum))
 	MeshLogger.log("📬 \(logString)")
@@ -1253,22 +1252,22 @@ func upsertStoreForwardModuleConfigPacket(config: Meshtastic.ModuleConfig.StoreF
 			}
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated Store & Forward Module Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 [StoreForwardConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data StoreForwardConfigEntity: \(nsError)")
+				Logger.data.error("💥 [StoreForwardConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Store & Forward Module Config")
+			Logger.data.error("💥 [StoreForwardConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Store & Forward Module Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data DetectionSensorConfigEntity failed: \(nsError)")
+		Logger.data.error("💥 [StoreForwardConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 	}
 }
 
-func upsertTelemetryModuleConfigPacket(config: Meshtastic.ModuleConfig.TelemetryConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.telemetry.config %@".localized, String(nodeNum))
 	MeshLogger.log("📈 \(logString)")
@@ -1307,20 +1306,20 @@ func upsertTelemetryModuleConfigPacket(config: Meshtastic.ModuleConfig.Telemetry
 
 			do {
 				try context.save()
-				Logger.data.info("💾 Updated Telemetry Module Config for node number: \(String(nodeNum))")
+				Logger.data.info("💾 [TelemetryConfigEntity] Updated Telemetry Module Config for node: \(nodeNum.toHex(), privacy: .public)")
 
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data TelemetryConfigEntity: \(nsError)")
+				Logger.data.error("💥 [TelemetryConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 			}
 
 		} else {
-			Logger.data.error("No Nodes found in local database matching node number \(nodeNum) unable to save Telemetry Module Config")
+			Logger.data.error("💥 [TelemetryConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Telemetry Module Config")
 		}
 
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("Fetching node for core data TelemetryConfigEntity failed: \(nsError)")
+		Logger.data.error("💥 [TelemetryConfigEntity] Fetching node for core data TelemetryConfigEntity failed: \(nsError, privacy: .public)")
 	}
 }

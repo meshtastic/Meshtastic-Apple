@@ -5,10 +5,11 @@
 //  Copyright Garth Vander Houwen 1/10/23.
 //
 
-import SwiftUI
-import MapKit
 import CoreLocation
+import MapKit
+import MeshtasticProtobufs
 import OSLog
+import SwiftUI
 
 struct WaypointForm: View {
 

@@ -33,10 +33,10 @@ class MeshLogger {
 			} else {
 				try data.write(to: logFile, options: .atomicWrite)
 				let log = String(data: data, encoding: .utf8) ?? "unknown".localized
-				Logger.mesh.notice("\(log)")
+				Logger.mesh.notice("\(log, privacy: .public)")
 			}
 		} catch {
-			Logger.mesh.error("Error writing mesh log data: \(error.localizedDescription)")
+			Logger.mesh.error("Error writing mesh log data: \(error.localizedDescription, privacy: .public)")
 		}
 	}
 }

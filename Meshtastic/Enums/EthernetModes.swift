@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import MeshtasticProtobufs
 
 enum EthernetMode: Int, CaseIterable, Identifiable {
 

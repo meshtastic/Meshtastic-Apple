@@ -154,6 +154,12 @@
 "interval.seventytwo.hours"="Soixante douze heures";
 "keyboard.type"="Type de clavier";
 "logging"="Enregistrement";
+"log.time"="Time";
+"log.subsystem"="Subsystem";
+"log.process"="Process";
+"log.category"="Category";
+"log.level"="Level";
+"log.message"="Message";
 "lora"="LoRa";
 "lora.config"="Configuration LoRa";
 "map"="Carte de maillage";

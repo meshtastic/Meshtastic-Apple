@@ -1,5 +1,6 @@
-import SwiftUI
+import MeshtasticProtobufs
 import OSLog
+import SwiftUI
 
 struct MessageText: View {
 	static let linkBlue = Color(red: 0.4627, green: 0.8392, blue: 1) /* #76d6ff */

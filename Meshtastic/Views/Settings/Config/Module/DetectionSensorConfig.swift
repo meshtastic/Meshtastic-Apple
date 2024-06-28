@@ -4,8 +4,9 @@
 //
 //  Copyright(c) Garth Vander Houwen 8/16/23.
 //
-import SwiftUI
+import MeshtasticProtobufs
 import OSLog
+import SwiftUI
 
 enum DetectionSensorRole: String, CaseIterable, Equatable, Decodable {
 	case sensor
