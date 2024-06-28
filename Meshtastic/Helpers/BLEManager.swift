@@ -435,12 +435,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			success = true
 
 			let traceRoute = TraceRouteEntity(context: context!)
-			let nodes: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+			let nodes = NodeInfoEntity.fetchRequest()
 			nodes.predicate = NSPredicate(format: "num IN %@", [destNum, self.connectedPeripheral.num])
 			do {
-				guard let fetchedNodes = try context!.fetch(nodes) as? [NodeInfoEntity] else {
-					return false
-				}
+				let fetchedNodes = try context!.fetch(nodes)
 				let receivingNode = fetchedNodes.first(where: { $0.num == destNum })
 				let connectedNode = fetchedNodes.first(where: { $0.num == self.connectedPeripheral.num })
 				traceRoute.id = Int64(meshPacket.id)
@@ -857,10 +855,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				/// MQTT Client Proxy and RangeTest and Store and Forward interest
 				if connectedPeripheral.num > 0 {
 
-					let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+					let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(connectedPeripheral.num))
 					do {
-						let fetchedNodeInfo = try context?.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] ?? []
+						let fetchedNodeInfo = try context?.fetch(fetchNodeInfoRequest) ?? []
 						if fetchedNodeInfo.count == 1 {
 							// Subscribe to Mqtt Client Proxy if enabled
 							if fetchedNodeInfo[0].mqttConfig != nil && fetchedNodeInfo[0].mqttConfig?.enabled ?? false && fetchedNodeInfo[0].mqttConfig?.proxyToClientEnabled ?? false {
@@ -940,24 +938,22 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			success = false
 
 		} else {
-
+			guard let context else { return false }
 			let fromUserNum: Int64 = self.connectedPeripheral.num
 
-			let messageUsers: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
+			let messageUsers = UserEntity.fetchRequest()
 			messageUsers.predicate = NSPredicate(format: "num IN %@", [fromUserNum, Int64(toUserNum)])
 
 			do {
 
-				guard let fetchedUsers = try context?.fetch(messageUsers) as? [UserEntity] else {
-					return false
-				}
+				let fetchedUsers = try context.fetch(messageUsers)
 				if fetchedUsers.isEmpty {
 
 					Logger.data.error("🚫 Message Users Not Found, Fail")
 					success = false
 				} else if fetchedUsers.count >= 1 {
 
-					let newMessage = MessageEntity(context: context!)
+					let newMessage = MessageEntity(context: context)
 					newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
 					newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 					newMessage.receivedACK = false
@@ -1014,18 +1010,17 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 						MeshLogger.log("💬 \(logString)")
 						do {
-							try context!.save()
+							try context.save()
 							Logger.data.info("💾 Saved a new sent message from \(self.connectedPeripheral.num.toHex(), privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
 							success = true
 
 						} catch {
-							context!.rollback()
+							context.rollback()
 							let nsError = error as NSError
 							Logger.data.error("Unresolved Core Data error in Send Message Function your database is corrupted running a node db reset should clean up the data. Error: \(nsError, privacy: .public)")
 						}
 					}
 				}
-
 			} catch {
 
 			}
@@ -1476,10 +1471,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					for cs in channelSet.settings {
 						if addChannels {
 							// We are trying to add a channel so lets get the last index
-							let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+							let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
 							fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
 							do {
-								let fetchedMyInfo = try context?.fetch(fetchMyInfoRequest) as? [MyInfoEntity] ?? []
+								let fetchedMyInfo = try context?.fetch(fetchMyInfoRequest) ?? []
 								if fetchedMyInfo.count == 1 {
 									i = Int32(fetchedMyInfo[0].channels?.count ?? -1)
 									myInfo = fetchedMyInfo[0]
@@ -3045,18 +3040,19 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	}
 
 	public func tryClearExistingChannels() {
+		guard let context else { return }
 		// Before we get started delete the existing channels from the myNodeInfo
-		let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+		let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
 		fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
 
 		do {
-			let fetchedMyInfo = try context?.fetch(fetchMyInfoRequest) as? [MyInfoEntity] ?? []
+			let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
 			if fetchedMyInfo.count == 1 {
 				let mutableChannels = fetchedMyInfo[0].channels?.mutableCopy() as? NSMutableOrderedSet
 				mutableChannels?.removeAllObjects()
 				fetchedMyInfo[0].channels = mutableChannels
 				do {
-					try context!.save()
+					try context.save()
 				} catch {
 					Logger.data.error("Failed to clear existing channels from local app database: \(error.localizedDescription, privacy: .public)")
 				}
