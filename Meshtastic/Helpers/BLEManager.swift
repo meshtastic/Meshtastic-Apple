@@ -1633,7 +1633,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			} catch {
 				context!.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Error deleting node from core data: \(nsError)")
+				Logger.data.error("🚫 Error deleting node from core data: \(nsError)")
 			}
 		}
 		return false
