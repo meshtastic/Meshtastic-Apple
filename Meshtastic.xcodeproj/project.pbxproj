@@ -887,6 +887,7 @@
 			isa = PBXGroup;
 			children = (
 				DD007BB12AA59B9A00F5FA12 /* CoreData */,
+				DDFFA7462B3A7F3C004730DB /* Bundle.swift */,
 				DDDB444529F8A96500EE2349 /* Character.swift */,
 				DDDB444929F8AA3A00EE2349 /* CLLocationCoordinate2D.swift */,
 				DDDB444B29F8AAA600EE2349 /* Color.swift */,
@@ -902,10 +903,9 @@
 				DDB75A0E2A05920E006ED576 /* FileManager.swift */,
 				DDB75A102A059258006ED576 /* Url.swift */,
 				DD1933772B084F4200771CD5 /* Measurement.swift */,
-				DDFFA7462B3A7F3C004730DB /* Bundle.swift */,
+				DDD5BB172C2F9C36007E03CA /* OSLogEntryLog.swift */,
 				DDF45C362BC46A5A005ED5F2 /* TimeZone.swift */,
 				DDD5BB0C2C285F00007E03CA /* Logger.swift */,
-				DDD5BB172C2F9C36007E03CA /* OSLogEntryLog.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";

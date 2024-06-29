@@ -17,7 +17,7 @@ extension OSLogEntryLog.Level {
 		case .info: "ℹ️ Info"
 		case .notice: "⚠️ Notice"
 		case .error: "🚨 Error"
-		case .fault: "💥  Fault"
+		case .fault: "💥 Fault"
 		@unknown default: "default"
 		}
 	}
