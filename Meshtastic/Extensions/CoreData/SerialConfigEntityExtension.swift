@@ -15,7 +15,7 @@ extension SerialConfigEntity {
 		self.timeout = Int32(config.timeout)
 		self.mode = Int32(config.mode.rawValue)
 	}
-	
+
 	func update(with config: ModuleConfig.SerialConfig) {
 		enabled = config.enabled
 		echo = config.echo
