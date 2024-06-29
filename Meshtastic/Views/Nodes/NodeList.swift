@@ -27,6 +27,7 @@ struct NodeList: View {
 	@State private var maxDistance: Double = 800000
 	@State private var hopsAway: Int = -1
 	@State private var deviceRole: Int = -1
+	@State private var deviceRoles: Set<Int> = []
 
 	@State var isEditingFilters = false
 
@@ -188,7 +189,7 @@ struct NodeList: View {
 				}
 			}
 			.sheet(isPresented: $isEditingFilters) {
-				NodeListFilter(viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isFavorite: $isFavorite, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, deviceRole: $deviceRole)
+				NodeListFilter(viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isFavorite: $isFavorite, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, deviceRole: $deviceRole, deviceRoles: $deviceRoles)
 			}
 			.safeAreaInset(edge: .bottom, alignment: .trailing) {
 				HStack {

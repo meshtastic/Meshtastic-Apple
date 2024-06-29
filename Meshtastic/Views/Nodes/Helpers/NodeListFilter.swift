@@ -20,6 +20,7 @@ struct NodeListFilter: View {
 	@Binding var maximumDistance: Double
 	@Binding var hopsAway: Int
 	@Binding var deviceRole: Int
+	@Binding var deviceRoles: Set<Int>
 
 	var body: some View {
 
