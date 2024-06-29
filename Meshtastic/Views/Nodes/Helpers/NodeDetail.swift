@@ -35,7 +35,7 @@ struct NodeDetail: View {
 								let components = (now..<later).formatted(.components(style: .narrow))
 								Label(
 									title: {
-										Text("\("uptime".localized)")
+										Text("\(NSLocalizedString("uptime", comment: "No comment provided"))")
 											.font(.title3)+Text(": \(components)")
 											.font(.title3)
 											.foregroundColor(Color.gray)
@@ -52,7 +52,7 @@ struct NodeDetail: View {
 						}
 						if node.metadata != nil {
 							HStack(alignment: .center) {
-								Text("firmware.version").font(.title2)+Text(": \(node.metadata?.firmwareVersion ?? "unknown".localized)")
+								Text("firmware.version").font(.title2)+Text(": \(node.metadata?.firmwareVersion ?? NSLocalizedString("unknown", comment: "No comment provided"))")
 									.font(.title3)
 									.foregroundColor(Color.gray)
 								if connectedNode != nil && connectedNode?.myInfo?.hasAdmin ?? false && node.metadata?.time != nil && !Calendar.current.isDateInToday(node.metadata!.time!) {

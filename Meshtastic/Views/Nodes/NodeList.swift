@@ -212,7 +212,7 @@ struct NodeList: View {
 			.searchable(text: $searchText, placement: .automatic, prompt: "Find a node")
 				.disableAutocorrection(true)
 				.scrollDismissesKeyboard(.immediately)
-			.navigationTitle(String.localizedStringWithFormat("nodes %@".localized, String(nodes.count)))
+			.navigationTitle(String.localizedStringWithFormat(NSLocalizedString("nodes %@", comment: "No comment provided"), String(nodes.count)))
 
 			.listStyle(.plain)
 			.confirmationDialog(
@@ -227,7 +227,7 @@ struct NodeList: View {
 						if deleteNode != nil {
 							let success = bleManager.removeNode(node: deleteNode!, connectedNodeNum: Int64(connectedNodeNum))
 							if !success {
-								Logger.data.error("Failed to delete node \(deleteNode?.user?.longName ?? "unknown".localized)")
+								Logger.data.error("Failed to delete node \(deleteNode?.user?.longName ?? NSLocalizedString("unknown", comment: "No comment provided"))")
 							}
 						}
 					}
@@ -248,7 +248,7 @@ struct NodeList: View {
 				NavigationStack {
 					NodeDetail(node: node, columnVisibility: columnVisibility)
 						.edgesIgnoringSafeArea([.leading, .trailing])
-						.navigationBarTitle(String(node.user?.longName ?? "unknown".localized), displayMode: .inline)
+						.navigationBarTitle(String(node.user?.longName ?? NSLocalizedString("unknown", comment: "No comment provided")), displayMode: .inline)
 						.navigationBarItems(
 							trailing:
 							ZStack {

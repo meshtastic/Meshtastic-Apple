@@ -17,7 +17,7 @@ struct LastHeardText: View {
 
 	var body: some View {
 		if lastHeard != nil && lastHeard! >= sixMonthsAgo! {
-			Text(lastHeard?.formatted() ?? "unknown.age".localized)
+			Text(lastHeard?.formatted() ?? NSLocalizedString("unknown.age", comment: "No comment provided"))
 		} else {
 			Text("unknown.age")
 		}

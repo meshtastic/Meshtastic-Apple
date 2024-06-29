@@ -76,9 +76,9 @@ struct PaxCounterLog: View {
 						.chartXAxis(.automatic)
 						.chartYScale(domain: 0...maxValue)
 						.chartForegroundStyleScale([
-							"paxcounter.ble".localized: .blue,
-							"paxcounter.wifi".localized: .orange,
-							"paxcounter.total".localized: .green
+							NSLocalizedString("paxcounter.ble", comment: "No comment provided"): .blue,
+							NSLocalizedString("paxcounter.wifi", comment: "No comment provided"): .orange,
+							NSLocalizedString("paxcounter.total", comment: "No comment provided"): .green
 						])
 						.chartLegend(position: .automatic, alignment: .bottom)
 					}
@@ -105,7 +105,7 @@ struct PaxCounterLog: View {
 							Text(components)
 						}
 						TableColumn("timestamp") { pc in
-							Text(pc.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+							Text(pc.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: "No comment provided"))
 						}
 						.width(min: 180)
 					}
@@ -149,7 +149,7 @@ struct PaxCounterLog: View {
 									let components = (now..<later).formatted(.components(style: .condensedAbbreviated))
 									Text(components)
 										.font(.caption)
-									Text(pc.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+									Text(pc.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: "No comment provided"))
 										.font(.caption)
 								}
 							}
@@ -218,7 +218,7 @@ struct PaxCounterLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \("paxcounter.log".localized)"),
+			defaultFilename: String("\(node.user?.longName ?? "Node") \(NSLocalizedString("paxcounter.log", comment: "No comment provided"))"),
 			onCompletion: { result in
 				switch result {
 				case .success:

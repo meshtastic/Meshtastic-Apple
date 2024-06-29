@@ -323,7 +323,7 @@ struct WaypointForm: View {
 						if LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) > 0.0 {
 							let metersAway = waypoint.coordinate.distance(from: LocationHelper.currentLocation)
 							Label {
-								Text("distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
+								Text(NSLocalizedString("distance", comment: "No comment provided") + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
 									.foregroundColor(.primary)
 							} icon: {
 								Image(systemName: "lines.measurement.horizontal")

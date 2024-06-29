@@ -14,7 +14,7 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 	if metricsType == 0 {
 		// Create Device Metrics Header
-		csvString = "\("battery.level".localized), \("voltage".localized), \("channel.utilization".localized), \("airtime".localized), \("uptime".localized), \("timestamp".localized)"
+		csvString = "\(NSLocalizedString("battery.level", comment: "No comment provided")), \(NSLocalizedString("voltage", comment: "No comment provided")), \(NSLocalizedString("channel.utilization", comment: "No comment provided")), \(NSLocalizedString("airtime", comment: "No comment provided")), \(NSLocalizedString("uptime", comment: "No comment provided")), \(NSLocalizedString("timestamp", comment: "No comment provided"))"
 		for dm in telemetry where dm.metricsType == 0 {
 				csvString += "\n"
 				csvString += String(dm.batteryLevel)
@@ -27,11 +27,11 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 				csvString += ", "
 				csvString += String(dm.uptimeSeconds)
 				csvString += ", "
-				csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
+				csvString += dm.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: "No comment provided")
 		}
 	} else if metricsType == 1 {
 		// Create Environment Telemetry Header
-		csvString = "Temperature, Relative Humidity, Barometric Pressure, Indoor Air Quality, Gas Resistance, \("timestamp".localized)"
+		csvString = "Temperature, Relative Humidity, Barometric Pressure, Indoor Air Quality, Gas Resistance, \(NSLocalizedString("timestamp", comment: "No comment provided"))"
 		for dm in telemetry where dm.metricsType == 1 {
 			csvString += "\n"
 			csvString += String(dm.temperature.localeTemperature())
@@ -44,7 +44,7 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 			csvString += ", "
 			csvString += String(dm.gasResistance)
 			csvString += ", "
-			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
+			csvString += dm.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: "No comment provided")
 		}
 	}
 	return csvString
@@ -55,12 +55,12 @@ func detectionsToCsv(detections: [MessageEntity]) -> String {
 	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 	// Create Header
-	csvString = "Detection event, \("timestamp".localized)"
+	csvString = "Detection event, \(NSLocalizedString("timestamp", comment: "No comment provided"))"
 	for d in detections {
 		csvString += "\n"
 		csvString += d.messagePayload ?? "Detection"
 		csvString += ", "
-		csvString += d.timestamp.formattedDate(format: dateFormatString).localized
+		csvString += d.timestamp.formattedDate(format: dateFormatString)
 	}
 	return csvString
 }
@@ -70,7 +70,7 @@ func logToCsvFile(log: [OSLogEntryLog]) -> String {
 	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 	// Create PAX Header
-	csvString = "Process, Category, Level, Message, \("timestamp".localized)"
+	csvString = "Process, Category, Level, Message, \(NSLocalizedString("timestamp", comment: "No comment provided"))"
 	for l in log {
 		csvString += "\n"
 		csvString += String(l.process)
@@ -91,7 +91,7 @@ func paxToCsvFile(pax: [PaxCounterEntity]) -> String {
 	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 	// Create PAX Header
-	csvString = "BLE, WiFi, Total Pax, Uptime, \("timestamp".localized)"
+	csvString = "BLE, WiFi, Total Pax, Uptime, \(NSLocalizedString("timestamp", comment: "No comment provided"))"
 	for p in pax {
 		csvString += "\n"
 		csvString += String(p.ble)
@@ -102,7 +102,7 @@ func paxToCsvFile(pax: [PaxCounterEntity]) -> String {
 		csvString += ", "
 		csvString += String(p.uptime)
 		csvString += ", "
-		csvString += p.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
+		csvString += p.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: "No comment provided")
 	}
 	return csvString
 }
@@ -112,7 +112,7 @@ func positionToCsvFile(positions: [PositionEntity]) -> String {
 	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 	// Create Position Header
-	csvString = "SeqNo, Latitude, Longitude, Altitude, Sats, Speed, Heading, SNR, \("timestamp".localized)"
+	csvString = "SeqNo, Latitude, Longitude, Altitude, Sats, Speed, Heading, SNR, \(NSLocalizedString("timestamp", comment: "No comment provided"))"
 	for pos in positions {
 		csvString += "\n"
 		csvString += String(pos.seqNo)
@@ -131,7 +131,7 @@ func positionToCsvFile(positions: [PositionEntity]) -> String {
 		csvString += ", "
 		csvString += String(pos.snr)
 		csvString += ", "
-		csvString += pos.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
+		csvString += pos.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: "No comment provided")
 	}
 	return csvString
 }

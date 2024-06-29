@@ -49,23 +49,23 @@ enum ScreenOnIntervals: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .fifteenSeconds:
-			return "interval.fifteen.seconds".localized
+			return NSLocalizedString("interval.fifteen.seconds", comment: "No comment provided")
 		case .thirtySeconds:
-			return "interval.thirty.seconds".localized
+			return NSLocalizedString("interval.thirty.seconds", comment: "No comment provided")
 		case .oneMinute:
-			return "interval.one.minute".localized
+			return NSLocalizedString("interval.one.minute", comment: "No comment provided")
 		case .fiveMinutes:
-			return "interval.five.minutes".localized
+			return NSLocalizedString("interval.five.minutes", comment: "No comment provided")
 		case .tenMinutes:
-			return "interval.ten.minutes".localized
+			return NSLocalizedString("interval.ten.minutes", comment: "No comment provided")
 		case .fifteenMinutes:
-			return "interval.fifteen.minutes".localized
+			return NSLocalizedString("interval.fifteen.minutes", comment: "No comment provided")
 		case .thirtyMinutes:
-			return "interval.thirty.minutes".localized
+			return NSLocalizedString("interval.thirty.minutes", comment: "No comment provided")
 		case .oneHour:
-			return "interval.one.hour".localized
+			return NSLocalizedString("interval.one.hour", comment: "No comment provided")
 		case .max:
-			return "always.on".localized
+			return NSLocalizedString("always.on", comment: "No comment provided")
 		}
 	}
 }
@@ -85,19 +85,19 @@ enum ScreenCarouselIntervals: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .off:
-			return "off".localized
+			return NSLocalizedString("off", comment: "No comment provided")
 		case .fifteenSeconds:
-			return "interval.fifteen.seconds".localized
+			return NSLocalizedString("interval.fifteen.seconds", comment: "No comment provided")
 		case .thirtySeconds:
-			return "interval.thirty.seconds".localized
+			return NSLocalizedString("interval.thirty.seconds", comment: "No comment provided")
 		case .oneMinute:
-			return "interval.one.minute".localized
+			return NSLocalizedString("interval.one.minute", comment: "No comment provided")
 		case .fiveMinutes:
-			return "interval.five.minutes".localized
+			return NSLocalizedString("interval.five.minutes", comment: "No comment provided")
 		case .tenMinutes:
-			return "interval.ten.minutes".localized
+			return NSLocalizedString("interval.ten.minutes", comment: "No comment provided")
 		case .fifteenMinutes:
-			return "interval.fifteen.minutes".localized
+			return NSLocalizedString("interval.fifteen.minutes", comment: "No comment provided")
 		}
 	}
 }
@@ -113,7 +113,7 @@ enum OledTypes: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .auto:
-			return "automatic.detection".localized
+			return NSLocalizedString("automatic.detection", comment: "No comment provided")
 		case .ssd1306:
 			return "SSD 1306"
 		case .sh1106:

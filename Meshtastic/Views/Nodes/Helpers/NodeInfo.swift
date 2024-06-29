@@ -25,12 +25,12 @@ struct NodeInfoItem: View {
 			if node.user != nil {
 				Divider()
 				VStack {
-					Image(node.user!.hwModel ?? "unset".localized)
+					Image(node.user!.hwModel ?? NSLocalizedString("unset", comment: "No comment provided"))
 						.resizable()
 						.aspectRatio(contentMode: .fit)
 						.frame(width: 75, height: 75)
 						.cornerRadius(5)
-					Text(String(node.user!.hwModel ?? "unset".localized))
+					Text(String(node.user!.hwModel ?? NSLocalizedString("unset", comment: "No comment provided")))
 						.font(.caption2).fixedSize()
 				}
 			}

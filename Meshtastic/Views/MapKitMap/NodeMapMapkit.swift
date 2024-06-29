@@ -149,7 +149,7 @@ struct NodeMapMapkit: View {
 						.presentationDetents([.medium, .large])
 						.presentationDragIndicator(.automatic)
 				})
-				.navigationBarTitle(String(node.user?.longName ?? "unknown".localized), displayMode: .inline)
+				.navigationBarTitle(String(node.user?.longName ?? NSLocalizedString("unknown", comment: "No comment provided")), displayMode: .inline)
 				.navigationBarItems(trailing:
 					ZStack {
 					ConnectedDevice(

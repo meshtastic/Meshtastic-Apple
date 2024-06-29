@@ -177,7 +177,7 @@ struct RouteRecorder: View {
 										let newRoute = RouteEntity(context: context)
 										newRoute.date = Date()
 										let at = ActivityType(rawValue: activity)
-										newRoute.name = "\(newRoute.date?.relativeTimeOfDay() ?? "morning".localized) \(at?.fileNameString ?? "hike")"
+										newRoute.name = "\(newRoute.date?.relativeTimeOfDay() ?? NSLocalizedString("morning", comment: "No comment provided")) \(at?.fileNameString ?? "hike")"
 										newRoute.id = Int32.random(in: Int32(Int8.max) ... Int32.max)
 										newRoute.color = Int64(UIColor.random.hex)
 										newRoute.enabled = false

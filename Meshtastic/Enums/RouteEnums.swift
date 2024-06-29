@@ -20,34 +20,34 @@ enum ActivityType: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .walking:
-			return "routes.activitytype.walking".localized
+			return NSLocalizedString("routes.activitytype.walking", comment: "No comment provided")
 		case .hiking:
-			return "routes.activitytype.hiking".localized
+			return NSLocalizedString("routes.activitytype.hiking", comment: "No comment provided")
 		case .biking:
-			return "routes.activitytype.biking".localized
+			return NSLocalizedString("routes.activitytype.biking", comment: "No comment provided")
 		case .driving:
-			return "routes.activitytype.driving".localized
+			return NSLocalizedString("routes.activitytype.driving", comment: "No comment provided")
 		case .overlanding:
-			return "routes.activitytype.overlanding".localized
+			return NSLocalizedString("routes.activitytype.overlanding", comment: "No comment provided")
 		case .skiing:
-			return "routes.activitytype.skiing".localized
+			return NSLocalizedString("routes.activitytype.skiing", comment: "No comment provided")
 		}
 	}
 
 	var fileNameString: String {
 		switch self {
 		case .walking:
-			return "routes.activitytype.filename.walking".localized
+			return NSLocalizedString("routes.activitytype.filename.walking", comment: "No comment provided")
 		case .hiking:
-			return "routes.activitytype.filename.hiking".localized
+			return NSLocalizedString("routes.activitytype.filename.hiking", comment: "No comment provided")
 		case .biking:
-			return "routes.activitytype.filename.biking".localized
+			return NSLocalizedString("routes.activitytype.filename.biking", comment: "No comment provided")
 		case .driving:
-			return "routes.activitytype.filename.driving".localized
+			return NSLocalizedString("routes.activitytype.filename.driving", comment: "No comment provided")
 		case .overlanding:
-			return "routes.activitytype.filename.overlanding".localized
+			return NSLocalizedString("routes.activitytype.filename.overlanding", comment: "No comment provided")
 		case .skiing:
-			return "routes.activitytype.filename.skiing".localized
+			return NSLocalizedString("routes.activitytype.filename.skiing", comment: "No comment provided")
 		}
 	}
 }

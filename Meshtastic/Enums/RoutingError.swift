@@ -27,29 +27,29 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		switch self {
 
 		case .none:
-			return "routing.acknowledged".localized
+			return NSLocalizedString("routing.acknowledged", comment: "No comment provided")
 		case .noRoute:
-			return "routing.noroute".localized
+			return NSLocalizedString("routing.noroute", comment: "No comment provided")
 		case .gotNak:
-			return "routing.gotnak".localized
+			return NSLocalizedString("routing.gotnak", comment: "No comment provided")
 		case .timeout:
-			return "routing.timeout".localized
+			return NSLocalizedString("routing.timeout", comment: "No comment provided")
 		case .noInterface:
-			return "routing.nointerface".localized
+			return NSLocalizedString("routing.nointerface", comment: "No comment provided")
 		case .maxRetransmit:
-			return "routing.maxretransmit".localized
+			return NSLocalizedString("routing.maxretransmit", comment: "No comment provided")
 		case .noChannel:
-			return "routing.nochannel".localized
+			return NSLocalizedString("routing.nochannel", comment: "No comment provided")
 		case .tooLarge:
-			return "routing.toolarge".localized
+			return NSLocalizedString("routing.toolarge", comment: "No comment provided")
 		case .noResponse:
-			return "routing.noresponse".localized
+			return NSLocalizedString("routing.noresponse", comment: "No comment provided")
 		case .dutyCycleLimit:
-			return "routing.dutycyclelimit".localized
+			return NSLocalizedString("routing.dutycyclelimit", comment: "No comment provided")
 		case .badRequest:
-			return "routing.badRequest".localized
+			return NSLocalizedString("routing.badRequest", comment: "No comment provided")
 		case .notAuthorized:
-			return "routing.notauthorized".localized
+			return NSLocalizedString("routing.notauthorized", comment: "No comment provided")
 		}
 	}
 	func protoEnumValue() -> Routing.Error {

@@ -94,7 +94,7 @@ func moduleConfig (config: ModuleConfig, context: NSManagedObjectContext, nodeNu
 
 func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedObjectContext) -> MyInfoEntity? {
 
-	let logString = String.localizedStringWithFormat("mesh.log.myinfo %@".localized, String(myInfo.myNodeNum))
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.myinfo %@", comment: "No comment provided"), String(myInfo.myNodeNum))
 	MeshLogger.log("ℹ️ \(logString)")
 
 	let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
@@ -144,7 +144,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 
 	if channel.isInitialized && channel.hasSettings && channel.role != Channel.Role.disabled {
 
-		let logString = String.localizedStringWithFormat("mesh.log.channel.received %d %@".localized, channel.index, String(fromNum))
+		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.channel.received %d %@", comment: "No comment provided"), channel.index, String(fromNum))
 		MeshLogger.log("🎛️ \(logString)")
 
 		let fetchedMyInfoRequest = MyInfoEntity.fetchRequest()
@@ -199,7 +199,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NSManagedObjectContext) {
 
 	if metadata.isInitialized {
-		let logString = String.localizedStringWithFormat("mesh.log.device.metadata.received %@".localized, fromNum.toHex())
+		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.device.metadata.received %@", comment: "No comment provided"), fromNum.toHex())
 		MeshLogger.log("🏷️ \(logString)")
 
 		let fetchedNodeRequest = NodeInfoEntity.fetchRequest()
@@ -246,7 +246,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 
 func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObjectContext) -> NodeInfoEntity? {
 
-	let logString = String.localizedStringWithFormat("mesh.log.nodeinfo.received %@".localized, String(nodeInfo.num))
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.nodeinfo.received %@", comment: "No comment provided"), String(nodeInfo.num))
 	MeshLogger.log("📟 \(logString)")
 
 	guard nodeInfo.num > 0 else { return nil }
@@ -431,7 +431,7 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 				if !cmmc.messages.isEmpty {
 
-					let logString = String.localizedStringWithFormat("mesh.log.cannedmessages.messages.received %@".localized, packet.from.toHex())
+					let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.cannedmessages.messages.received %@", comment: "No comment provided"), packet.from.toHex())
 					MeshLogger.log("🥫 \(logString)")
 
 					let fetchNodeRequest = NodeInfoEntity.fetchRequest()
@@ -539,7 +539,7 @@ func adminResponseAck (packet: MeshPacket, context: NSManagedObjectContext) {
 }
 func paxCounterPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("mesh.log.paxcounter %@".localized, String(packet.from))
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.paxcounter %@", comment: "No comment provided"), String(packet.from))
 	MeshLogger.log("🧑‍🤝‍🧑 \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
@@ -582,8 +582,8 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 
 		let routingError = RoutingError(rawValue: routingMessage.errorReason.rawValue)
 
-		let routingErrorString = routingError?.display ?? "unknown".localized
-		let logString = String.localizedStringWithFormat("mesh.log.routing.message %@ %@".localized, String(packet.decoded.requestID), routingErrorString)
+		let routingErrorString = routingError?.display ?? NSLocalizedString("unknown", comment: "No comment provided")
+		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.routing.message %@ %@", comment: "No comment provided"), String(packet.decoded.requestID), routingErrorString)
 		MeshLogger.log("🕸️ \(logString)")
 
 		let fetchMessageRequest = MessageEntity.fetchRequest()
@@ -643,7 +643,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 
 		// Only log telemetry from the mesh not the connected device
 		if connectedNode != Int64(packet.from) {
-			let logString = String.localizedStringWithFormat("mesh.log.telemetry.received %@".localized, String(packet.from))
+			let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.telemetry.received %@", comment: "No comment provided"), String(packet.from))
 			MeshLogger.log("📈 \(logString)")
 		} else {
 			// If it is the connected node
@@ -769,7 +769,7 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 
 	if messageText?.count ?? 0 > 0 {
 
-		MeshLogger.log("💬 \("mesh.log.textmessage.received".localized)")
+		MeshLogger.log("💬 \(NSLocalizedString("mesh.log.textmessage.received", comment: "No comment provided"))")
 
 		let messageUsers = UserEntity.fetchRequest()
 		messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
@@ -833,7 +833,7 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 							manager.notifications = [
 								Notification(
 									id: ("notification.id.\(newMessage.messageId)"),
-									title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
+									title: "\(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "No comment provided"))",
 									subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 									content: messageText!,
 									target: "messages",
@@ -841,7 +841,7 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 								)
 							]
 							manager.schedule()
-							Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
+							Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "No comment provided"))")
 						}
 					} else if newMessage.fromUser != nil && newMessage.toUser == nil {
 
@@ -864,14 +864,14 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 										manager.notifications = [
 											Notification(
 												id: ("notification.id.\(newMessage.messageId)"),
-												title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
+												title: "\(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "No comment provided"))",
 												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 												content: messageText!,
 												target: "messages",
 												path: "meshtastic://messages?channel=\(newMessage.channel)&messageId=\(newMessage.messageId)")
 										]
 										manager.schedule()
-										Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
+										Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "No comment provided"))")
 									}
 								}
 							}
@@ -893,7 +893,7 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 
 func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("mesh.log.waypoint.received %@".localized, String(packet.from))
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.waypoint.received %@", comment: "No comment provided"), String(packet.from))
 	MeshLogger.log("📍 \(logString)")
 
 	let fetchWaypointRequest = WaypointEntity.fetchRequest()

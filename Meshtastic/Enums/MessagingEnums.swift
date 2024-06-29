@@ -46,21 +46,21 @@ enum Tapbacks: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .wave:
-			return "tapback.wave".localized
+			return NSLocalizedString("tapback.wave", comment: "No comment provided")
 		case .heart:
-			return "tapback.heart".localized
+			return NSLocalizedString("tapback.heart", comment: "No comment provided")
 		case .thumbsUp:
-			return "tapback.thumbsup".localized
+			return NSLocalizedString("tapback.thumbsup", comment: "No comment provided")
 		case .thumbsDown:
-			return "tapback.thumbsdown".localized
+			return NSLocalizedString("tapback.thumbsdown", comment: "No comment provided")
 		case .haHa:
-			return "tapback.haha".localized
+			return NSLocalizedString("tapback.haha", comment: "No comment provided")
 		case .exclamation:
-			return "tapback.exclamation".localized
+			return NSLocalizedString("tapback.exclamation", comment: "No comment provided")
 		case .question:
-			return "tapback.question".localized
+			return NSLocalizedString("tapback.question", comment: "No comment provided")
 		case .poop:
-			return "tapback.poop".localized
+			return NSLocalizedString("tapback.poop", comment: "No comment provided")
 		}
 	}
 }

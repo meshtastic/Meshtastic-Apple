@@ -17,11 +17,11 @@ enum BluetoothModes: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .randomPin:
-			return "bluetooth.mode.randompin".localized
+			return NSLocalizedString("bluetooth.mode.randompin", comment: "No comment provided")
 		case .fixedPin:
-			return "bluetooth.mode.fixedpin".localized
+			return NSLocalizedString("bluetooth.mode.fixedpin", comment: "No comment provided")
 		case .noPin:
-			return "bluetooth.mode.nopin".localized
+			return NSLocalizedString("bluetooth.mode.nopin", comment: "No comment provided")
 		}
 	}
 	func protoEnumValue() -> Config.BluetoothConfig.PairingMode {

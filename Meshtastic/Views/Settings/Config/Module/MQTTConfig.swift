@@ -67,7 +67,7 @@ struct MQTTConfig: View {
 
 					if enabled && proxyToClientEnabled && node!.mqttConfig!.proxyToClientEnabled == true {
 						Toggle(isOn: $mqttConnected) {
-							Label(mqttConnected ? "mqtt.disconnect".localized : "mqtt.connect".localized, systemImage: "server.rack")
+							Label(mqttConnected ? NSLocalizedString("mqtt.disconnect", comment: "No comment provided") : NSLocalizedString("mqtt.connect", comment: "No comment provided"), systemImage: "server.rack")
 							if bleManager.mqttError.count > 0 {
 								Text(bleManager.mqttError)
 									.fixedSize(horizontal: false, vertical: true)

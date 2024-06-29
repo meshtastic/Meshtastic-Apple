@@ -67,7 +67,7 @@ struct UserList: View {
 
 							VStack(alignment: .leading) {
 								HStack {
-									Text(user.longName ?? "unknown".localized)
+									Text(user.longName ?? NSLocalizedString("unknown", comment: "No comment provided"))
 										.font(.headline)
 									Spacer()
 									if user.userNode?.favorite ?? false {
@@ -168,7 +168,7 @@ struct UserList: View {
 				}
 			}
 			.listStyle(.plain)
-			.navigationTitle(String.localizedStringWithFormat("contacts %@".localized, String(users.count == 0 ? 0 : users.count - 1)))
+			.navigationTitle(String.localizedStringWithFormat(NSLocalizedString("contacts %@", comment: "No comment provided"), String(users.count == 0 ? 0 : users.count - 1)))
 			.sheet(isPresented: $isEditingFilters) {
 				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isFavorite: $isFavorite, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, deviceRole: $deviceRole)
 			}

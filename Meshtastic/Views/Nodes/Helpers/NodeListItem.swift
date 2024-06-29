@@ -29,7 +29,7 @@ struct NodeListItem: View {
 					}
 					VStack(alignment: .leading) {
 						HStack {
-							Text(node.user?.longName ?? "unknown".localized)
+							Text(node.user?.longName ?? NSLocalizedString("unknown", comment: "No comment provided"))
 								.fontWeight(.medium)
 								.font(.headline)
 							if node.favorite {
@@ -66,7 +66,7 @@ struct NodeListItem: View {
 								.font(.callout)
 								.symbolRenderingMode(.hierarchical)
 								.frame(width: 30)
-							Text("Role: \(role?.name ?? "unknown".localized)")
+							Text("Role: \(role?.name ?? NSLocalizedString("unknown", comment: "No comment provided"))")
 								.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 								.foregroundColor(.gray)
 
@@ -77,7 +77,7 @@ struct NodeListItem: View {
 									.font(.callout)
 									.symbolRenderingMode(.hierarchical)
 									.frame(width: 30)
-								Text("storeforward".localized)
+								Text(NSLocalizedString("storeforward", comment: "No comment provided"))
 									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 									.foregroundColor(.gray)
 							}

@@ -21,17 +21,17 @@ enum GpsFormats: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .gpsFormatDec:
-			return "gpsformat.dec".localized
+			return NSLocalizedString("gpsformat.dec", comment: "No comment provided")
 		case .gpsFormatDms:
-			return "gpsformat.dms".localized
+			return NSLocalizedString("gpsformat.dms", comment: "No comment provided")
 		case .gpsFormatUtm:
-			return "gpsformat.utm".localized
+			return NSLocalizedString("gpsformat.utm", comment: "No comment provided")
 		case .gpsFormatMgrs:
-			return "gpsformat.mgrs".localized
+			return NSLocalizedString("gpsformat.mgrs", comment: "No comment provided")
 		case .gpsFormatOlc:
-			return "gpsformat.olc".localized
+			return NSLocalizedString("gpsformat.olc", comment: "No comment provided")
 		case .gpsFormatOsgr:
-			return "gpsformat.osgr".localized
+			return NSLocalizedString("gpsformat.osgr", comment: "No comment provided")
 		}
 	}
 	func protoEnumValue() -> Config.DisplayConfig.GpsCoordinateFormat {
@@ -73,29 +73,29 @@ enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .thirtySeconds:
-			return "interval.thirty.seconds".localized
+			return NSLocalizedString("interval.thirty.seconds", comment: "No comment provided")
 		case .oneMinute:
-			return "interval.one.minute".localized
+			return NSLocalizedString("interval.one.minute", comment: "No comment provided")
 		case .twoMinutes:
-			return "interval.two.minutes".localized
+			return NSLocalizedString("interval.two.minutes", comment: "No comment provided")
 		case .fiveMinutes:
-			return "interval.five.minutes".localized
+			return NSLocalizedString("interval.five.minutes", comment: "No comment provided")
 		case .tenMinutes:
-			return "interval.ten.minutes".localized
+			return NSLocalizedString("interval.ten.minutes", comment: "No comment provided")
 		case .fifteenMinutes:
-			return "interval.fifteen.minutes".localized
+			return NSLocalizedString("interval.fifteen.minutes", comment: "No comment provided")
 		case .thirtyMinutes:
-			return "interval.thirty.minutes".localized
+			return NSLocalizedString("interval.thirty.minutes", comment: "No comment provided")
 		case .oneHour:
-			return "interval.one.hour".localized
+			return NSLocalizedString("interval.one.hour", comment: "No comment provided")
 		case .sixHours:
-			return "interval.six.hours".localized
+			return NSLocalizedString("interval.six.hours", comment: "No comment provided")
 		case .twelveHours:
-			return "interval.twelve.hours".localized
+			return NSLocalizedString("interval.twelve.hours", comment: "No comment provided")
 		case .twentyFourHours:
-			return "interval.twentyfour.hours".localized
+			return NSLocalizedString("interval.twentyfour.hours", comment: "No comment provided")
 		case .maxInt32:
-			return "on.boot".localized
+			return NSLocalizedString("on.boot", comment: "No comment provided")
 		}
 	}
 }
@@ -110,11 +110,11 @@ enum GpsMode: Int, CaseIterable, Equatable {
 	var description: String {
 		switch self {
 		case .disabled:
-			return "gpsmode.disabled".localized
+			return NSLocalizedString("gpsmode.disabled", comment: "No comment provided")
 		case .enabled:
-			return "gpsmode.enabled".localized
+			return NSLocalizedString("gpsmode.enabled", comment: "No comment provided")
 		case .notPresent:
-			return "gpsmode.notPresent".localized
+			return NSLocalizedString("gpsmode.notPresent", comment: "No comment provided")
 		}
 	}
 	func protoEnumValue() -> Config.PositionConfig.GpsMode {

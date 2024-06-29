@@ -5,7 +5,7 @@ struct TextMessageSize: View {
 	let totalBytes: Int
 
 	var body: some View {
-		ProgressView("\("bytes".localized): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
+		ProgressView("\(NSLocalizedString("bytes", comment: "No comment provided")): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
 			.frame(width: 130)
 			.padding(5)
 			.font(.subheadline)

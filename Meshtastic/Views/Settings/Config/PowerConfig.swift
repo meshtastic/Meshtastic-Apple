@@ -62,7 +62,10 @@ struct PowerConfig: View {
 						HStack {
 							Text("config.power.adc.multiplier")
 							Spacer()
-							FloatField(title: "config.power.adc.multiplier", number: $adcMultiplier) {
+							FloatField(
+								title: NSLocalizedString("config.power.adc.multiplier", comment: ""),
+								number: $adcMultiplier
+							) {
 								(2.0 ... 6.0).contains($0)
 							}
 							.focused($isFocused)
@@ -233,7 +236,7 @@ private struct FloatField: View {
 	@State private var typingNumber: Float = 0.0
 
 	var body: some View {
-		TextField(title.localized, value: $typingNumber, format: .number)
+		TextField(title, value: $typingNumber, format: .number)
 			.foregroundColor(.gray)
 			.multilineTextAlignment(.trailing)
 			.onChange(of: typingNumber, perform: { _ in

@@ -133,7 +133,7 @@ struct DetectionSensorLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \("detection.sensor.log".localized)"),
+			defaultFilename: String("\(node.user?.longName ?? "Node") \(NSLocalizedString("detection.sensor.log", comment: "No comment provided"))"),
 			onCompletion: { result in
 				switch result {
 				case .success:

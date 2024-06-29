@@ -54,27 +54,27 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .client:
-			return "device.role.client".localized
+			return NSLocalizedString("device.role.client", comment: "No comment provided")
 		case .clientMute:
-			return "device.role.clientmute".localized
+			return NSLocalizedString("device.role.clientmute", comment: "No comment provided")
 		case .router:
-			return "device.role.router".localized
+			return NSLocalizedString("device.role.router", comment: "No comment provided")
 		case .routerClient:
-			return "device.role.routerclient".localized
+			return NSLocalizedString("device.role.routerclient", comment: "No comment provided")
 		case .repeater:
-			return "device.role.repeater".localized
+			return NSLocalizedString("device.role.repeater", comment: "No comment provided")
 		case .tracker:
-			return "device.role.tracker".localized
+			return NSLocalizedString("device.role.tracker", comment: "No comment provided")
 		case .sensor:
-			return "device.role.sensor".localized
+			return NSLocalizedString("device.role.sensor", comment: "No comment provided")
 		case .tak:
-			return "device.role.tak".localized
+			return NSLocalizedString("device.role.tak", comment: "No comment provided")
 		case .takTracker:
-			return "device.role.taktracker".localized
+			return NSLocalizedString("device.role.taktracker", comment: "No comment provided")
 		case .clientHidden:
-			return "device.role.clienthidden".localized
+			return NSLocalizedString("device.role.clienthidden", comment: "No comment provided")
 		case .lostAndFound:
-			return "device.role.lostandfound".localized
+			return NSLocalizedString("device.role.lostandfound", comment: "No comment provided")
 		}
 	}
 

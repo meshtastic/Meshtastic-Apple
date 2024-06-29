@@ -585,6 +585,7 @@
       }
     },
     "airtime" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -697,7 +698,7 @@
 
     },
     "always.on" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1254,7 +1255,7 @@
 
     },
     "automatic.detection" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1398,6 +1399,7 @@
 
     },
     "battery.level" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1465,7 +1467,7 @@
 
     },
     "ble.connection.timeout %d %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1524,7 +1526,7 @@
       }
     },
     "ble.errorcode.6 %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1583,7 +1585,7 @@
       }
     },
     "ble.errorcode.14 %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1642,7 +1644,7 @@
       }
     },
     "ble.errorcode.pin %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1875,6 +1877,7 @@
       }
     },
     "bluetooth.mode.fixedpin" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1933,7 +1936,7 @@
       }
     },
     "bluetooth.mode.nopin" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1992,7 +1995,7 @@
       }
     },
     "bluetooth.mode.randompin" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2237,7 +2240,7 @@
 
     },
     "bytes" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2479,7 +2482,7 @@
       }
     },
     "canned.messages.preset.cardkb" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2538,7 +2541,7 @@
       }
     },
     "canned.messages.preset.manual" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2597,7 +2600,7 @@
       }
     },
     "canned.messages.preset.rakrotary" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2756,7 +2759,7 @@
 
     },
     "channel.role.disabled" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2815,7 +2818,7 @@
       }
     },
     "channel.role.primary" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2874,7 +2877,7 @@
       }
     },
     "channel.role.secondary" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2933,6 +2936,7 @@
       }
     },
     "channel.utilization" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3175,6 +3179,9 @@
           }
         }
       }
+    },
+    "client" : {
+
     },
     "Client" : {
 
@@ -4778,7 +4785,7 @@
 
     },
     "contacts %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5028,7 +5035,7 @@
 
     },
     "default" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5276,6 +5283,7 @@
       }
     },
     "detection.sensor.log" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5560,6 +5568,7 @@
       }
     },
     "device.metrics.log" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5618,7 +5627,7 @@
       }
     },
     "device.role.client" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5677,7 +5686,7 @@
       }
     },
     "device.role.clienthidden" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5736,7 +5745,7 @@
       }
     },
     "device.role.clientmute" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5795,7 +5804,7 @@
       }
     },
     "device.role.lostandfound" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5854,7 +5863,7 @@
       }
     },
     "device.role.repeater" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5913,7 +5922,7 @@
       }
     },
     "device.role.router" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5972,7 +5981,7 @@
       }
     },
     "device.role.routerclient" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6031,7 +6040,7 @@
       }
     },
     "device.role.sensor" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6090,7 +6099,7 @@
       }
     },
     "device.role.tak" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6149,7 +6158,7 @@
       }
     },
     "device.role.taktracker" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6208,7 +6217,7 @@
       }
     },
     "device.role.tracker" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6575,7 +6584,7 @@
       }
     },
     "distance" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7289,7 +7298,7 @@
       }
     },
     "firmware.version.unsupported" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7559,6 +7568,9 @@
         }
       }
     },
+    "geoJson" : {
+      "comment" : "The GeoJSON overlay type for the map overlay server"
+    },
     "Get custom waterproof solar and detection sensor router nodes, aluminium desktop nodes and rugged handsets." : {
 
     },
@@ -7602,7 +7614,7 @@
 
     },
     "gpsformat.dec" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7661,7 +7673,7 @@
       }
     },
     "gpsformat.dms" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7720,7 +7732,7 @@
       }
     },
     "gpsformat.mgrs" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7779,7 +7791,7 @@
       }
     },
     "gpsformat.olc" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7838,7 +7850,7 @@
       }
     },
     "gpsformat.osgr" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7897,7 +7909,7 @@
       }
     },
     "gpsformat.utm" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7956,7 +7968,7 @@
       }
     },
     "gpsmode.disabled" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7991,7 +8003,7 @@
       }
     },
     "gpsmode.enabled" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8026,7 +8038,7 @@
       }
     },
     "gpsmode.notPresent" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8070,7 +8082,7 @@
 
     },
     "heard" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8242,7 +8254,7 @@
 
     },
     "hybrid" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8301,7 +8313,7 @@
       }
     },
     "hybrid.flyover" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8451,7 +8463,7 @@
       }
     },
     "incomplete" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8507,7 +8519,7 @@
 
     },
     "inputevent.back" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8566,7 +8578,7 @@
       }
     },
     "inputevent.cancel" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8625,7 +8637,7 @@
       }
     },
     "inputevent.down" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8684,7 +8696,7 @@
       }
     },
     "inputevent.left" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8743,7 +8755,7 @@
       }
     },
     "inputevent.none" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8802,7 +8814,7 @@
       }
     },
     "inputevent.right" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8861,7 +8873,7 @@
       }
     },
     "inputevent.select" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8920,7 +8932,7 @@
       }
     },
     "inputevent.up" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8982,7 +8994,7 @@
 
     },
     "interval.eighteen.hours" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9058,7 +9070,7 @@
       }
     },
     "interval.fifteen.minutes" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9117,7 +9129,7 @@
       }
     },
     "interval.fifteen.seconds" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9176,7 +9188,7 @@
       }
     },
     "interval.five.hours" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9235,7 +9247,7 @@
       }
     },
     "interval.five.minutes" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9294,7 +9306,7 @@
       }
     },
     "interval.five.seconds" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9353,7 +9365,7 @@
       }
     },
     "interval.fortyeight.hours" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9400,7 +9412,7 @@
       }
     },
     "interval.fortyfive.seconds" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9459,7 +9471,7 @@
       }
     },
     "interval.four.hours" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9518,7 +9530,7 @@
       }
     },
     "interval.four.seconds" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9577,7 +9589,7 @@
       }
     },
     "interval.one.hour" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9636,7 +9648,7 @@
       }
     },
     "interval.one.minute" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9695,7 +9707,7 @@
       }
     },
     "interval.one.second" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9754,7 +9766,7 @@
       }
     },
     "interval.seventytwo.hours" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9801,7 +9813,7 @@
       }
     },
     "interval.six.hours" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9860,7 +9872,7 @@
       }
     },
     "interval.ten.minutes" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9919,7 +9931,7 @@
       }
     },
     "interval.ten.seconds" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9978,7 +9990,7 @@
       }
     },
     "interval.thirty.minutes" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10037,7 +10049,7 @@
       }
     },
     "interval.thirty.seconds" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10096,7 +10108,7 @@
       }
     },
     "interval.thirtysix.hours" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10155,7 +10167,7 @@
       }
     },
     "interval.three.hours" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10214,7 +10226,7 @@
       }
     },
     "interval.three.seconds" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10273,7 +10285,7 @@
       }
     },
     "interval.twelve.hours" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10450,7 +10462,7 @@
       }
     },
     "interval.twentyfour.hours" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10509,7 +10521,7 @@
       }
     },
     "interval.two.hours" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10568,7 +10580,7 @@
       }
     },
     "interval.two.minutes" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10627,7 +10639,7 @@
       }
     },
     "interval.two.seconds" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10807,6 +10819,7 @@
 
     },
     "log.category" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10859,6 +10872,7 @@
       }
     },
     "log.level" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10911,6 +10925,7 @@
       }
     },
     "log.message" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10963,7 +10978,7 @@
       }
     },
     "log.process" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11016,7 +11031,7 @@
       }
     },
     "log.subsystem" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11069,6 +11084,7 @@
       }
     },
     "log.time" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11500,7 +11516,7 @@
       }
     },
     "map.tiles.delete" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11736,7 +11752,7 @@
       }
     },
     "map.usertrackingmode.follow" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11795,7 +11811,7 @@
       }
     },
     "map.usertrackingmode.followwithheading" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11854,7 +11870,7 @@
       }
     },
     "map.usertrackingmode.none" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12032,7 +12048,7 @@
       }
     },
     "mesh.log.ambientlighting.config %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12091,7 +12107,7 @@
       }
     },
     "mesh.log.bluetooth.config %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12150,7 +12166,7 @@
       }
     },
     "mesh.log.cannedmessage.config %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12209,7 +12225,7 @@
       }
     },
     "mesh.log.cannedmessages.messages.get %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12268,7 +12284,7 @@
       }
     },
     "mesh.log.cannedmessages.messages.received %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12327,7 +12343,7 @@
       }
     },
     "mesh.log.channel.received %d %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12386,7 +12402,7 @@
       }
     },
     "mesh.log.channel.sent %@ %d" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12445,7 +12461,7 @@
       }
     },
     "mesh.log.detectionsensor.config %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12504,7 +12520,7 @@
       }
     },
     "mesh.log.device.config %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12563,7 +12579,7 @@
       }
     },
     "mesh.log.device.metadata.received %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12681,7 +12697,7 @@
       }
     },
     "mesh.log.display.config %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12740,7 +12756,7 @@
       }
     },
     "mesh.log.externalnotification.config %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12799,7 +12815,7 @@
       }
     },
     "mesh.log.lora.config %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12858,7 +12874,7 @@
       }
     },
     "mesh.log.lora.config.sent %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12917,7 +12933,7 @@
       }
     },
     "mesh.log.mqtt.config %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12976,7 +12992,7 @@
       }
     },
     "mesh.log.myinfo %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13035,7 +13051,7 @@
       }
     },
     "mesh.log.network.config %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13094,7 +13110,7 @@
       }
     },
     "mesh.log.nodeinfo.received %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13153,7 +13169,7 @@
       }
     },
     "mesh.log.paxcounter %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13206,7 +13222,7 @@
       }
     },
     "mesh.log.paxcounter.config %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13229,7 +13245,7 @@
       }
     },
     "mesh.log.position.config %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13288,7 +13304,7 @@
       }
     },
     "mesh.log.position.received %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13347,7 +13363,7 @@
       }
     },
     "mesh.log.power.config %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13370,7 +13386,7 @@
       }
     },
     "mesh.log.rangetest.config %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13429,7 +13445,7 @@
       }
     },
     "mesh.log.ringtone.config %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13488,7 +13504,7 @@
       }
     },
     "mesh.log.routing.message %@ %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13547,7 +13563,7 @@
       }
     },
     "mesh.log.serial.config %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13606,7 +13622,7 @@
       }
     },
     "mesh.log.sharelocation %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13665,7 +13681,7 @@
       }
     },
     "mesh.log.storeforward.config %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13724,7 +13740,7 @@
       }
     },
     "mesh.log.telemetry.config %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13783,7 +13799,7 @@
       }
     },
     "mesh.log.telemetry.received %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13842,7 +13858,7 @@
       }
     },
     "mesh.log.textmessage.received" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13901,7 +13917,7 @@
       }
     },
     "mesh.log.textmessage.send.failed %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13960,7 +13976,7 @@
       }
     },
     "mesh.log.textmessage.sent %@ %@ %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14019,7 +14035,7 @@
       }
     },
     "mesh.log.traceroute.received.direct %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14078,7 +14094,7 @@
       }
     },
     "mesh.log.traceroute.received.route %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14137,7 +14153,7 @@
       }
     },
     "mesh.log.traceroute.sent %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14196,7 +14212,7 @@
       }
     },
     "mesh.log.wantconfig %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14255,7 +14271,7 @@
       }
     },
     "mesh.log.waypoint.received %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14314,7 +14330,7 @@
       }
     },
     "mesh.log.waypoint.sent %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14686,6 +14702,9 @@
         }
       }
     },
+    "morning" : {
+      "comment" : "No comment provided"
+    },
     "mqtt" : {
       "localizations" : {
         "de" : {
@@ -14864,7 +14883,7 @@
       }
     },
     "mqtt.connect" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14923,7 +14942,7 @@
       }
     },
     "mqtt.disconnect" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -15322,7 +15341,7 @@
 
     },
     "nodelist.filter.distance %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -15433,7 +15452,7 @@
       }
     },
     "nodes %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -15627,7 +15646,7 @@
       }
     },
     "off" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -15754,7 +15773,7 @@
 
     },
     "on.boot" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -16035,6 +16054,7 @@
       }
     },
     "paxcounter.ble" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16101,6 +16121,7 @@
       }
     },
     "paxcounter.log" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16123,6 +16144,7 @@
       }
     },
     "paxcounter.total" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16145,6 +16167,7 @@
       }
     },
     "paxcounter.wifi" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16430,7 +16453,7 @@
       }
     },
     "position.precision %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17034,7 +17057,7 @@
 
     },
     "relativetimeofday.afternoon" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17051,7 +17074,7 @@
       }
     },
     "relativetimeofday.evening" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17068,7 +17091,7 @@
       }
     },
     "relativetimeofday.midday" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17085,7 +17108,7 @@
       }
     },
     "relativetimeofday.morning" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17102,7 +17125,7 @@
       }
     },
     "relativetimeofday.nighttime" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17525,7 +17548,7 @@
       }
     },
     "routes.activitytype.biking" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17542,7 +17565,7 @@
       }
     },
     "routes.activitytype.driving" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17559,7 +17582,7 @@
       }
     },
     "routes.activitytype.filename.biking" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17576,7 +17599,7 @@
       }
     },
     "routes.activitytype.filename.driving" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17593,7 +17616,7 @@
       }
     },
     "routes.activitytype.filename.hiking" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17610,7 +17633,7 @@
       }
     },
     "routes.activitytype.filename.overlanding" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17627,7 +17650,7 @@
       }
     },
     "routes.activitytype.filename.skiing" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17644,7 +17667,7 @@
       }
     },
     "routes.activitytype.filename.walking" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17661,7 +17684,7 @@
       }
     },
     "routes.activitytype.hiking" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17678,7 +17701,7 @@
       }
     },
     "routes.activitytype.overlanding" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17695,7 +17718,7 @@
       }
     },
     "routes.activitytype.skiing" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17712,7 +17735,7 @@
       }
     },
     "routes.activitytype.walking" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17729,7 +17752,7 @@
       }
     },
     "routing.acknowledged" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -17788,7 +17811,7 @@
       }
     },
     "routing.badRequest" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -17847,7 +17870,7 @@
       }
     },
     "routing.dutycyclelimit" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -17906,7 +17929,7 @@
       }
     },
     "routing.gotnak" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -17965,7 +17988,7 @@
       }
     },
     "routing.maxretransmit" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18024,7 +18047,7 @@
       }
     },
     "routing.nochannel" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18083,7 +18106,7 @@
       }
     },
     "routing.nointerface" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18142,7 +18165,7 @@
       }
     },
     "routing.noresponse" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18201,7 +18224,7 @@
       }
     },
     "routing.noroute" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18260,7 +18283,7 @@
       }
     },
     "routing.notauthorized" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18319,7 +18342,7 @@
       }
     },
     "routing.timeout" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18378,7 +18401,7 @@
       }
     },
     "routing.toolarge" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18449,7 +18472,7 @@
 
     },
     "satellite" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18508,7 +18531,7 @@
       }
     },
     "satellite.flyover" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18643,7 +18666,7 @@
 
     },
     "save.config %@" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18909,6 +18932,9 @@
     "Sender Interval" : {
 
     },
+    "sensor" : {
+
+    },
     "Sensor Metrics" : {
 
     },
@@ -19043,8 +19069,11 @@
         }
       }
     },
+    "serial.mode.caltopo" : {
+      "comment" : "No comment provided"
+    },
     "serial.mode.default" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -19103,7 +19132,7 @@
       }
     },
     "serial.mode.nmea" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -19162,7 +19191,7 @@
       }
     },
     "serial.mode.proto" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -19221,7 +19250,7 @@
       }
     },
     "serial.mode.simple" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -19280,7 +19309,7 @@
       }
     },
     "serial.mode.txtmsg" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -19711,7 +19740,7 @@
       }
     },
     "standard" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -19770,7 +19799,7 @@
       }
     },
     "standard.muted" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -19896,6 +19925,7 @@
 
     },
     "storeforward" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -20192,7 +20222,7 @@
       }
     },
     "tapback.exclamation" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -20251,7 +20281,7 @@
       }
     },
     "tapback.haha" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -20310,7 +20340,7 @@
       }
     },
     "tapback.heart" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -20369,7 +20399,7 @@
       }
     },
     "tapback.poop" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -20428,7 +20458,7 @@
       }
     },
     "tapback.question" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -20487,7 +20517,7 @@
       }
     },
     "tapback.thumbsdown" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -20546,7 +20576,7 @@
       }
     },
     "tapback.thumbsup" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -20605,7 +20635,7 @@
       }
     },
     "tapback.wave" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -20860,6 +20890,9 @@
     "Tiles above Labels" : {
 
     },
+    "tileServer" : {
+      "comment" : "The Tile Server overlay type for the map overlay server"
+    },
     "Time" : {
 
     },
@@ -20931,6 +20964,7 @@
       }
     },
     "timestamp" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21676,7 +21710,7 @@
 
     },
     "unknown" : {
-      "extractionState" : "migrated",
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21735,6 +21769,7 @@
       }
     },
     "unknown.age" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21793,6 +21828,7 @@
       }
     },
     "unset" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21860,6 +21896,7 @@
 
     },
     "update.firmware" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21985,6 +22022,7 @@
 
     },
     "uptime" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -22195,6 +22233,7 @@
 
     },
     "voltage" : {
+      "comment" : "No comment provided",
       "localizations" : {
         "de" : {
           "stringUnit" : {

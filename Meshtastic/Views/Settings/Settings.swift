@@ -177,21 +177,21 @@ struct Settings: View {
 									ForEach(nodes) { node in
 										if node.num == bleManager.connectedPeripheral?.num ?? 0 {
 											Label {
-												Text("BLE: \(node.user?.longName ?? "unknown".localized)")
+												Text("BLE: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "No comment provided"))")
 											} icon: {
 												Image(systemName: "antenna.radiowaves.left.and.right")
 											}
 											.tag(Int(node.num))
 										} else if node.metadata != nil {
 											Label {
-												Text("Remote: \(node.user?.longName ?? "unknown".localized)")
+												Text("Remote: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "No comment provided"))")
 											} icon: {
 												Image(systemName: "av.remote")
 											}
 											.tag(Int(node.num))
 										} else if hasAdmin {
 											Label {
-												Text("Request Admin: \(node.user?.longName ?? "unknown".localized)")
+												Text("Request Admin: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "No comment provided"))")
 											} icon: {
 												Image(systemName: "rectangle.and.hand.point.up.left")
 											}
@@ -219,7 +219,7 @@ struct Settings: View {
 								}
 							} else {
 								if bleManager.connectedPeripheral != nil {
-									Text("Connected Node \(node?.user?.longName ?? "unknown".localized)")
+									Text("Connected Node \(node?.user?.longName ?? NSLocalizedString("unknown", comment: "No comment provided"))")
 								}
 							}
 						}

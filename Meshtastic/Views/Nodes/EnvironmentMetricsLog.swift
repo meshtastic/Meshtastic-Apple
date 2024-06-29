@@ -100,7 +100,7 @@ struct EnvironmentMetricsLog: View {
 								Text("\(String(format: "%.1f", em.voltage))")
 							}
 							TableColumn("timestamp") { em in
-								Text(em.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+								Text(em.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: "No comment provided"))
 							}
 							.width(min: 180)
 						}
@@ -144,7 +144,7 @@ struct EnvironmentMetricsLog: View {
 											.font(.caption)
 										IndoorAirQuality(iaq: Int(em.iaq), displayMode: .dot)
 											.font(.caption)
-										Text(em.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+										Text(em.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: "No comment provided"))
 											.font(.caption)
 									}
 								}

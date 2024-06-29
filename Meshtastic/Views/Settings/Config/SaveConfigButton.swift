@@ -24,8 +24,8 @@ struct SaveConfigButton: View {
 			isPresented: $isPresentingSaveConfirm,
 			titleVisibility: .visible
 		) {
-			let nodeName = node?.user?.longName ?? "unknown".localized
-			let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
+			let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "No comment provided")
+			let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "No comment provided"), nodeName)
 			Button(buttonText) {
 				onConfirmation()
 			}

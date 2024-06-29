@@ -107,7 +107,7 @@ struct AppSettings: View {
 						Button {
 							isPresentingDeleteMapTilesConfirm = true
 						} label: {
-							Label("\("map.tiles.delete".localized) (\(totalDownloadedTileSize))", systemImage: "trash")
+							Label("\(NSLocalizedString("map.tiles.delete", comment: "No comment provided")) (\(totalDownloadedTileSize))", systemImage: "trash")
 								.foregroundColor(.red)
 						}
 						.confirmationDialog(

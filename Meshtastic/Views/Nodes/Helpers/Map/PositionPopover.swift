@@ -51,7 +51,7 @@ struct PositionPopover: View {
 				VStack(alignment: .leading) {
 					/// Time
 					Label {
-						Text("heard".localized + ":")
+						Text(NSLocalizedString("heard", comment: "No comment provided") + ":")
 						LastHeardText(lastHeard: position.time)
 							.foregroundColor(.primary)
 					} icon: {
@@ -147,7 +147,7 @@ struct PositionPopover: View {
 						if lastLocation.distance(from: CLLocation(latitude: LocationsHandler.DefaultLocation.latitude, longitude: LocationsHandler.DefaultLocation.longitude)) > 0.0 {
 							let metersAway = position.coordinate.distance(from: CLLocationCoordinate2D(latitude: lastLocation.coordinate.latitude, longitude: lastLocation.coordinate.longitude))
 							Label {
-								Text("distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
+								Text(NSLocalizedString("distance", comment: "No comment provided") + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
 									.foregroundColor(.primary)
 							} icon: {
 								Image(systemName: "lines.measurement.horizontal")

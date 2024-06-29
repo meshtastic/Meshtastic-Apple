@@ -37,7 +37,7 @@ struct LogDetail: View {
 					List {
 						/// Time
 						Label {
-							Text("log.time".localized + ":")
+							Text(NSLocalizedString("log.time", comment: "No comment provided") + ":")
 								.font(idiom == .phone ? .caption : .title)
 								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
 							Text(log.date.formatted(dateFormatStyle))
@@ -53,7 +53,7 @@ struct LogDetail: View {
 						.listSectionSeparator(.visible, edges: .bottom)
 						/// Subsystem
 						Label {
-							Text("log.subsystem".localized + ":")
+							Text(NSLocalizedString("log.subsystem", comment: "No comment provided") + ":")
 								.font(idiom == .phone ? .caption : .title)
 								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
 							Text(log.subsystem)
@@ -68,7 +68,7 @@ struct LogDetail: View {
 						.listRowSeparator(.visible)
 						/// Process
 						Label {
-							Text("log.process".localized + ":")
+							Text(NSLocalizedString("log.process", comment: "No comment provided") + ":")
 								.font(idiom == .phone ? .caption : .title)
 								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
 							Text(log.process)
@@ -83,7 +83,7 @@ struct LogDetail: View {
 						.listRowSeparator(.visible)
 						/// Category
 						Label {
-							Text("log.category".localized + ":")
+							Text(NSLocalizedString("log.category", comment: "No comment provided") + ":")
 								.font(idiom == .phone ? .caption : .title)
 								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
 							Text(log.category)
@@ -98,7 +98,7 @@ struct LogDetail: View {
 						.listRowSeparator(.visible)
 						/// Level
 						Label {
-							Text("log.level".localized + ":")
+							Text(NSLocalizedString("log.level", comment: "No comment provided") + ":")
 								.font(idiom == .phone ? .caption : .title)
 								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
 							Text(log.level.description)
@@ -113,7 +113,7 @@ struct LogDetail: View {
 						.listRowSeparator(.visible)
 						/// message
 						Label {
-							Text("log.message".localized + ":")
+							Text(NSLocalizedString("log.message", comment: "No comment provided") + ":")
 								.font(idiom == .phone ? .caption : .title)
 								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
 							Text(log.composedMessage)

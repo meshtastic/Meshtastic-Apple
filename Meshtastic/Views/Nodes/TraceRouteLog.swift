@@ -34,7 +34,7 @@ struct TraceRouteLog: View {
 					List(node.traceRoutes?.reversed() as? [TraceRouteEntity] ?? [], id: \.self, selection: $selectedRoute) { route in
 
 						Label {
-							Text("\(route.time?.formatted() ?? "unknown".localized) - \(route.response ? (route.hops?.count == 0 && route.response ? "Direct" : "\(route.hops?.count ?? 0) \(route.hops?.count ?? 0 == 1 ? "Hop": "Hops")") : "No Response")")
+							Text("\(route.time?.formatted() ?? NSLocalizedString("unknown", comment: "No comment provided")) - \(route.response ? (route.hops?.count == 0 && route.response ? "Direct" : "\(route.hops?.count ?? 0) \(route.hops?.count ?? 0 == 1 ? "Hop": "Hops")") : "No Response")")
 						} icon: {
 							Image(systemName: route.response ? (route.hops?.count == 0 && route.response ? "person.line.dotted.person" : "point.3.connected.trianglepath.dotted") : "person.slash")
 								.symbolRenderingMode(.hierarchical)
@@ -48,7 +48,7 @@ struct TraceRouteLog: View {
 						if selectedRoute?.response ?? false && selectedRoute?.hops?.count ?? 0 > 0 {
 
 							Label {
-								Text("Route: \(selectedRoute?.routeText ?? "unknown".localized)")
+								Text("Route: \(selectedRoute?.routeText ?? NSLocalizedString("unknown", comment: "No comment provided"))")
 							} icon: {
 								Image(systemName: "signpost.right.and.left")
 									.symbolRenderingMode(.hierarchical)
@@ -56,7 +56,7 @@ struct TraceRouteLog: View {
 							.font(.title2)
 						} else if selectedRoute?.response ?? false {
 							Label {
-								Text("Trace route received directly by \(selectedRoute?.node?.user?.longName ?? "unknown".localized)")
+								Text("Trace route received directly by \(selectedRoute?.node?.user?.longName ?? NSLocalizedString("unknown", comment: "No comment provided"))")
 							} icon: {
 								Image(systemName: "signpost.right.and.left")
 									.symbolRenderingMode(.hierarchical)
@@ -112,7 +112,7 @@ struct TraceRouteLog: View {
 									if startPoint.distance(from: CLLocation(latitude: LocationsHandler.DefaultLocation.latitude, longitude: LocationsHandler.DefaultLocation.longitude)) > 0.0 {
 										let metersAway = selectedRoute?.coordinate?.distance(from: CLLocationCoordinate2D(latitude: mostRecent.latitude ?? LocationsHandler.DefaultLocation.latitude, longitude: mostRecent.longitude ?? LocationsHandler.DefaultLocation.longitude))
 										Label {
-											Text("distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway ?? 0)))")
+											Text(NSLocalizedString("distance", comment: "No comment provided") + ": \(distanceFormatter.string(fromDistance: Double(metersAway ?? 0)))")
 												.foregroundColor(.primary)
 										} icon: {
 											Image(systemName: "lines.measurement.horizontal")
@@ -124,7 +124,7 @@ struct TraceRouteLog: View {
 						} else {
 							VStack {
 								Label {
-									Text("Trace route sent to \(selectedRoute?.node?.user?.longName ?? "unknown".localized)")
+									Text("Trace route sent to \(selectedRoute?.node?.user?.longName ?? NSLocalizedString("unknown", comment: "No comment provided"))")
 								} icon: {
 									Image(systemName: "signpost.right.and.left")
 										.symbolRenderingMode(.hierarchical)

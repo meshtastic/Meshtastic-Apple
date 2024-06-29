@@ -116,7 +116,7 @@ struct DeviceMetricsLog: View {
 							Text(components)
 						}
 						TableColumn("timestamp") { dm in
-							Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+							Text(dm.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: "No comment provided"))
 						}
 						.width(min: 180)
 					}
@@ -162,7 +162,7 @@ struct DeviceMetricsLog: View {
 										.font(.caption)
 									Text("\(String(format: "%.2f", dm.airUtilTx))%")
 										.font(.caption)
-									Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+									Text(dm.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: "No comment provided"))
 										.font(.caption)
 								}
 							}
@@ -231,7 +231,7 @@ struct DeviceMetricsLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \("device.metrics.log".localized)"),
+			defaultFilename: String("\(node.user?.longName ?? "Node") \(NSLocalizedString("device.metrics.log", comment: "No comment provided"))"),
 			onCompletion: { result in
 				switch result {
 				case .success:

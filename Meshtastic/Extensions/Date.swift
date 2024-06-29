@@ -15,18 +15,18 @@ extension Date {
 		if self > Calendar.current.date(byAdding: .year, value: -5, to: Date())! {
 			return dateformat.string(from: self)
 		} else {
-			return "unknown.age".localized
+			return NSLocalizedString("unknown.age", comment: "No comment provided")
 		}
 	}
 	func relativeTimeOfDay() -> String {
 		let hour = Calendar.current.component(.hour, from: self)
 
 		switch hour {
-		case 6..<12: return "relativetimeofday.morning".localized
-		case 12: return "relativetimeofday.midday".localized
-		case 13..<17: return "relativetimeofday.afternoon".localized
-		case 17..<22: return "relativetimeofday.evening".localized
-		default: return "relativetimeofday.nighttime".localized
+		case 6..<12: return NSLocalizedString("relativetimeofday.morning", comment: "No comment provided")
+		case 12: return NSLocalizedString("relativetimeofday.midday", comment: "No comment provided")
+		case 13..<17: return NSLocalizedString("relativetimeofday.afternoon", comment: "No comment provided")
+		case 17..<22: return NSLocalizedString("relativetimeofday.evening", comment: "No comment provided")
+		default: return NSLocalizedString("relativetimeofday.nighttime", comment: "No comment provided")
 		}
 	}
 }

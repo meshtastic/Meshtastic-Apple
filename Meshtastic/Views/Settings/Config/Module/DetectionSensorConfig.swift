@@ -19,7 +19,15 @@ enum DetectionSensorRole: String, CaseIterable, Equatable, Decodable {
 			return "Client"
 		}
 	}
-	var localized: String { self.rawValue.localized }
+	
+	var localized: String {
+		switch self {
+		case .sensor:
+			NSLocalizedString("sensor", comment: "")
+		case .client:
+			NSLocalizedString("client", comment: "")
+		}
+	}
 }
 
 struct DetectionSensorConfig: View {

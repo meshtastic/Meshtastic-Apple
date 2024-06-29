@@ -32,7 +32,7 @@ class MeshLogger {
 				fileHandle.closeFile()
 			} else {
 				try data.write(to: logFile, options: .atomicWrite)
-				let log = String(data: data, encoding: .utf8) ?? "unknown".localized
+				let log = String(data: data, encoding: .utf8) ?? NSLocalizedString("unknown", comment: "No comment provided")
 				Logger.mesh.notice("\(log, privacy: .public)")
 			}
 		} catch {
