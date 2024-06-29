@@ -37,11 +37,16 @@ open Meshtastic.xcworkspace
 - Use Core Data for persistence
 
 ## Updating Protobufs:
-- run:
-  ```bash
-  ./scripts/gen_protos.sh
-  ```
-- build, test, commit changes
+
+1. run
+```bash
+./scripts/gen_protos.sh
+```
+2. Build, test, and commit the changes.
+
+## Release Process
+
+For more information on how a new release of Meshtastic is managed, please refer to [RELEASING.md](./RELEASING.md)
 
 ## License
 
