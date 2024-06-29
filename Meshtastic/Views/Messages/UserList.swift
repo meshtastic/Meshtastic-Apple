@@ -26,6 +26,8 @@ struct UserList: View {
 	@State private var maxDistance: Double = 800000
 	@State private var hopsAway: Int = -1
 	@State private var deviceRole: Int = -1
+	@State private var roleFilter = false
+	@State private var deviceRoles: Set<Int> = []
 	@State var isEditingFilters = false
 
 	@FetchRequest(
@@ -170,7 +172,7 @@ struct UserList: View {
 			.listStyle(.plain)
 			.navigationTitle(String.localizedStringWithFormat("contacts %@".localized, String(users.count == 0 ? 0 : users.count - 1)))
 			.sheet(isPresented: $isEditingFilters) {
-				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isFavorite: $isFavorite, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, deviceRole: $deviceRole)
+				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isFavorite: $isFavorite, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, deviceRole: $deviceRole, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
 			}
 			.onChange(of: searchText) { _ in
 				searchUserList()

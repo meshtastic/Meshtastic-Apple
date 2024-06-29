@@ -10,6 +10,7 @@ import SwiftUI
 
 struct NodeListFilter: View {
 	@Environment(\.dismiss) private var dismiss
+	@State var editMode = EditMode.active
 	/// Filters
 	var filterTitle = "Node Filters"
 	@Binding var viaLora: Bool
@@ -20,6 +21,7 @@ struct NodeListFilter: View {
 	@Binding var maximumDistance: Double
 	@Binding var hopsAway: Int
 	@Binding var deviceRole: Int
+	@Binding var roleFilter: Bool
 	@Binding var deviceRoles: Set<Int>
 
 	var body: some View {
@@ -126,6 +128,31 @@ struct NodeListFilter: View {
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
+					}
+					Toggle(isOn: $roleFilter) {
+
+						Label {
+							Text("Roles")
+						} icon: {
+							Image(systemName: "apps.iphone")
+						}
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+
+					.listRowSeparator(roleFilter ? .hidden : .visible)
+					if roleFilter {
+						VStack {
+							List(DeviceRoles.allCases, selection: $deviceRoles) { dr in
+								Label {
+									Text("  \(dr.name)")
+								} icon: {
+									Image(systemName: dr.systemName)
+								}
+							}
+							.listStyle(.plain)
+							.environment(\.editMode, $editMode) /// bind it here!
+							.frame(minHeight: 210, maxHeight: .infinity)
+						}
 					}
 				}
 			}
