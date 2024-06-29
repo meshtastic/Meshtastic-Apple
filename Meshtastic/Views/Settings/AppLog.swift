@@ -9,7 +9,7 @@ import SwiftUI
 import OSLog
 
 /// Needed for TableColumnForEach
-@available(iOS 17.4, *)
+@available(iOS 17.4, macOS 14.4, *)
 struct AppLog: View {
 
 	@State private var logs: [OSLogEntryLog] = []
@@ -40,15 +40,17 @@ struct AppLog: View {
 					Text(value.date.formatted(dateFormatStyle))
 				}
 				.width(min: 125, max: 150)
-				TableColumn("log.category", value: \.category)
-					.width(min: 125, max: 150)
 				TableColumn("log.level") { value in
 					Text(value.level.description)
+						.foregroundStyle(value.level.color)
 				}
 				.width(min: 75, max: 100)
+				TableColumn("log.category", value: \.category)
+					.width(min: 125, max: 150)
 			}
 			TableColumn("log.message", value: \.composedMessage) { value in
 				Text(value.composedMessage)
+					.foregroundStyle(value.level.color)
 					.font(idiom == .phone ? .caption : .body)
 			}
 			.width(ideal: 200, max: .infinity)

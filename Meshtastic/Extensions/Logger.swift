@@ -6,6 +6,7 @@
 //
 
 import OSLog
+import SwiftUI
 
 extension Logger {
 
@@ -69,6 +70,17 @@ extension OSLogEntryLog.Level {
 		case .error: "🚨 Error"
 		case .fault: "💥  Fault"
 		@unknown default: "default"
+		}
+	}
+	var color: Color {
+		switch self {
+		case .undefined: .green
+		case .debug: .blue
+		case .info: .green
+		case .notice: .orange
+		case .error: .red
+		case .fault: .red
+		@unknown default: .green
 		}
 	}
 }
