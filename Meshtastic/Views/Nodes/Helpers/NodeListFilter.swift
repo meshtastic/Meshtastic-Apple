@@ -153,7 +153,7 @@ struct NodeListFilter: View {
 			.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.fraction(1.0)])
+		.presentationDetents([.fraction(roleFilter ? 1.0 : 0.55)])
 		.presentationDragIndicator(.visible)
 	}
 }
