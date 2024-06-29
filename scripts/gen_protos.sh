@@ -2,14 +2,14 @@
 
 # simple sanity checking for repo
 if [ ! -d "./protobufs" ]; then
-   echo 'Please check out the protobuf submodule by running: `git submodule update --init`'
-  exit
+  git submodule update --init
+else 
+  git submodule update
 fi
 
 # simple sanity checking for executable
 if [ ! -x "$(which protoc)" ]; then
-  echo 'Please install swift-protobuf by running: `brew install swift-protobuf`'
-  exit
+  brew install swift-protobuf
 fi
 
 protoc --proto_path=./protobufs --swift_opt=Visibility=Public --swift_out=./MeshtasticProtobufs/Sources ./protobufs/meshtastic/*.proto 
