@@ -353,7 +353,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 
 					do {
 						try context.save()
-						Logger.data.info("💾 Updated Node Position Coordinates from Position App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
+						Logger.data.info("💾 [Position] Saved from Position App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
 					} catch {
 						context.rollback()
 						let nsError = error as NSError

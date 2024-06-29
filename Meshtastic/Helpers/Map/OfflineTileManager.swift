@@ -21,7 +21,7 @@ class OfflineTileManager: ObservableObject {
 	}
 
 	init() {
-		Logger.services.debug("Documents Directory = \(self.documentsDirectory.absoluteString, privacy: .public)")
+		Logger.services.info("🗂️ Documents Directory = \(self.documentsDirectory.absoluteString, privacy: .public)")
 		createDirectoriesIfNecessary()
 	}
 

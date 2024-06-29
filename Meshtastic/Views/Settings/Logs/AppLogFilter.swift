@@ -81,7 +81,7 @@ enum LogLevels: Int, CaseIterable, Identifiable {
 	var color: Color {
 		switch self {
 		case .debug:
-			return  .blue
+			return .indigo
 		case .info:
 			return .green
 		case .notice:
