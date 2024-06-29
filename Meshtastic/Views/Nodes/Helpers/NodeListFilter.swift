@@ -20,7 +20,6 @@ struct NodeListFilter: View {
 	@Binding var distanceFilter: Bool
 	@Binding var maximumDistance: Double
 	@Binding var hopsAway: Int
-	@Binding var deviceRole: Int
 	@Binding var roleFilter: Bool
 	@Binding var deviceRoles: Set<Int>
 
@@ -114,21 +113,6 @@ struct NodeListFilter: View {
 						}
 						.pickerStyle(DefaultPickerStyle())
 					}
-					HStack {
-						Label("Device Role", systemImage: "apps.iphone")
-						Picker("", selection: $deviceRole) {
-							Text("All Roles")
-								.tag(-1)
-							ForEach(DeviceRoles.allCases) { dr in
-								Label {
-									Text("  \(dr.name)")
-								} icon: {
-									Image(systemName: dr.systemName)
-								}
-							}
-						}
-						.pickerStyle(DefaultPickerStyle())
-					}
 					Toggle(isOn: $roleFilter) {
 
 						Label {
@@ -151,7 +135,7 @@ struct NodeListFilter: View {
 							}
 							.listStyle(.plain)
 							.environment(\.editMode, $editMode) /// bind it here!
-							.frame(minHeight: 210, maxHeight: .infinity)
+							.frame(minHeight: 490, maxHeight: .infinity)
 						}
 					}
 				}
@@ -169,7 +153,7 @@ struct NodeListFilter: View {
 			.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.fraction(0.6), .fraction(0.75)])
+		.presentationDetents([.fraction(1.0)])
 		.presentationDragIndicator(.visible)
 	}
 }

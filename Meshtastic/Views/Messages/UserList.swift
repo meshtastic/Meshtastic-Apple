@@ -25,7 +25,6 @@ struct UserList: View {
 	@State private var distanceFilter = false
 	@State private var maxDistance: Double = 800000
 	@State private var hopsAway: Int = -1
-	@State private var deviceRole: Int = -1
 	@State private var roleFilter = false
 	@State private var deviceRoles: Set<Int> = []
 	@State var isEditingFilters = false
@@ -172,7 +171,7 @@ struct UserList: View {
 			.listStyle(.plain)
 			.navigationTitle(String.localizedStringWithFormat("contacts %@".localized, String(users.count == 0 ? 0 : users.count - 1)))
 			.sheet(isPresented: $isEditingFilters) {
-				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isFavorite: $isFavorite, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, deviceRole: $deviceRole, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
+				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isFavorite: $isFavorite, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
 			}
 			.onChange(of: searchText) { _ in
 				searchUserList()
@@ -189,7 +188,7 @@ struct UserList: View {
 				}
 				searchUserList()
 			}
-			.onChange(of: deviceRole) { _ in
+			.onChange(of: [deviceRoles]) { _ in
 				searchUserList()
 			}
 			.onChange(of: hopsAway) { _ in
@@ -261,10 +260,15 @@ struct UserList: View {
 				predicates.append(mqttPredicate)
 			}
 		}
-		/// Role
-		if deviceRole > -1 {
-			let rolePredicate = NSPredicate(format: "role == %i", Int32(deviceRole))
-			predicates.append(rolePredicate)
+		/// Roles
+		if roleFilter && deviceRoles.count > 0 {
+			var rolesArray: [NSPredicate] = []
+			for dr in deviceRoles {
+				let deviceRolePredicate = NSPredicate(format: "user.role == %i", Int32(dr))
+				rolesArray.append(deviceRolePredicate)
+			}
+			let compoundPredicate = NSCompoundPredicate(type: .or, subpredicates: rolesArray)
+			predicates.append(compoundPredicate)
 		}
 		/// Hops Away
 		if hopsAway > 0 {

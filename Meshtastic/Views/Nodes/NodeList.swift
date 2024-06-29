@@ -26,7 +26,6 @@ struct NodeList: View {
 	@State private var distanceFilter = false
 	@State private var maxDistance: Double = 800000
 	@State private var hopsAway: Int = -1
-	@State private var nodeRole: Int = -1
 	@State private var roleFilter = false
 	@State private var deviceRoles: Set<Int> = []
 
@@ -190,7 +189,7 @@ struct NodeList: View {
 				}
 			}
 			.sheet(isPresented: $isEditingFilters) {
-				NodeListFilter(viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isFavorite: $isFavorite, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, deviceRole: $nodeRole, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
+				NodeListFilter(viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isFavorite: $isFavorite, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
 			}
 			.safeAreaInset(edge: .bottom, alignment: .trailing) {
 				HStack {
@@ -299,7 +298,7 @@ struct NodeList: View {
 			}
 			searchNodeList()
 		}
-		.onChange(of: nodeRole) { _ in
+		.onChange(of: [deviceRoles]) { _ in
 			searchNodeList()
 		}
 		.onChange(of: hopsAway) { _ in
@@ -364,9 +363,14 @@ struct NodeList: View {
 			}
 		}
 		/// Role
-		if nodeRole > -1 {
-			let rolePredicate = NSPredicate(format: "user.role == %i", Int32(nodeRole))
-			predicates.append(rolePredicate)
+		if roleFilter && deviceRoles.count > 0 {
+			var rolesArray: [NSPredicate] = []
+			for dr in deviceRoles {
+				let deviceRolePredicate = NSPredicate(format: "user.role == %i", Int32(dr))
+				rolesArray.append(deviceRolePredicate)
+			}
+			let compoundPredicate = NSCompoundPredicate(type: .or, subpredicates: rolesArray)
+			predicates.append(compoundPredicate)
 		}
 		/// Hops Away
 		if hopsAway > 0 {
