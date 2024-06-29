@@ -44,9 +44,9 @@ struct AppLog: View {
 					Text(value.level.description)
 						.foregroundStyle(value.level.color)
 				}
-				.width(min: 75, max: 100)
+				.width(min: 85, max: 110)
 				TableColumn("log.category", value: \.category)
-					.width(min: 125, max: 150)
+					.width(min: 80, max: 130)
 			}
 			TableColumn("log.message", value: \.composedMessage) { value in
 				Text(value.composedMessage)

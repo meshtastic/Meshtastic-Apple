@@ -244,13 +244,13 @@ extension NSPersistentContainer {
 					do {
 						try FileManager.default.removeItem(at: directory.appendingPathComponent("Meshtastic.sqlite-shm"))
 					} catch {
-						Logger.services.error("Error Deleting Meshtastic.sqlite-shm file \(error, privacy: .public)")
+						Logger.services.error("🗄 Error Deleting Meshtastic.sqlite-shm file \(error, privacy: .public)")
 					}
 				} catch {
-					Logger.services.error("Error Deleting Meshtastic.sqlite-wal file \(error, privacy: .public)")
+					Logger.services.error("🗄 Error Deleting Meshtastic.sqlite-wal file \(error, privacy: .public)")
 				}
 			} catch {
-				Logger.services.error("Error Deleting Meshtastic.sqlite file \(error, privacy: .public)")
+				Logger.services.error("🗄 Error Deleting Meshtastic.sqlite file \(error, privacy: .public)")
 				throw CopyPersistentStoreErrors.copyStoreError("\(error.localizedDescription)")
 			}
 		}
