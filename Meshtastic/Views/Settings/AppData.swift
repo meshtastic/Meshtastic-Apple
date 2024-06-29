@@ -59,7 +59,6 @@ struct AppData: View {
 										bleManager.disconnectPeripheral(reconnect: false)
 										let container = NSPersistentContainer(name: "Meshtastic")
 										do {
-											clearCoreDataDatabase(context: context, includeRoutes: true)
 											try container.restorePersistentStore(from: file.absoluteURL)
 											let request = MyInfoEntity.fetchRequest()
 											try context.fetch(request)

@@ -22,17 +22,17 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 
 /// Note: There are no 'PowerMon' messages normally in use (PowerMons are sent only as structured logs - slogs).
 ///But we wrap our State enum in this message to effectively nest a namespace (without our linter yelling at us)
-struct PowerMon {
+public struct PowerMon {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   /// Any significant power changing event in meshtastic should be tagged with a powermon state transition.
   ///If you are making new meshtastic features feel free to add new entries at the end of this definition.
-  enum State: SwiftProtobuf.Enum {
-    typealias RawValue = Int
+  public enum State: SwiftProtobuf.Enum {
+    public typealias RawValue = Int
     case none // = 0
     case cpuDeepSleep // = 1
     case cpuLightSleep // = 2
@@ -62,11 +62,11 @@ struct PowerMon {
     case gpsActive // = 2048
     case UNRECOGNIZED(Int)
 
-    init() {
+    public init() {
       self = .none
     }
 
-    init?(rawValue: Int) {
+    public init?(rawValue: Int) {
       switch rawValue {
       case 0: self = .none
       case 1: self = .cpuDeepSleep
@@ -85,7 +85,7 @@ struct PowerMon {
       }
     }
 
-    var rawValue: Int {
+    public var rawValue: Int {
       switch self {
       case .none: return 0
       case .cpuDeepSleep: return 1
@@ -106,14 +106,14 @@ struct PowerMon {
 
   }
 
-  init() {}
+  public init() {}
 }
 
 #if swift(>=4.2)
 
 extension PowerMon.State: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [PowerMon.State] = [
+  public static let allCases: [PowerMon.State] = [
     .none,
     .cpuDeepSleep,
     .cpuLightSleep,
@@ -142,26 +142,26 @@ extension PowerMon.State: @unchecked Sendable {}
 fileprivate let _protobuf_package = "meshtastic"
 
 extension PowerMon: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".PowerMon"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+  public static let protoMessageName: String = _protobuf_package + ".PowerMon"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let _ = try decoder.nextFieldNumber() {
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: PowerMon, rhs: PowerMon) -> Bool {
+  public static func ==(lhs: PowerMon, rhs: PowerMon) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
 extension PowerMon.State: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "None"),
     1: .same(proto: "CPU_DeepSleep"),
     2: .same(proto: "CPU_LightSleep"),

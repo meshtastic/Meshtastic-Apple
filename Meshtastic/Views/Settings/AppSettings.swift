@@ -87,13 +87,13 @@ struct AppSettings: View {
 										do {
 											try FileManager.default.removeItem(at: url.appendingPathComponent("Meshtastic.sqlite-shm"))
 										} catch {
-											Logger.services.error("Error Deleting Meshtastic.sqlite-shm file \(error, privacy: .public)")
+											Logger.services.error("🗄 Error Deleting Meshtastic.sqlite-shm file \(error, privacy: .public)")
 										}
 									} catch {
-										Logger.services.error("Error Deleting Meshtastic.sqlite-wal file \(error, privacy: .public)")
+										Logger.services.error("🗄 Error Deleting Meshtastic.sqlite-wal file \(error, privacy: .public)")
 									}
 								} catch {
-									Logger.services.error("Error Deleting Meshtastic.sqlite file \(error, privacy: .public)")
+									Logger.services.error("🗄 Error Deleting Meshtastic.sqlite file \(error, privacy: .public)")
 								}
 							}
 							clearCoreDataDatabase(context: context, includeRoutes: true)

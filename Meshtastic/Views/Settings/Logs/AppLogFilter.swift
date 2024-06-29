@@ -78,6 +78,20 @@ enum LogLevels: Int, CaseIterable, Identifiable {
 			return "💥 Fault"
 		}
 	}
+	var color: Color {
+		switch self {
+		case .debug:
+			return .indigo
+		case .info:
+			return .green
+		case .notice:
+			return .orange
+		case .error:
+			return .red
+		case .fault:
+			return .red
+		}
+	}
 }
 
 struct AppLogFilter: View {
@@ -107,6 +121,7 @@ struct AppLogFilter: View {
 					VStack {
 						List(LogLevels.allCases, selection: $levels) { level in
 							Text(level.description)
+								.foregroundStyle(level.color)
 						}
 						.listStyle(.plain)
 						.environment(\.editMode, $editMode) /// bind it here!

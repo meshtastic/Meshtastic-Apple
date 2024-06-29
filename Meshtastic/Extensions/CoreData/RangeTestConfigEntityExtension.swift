@@ -11,7 +11,7 @@ extension RangeTestConfigEntity {
 		self.enabled = config.enabled
 		self.save = config.save
 	}
-	
+
 	func update(with config: ModuleConfig.RangeTestConfig) {
 		sender = Int32(config.sender)
 		enabled = config.enabled
