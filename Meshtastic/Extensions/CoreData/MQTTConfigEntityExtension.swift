@@ -20,7 +20,7 @@ extension MQTTConfigEntity {
 		self.mapPositionPrecision = Int32(config.mapReportSettings.positionPrecision)
 		self.mapPublishIntervalSecs = Int32(config.mapReportSettings.publishIntervalSecs)
 	}
-	
+
 	func update(with config: ModuleConfig.MQTTConfig) {
 		enabled = config.enabled
 		proxyToClientEnabled = config.proxyToClientEnabled

@@ -152,6 +152,7 @@
 		DDD5BB092C285DDC007E03CA /* AppLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB082C285DDC007E03CA /* AppLog.swift */; };
 		DDD5BB0B2C285E45007E03CA /* LogDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB0A2C285E45007E03CA /* LogDetail.swift */; };
 		DDD5BB102C285FB3007E03CA /* AppLogFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB0F2C285FB3007E03CA /* AppLogFilter.swift */; };
+		DDD5BB182C2F9C36007E03CA /* OSLogEntryLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB172C2F9C36007E03CA /* OSLogEntryLog.swift */; };
 		DDD6EEAF29BC024700383354 /* Firmware.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD6EEAE29BC024700383354 /* Firmware.swift */; };
 		DDD94A502845C8F5004A87A0 /* DateTimeText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */; };
 		DDD9E4E4284B208E003777C5 /* UserEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */; };
@@ -393,6 +394,7 @@
 		DDD5BB0F2C285FB3007E03CA /* AppLogFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogFilter.swift; sourceTree = "<group>"; };
 		DDD5BB142C28680D007E03CA /* MeshtasticDataModelV 38.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 38.xcdatamodel"; sourceTree = "<group>"; };
 		DDD5BB152C28B1E4007E03CA /* AppData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppData.swift; sourceTree = "<group>"; };
+		DDD5BB172C2F9C36007E03CA /* OSLogEntryLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSLogEntryLog.swift; sourceTree = "<group>"; };
 		DDD6EEAE29BC024700383354 /* Firmware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Firmware.swift; sourceTree = "<group>"; };
 		DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateTimeText.swift; sourceTree = "<group>"; };
 		DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserEntityExtension.swift; sourceTree = "<group>"; };
@@ -877,6 +879,7 @@
 			isa = PBXGroup;
 			children = (
 				DD007BB12AA59B9A00F5FA12 /* CoreData */,
+				DDFFA7462B3A7F3C004730DB /* Bundle.swift */,
 				DDDB444529F8A96500EE2349 /* Character.swift */,
 				DDDB444929F8AA3A00EE2349 /* CLLocationCoordinate2D.swift */,
 				DDDB444B29F8AAA600EE2349 /* Color.swift */,
@@ -892,7 +895,7 @@
 				DDB75A0E2A05920E006ED576 /* FileManager.swift */,
 				DDB75A102A059258006ED576 /* Url.swift */,
 				DD1933772B084F4200771CD5 /* Measurement.swift */,
-				DDFFA7462B3A7F3C004730DB /* Bundle.swift */,
+				DDD5BB172C2F9C36007E03CA /* OSLogEntryLog.swift */,
 				DDF45C362BC46A5A005ED5F2 /* TimeZone.swift */,
 				DDD5BB0C2C285F00007E03CA /* Logger.swift */,
 			);
@@ -1087,6 +1090,7 @@
 				D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */,
 				DD5E523F298F5A9E00D21B61 /* AirQualityIndex.swift in Sources */,
 				DD964FBF296E76EF007C176F /* WaypointFormMapKit.swift in Sources */,
+				DDD5BB182C2F9C36007E03CA /* OSLogEntryLog.swift in Sources */,
 				DD3501892852FC3B000FC853 /* Settings.swift in Sources */,
 				DDDC22382BA92344002C44F1 /* MeshMapContent.swift in Sources */,
 				DDDB443629F6287000EE2349 /* MapButtons.swift in Sources */,

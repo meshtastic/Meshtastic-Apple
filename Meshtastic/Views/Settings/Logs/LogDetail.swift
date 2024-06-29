@@ -81,6 +81,22 @@ struct LogDetail: View {
 						}
 						.padding(.bottom, 5)
 						.listRowSeparator(.visible)
+						/// Level
+						Label {
+							Text("log.level".localized + ":")
+								.font(idiom == .phone ? .caption : .title)
+								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
+							Text(log.level.description)
+								.font(idiom == .phone ? .caption : .title)
+								.foregroundStyle(log.level.color)
+						} icon: {
+							Image(systemName: "stairs")
+								.symbolRenderingMode(.hierarchical)
+								.font(idiom == .phone ? .caption : .title)
+								.frame(width: 35)
+						}
+						.padding(.bottom, 5)
+						.listRowSeparator(.visible)
 						/// Category
 						Label {
 							Text("log.category".localized + ":")
@@ -96,21 +112,7 @@ struct LogDetail: View {
 						}
 						.padding(.bottom, 5)
 						.listRowSeparator(.visible)
-						/// Level
-						Label {
-							Text("log.level".localized + ":")
-								.font(idiom == .phone ? .caption : .title)
-								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
-							Text(log.level.description)
-								.font(idiom == .phone ? .caption : .title)
-						} icon: {
-							Image(systemName: "stairs")
-								.symbolRenderingMode(.hierarchical)
-								.font(idiom == .phone ? .caption : .title)
-								.frame(width: 35)
-						}
-						.padding(.bottom, 5)
-						.listRowSeparator(.visible)
+
 						/// message
 						Label {
 							Text("log.message".localized + ":")
@@ -119,6 +121,7 @@ struct LogDetail: View {
 							Text(log.composedMessage)
 								.textSelection(.enabled)
 								.font(idiom == .phone ? .body : .title)
+								.foregroundStyle(log.level.color)
 								.padding(.bottom, 5)
 						} icon: {
 							Image(systemName: "text.bubble")

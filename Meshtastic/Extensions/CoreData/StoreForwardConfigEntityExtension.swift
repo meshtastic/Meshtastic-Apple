@@ -13,7 +13,7 @@ extension StoreForwardConfigEntity {
 		self.historyReturnMax = Int32(config.historyReturnMax)
 		self.historyReturnWindow = Int32(config.historyReturnWindow)
 	}
-	
+
 	func update(with config: ModuleConfig.StoreForwardConfig) {
 		enabled = config.enabled
 		heartbeat = config.heartbeat
