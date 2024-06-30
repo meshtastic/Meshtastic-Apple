@@ -264,7 +264,7 @@ struct UserList: View {
 		if roleFilter && deviceRoles.count > 0 {
 			var rolesArray: [NSPredicate] = []
 			for dr in deviceRoles {
-				let deviceRolePredicate = NSPredicate(format: "user.role == %i", Int32(dr))
+				let deviceRolePredicate = NSPredicate(format: "role == %i", Int32(dr))
 				rolesArray.append(deviceRolePredicate)
 			}
 			let compoundPredicate = NSCompoundPredicate(type: .or, subpredicates: rolesArray)
