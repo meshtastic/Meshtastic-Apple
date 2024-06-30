@@ -11,7 +11,6 @@ import SwiftUI
 struct NodeListFilter: View {
 	@Environment(\.dismiss) private var dismiss
 	@State var editMode = EditMode.active
-	/// Filters
 	var filterTitle = "Node Filters"
 	@Binding var viaLora: Bool
 	@Binding var viaMqtt: Bool
@@ -130,8 +129,6 @@ struct NodeListFilter: View {
 						}
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-					.listRowSeparator(roleFilter ? .hidden : .visible)
 					if roleFilter {
 						VStack {
 							List(DeviceRoles.allCases, selection: $deviceRoles) { dr in

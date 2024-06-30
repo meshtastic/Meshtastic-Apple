@@ -284,37 +284,55 @@ struct NodeList: View {
 		}
 		.navigationSplitViewStyle(.balanced)
 		.onChange(of: searchText) { _ in
-			searchNodeList()
+			Task {
+				await searchNodeList()
+			}
 		}
 		.onChange(of: viaLora) { _ in
 			if !viaLora && !viaMqtt {
 				viaMqtt = true
 			}
-			searchNodeList()
+			Task {
+				await searchNodeList()
+			}
 		}
 		.onChange(of: viaMqtt) { _ in
 			if !viaLora && !viaMqtt {
 				viaLora = true
 			}
-			searchNodeList()
+			Task {
+				await searchNodeList()
+			}
 		}
 		.onChange(of: [deviceRoles]) { _ in
-			searchNodeList()
+			Task {
+				await searchNodeList()
+			}
 		}
 		.onChange(of: hopsAway) { _ in
-			searchNodeList()
+			Task {
+				await searchNodeList()
+			}
 		}
 		.onChange(of: isOnline) { _ in
-			searchNodeList()
+			Task {
+				await searchNodeList()
+			}
 		}
 		.onChange(of: isFavorite) { _ in
-			searchNodeList()
+			Task {
+				await searchNodeList()
+			}
 		}
 		.onChange(of: maxDistance) { _ in
-			searchNodeList()
+			Task {
+				await searchNodeList()
+			}
 		}
 		.onChange(of: distanceFilter) { _ in
-			searchNodeList()
+			Task {
+				await searchNodeList()
+			}
 		}
 		.onChange(of: (appState.navigationPath)) { newPath in
 
@@ -339,11 +357,13 @@ struct NodeList: View {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
-			searchNodeList()
+			Task {
+				await searchNodeList()
+			}
 		}
 	}
 
-	private func searchNodeList() {
+	private func searchNodeList() async -> Void {
 		/// Case Insensitive Search Text Predicates
 		let searchPredicates = ["user.userId", "user.numString", "user.hwModel", "user.longName", "user.shortName"].map { property in
 			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
