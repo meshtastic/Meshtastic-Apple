@@ -19,7 +19,7 @@ struct NodeListFilter: View {
 	@Binding var isFavorite: Bool
 	@Binding var distanceFilter: Bool
 	@Binding var maximumDistance: Double
-	@Binding var hopsAway: Int
+	@Binding var hopsAway: Double
 	@Binding var roleFilter: Bool
 	@Binding var deviceRoles: Set<Int>
 
@@ -99,19 +99,27 @@ struct NodeListFilter: View {
 							.pickerStyle(DefaultPickerStyle())
 						}
 					}
-					HStack {
+					VStack(alignment: .leading) {
 						Label("Hops Away", systemImage: "hare")
-						Picker("", selection: $hopsAway) {
-							Text("Any")
-								.tag(-1)
-							Text("Direct")
-								.tag(0)
-							ForEach(1..<8) {
-								Text("\($0)")
-									.tag($0)
-							}
+						Slider(
+							value: $hopsAway,
+							in: -1...7,
+							step: 1
+						) {
+							Text("Speed")
+						} minimumValueLabel: {
+							Text("All")
+						} maximumValueLabel: {
+							Text("7")
 						}
-						.pickerStyle(DefaultPickerStyle())
+						if hopsAway >= 0 {
+							if hopsAway == 0 {
+								Text("Direct")
+							} else if hopsAway == 1 {
+								Text("1 hop away")
+							} else {
+								Text("\(Int(hopsAway)) or less hops away")							}
+						}
 					}
 					Toggle(isOn: $roleFilter) {
 
@@ -153,7 +161,7 @@ struct NodeListFilter: View {
 			.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.fraction(roleFilter ? 1.0 : 0.55)])
+		.presentationDetents([.fraction(roleFilter ? 1.0 : 0.65)])
 		.presentationDragIndicator(.visible)
 	}
 }

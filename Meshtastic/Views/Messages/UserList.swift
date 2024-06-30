@@ -24,7 +24,7 @@ struct UserList: View {
 	@State private var isFavorite = false
 	@State private var distanceFilter = false
 	@State private var maxDistance: Double = 800000
-	@State private var hopsAway: Int = -1
+	@State private var hopsAway: Double = -1.0
 	@State private var roleFilter = false
 	@State private var deviceRoles: Set<Int> = []
 	@State var isEditingFilters = false
@@ -271,11 +271,15 @@ struct UserList: View {
 			predicates.append(compoundPredicate)
 		}
 		/// Hops Away
-		if hopsAway > 0 {
-			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway == %i", Int32(hopsAway))
-			predicates.append(hopsAwayPredicate)
+		if hopsAway > -1.0 {
+			if hopsAway == 0.0 {
+				let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway == %i", Int32(hopsAway))
+				predicates.append(hopsAwayPredicate)
+			} else {
+				let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway > 0 AND userNode.hopsAway <= %i", Int32(hopsAway))
+				predicates.append(hopsAwayPredicate)
+			}
 		}
-
 		/// Online
 		if isOnline {
 			let isOnlinePredicate = NSPredicate(format: "userNode.lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -15, to: Date())! as NSDate)
