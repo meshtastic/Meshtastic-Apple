@@ -15,6 +15,7 @@
 		25AECD4F2C2F723200862C8E /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 25AECD4E2C2F723200862C8E /* Localizable.xcstrings */; };
 		25F26B1E2C2F610D00C9CD9D /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB0C2C285F00007E03CA /* Logger.swift */; };
 		25F26B1F2C2F611300C9CD9D /* AppData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB152C28B1E4007E03CA /* AppData.swift */; };
+		6D825E622C34786C008DBEE4 /* CommonRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D825E612C34786C008DBEE4 /* CommonRegex.swift */; };
 		6DA39D8E2A92DC52007E311C /* MeshtasticAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */; };
 		6DEDA55A2A957B8E00321D2E /* DetectionSensorLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */; };
 		6DEDA55C2A9592F900321D2E /* MessageEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */; };
@@ -222,6 +223,7 @@
 
 /* Begin PBXFileReference section */
 		25AECD4E2C2F723200862C8E /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		6D825E612C34786C008DBEE4 /* CommonRegex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonRegex.swift; sourceTree = "<group>"; };
 		6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAppDelegate.swift; sourceTree = "<group>"; };
 		6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorLog.swift; sourceTree = "<group>"; };
 		6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntityExtension.swift; sourceTree = "<group>"; };
@@ -832,6 +834,7 @@
 				DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */,
 				DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */,
 				DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */,
+				6D825E612C34786C008DBEE4 /* CommonRegex.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1099,6 +1102,7 @@
 				DD798B072915928D005217CD /* ChannelMessageList.swift in Sources */,
 				DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */,
 				DD77093D2AA1AFA3007A8BF0 /* ChannelTips.swift in Sources */,
+				6D825E622C34786C008DBEE4 /* CommonRegex.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
 				DDDB444C29F8AAA600EE2349 /* Color.swift in Sources */,
 				DDB8F4122A9EE5DD00230ECE /* UserList.swift in Sources */,
