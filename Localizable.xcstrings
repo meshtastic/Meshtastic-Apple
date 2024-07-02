@@ -140,7 +140,13 @@
     "%d%%" : {
 
     },
+    "%lf" : {
+
+    },
     "%lld" : {
+
+    },
+    "%lld or less hops away" : {
 
     },
     "%lld Readings Total" : {
@@ -165,6 +171,15 @@
 
     },
     "1 byte" : {
+
+    },
+    "1 hop away" : {
+
+    },
+    "7" : {
+
+    },
+    "8" : {
 
     },
     "25" : {
@@ -666,10 +681,10 @@
     "Alert when receiving a message" : {
 
     },
-    "All device and app data will be deleted. You will also need to forget your devices under Settings > Bluetooth." : {
+    "All" : {
 
     },
-    "All Roles" : {
+    "All device and app data will be deleted. You will also need to forget your devices under Settings > Bluetooth." : {
 
     },
     "Allow Position Requests" : {
@@ -872,9 +887,6 @@
       }
     },
     "An open source, off-grid, decentralized, mesh network that runs on affordable, low-power radios." : {
-
-    },
-    "Any" : {
 
     },
     "Any missed messages will be delivered again." : {
@@ -17385,6 +17397,9 @@
 
     },
     "Role: %@" : {
+
+    },
+    "Roles" : {
 
     },
     "Root Topic" : {

@@ -101,7 +101,7 @@ struct AppLogFilter: View {
 	var filterTitle = "App Log Filters"
 	@Binding var categories: Set<Int>
 	@Binding var levels: Set<Int>
-	@State var editMode = EditMode.active /// the edit mode
+	@State var editMode = EditMode.active
 
 	var body: some View {
 

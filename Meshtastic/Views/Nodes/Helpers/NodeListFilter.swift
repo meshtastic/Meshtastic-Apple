@@ -10,7 +10,7 @@ import SwiftUI
 
 struct NodeListFilter: View {
 	@Environment(\.dismiss) private var dismiss
-	/// Filters
+	@State var editMode = EditMode.active
 	var filterTitle = "Node Filters"
 	@Binding var viaLora: Bool
 	@Binding var viaMqtt: Bool
@@ -18,8 +18,9 @@ struct NodeListFilter: View {
 	@Binding var isFavorite: Bool
 	@Binding var distanceFilter: Bool
 	@Binding var maximumDistance: Double
-	@Binding var hopsAway: Int
-	@Binding var deviceRole: Int
+	@Binding var hopsAway: Double
+	@Binding var roleFilter: Bool
+	@Binding var deviceRoles: Set<Int>
 
 	var body: some View {
 
@@ -97,34 +98,50 @@ struct NodeListFilter: View {
 							.pickerStyle(DefaultPickerStyle())
 						}
 					}
-					HStack {
+					VStack(alignment: .leading) {
 						Label("Hops Away", systemImage: "hare")
-						Picker("", selection: $hopsAway) {
-							Text("Any")
-								.tag(-1)
-							Text("Direct")
-								.tag(0)
-							ForEach(1..<8) {
-								Text("\($0)")
-									.tag($0)
-							}
+						Slider(
+							value: $hopsAway,
+							in: -1...7,
+							step: 1
+						) {
+							Text("Speed")
+						} minimumValueLabel: {
+							Text("All")
+						} maximumValueLabel: {
+							Text("7")
 						}
-						.pickerStyle(DefaultPickerStyle())
+						if hopsAway >= 0 {
+							if hopsAway == 0 {
+								Text("Direct")
+							} else if hopsAway == 1 {
+								Text("1 hop away")
+							} else {
+								Text("\(Int(hopsAway)) or less hops away")							}
+						}
 					}
-					HStack {
-						Label("Device Role", systemImage: "apps.iphone")
-						Picker("", selection: $deviceRole) {
-							Text("All Roles")
-								.tag(-1)
-							ForEach(DeviceRoles.allCases) { dr in
+					Toggle(isOn: $roleFilter) {
+
+						Label {
+							Text("Roles")
+						} icon: {
+							Image(systemName: "apps.iphone")
+						}
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					if roleFilter {
+						VStack {
+							List(DeviceRoles.allCases, selection: $deviceRoles) { dr in
 								Label {
 									Text("  \(dr.name)")
 								} icon: {
 									Image(systemName: dr.systemName)
 								}
 							}
+							.listStyle(.plain)
+							.environment(\.editMode, $editMode) /// bind it here!
+							.frame(minHeight: 490, maxHeight: .infinity)
 						}
-						.pickerStyle(DefaultPickerStyle())
 					}
 				}
 			}
@@ -141,7 +158,7 @@ struct NodeListFilter: View {
 			.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.fraction(0.6), .fraction(0.75)])
+		.presentationDetents([.fraction(roleFilter ? 1.0 : 0.65)])
 		.presentationDragIndicator(.visible)
 	}
 }

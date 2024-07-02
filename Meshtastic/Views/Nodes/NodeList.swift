@@ -25,8 +25,9 @@ struct NodeList: View {
 	@State private var isFavorite = false
 	@State private var distanceFilter = false
 	@State private var maxDistance: Double = 800000
-	@State private var hopsAway: Int = -1
-	@State private var deviceRole: Int = -1
+	@State private var hopsAway: Double = -1.0
+	@State private var roleFilter = false
+	@State private var deviceRoles: Set<Int> = []
 
 	@State var isEditingFilters = false
 
@@ -188,7 +189,7 @@ struct NodeList: View {
 				}
 			}
 			.sheet(isPresented: $isEditingFilters) {
-				NodeListFilter(viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isFavorite: $isFavorite, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, deviceRole: $deviceRole)
+				NodeListFilter(viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isFavorite: $isFavorite, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
 			}
 			.safeAreaInset(edge: .bottom, alignment: .trailing) {
 				HStack {
@@ -283,37 +284,55 @@ struct NodeList: View {
 		}
 		.navigationSplitViewStyle(.balanced)
 		.onChange(of: searchText) { _ in
-			searchNodeList()
+			Task {
+				await searchNodeList()
+			}
 		}
 		.onChange(of: viaLora) { _ in
 			if !viaLora && !viaMqtt {
 				viaMqtt = true
 			}
-			searchNodeList()
+			Task {
+				await searchNodeList()
+			}
 		}
 		.onChange(of: viaMqtt) { _ in
 			if !viaLora && !viaMqtt {
 				viaLora = true
 			}
-			searchNodeList()
+			Task {
+				await searchNodeList()
+			}
 		}
-		.onChange(of: deviceRole) { _ in
-			searchNodeList()
+		.onChange(of: [deviceRoles]) { _ in
+			Task {
+				await searchNodeList()
+			}
 		}
 		.onChange(of: hopsAway) { _ in
-			searchNodeList()
+			Task {
+				await searchNodeList()
+			}
 		}
 		.onChange(of: isOnline) { _ in
-			searchNodeList()
+			Task {
+				await searchNodeList()
+			}
 		}
 		.onChange(of: isFavorite) { _ in
-			searchNodeList()
+			Task {
+				await searchNodeList()
+			}
 		}
 		.onChange(of: maxDistance) { _ in
-			searchNodeList()
+			Task {
+				await searchNodeList()
+			}
 		}
 		.onChange(of: distanceFilter) { _ in
-			searchNodeList()
+			Task {
+				await searchNodeList()
+			}
 		}
 		.onChange(of: (appState.navigationPath)) { newPath in
 
@@ -338,11 +357,13 @@ struct NodeList: View {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
-			searchNodeList()
+			Task {
+				await searchNodeList()
+			}
 		}
 	}
 
-	private func searchNodeList() {
+	private func searchNodeList() async -> Void {
 		/// Case Insensitive Search Text Predicates
 		let searchPredicates = ["user.userId", "user.numString", "user.hwModel", "user.longName", "user.shortName"].map { property in
 			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
@@ -362,14 +383,23 @@ struct NodeList: View {
 			}
 		}
 		/// Role
-		if deviceRole > -1 {
-			let rolePredicate = NSPredicate(format: "user.role == %i", Int32(deviceRole))
-			predicates.append(rolePredicate)
+		if roleFilter && deviceRoles.count > 0 {
+			var rolesArray: [NSPredicate] = []
+			for dr in deviceRoles {
+				let deviceRolePredicate = NSPredicate(format: "user.role == %i", Int32(dr))
+				rolesArray.append(deviceRolePredicate)
+			}
+			let compoundPredicate = NSCompoundPredicate(type: .or, subpredicates: rolesArray)
+			predicates.append(compoundPredicate)
 		}
 		/// Hops Away
-		if hopsAway > 0 {
+		if hopsAway == 0.0 {
 			let hopsAwayPredicate = NSPredicate(format: "hopsAway == %i", Int32(hopsAway))
 			predicates.append(hopsAwayPredicate)
+		} else if hopsAway > -1.0 {
+			let hopsAwayPredicate = NSPredicate(format: "hopsAway > 0 AND hopsAway <= %i", Int32(hopsAway))
+			predicates.append(hopsAwayPredicate)
+		}
 		}
 
 		/// Online

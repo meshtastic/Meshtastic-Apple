@@ -24,8 +24,9 @@ struct UserList: View {
 	@State private var isFavorite = false
 	@State private var distanceFilter = false
 	@State private var maxDistance: Double = 800000
-	@State private var hopsAway: Int = -1
-	@State private var deviceRole: Int = -1
+	@State private var hopsAway: Double = -1.0
+	@State private var roleFilter = false
+	@State private var deviceRoles: Set<Int> = []
 	@State var isEditingFilters = false
 
 	@FetchRequest(
@@ -170,7 +171,7 @@ struct UserList: View {
 			.listStyle(.plain)
 			.navigationTitle(String.localizedStringWithFormat("contacts %@".localized, String(users.count == 0 ? 0 : users.count - 1)))
 			.sheet(isPresented: $isEditingFilters) {
-				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isFavorite: $isFavorite, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, deviceRole: $deviceRole)
+				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isFavorite: $isFavorite, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
 			}
 			.onChange(of: searchText) { _ in
 				searchUserList()
@@ -187,7 +188,7 @@ struct UserList: View {
 				}
 				searchUserList()
 			}
-			.onChange(of: deviceRole) { _ in
+			.onChange(of: [deviceRoles]) { _ in
 				searchUserList()
 			}
 			.onChange(of: hopsAway) { _ in
@@ -259,17 +260,25 @@ struct UserList: View {
 				predicates.append(mqttPredicate)
 			}
 		}
-		/// Role
-		if deviceRole > -1 {
-			let rolePredicate = NSPredicate(format: "role == %i", Int32(deviceRole))
-			predicates.append(rolePredicate)
+		/// Roles
+		if roleFilter && deviceRoles.count > 0 {
+			var rolesArray: [NSPredicate] = []
+			for dr in deviceRoles {
+				let deviceRolePredicate = NSPredicate(format: "role == %i", Int32(dr))
+				rolesArray.append(deviceRolePredicate)
+			}
+			let compoundPredicate = NSCompoundPredicate(type: .or, subpredicates: rolesArray)
+			predicates.append(compoundPredicate)
 		}
 		/// Hops Away
-		if hopsAway > 0 {
+		if hopsAway == 0.0 {
 			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway == %i", Int32(hopsAway))
 			predicates.append(hopsAwayPredicate)
+		} else if hopsAway > -1.0 {
+			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway > 0 AND userNode.hopsAway <= %i", Int32(hopsAway))
+			predicates.append(hopsAwayPredicate)
 		}
-
+		}
 		/// Online
 		if isOnline {
 			let isOnlinePredicate = NSPredicate(format: "userNode.lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -15, to: Date())! as NSDate)
