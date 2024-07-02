@@ -393,14 +393,13 @@ struct NodeList: View {
 			predicates.append(compoundPredicate)
 		}
 		/// Hops Away
-		if hopsAway > -1.0 {
-			if hopsAway == 0.0 {
-				let hopsAwayPredicate = NSPredicate(format: "hopsAway == %i", Int32(hopsAway))
-				predicates.append(hopsAwayPredicate)
-			} else {
-				let hopsAwayPredicate = NSPredicate(format: "hopsAway > 0 AND hopsAway <= %i", Int32(hopsAway))
-				predicates.append(hopsAwayPredicate)
-			}
+		if hopsAway == 0.0 {
+			let hopsAwayPredicate = NSPredicate(format: "hopsAway == %i", Int32(hopsAway))
+			predicates.append(hopsAwayPredicate)
+		} else if hopsAway > -1.0 {
+			let hopsAwayPredicate = NSPredicate(format: "hopsAway > 0 AND hopsAway <= %i", Int32(hopsAway))
+			predicates.append(hopsAwayPredicate)
+		}
 		}
 
 		/// Online
