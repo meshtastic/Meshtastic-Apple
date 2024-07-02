@@ -56,8 +56,8 @@ class LocalMBTileOverlay: MKTileOverlay {
 			self.mb = try Connection(self.path, readonly: true)
 			let metadata = Table("metadata")
 
-			let name = Expression<String>("name")
-			let value = Expression<String>("value")
+			let name = Expression<String>(value: "name")
+			let value = Expression<String>(value: "value")
 
 			// make sure it's raster
 			let formatQuery = try mb.pluck(metadata.select(value).filter(name == "format"))
