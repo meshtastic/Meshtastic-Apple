@@ -6,7 +6,6 @@ import MapKit
 import MeshtasticProtobufs
 import CocoaMQTT
 import OSLog
-import RegexBuilder
 
 // ---------------------------------------------------------------------------------------
 // Meshtastic BLE Device Manager
@@ -52,7 +51,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
 	let LEGACY_LOGRADIO_UUID = CBUUID(string: "0x6C6FD238-78FA-436B-AACF-15C5BE1EF2E2")
 	let LOGRADIO_UUID = CBUUID(string: "0x5a3d6e49-06e6-4423-9944-e9de8cdf9547")
-
 
 	// MARK: init BLEManager
 	override init() {
@@ -318,7 +316,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				FROMNUM_characteristic = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
 
-			case LEGACY_LOGRADIO_LOGRADIO_UUID:
+			case LEGACY_LOGRADIO_UUID:
 				Logger.services.info("✅ [BLE] did discover legacy LOGRADIO (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown", privacy: .public)")
 				LEGACY_LOGRADIO_characteristic = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
@@ -514,7 +512,54 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 	}
 
-	// MARK: Data Read / Update Characteristic Event
+	fileprivate func handleRadioLog(radioLog: String) {
+		var log = radioLog
+		/// Debug Log Level
+		if log.starts(with: "DEBUG |") {
+			do {
+				let logString = log
+				if let coordsMatch = try CommonRegex.COORDS_REGEX.firstMatch(in: logString) {
+					log = "\(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces))"
+					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+					Logger.radio.debug("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0.replacingOccurrences(of: "[,]", with: "", options: .regularExpression), privacy: .private) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
+				} else {
+					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+					Logger.radio.debug("🕵🏻‍♂️ \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+				}
+			} catch {
+				log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+				Logger.radio.debug("🕵🏻‍♂️ \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+			}
+		} else if log.starts(with: "INFO  |") {
+			do {
+				let logString = log
+				if let coordsMatch = try CommonRegex.COORDS_REGEX.firstMatch(in: logString) {
+					log = "\(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces))"
+					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+					Logger.radio.info("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0.replacingOccurrences(of: "[,]", with: "", options: .regularExpression), privacy: .private) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
+				} else {
+					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+					Logger.radio.info("📢 \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+				}
+			} catch {
+				log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+				Logger.radio.info("📢 \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+			}
+		} else if log.starts(with: "WARN  |") {
+			log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+			Logger.radio.warning("⚠️ \(log.replacingOccurrences(of: "WARN  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+		} else if log.starts(with: "ERROR |") {
+			log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+			Logger.radio.error("💥 \(log.replacingOccurrences(of: "ERROR |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+		} else if log.starts(with: "CRIT  |") {
+			log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+			Logger.radio.critical("🧨 \(log.replacingOccurrences(of: "CRIT  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+		} else {
+			log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+			Logger.radio.debug("📟 \(log, privacy: .public)")
+		}
+	}
+	
 	func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
 
 		if let error {
@@ -537,67 +582,35 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			if characteristic.value == nil || characteristic.value!.isEmpty {
 				return
 			}
-			let coordsSearch = Regex {
-				Capture {
-					Regex {
-						"lat="
-						OneOrMore(.digit)
-					}
+			do {
+				let logRecord = try LogRecord(serializedData: characteristic.value!)
+				var message = logRecord.source.isEmpty ? logRecord.message : "[\(logRecord.source)] \(logRecord.message)"
+				switch logRecord.level {
+				case .debug:
+					message = "DEBUG | \(message)"
+				case .info:
+					message = "INFO  | \(message)"
+				case .warning:
+				   message = "WARN  | \(message)"
+				case .error:
+				   message = "ERROR | \(message)"
+				case .critical:
+				  message = "CRIT  | \(message)"
+				default:
+					message = "DEBUG | \(message)"
 				}
-				Capture {" "}
-				Capture {
-					Regex {
-						"long="
-						OneOrMore(.digit)
-					}
-				}
+				handleRadioLog(radioLog: message)
 			}
-				.anchorsMatchLineEndings()
-			if var log = String(data: characteristic.value!, encoding: .utf8) {
-				/// Debug Log Level
-				if log.starts(with: "DEBUG |") {
-					do {
-						let logString = log
-						if let coordsMatch = try coordsSearch.firstMatch(in: logString) {
-							log = "\(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces))"
-							log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-							Logger.radio.debug("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0.replacingOccurrences(of: "[,]", with: "", options: .regularExpression), privacy: .private) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
-						} else {
-							log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-							Logger.radio.debug("🕵🏻‍♂️ \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
-						}
-					} catch {
-						log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-						Logger.radio.debug("🕵🏻‍♂️ \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
-					}
-				} else if log.starts(with: "INFO  |") {
-					do {
-						let logString = log
-						if let coordsMatch = try coordsSearch.firstMatch(in: logString) {
-							log = "\(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces))"
-							log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-							Logger.radio.info("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0.replacingOccurrences(of: "[,]", with: "", options: .regularExpression), privacy: .private) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
-						} else {
-							log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-							Logger.radio.info("📢 \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
-						}
-					} catch {
-						log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-						Logger.radio.info("📢 \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
-					}
-				} else if log.starts(with: "WARN  |") {
-					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-					Logger.radio.warning("⚠️ \(log.replacingOccurrences(of: "WARN  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
-				} else if log.starts(with: "ERROR |") {
-					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-					Logger.radio.error("💥 \(log.replacingOccurrences(of: "ERROR |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
-				} else if log.starts(with: "CRIT  |") {
-					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-					Logger.radio.critical("🧨 \(log.replacingOccurrences(of: "CRIT  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
-				} else {
-					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-					Logger.radio.debug("📟 \(log, privacy: .public)")
-				}
+			catch {
+				// Ignore fail to parse as LogRecord
+			}
+
+		case LEGACY_LOGRADIO_UUID:
+			if characteristic.value == nil || characteristic.value!.isEmpty {
+				return
+			}
+			if let log = String(data: characteristic.value!, encoding: .utf8) {
+				handleRadioLog(radioLog: log)
 			}
 
 		case FROMRADIO_UUID:
