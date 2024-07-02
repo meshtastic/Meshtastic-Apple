@@ -278,7 +278,6 @@ struct UserList: View {
 			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway > 0 AND userNode.hopsAway <= %i", Int32(hopsAway))
 			predicates.append(hopsAwayPredicate)
 		}
-		}
 		/// Online
 		if isOnline {
 			let isOnlinePredicate = NSPredicate(format: "userNode.lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -15, to: Date())! as NSDate)

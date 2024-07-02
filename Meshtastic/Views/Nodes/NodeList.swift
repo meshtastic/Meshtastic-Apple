@@ -400,7 +400,6 @@ struct NodeList: View {
 			let hopsAwayPredicate = NSPredicate(format: "hopsAway > 0 AND hopsAway <= %i", Int32(hopsAway))
 			predicates.append(hopsAwayPredicate)
 		}
-		}
 
 		/// Online
 		if isOnline {
