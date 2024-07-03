@@ -154,14 +154,12 @@ struct Channels: View {
 						var channel = Channel()
 						channel.index = channelIndex
 						channel.role = ChannelRoles(rawValue: channelRole)?.protoEnumValue() ?? .secondary
-						if channel.role != Channel.Role.disabled {
 							channel.index = channelIndex
 							channel.settings.name = channelName
 							channel.settings.psk = Data(base64Encoded: channelKey) ?? Data()
 							channel.settings.uplinkEnabled = uplink
 							channel.settings.downlinkEnabled = downlink
 							channel.settings.moduleSettings.positionPrecision = UInt32(positionPrecision)
-
 							selectedChannel!.role = Int32(channelRole)
 							selectedChannel!.index = channelIndex
 							selectedChannel!.name = channelName
@@ -180,6 +178,7 @@ struct Channels: View {
 							}
 							node?.myInfo?.channels = mutableChannels.copy() as? NSOrderedSet
 							context.refresh(selectedChannel!, mergeChanges: true)
+						if channel.role != Channel.Role.disabled {
 							do {
 								try context.save()
 								Logger.data.info("💾 Saved Channel: \(channel.settings.name)")
@@ -189,19 +188,14 @@ struct Channels: View {
 								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError)")
 							}
 						} else {
-							guard let channelEntities = node?.myInfo?.channels as? [ChannelEntity],
-								  let channelEntity = channelEntities.first(where: { $0.index == channelIndex }) else {
-								return
-							}
-
-							let objects = channelEntity.allPrivateMessages
+							let objects = selectedChannel?.allPrivateMessages ?? []
 							for object in objects {
 								context.delete(object)
 							}
-							for node in nodes where node.channel == channelEntity.index {
+							for node in nodes where node.channel == channel.index {
 								context.delete(node)
 							}
-							context.delete(channelEntity)
+							context.delete(selectedChannel!)
 							do {
 								try context.save()
 								Logger.data.info("💾 Deleted Channel: \(channel.settings.name)")
@@ -211,7 +205,6 @@ struct Channels: View {
 								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError)")
 							}
 						}
-
 						let adminMessageId =  bleManager.saveChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
 
 						if adminMessageId > 0 {

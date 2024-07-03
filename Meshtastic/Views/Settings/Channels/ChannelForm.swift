@@ -57,7 +57,6 @@ struct ChannelForm: View {
 							Text("Default").tag(-1)
 							Text("1 byte").tag(1)
 							Text("128 bit").tag(16)
-							Text("192 bit").tag(24)
 							Text("256 bit").tag(32)
 						}
 						.pickerStyle(DefaultPickerStyle())
