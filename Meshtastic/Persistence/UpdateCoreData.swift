@@ -127,6 +127,7 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes
 	}
 }
 
+@MainActor
 func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.nodeinfo.received %@".localized, packet.from.toHex())
@@ -260,8 +261,9 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
 			}
 			if fetchedNode[0].user == nil {
-				let newUser = createUser(num: Int64(packet.from), context: context)
+				let newUser = createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
 				fetchedNode[0].user! = newUser
+				
 			}
 			do {
 				try context.save()
@@ -277,6 +279,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 	}
 }
 
+@MainActor 
 func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.position.received %@".localized, String(packet.from))
