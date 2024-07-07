@@ -11,23 +11,24 @@ import MapKit
 
 struct NodeInfoItem: View {
 
-	@ObservedObject var node: NodeInfoEntity
-	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
+	@ObservedObject
+	var node: NodeInfoEntity
+
+	var modemPreset: ModemPresets = ModemPresets(
+		rawValue: UserDefaults.modemPreset
+	) ?? ModemPresets.longFast
 
 	var body: some View {
-
-		Divider()
-
 		HStack {
-
-			VStack(alignment: .center) {
-				CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65)
-			}
-			if node.user != nil {
-				Divider()
+			CircleText(
+				text: node.user?.shortName ?? "?",
+				color: Color(UIColor(hex: UInt32(node.num))),
+				circleSize: 65
+			)
+			if let user = node.user {
 				VStack(alignment: .center) {
-					if node.user?.hwModel != "UNSET" {
-						Image(node.user!.hwModel ?? "unset".localized)
+					if user.hwModel != "UNSET" {
+						Image(user.hwModel ?? "unset".localized)
 							.resizable()
 							.aspectRatio(contentMode: .fit)
 							.frame(width: 75, height: 75)
@@ -47,8 +48,8 @@ struct NodeInfoItem: View {
 					}
 				}
 			}
+
 			if node.snr != 0 && !node.viaMqtt {
-				Divider()
 				VStack(alignment: .center) {
 					let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: modemPreset)
 					LoRaSignalStrengthIndicator(signalStrength: signalStrength)
@@ -61,41 +62,12 @@ struct NodeInfoItem: View {
 						.font(.caption2)
 				}
 			}
+
 			if node.telemetries?.count ?? 0 > 0 {
-				Divider()
 				BatteryGauge(node: node)
+					.padding()
 			}
+			Spacer()
 		}
-		Divider()
-		HStack(alignment: .center) {
-			VStack {
-				HStack {
-					Image(systemName: "number")
-						.font(.title2)
-						.foregroundColor(.accentColor)
-						.symbolRenderingMode(.hierarchical)
-					Text("Node Number:").font(.title2)
-				}
-				Text(String(node.num))
-					.font(.title3)
-					.foregroundColor(.gray)
-					.textSelection(.enabled)
-			}
-			Divider()
-			VStack {
-				HStack {
-					Image(systemName: "person")
-						.font(.title2)
-						.foregroundColor(.accentColor)
-						.symbolRenderingMode(.hierarchical)
-					Text("User Id:").font(.title2)
-				}
-				Text(node.user?.userId ?? "?")
-					.font(.title3)
-					.foregroundColor(.gray)
-					.textSelection(.enabled)
-			}
-		}
-		Divider()
 	}
 }

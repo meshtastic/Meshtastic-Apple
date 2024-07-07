@@ -525,6 +525,9 @@
         }
       }
     },
+    "Administration" : {
+
+    },
     "Advanced" : {
 
     },
@@ -11187,6 +11190,9 @@
         }
       }
     },
+    "Logs" : {
+
+    },
     "Logs:" : {
 
     },
@@ -15308,6 +15314,9 @@
         }
       }
     },
+    "Node" : {
+
+    },
     "Node Core Data Backup %@/%@ - %@ - %@" : {
       "localizations" : {
         "en" : {
@@ -15327,7 +15336,7 @@
     "Node Map" : {
 
     },
-    "Node Number:" : {
+    "Node Number" : {
 
     },
     "nodelist.filter.distance %@" : {
@@ -17037,6 +17046,9 @@
       }
     },
     "Recording route" : {
+
+    },
+    "Refresh device metadata" : {
 
     },
     "Region" : {
@@ -22100,7 +22112,7 @@
     "User Details" : {
 
     },
-    "User Id:" : {
+    "User Id" : {
 
     },
     "user.details" : {
