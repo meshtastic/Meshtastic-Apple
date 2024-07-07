@@ -20,7 +20,7 @@ struct SaveChannelQRCode: View {
 		VStack {
 			Text("\(addChannels ? "Add" : "Replace all") Channels?")
 				.font(.title)
-			Text("These settings will \(addChannels ? "add" : "replace all") channels. The current LoRa Config will be replaced. After everything saves your device will reboot.")
+			Text("These settings will \(addChannels ? "add" : "replace all") channels. The current LoRa Config will be replaced, if there are substantial changes to the LoRa config the device will reboot")
 				.fixedSize(horizontal: false, vertical: true)
 				.foregroundColor(.gray)
 				.font(.title3)

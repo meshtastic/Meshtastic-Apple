@@ -270,9 +270,45 @@ struct ShareChannels: View {
 		loRaConfig.ignoreMqtt = node?.loRaConfig?.ignoreMqtt ?? false
 		channelSet.loraConfig = loRaConfig
 		if node?.myInfo?.channels != nil && node?.myInfo?.channels?.count ?? 0 > 0 {
-			for ch in node?.myInfo?.channels?.array as? [ChannelEntity] ?? [] {
-				if ch.role > 0, ch.index == 0 && includeChannel0 || ch.index == 1 && includeChannel1 || ch.index == 2 && includeChannel2 || ch.index == 3 && includeChannel3 ||
-					ch.index == 4 && includeChannel4 || ch.index == 5 && includeChannel5 || ch.index == 6 && includeChannel6 || ch.index == 7 && includeChannel7 {
+			for ch in node?.myInfo?.channels?.array as? [ChannelEntity] ?? [] where ch.role > 0 {
+				var includeChannel = false
+				switch ch.index {
+				case 0:
+					if includeChannel0 {
+						includeChannel = true
+					}
+				case 1:
+					if includeChannel1 {
+						includeChannel = true
+					}
+				case 2:
+					if includeChannel2 {
+						includeChannel = true
+					}
+				case 3:
+					if includeChannel3 {
+						includeChannel = true
+					}
+				case 4:
+					if includeChannel4 {
+						includeChannel = true
+					}
+				case 5:
+					if includeChannel5 {
+						includeChannel = true
+					}
+				case 6:
+					if includeChannel6 {
+						includeChannel = true
+					}
+				case 7:
+					if includeChannel7 {
+						includeChannel = true
+					}
+				default:
+					includeChannel = false
+				}
+				if includeChannel {
 					var channelSettings = ChannelSettings()
 					channelSettings.name = ch.name!
 					channelSettings.psk = ch.psk!
