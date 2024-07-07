@@ -16,7 +16,7 @@ struct MapSettingsForm: View {
 	@AppStorage("meshMapShowNodeHistory") private var nodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var routeLines = false
 	@AppStorage("enableMapConvexHull") private var convexHull = false
-	@AppStorage("enableMapWaypoints") private var waypoints = false
+	@AppStorage("enableMapWaypoints") private var waypoints = true
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
 	@Binding var mapLayer: MapLayer

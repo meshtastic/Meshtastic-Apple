@@ -176,7 +176,7 @@ struct AppLog: View {
 	}
 }
 
-@available(iOS 17.4, *)
+@available(iOS 17.4, macOS 14.4, *)
 extension AppLog {
 	@MainActor
 	private func searchAppLogs() async -> [OSLogEntryLog] {
