@@ -132,9 +132,186 @@ extension PowerMon.State: CaseIterable {
 
 #endif  // swift(>=4.2)
 
+///
+/// PowerStress testing support via the C++ PowerStress module
+public struct PowerStressMessage {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// What type of HardwareMessage is this?
+  public var cmd: PowerStressMessage.Opcode = .unset
+
+  public var numSeconds: Float = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  ///
+  /// What operation would we like the UUT to perform.
+  ///note: senders should probably set want_response in their request packets, so that they can know when the state
+  ///machine has started processing their request
+  public enum Opcode: SwiftProtobuf.Enum {
+    public typealias RawValue = Int
+
+    ///
+    /// Unset/unused
+    case unset // = 0
+
+    /// Print board version slog and send an ack that we are alive and ready to process commands
+    case printInfo // = 1
+
+    /// Try to turn off all automatic processing of packets, screen, sleeping, etc (to make it easier to measure in isolation)
+    case forceQuiet // = 2
+
+    /// Stop powerstress processing - probably by just rebooting the board
+    case endQuiet // = 3
+
+    /// Turn the screen on
+    case screenOn // = 16
+
+    /// Turn the screen off
+    case screenOff // = 17
+
+    /// Let the CPU run but we assume mostly idling for num_seconds
+    case cpuIdle // = 32
+
+    /// Force deep sleep for FIXME seconds
+    case cpuDeepsleep // = 33
+
+    /// Spin the CPU as fast as possible for num_seconds
+    case cpuFullon // = 34
+
+    /// Turn the LED on for num_seconds (and leave it on - for baseline power measurement purposes)
+    case ledOn // = 48
+
+    /// Force the LED off for num_seconds
+    case ledOff // = 49
+
+    /// Completely turn off the LORA radio for num_seconds
+    case loraOff // = 64
+
+    /// Send Lora packets for num_seconds
+    case loraTx // = 65
+
+    /// Receive Lora packets for num_seconds (node will be mostly just listening, unless an external agent is helping stress this by sending packets on the current channel)
+    case loraRx // = 66
+
+    /// Turn off the BT radio for num_seconds
+    case btOff // = 80
+
+    /// Turn on the BT radio for num_seconds
+    case btOn // = 81
+
+    /// Turn off the WIFI radio for num_seconds
+    case wifiOff // = 96
+
+    /// Turn on the WIFI radio for num_seconds
+    case wifiOn // = 97
+
+    /// Turn off the GPS radio for num_seconds
+    case gpsOff // = 112
+
+    /// Turn on the GPS radio for num_seconds
+    case gpsOn // = 113
+    case UNRECOGNIZED(Int)
+
+    public init() {
+      self = .unset
+    }
+
+    public init?(rawValue: Int) {
+      switch rawValue {
+      case 0: self = .unset
+      case 1: self = .printInfo
+      case 2: self = .forceQuiet
+      case 3: self = .endQuiet
+      case 16: self = .screenOn
+      case 17: self = .screenOff
+      case 32: self = .cpuIdle
+      case 33: self = .cpuDeepsleep
+      case 34: self = .cpuFullon
+      case 48: self = .ledOn
+      case 49: self = .ledOff
+      case 64: self = .loraOff
+      case 65: self = .loraTx
+      case 66: self = .loraRx
+      case 80: self = .btOff
+      case 81: self = .btOn
+      case 96: self = .wifiOff
+      case 97: self = .wifiOn
+      case 112: self = .gpsOff
+      case 113: self = .gpsOn
+      default: self = .UNRECOGNIZED(rawValue)
+      }
+    }
+
+    public var rawValue: Int {
+      switch self {
+      case .unset: return 0
+      case .printInfo: return 1
+      case .forceQuiet: return 2
+      case .endQuiet: return 3
+      case .screenOn: return 16
+      case .screenOff: return 17
+      case .cpuIdle: return 32
+      case .cpuDeepsleep: return 33
+      case .cpuFullon: return 34
+      case .ledOn: return 48
+      case .ledOff: return 49
+      case .loraOff: return 64
+      case .loraTx: return 65
+      case .loraRx: return 66
+      case .btOff: return 80
+      case .btOn: return 81
+      case .wifiOff: return 96
+      case .wifiOn: return 97
+      case .gpsOff: return 112
+      case .gpsOn: return 113
+      case .UNRECOGNIZED(let i): return i
+      }
+    }
+
+  }
+
+  public init() {}
+}
+
+#if swift(>=4.2)
+
+extension PowerStressMessage.Opcode: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [PowerStressMessage.Opcode] = [
+    .unset,
+    .printInfo,
+    .forceQuiet,
+    .endQuiet,
+    .screenOn,
+    .screenOff,
+    .cpuIdle,
+    .cpuDeepsleep,
+    .cpuFullon,
+    .ledOn,
+    .ledOff,
+    .loraOff,
+    .loraTx,
+    .loraRx,
+    .btOff,
+    .btOn,
+    .wifiOff,
+    .wifiOn,
+    .gpsOff,
+    .gpsOn,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
 #if swift(>=5.5) && canImport(_Concurrency)
 extension PowerMon: @unchecked Sendable {}
 extension PowerMon.State: @unchecked Sendable {}
+extension PowerStressMessage: @unchecked Sendable {}
+extension PowerStressMessage.Opcode: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -175,5 +352,68 @@ extension PowerMon.State: SwiftProtobuf._ProtoNameProviding {
     512: .same(proto: "Screen_Drawing"),
     1024: .same(proto: "Wifi_On"),
     2048: .same(proto: "GPS_Active"),
+  ]
+}
+
+extension PowerStressMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".PowerStressMessage"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "cmd"),
+    2: .standard(proto: "num_seconds"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.cmd) }()
+      case 2: try { try decoder.decodeSingularFloatField(value: &self.numSeconds) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.cmd != .unset {
+      try visitor.visitSingularEnumField(value: self.cmd, fieldNumber: 1)
+    }
+    if self.numSeconds != 0 {
+      try visitor.visitSingularFloatField(value: self.numSeconds, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: PowerStressMessage, rhs: PowerStressMessage) -> Bool {
+    if lhs.cmd != rhs.cmd {return false}
+    if lhs.numSeconds != rhs.numSeconds {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension PowerStressMessage.Opcode: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "UNSET"),
+    1: .same(proto: "PRINT_INFO"),
+    2: .same(proto: "FORCE_QUIET"),
+    3: .same(proto: "END_QUIET"),
+    16: .same(proto: "SCREEN_ON"),
+    17: .same(proto: "SCREEN_OFF"),
+    32: .same(proto: "CPU_IDLE"),
+    33: .same(proto: "CPU_DEEPSLEEP"),
+    34: .same(proto: "CPU_FULLON"),
+    48: .same(proto: "LED_ON"),
+    49: .same(proto: "LED_OFF"),
+    64: .same(proto: "LORA_OFF"),
+    65: .same(proto: "LORA_TX"),
+    66: .same(proto: "LORA_RX"),
+    80: .same(proto: "BT_OFF"),
+    81: .same(proto: "BT_ON"),
+    96: .same(proto: "WIFI_OFF"),
+    97: .same(proto: "WIFI_ON"),
+    112: .same(proto: "GPS_OFF"),
+    113: .same(proto: "GPS_ON"),
   ]
 }
