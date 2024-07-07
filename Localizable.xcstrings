@@ -20839,7 +20839,7 @@
     "There has been no response to a request for device metadata over the admin channel for this node." : {
 
     },
-    "These settings will %@ channels. The current LoRa Config will be replaced. After everything saves your device will reboot." : {
+    "These settings will %@ channels. The current LoRa Config will be replaced, if there are substantial changes to the LoRa config the device will reboot" : {
 
     },
     "Thirty Minutes" : {
