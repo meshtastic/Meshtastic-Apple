@@ -486,8 +486,8 @@ func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, con
 
 				let newDisplayConfig = DisplayConfigEntity(context: context)
 				newDisplayConfig.gpsFormat = Int32(config.gpsFormat.rawValue)
-				newDisplayConfig.screenOnSeconds = Int32(config.screenOnSecs)
-				newDisplayConfig.screenCarouselInterval = Int32(config.autoScreenCarouselSecs)
+				newDisplayConfig.screenOnSeconds = Int32(truncatingIfNeeded: config.screenOnSecs)
+				newDisplayConfig.screenCarouselInterval = Int32(truncatingIfNeeded: config.autoScreenCarouselSecs)
 				newDisplayConfig.compassNorthTop = config.compassNorthTop
 				newDisplayConfig.flipScreen = config.flipScreen
 				newDisplayConfig.oledType = Int32(config.oled.rawValue)
@@ -499,8 +499,8 @@ func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, con
 			} else {
 
 				fetchedNode[0].displayConfig?.gpsFormat = Int32(config.gpsFormat.rawValue)
-				fetchedNode[0].displayConfig?.screenOnSeconds = Int32(config.screenOnSecs)
-				fetchedNode[0].displayConfig?.screenCarouselInterval = Int32(config.autoScreenCarouselSecs)
+				fetchedNode[0].displayConfig?.screenOnSeconds = Int32(truncatingIfNeeded: config.screenOnSecs)
+				fetchedNode[0].displayConfig?.screenCarouselInterval = Int32(truncatingIfNeeded: config.autoScreenCarouselSecs)
 				fetchedNode[0].displayConfig?.compassNorthTop = config.compassNorthTop
 				fetchedNode[0].displayConfig?.flipScreen = config.flipScreen
 				fetchedNode[0].displayConfig?.oledType = Int32(config.oled.rawValue)
@@ -718,19 +718,19 @@ func upsertPowerConfigPacket(config: Config.PowerConfig, nodeNum: Int64, context
 				newPowerConfig.adcMultiplierOverride = config.adcMultiplierOverride
 				newPowerConfig.deviceBatteryInaAddress = Int32(config.deviceBatteryInaAddress)
 				newPowerConfig.isPowerSaving = config.isPowerSaving
-				newPowerConfig.lsSecs = Int32(config.lsSecs)
-				newPowerConfig.minWakeSecs = Int32(config.minWakeSecs)
-				newPowerConfig.onBatteryShutdownAfterSecs = Int32(config.onBatteryShutdownAfterSecs)
-				newPowerConfig.waitBluetoothSecs = Int32(config.waitBluetoothSecs)
+				newPowerConfig.lsSecs = Int32(truncatingIfNeeded: config.lsSecs)
+				newPowerConfig.minWakeSecs = Int32(truncatingIfNeeded: config.minWakeSecs)
+				newPowerConfig.onBatteryShutdownAfterSecs = Int32(truncatingIfNeeded: config.onBatteryShutdownAfterSecs)
+				newPowerConfig.waitBluetoothSecs = Int32(truncatingIfNeeded: config.waitBluetoothSecs)
 				fetchedNode[0].powerConfig = newPowerConfig
 			} else {
 				fetchedNode[0].powerConfig?.adcMultiplierOverride = config.adcMultiplierOverride
 				fetchedNode[0].powerConfig?.deviceBatteryInaAddress = Int32(config.deviceBatteryInaAddress)
 				fetchedNode[0].powerConfig?.isPowerSaving = config.isPowerSaving
-				fetchedNode[0].powerConfig?.lsSecs = Int32(config.lsSecs)
-				fetchedNode[0].powerConfig?.minWakeSecs = Int32(config.minWakeSecs)
-				fetchedNode[0].powerConfig?.onBatteryShutdownAfterSecs = Int32(config.onBatteryShutdownAfterSecs)
-				fetchedNode[0].powerConfig?.waitBluetoothSecs = Int32(config.waitBluetoothSecs)
+				fetchedNode[0].powerConfig?.lsSecs = Int32(truncatingIfNeeded: config.lsSecs)
+				fetchedNode[0].powerConfig?.minWakeSecs = Int32(truncatingIfNeeded: config.minWakeSecs)
+				fetchedNode[0].powerConfig?.onBatteryShutdownAfterSecs = Int32(truncatingIfNeeded: config.onBatteryShutdownAfterSecs)
+				fetchedNode[0].powerConfig?.waitBluetoothSecs = Int32(truncatingIfNeeded: config.waitBluetoothSecs)
 			}
 			do {
 				try context.save()
@@ -886,8 +886,8 @@ func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSenso
 				newConfig.monitorPin = Int32(config.monitorPin)
 				newConfig.detectionTriggeredHigh = config.detectionTriggeredHigh
 				newConfig.usePullup = config.usePullup
-				newConfig.minimumBroadcastSecs = Int32(config.minimumBroadcastSecs)
-				newConfig.stateBroadcastSecs = Int32(config.stateBroadcastSecs)
+				newConfig.minimumBroadcastSecs = Int32(truncatingIfNeeded: config.minimumBroadcastSecs)
+				newConfig.stateBroadcastSecs = Int32(truncatingIfNeeded: config.stateBroadcastSecs)
 				fetchedNode[0].detectionSensorConfig = newConfig
 
 			} else {
@@ -897,8 +897,8 @@ func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSenso
 				fetchedNode[0].detectionSensorConfig?.monitorPin = Int32(config.monitorPin)
 				fetchedNode[0].detectionSensorConfig?.usePullup = config.usePullup
 				fetchedNode[0].detectionSensorConfig?.detectionTriggeredHigh = config.detectionTriggeredHigh
-				fetchedNode[0].detectionSensorConfig?.minimumBroadcastSecs = Int32(config.minimumBroadcastSecs)
-				fetchedNode[0].detectionSensorConfig?.stateBroadcastSecs = Int32(config.stateBroadcastSecs)
+				fetchedNode[0].detectionSensorConfig?.minimumBroadcastSecs = Int32(truncatingIfNeeded: config.minimumBroadcastSecs)
+				fetchedNode[0].detectionSensorConfig?.stateBroadcastSecs = Int32(truncatingIfNeeded: config.stateBroadcastSecs)
 			}
 
 			do {
