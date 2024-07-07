@@ -127,7 +127,6 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes
 	}
 }
 
-@MainActor
 func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.nodeinfo.received %@".localized, packet.from.toHex())
@@ -279,7 +278,6 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 	}
 }
 
-@MainActor 
 func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.position.received %@".localized, String(packet.from))
