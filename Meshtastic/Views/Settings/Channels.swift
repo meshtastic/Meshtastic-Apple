@@ -172,7 +172,8 @@ struct Channels: View {
 								return
 							}
 							if mutableChannels.contains(selectedChannel as Any) {
-								mutableChannels.replaceObject(at: Int(channel.index), with: selectedChannel as Any)
+								let replaceChannel = mutableChannels.first(where: { selectedChannel?.psk == ($0 as AnyObject).psk && selectedChannel?.name == ($0 as AnyObject).name})
+								mutableChannels.replaceObject(at: mutableChannels.index(of: replaceChannel as Any), with: selectedChannel as Any)
 							} else {
 								mutableChannels.add(selectedChannel as Any)
 							}
