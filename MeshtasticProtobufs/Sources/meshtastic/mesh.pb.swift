@@ -305,6 +305,23 @@ public enum HardwareModel: SwiftProtobuf.Enum {
   case heltecCapsuleSensorV3 // = 65
 
   ///
+  /// Heltec Vision Master T190 with ESP32-S3 CPU, and a 1.90 inch TFT display
+  case heltecVisionMasterT190 // = 66
+
+  ///
+  /// Heltec Vision Master E213 with ESP32-S3 CPU, and a 2.13 inch E-Ink display
+  case heltecVisionMasterE213 // = 67
+
+  ///
+  /// Heltec Vision Master E290 with ESP32-S3 CPU, and a 2.9 inch E-Ink display
+  case heltecVisionMasterE290 // = 68
+
+  ///
+  /// Heltec Mesh Node T114 board with nRF52840 CPU, and a 1.14 inch TFT display, Ultimate low-power design,
+  /// specifically adapted for the Meshtatic project
+  case heltecMeshNodeT114 // = 69
+
+  ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -382,6 +399,10 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case 63: self = .nrf52PromicroDiy
     case 64: self = .radiomaster900BanditNano
     case 65: self = .heltecCapsuleSensorV3
+    case 66: self = .heltecVisionMasterT190
+    case 67: self = .heltecVisionMasterE213
+    case 68: self = .heltecVisionMasterE290
+    case 69: self = .heltecMeshNodeT114
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -454,6 +475,10 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case .nrf52PromicroDiy: return 63
     case .radiomaster900BanditNano: return 64
     case .heltecCapsuleSensorV3: return 65
+    case .heltecVisionMasterT190: return 66
+    case .heltecVisionMasterE213: return 67
+    case .heltecVisionMasterE290: return 68
+    case .heltecMeshNodeT114: return 69
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -531,6 +556,10 @@ extension HardwareModel: CaseIterable {
     .nrf52PromicroDiy,
     .radiomaster900BanditNano,
     .heltecCapsuleSensorV3,
+    .heltecVisionMasterT190,
+    .heltecVisionMasterE213,
+    .heltecVisionMasterE290,
+    .heltecMeshNodeT114,
     .privateHw,
   ]
 }
@@ -2286,6 +2315,16 @@ public struct FromRadio {
     set {_uniqueStorage()._payloadVariant = .mqttClientProxyMessage(newValue)}
   }
 
+  ///
+  /// File system manifest messages
+  public var fileInfo: FileInfo {
+    get {
+      if case .fileInfo(let v)? = _storage._payloadVariant {return v}
+      return FileInfo()
+    }
+    set {_uniqueStorage()._payloadVariant = .fileInfo(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -2338,6 +2377,9 @@ public struct FromRadio {
     ///
     /// MQTT Client Proxy Message (device sending to client / phone for publishing to MQTT)
     case mqttClientProxyMessage(MqttClientProxyMessage)
+    ///
+    /// File system manifest messages
+    case fileInfo(FileInfo)
 
   #if !swift(>=4.1)
     public static func ==(lhs: FromRadio.OneOf_PayloadVariant, rhs: FromRadio.OneOf_PayloadVariant) -> Bool {
@@ -2397,6 +2439,10 @@ public struct FromRadio {
         guard case .mqttClientProxyMessage(let l) = lhs, case .mqttClientProxyMessage(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
+      case (.fileInfo, .fileInfo): return {
+        guard case .fileInfo(let l) = lhs, case .fileInfo(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
       default: return false
       }
     }
@@ -2406,6 +2452,26 @@ public struct FromRadio {
   public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
+}
+
+///
+/// Individual File info for the device
+public struct FileInfo {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// The fully qualified path of the file
+  public var fileName: String = String()
+
+  ///
+  /// The size of the file in bytes
+  public var sizeBytes: UInt32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
 }
 
 ///
@@ -2879,6 +2945,7 @@ extension LogRecord.Level: @unchecked Sendable {}
 extension QueueStatus: @unchecked Sendable {}
 extension FromRadio: @unchecked Sendable {}
 extension FromRadio.OneOf_PayloadVariant: @unchecked Sendable {}
+extension FileInfo: @unchecked Sendable {}
 extension ToRadio: @unchecked Sendable {}
 extension ToRadio.OneOf_PayloadVariant: @unchecked Sendable {}
 extension Compressed: @unchecked Sendable {}
@@ -2964,6 +3031,10 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     63: .same(proto: "NRF52_PROMICRO_DIY"),
     64: .same(proto: "RADIOMASTER_900_BANDIT_NANO"),
     65: .same(proto: "HELTEC_CAPSULE_SENSOR_V3"),
+    66: .same(proto: "HELTEC_VISION_MASTER_T190"),
+    67: .same(proto: "HELTEC_VISION_MASTER_E213"),
+    68: .same(proto: "HELTEC_VISION_MASTER_E290"),
+    69: .same(proto: "HELTEC_MESH_NODE_T114"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
@@ -4229,6 +4300,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     12: .same(proto: "xmodemPacket"),
     13: .same(proto: "metadata"),
     14: .same(proto: "mqttClientProxyMessage"),
+    15: .same(proto: "fileInfo"),
   ]
 
   fileprivate class _StorageClass {
@@ -4428,6 +4500,19 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
             _storage._payloadVariant = .mqttClientProxyMessage(v)
           }
         }()
+        case 15: try {
+          var v: FileInfo?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .fileInfo(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .fileInfo(v)
+          }
+        }()
         default: break
         }
       }
@@ -4496,6 +4581,10 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
         guard case .mqttClientProxyMessage(let v)? = _storage._payloadVariant else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 14)
       }()
+      case .fileInfo?: try {
+        guard case .fileInfo(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 15)
+      }()
       case nil: break
       }
     }
@@ -4513,6 +4602,44 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       }
       if !storagesAreEqual {return false}
     }
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension FileInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".FileInfo"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "file_name"),
+    2: .standard(proto: "size_bytes"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.fileName) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.sizeBytes) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.fileName.isEmpty {
+      try visitor.visitSingularStringField(value: self.fileName, fieldNumber: 1)
+    }
+    if self.sizeBytes != 0 {
+      try visitor.visitSingularUInt32Field(value: self.sizeBytes, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: FileInfo, rhs: FileInfo) -> Bool {
+    if lhs.fileName != rhs.fileName {return false}
+    if lhs.sizeBytes != rhs.sizeBytes {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

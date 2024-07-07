@@ -864,6 +864,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				Logger.services.info("MAX PORT NUM OF 511")
 			case .atakPlugin:
 				MeshLogger.log("🕸️ MESH PACKET received for ATAK Plugin App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+			case .powerstressApp:
+				MeshLogger.log("🕸️ MESH PACKET received for Power Stress App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			}
 
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {

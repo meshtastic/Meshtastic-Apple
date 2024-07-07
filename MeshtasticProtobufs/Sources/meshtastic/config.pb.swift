@@ -220,9 +220,6 @@ public struct Config {
       ///   The wifi radio and the oled screen will be put to sleep.
       ///   This mode may still potentially have higher power usage due to it's preference in message rebroadcasting on the mesh.
       case router // = 2
-
-      ///
-      /// Description: Combination of both ROUTER and CLIENT. Not for mobile devices.
       case routerClient // = 3
 
       ///
