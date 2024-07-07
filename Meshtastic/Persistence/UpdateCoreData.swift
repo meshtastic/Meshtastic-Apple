@@ -260,8 +260,9 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
 			}
 			if fetchedNode[0].user == nil {
-				let newUser = createUser(num: Int64(packet.from), context: context)
+				let newUser = createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
 				fetchedNode[0].user! = newUser
+				
 			}
 			do {
 				try context.save()
