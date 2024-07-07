@@ -39,7 +39,7 @@ open Meshtastic.xcworkspace
 ## Updating Protobufs:
 - run:
   ```bash
-  scripts/gen_protos.sh
+  ./scripts/gen_protos.sh
   ```
 - build, test, commit changes
 
