@@ -5985,55 +5985,55 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Router Client - Mesh Pakete werden bevorzugt über diesen Node gerouted. Der Router Client kann parallel auch von einer Client-App genutzt werden."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Combination of both ROUTER and CLIENT. Not for mobile devices."
+            "value" : "Combination of both ROUTER and CLIENT. Not for mobile devices. Deprecated"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Combinaison des modes ROUTER et CLIENT. Pas pour les appareils mobiles."
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "קומבינציה של ROUTER וCLIENT. לא למכשירים ניידים."
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Router Client - Hybryda ról klienta i routera. Podobnie jak w przypadku routera, z tym że Router Client może być używany zarówno jako router, jak i klient połączony z aplikacją. Radia BLE/Wi-Fi i ekran OLED nie zostaną uśpione."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Combinação de ROTEADOR e CLIENTE. Não para dispositivos móveis."
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Kombination av både ROUTER och CLIENT. Inte för mobila enheter."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "路由客户端模式 - 优先转发 Mesh 网络中其他节点的消息，App 也可以连接到电台进行收发操作。"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "路由客户端模式 - 優先轉發 Mesh 網路中其他中繼點的消息，App 也可以連接到電台進行收發操作。"
           }
         }

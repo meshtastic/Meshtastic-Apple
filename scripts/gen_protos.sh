@@ -4,7 +4,7 @@
 if [ ! -d "./protobufs" ]; then
   git submodule update --init
 else 
-  git submodule update
+  git submodule update --remote --merge
 fi
 
 # simple sanity checking for executable
