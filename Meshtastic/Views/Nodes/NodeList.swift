@@ -16,7 +16,6 @@ struct NodeList: View {
 	@State private var isPresentingTraceRouteSentAlert = false
 	@State private var isPresentingClientHistorySentAlert = false
 	@State private var isPresentingDeleteNodeAlert = false
-	@State private var isPresentingPositionSentAlert = false
 	@State private var deleteNodeId: Int64 = 0
 	@State private var searchText = ""
 	@State private var viaLora = true
@@ -76,24 +75,14 @@ struct NodeList: View {
 							user: user
 						)
 
-						if bleManager.connectedPeripheral != nil && node.num != connectedNodeNum {
-							Button {
-								let positionSent = bleManager.sendPosition(
-									channel: node.channel,
-									destNum: node.num,
-									wantResponse: true
-								)
-								if positionSent {
-									isPresentingPositionSentAlert = true
-									DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-										isPresentingPositionSentAlert = false
-									}
-								}
-							} label: {
-								Label("Exchange Positions", systemImage: "arrow.triangle.2.circlepath")
-							}
-						}
-						if bleManager.connectedPeripheral != nil && connectedNodeNum != node.num {
+						if let connectedPeripheral = bleManager.connectedPeripheral,
+							node.num != connectedPeripheral.num {
+							
+							ExchangePositionsButton(
+								bleManager: bleManager,
+								node: node
+							)
+						
 							Button {
 								let success = bleManager.sendTraceRouteRequest(destNum: node.user?.num ?? 0, wantResponse: true)
 								if success {
@@ -130,14 +119,6 @@ struct NodeList: View {
 							}
 						}
 					}
-				}
-				.alert(
-					"Position Sent",
-					isPresented: $isPresentingPositionSentAlert
-				) {
-					Button("OK") {	}.keyboardShortcut(.defaultAction)
-				} message: {
-					Text("Your position has been sent with a request for a response with their position.")
 				}
 				.alert(
 					"Trace Route Sent",

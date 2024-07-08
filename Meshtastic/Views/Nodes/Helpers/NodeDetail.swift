@@ -230,6 +230,14 @@ struct NodeDetail: View {
 							user: user
 						)
 					}
+
+					if let connectedPeripheral = bleManager.connectedPeripheral,
+					   node.num != connectedPeripheral.num {
+						ExchangePositionsButton(
+							bleManager: bleManager,
+							node: node
+						)
+					}
 				}
 
 				if let metadata = node.metadata,
