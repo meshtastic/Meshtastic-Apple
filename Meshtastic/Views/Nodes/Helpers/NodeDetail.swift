@@ -20,210 +20,239 @@ struct NodeDetail: View {
 	var columnVisibility = NavigationSplitViewVisibility.all
 
 	var body: some View {
-
-		let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 		NavigationStack {
-			GeometryReader { _ in
-				VStack {
-					ScrollView {
-						NodeInfoItem(node: node)
-						let dm = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity
-						if dm?.uptimeSeconds ?? 0 > 0 {
-							HStack(alignment: .center) {
-								let now = Date.now
-								let later = now + TimeInterval(dm!.uptimeSeconds)
-								let components = (now..<later).formatted(.components(style: .narrow))
-								Label(
-									title: {
-										Text("\("uptime".localized)")
-											.font(.title3)+Text(": \(components)")
-											.font(.title3)
-											.foregroundColor(Color.gray)
-									},
-									icon: {
-										Image(systemName: "checkmark.circle.fill")
-											.foregroundColor(.green)
-											.symbolRenderingMode(.hierarchical)
-											.font(.title)
-									}
-								)
-							}
-							Divider()
+			List {
+				let connectedNode = getNodeInfo(
+					id: bleManager.connectedPeripheral?.num ?? -1,
+					context: context
+				)
+
+				Section("Hardware") {
+					NodeInfoItem(node: node)
+				}
+
+				Section("Node") {
+					HStack {
+						Label {
+							Text("Node Number")
+						} icon: {
+							Image(systemName: "number")
+								.symbolRenderingMode(.hierarchical)
 						}
-						if node.metadata != nil {
-							HStack(alignment: .center) {
-								Text("firmware.version").font(.title2)+Text(": \(node.metadata?.firmwareVersion ?? "unknown".localized)")
-									.font(.title3)
-									.foregroundColor(Color.gray)
-								if connectedNode != nil && connectedNode?.myInfo?.hasAdmin ?? false && node.metadata?.time != nil && !Calendar.current.isDateInToday(node.metadata!.time!) {
-									Button {
-										let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
-										if adminMessageId > 0 {
-											Logger.mesh.info("Sent node metadata request from node details")
-										}
-									} label: {
-										Image(systemName: "arrow.clockwise")
-											.font(.title3)
-									}
-									.buttonStyle(.bordered)
-									.buttonBorderShape(.capsule)
-									.controlSize(.small)
-								}
-							}
-							Divider()
+						Spacer()
+						Text(String(node.num))
+					}
+
+					HStack {
+						Label {
+							Text("User Id")
+						} icon: {
+							Image(systemName: "person")
+								.symbolRenderingMode(.multicolor)
 						}
-						VStack {
-							NavigationLink {
-								DeviceMetricsLog(node: node)
-							} label: {
-								Image(systemName: "flipphone")
+						Spacer()
+						Text(node.user?.userId ?? "?")
+					}
+
+					if let dm = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity, dm.uptimeSeconds > 0 {
+						HStack {
+							Label {
+								Text("\("uptime".localized)")
+							} icon: {
+								Image(systemName: "checkmark.circle.fill")
+									.foregroundColor(.green)
 									.symbolRenderingMode(.hierarchical)
-									.font(.title)
-
-								Text("Device Metrics Log")
-									.font(.title3)
 							}
-							.disabled(!node.hasDeviceMetrics)
+							Spacer()
 
-							Divider()
-							NavigationLink {
-								if #available (iOS 17, macOS 14, *) {
-									NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
-								} else {
-									NodeMapMapkit(node: node)
-								}
-
-							} label: {
-								Image(systemName: "map")
-									.symbolRenderingMode(.hierarchical)
-									.font(.title)
-
-								Text("Node Map")
-									.font(.title3)
-							}
-							.disabled(!node.hasPositions)
-							Divider()
-							NavigationLink {
-								PositionLog(node: node)
-							} label: {
-								Image(systemName: "mappin.and.ellipse")
-									.symbolRenderingMode(.hierarchical)
-									.font(.title)
-
-								Text("Position Log")
-									.font(.title3)
-							}
-							.disabled(!node.hasPositions)
-							Divider()
-							NavigationLink {
-								EnvironmentMetricsLog(node: node)
-							} label: {
-								Image(systemName: "cloud.sun.rain")
-									.symbolRenderingMode(.hierarchical)
-									.font(.title)
-
-								Text("Environment Metrics Log")
-									.font(.title3)
-							}
-							.disabled(!node.hasEnvironmentMetrics)
-							Divider()
-							if #available(iOS 17.0, macOS 14.0, *) {
-								NavigationLink {
-									TraceRouteLog(node: node)
-								} label: {
-									Image(systemName: "signpost.right.and.left")
-										.symbolRenderingMode(.hierarchical)
-										.font(.title)
-
-									Text("Trace Route Log")
-										.font(.title3)
-								}
-								.disabled(node.traceRoutes?.count ?? 0 == 0)
-								Divider()
-							}
-							NavigationLink {
-								DetectionSensorLog(node: node)
-							} label: {
-								Image(systemName: "sensor")
-									.symbolRenderingMode(.hierarchical)
-									.font(.title)
-
-								Text("Detection Sensor Log")
-									.font(.title3)
-							}
-							.disabled(!node.hasDetectionSensorMetrics)
-							Divider()
-							if node.hasPax {
-								NavigationLink {
-									PaxCounterLog(node: node)
-								} label: {
-									Image(systemName: "figure.walk.motion")
-										.symbolRenderingMode(.hierarchical)
-										.font(.title)
-
-									Text("paxcounter.log")
-										.font(.title3)
-								}
-								.disabled(!node.hasPax)
-								Divider()
-							}
+							let now = Date.now
+							let later = now + TimeInterval(dm.uptimeSeconds)
+							let uptime = (now..<later).formatted(.components(style: .narrow))
+							Text(uptime)
 						}
-						if self.bleManager.connectedPeripheral != nil && node.metadata != nil {
-							HStack {
-								if node.metadata?.canShutdown ?? false {
+					}
 
-									Button(action: {
-										showingShutdownConfirm = true
-									}) {
-										Label("Power Off", systemImage: "power")
-									}
-									.buttonStyle(.bordered)
-									.buttonBorderShape(.capsule)
-									.controlSize(.large)
-									.padding()
-									.confirmationDialog(
-										"are.you.sure",
-										isPresented: $showingShutdownConfirm
-									) {
-										Button("Shutdown Node?", role: .destructive) {
-											if !bleManager.sendShutdown(fromUser: connectedNode!.user!, toUser: node.user!, adminIndex: connectedNode!.myInfo!.adminIndex) {
-												Logger.mesh.warning("Shutdown Failed")
-											}
-										}
-									}
-								}
-
-								Button(action: {
-									showingRebootConfirm = true
-								}) {
-									Label("reboot", systemImage: "arrow.triangle.2.circlepath")
-								}
-								.buttonStyle(.bordered)
-								.buttonBorderShape(.capsule)
-								.controlSize(.large)
-								.padding()
-								.confirmationDialog("are.you.sure",
-													isPresented: $showingRebootConfirm
-								) {
-									Button("reboot.node", role: .destructive) {
-										if !bleManager.sendReboot(fromUser: connectedNode!.user!, toUser: node.user!, adminIndex: connectedNode!.myInfo!.adminIndex) {
-											Logger.mesh.warning("Reboot Failed")
-										}
-									}
-								}
+					if let metadata = node.metadata {
+						HStack {
+							Label {
+								Text("firmware.version")
+							} icon: {
+								Image(systemName: "memorychip")
+									.symbolRenderingMode(.multicolor)
 							}
-							.padding(5)
-							Divider()
+							Spacer()
+
+							Text(metadata.firmwareVersion ?? "unknown".localized)
 						}
 					}
 				}
-				.onAppear {
-					if self.bleManager.context == nil {
-						self.bleManager.context = context
+
+				Section("Logs") {
+					// Metrics
+					NavigationLink {
+						DeviceMetricsLog(node: node)
+					} label: {
+						Label {
+							Text("Device Metrics Log")
+						} icon: {
+							Image(systemName: "flipphone")
+								.symbolRenderingMode(.multicolor)
+						}
+					}
+					.disabled(!node.hasDeviceMetrics)
+
+					NavigationLink {
+						if #available (iOS 17, macOS 14, *) {
+							NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
+						} else {
+							NodeMapMapkit(node: node)
+						}
+					} label: {
+						Label {
+							Text("Node Map")
+						} icon: {
+							Image(systemName: "map")
+								.symbolRenderingMode(.multicolor)
+						}
+					}
+					.disabled(!node.hasPositions)
+
+					NavigationLink {
+						PositionLog(node: node)
+					} label: {
+						Label {
+							Text("Position Log")
+						} icon: {
+							Image(systemName: "mappin.and.ellipse")
+								.symbolRenderingMode(.multicolor)
+						}
+					}
+					.disabled(!node.hasPositions)
+
+					NavigationLink {
+						EnvironmentMetricsLog(node: node)
+					} label: {
+						Label {
+							Text("Environment Metrics Log")
+						} icon: {
+							Image(systemName: "cloud.sun.rain")
+								.symbolRenderingMode(.multicolor)
+						}
+					}
+					.disabled(!node.hasEnvironmentMetrics)
+
+					if #available(iOS 17.0, macOS 14.0, *) {
+						NavigationLink {
+							TraceRouteLog(node: node)
+						} label: {
+							Label {
+								Text("Trace Route Log")
+							} icon: {
+								Image(systemName: "signpost.right.and.left")
+									.symbolRenderingMode(.multicolor)
+							}
+						}
+						.disabled(node.traceRoutes?.count ?? 0 == 0)
+					}
+
+					NavigationLink {
+						DetectionSensorLog(node: node)
+					} label: {
+						Label {
+							Text("Detection Sensor Log")
+						} icon: {
+							Image(systemName: "sensor")
+								.symbolRenderingMode(.multicolor)
+						}
+					}
+					.disabled(!node.hasDetectionSensorMetrics)
+
+					if node.hasPax {
+						NavigationLink {
+							PaxCounterLog(node: node)
+						} label: {
+							Label {
+								Text("paxcounter.log")
+							} icon: {
+								Image(systemName: "figure.walk.motion")
+									.symbolRenderingMode(.multicolor)
+							}
+						}
+						.disabled(!node.hasPax)
+					}
+				}
+
+				if let metadata = node.metadata,
+				   let connectedNode,
+				   self.bleManager.connectedPeripheral != nil {
+					Section("Administration") {
+						if connectedNode.myInfo?.hasAdmin ?? false {
+							Button {
+								let adminMessageId = bleManager.requestDeviceMetadata(
+									fromUser: connectedNode.user!,
+									toUser: node.user!,
+									adminIndex: connectedNode.myInfo!.adminIndex,
+									context: context
+								)
+								if adminMessageId > 0 {
+									Logger.mesh.info("Sent node metadata request from node details")
+								}
+							} label: {
+								Label {
+									Text("Refresh device metadata")
+								} icon: {
+									Image(systemName: "arrow.clockwise")
+								}
+							}
+						}
+
+						if metadata.canShutdown {
+							Label("Power Off", systemImage: "power")
+								.onTapGesture {
+									showingShutdownConfirm = true
+								}
+								.confirmationDialog(
+									"are.you.sure",
+									isPresented: $showingShutdownConfirm
+								) {
+									Button("Shutdown Node?", role: .destructive) {
+										if !bleManager.sendShutdown(
+											fromUser: connectedNode.user!,
+											toUser: node.user!,
+											adminIndex: connectedNode.myInfo!.adminIndex
+										) {
+											Logger.mesh.warning("Shutdown Failed")
+										}
+									}
+								}
+						}
+						Label("reboot", systemImage: "arrow.triangle.2.circlepath")
+							.onTapGesture {
+								showingRebootConfirm = true
+							}
+							.confirmationDialog(
+								"are.you.sure",
+								isPresented: $showingRebootConfirm
+							) {
+								Button("reboot.node", role: .destructive) {
+									if !bleManager.sendReboot(
+										fromUser: connectedNode.user!,
+										toUser: node.user!,
+										adminIndex: connectedNode.myInfo!.adminIndex
+									) {
+										Logger.mesh.warning("Reboot Failed")
+									}
+								}
+							}
 					}
 				}
 			}
-			.padding(.bottom, 2)
+			.listStyle(.insetGrouped)
+			.onAppear {
+				if self.bleManager.context == nil {
+					self.bleManager.context = context
+				}
+			}
 		}
 	}
 }
