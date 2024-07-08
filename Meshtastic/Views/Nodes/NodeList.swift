@@ -69,19 +69,13 @@ struct NodeList: View {
 						node: node
 					)
 
-					if node.user != nil {
-						Button {
-							node.user!.mute = !node.user!.mute
-							context.refresh(node, mergeChanges: true)
-							do {
-								try context.save()
-							} catch {
-								context.rollback()
-								Logger.data.error("Save User Mute Error")
-							}
-						} label: {
-							Label(node.user!.mute ? "Show Alerts" : "Hide Alerts", systemImage: node.user!.mute ? "bell" : "bell.slash")
-						}
+					if let user = node.user {
+						NodeAlertsButton(
+							context: context,
+							node: node,
+							user: user
+						)
+
 						if bleManager.connectedPeripheral != nil && node.num != connectedNodeNum {
 							Button {
 								let positionSent = bleManager.sendPosition(

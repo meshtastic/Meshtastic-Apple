@@ -222,6 +222,14 @@ struct NodeDetail: View {
 						context: context,
 						node: node
 					)
+
+					if let user = node.user {
+						NodeAlertsButton(
+							context: context,
+							node: node,
+							user: user
+						)
+					}
 				}
 
 				if let metadata = node.metadata,
