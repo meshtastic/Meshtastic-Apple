@@ -55,7 +55,7 @@ struct NodeList: View {
 //				}
 //			}
 
-			let connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
+			let connectedNodeNum = Int(bleManager.connectedPeripheral?.num ?? 0)
 			let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
 			List(nodes, id: \.self, selection: $selectedNode) { node in
 
@@ -63,38 +63,12 @@ struct NodeList: View {
 							 connected: bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num,
 							 connectedNode: (bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? -1 : -1))
 				.contextMenu {
+					FavoriteNodeButton(
+						bleManager: bleManager,
+						context: context,
+						node: node
+					)
 
-					Button {
-						if !node.favorite {
-
-							let success = bleManager.setFavoriteNode(node: node, connectedNodeNum: Int64(connectedNodeNum))
-							if success {
-								node.favorite = !node.favorite
-								do {
-									try context.save()
-								} catch {
-									context.rollback()
-									Logger.data.error("Save Node Favorite Error")
-								}
-								Logger.data.debug("Favorited a node")
-							}
-						} else {
-							let success = bleManager.removeFavoriteNode(node: node, connectedNodeNum: Int64(connectedNodeNum))
-							if success {
-								node.favorite = !node.favorite
-								do {
-									try context.save()
-								} catch {
-									context.rollback()
-									Logger.data.error("Save Node Favorite Error")
-								}
-								Logger.data.debug("Favorited a node")
-							}
-						}
-
-					} label: {
-						Label(node.favorite ? "Un-Favorite" : "Favorite", systemImage: node.favorite ? "star.slash.fill" : "star.fill")
-					}
 					if node.user != nil {
 						Button {
 							node.user!.mute = !node.user!.mute

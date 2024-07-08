@@ -331,6 +331,9 @@
     "Acknowledged by another node" : {
 
     },
+    "Actions" : {
+
+    },
     "Active" : {
 
     },
@@ -399,6 +402,9 @@
 
     },
     "Add Channels" : {
+
+    },
+    "Add to favorites" : {
 
     },
     "Additional help" : {
@@ -17149,6 +17155,9 @@
 
     },
     "Remove" : {
+
+    },
+    "Remove from favorites" : {
 
     },
     "Replace Channels" : {

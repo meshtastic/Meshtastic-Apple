@@ -19,6 +19,40 @@ struct NodeDetail: View {
 	@ObservedObject var node: NodeInfoEntity
 	var columnVisibility = NavigationSplitViewVisibility.all
 
+	var favoriteNodeAction: some View {
+		let connectedNodeNum = bleManager.connectedPeripheral?.num ?? 0
+		return Button {
+			let success = if node.favorite {
+				bleManager.removeFavoriteNode(
+					node: node,
+					connectedNodeNum: Int64(connectedNodeNum)
+				)
+			} else {
+				bleManager.setFavoriteNode(
+					node: node,
+					connectedNodeNum: Int64(connectedNodeNum)
+				)
+			}
+			if success {
+				node.favorite = !node.favorite
+				do {
+					try context.save()
+				} catch {
+					context.rollback()
+					Logger.data.error("Save Node Favorite Error")
+				}
+				Logger.data.debug("Favorited a node")
+			}
+		} label: {
+			Label {
+				Text(node.favorite ? "Remove from favorites" : "Add to favorites")
+			} icon: {
+				Image(systemName: node.favorite ? "star.fill" : "star")
+					.symbolRenderingMode(.multicolor)
+			}
+		}
+	}
+
 	var body: some View {
 		NavigationStack {
 			List {
@@ -182,6 +216,14 @@ struct NodeDetail: View {
 					}
 				}
 
+				Section("Actions") {
+					FavoriteNodeButton(
+						bleManager: bleManager,
+						context: context,
+						node: node
+					)
+				}
+
 				if let metadata = node.metadata,
 				   let connectedNode,
 				   self.bleManager.connectedPeripheral != nil {
@@ -207,43 +249,47 @@ struct NodeDetail: View {
 						}
 
 						if metadata.canShutdown {
-							Label("Power Off", systemImage: "power")
-								.onTapGesture {
-									showingShutdownConfirm = true
-								}
-								.confirmationDialog(
-									"are.you.sure",
-									isPresented: $showingShutdownConfirm
-								) {
-									Button("Shutdown Node?", role: .destructive) {
-										if !bleManager.sendShutdown(
-											fromUser: connectedNode.user!,
-											toUser: node.user!,
-											adminIndex: connectedNode.myInfo!.adminIndex
-										) {
-											Logger.mesh.warning("Shutdown Failed")
-										}
-									}
-								}
-						}
-						Label("reboot", systemImage: "arrow.triangle.2.circlepath")
-							.onTapGesture {
-								showingRebootConfirm = true
-							}
-							.confirmationDialog(
+							Button {
+								showingShutdownConfirm = true
+							} label: {
+								Label("Power Off", systemImage: "power")
+							}.confirmationDialog(
 								"are.you.sure",
-								isPresented: $showingRebootConfirm
+								isPresented: $showingShutdownConfirm
 							) {
-								Button("reboot.node", role: .destructive) {
-									if !bleManager.sendReboot(
+								Button("Shutdown Node?", role: .destructive) {
+									if !bleManager.sendShutdown(
 										fromUser: connectedNode.user!,
 										toUser: node.user!,
 										adminIndex: connectedNode.myInfo!.adminIndex
 									) {
-										Logger.mesh.warning("Reboot Failed")
+										Logger.mesh.warning("Shutdown Failed")
 									}
 								}
 							}
+						}
+
+						Button {
+							showingRebootConfirm = true
+						} label: {
+							Label(
+								"reboot",
+								systemImage: "arrow.triangle.2.circlepath"
+							)
+						}.confirmationDialog(
+							"are.you.sure",
+							isPresented: $showingRebootConfirm
+						) {
+							Button("reboot.node", role: .destructive) {
+								if !bleManager.sendReboot(
+									fromUser: connectedNode.user!,
+									toUser: node.user!,
+									adminIndex: connectedNode.myInfo!.adminIndex
+								) {
+									Logger.mesh.warning("Reboot Failed")
+								}
+							}
+						}
 					}
 				}
 			}

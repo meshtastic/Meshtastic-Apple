@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		251926852C3BA97800249DF5 /* FavoriteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */; };
 		259792252C2F114500AD1659 /* ChannelEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */; };
 		259792262C2F114500AD1659 /* PositionEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */; };
 		259792272C2F114500AD1659 /* TraceRouteEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE5B4052B227E3200FCDD05 /* TraceRouteEntityExtension.swift */; };
@@ -222,6 +223,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteNodeButton.swift; sourceTree = "<group>"; };
 		25AECD4E2C2F723200862C8E /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		6D825E612C34786C008DBEE4 /* CommonRegex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonRegex.swift; sourceTree = "<group>"; };
 		6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAppDelegate.swift; sourceTree = "<group>"; };
@@ -874,6 +876,7 @@
 				DDDB26452AACC0B7003AFCB7 /* NodeInfoItem.swift */,
 				DDDB26412AABF655003AFCB7 /* NodeListItem.swift */,
 				DDDCD56F2BB26F5C00BE6B60 /* NodeListFilter.swift */,
+				251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1202,6 +1205,7 @@
 				DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */,
 				DDDE5A1029AFE69700490C6C /* MeshActivityAttributes.swift in Sources */,
 				DD1925B928CDA93900720036 /* SerialConfigEnums.swift in Sources */,
+				251926852C3BA97800249DF5 /* FavoriteNodeButton.swift in Sources */,
 				D9C983A02B79D0E800BDBE6A /* AlertButton.swift in Sources */,
 				DD86D4112881D16900BAEB7A /* WriteCsvFile.swift in Sources */,
 				DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */,
