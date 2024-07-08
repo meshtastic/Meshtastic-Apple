@@ -20875,7 +20875,7 @@
     "This conversation will be deleted." : {
 
     },
-    "This could take a while, response will appear in the trace route log for the node it was sent to." : {
+    "This could take a while. The response will appear in the trace route log for the node it was sent to." : {
 
     },
     "This determines the actual frequency you are transmitting on in the band. If set to 0 this value will be calculated automatically based on the primary channel name." : {

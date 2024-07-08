@@ -13,7 +13,6 @@ struct NodeList: View {
 	@StateObject var appState = AppState.shared
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
-	@State private var isPresentingTraceRouteSentAlert = false
 	@State private var isPresentingClientHistorySentAlert = false
 	@State private var isPresentingDeleteNodeAlert = false
 	@State private var deleteNodeId: Int64 = 0
@@ -58,9 +57,11 @@ struct NodeList: View {
 			let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
 			List(nodes, id: \.self, selection: $selectedNode) { node in
 
-				NodeListItem(node: node,
-							 connected: bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num,
-							 connectedNode: (bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? -1 : -1))
+				NodeListItem(
+					node: node,
+					connected: bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num,
+					connectedNode: (bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? -1 : -1)
+				)
 				.contextMenu {
 					FavoriteNodeButton(
 						bleManager: bleManager,
@@ -77,33 +78,22 @@ struct NodeList: View {
 
 						if let connectedPeripheral = bleManager.connectedPeripheral,
 							node.num != connectedPeripheral.num {
-							
+
 							ExchangePositionsButton(
 								bleManager: bleManager,
 								node: node
 							)
-						
-							Button {
-								let success = bleManager.sendTraceRouteRequest(destNum: node.user?.num ?? 0, wantResponse: true)
-								if success {
-									isPresentingTraceRouteSentAlert = true
-									DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-										isPresentingTraceRouteSentAlert = false
-									}
-								}
 
-							} label: {
-								Label("Trace Route", systemImage: "signpost.right.and.left")
-							}
+							TraceRouteButton(
+								bleManager: bleManager,
+								node: node
+							)
+							
 							if node.isStoreForwardRouter {
-
 								Button {
 									let success = bleManager.requestStoreAndForwardClientHistory(fromUser: connectedNode!.user!, toUser: node.user!)
 									if success {
 										isPresentingClientHistorySentAlert = true
-										DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-											isPresentingClientHistorySentAlert = false
-										}
 									}
 								} label: {
 									Label("Client History", systemImage: "envelope.arrow.triangle.branch")
@@ -121,18 +111,10 @@ struct NodeList: View {
 					}
 				}
 				.alert(
-					"Trace Route Sent",
-					isPresented: $isPresentingTraceRouteSentAlert
-				) {
-					Button("OK") {	}.keyboardShortcut(.defaultAction)
-				} message: {
-					Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
-				}
-				.alert(
 					"Client History Request Sent",
 					isPresented: $isPresentingClientHistorySentAlert
 				) {
-					Button("OK") {	}.keyboardShortcut(.defaultAction)
+					Button("OK") {  }.keyboardShortcut(.defaultAction)
 				} message: {
 					Text("Any missed messages will be delivered again.")
 				}

@@ -10,6 +10,7 @@
 		251926852C3BA97800249DF5 /* FavoriteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */; };
 		251926872C3BAE2200249DF5 /* NodeAlertsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */; };
 		2519268A2C3BB1B200249DF5 /* ExchangePositionsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */; };
+		2519268C2C3BB52000249DF5 /* TraceRouteButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2519268B2C3BB52000249DF5 /* TraceRouteButton.swift */; };
 		259792252C2F114500AD1659 /* ChannelEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */; };
 		259792262C2F114500AD1659 /* PositionEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */; };
 		259792272C2F114500AD1659 /* TraceRouteEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE5B4052B227E3200FCDD05 /* TraceRouteEntityExtension.swift */; };
@@ -228,6 +229,7 @@
 		251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteNodeButton.swift; sourceTree = "<group>"; };
 		251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeAlertsButton.swift; sourceTree = "<group>"; };
 		251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangePositionsButton.swift; sourceTree = "<group>"; };
+		2519268B2C3BB52000249DF5 /* TraceRouteButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRouteButton.swift; sourceTree = "<group>"; };
 		25AECD4E2C2F723200862C8E /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		6D825E612C34786C008DBEE4 /* CommonRegex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonRegex.swift; sourceTree = "<group>"; };
 		6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAppDelegate.swift; sourceTree = "<group>"; };
@@ -483,6 +485,7 @@
 				251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */,
 				251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */,
 				251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */,
+				2519268B2C3BB52000249DF5 /* TraceRouteButton.swift */,
 			);
 			path = Actions;
 			sourceTree = "<group>";
@@ -1185,6 +1188,7 @@
 				DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */,
 				DDDB26422AABF655003AFCB7 /* NodeListItem.swift in Sources */,
 				DDDB444629F8A96500EE2349 /* Character.swift in Sources */,
+				2519268C2C3BB52000249DF5 /* TraceRouteButton.swift in Sources */,
 				DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */,
 				DDB6ABDB28B0AC6000384BA1 /* DistanceText.swift in Sources */,
 				DD94B7402ACCE3BE00DCD1D1 /* MapSettingsForm.swift in Sources */,
