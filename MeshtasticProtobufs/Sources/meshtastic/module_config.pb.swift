@@ -903,6 +903,10 @@ public struct ModuleConfig {
     /// TODO: REPLACE
     public var historyReturnWindow: UInt32 = 0
 
+    ///
+    /// Set to true to let this node act as a server that stores received messages and resends them upon request.
+    public var isServer: Bool = false
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public init() {}
@@ -2204,6 +2208,7 @@ extension ModuleConfig.StoreForwardConfig: SwiftProtobuf.Message, SwiftProtobuf.
     3: .same(proto: "records"),
     4: .standard(proto: "history_return_max"),
     5: .standard(proto: "history_return_window"),
+    6: .standard(proto: "is_server"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2217,6 +2222,7 @@ extension ModuleConfig.StoreForwardConfig: SwiftProtobuf.Message, SwiftProtobuf.
       case 3: try { try decoder.decodeSingularUInt32Field(value: &self.records) }()
       case 4: try { try decoder.decodeSingularUInt32Field(value: &self.historyReturnMax) }()
       case 5: try { try decoder.decodeSingularUInt32Field(value: &self.historyReturnWindow) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.isServer) }()
       default: break
       }
     }
@@ -2238,6 +2244,9 @@ extension ModuleConfig.StoreForwardConfig: SwiftProtobuf.Message, SwiftProtobuf.
     if self.historyReturnWindow != 0 {
       try visitor.visitSingularUInt32Field(value: self.historyReturnWindow, fieldNumber: 5)
     }
+    if self.isServer != false {
+      try visitor.visitSingularBoolField(value: self.isServer, fieldNumber: 6)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2247,6 +2256,7 @@ extension ModuleConfig.StoreForwardConfig: SwiftProtobuf.Message, SwiftProtobuf.
     if lhs.records != rhs.records {return false}
     if lhs.historyReturnMax != rhs.historyReturnMax {return false}
     if lhs.historyReturnWindow != rhs.historyReturnWindow {return false}
+    if lhs.isServer != rhs.isServer {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

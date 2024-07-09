@@ -4954,6 +4954,7 @@
 
     },
     "current" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

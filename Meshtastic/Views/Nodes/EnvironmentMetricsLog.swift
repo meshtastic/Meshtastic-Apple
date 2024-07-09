@@ -93,12 +93,6 @@ struct EnvironmentMetricsLog: View {
 									IndoorAirQuality(iaq: Int(em.iaq), displayMode: IaqDisplayMode.dot )
 								}
 							}
-							TableColumn("current") { em in
-								Text("\(String(format: "%.1f", em.current))")
-							}
-							TableColumn("voltage") { em in
-								Text("\(String(format: "%.1f", em.voltage))")
-							}
 							TableColumn("timestamp") { em in
 								Text(em.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 							}
