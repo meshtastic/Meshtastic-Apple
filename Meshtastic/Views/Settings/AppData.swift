@@ -20,6 +20,13 @@ struct AppData: View {
 	var body: some View {
 
 		VStack {
+
+			Section(header: Text("phone.gps")) {
+				if #available(iOS 17.0, macOS 14.0, *) {
+					GPSStatus()
+				}
+			}
+			Divider()
 			Button(action: {
 				let container = NSPersistentContainer(name: "Meshtastic")
 				guard let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
@@ -47,7 +54,9 @@ struct AppData: View {
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
+			Divider()
 		}
+
 		List(files, id: \.self) { file in
 			HStack {
 				VStack(alignment: .leading ) {
