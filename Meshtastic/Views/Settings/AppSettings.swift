@@ -24,6 +24,10 @@ struct AppSettings: View {
 						}
 					}
 				}
+				Section(header: Text("environment")) {
+					
+					
+				}
 				Section(header: Text("phone.gps")) {
 					if #available(iOS 17.0, macOS 14.0, *) {
 						GPSStatus()
