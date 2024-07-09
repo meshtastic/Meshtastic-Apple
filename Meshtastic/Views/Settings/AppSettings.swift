@@ -10,7 +10,6 @@ struct AppSettings: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@ObservedObject var tileManager = OfflineTileManager.shared
 	@State var totalDownloadedTileSize = ""
-	@StateObject var locationHelper = LocationHelper()
 	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var isPresentingDeleteMapTilesConfirm = false
 	var body: some View {
