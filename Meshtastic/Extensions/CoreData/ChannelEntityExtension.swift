@@ -11,8 +11,8 @@ import MeshtasticProtobufs
 extension ChannelEntity {
 
 	var allPrivateMessages: [MessageEntity] {
-
-		self.value(forKey: "allPrivateMessages") as? [MessageEntity] ?? [MessageEntity]()
+		let predicate = NSPredicate(format: "channel == %d", self.index)
+		return Array((self.channelMessages ?? []).filtered(using: predicate)) as? [MessageEntity] ?? []
 	}
 
 	var unreadMessages: Int {
@@ -20,7 +20,6 @@ extension ChannelEntity {
 		let unreadMessages = allPrivateMessages.filter { ($0 as AnyObject).read == false }
 		return unreadMessages.count
 	}
-
 	var protoBuf: Channel {
 		var channel = Channel()
 		channel.index = self.index

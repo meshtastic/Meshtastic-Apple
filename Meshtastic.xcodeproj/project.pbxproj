@@ -281,6 +281,7 @@
 		DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryGauge.swift; sourceTree = "<group>"; };
 		DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagingEnums.swift; sourceTree = "<group>"; };
 		DD3CC6C128EB9D4900FA9159 /* UpdateCoreData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCoreData.swift; sourceTree = "<group>"; };
+		DD3D17DB2C3CBFD300561584 /* MeshtasticDataModelV 39.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 39.xcdatamodel"; sourceTree = "<group>"; };
 		DD41582528582E9B009B0E59 /* DeviceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConfig.swift; sourceTree = "<group>"; };
 		DD415827285859C4009B0E59 /* TelemetryConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryConfig.swift; sourceTree = "<group>"; };
 		DD41582928585C32009B0E59 /* RangeTestConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeTestConfig.swift; sourceTree = "<group>"; };
@@ -1421,7 +1422,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.3.15;
+				MARKETING_VERSION = 2.3.16;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1456,7 +1457,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.3.15;
+				MARKETING_VERSION = 2.3.16;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1488,7 +1489,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.3.15;
+				MARKETING_VERSION = 2.3.16;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1521,7 +1522,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.3.15;
+				MARKETING_VERSION = 2.3.16;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1624,6 +1625,7 @@
 		DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DD3D17DB2C3CBFD300561584 /* MeshtasticDataModelV 39.xcdatamodel */,
 				DDD5BB142C28680D007E03CA /* MeshtasticDataModelV 38.xcdatamodel */,
 				DDD28D372C0CD2670063CFA3 /* MeshtasticDataModelV 37.xcdatamodel */,
 				DD31B04D2BDC6FD30024FA63 /* MeshtasticDataModelV 36.xcdatamodel */,
@@ -1663,7 +1665,7 @@
 				DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
 				DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
 			);
-			currentVersion = DDD5BB142C28680D007E03CA /* MeshtasticDataModelV 38.xcdatamodel */;
+			currentVersion = DD3D17DB2C3CBFD300561584 /* MeshtasticDataModelV 39.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";
