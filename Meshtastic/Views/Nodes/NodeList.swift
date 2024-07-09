@@ -13,9 +13,6 @@ struct NodeList: View {
 	@StateObject var appState = AppState.shared
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
-	@State private var isPresentingClientHistorySentAlert = false
-	@State private var isPresentingDeleteNodeAlert = false
-	@State private var deleteNodeId: Int64 = 0
 	@State private var searchText = ""
 	@State private var viaLora = true
 	@State private var viaMqtt = true
@@ -35,92 +32,72 @@ struct NodeList: View {
 	@EnvironmentObject var bleManager: BLEManager
 
 	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "favorite", ascending: false),
-						  NSSortDescriptor(key: "lastHeard", ascending: false),
-						  NSSortDescriptor(key: "user.longName", ascending: true)],
-		animation: .default)
-
+		sortDescriptors: [
+			NSSortDescriptor(key: "favorite", ascending: false),
+			NSSortDescriptor(key: "lastHeard", ascending: false),
+			NSSortDescriptor(key: "user.longName", ascending: true),
+		],
+		animation: .default
+	)
 	var nodes: FetchedResults<NodeInfoEntity>
+
+	@ViewBuilder
+	func contextMenuActions(
+		node: NodeInfoEntity,
+		connectedNode: NodeInfoEntity?
+	) -> some View {
+		FavoriteNodeButton(
+			bleManager: bleManager,
+			context: context,
+			node: node
+		)
+
+		if let user = node.user {
+			NodeAlertsButton(
+				context: context,
+				node: node,
+				user: user
+			)
+		}
+		if let connectedNode {
+			DeleteNodeButton(
+				bleManager: bleManager,
+				context: context,
+				connectedNode: connectedNode,
+				node: node
+			)
+		}
+	}
 
 	var body: some View {
 		NavigationSplitView(columnVisibility: $columnVisibility) {
-
-//			HStack {
-//				Button("Open Node") {
-//					UIApplication
-//						.shared
-//						.open(URL(string: "meshtastic://nodes?nodeNum=530606484")!)
-//				}
-//			}
-
 			let connectedNodeNum = Int(bleManager.connectedPeripheral?.num ?? 0)
 			let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
 			List(nodes, id: \.self, selection: $selectedNode) { node in
-
 				NodeListItem(
 					node: node,
-					connected: bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num,
-					connectedNode: (bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? -1 : -1)
+					connected: bleManager.connectedPeripheral?.num ?? -1 == node.num,
+					connectedNode: bleManager.connectedPeripheral?.num ?? -1
 				)
 				.contextMenu {
-					FavoriteNodeButton(
-						bleManager: bleManager,
-						context: context,
-						node: node
+					contextMenuActions(
+						node: node,
+						connectedNode: connectedNode
 					)
-
-					if let user = node.user {
-						NodeAlertsButton(
-							context: context,
-							node: node,
-							user: user
-						)
-
-						if let connectedPeripheral = bleManager.connectedPeripheral,
-							node.num != connectedPeripheral.num {
-
-							ExchangePositionsButton(
-								bleManager: bleManager,
-								node: node
-							)
-
-							TraceRouteButton(
-								bleManager: bleManager,
-								node: node
-							)
-							
-							if node.isStoreForwardRouter {
-								Button {
-									let success = bleManager.requestStoreAndForwardClientHistory(fromUser: connectedNode!.user!, toUser: node.user!)
-									if success {
-										isPresentingClientHistorySentAlert = true
-									}
-								} label: {
-									Label("Client History", systemImage: "envelope.arrow.triangle.branch")
-								}
-							}
-						}
-						if bleManager.connectedPeripheral != nil {
-							Button(role: .destructive) {
-								deleteNodeId = node.num
-								isPresentingDeleteNodeAlert = true
-							} label: {
-								Label("Delete Node", systemImage: "trash")
-							}
-						}
-					}
-				}
-				.alert(
-					"Client History Request Sent",
-					isPresented: $isPresentingClientHistorySentAlert
-				) {
-					Button("OK") {  }.keyboardShortcut(.defaultAction)
-				} message: {
-					Text("Any missed messages will be delivered again.")
 				}
 			}
 			.sheet(isPresented: $isEditingFilters) {
-				NodeListFilter(viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isFavorite: $isFavorite, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
+				NodeListFilter(
+					viaLora: $viaLora,
+					viaMqtt: $viaMqtt,
+					isOnline: $isOnline,
+					isFavorite: $isFavorite,
+					distanceFilter: $distanceFilter,
+					maximumDistance: $maxDistance,
+					hopsAway: $hopsAway,
+					roleFilter: $roleFilter,
+					deviceRoles: $deviceRoles
+				)
 			}
 			.safeAreaInset(edge: .bottom, alignment: .trailing) {
 				HStack {
@@ -135,67 +112,58 @@ struct NodeList: View {
 					.tint(Color(UIColor.secondarySystemBackground))
 					.foregroundColor(.accentColor)
 					.buttonStyle(.borderedProminent)
-
 				}
 				.controlSize(.regular)
 				.padding(5)
 			}
 			.padding(.bottom, 5)
 			.searchable(text: $searchText, placement: .automatic, prompt: "Find a node")
-				.disableAutocorrection(true)
-				.scrollDismissesKeyboard(.immediately)
+			.disableAutocorrection(true)
+			.scrollDismissesKeyboard(.immediately)
 			.navigationTitle(String.localizedStringWithFormat("nodes %@".localized, String(nodes.count)))
-
 			.listStyle(.plain)
-			.confirmationDialog(
-
-				"are.you.sure",
-				isPresented: $isPresentingDeleteNodeAlert,
-				titleVisibility: .visible
-			) {
-				Button("Delete Node") {
-					let deleteNode = getNodeInfo(id: deleteNodeId, context: context)
-					if connectedNode != nil {
-						if deleteNode != nil {
-							let success = bleManager.removeNode(node: deleteNode!, connectedNodeNum: Int64(connectedNodeNum))
-							if !success {
-								Logger.data.error("Failed to delete node \(deleteNode?.user?.longName ?? "unknown".localized)")
-							}
-						}
-					}
-				}
-			}
 			.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
-			.navigationBarItems(leading:
-				MeshtasticLogo(),
-				trailing:
-					ZStack {
+			.navigationBarItems(
+				leading: MeshtasticLogo(),
+				trailing: ZStack {
 					ConnectedDevice(
 						bluetoothOn: bleManager.isSwitchedOn,
 						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", phoneOnly: true)
-				})
+						name: bleManager.connectedPeripheral?.shortName ?? "?",
+						phoneOnly: true
+					)
+				}
+			)
 		} content: {
 			if let node = selectedNode {
 				NavigationStack {
-					NodeDetail(node: node, columnVisibility: columnVisibility)
-						.edgesIgnoringSafeArea([.leading, .trailing])
-						.navigationBarTitle(String(node.user?.longName ?? "unknown".localized), displayMode: .inline)
-						.navigationBarItems(
-							trailing:
-							ZStack {
-								if UIDevice.current.userInterfaceIdiom != .phone {
-									Button {
-										columnVisibility = .detailOnly
-									} label: {
-										Image(systemName: "rectangle")
-									}
+					NodeDetail(
+						connectedNode: nodes.first(where: {
+							let connectedNodeNum = Int(bleManager.connectedPeripheral?.num ?? 0)
+							return $0.num == connectedNodeNum
+						}),
+						node: node,
+						columnVisibility: columnVisibility
+					)
+					.edgesIgnoringSafeArea([.leading, .trailing])
+					.navigationBarTitle(String(node.user?.longName ?? "unknown".localized), displayMode: .inline)
+					.navigationBarItems(
+						trailing: ZStack {
+							if UIDevice.current.userInterfaceIdiom != .phone {
+								Button {
+									columnVisibility = .detailOnly
+								} label: {
+									Image(systemName: "rectangle")
 								}
-								ConnectedDevice(
-									bluetoothOn: bleManager.isSwitchedOn,
-									deviceConnected: bleManager.connectedPeripheral != nil,
-									name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", phoneOnly: true)
-						})
+							}
+							ConnectedDevice(
+								bluetoothOn: bleManager.isSwitchedOn,
+								deviceConnected: bleManager.connectedPeripheral != nil,
+								name: bleManager.connectedPeripheral?.shortName ?? "?",
+								phoneOnly: true
+							)
+						}
+					)
 				}
 
 			 } else {
@@ -294,7 +262,7 @@ struct NodeList: View {
 		}
 	}
 
-	private func searchNodeList() async -> Void {
+	private func searchNodeList() async {
 		/// Case Insensitive Search Text Predicates
 		let searchPredicates = ["user.userId", "user.numString", "user.hwModel", "user.longName", "user.shortName"].map { property in
 			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)

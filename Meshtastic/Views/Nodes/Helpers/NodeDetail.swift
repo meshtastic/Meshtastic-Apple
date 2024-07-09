@@ -16,7 +16,13 @@ struct NodeDetail: View {
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
 
-	@ObservedObject var node: NodeInfoEntity
+	// The node the device is currently connected to
+	var connectedNode: NodeInfoEntity?
+	
+	// The node information being displayed on the detail screen
+	@ObservedObject
+	var node: NodeInfoEntity
+	
 	var columnVisibility = NavigationSplitViewVisibility.all
 
 	var favoriteNodeAction: some View {
@@ -242,6 +248,23 @@ struct NodeDetail: View {
 							bleManager: bleManager,
 							node: node
 						)
+						
+						if let connectedNode {
+							if node.isStoreForwardRouter {
+								ClientHistoryButton(
+									bleManager: bleManager,
+									connectedNode: connectedNode,
+									node: node
+								)
+							}
+
+							DeleteNodeButton(
+								bleManager: bleManager,
+								context: context,
+								connectedNode: connectedNode,
+								node: node
+							)
+						}
 					}
 				}
 
