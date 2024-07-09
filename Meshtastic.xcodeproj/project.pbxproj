@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		251926852C3BA97800249DF5 /* FavoriteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */; };
+		251926872C3BAE2200249DF5 /* NodeAlertsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */; };
+		2519268A2C3BB1B200249DF5 /* ExchangePositionsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */; };
+		2519268C2C3BB52000249DF5 /* TraceRouteButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2519268B2C3BB52000249DF5 /* TraceRouteButton.swift */; };
+		251926902C3CB44900249DF5 /* ClientHistoryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2519268F2C3CB44900249DF5 /* ClientHistoryButton.swift */; };
+		251926922C3CB52300249DF5 /* DeleteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926912C3CB52300249DF5 /* DeleteNodeButton.swift */; };
 		259792252C2F114500AD1659 /* ChannelEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */; };
 		259792262C2F114500AD1659 /* PositionEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */; };
 		259792272C2F114500AD1659 /* TraceRouteEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE5B4052B227E3200FCDD05 /* TraceRouteEntityExtension.swift */; };
@@ -222,6 +228,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteNodeButton.swift; sourceTree = "<group>"; };
+		251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeAlertsButton.swift; sourceTree = "<group>"; };
+		251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangePositionsButton.swift; sourceTree = "<group>"; };
+		2519268B2C3BB52000249DF5 /* TraceRouteButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRouteButton.swift; sourceTree = "<group>"; };
+		2519268F2C3CB44900249DF5 /* ClientHistoryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientHistoryButton.swift; sourceTree = "<group>"; };
+		251926912C3CB52300249DF5 /* DeleteNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteNodeButton.swift; sourceTree = "<group>"; };
 		25AECD4E2C2F723200862C8E /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		6D825E612C34786C008DBEE4 /* CommonRegex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonRegex.swift; sourceTree = "<group>"; };
 		6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAppDelegate.swift; sourceTree = "<group>"; };
@@ -471,6 +483,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		251926882C3BAF2E00249DF5 /* Actions */ = {
+			isa = PBXGroup;
+			children = (
+				251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */,
+				251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */,
+				251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */,
+				2519268B2C3BB52000249DF5 /* TraceRouteButton.swift */,
+				2519268F2C3CB44900249DF5 /* ClientHistoryButton.swift */,
+				251926912C3CB52300249DF5 /* DeleteNodeButton.swift */,
+			);
+			path = Actions;
+			sourceTree = "<group>";
+		};
 		C9483F6B2773016700998F6B /* MapKitMap */ = {
 			isa = PBXGroup;
 			children = (
@@ -874,6 +899,7 @@
 				DDDB26452AACC0B7003AFCB7 /* NodeInfoItem.swift */,
 				DDDB26412AABF655003AFCB7 /* NodeListItem.swift */,
 				DDDCD56F2BB26F5C00BE6B60 /* NodeListFilter.swift */,
+				251926882C3BAF2E00249DF5 /* Actions */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1112,6 +1138,7 @@
 				DD93800E2BA74D0C008BEC06 /* ChannelForm.swift in Sources */,
 				DD41A61529AB0035003C5A37 /* NodeWeatherForecast.swift in Sources */,
 				DDB6ABD628AE742000384BA1 /* BluetoothConfig.swift in Sources */,
+				251926902C3CB44900249DF5 /* ClientHistoryButton.swift in Sources */,
 				DDD5BB102C285FB3007E03CA /* AppLogFilter.swift in Sources */,
 				DD4640202AFF10F4002A5ECB /* WaypointForm.swift in Sources */,
 				DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */,
@@ -1168,6 +1195,7 @@
 				DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */,
 				DDDB26422AABF655003AFCB7 /* NodeListItem.swift in Sources */,
 				DDDB444629F8A96500EE2349 /* Character.swift in Sources */,
+				2519268C2C3BB52000249DF5 /* TraceRouteButton.swift in Sources */,
 				DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */,
 				DDB6ABDB28B0AC6000384BA1 /* DistanceText.swift in Sources */,
 				DD94B7402ACCE3BE00DCD1D1 /* MapSettingsForm.swift in Sources */,
@@ -1188,6 +1216,7 @@
 				DDB6ABE028B13AC700384BA1 /* DeviceEnums.swift in Sources */,
 				DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */,
 				D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */,
+				251926872C3BAE2200249DF5 /* NodeAlertsButton.swift in Sources */,
 				DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */,
 				D9BC22DB2B7DE8E2006A37D5 /* TileDownloadStatus.swift in Sources */,
 				DDD5BB092C285DDC007E03CA /* AppLog.swift in Sources */,
@@ -1202,6 +1231,7 @@
 				DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */,
 				DDDE5A1029AFE69700490C6C /* MeshActivityAttributes.swift in Sources */,
 				DD1925B928CDA93900720036 /* SerialConfigEnums.swift in Sources */,
+				251926852C3BA97800249DF5 /* FavoriteNodeButton.swift in Sources */,
 				D9C983A02B79D0E800BDBE6A /* AlertButton.swift in Sources */,
 				DD86D4112881D16900BAEB7A /* WriteCsvFile.swift in Sources */,
 				DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */,
@@ -1213,9 +1243,11 @@
 				DDB75A212A12B954006ED576 /* LoRaSignalStrength.swift in Sources */,
 				DD6193752862F6E600E59241 /* ExternalNotificationConfig.swift in Sources */,
 				DD268D8E2BCC90E2008073AE /* RouteEnums.swift in Sources */,
+				251926922C3CB52300249DF5 /* DeleteNodeButton.swift in Sources */,
 				DDB6ABE428B13FFF00384BA1 /* DisplayEnums.swift in Sources */,
 				DD4975A52B147BA90026544E /* AmbientLightingConfig.swift in Sources */,
 				D93068D92B81509C0066FBC8 /* TapbackResponses.swift in Sources */,
+				2519268A2C3BB1B200249DF5 /* ExchangePositionsButton.swift in Sources */,
 				DD86D40A287F04F100BAEB7A /* InvalidVersion.swift in Sources */,
 				DDD94A502845C8F5004A87A0 /* DateTimeText.swift in Sources */,
 				DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */,
