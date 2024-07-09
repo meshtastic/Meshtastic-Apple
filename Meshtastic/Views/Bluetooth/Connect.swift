@@ -221,12 +221,12 @@ struct Connect: View {
 												}
 												do {
 													try container.copyPersistentStores(to: url.appendingPathComponent("backup").appendingPathComponent("\(UserDefaults.preferredPeripheralNum)"), overwriting: true)
-													clearCoreDataDatabase(context: context, includeRoutes: true)
 													Logger.data.notice("🗂️ Made a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
 
 												} catch {
 													Logger.data.error("🗂️ Core data backup copy error: \(error, privacy: .public)")
 												}
+												clearCoreDataDatabase(context: context, includeRoutes: false)
 											}
 											UserDefaults.preferredPeripheralId = selectedPeripherialId
 											self.bleManager.connectTo(peripheral: peripheral.peripheral)
