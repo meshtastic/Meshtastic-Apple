@@ -23,10 +23,10 @@ struct IAQScale: View {
 		}
 		.padding()
 		.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-//		.overlay(
-//			RoundedRectangle(cornerRadius: 20)
-//				.stroke(.secondary, lineWidth: 5)
-//		)
+		.overlay(
+			RoundedRectangle(cornerRadius: 20)
+				.stroke(.secondary, lineWidth: 5)
+		)
 	}
 }
 

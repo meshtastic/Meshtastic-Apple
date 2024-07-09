@@ -71,6 +71,9 @@ extension UserDefaults {
 		case channelMessageNotifications
 		case modemPreset
 		case firmwareVersion
+		case environmentIncludeIAQ
+		case environmentIncludeWind
+		case environmentEnableWeatherKit
 		case testIntEnum
 	}
 
@@ -161,6 +164,15 @@ extension UserDefaults {
 
 	@UserDefault(.firmwareVersion, defaultValue: "0.0.0")
 	static var firmwareVersion: String
+
+	@UserDefault(.environmentIncludeIAQ, defaultValue: true)
+	static var environmentIncludeIAQ: Bool
+
+	@UserDefault(.environmentIncludeWind, defaultValue: false)
+	static var environmentIncludeWind: Bool
+	
+	@UserDefault(.environmentEnableWeatherKit, defaultValue: false)
+	static var environmentEnableWeatherKit: Bool
 
 	@UserDefault(.testIntEnum, defaultValue: .one)
 	static var testIntEnum: TestIntEnum

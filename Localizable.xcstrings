@@ -8530,6 +8530,9 @@
     "Indoor Air Quality" : {
 
     },
+    "Indoor Air Quality Index" : {
+
+    },
     "inputevent.back" : {
       "extractionState" : "migrated",
       "localizations" : {
@@ -20827,6 +20830,9 @@
     "Ten Minutes" : {
 
     },
+    "Test" : {
+
+    },
     "The amount of time to wait before we consider your packet as done." : {
 
     },
@@ -22358,6 +22364,9 @@
     "Waypoint Options" : {
 
     },
+    "Weather Conditions" : {
+
+    },
     "Web Flasher" : {
 
     },
@@ -22377,6 +22386,9 @@
 
     },
     "WiFi Options" : {
+
+    },
+    "Wind" : {
 
     },
     "x" : {

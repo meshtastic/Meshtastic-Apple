@@ -68,6 +68,7 @@
 		DD3CC6BE28E4CD9800FA9159 /* BatteryGauge.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */; };
 		DD3CC6C028E7A60700FA9159 /* MessagingEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */; };
 		DD3CC6C228EB9D4900FA9159 /* UpdateCoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6C128EB9D4900FA9159 /* UpdateCoreData.swift */; };
+		DD3D17DE2C3DD8C300561584 /* LocalWeatherConditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3D17DD2C3DD8C300561584 /* LocalWeatherConditions.swift */; };
 		DD41582628582E9B009B0E59 /* DeviceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41582528582E9B009B0E59 /* DeviceConfig.swift */; };
 		DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD415827285859C4009B0E59 /* TelemetryConfig.swift */; };
 		DD41582A28585C32009B0E59 /* RangeTestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41582928585C32009B0E59 /* RangeTestConfig.swift */; };
@@ -293,6 +294,7 @@
 		DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryGauge.swift; sourceTree = "<group>"; };
 		DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagingEnums.swift; sourceTree = "<group>"; };
 		DD3CC6C128EB9D4900FA9159 /* UpdateCoreData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCoreData.swift; sourceTree = "<group>"; };
+		DD3D17DD2C3DD8C300561584 /* LocalWeatherConditions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalWeatherConditions.swift; sourceTree = "<group>"; };
 		DD41582528582E9B009B0E59 /* DeviceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConfig.swift; sourceTree = "<group>"; };
 		DD415827285859C4009B0E59 /* TelemetryConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryConfig.swift; sourceTree = "<group>"; };
 		DD41582928585C32009B0E59 /* RangeTestConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeTestConfig.swift; sourceTree = "<group>"; };
@@ -601,9 +603,10 @@
 			children = (
 				DD5E523E298F5A9E00D21B61 /* AirQualityIndex.swift */,
 				DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */,
-				DDA9515D2BC6F56F00CEA535 /* IndoorAirQuality.swift */,
-				DD41A61429AB0035003C5A37 /* NodeWeatherForecast.swift */,
 				DD354FD82BD96A0B0061A25F /* IAQScale.swift */,
+				DDA9515D2BC6F56F00CEA535 /* IndoorAirQuality.swift */,
+				DD3D17DD2C3DD8C300561584 /* LocalWeatherConditions.swift */,
+				DD41A61429AB0035003C5A37 /* NodeWeatherForecast.swift */,
 			);
 			path = Weather;
 			sourceTree = "<group>";
@@ -1229,6 +1232,7 @@
 				DD1B8F402B35E2F10022AABC /* GPSStatus.swift in Sources */,
 				DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */,
 				DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */,
+				DD3D17DE2C3DD8C300561584 /* LocalWeatherConditions.swift in Sources */,
 				DDDE5A1029AFE69700490C6C /* MeshActivityAttributes.swift in Sources */,
 				DD1925B928CDA93900720036 /* SerialConfigEnums.swift in Sources */,
 				251926852C3BA97800249DF5 /* FavoriteNodeButton.swift in Sources */,
