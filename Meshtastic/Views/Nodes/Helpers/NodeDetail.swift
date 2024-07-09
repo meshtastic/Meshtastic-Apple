@@ -41,6 +41,7 @@ struct NodeDetail: View {
 						}
 						Spacer()
 						Text(String(node.num))
+						.textSelection(.enabled)
 					}
 
 					HStack {
@@ -52,6 +53,7 @@ struct NodeDetail: View {
 						}
 						Spacer()
 						Text(node.user?.userId ?? "?")
+						.textSelection(.enabled)
 					}
 
 					if let dm = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity, dm.uptimeSeconds > 0 {
@@ -69,6 +71,7 @@ struct NodeDetail: View {
 							let later = now + TimeInterval(dm.uptimeSeconds)
 							let uptime = (now..<later).formatted(.components(style: .narrow))
 							Text(uptime)
+							.textSelection(.enabled)
 						}
 					}
 
