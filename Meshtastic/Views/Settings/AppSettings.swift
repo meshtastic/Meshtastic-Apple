@@ -13,8 +13,8 @@ struct AppSettings: View {
 	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var isPresentingDeleteMapTilesConfirm = false
 	@AppStorage("environmentIncludeIAQ") private var environmentIncludeIAQ: Bool = true
-	@State private var environmentIncludeWind = false
-	@State private var environmentEnableWeatherKit = true
+	@AppStorage("environmentIncludeWind") private var  environmentIncludeWind: Bool = false
+	@AppStorage("environmentEnableWeatherKit") private var  environmentEnableWeatherKit: Bool = true
 	var body: some View {
 		VStack {
 			Form {

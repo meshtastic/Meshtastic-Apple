@@ -86,51 +86,11 @@ struct NodeMapMapkit: View {
 										.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 										.pickerStyle(.menu)
 										.padding(5)
-										VStack {
-											VStack {
-												Label(temperature?.formatted(.measurement(width: .narrow)) ?? "??", systemImage: symbolName)
-													.font(.caption)
-
-												Label("\(humidity ?? 0)%", systemImage: "humidity")
-													.font(.caption2)
-
-												AsyncImage(url: attributionLogo) { image in
-													image
-														.resizable()
-														.scaledToFit()
-												} placeholder: {
-													ProgressView()
-														.controlSize(.mini)
-												}
-												.frame(height: 10)
-
-												Link("Other data sources", destination: attributionLink ?? URL(string: "https://weather-data.apple.com/legal-attribution.html")!)
-													.font(.caption2)
-											}
-											.padding(5)
-
-										}
-										.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-										.padding(5)
-										.task {
-											do {
-												if node.hasPositions {
-													let mostRecent = node.positions?.lastObject as? PositionEntity
-													let weather = try await WeatherService.shared.weather(for: mostRecent?.nodeLocation ?? CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude))
-													condition = weather.currentWeather.condition
-													temperature = weather.currentWeather.temperature
-													humidity = Int(weather.currentWeather.humidity * 100)
-													symbolName = weather.currentWeather.symbolName
-													let attribution = try await WeatherService.shared.attribution
-													attributionLink = attribution.legalPageURL
-													attributionLogo = colorScheme == .light ? attribution.combinedMarkLightURL : attribution.combinedMarkDarkURL
-												}
-											} catch {
-												Logger.services.error("Could not gather weather information: \(error.localizedDescription)")
-												condition = .clear
-												symbolName = "cloud.fill"
-											}
-										}
+										//if UserDefaults.environmentEnableWeatherKit {
+											//VStack {
+												LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
+											//}
+										//}
 									}
 								}
 							}

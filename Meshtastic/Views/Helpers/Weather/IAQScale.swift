@@ -25,7 +25,7 @@ struct IAQScale: View {
 		.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 		.overlay(
 			RoundedRectangle(cornerRadius: 20)
-				.stroke(.secondary, lineWidth: 5)
+				.stroke(.secondary, lineWidth: 3)
 		)
 	}
 }

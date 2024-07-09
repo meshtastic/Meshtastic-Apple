@@ -10,6 +10,10 @@ import CoreData
 
 extension NodeInfoEntity {
 
+	var latestPosition: PositionEntity? {
+		return self.positions?.lastObject as? PositionEntity
+	}
+
 	var hasPositions: Bool {
 		return positions?.count ?? 0 > 0
 	}
