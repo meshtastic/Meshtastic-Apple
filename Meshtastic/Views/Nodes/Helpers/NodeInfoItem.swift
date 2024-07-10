@@ -61,14 +61,14 @@ struct NodeInfoItem: View {
 						.foregroundColor(getRssiColor(rssi: node.rssi))
 						.font(.caption2)
 				}
-				.frame(minWidth: 100, maxWidth: 180)
+				.frame(minWidth: 90, maxWidth: 180)
 			}
 
 			if node.telemetries?.count ?? 0 > 0 {
 				BatteryGauge(node: node)
 					.padding()
 			}
-			Spacer()
 		}
+		.padding(.leading)
 	}
 }
