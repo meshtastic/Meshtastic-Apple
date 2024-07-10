@@ -25,7 +25,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// bin/build-all.sh script.
 /// Because they will be used to find firmware filenames in the android app for OTA updates.
 /// To match the old style filenames, _ is converted to -, p is converted to .
-public enum HardwareModel: SwiftProtobuf.Enum {
+public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -484,11 +484,6 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     }
   }
 
-}
-
-#if swift(>=4.2)
-
-extension HardwareModel: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   public static let allCases: [HardwareModel] = [
     .unset,
@@ -562,13 +557,12 @@ extension HardwareModel: CaseIterable {
     .heltecMeshNodeT114,
     .privateHw,
   ]
-}
 
-#endif  // swift(>=4.2)
+}
 
 ///
 /// Shared constants between device and phone
-public enum Constants: SwiftProtobuf.Enum {
+public enum Constants: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -603,26 +597,20 @@ public enum Constants: SwiftProtobuf.Enum {
     }
   }
 
-}
-
-#if swift(>=4.2)
-
-extension Constants: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   public static let allCases: [Constants] = [
     .zero,
     .dataPayloadLen,
   ]
-}
 
-#endif  // swift(>=4.2)
+}
 
 ///
 /// Error codes for critical errors
 /// The device might report these fault codes on the screen.
 /// If you encounter a fault code, please post on the meshtastic.discourse.group
 /// and we'll try to help.
-public enum CriticalErrorCode: SwiftProtobuf.Enum {
+public enum CriticalErrorCode: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -716,11 +704,6 @@ public enum CriticalErrorCode: SwiftProtobuf.Enum {
     }
   }
 
-}
-
-#if swift(>=4.2)
-
-extension CriticalErrorCode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   public static let allCases: [CriticalErrorCode] = [
     .none,
@@ -736,13 +719,12 @@ extension CriticalErrorCode: CaseIterable {
     .sx1262Failure,
     .radioSpiBug,
   ]
-}
 
-#endif  // swift(>=4.2)
+}
 
 ///
 /// a gps position
-public struct Position {
+public struct Position: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -931,7 +913,7 @@ public struct Position {
 
   ///
   /// How the location was acquired: manual, onboard GPS, external (EUD) GPS
-  public enum LocSource: SwiftProtobuf.Enum {
+  public enum LocSource: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -975,12 +957,20 @@ public struct Position {
       }
     }
 
+    // The compiler won't synthesize support with the UNRECOGNIZED case.
+    public static let allCases: [Position.LocSource] = [
+      .locUnset,
+      .locManual,
+      .locInternal,
+      .locExternal,
+    ]
+
   }
 
   ///
   /// How the altitude was acquired: manual, GPS int/ext, etc
   /// Default: same as location_source if present
-  public enum AltSource: SwiftProtobuf.Enum {
+  public enum AltSource: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -1030,37 +1020,21 @@ public struct Position {
       }
     }
 
+    // The compiler won't synthesize support with the UNRECOGNIZED case.
+    public static let allCases: [Position.AltSource] = [
+      .altUnset,
+      .altManual,
+      .altInternal,
+      .altExternal,
+      .altBarometric,
+    ]
+
   }
 
   public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
 }
-
-#if swift(>=4.2)
-
-extension Position.LocSource: CaseIterable {
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [Position.LocSource] = [
-    .locUnset,
-    .locManual,
-    .locInternal,
-    .locExternal,
-  ]
-}
-
-extension Position.AltSource: CaseIterable {
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [Position.AltSource] = [
-    .altUnset,
-    .altManual,
-    .altInternal,
-    .altExternal,
-    .altBarometric,
-  ]
-}
-
-#endif  // swift(>=4.2)
 
 ///
 /// Broadcast when a newly powered mesh node wants to find a node num it can use
@@ -1083,7 +1057,7 @@ extension Position.AltSource: CaseIterable {
 /// A few nodenums are reserved and will never be requested:
 /// 0xff - broadcast
 /// 0 through 3 - for future use
-public struct User {
+public struct User: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1108,6 +1082,8 @@ public struct User {
   /// Deprecated in Meshtastic 2.1.x
   /// This is the addr of the radio.
   /// Not populated by the phone, but added by the esp32 when broadcasting
+  ///
+  /// NOTE: This field was marked as deprecated in the .proto file.
   public var macaddr: Data = Data()
 
   ///
@@ -1134,7 +1110,7 @@ public struct User {
 
 ///
 /// A message used in our Dynamic Source Routing protocol (RFC 4728 based)
-public struct RouteDiscovery {
+public struct RouteDiscovery: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1150,7 +1126,7 @@ public struct RouteDiscovery {
 
 ///
 /// A Routing control Data packet handled by the routing module
-public struct Routing {
+public struct Routing: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1190,7 +1166,7 @@ public struct Routing {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_Variant: Equatable {
+  public enum OneOf_Variant: Equatable, Sendable {
     ///
     /// A route request going from the requester
     case routeRequest(RouteDiscovery)
@@ -1202,34 +1178,12 @@ public struct Routing {
     /// in addition to ack.fail_id to provide details on the type of failure).
     case errorReason(Routing.Error)
 
-  #if !swift(>=4.1)
-    public static func ==(lhs: Routing.OneOf_Variant, rhs: Routing.OneOf_Variant) -> Bool {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch (lhs, rhs) {
-      case (.routeRequest, .routeRequest): return {
-        guard case .routeRequest(let l) = lhs, case .routeRequest(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.routeReply, .routeReply): return {
-        guard case .routeReply(let l) = lhs, case .routeReply(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.errorReason, .errorReason): return {
-        guard case .errorReason(let l) = lhs, case .errorReason(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      default: return false
-      }
-    }
-  #endif
   }
 
   ///
   /// A failure in delivering a message (usually used for routing control messages, but might be provided in addition to ack.fail_id to provide
   /// details on the type of failure).
-  public enum Error: SwiftProtobuf.Enum {
+  public enum Error: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -1323,38 +1277,32 @@ public struct Routing {
       }
     }
 
+    // The compiler won't synthesize support with the UNRECOGNIZED case.
+    public static let allCases: [Routing.Error] = [
+      .none,
+      .noRoute,
+      .gotNak,
+      .timeout,
+      .noInterface,
+      .maxRetransmit,
+      .noChannel,
+      .tooLarge,
+      .noResponse,
+      .dutyCycleLimit,
+      .badRequest,
+      .notAuthorized,
+    ]
+
   }
 
   public init() {}
 }
 
-#if swift(>=4.2)
-
-extension Routing.Error: CaseIterable {
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [Routing.Error] = [
-    .none,
-    .noRoute,
-    .gotNak,
-    .timeout,
-    .noInterface,
-    .maxRetransmit,
-    .noChannel,
-    .tooLarge,
-    .noResponse,
-    .dutyCycleLimit,
-    .badRequest,
-    .notAuthorized,
-  ]
-}
-
-#endif  // swift(>=4.2)
-
 ///
 /// (Formerly called SubPacket)
 /// The payload portion fo a packet, this is the actual bytes that are sent
 /// inside a radio packet (because from/to are broken out by the comms library)
-public struct DataMessage {
+public struct DataMessage: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1408,7 +1356,7 @@ public struct DataMessage {
 
 ///
 /// Waypoint message, used to share arbitrary locations across the mesh
-public struct Waypoint {
+public struct Waypoint: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1453,7 +1401,7 @@ public struct Waypoint {
 
 ///
 /// This message will be proxied over the PhoneAPI for the client to deliver to the MQTT server
-public struct MqttClientProxyMessage {
+public struct MqttClientProxyMessage: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1494,7 +1442,7 @@ public struct MqttClientProxyMessage {
 
   ///
   /// The actual service envelope payload or text for mqtt pub / sub
-  public enum OneOf_PayloadVariant: Equatable {
+  public enum OneOf_PayloadVariant: Equatable, @unchecked Sendable {
     ///
     /// Bytes
     case data(Data)
@@ -1502,24 +1450,6 @@ public struct MqttClientProxyMessage {
     /// Text
     case text(String)
 
-  #if !swift(>=4.1)
-    public static func ==(lhs: MqttClientProxyMessage.OneOf_PayloadVariant, rhs: MqttClientProxyMessage.OneOf_PayloadVariant) -> Bool {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch (lhs, rhs) {
-      case (.data, .data): return {
-        guard case .data(let l) = lhs, case .data(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.text, .text): return {
-        guard case .text(let l) = lhs, case .text(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      default: return false
-      }
-    }
-  #endif
   }
 
   public init() {}
@@ -1529,7 +1459,7 @@ public struct MqttClientProxyMessage {
 /// A packet envelope sent/received over the mesh
 /// only payload_variant is sent in the payload portion of the LORA packet.
 /// The other fields are either not sent at all, or sent in the special 16 byte LORA header.
-public struct MeshPacket {
+public struct MeshPacket: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1663,6 +1593,8 @@ public struct MeshPacket {
 
   ///
   /// Describe if this message is delayed
+  ///
+  /// NOTE: This field was marked as deprecated in the .proto file.
   public var delayed: MeshPacket.Delayed {
     get {return _storage._delayed}
     set {_uniqueStorage()._delayed = newValue}
@@ -1685,7 +1617,7 @@ public struct MeshPacket {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_PayloadVariant: Equatable {
+  public enum OneOf_PayloadVariant: Equatable, @unchecked Sendable {
     ///
     /// TODO: REPLACE
     case decoded(DataMessage)
@@ -1693,24 +1625,6 @@ public struct MeshPacket {
     /// TODO: REPLACE
     case encrypted(Data)
 
-  #if !swift(>=4.1)
-    public static func ==(lhs: MeshPacket.OneOf_PayloadVariant, rhs: MeshPacket.OneOf_PayloadVariant) -> Bool {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch (lhs, rhs) {
-      case (.decoded, .decoded): return {
-        guard case .decoded(let l) = lhs, case .decoded(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.encrypted, .encrypted): return {
-        guard case .encrypted(let l) = lhs, case .encrypted(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      default: return false
-      }
-    }
-  #endif
   }
 
   ///
@@ -1732,7 +1646,7 @@ public struct MeshPacket {
   /// So I bit the bullet and implemented a new (internal - not sent over the air)
   /// field in MeshPacket called 'priority'.
   /// And the transmission queue in the router object is now a priority queue.
-  public enum Priority: SwiftProtobuf.Enum {
+  public enum Priority: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -1797,11 +1711,22 @@ public struct MeshPacket {
       }
     }
 
+    // The compiler won't synthesize support with the UNRECOGNIZED case.
+    public static let allCases: [MeshPacket.Priority] = [
+      .unset,
+      .min,
+      .background,
+      .default,
+      .reliable,
+      .ack,
+      .max,
+    ]
+
   }
 
   ///
   /// Identify if this is a delayed packet
-  public enum Delayed: SwiftProtobuf.Enum {
+  public enum Delayed: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -1839,38 +1764,19 @@ public struct MeshPacket {
       }
     }
 
+    // The compiler won't synthesize support with the UNRECOGNIZED case.
+    public static let allCases: [MeshPacket.Delayed] = [
+      .noDelay,
+      .broadcast,
+      .direct,
+    ]
+
   }
 
   public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
 }
-
-#if swift(>=4.2)
-
-extension MeshPacket.Priority: CaseIterable {
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [MeshPacket.Priority] = [
-    .unset,
-    .min,
-    .background,
-    .default,
-    .reliable,
-    .ack,
-    .max,
-  ]
-}
-
-extension MeshPacket.Delayed: CaseIterable {
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [MeshPacket.Delayed] = [
-    .noDelay,
-    .broadcast,
-    .direct,
-  ]
-}
-
-#endif  // swift(>=4.2)
 
 ///
 /// The bluetooth to device link:
@@ -1889,7 +1795,7 @@ extension MeshPacket.Delayed: CaseIterable {
 /// level etc) SET_CONFIG (switches device to a new set of radio params and
 /// preshared key, drops all existing nodes, force our node to rejoin this new group)
 /// Full information about a node on the mesh
-public struct NodeInfo {
+public struct NodeInfo: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1990,7 +1896,7 @@ public struct NodeInfo {
 /// Unique local debugging info for this node
 /// Note: we don't include position or the user info, because that will come in the
 /// Sent to the phone in response to WantNodes.
-public struct MyNodeInfo {
+public struct MyNodeInfo: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2021,7 +1927,7 @@ public struct MyNodeInfo {
 /// on the message it is assumed to be a continuation of the previously sent message.
 /// This allows the device code to use fixed maxlen 64 byte strings for messages,
 /// and then extend as needed by emitting multiple records.
-public struct LogRecord {
+public struct LogRecord: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2046,7 +1952,7 @@ public struct LogRecord {
 
   ///
   /// Log levels, chosen to match python logging conventions.
-  public enum Level: SwiftProtobuf.Enum {
+  public enum Level: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -2108,29 +2014,23 @@ public struct LogRecord {
       }
     }
 
+    // The compiler won't synthesize support with the UNRECOGNIZED case.
+    public static let allCases: [LogRecord.Level] = [
+      .unset,
+      .critical,
+      .error,
+      .warning,
+      .info,
+      .debug,
+      .trace,
+    ]
+
   }
 
   public init() {}
 }
 
-#if swift(>=4.2)
-
-extension LogRecord.Level: CaseIterable {
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [LogRecord.Level] = [
-    .unset,
-    .critical,
-    .error,
-    .warning,
-    .info,
-    .debug,
-    .trace,
-  ]
-}
-
-#endif  // swift(>=4.2)
-
-public struct QueueStatus {
+public struct QueueStatus: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2157,7 +2057,7 @@ public struct QueueStatus {
 /// It will support READ and NOTIFY. When a new packet arrives the device will BLE notify?
 /// It will sit in that descriptor until consumed by the phone,
 /// at which point the next item in the FIFO will be populated.
-public struct FromRadio {
+public struct FromRadio: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2165,26 +2065,20 @@ public struct FromRadio {
   ///
   /// The packet id, used to allow the phone to request missing read packets from the FIFO,
   /// see our bluetooth docs
-  public var id: UInt32 {
-    get {return _storage._id}
-    set {_uniqueStorage()._id = newValue}
-  }
+  public var id: UInt32 = 0
 
   ///
   /// Log levels, chosen to match python logging conventions.
-  public var payloadVariant: OneOf_PayloadVariant? {
-    get {return _storage._payloadVariant}
-    set {_uniqueStorage()._payloadVariant = newValue}
-  }
+  public var payloadVariant: FromRadio.OneOf_PayloadVariant? = nil
 
   ///
   /// Log levels, chosen to match python logging conventions.
   public var packet: MeshPacket {
     get {
-      if case .packet(let v)? = _storage._payloadVariant {return v}
+      if case .packet(let v)? = payloadVariant {return v}
       return MeshPacket()
     }
-    set {_uniqueStorage()._payloadVariant = .packet(newValue)}
+    set {payloadVariant = .packet(newValue)}
   }
 
   ///
@@ -2192,10 +2086,10 @@ public struct FromRadio {
   /// NOTE: This ID must not change - to keep (minimal) compatibility with <1.2 version of android apps.
   public var myInfo: MyNodeInfo {
     get {
-      if case .myInfo(let v)? = _storage._payloadVariant {return v}
+      if case .myInfo(let v)? = payloadVariant {return v}
       return MyNodeInfo()
     }
-    set {_uniqueStorage()._payloadVariant = .myInfo(newValue)}
+    set {payloadVariant = .myInfo(newValue)}
   }
 
   ///
@@ -2203,30 +2097,30 @@ public struct FromRadio {
   /// starts over with the first node in our DB
   public var nodeInfo: NodeInfo {
     get {
-      if case .nodeInfo(let v)? = _storage._payloadVariant {return v}
+      if case .nodeInfo(let v)? = payloadVariant {return v}
       return NodeInfo()
     }
-    set {_uniqueStorage()._payloadVariant = .nodeInfo(newValue)}
+    set {payloadVariant = .nodeInfo(newValue)}
   }
 
   ///
   /// Include a part of the config (was: RadioConfig radio)
   public var config: Config {
     get {
-      if case .config(let v)? = _storage._payloadVariant {return v}
+      if case .config(let v)? = payloadVariant {return v}
       return Config()
     }
-    set {_uniqueStorage()._payloadVariant = .config(newValue)}
+    set {payloadVariant = .config(newValue)}
   }
 
   ///
   /// Set to send debug console output over our protobuf stream
   public var logRecord: LogRecord {
     get {
-      if case .logRecord(let v)? = _storage._payloadVariant {return v}
+      if case .logRecord(let v)? = payloadVariant {return v}
       return LogRecord()
     }
-    set {_uniqueStorage()._payloadVariant = .logRecord(newValue)}
+    set {payloadVariant = .logRecord(newValue)}
   }
 
   ///
@@ -2236,10 +2130,10 @@ public struct FromRadio {
   /// NOTE: This ID must not change - to keep (minimal) compatibility with <1.2 version of android apps.
   public var configCompleteID: UInt32 {
     get {
-      if case .configCompleteID(let v)? = _storage._payloadVariant {return v}
+      if case .configCompleteID(let v)? = payloadVariant {return v}
       return 0
     }
-    set {_uniqueStorage()._payloadVariant = .configCompleteID(newValue)}
+    set {payloadVariant = .configCompleteID(newValue)}
   }
 
   ///
@@ -2249,87 +2143,87 @@ public struct FromRadio {
   /// NOTE: This ID must not change - to keep (minimal) compatibility with <1.2 version of android apps.
   public var rebooted: Bool {
     get {
-      if case .rebooted(let v)? = _storage._payloadVariant {return v}
+      if case .rebooted(let v)? = payloadVariant {return v}
       return false
     }
-    set {_uniqueStorage()._payloadVariant = .rebooted(newValue)}
+    set {payloadVariant = .rebooted(newValue)}
   }
 
   ///
   /// Include module config
   public var moduleConfig: ModuleConfig {
     get {
-      if case .moduleConfig(let v)? = _storage._payloadVariant {return v}
+      if case .moduleConfig(let v)? = payloadVariant {return v}
       return ModuleConfig()
     }
-    set {_uniqueStorage()._payloadVariant = .moduleConfig(newValue)}
+    set {payloadVariant = .moduleConfig(newValue)}
   }
 
   ///
   /// One packet is sent for each channel
   public var channel: Channel {
     get {
-      if case .channel(let v)? = _storage._payloadVariant {return v}
+      if case .channel(let v)? = payloadVariant {return v}
       return Channel()
     }
-    set {_uniqueStorage()._payloadVariant = .channel(newValue)}
+    set {payloadVariant = .channel(newValue)}
   }
 
   ///
   /// Queue status info
   public var queueStatus: QueueStatus {
     get {
-      if case .queueStatus(let v)? = _storage._payloadVariant {return v}
+      if case .queueStatus(let v)? = payloadVariant {return v}
       return QueueStatus()
     }
-    set {_uniqueStorage()._payloadVariant = .queueStatus(newValue)}
+    set {payloadVariant = .queueStatus(newValue)}
   }
 
   ///
   /// File Transfer Chunk
   public var xmodemPacket: XModem {
     get {
-      if case .xmodemPacket(let v)? = _storage._payloadVariant {return v}
+      if case .xmodemPacket(let v)? = payloadVariant {return v}
       return XModem()
     }
-    set {_uniqueStorage()._payloadVariant = .xmodemPacket(newValue)}
+    set {payloadVariant = .xmodemPacket(newValue)}
   }
 
   ///
   /// Device metadata message
   public var metadata: DeviceMetadata {
     get {
-      if case .metadata(let v)? = _storage._payloadVariant {return v}
+      if case .metadata(let v)? = payloadVariant {return v}
       return DeviceMetadata()
     }
-    set {_uniqueStorage()._payloadVariant = .metadata(newValue)}
+    set {payloadVariant = .metadata(newValue)}
   }
 
   ///
   /// MQTT Client Proxy Message (device sending to client / phone for publishing to MQTT)
   public var mqttClientProxyMessage: MqttClientProxyMessage {
     get {
-      if case .mqttClientProxyMessage(let v)? = _storage._payloadVariant {return v}
+      if case .mqttClientProxyMessage(let v)? = payloadVariant {return v}
       return MqttClientProxyMessage()
     }
-    set {_uniqueStorage()._payloadVariant = .mqttClientProxyMessage(newValue)}
+    set {payloadVariant = .mqttClientProxyMessage(newValue)}
   }
 
   ///
   /// File system manifest messages
   public var fileInfo: FileInfo {
     get {
-      if case .fileInfo(let v)? = _storage._payloadVariant {return v}
+      if case .fileInfo(let v)? = payloadVariant {return v}
       return FileInfo()
     }
-    set {_uniqueStorage()._payloadVariant = .fileInfo(newValue)}
+    set {payloadVariant = .fileInfo(newValue)}
   }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
   /// Log levels, chosen to match python logging conventions.
-  public enum OneOf_PayloadVariant: Equatable {
+  public enum OneOf_PayloadVariant: Equatable, Sendable {
     ///
     /// Log levels, chosen to match python logging conventions.
     case packet(MeshPacket)
@@ -2381,82 +2275,14 @@ public struct FromRadio {
     /// File system manifest messages
     case fileInfo(FileInfo)
 
-  #if !swift(>=4.1)
-    public static func ==(lhs: FromRadio.OneOf_PayloadVariant, rhs: FromRadio.OneOf_PayloadVariant) -> Bool {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch (lhs, rhs) {
-      case (.packet, .packet): return {
-        guard case .packet(let l) = lhs, case .packet(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.myInfo, .myInfo): return {
-        guard case .myInfo(let l) = lhs, case .myInfo(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.nodeInfo, .nodeInfo): return {
-        guard case .nodeInfo(let l) = lhs, case .nodeInfo(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.config, .config): return {
-        guard case .config(let l) = lhs, case .config(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.logRecord, .logRecord): return {
-        guard case .logRecord(let l) = lhs, case .logRecord(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.configCompleteID, .configCompleteID): return {
-        guard case .configCompleteID(let l) = lhs, case .configCompleteID(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.rebooted, .rebooted): return {
-        guard case .rebooted(let l) = lhs, case .rebooted(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.moduleConfig, .moduleConfig): return {
-        guard case .moduleConfig(let l) = lhs, case .moduleConfig(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.channel, .channel): return {
-        guard case .channel(let l) = lhs, case .channel(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.queueStatus, .queueStatus): return {
-        guard case .queueStatus(let l) = lhs, case .queueStatus(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.xmodemPacket, .xmodemPacket): return {
-        guard case .xmodemPacket(let l) = lhs, case .xmodemPacket(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.metadata, .metadata): return {
-        guard case .metadata(let l) = lhs, case .metadata(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.mqttClientProxyMessage, .mqttClientProxyMessage): return {
-        guard case .mqttClientProxyMessage(let l) = lhs, case .mqttClientProxyMessage(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.fileInfo, .fileInfo): return {
-        guard case .fileInfo(let l) = lhs, case .fileInfo(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      default: return false
-      }
-    }
-  #endif
   }
 
   public init() {}
-
-  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 ///
 /// Individual File info for the device
-public struct FileInfo {
+public struct FileInfo: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2477,7 +2303,7 @@ public struct FileInfo {
 ///
 /// Packets/commands to the radio will be written (reliably) to the toRadio characteristic.
 /// Once the write completes the phone can assume it is handled.
-public struct ToRadio {
+public struct ToRadio: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2557,7 +2383,7 @@ public struct ToRadio {
 
   ///
   /// Log levels, chosen to match python logging conventions.
-  public enum OneOf_PayloadVariant: Equatable {
+  public enum OneOf_PayloadVariant: Equatable, Sendable {
     ///
     /// Send this packet on the mesh
     case packet(MeshPacket)
@@ -2584,40 +2410,6 @@ public struct ToRadio {
     /// Heartbeat message (used to keep the device connection awake on serial)
     case heartbeat(Heartbeat)
 
-  #if !swift(>=4.1)
-    public static func ==(lhs: ToRadio.OneOf_PayloadVariant, rhs: ToRadio.OneOf_PayloadVariant) -> Bool {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch (lhs, rhs) {
-      case (.packet, .packet): return {
-        guard case .packet(let l) = lhs, case .packet(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.wantConfigID, .wantConfigID): return {
-        guard case .wantConfigID(let l) = lhs, case .wantConfigID(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.disconnect, .disconnect): return {
-        guard case .disconnect(let l) = lhs, case .disconnect(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.xmodemPacket, .xmodemPacket): return {
-        guard case .xmodemPacket(let l) = lhs, case .xmodemPacket(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.mqttClientProxyMessage, .mqttClientProxyMessage): return {
-        guard case .mqttClientProxyMessage(let l) = lhs, case .mqttClientProxyMessage(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.heartbeat, .heartbeat): return {
-        guard case .heartbeat(let l) = lhs, case .heartbeat(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      default: return false
-      }
-    }
-  #endif
   }
 
   public init() {}
@@ -2625,7 +2417,7 @@ public struct ToRadio {
 
 ///
 /// Compressed message payload
-public struct Compressed {
+public struct Compressed: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2645,7 +2437,7 @@ public struct Compressed {
 
 ///
 /// Full info on edges for a single node
-public struct NeighborInfo {
+public struct NeighborInfo: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2673,7 +2465,7 @@ public struct NeighborInfo {
 
 ///
 /// A single edge in the mesh
-public struct Neighbor {
+public struct Neighbor: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2703,7 +2495,7 @@ public struct Neighbor {
 
 ///
 /// Device metadata response
-public struct DeviceMetadata {
+public struct DeviceMetadata: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2756,7 +2548,7 @@ public struct DeviceMetadata {
 ///
 /// A heartbeat message is sent to the node from the client to keep the connection alive.
 /// This is currently only needed to keep serial connections alive, but can be used by any PhoneAPI.
-public struct Heartbeat {
+public struct Heartbeat: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2768,7 +2560,7 @@ public struct Heartbeat {
 
 ///
 /// RemoteHardwarePins associated with a node
-public struct NodeRemoteHardwarePin {
+public struct NodeRemoteHardwarePin: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2795,7 +2587,7 @@ public struct NodeRemoteHardwarePin {
   fileprivate var _pin: RemoteHardwarePin? = nil
 }
 
-public struct ChunkedPayload {
+public struct ChunkedPayload: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2823,7 +2615,7 @@ public struct ChunkedPayload {
 
 ///
 /// Wrapper message for broken repeated oneof support
-public struct resend_chunks {
+public struct resend_chunks: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2837,7 +2629,7 @@ public struct resend_chunks {
 
 ///
 /// Responses to a ChunkedPayload request
-public struct ChunkedPayloadResponse {
+public struct ChunkedPayloadResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2880,7 +2672,7 @@ public struct ChunkedPayloadResponse {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_PayloadVariant: Equatable {
+  public enum OneOf_PayloadVariant: Equatable, Sendable {
     ///
     /// Request to transfer chunked payload
     case requestTransfer(Bool)
@@ -2891,74 +2683,10 @@ public struct ChunkedPayloadResponse {
     /// Request missing indexes in the chunked payload
     case resendChunks(resend_chunks)
 
-  #if !swift(>=4.1)
-    public static func ==(lhs: ChunkedPayloadResponse.OneOf_PayloadVariant, rhs: ChunkedPayloadResponse.OneOf_PayloadVariant) -> Bool {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch (lhs, rhs) {
-      case (.requestTransfer, .requestTransfer): return {
-        guard case .requestTransfer(let l) = lhs, case .requestTransfer(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.acceptTransfer, .acceptTransfer): return {
-        guard case .acceptTransfer(let l) = lhs, case .acceptTransfer(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.resendChunks, .resendChunks): return {
-        guard case .resendChunks(let l) = lhs, case .resendChunks(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      default: return false
-      }
-    }
-  #endif
   }
 
   public init() {}
 }
-
-#if swift(>=5.5) && canImport(_Concurrency)
-extension HardwareModel: @unchecked Sendable {}
-extension Constants: @unchecked Sendable {}
-extension CriticalErrorCode: @unchecked Sendable {}
-extension Position: @unchecked Sendable {}
-extension Position.LocSource: @unchecked Sendable {}
-extension Position.AltSource: @unchecked Sendable {}
-extension User: @unchecked Sendable {}
-extension RouteDiscovery: @unchecked Sendable {}
-extension Routing: @unchecked Sendable {}
-extension Routing.OneOf_Variant: @unchecked Sendable {}
-extension Routing.Error: @unchecked Sendable {}
-extension DataMessage: @unchecked Sendable {}
-extension Waypoint: @unchecked Sendable {}
-extension MqttClientProxyMessage: @unchecked Sendable {}
-extension MqttClientProxyMessage.OneOf_PayloadVariant: @unchecked Sendable {}
-extension MeshPacket: @unchecked Sendable {}
-extension MeshPacket.OneOf_PayloadVariant: @unchecked Sendable {}
-extension MeshPacket.Priority: @unchecked Sendable {}
-extension MeshPacket.Delayed: @unchecked Sendable {}
-extension NodeInfo: @unchecked Sendable {}
-extension MyNodeInfo: @unchecked Sendable {}
-extension LogRecord: @unchecked Sendable {}
-extension LogRecord.Level: @unchecked Sendable {}
-extension QueueStatus: @unchecked Sendable {}
-extension FromRadio: @unchecked Sendable {}
-extension FromRadio.OneOf_PayloadVariant: @unchecked Sendable {}
-extension FileInfo: @unchecked Sendable {}
-extension ToRadio: @unchecked Sendable {}
-extension ToRadio.OneOf_PayloadVariant: @unchecked Sendable {}
-extension Compressed: @unchecked Sendable {}
-extension NeighborInfo: @unchecked Sendable {}
-extension Neighbor: @unchecked Sendable {}
-extension DeviceMetadata: @unchecked Sendable {}
-extension Heartbeat: @unchecked Sendable {}
-extension NodeRemoteHardwarePin: @unchecked Sendable {}
-extension ChunkedPayload: @unchecked Sendable {}
-extension resend_chunks: @unchecked Sendable {}
-extension ChunkedPayloadResponse: @unchecked Sendable {}
-extension ChunkedPayloadResponse.OneOf_PayloadVariant: @unchecked Sendable {}
-#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
@@ -3903,7 +3631,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       if _storage._rxTime != 0 {
         try visitor.visitSingularFixed32Field(value: _storage._rxTime, fieldNumber: 7)
       }
-      if _storage._rxSnr != 0 {
+      if _storage._rxSnr.bitPattern != 0 {
         try visitor.visitSingularFloatField(value: _storage._rxSnr, fieldNumber: 8)
       }
       if _storage._hopLimit != 0 {
@@ -4078,7 +3806,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       try { if let v = _storage._position {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
       } }()
-      if _storage._snr != 0 {
+      if _storage._snr.bitPattern != 0 {
         try visitor.visitSingularFloatField(value: _storage._snr, fieldNumber: 4)
       }
       if _storage._lastHeard != 0 {
@@ -4303,305 +4031,263 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     15: .same(proto: "fileInfo"),
   ]
 
-  fileprivate class _StorageClass {
-    var _id: UInt32 = 0
-    var _payloadVariant: FromRadio.OneOf_PayloadVariant?
-
-    #if swift(>=5.10)
-      // This property is used as the initial default value for new instances of the type.
-      // The type itself is protecting the reference to its storage via CoW semantics.
-      // This will force a copy to be made of this reference when the first mutation occurs;
-      // hence, it is safe to mark this as `nonisolated(unsafe)`.
-      static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
-
-    private init() {}
-
-    init(copying source: _StorageClass) {
-      _id = source._id
-      _payloadVariant = source._payloadVariant
-    }
-  }
-
-  fileprivate mutating func _uniqueStorage() -> _StorageClass {
-    if !isKnownUniquelyReferenced(&_storage) {
-      _storage = _StorageClass(copying: _storage)
-    }
-    return _storage
-  }
-
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    _ = _uniqueStorage()
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      while let fieldNumber = try decoder.nextFieldNumber() {
-        // The use of inline closures is to circumvent an issue where the compiler
-        // allocates stack space for every case branch when no optimizations are
-        // enabled. https://github.com/apple/swift-protobuf/issues/1034
-        switch fieldNumber {
-        case 1: try { try decoder.decodeSingularUInt32Field(value: &_storage._id) }()
-        case 2: try {
-          var v: MeshPacket?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .packet(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .packet(v)
-          }
-        }()
-        case 3: try {
-          var v: MyNodeInfo?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .myInfo(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .myInfo(v)
-          }
-        }()
-        case 4: try {
-          var v: NodeInfo?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .nodeInfo(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .nodeInfo(v)
-          }
-        }()
-        case 5: try {
-          var v: Config?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .config(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .config(v)
-          }
-        }()
-        case 6: try {
-          var v: LogRecord?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .logRecord(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .logRecord(v)
-          }
-        }()
-        case 7: try {
-          var v: UInt32?
-          try decoder.decodeSingularUInt32Field(value: &v)
-          if let v = v {
-            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .configCompleteID(v)
-          }
-        }()
-        case 8: try {
-          var v: Bool?
-          try decoder.decodeSingularBoolField(value: &v)
-          if let v = v {
-            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .rebooted(v)
-          }
-        }()
-        case 9: try {
-          var v: ModuleConfig?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .moduleConfig(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .moduleConfig(v)
-          }
-        }()
-        case 10: try {
-          var v: Channel?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .channel(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .channel(v)
-          }
-        }()
-        case 11: try {
-          var v: QueueStatus?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .queueStatus(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .queueStatus(v)
-          }
-        }()
-        case 12: try {
-          var v: XModem?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .xmodemPacket(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .xmodemPacket(v)
-          }
-        }()
-        case 13: try {
-          var v: DeviceMetadata?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .metadata(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .metadata(v)
-          }
-        }()
-        case 14: try {
-          var v: MqttClientProxyMessage?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .mqttClientProxyMessage(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .mqttClientProxyMessage(v)
-          }
-        }()
-        case 15: try {
-          var v: FileInfo?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .fileInfo(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .fileInfo(v)
-          }
-        }()
-        default: break
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.id) }()
+      case 2: try {
+        var v: MeshPacket?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .packet(let m) = current {v = m}
         }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .packet(v)
+        }
+      }()
+      case 3: try {
+        var v: MyNodeInfo?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .myInfo(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .myInfo(v)
+        }
+      }()
+      case 4: try {
+        var v: NodeInfo?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .nodeInfo(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .nodeInfo(v)
+        }
+      }()
+      case 5: try {
+        var v: Config?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .config(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .config(v)
+        }
+      }()
+      case 6: try {
+        var v: LogRecord?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .logRecord(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .logRecord(v)
+        }
+      }()
+      case 7: try {
+        var v: UInt32?
+        try decoder.decodeSingularUInt32Field(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .configCompleteID(v)
+        }
+      }()
+      case 8: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .rebooted(v)
+        }
+      }()
+      case 9: try {
+        var v: ModuleConfig?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .moduleConfig(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .moduleConfig(v)
+        }
+      }()
+      case 10: try {
+        var v: Channel?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .channel(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .channel(v)
+        }
+      }()
+      case 11: try {
+        var v: QueueStatus?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .queueStatus(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .queueStatus(v)
+        }
+      }()
+      case 12: try {
+        var v: XModem?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .xmodemPacket(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .xmodemPacket(v)
+        }
+      }()
+      case 13: try {
+        var v: DeviceMetadata?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .metadata(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .metadata(v)
+        }
+      }()
+      case 14: try {
+        var v: MqttClientProxyMessage?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .mqttClientProxyMessage(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .mqttClientProxyMessage(v)
+        }
+      }()
+      case 15: try {
+        var v: FileInfo?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .fileInfo(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .fileInfo(v)
+        }
+      }()
+      default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every if/case branch local when no optimizations
-      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-      // https://github.com/apple/swift-protobuf/issues/1182
-      if _storage._id != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._id, fieldNumber: 1)
-      }
-      switch _storage._payloadVariant {
-      case .packet?: try {
-        guard case .packet(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-      }()
-      case .myInfo?: try {
-        guard case .myInfo(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-      }()
-      case .nodeInfo?: try {
-        guard case .nodeInfo(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
-      }()
-      case .config?: try {
-        guard case .config(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
-      }()
-      case .logRecord?: try {
-        guard case .logRecord(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
-      }()
-      case .configCompleteID?: try {
-        guard case .configCompleteID(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 7)
-      }()
-      case .rebooted?: try {
-        guard case .rebooted(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularBoolField(value: v, fieldNumber: 8)
-      }()
-      case .moduleConfig?: try {
-        guard case .moduleConfig(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
-      }()
-      case .channel?: try {
-        guard case .channel(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
-      }()
-      case .queueStatus?: try {
-        guard case .queueStatus(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
-      }()
-      case .xmodemPacket?: try {
-        guard case .xmodemPacket(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
-      }()
-      case .metadata?: try {
-        guard case .metadata(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
-      }()
-      case .mqttClientProxyMessage?: try {
-        guard case .mqttClientProxyMessage(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 14)
-      }()
-      case .fileInfo?: try {
-        guard case .fileInfo(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 15)
-      }()
-      case nil: break
-      }
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.id != 0 {
+      try visitor.visitSingularUInt32Field(value: self.id, fieldNumber: 1)
+    }
+    switch self.payloadVariant {
+    case .packet?: try {
+      guard case .packet(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    }()
+    case .myInfo?: try {
+      guard case .myInfo(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    }()
+    case .nodeInfo?: try {
+      guard case .nodeInfo(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+    }()
+    case .config?: try {
+      guard case .config(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+    }()
+    case .logRecord?: try {
+      guard case .logRecord(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+    }()
+    case .configCompleteID?: try {
+      guard case .configCompleteID(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 7)
+    }()
+    case .rebooted?: try {
+      guard case .rebooted(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 8)
+    }()
+    case .moduleConfig?: try {
+      guard case .moduleConfig(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
+    }()
+    case .channel?: try {
+      guard case .channel(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
+    }()
+    case .queueStatus?: try {
+      guard case .queueStatus(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
+    }()
+    case .xmodemPacket?: try {
+      guard case .xmodemPacket(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
+    }()
+    case .metadata?: try {
+      guard case .metadata(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
+    }()
+    case .mqttClientProxyMessage?: try {
+      guard case .mqttClientProxyMessage(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 14)
+    }()
+    case .fileInfo?: try {
+      guard case .fileInfo(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 15)
+    }()
+    case nil: break
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: FromRadio, rhs: FromRadio) -> Bool {
-    if lhs._storage !== rhs._storage {
-      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
-        let _storage = _args.0
-        let rhs_storage = _args.1
-        if _storage._id != rhs_storage._id {return false}
-        if _storage._payloadVariant != rhs_storage._payloadVariant {return false}
-        return true
-      }
-      if !storagesAreEqual {return false}
-    }
+    if lhs.id != rhs.id {return false}
+    if lhs.payloadVariant != rhs.payloadVariant {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -4893,7 +4579,7 @@ extension Neighbor: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if self.nodeID != 0 {
       try visitor.visitSingularUInt32Field(value: self.nodeID, fieldNumber: 1)
     }
-    if self.snr != 0 {
+    if self.snr.bitPattern != 0 {
       try visitor.visitSingularFloatField(value: self.snr, fieldNumber: 2)
     }
     if self.lastRxTime != 0 {
@@ -5006,8 +4692,8 @@ extension Heartbeat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let _ = try decoder.nextFieldNumber() {
-    }
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
