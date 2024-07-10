@@ -18,11 +18,11 @@ struct NodeDetail: View {
 
 	// The node the device is currently connected to
 	var connectedNode: NodeInfoEntity?
-	
+
 	// The node information being displayed on the detail screen
 	@ObservedObject
 	var node: NodeInfoEntity
-	
+
 	var columnVisibility = NavigationSplitViewVisibility.all
 
 	var favoriteNodeAction: some View {
@@ -251,7 +251,7 @@ struct NodeDetail: View {
 							bleManager: bleManager,
 							node: node
 						)
-						
+
 						if let connectedNode {
 							if node.isStoreForwardRouter {
 								ClientHistoryButton(

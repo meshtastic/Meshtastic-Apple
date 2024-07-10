@@ -681,7 +681,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 				telemetry.snr = packet.rxSnr
 				telemetry.rssi = packet.rxRssi
 				telemetry.time = Date(timeIntervalSince1970: TimeInterval(Int64(truncatingIfNeeded: telemetryMessage.time)))
-				
+
 				guard let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as? NSMutableOrderedSet else {
 					return
 				}

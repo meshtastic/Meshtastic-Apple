@@ -559,7 +559,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			Logger.radio.debug("📟 \(log, privacy: .public)")
 		}
 	}
-	
+
 	func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
 
 		if let error {
@@ -600,8 +600,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					message = "DEBUG | \(message)"
 				}
 				handleRadioLog(radioLog: message)
-			}
-			catch {
+			} catch {
 				// Ignore fail to parse as LogRecord
 			}
 
