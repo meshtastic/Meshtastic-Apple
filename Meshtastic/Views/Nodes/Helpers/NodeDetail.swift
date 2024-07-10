@@ -123,14 +123,13 @@ struct NodeDetail: View {
 						}
 					}
 				}
-				if UserDefaults.environmentEnableWeatherKit || (node.telemetryConfig?.environmentMeasurementEnabled ?? false) {
+				if UserDefaults.environmentEnableWeatherKit || (node.hasEnvironmentMetrics) {
 					Section("Environment") {
 						LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
 					//	NodeWeatherForecastView(location: node.latestPosition?.nodeLocation)
-						IndoorAirQuality(iaq: Int(node.latestEnvironmentMetrics?.iaq ?? 0), displayMode: .gauge)
-					//	if node.latestEnvironmentMetrics == nil {
-							
-					//	}
+						if node.latestEnvironmentMetrics?.iaq ?? 0 > 0 {
+							IndoorAirQuality(iaq: Int(node.latestEnvironmentMetrics?.iaq ?? 0), displayMode: .gauge)
+						}
 					}
 				}
 				Section("Logs") {

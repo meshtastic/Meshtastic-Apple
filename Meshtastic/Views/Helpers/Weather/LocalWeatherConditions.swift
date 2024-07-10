@@ -62,7 +62,7 @@ struct LocalWeatherConditions: View {
 					symbolName = "cloud.fill"
 				}
 			}
-			.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+			//.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 			.padding(5)
 		}
 	}

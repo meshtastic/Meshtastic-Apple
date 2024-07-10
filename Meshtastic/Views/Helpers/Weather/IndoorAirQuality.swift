@@ -27,7 +27,6 @@ struct IndoorAirQuality: View {
 
 	var body: some View {
 		let iaqEnum = Iaq.getIaq(for: iaq)
-
 		VStack {
 			switch displayMode {
 			case .pill:
