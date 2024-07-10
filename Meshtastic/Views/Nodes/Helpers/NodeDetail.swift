@@ -114,7 +114,7 @@ struct NodeDetail: View {
 						}
 					}
 
-					if let firstHeard = node.firstHeard {
+					if let firstHeard = node.firstHeard, firstHeard.timeIntervalSince1970 > 0 {
 						HStack {
 							Label {
 								Text("First heard")
@@ -135,7 +135,7 @@ struct NodeDetail: View {
 						}
 					}
 
-					if let lastHeard = node.lastHeard {
+					if let lastHeard = node.lastHeard, lastHeard.timeIntervalSince1970 > 0 {
 						HStack {
 							Label {
 								Text("Last heard")

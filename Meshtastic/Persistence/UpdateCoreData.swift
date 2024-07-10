@@ -145,7 +145,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			let newNode = NodeInfoEntity(context: context)
 			newNode.id = Int64(packet.from)
 			newNode.num = Int64(packet.from)
-			if packet.rxTime != 0 {
+			if packet.rxTime > 0 {
 				newNode.firstHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 				newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 			}
