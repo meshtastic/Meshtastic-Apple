@@ -8,15 +8,9 @@ import SwiftUI
 struct LastHeardText: View {
 	var lastHeard: Date?
 
-	static let formatter: RelativeDateTimeFormatter = {
-		let formatter = RelativeDateTimeFormatter()
-		formatter.unitsStyle = .full
-		return formatter
-	}()
-
 	var body: some View {
-		if let lastHeard, lastHeard.timeIntervalSince1970 > 0, let text = Self.formatter.string(for: lastHeard) {
-			Text(text)
+		if let lastHeard, lastHeard.timeIntervalSince1970 > 0 {
+			Text(lastHeard.formatted())
 		} else {
 			Text("unknown")
 		}

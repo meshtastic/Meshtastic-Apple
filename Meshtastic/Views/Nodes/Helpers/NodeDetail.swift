@@ -10,11 +10,17 @@ import CoreLocation
 import OSLog
 
 struct NodeDetail: View {
+	private static let relativeFormatter: RelativeDateTimeFormatter = {
+		let formatter = RelativeDateTimeFormatter()
+		formatter.unitsStyle = .full
+		return formatter
+	}()
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
+	@State private var dateFormatRelative: Bool = true
 
 	// The node the device is currently connected to
 	var connectedNode: NodeInfoEntity?
@@ -138,9 +144,15 @@ struct NodeDetail: View {
 									.symbolRenderingMode(.multicolor)
 							}
 							Spacer()
-
-							LastHeardText(lastHeard: firstHeard)
-								.textSelection(.enabled)
+							if dateFormatRelative, let text = Self.relativeFormatter.string(for: firstHeard) {
+								Text(text)
+									.textSelection(.enabled)
+							} else {
+								Text(firstHeard.formatted())
+									.textSelection(.enabled)
+							}
+						}.onTapGesture {
+							dateFormatRelative.toggle()
 						}
 					}
 
@@ -154,8 +166,15 @@ struct NodeDetail: View {
 							}
 							Spacer()
 
-							LastHeardText(lastHeard: lastHeard)
-								.textSelection(.enabled)
+							if dateFormatRelative, let text = Self.relativeFormatter.string(for: lastHeard) {
+								Text(text)
+									.textSelection(.enabled)
+							} else {
+								Text(lastHeard.formatted())
+									.textSelection(.enabled)
+							}
+						}.onTapGesture {
+							dateFormatRelative.toggle()
 						}
 					}
 				}
