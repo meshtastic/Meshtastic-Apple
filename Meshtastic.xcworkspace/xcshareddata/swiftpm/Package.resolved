@@ -1,42 +1,6 @@
 {
-  "originHash" : "74b3ad6215f078d89f4436b6ce0e318f145842efa3453bbe055ab76057de7d6b",
+  "originHash" : "a2385deee281bd55bce80722a1f2b020f7b745c02005befa8ccbf58a39ef4002",
   "pins" : [
-    {
-      "identity" : "cocoamqtt",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/emqx/CocoaMQTT",
-      "state" : {
-        "revision" : "aff43422925cc30b9af319f4c4dce4f52859baf4",
-        "version" : "2.1.8"
-      }
-    },
-    {
-      "identity" : "mqttcocoaasyncsocket",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/leeway1208/MqttCocoaAsyncSocket",
-      "state" : {
-        "revision" : "ce3e18607fd01079495f86ff6195d8a3ca469f73",
-        "version" : "1.0.8"
-      }
-    },
-    {
-      "identity" : "sqlite.swift",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/stephencelis/SQLite.swift.git",
-      "state" : {
-        "revision" : "a95fc6df17d108bd99210db5e8a9bac90fe984b8",
-        "version" : "0.15.3"
-      }
-    },
-    {
-      "identity" : "starscream",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/daltoniam/Starscream.git",
-      "state" : {
-        "revision" : "c6bfd1af48efcc9a9ad203665db12375ba6b145a",
-        "version" : "4.0.8"
-      }
-    },
     {
       "identity" : "swift-protobuf",
       "kind" : "remoteSourceControl",
