@@ -40,11 +40,18 @@ struct MeshtasticAppleApp: App {
 
 				if (self.incomingUrl?.absoluteString.lowercased().contains("meshtastic.org/e/#")) != nil {
 					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
-						guard let cs = components.last!.components(separatedBy: "?").first else {
-							return
-						}
-						self.channelSettings = cs
 						self.addChannels = Bool(self.incomingUrl?["add"] ?? "false") ?? false
+						if ((self.incomingUrl?.absoluteString.lowercased().contains("?")) != nil) {
+							guard let cs = components.last!.components(separatedBy: "?").first else {
+								return
+							}
+							self.channelSettings = cs
+						} else {
+							guard let cs = components.first else {
+								return
+							}
+							self.channelSettings = cs
+						}
 						Logger.services.debug("Add Channel \(self.addChannels)")
 					}
 					self.saveChannels = true
@@ -60,7 +67,19 @@ struct MeshtasticAppleApp: App {
 				self.incomingUrl = url
 				if url.absoluteString.lowercased().contains("meshtastic.org/e/#") {
 					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
-						self.channelSettings = components.last!
+						self.addChannels = Bool(self.incomingUrl?["add"] ?? "false") ?? false
+						if ((self.incomingUrl?.absoluteString.lowercased().contains("?")) != nil) {
+							guard let cs = components.last!.components(separatedBy: "?").first else {
+								return
+							}
+							self.channelSettings = cs
+						} else {
+							guard let cs = components.first else {
+								return
+							}
+							self.channelSettings = cs
+						}
+						Logger.services.debug("Add Channel \(self.addChannels)")
 					}
 					self.saveChannels = true
 					Logger.mesh.debug("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link")")
