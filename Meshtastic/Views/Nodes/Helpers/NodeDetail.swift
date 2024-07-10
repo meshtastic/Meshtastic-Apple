@@ -129,6 +129,21 @@ struct NodeDetail: View {
 						}
 					}
 
+					if let firstHeard = node.firstHeard {
+						HStack {
+							Label {
+								Text("First heard")
+							} icon: {
+								Image(systemName: "clock")
+									.symbolRenderingMode(.multicolor)
+							}
+							Spacer()
+
+							LastHeardText(lastHeard: firstHeard)
+								.textSelection(.enabled)
+						}
+					}
+
 					if let lastHeard = node.lastHeard {
 						HStack {
 							Label {

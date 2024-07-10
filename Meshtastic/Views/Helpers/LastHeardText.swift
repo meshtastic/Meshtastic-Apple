@@ -15,8 +15,8 @@ struct LastHeardText: View {
 	}()
 
 	var body: some View {
-		if let lastHeard, lastHeard.timeIntervalSince1970 > 0 {
-			Text(lastHeard.formatted())
+		if let lastHeard, lastHeard.timeIntervalSince1970 > 0, let text = Self.formatter.string(for: lastHeard) {
+			Text(text)
 		} else {
 			Text("unknown")
 		}
