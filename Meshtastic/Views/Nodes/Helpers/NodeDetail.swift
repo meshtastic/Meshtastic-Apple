@@ -10,17 +10,25 @@ import CoreLocation
 import OSLog
 
 struct NodeDetail: View {
+	private static let relativeFormatter: RelativeDateTimeFormatter = {
+		let formatter = RelativeDateTimeFormatter()
+		formatter.unitsStyle = .full
+		return formatter
+	}()
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
+	@State private var dateFormatRelative: Bool = true
 
 	// The node the device is currently connected to
 	var connectedNode: NodeInfoEntity?
+
 	// The node information being displayed on the detail screen
 	@ObservedObject
 	var node: NodeInfoEntity
+
 	var columnVisibility = NavigationSplitViewVisibility.all
 	
 	var favoriteNodeAction: some View {
@@ -78,6 +86,7 @@ struct NodeDetail: View {
 						}
 						Spacer()
 						Text(String(node.num))
+						.textSelection(.enabled)
 					}
 
 					HStack {
@@ -89,6 +98,34 @@ struct NodeDetail: View {
 						}
 						Spacer()
 						Text(node.user?.userId ?? "?")
+						.textSelection(.enabled)
+					}
+
+					if let metadata = node.metadata {
+						HStack {
+							Label {
+								Text("firmware.version")
+							} icon: {
+								Image(systemName: "memorychip")
+									.symbolRenderingMode(.multicolor)
+							}
+							Spacer()
+
+							Text(metadata.firmwareVersion ?? "unknown".localized)
+						}
+					}
+
+					if let role = node.user?.role, let deviceRole = DeviceRoles(rawValue: Int(role)) {
+						HStack {
+							Label {
+								Text("Role")
+							} icon: {
+								Image(systemName: deviceRole.systemName)
+									.symbolRenderingMode(.multicolor)
+							}
+							Spacer()
+							Text(deviceRole.name)
+						}
 					}
 
 					if let dm = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity, dm.uptimeSeconds > 0 {
@@ -106,20 +143,50 @@ struct NodeDetail: View {
 							let later = now + TimeInterval(dm.uptimeSeconds)
 							let uptime = (now..<later).formatted(.components(style: .narrow))
 							Text(uptime)
+								.textSelection(.enabled)
 						}
 					}
 
-					if let metadata = node.metadata {
+					if let firstHeard = node.firstHeard, firstHeard.timeIntervalSince1970 > 0 {
 						HStack {
 							Label {
-								Text("firmware.version")
+								Text("First heard")
 							} icon: {
-								Image(systemName: "memorychip")
+								Image(systemName: "clock")
+									.symbolRenderingMode(.multicolor)
+							}
+							Spacer()
+							if dateFormatRelative, let text = Self.relativeFormatter.string(for: firstHeard) {
+								Text(text)
+									.textSelection(.enabled)
+							} else {
+								Text(firstHeard.formatted())
+									.textSelection(.enabled)
+							}
+						}.onTapGesture {
+							dateFormatRelative.toggle()
+						}
+					}
+
+					if let lastHeard = node.lastHeard, lastHeard.timeIntervalSince1970 > 0 {
+						HStack {
+							Label {
+								Text("Last heard")
+							} icon: {
+								Image(systemName: "clock.arrow.circlepath")
 									.symbolRenderingMode(.multicolor)
 							}
 							Spacer()
 
-							Text(metadata.firmwareVersion ?? "unknown".localized)
+							if dateFormatRelative, let text = Self.relativeFormatter.string(for: lastHeard) {
+								Text(text)
+									.textSelection(.enabled)
+							} else {
+								Text(lastHeard.formatted())
+									.textSelection(.enabled)
+							}
+						}.onTapGesture {
+							dateFormatRelative.toggle()
 						}
 					}
 				}
@@ -253,7 +320,7 @@ struct NodeDetail: View {
 							bleManager: bleManager,
 							node: node
 						)
-						
+
 						if let connectedNode {
 							if node.isStoreForwardRouter {
 								ClientHistoryButton(

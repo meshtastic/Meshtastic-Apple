@@ -47,7 +47,7 @@ struct NodeMapSwiftUI: View {
 		if node.hasPositions {
 			ZStack {
 				MapReader { _ in
-					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
+					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 3000, maximumDistance: .infinity), scope: mapScope) {
 						NodeMapContent(node: node)
 					}
 					.mapScope(mapScope)

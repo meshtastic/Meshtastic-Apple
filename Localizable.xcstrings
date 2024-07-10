@@ -4954,6 +4954,7 @@
 
     },
     "current" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7370,6 +7371,9 @@
           }
         }
       }
+    },
+    "First heard" : {
+
     },
     "Five Minutes" : {
 
@@ -10805,6 +10809,9 @@
           }
         }
       }
+    },
+    "Last heard" : {
+
     },
     "Latitude" : {
 
@@ -21721,7 +21728,6 @@
 
     },
     "unknown" : {
-      "extractionState" : "migrated",
       "localizations" : {
         "de" : {
           "stringUnit" : {
