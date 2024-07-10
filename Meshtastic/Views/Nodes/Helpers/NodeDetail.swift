@@ -18,6 +18,7 @@ struct NodeDetail: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
 	@State private var dateFormatRelative: Bool = true
@@ -179,6 +180,29 @@ struct NodeDetail: View {
 					}
 				}
 
+				if node.hasPositions, let position = node.positions?.lastObject as? PositionEntity {
+					Section("Position") {
+						MapSnapshotView(location: position.coordinate)
+							.aspectRatio(1, contentMode: .fill)
+							.padding(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+
+						NavigationLink {
+							if #available (iOS 17, macOS 14, *) {
+								NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
+							} else {
+								NodeMapMapkit(node: node)
+							}
+						} label: {
+							Label {
+								Text("Node Map")
+							} icon: {
+								Image(systemName: "map")
+									.symbolRenderingMode(.multicolor)
+							}
+						}
+					}
+				}
+
 				Section("Logs") {
 					// Metrics
 					NavigationLink {
@@ -192,22 +216,6 @@ struct NodeDetail: View {
 						}
 					}
 					.disabled(!node.hasDeviceMetrics)
-
-					NavigationLink {
-						if #available (iOS 17, macOS 14, *) {
-							NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
-						} else {
-							NodeMapMapkit(node: node)
-						}
-					} label: {
-						Label {
-							Text("Node Map")
-						} icon: {
-							Image(systemName: "map")
-								.symbolRenderingMode(.multicolor)
-						}
-					}
-					.disabled(!node.hasPositions)
 
 					NavigationLink {
 						PositionLog(node: node)
