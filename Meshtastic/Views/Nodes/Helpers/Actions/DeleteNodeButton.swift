@@ -10,6 +10,9 @@ struct DeleteNodeButton: View {
 	var connectedNode: NodeInfoEntity
 
 	var node: NodeInfoEntity
+	
+	@EnvironmentObject
+	var queryCoreDataController: QueryCoreDataController
 
 	@State
 	private var isPresentingAlert = false
@@ -31,10 +34,7 @@ struct DeleteNodeButton: View {
 			titleVisibility: .visible
 		) {
 			Button("Delete Node", role: .destructive) {
-				guard let deleteNode = getNodeInfo(
-					id: node.num,
-					context: context
-				) else {
+				guard let deleteNode = queryCoreDataController.getNodeInfo(id: node.num) else {
 					Logger.data.error("Unable to find node info to delete node \(node.num)")
 					return
 				}

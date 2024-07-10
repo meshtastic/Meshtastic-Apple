@@ -14,6 +14,7 @@ struct ChannelList: View {
 	@StateObject var appState = AppState.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var updateCoreDataController: UpdateCoreDataController
 
 	@State var node: NodeInfoEntity?
 
@@ -140,17 +141,12 @@ struct ChannelList: View {
 								titleVisibility: .visible
 							) {
 								Button(role: .destructive) {
-									deleteChannelMessages(channel: channelSelection!, context: context)
+									updateCoreDataController.deleteChannelMessages(channel: channelSelection!)
 									context.refresh(myInfo, mergeChanges: true)
 									UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 									channelSelection = nil
 								} label: {
 									Text("delete")
-								}
-							}
-							.onAppear {
-								if self.bleManager.context == nil {
-									self.bleManager.context = context
 								}
 							}
 					}

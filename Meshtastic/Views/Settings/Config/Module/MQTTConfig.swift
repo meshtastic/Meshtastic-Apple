@@ -13,8 +13,11 @@ struct MQTTConfig: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var queryCoreDataController: QueryCoreDataController
 	@Environment(\.dismiss) private var goBack
+
 	var node: NodeInfoEntity?
+	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges: Bool = false
 	@State var enabled = false
@@ -246,7 +249,7 @@ struct MQTTConfig: View {
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
+			let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1)
 			if connectedNode != nil {
 				var mqtt = ModuleConfig.MQTTConfig()
 				mqtt.enabled = self.enabled
@@ -357,14 +360,11 @@ struct MQTTConfig: View {
 			}
 		}
 		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
 			setMqttValues()
 			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.mqttConfig == nil {
 				Logger.mesh.info("empty mqtt module config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+				let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral.num)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}

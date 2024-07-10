@@ -226,7 +226,8 @@ struct Connect: View {
 												} catch {
 													Logger.data.error("🗂️ Core data backup copy error: \(error, privacy: .public)")
 												}
-												clearCoreDataDatabase(context: context, includeRoutes: false)
+												// TODO: fix-me
+//												clearCoreDataDatabase(context: context, includeRoutes: false)
 											}
 											UserDefaults.preferredPeripheralId = selectedPeripherialId
 											self.bleManager.connectTo(peripheral: peripheral.peripheral)
@@ -323,11 +324,6 @@ struct Connect: View {
 				}
 			}
 		}
-		.onAppear(perform: {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
-		})
 	}
 	#if canImport(ActivityKit)
 	func startNodeActivity() {

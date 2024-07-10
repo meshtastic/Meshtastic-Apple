@@ -12,6 +12,7 @@ import SwiftUI
 struct BluetoothConfig: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var queryCoreDataController: QueryCoreDataController
 	@Environment(\.dismiss) private var goBack
 	var node: NodeInfoEntity?
 	@State var hasChanges = false
@@ -80,7 +81,7 @@ struct BluetoothConfig: View {
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			if let myNodeNum = bleManager.connectedPeripheral?.num,
-				let connectedNode = getNodeInfo(id: myNodeNum, context: context) {
+			   let connectedNode = queryCoreDataController.getNodeInfo(id: myNodeNum) {
 				var bc = Config.BluetoothConfig()
 				bc.enabled = enabled
 				bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
@@ -107,14 +108,11 @@ struct BluetoothConfig: View {
 			}
 		)
 		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
 			setBluetoothValues()
 			// Need to request a BluetoothConfig from the remote node before allowing changes
 			if let connectedPeripheral = bleManager.connectedPeripheral, let node, node.bluetoothConfig == nil {
 				Logger.mesh.info("empty bluetooth config")
-				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				let connectedNode = queryCoreDataController.getNodeInfo(id: connectedPeripheral.num)
 				if let connectedNode {
 					_ = bleManager.requestBluetoothConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 				}

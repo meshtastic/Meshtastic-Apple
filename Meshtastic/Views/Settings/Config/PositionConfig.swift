@@ -27,6 +27,7 @@ struct PositionConfig: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var queryCoreDataController: QueryCoreDataController
 	@Environment(\.dismiss) private var goBack
 	var node: NodeInfoEntity?
 	@State var hasChanges = false
@@ -290,7 +291,7 @@ struct PositionConfig: View {
 			if fixedPosition && !supportedVersion {
 				_ = bleManager.sendPosition(channel: 0, destNum: node?.num ?? 0, wantResponse: true)
 			}
-			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral!.num, context: context)
+			let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral!.num)
 
 			if connectedNode != nil {
 				var pc = Config.PositionConfig()
@@ -377,15 +378,12 @@ struct PositionConfig: View {
 			}
 		)
 		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
 			setPositionValues()
 			supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
 			// Need to request a PositionConfig from the remote node before allowing changes
 			if let connectedPeripheral = bleManager.connectedPeripheral, node?.positionConfig == nil {
 				Logger.mesh.info("empty position config")
-				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				let connectedNode = queryCoreDataController.getNodeInfo(id: connectedPeripheral.num)
 				if let node, let connectedNode {
 					_ = bleManager.requestPositionConfig(
 						fromUser: connectedNode.user!,

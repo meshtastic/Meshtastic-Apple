@@ -10,6 +10,7 @@ import SwiftUI
 struct RtttlConfig: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var queryCoreDataController: QueryCoreDataController
 	@Environment(\.dismiss) private var goBack
 
 	var node: NodeInfoEntity?
@@ -50,7 +51,7 @@ struct RtttlConfig: View {
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.rtttlConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+				let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral.num)
 				if connectedNode != nil {
 					let adminMessageId =  bleManager.saveRtttlConfig(ringtone: ringtone.trimmingCharacters(in: .whitespacesAndNewlines), fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					if adminMessageId > 0 {
@@ -67,13 +68,10 @@ struct RtttlConfig: View {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 			})
 			.onAppear {
-				if self.bleManager.context == nil {
-					self.bleManager.context = context
-				}
 				setRtttLConfigValue()
 				// Need to request a Rtttl Config from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && (node?.rtttlConfig == nil || node?.rtttlConfig?.ringtone?.count ?? 0 == 0) {
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+					let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral.num)
 					if node != nil && connectedNode != nil {
 						_ = bleManager.requestRtttlConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					}

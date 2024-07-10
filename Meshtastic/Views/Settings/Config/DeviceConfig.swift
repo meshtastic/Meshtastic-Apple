@@ -13,6 +13,9 @@ struct DeviceConfig: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var persistenceController: PersistenceController
+	@EnvironmentObject var queryCoreDataController: QueryCoreDataController
+
 	@Environment(\.dismiss) private var goBack
 
 	var node: NodeInfoEntity?
@@ -166,7 +169,7 @@ struct DeviceConfig: View {
 							if bleManager.sendNodeDBReset(fromUser: node!.user!, toUser: node!.user!) {
 								DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
 									bleManager.disconnectPeripheral()
-									clearCoreDataDatabase(context: context, includeRoutes: false)
+									persistenceController.clearCoreDataDatabase(context: context, includeRoutes: false)
 								}
 
 							} else {
@@ -191,7 +194,8 @@ struct DeviceConfig: View {
 							if bleManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!) {
 								DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
 									bleManager.disconnectPeripheral()
-									clearCoreDataDatabase(context: context, includeRoutes: false)
+									// TODO: re-enable me
+//									clearCoreDataDatabase(context: context, includeRoutes: false)
 								}
 							} else {
 								Logger.mesh.error("Factory Reset Failed")
@@ -202,7 +206,7 @@ struct DeviceConfig: View {
 			}
 			HStack {
 				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+					let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral.num)
 					if connectedNode != nil {
 						var dc = Config.DeviceConfig()
 						dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
@@ -238,14 +242,11 @@ struct DeviceConfig: View {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
 		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
 			setDeviceValues()
 			// Need to request a LoRaConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.deviceConfig == nil {
 				Logger.mesh.info("empty device config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
+				let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1)
 				if node != nil && connectedNode != nil && connectedNode?.user != nil {
 					_ = bleManager.requestDeviceConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}

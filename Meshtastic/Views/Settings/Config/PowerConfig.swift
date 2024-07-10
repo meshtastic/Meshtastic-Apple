@@ -4,6 +4,7 @@ import MeshtasticProtobufs
 struct PowerConfig: View {
 	@Environment(\.managedObjectContext) private var context
 	@EnvironmentObject private var bleManager: BLEManager
+	@EnvironmentObject var queryCoreDataController: QueryCoreDataController
 	@Environment(\.dismiss) private var goBack
 
 	let node: NodeInfoEntity?
@@ -118,10 +119,6 @@ struct PowerConfig: View {
 			}
 		}
 		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
-
 			Api().loadDeviceHardwareData { (hw) in
 
 				for device in hw {
@@ -136,7 +133,7 @@ struct PowerConfig: View {
 
 			// Need to request a Power config from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.powerConfig == nil {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
+				let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestPowerConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
@@ -180,7 +177,7 @@ struct PowerConfig: View {
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			guard let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context),
+			guard let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral.num),
 				  let fromUser = connectedNode.user,
 				  let toUser = node?.user else {
 				return

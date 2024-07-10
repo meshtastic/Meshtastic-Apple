@@ -12,6 +12,7 @@ struct AmbientLightingConfig: View {
 	@Environment(\.self) var environment
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var queryCoreDataController: QueryCoreDataController
 	@Environment(\.dismiss) private var goBack
 
 	var node: NodeInfoEntity?
@@ -59,7 +60,7 @@ struct AmbientLightingConfig: View {
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.ambientLightingConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+				let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral.num)
 				if connectedNode != nil {
 					var al = ModuleConfig.AmbientLightingConfig()
 					al.ledState = ledState
@@ -85,13 +86,10 @@ struct AmbientLightingConfig: View {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 			})
 			.onAppear {
-				if self.bleManager.context == nil {
-					self.bleManager.context = context
-				}
 				setAmbientLightingConfigValue()
 				// Need to request a Ambient Lighting Config from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.ambientLightingConfig == nil {
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+					let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral.num)
 					if node != nil && connectedNode != nil {
 						_ = bleManager.requestAmbientLightingConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					}

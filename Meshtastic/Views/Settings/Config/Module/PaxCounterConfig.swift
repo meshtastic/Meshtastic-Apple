@@ -11,6 +11,7 @@ import SwiftUI
 struct PaxCounterConfig: View {
 	@Environment(\.managedObjectContext) private var context
 	@EnvironmentObject private var bleManager: BLEManager
+	@EnvironmentObject var queryCoreDataController: QueryCoreDataController
 	@Environment(\.dismiss) private var goBack
 
 	let node: NodeInfoEntity?
@@ -58,14 +59,11 @@ struct PaxCounterConfig: View {
 			)
 		})
 		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
 
 			setPaxValues()
 			// Need to request a PAX Counter module config from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.paxCounterConfig == nil {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
+				let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestPaxCounterModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
@@ -83,7 +81,7 @@ struct PaxCounterConfig: View {
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			guard let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context),
+			guard let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral.num),
 				  let fromUser = connectedNode.user,
 				  let toUser = node?.user else {
 				return

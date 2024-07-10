@@ -87,9 +87,6 @@ struct Messages: View {
 				}
 			}
 			.onAppear {
-				if self.bleManager.context == nil {
-					self.bleManager.context = context
-				}
 				if UserDefaults.preferredPeripheralId.count > 0 {
 					let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(UserDefaults.preferredPeripheralNum))

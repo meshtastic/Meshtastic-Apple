@@ -13,6 +13,7 @@ struct PaxCounterLog: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var updateCoreDataController: UpdateCoreDataController
 
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
@@ -175,7 +176,7 @@ struct PaxCounterLog: View {
 						titleVisibility: .visible
 					) {
 						Button("paxcounter.delete", role: .destructive) {
-							if clearPax(destNum: node.num, context: context) {
+							if updateCoreDataController.clearPax(destNum: node.num) {
 								Logger.services.info("Cleared Pax Counter for \(node.num)")
 							} else {
 								Logger.services.error("Clear Pax Counter Log Failed")
@@ -209,11 +210,6 @@ struct PaxCounterLog: View {
 			ZStack {
 				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
-		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
-		}
 		.fileExporter(
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),

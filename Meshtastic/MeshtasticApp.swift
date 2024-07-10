@@ -11,9 +11,20 @@ import TipKit
 @main
 struct MeshtasticAppleApp: App {
 
-	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self) var appDelegate
-	let persistenceController = PersistenceController.shared
-	@ObservedObject private var bleManager: BLEManager = BLEManager.shared
+	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self)
+	var appDelegate
+
+	@ObservedObject
+	var bleManager: BLEManager
+
+	@ObservedObject
+	var persistenceController: PersistenceController
+	
+	@ObservedObject
+	var updateCoreDataController: UpdateCoreDataController
+	
+	@ObservedObject
+	var queryCoreDataController: QueryCoreDataController
 
 	@Environment(\.scenePhase) var scenePhase
 
@@ -23,10 +34,29 @@ struct MeshtasticAppleApp: App {
 	@State var addChannels = false
 	@StateObject var appState = AppState.shared
 
+	init() {
+		let persistenceController = PersistenceController()
+		let backgroundContext = persistenceController.container.newBackgroundContext()
+		let updateCoreDataController = UpdateCoreDataController(context: backgroundContext)
+		let queryCoreDataController = QueryCoreDataController(context: persistenceController.container.viewContext)
+		
+		self.persistenceController = persistenceController
+		self.updateCoreDataController = updateCoreDataController
+		self.queryCoreDataController = queryCoreDataController
+		self.bleManager = BLEManager(
+			context: persistenceController.container.viewContext,
+			updateCoreDataController: updateCoreDataController,
+			queryCoreDataController: queryCoreDataController
+		)
+	}
+
     var body: some Scene {
         WindowGroup {
 			ContentView()
 			.environment(\.managedObjectContext, persistenceController.container.viewContext)
+			.environmentObject(persistenceController)
+			.environmentObject(updateCoreDataController)
+			.environmentObject(queryCoreDataController)
 			.environmentObject(bleManager)
 			.sheet(isPresented: $saveChannels) {
 				SaveChannelQRCode(channelSetLink: channelSettings ?? "Empty Channel URL", addChannels: addChannels, bleManager: bleManager)
@@ -41,7 +71,7 @@ struct MeshtasticAppleApp: App {
 				if (self.incomingUrl?.absoluteString.lowercased().contains("meshtastic.org/e/#")) != nil {
 					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
 						self.addChannels = Bool(self.incomingUrl?["add"] ?? "false") ?? false
-						if ((self.incomingUrl?.absoluteString.lowercased().contains("?")) != nil) {
+						if (self.incomingUrl?.absoluteString.lowercased().contains("?")) != nil {
 							guard let cs = components.last!.components(separatedBy: "?").first else {
 								return
 							}
