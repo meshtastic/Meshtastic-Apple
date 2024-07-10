@@ -10,6 +10,11 @@ import CoreLocation
 import OSLog
 
 struct NodeDetail: View {
+	private static let relativeFormatter: RelativeDateTimeFormatter = {
+		let formatter = RelativeDateTimeFormatter()
+		formatter.unitsStyle = .full
+		return formatter
+	}()
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -129,7 +134,7 @@ struct NodeDetail: View {
 						}
 					}
 
-					if let firstHeard = node.firstHeard {
+					if let firstHeard = node.firstHeard, let text = Self.relativeFormatter.string(for: firstHeard) {
 						HStack {
 							Label {
 								Text("First heard")
@@ -139,12 +144,12 @@ struct NodeDetail: View {
 							}
 							Spacer()
 
-							LastHeardText(lastHeard: firstHeard)
+							Text(text)
 								.textSelection(.enabled)
 						}
 					}
 
-					if let lastHeard = node.lastHeard {
+					if let lastHeard = node.lastHeard, let text = Self.relativeFormatter.string(for: lastHeard) {
 						HStack {
 							Label {
 								Text("Last heard")
@@ -154,7 +159,7 @@ struct NodeDetail: View {
 							}
 							Spacer()
 
-							LastHeardText(lastHeard: lastHeard)
+							Text(text)
 								.textSelection(.enabled)
 						}
 					}
