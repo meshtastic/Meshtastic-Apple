@@ -82,6 +82,19 @@ struct NodeDetail: View {
 						}
 					}
 
+					if let role = node.user?.role, let deviceRole = DeviceRoles(rawValue: Int(role)) {
+						HStack {
+							Label {
+								Text("Role")
+							} icon: {
+								Image(systemName: deviceRole.systemName)
+									.symbolRenderingMode(.multicolor)
+							}
+							Spacer()
+							Text(deviceRole.name)
+						}
+					}
+
 					if let dm = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity, dm.uptimeSeconds > 0 {
 						HStack {
 							Label {
