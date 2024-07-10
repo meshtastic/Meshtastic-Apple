@@ -18,13 +18,11 @@ struct NodeDetail: View {
 
 	// The node the device is currently connected to
 	var connectedNode: NodeInfoEntity?
-	
 	// The node information being displayed on the detail screen
 	@ObservedObject
 	var node: NodeInfoEntity
-	
 	var columnVisibility = NavigationSplitViewVisibility.all
-
+	
 	var favoriteNodeAction: some View {
 		let connectedNodeNum = bleManager.connectedPeripheral?.num ?? 0
 		return Button {
@@ -70,7 +68,6 @@ struct NodeDetail: View {
 				Section("Hardware") {
 					NodeInfoItem(node: node)
 				}
-
 				Section("Node") {
 					HStack {
 						Label {
@@ -126,7 +123,16 @@ struct NodeDetail: View {
 						}
 					}
 				}
-
+				if UserDefaults.environmentEnableWeatherKit || (node.telemetryConfig?.environmentMeasurementEnabled ?? false) {
+					Section("Environment") {
+						LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
+					//	NodeWeatherForecastView(location: node.latestPosition?.nodeLocation)
+						IndoorAirQuality(iaq: Int(node.latestEnvironmentMetrics?.iaq ?? 0), displayMode: .gauge)
+					//	if node.latestEnvironmentMetrics == nil {
+							
+					//	}
+					}
+				}
 				Section("Logs") {
 					// Metrics
 					NavigationLink {

@@ -12,7 +12,7 @@ import WeatherKit
 import OSLog
 
 struct NodeWeatherForecastView: View {
-	var location: CLLocation
+	var location: CLLocation?
 
 	@State private var forecast: NodeWeatherForecast = placeholderForecast
 
@@ -26,14 +26,16 @@ struct NodeWeatherForecastView: View {
 		.background()
 		.task {
 			do {
-				let weather = try await WeatherService.shared.weather(for: location, including: .hourly).forecast
-				forecast = NodeWeatherForecast(entries: weather.map {
-					.init(
-						date: $0.date,
-						degrees: $0.temperature.converted(to: .fahrenheit).value,
-						isDaylight: $0.isDaylight
-					)
-				})
+				if location != nil {
+					let weather = try await WeatherService.shared.weather(for: location!, including: .hourly).forecast
+					forecast = NodeWeatherForecast(entries: weather.map {
+						.init(
+							date: $0.date,
+							degrees: $0.temperature.converted(to: .fahrenheit).value,
+							isDaylight: $0.isDaylight
+						)
+					})
+				}
 			} catch {
 				Logger.services.error("Could not load weather: \(error.localizedDescription)")
 			}
