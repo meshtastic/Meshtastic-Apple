@@ -10798,6 +10798,9 @@
         }
       }
     },
+    "Last heard" : {
+
+    },
     "Latitude" : {
 
     },
@@ -21713,7 +21716,6 @@
 
     },
     "unknown" : {
-      "extractionState" : "migrated",
       "localizations" : {
         "de" : {
           "stringUnit" : {

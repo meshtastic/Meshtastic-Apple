@@ -18,11 +18,11 @@ struct NodeDetail: View {
 
 	// The node the device is currently connected to
 	var connectedNode: NodeInfoEntity?
-	
+
 	// The node information being displayed on the detail screen
 	@ObservedObject
 	var node: NodeInfoEntity
-	
+
 	var columnVisibility = NavigationSplitViewVisibility.all
 
 	var favoriteNodeAction: some View {
@@ -96,6 +96,20 @@ struct NodeDetail: View {
 						.textSelection(.enabled)
 					}
 
+					if let metadata = node.metadata {
+						HStack {
+							Label {
+								Text("firmware.version")
+							} icon: {
+								Image(systemName: "memorychip")
+									.symbolRenderingMode(.multicolor)
+							}
+							Spacer()
+
+							Text(metadata.firmwareVersion ?? "unknown".localized)
+						}
+					}
+
 					if let dm = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity, dm.uptimeSeconds > 0 {
 						HStack {
 							Label {
@@ -111,21 +125,22 @@ struct NodeDetail: View {
 							let later = now + TimeInterval(dm.uptimeSeconds)
 							let uptime = (now..<later).formatted(.components(style: .narrow))
 							Text(uptime)
-							.textSelection(.enabled)
+								.textSelection(.enabled)
 						}
 					}
 
-					if let metadata = node.metadata {
+					if let lastHeard = node.lastHeard {
 						HStack {
 							Label {
-								Text("firmware.version")
+								Text("Last heard")
 							} icon: {
-								Image(systemName: "memorychip")
+								Image(systemName: "clock.arrow.circlepath")
 									.symbolRenderingMode(.multicolor)
 							}
 							Spacer()
 
-							Text(metadata.firmwareVersion ?? "unknown".localized)
+							LastHeardText(lastHeard: lastHeard)
+								.textSelection(.enabled)
 						}
 					}
 				}
