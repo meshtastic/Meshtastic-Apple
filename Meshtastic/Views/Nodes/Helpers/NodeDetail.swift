@@ -20,6 +20,7 @@ struct NodeDetail: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
+	@State private var dateFormatRelative: Bool = true
 
 	// The node the device is currently connected to
 	var connectedNode: NodeInfoEntity?
@@ -134,7 +135,7 @@ struct NodeDetail: View {
 						}
 					}
 
-					if let firstHeard = node.firstHeard, let text = Self.relativeFormatter.string(for: firstHeard) {
+					if let firstHeard = node.firstHeard {
 						HStack {
 							Label {
 								Text("First heard")
@@ -143,13 +144,19 @@ struct NodeDetail: View {
 									.symbolRenderingMode(.multicolor)
 							}
 							Spacer()
-
-							Text(text)
-								.textSelection(.enabled)
+							if dateFormatRelative, let text = Self.relativeFormatter.string(for: firstHeard) {
+								Text(text)
+									.textSelection(.enabled)
+							} else {
+								Text(firstHeard.formatted())
+									.textSelection(.enabled)
+							}
+						}.onTapGesture {
+							dateFormatRelative.toggle()
 						}
 					}
 
-					if let lastHeard = node.lastHeard, let text = Self.relativeFormatter.string(for: lastHeard) {
+					if let lastHeard = node.lastHeard {
 						HStack {
 							Label {
 								Text("Last heard")
@@ -159,8 +166,15 @@ struct NodeDetail: View {
 							}
 							Spacer()
 
-							Text(text)
-								.textSelection(.enabled)
+							if dateFormatRelative, let text = Self.relativeFormatter.string(for: lastHeard) {
+								Text(text)
+									.textSelection(.enabled)
+							} else {
+								Text(lastHeard.formatted())
+									.textSelection(.enabled)
+							}
+						}.onTapGesture {
+							dateFormatRelative.toggle()
 						}
 					}
 				}
