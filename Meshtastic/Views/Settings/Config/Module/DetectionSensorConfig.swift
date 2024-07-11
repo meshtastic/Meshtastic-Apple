@@ -26,6 +26,7 @@ struct DetectionSensorConfig: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var queryCoreDataController: QueryCoreDataController
 	@Environment(\.dismiss) private var goBack
 	var node: NodeInfoEntity?
 	@State private var isPresentingSaveConfirm: Bool = false
@@ -159,7 +160,7 @@ struct DetectionSensorConfig: View {
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.detectionSensorConfig == nil)
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
+			let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1)
 			if connectedNode != nil {
 				var dsc = ModuleConfig.DetectionSensorConfig()
 				dsc.enabled = self.enabled
@@ -185,14 +186,11 @@ struct DetectionSensorConfig: View {
 				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
 		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
 			setDetectionSensorValues()
 			// Need to request a Detection Sensor Module Config from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.detectionSensorConfig == nil {
 				Logger.mesh.info("empty detection sensor module config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+				let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral.num)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestDetectionSensorModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}

@@ -12,6 +12,7 @@ struct UserConfig: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var queryCoreDataController: QueryCoreDataController
 	@Environment(\.dismiss) private var goBack
 
 	var node: NodeInfoEntity?
@@ -149,8 +150,8 @@ struct UserConfig: View {
 							return
 						}
 
-						let connectedUser = getUser(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
-						let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
+						let connectedUser = queryCoreDataController.getUser(id: bleManager.connectedPeripheral?.num ?? -1)
+						let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1)
 						if node != nil && connectedNode != nil {
 
 							if !isLicensed {

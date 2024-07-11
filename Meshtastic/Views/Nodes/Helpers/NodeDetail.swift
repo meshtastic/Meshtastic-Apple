@@ -18,6 +18,7 @@ struct NodeDetail: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var queryCoreDataController: QueryCoreDataController
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
 	@State private var dateFormatRelative: Bool = true
@@ -34,10 +35,7 @@ struct NodeDetail: View {
 	var body: some View {
 		NavigationStack {
 			List {
-				let connectedNode = getNodeInfo(
-					id: bleManager.connectedPeripheral?.num ?? -1,
-					context: context
-				)
+				let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1)
 
 				Section("Hardware") {
 					NodeInfoItem(node: node)
@@ -369,11 +367,6 @@ struct NodeDetail: View {
 				}
 			}
 			.listStyle(.insetGrouped)
-			.onAppear {
-				if self.bleManager.context == nil {
-					self.bleManager.context = context
-				}
-			}
 		}
 	}
 }

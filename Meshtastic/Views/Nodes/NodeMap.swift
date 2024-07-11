@@ -238,12 +238,9 @@ struct NodeMap: View {
 				name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName :
 					"?")
 		})
-		.onAppear(perform: {
+		.onAppear {
 			UIApplication.shared.isIdleTimerDisabled = true
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
-		})
+		}
 		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false
 		})

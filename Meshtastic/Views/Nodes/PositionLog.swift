@@ -10,6 +10,7 @@ import OSLog
 struct PositionLog: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var updateCoreDataController: UpdateCoreDataController
 	@Environment(\.verticalSizeClass) var verticalSizeClass: UserInterfaceSizeClass?
 	@Environment(\.horizontalSizeClass) var horizontalSizeClass: UserInterfaceSizeClass?
 	var useGrid: Bool {
@@ -130,7 +131,7 @@ struct PositionLog: View {
 						titleVisibility: .visible
 					) {
 						Button("Delete all positions?", role: .destructive) {
-							if clearPositions(destNum: node.num, context: context) {
+							if updateCoreDataController.clearPositions(destNum: node.num) {
 								Logger.services.info("Successfully Cleared Position Log")
 							} else {
 								Logger.services.error("Clear Position Log Failed")
@@ -179,10 +180,5 @@ struct PositionLog: View {
 				ZStack {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
-		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
-		}
 	}
 }

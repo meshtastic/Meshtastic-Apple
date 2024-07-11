@@ -11,6 +11,7 @@ import SwiftUI
 struct CannedMessagesConfig: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var queryCoreDataController: QueryCoreDataController
 	@Environment(\.dismiss) private var goBack
 	var node: NodeInfoEntity?
 	@State private var isPresentingSaveConfirm: Bool = false
@@ -178,7 +179,7 @@ struct CannedMessagesConfig: View {
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.cannedMessageConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
+				let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1)
 				if hasChanges {
 					if connectedNode != nil {
 						var cmc = ModuleConfig.CannedMessageConfig()
@@ -229,14 +230,11 @@ struct CannedMessagesConfig: View {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 			})
 			.onAppear {
-				if self.bleManager.context == nil {
-					self.bleManager.context = context
-				}
 				setCannedMessagesValues()
 				// Need to request a CannedMessagesModuleConfig from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.cannedMessageConfig == nil {
 					Logger.mesh.info("empty canned messages module config")
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+					let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral.num)
 					if node != nil && connectedNode != nil {
 						_ = bleManager.requestCannedMessagesModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					}

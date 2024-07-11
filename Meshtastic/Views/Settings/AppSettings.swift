@@ -8,6 +8,7 @@ import OSLog
 struct AppSettings: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var persistenceController: PersistenceController
 	@ObservedObject var tileManager = OfflineTileManager.shared
 	@State var totalDownloadedTileSize = ""
 	@State private var isPresentingCoreDataResetConfirm = false
@@ -57,7 +58,7 @@ struct AppSettings: View {
 									Logger.services.error("🗄 Error Deleting Meshtastic.sqlite file \(error, privacy: .public)")
 								}
 							}
-							clearCoreDataDatabase(context: context, includeRoutes: true)
+							persistenceController.clearCoreDataDatabase(context: context, includeRoutes: true)
 							context.refreshAllObjects()
 							UserDefaults.standard.reset()
 						}
@@ -94,10 +95,5 @@ struct AppSettings: View {
 								ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
-		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
-		}
 	}
 }

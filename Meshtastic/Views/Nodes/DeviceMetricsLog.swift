@@ -12,6 +12,7 @@ struct DeviceMetricsLog: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var updateCoreDataController: UpdateCoreDataController
 
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
@@ -188,7 +189,7 @@ struct DeviceMetricsLog: View {
 						titleVisibility: .visible
 					) {
 						Button("device.metrics.delete", role: .destructive) {
-							if clearTelemetry(destNum: node.num, metricsType: 0, context: context) {
+							if updateCoreDataController.clearTelemetry(destNum: node.num, metricsType: 0) {
 								Logger.data.notice("Cleared Device Metrics for \(node.num)")
 							} else {
 								Logger.data.error("Clear Device Metrics Log Failed")
@@ -222,11 +223,6 @@ struct DeviceMetricsLog: View {
 			ZStack {
 				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
-		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
-		}
 		.fileExporter(
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),

@@ -13,6 +13,8 @@ import SwiftUI
 struct WaypointFormMapKit: View {
 
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var queryCoreDataController: QueryCoreDataController
+	@Environment(\.managedObjectContext) private var context
 	@Environment(\.dismiss) private var dismiss
 	@State var coordinate: WaypointCoordinate
 	@FocusState private var iconIsFocused: Bool
@@ -122,7 +124,7 @@ struct WaypointFormMapKit: View {
 				// Loading a waypoint from edit
 				if coordinate.waypointId > 0 {
 					newWaypoint.id = UInt32(coordinate.waypointId)
-					let waypoint  = getWaypoint(id: Int64(coordinate.waypointId), context: bleManager.context!)
+					let waypoint = queryCoreDataController.getWaypoint(id: Int64(coordinate.waypointId))
 					newWaypoint.latitudeI = waypoint.latitudeI
 					newWaypoint.longitudeI = waypoint.longitudeI
 				} else {
@@ -179,14 +181,15 @@ struct WaypointFormMapKit: View {
 
 				Menu {
 					Button("For me", action: {
-						let waypoint  = getWaypoint(id: Int64(coordinate.waypointId), context: bleManager.context!)
-						bleManager.context!.delete(waypoint)
-					 do {
-						 try bleManager.context!.save()
-					 } catch {
-						 bleManager.context!.rollback()
-					 }
-					 dismiss() })
+						let waypoint = queryCoreDataController.getWaypoint(id: Int64(coordinate.waypointId))
+						context.delete(waypoint)
+						do {
+							try context.save()
+						} catch {
+							context.rollback()
+						}
+						dismiss()
+					})
 					Button("For everyone", action: {
 						var newWaypoint = Waypoint()
 
@@ -230,7 +233,7 @@ struct WaypointFormMapKit: View {
 		}
 		.onAppear {
 			if coordinate.waypointId > 0 {
-				let waypoint  = getWaypoint(id: Int64(coordinate.waypointId), context: bleManager.context!)
+				let waypoint = queryCoreDataController.getWaypoint(id: Int64(coordinate.waypointId))
 				name = waypoint.name ?? "Dropped Pin"
 				description = waypoint.longDescription ?? ""
 				icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")

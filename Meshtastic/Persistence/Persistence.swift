@@ -8,9 +8,7 @@
 import CoreData
 import OSLog
 
-class PersistenceController {
-
-	static let shared = PersistenceController()
+class PersistenceController: ObservableObject {
 
 	static var preview: PersistenceController = {
 		let result = PersistenceController(inMemory: false)
@@ -72,6 +70,29 @@ class PersistenceController {
 			Logger.data.error("Failed to destroy CoreData database, delete the app and re-install to clear data. Attempted to clear persistent store: \(error.localizedDescription)")
 		}
 	}
+	
+	public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes: Bool) {
+		for i in 0...container.managedObjectModel.entities.count-1 {
+			
+			let entity = container.managedObjectModel.entities[i]
+			let query = NSFetchRequest<NSFetchRequestResult>(entityName: entity.name!)
+			var deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
+			let entityName = entity.name ?? "UNK"
+			
+			if includeRoutes {
+				deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
+			} else if !includeRoutes {
+				if !(entityName.contains("RouteEntity") || entityName.contains("LocationEntity")) {
+					deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
+				}
+			}
+			do {
+				try context.executeAndMergeChanges(using: deleteRequest)
+			} catch {
+				Logger.data.error("\(error.localizedDescription)")
+			}
+		}
+	}
 }
 
 extension NSManagedObjectContext {
@@ -103,40 +124,7 @@ extension NSPersistentContainer {
 		case invalidSource(String)
 	}
 
-	/// Restore a persistent store for a URL `backupURL`.
-	/// **Be very careful with this**. To restore a persistent store, the current persistent store must be removed from the container. When that happens, **all currently loaded Core Data objects** will become invalid. Using them after restoring will cause your app to crash. When calling this method you **must** ensure that you do not continue to use any previously fetched managed objects or existing fetched results controllers. **If this method does not throw, that does not mean your app is safe.** You need to take extra steps to prevent crashes. The details vary depending on the nature of your app.
-	/// - Parameter backupURL: A file URL containing backup copies of all currently loaded persistent stores.
-	/// - Throws: `CopyPersistentStoreError` in various situations.
-	/// - Returns: Nothing. If no errors are thrown, the restore is complete.
-//	func restorePersistentStore(from backupURL: URL) throws -> Void {
-//		guard backupURL.isFileURL else {
-//			throw CopyPersistentStoreErrors.invalidSource("Backup URL must be a file URL")
-//		}
-//
-//		for persistentStoreDescription in persistentStoreDescriptions {
-//			guard let loadedStoreURL = persistentStoreDescription.url else {
-//				continue
-//			}
-//			guard FileManager.default.fileExists(atPath: backupURL.path) else {
-//				throw CopyPersistentStoreErrors.invalidSource("Missing backup store for \(backupURL)")
-//			}
-//			do {
-//				let storeOptions = persistentStoreDescription.options
-//				let configurationName = persistentStoreDescription.configuration
-//				let storeType = persistentStoreDescription.type
-//
-//				// Replace the current store with the backup copy. This has a side effect of removing the current store from the Core Data stack.
-//				// When restoring, it's necessary to use the current persistent store coordinator.
-//				try persistentStoreCoordinator.replacePersistentStore(at: loadedStoreURL, destinationOptions: storeOptions, withPersistentStoreFrom: backupURL, sourceOptions: storeOptions, ofType: storeType)
-//				// Add the persistent store at the same location we've been using, because it was removed in the previous step.
-//				try persistentStoreCoordinator.addPersistentStore(ofType: storeType, configurationName: configurationName, at: loadedStoreURL, options: storeOptions)
-//			} catch {
-//				throw CopyPersistentStoreErrors.copyStoreError("Could not restore: \(error.localizedDescription)")
-//			}
-//		}
-//	}
-//	
-	/// Restore backup persistent stores located in the directory referenced by `backupURL`.
+	 /// Restore backup persistent stores located in the directory referenced by `backupURL`.
 	 ///
 	 /// **Be very careful with this**. To restore a persistent store, the current persistent store must be removed from the container. When that happens, **all currently loaded Core Data objects** will become invalid. Using them after restoring will cause your app to crash. When calling this method you **must** ensure that you do not continue to use any previously fetched managed objects or existing fetched results controllers. **If this method does not throw, that does not mean your app is safe.** You need to take extra steps to prevent crashes. The details vary depending on the nature of your app.
 	 /// - Parameter backupURL: A file URL containing backup copies of all currently loaded persistent stores.

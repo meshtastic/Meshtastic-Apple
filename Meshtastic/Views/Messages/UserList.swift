@@ -17,6 +17,7 @@ struct UserList: View {
 	@StateObject var appState = AppState.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var updateCoreDataController: UpdateCoreDataController
 	@State private var searchText = ""
 	@State private var viaLora = true
 	@State private var viaMqtt = true
@@ -158,7 +159,7 @@ struct UserList: View {
 							titleVisibility: .visible
 						) {
 							Button(role: .destructive) {
-								deleteUserMessages(user: userSelection!, context: context)
+								updateCoreDataController.deleteUserMessages(user: userSelection!)
 								context.refresh(node!.user!, mergeChanges: true)
 								UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 							} label: {
@@ -210,9 +211,6 @@ struct UserList: View {
 				userSelection = users.first(where: { $0.num == newUserNum })
 			}
 			.onAppear {
-				if self.bleManager.context == nil {
-					self.bleManager.context = context
-				}
 				searchUserList()
 			}
 			.safeAreaInset(edge: .bottom, alignment: .trailing) {

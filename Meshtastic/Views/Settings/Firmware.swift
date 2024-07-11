@@ -12,6 +12,7 @@ import OSLog
 struct Firmware: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var queryCoreDataController: QueryCoreDataController
 	var node: NodeInfoEntity?
 	@State var minimumVersion = "2.3.15"
 	@State var version = ""
@@ -108,7 +109,7 @@ struct Firmware: View {
 								.foregroundStyle(.gray)
 								.font(.caption)
 							Button {
-								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
+								let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0)
 								if connectedNode != nil {
 
 									if bleManager.sendEnterDfuMode(fromUser: connectedNode!.user!, toUser: node!.user!) {
@@ -158,7 +159,7 @@ struct Firmware: View {
 						HStack(alignment: .center) {
 							Spacer()
 							Button {
-								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
+								let connectedNode = queryCoreDataController.getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0)
 								if connectedNode != nil {
 									if !bleManager.sendRebootOta(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex) {
 										Logger.mesh.error("Reboot Failed")
