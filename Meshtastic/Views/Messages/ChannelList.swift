@@ -11,7 +11,6 @@ import OSLog
 
 struct ChannelList: View {
 
-	@StateObject var appState = AppState.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 
@@ -142,7 +141,6 @@ struct ChannelList: View {
 								Button(role: .destructive) {
 									deleteChannelMessages(channel: channelSelection!, context: context)
 									context.refresh(myInfo, mergeChanges: true)
-									UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 									channelSelection = nil
 								} label: {
 									Text("delete")

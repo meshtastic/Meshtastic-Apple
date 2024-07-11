@@ -18853,6 +18853,7 @@
       }
     },
     "select.menu.item" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

@@ -11,7 +11,7 @@ import OSLog
 import SwiftUI
 
 struct ChannelMessageList: View {
-	@StateObject var appState = AppState.shared
+	@EnvironmentObject var appState: AppState
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 
@@ -80,7 +80,6 @@ struct ChannelMessageList: View {
 
 									TapbackResponses(message: message) {
 										appState.unreadChannelMessages = myInfo.unreadMessages
-										UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 										context.refresh(myInfo, mergeChanges: true)
 									}
 
@@ -118,7 +117,6 @@ struct ChannelMessageList: View {
 										try context.save()
 										Logger.data.info("📖 [App] Read message \(message.messageId) ")
 										appState.unreadChannelMessages = myInfo.unreadMessages
-										UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 										context.refresh(myInfo, mergeChanges: true)
 									} catch {
 										Logger.data.error("Failed to read message \(message.messageId): \(error.localizedDescription)")

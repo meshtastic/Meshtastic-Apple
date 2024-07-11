@@ -14,44 +14,22 @@ import TipKit
 struct Settings: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "favorite", ascending: false),
-									NSSortDescriptor(key: "user.longName", ascending: true)], animation: .default)
+	@FetchRequest(
+		sortDescriptors: [
+			NSSortDescriptor(key: "favorite", ascending: false),
+			NSSortDescriptor(key: "user.longName", ascending: true)
+		],
+		animation: .default
+	)
 	private var nodes: FetchedResults<NodeInfoEntity>
+
 	@State private var selectedNode: Int = 0
 	@State private var preferredNodeNum: Int = 0
-	@State private var selection: SettingsSidebar = .about
 
-	enum SettingsSidebar {
-		case appSettings
-		case routes
-		case routeRecorder
-		case shareChannels
-		case userConfig
-		case loraConfig
-		case channelConfig
-		case bluetoothConfig
-		case deviceConfig
-		case displayConfig
-		case networkConfig
-		case paxCounterConfig
-		case positionConfig
-		case powerConfig
-		case ambientLightingConfig
-		case cannedMessagesConfig
-		case detectionSensorConfig
-		case externalNotificationConfig
-		case mqttConfig
-		case rangeTestConfig
-		case ringtoneConfig
-		case serialConfig
-		case storeAndForwardConfig
-		case telemetryConfig
-		case meshLog
-		case adminMessageLog
-		case about
-		case appLog
-		case appData
-	}
+	@ObservedObject
+	var router: Router
+
+	// MARK: Views
 
 	var radioConfigurationSection: some View {
 		Section("radio.configuration") {
@@ -77,9 +55,7 @@ struct Settings: View {
 					.foregroundColor(.gray)
 			}
 
-			NavigationLink {
-				LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }))
-			} label: {
+			NavigationLink(value: SettingsNavigationState.lora) {
 				Label {
 					Text("lora")
 				} icon: {
@@ -87,72 +63,272 @@ struct Settings: View {
 						.rotationEffect(.degrees(-90))
 				}
 			}
-			.tag(SettingsSidebar.loraConfig)
 
-			NavigationLink {
-				Channels(node: node)
-			} label: {
+			NavigationLink(value: SettingsNavigationState.channels) {
 				Label {
 					Text("channels")
 				} icon: {
 					Image(systemName: "fibrechannel")
 				}
 			}
-			.tag(SettingsSidebar.channelConfig)
 			.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
 
-			NavigationLink {
-				ShareChannels(node: node)
-			} label: {
+			NavigationLink(value: SettingsNavigationState.shareQRCode) {
 				Label {
 					Text("share.channels")
 				} icon: {
 					Image(systemName: "qrcode")
 				}
 			}
-			.tag(SettingsSidebar.shareChannels)
+			.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
+		}
+	}
+
+	var deviceConfigurationSection: some View {
+		Section("device.configuration") {
+			NavigationLink(value: SettingsNavigationState.user) {
+				Label {
+					Text("user")
+				} icon: {
+					Image(systemName: "person.crop.rectangle.fill")
+				}
+			}
+
+			NavigationLink(value: SettingsNavigationState.bluetooth) {
+				Label {
+					Text("bluetooth")
+				} icon: {
+					Image(systemName: "antenna.radiowaves.left.and.right")
+				}
+			}
+
+			NavigationLink(value: SettingsNavigationState.device) {
+				Label {
+					Text("device")
+				} icon: {
+					Image(systemName: "flipphone")
+				}
+			}
+
+			NavigationLink(value: SettingsNavigationState.display) {
+				Label {
+					Text("display")
+				} icon: {
+					Image(systemName: "display")
+				}
+			}
+
+			NavigationLink(value: SettingsNavigationState.network) {
+				Label {
+					Text("network")
+				} icon: {
+					Image(systemName: "network")
+				}
+			}
+
+			NavigationLink(value: SettingsNavigationState.position) {
+				Label {
+					Text("position")
+				} icon: {
+					Image(systemName: "location")
+				}
+			}
+
+			NavigationLink(value: SettingsNavigationState.power) {
+				Label {
+					Text("config.power.settings")
+				} icon: {
+					Image(systemName: "bolt.fill")
+				}
+			}
+		}
+	}
+
+	var moduleConfigurationSection: some View {
+		Section("module.configuration") {
+			if #available(iOS 17.0, macOS 14.0, *) {
+				NavigationLink(value: SettingsNavigationState.ambientLighting) {
+					Label {
+						Text("ambient.lighting")
+					} icon: {
+						Image(systemName: "light.max")
+					}
+				}
+			}
+
+			NavigationLink(value: SettingsNavigationState.cannedMessages) {
+				Label {
+					Text("canned.messages")
+				} icon: {
+					Image(systemName: "list.bullet.rectangle.fill")
+				}
+			}
+
+			NavigationLink(value: SettingsNavigationState.detectionSensor) {
+				Label {
+					Text("detection.sensor")
+				} icon: {
+					Image(systemName: "sensor")
+				}
+			}
+
+			NavigationLink(value: SettingsNavigationState.externalNotification) {
+				Label {
+					Text("external.notification")
+				} icon: {
+					Image(systemName: "megaphone")
+				}
+			}
+
+			NavigationLink(value: SettingsNavigationState.mqtt) {
+				Label {
+					Text("mqtt")
+				} icon: {
+					Image(systemName: "dot.radiowaves.up.forward")
+				}
+			}
+
+			NavigationLink(value: SettingsNavigationState.rangeTest) {
+				Label {
+					Text("range.test")
+				} icon: {
+					Image(systemName: "point.3.connected.trianglepath.dotted")
+				}
+			}
+
+			if let node = nodes.first(where: { $0.num == preferredNodeNum }),
+				node.metadata?.hasWifi ?? false {
+				NavigationLink(value: SettingsNavigationState.paxCounter) {
+					Label {
+						Text("config.module.paxcounter.settings")
+					} icon: {
+						Image(systemName: "figure.walk.motion")
+					}
+				}
+			}
+
+			NavigationLink(value: SettingsNavigationState.ringtone) {
+				Label {
+					Text("ringtone")
+				} icon: {
+					Image(systemName: "music.note.list")
+				}
+			}
+
+			NavigationLink(value: SettingsNavigationState.serial) {
+				Label {
+					Text("serial")
+				} icon: {
+					Image(systemName: "terminal")
+				}
+			}
+
+			NavigationLink(value: SettingsNavigationState.storeAndForward) {
+				Label {
+					Text("storeforward")
+				} icon: {
+					Image(systemName: "envelope.arrow.triangle.branch")
+				}
+			}
+
+			NavigationLink(value: SettingsNavigationState.telemetry) {
+				Label {
+					Text("telemetry")
+				} icon: {
+					Image(systemName: "chart.xyaxis.line")
+				}
+			}
+		}
+	}
+
+	var loggingSection: some View {
+		Section(header: Text("logging")) {
+			NavigationLink(value: SettingsNavigationState.meshLog) {
+				Label {
+					Text("mesh.log")
+				} icon: {
+					Image(systemName: "list.bullet.rectangle")
+				}
+			}
+
+			if #available (iOS 17.4, *) {
+				NavigationLink(value: SettingsNavigationState.debugLogs) {
+					Label {
+						Text("Debug Logs")
+					} icon: {
+						Image(systemName: "stethoscope")
+					}
+				}
+			}
+		}
+	}
+
+	var developersSection: some View {
+		Section(header: Text("Developers")) {
+			NavigationLink(value: SettingsNavigationState.appFiles) {
+				Label {
+					Text("App Files")
+				} icon: {
+					Image(systemName: "folder")
+				}
+			}
+		}
+	}
+
+	var firmwareSection: some View {
+		Section(header: Text("Firmware")) {
+			NavigationLink(value: SettingsNavigationState.firmwareUpdates) {
+				Label {
+					Text("Firmware Updates")
+				} icon: {
+					Image(systemName: "arrow.up.arrow.down.square")
+				}
+			}
 			.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
 		}
 	}
 
 	var body: some View {
-		NavigationSplitView {
+		NavigationStack(
+			path: Binding<[SettingsNavigationState]>(
+				get: {
+					guard case .settings(let route) = router.navigationState, let setting = route else {
+						return []
+					}
+					return [setting]
+				},
+				set: { newPath in
+					router.navigationState = .settings(newPath.first)
+				}
+			)
+		) {
 			let node = nodes.first(where: { $0.num == preferredNodeNum })
 			List {
-				NavigationLink {
-					AboutMeshtastic()
-				} label: {
+				NavigationLink(value: SettingsNavigationState.about) {
 					Label {
 						Text("about.meshtastic")
 					} icon: {
 						Image(systemName: "questionmark.app")
 					}
 				}
-				.tag(SettingsSidebar.about)
-				NavigationLink {
-					AppSettings()
-				} label: {
+
+				NavigationLink(value: SettingsNavigationState.appSettings) {
 					Label {
 						Text("appsettings")
 					} icon: {
 						Image(systemName: "gearshape")
 					}
 				}
-				.tag(SettingsSidebar.appSettings)
 				if #available(iOS 17.0, macOS 14.0, *) {
-					NavigationLink {
-						Routes()
-					} label: {
+					NavigationLink(value: SettingsNavigationState.routes) {
 						Label {
 							Text("routes")
 						} icon: {
 							Image(systemName: "road.lanes.curved.right")
 						}
 					}
-					.tag(SettingsSidebar.routes)
-					NavigationLink {
-						RouteRecorder()
-					} label: {
+
+					NavigationLink(value: SettingsNavigationState.routeRecorder) {
 						Label {
 							Text("route.recorder")
 						} icon: {
@@ -160,10 +336,9 @@ struct Settings: View {
 								.foregroundColor(.red)
 						}
 					}
-					.tag(SettingsSidebar.routeRecorder)
 				}
 
-				let hasAdmin = node?.myInfo?.adminIndex ?? 0 > 0 ? true : false
+				let hasAdmin = node?.myInfo?.adminIndex ?? 0 > 0
 
 				if !(node?.deviceConfig?.isManaged ?? false) {
 					if bleManager.connectedPeripheral != nil {
@@ -225,246 +400,84 @@ struct Settings: View {
 						}
 					}
 					radioConfigurationSection
-					Section("device.configuration") {
-						NavigationLink {
-							UserConfig(node: nodes.first(where: { $0.num == selectedNode }))
-						} label: {
-							Label {
-								Text("user")
-							} icon: {
-								Image(systemName: "person.crop.rectangle.fill")
-							}
-						}
-						.tag(SettingsSidebar.userConfig)
-						NavigationLink {
-							BluetoothConfig(node: nodes.first(where: { $0.num == selectedNode }))
-						} label: {
-							Label {
-								Text("bluetooth")
-							} icon: {
-								Image(systemName: "antenna.radiowaves.left.and.right")
-							}
-						}
-						.tag(SettingsSidebar.bluetoothConfig)
-						NavigationLink {
-							DeviceConfig(node: nodes.first(where: { $0.num == selectedNode }))
-						} label: {
-							Label {
-								Text("device")
-							} icon: {
-								Image(systemName: "flipphone")
-							}
-						}
-						.tag(SettingsSidebar.deviceConfig)
-						NavigationLink {
-							DisplayConfig(node: nodes.first(where: { $0.num == selectedNode }))
-						} label: {
-							Label {
-								Text("display")
-							} icon: {
-								Image(systemName: "display")
-							}
-						}
-						.tag(SettingsSidebar.displayConfig)
-						NavigationLink {
-							NetworkConfig(node: nodes.first(where: { $0.num == selectedNode }))
-						} label: {
-							Label {
-								Text("network")
-							} icon: {
-								Image(systemName: "network")
-							}
-						}
-						.tag(SettingsSidebar.networkConfig)
-						NavigationLink {
-							PositionConfig(node: nodes.first(where: { $0.num == selectedNode }))
-						} label: {
-							Label {
-								Text("position")
-							} icon: {
-								Image(systemName: "location")
-							}
-						}
-						.tag(SettingsSidebar.positionConfig)
-
-						NavigationLink {
-							PowerConfig(node: nodes.first(where: { $0.num == selectedNode }))
-						} label: {
-							Label {
-								Text("config.power.settings")
-							} icon: {
-								Image(systemName: "bolt.fill")
-							}
-						}
-						.tag(SettingsSidebar.powerConfig)
-					}
-					Section("module.configuration") {
-						if #available(iOS 17.0, macOS 14.0, *) {
-							NavigationLink {
-								AmbientLightingConfig(node: nodes.first(where: { $0.num == selectedNode }))
-							} label: {
-								Label {
-									Text("ambient.lighting")
-								} icon: {
-									Image(systemName: "light.max")
-								}
-							}
-							.tag(SettingsSidebar.ambientLightingConfig)
-						}
-						NavigationLink {
-							CannedMessagesConfig(node: nodes.first(where: { $0.num == selectedNode }))
-						} label: {
-							Label {
-								Text("canned.messages")
-							} icon: {
-								Image(systemName: "list.bullet.rectangle.fill")
-							}
-						}
-						.tag(SettingsSidebar.cannedMessagesConfig)
-						NavigationLink {
-							DetectionSensorConfig(node: nodes.first(where: { $0.num == selectedNode }))
-						} label: {
-							Label {
-								Text("detection.sensor")
-							} icon: {
-								Image(systemName: "sensor")
-							}
-						}
-						.tag(SettingsSidebar.detectionSensorConfig)
-						NavigationLink {
-							ExternalNotificationConfig(node: nodes.first(where: { $0.num == selectedNode }))
-						} label: {
-							Label {
-								Text("external.notification")
-							} icon: {
-								Image(systemName: "megaphone")
-							}
-						}
-						.tag(SettingsSidebar.externalNotificationConfig)
-						NavigationLink {
-							MQTTConfig(node: nodes.first(where: { $0.num == selectedNode }))
-						} label: {
-							Label {
-								Text("mqtt")
-							} icon: {
-								Image(systemName: "dot.radiowaves.up.forward")
-							}
-						}
-						.tag(SettingsSidebar.mqttConfig)
-						NavigationLink {
-							RangeTestConfig(node: nodes.first(where: { $0.num == selectedNode }))
-						} label: {
-							Label {
-								Text("range.test")
-							} icon: {
-								Image(systemName: "point.3.connected.trianglepath.dotted")
-							}
-						}
-						.tag(SettingsSidebar.rangeTestConfig)
-						if node?.metadata?.hasWifi ?? false {
-							NavigationLink {
-								PaxCounterConfig(node: nodes.first(where: { $0.num == selectedNode }))
-							} label: {
-								Label {
-									Text("config.module.paxcounter.settings")
-								} icon: {
-									Image(systemName: "figure.walk.motion")
-								}
-							}
-							.tag(SettingsSidebar.paxCounterConfig)
-						}
-						NavigationLink {
-							RtttlConfig(node: nodes.first(where: { $0.num == selectedNode }))
-						} label: {
-							Label {
-								Text("ringtone")
-							} icon: {
-								Image(systemName: "music.note.list")
-							}
-						}
-						.tag(SettingsSidebar.ringtoneConfig)
-						NavigationLink {
-							SerialConfig(node: nodes.first(where: { $0.num == selectedNode }))
-						} label: {
-							Label {
-								Text("serial")
-							} icon: {
-								Image(systemName: "terminal")
-							}
-						}
-						.tag(SettingsSidebar.serialConfig)
-						NavigationLink {
-							StoreForwardConfig(node: nodes.first(where: { $0.num == selectedNode }))
-						} label: {
-							Label {
-								Text("storeforward")
-							} icon: {
-								Image(systemName: "envelope.arrow.triangle.branch")
-							}
-						}
-						.tag(SettingsSidebar.storeAndForwardConfig)
-						NavigationLink {
-							TelemetryConfig(node: nodes.first(where: { $0.num == selectedNode }))
-						} label: {
-							Label {
-								Text("telemetry")
-							} icon: {
-								Image(systemName: "chart.xyaxis.line")
-							}
-						}
-						.tag(SettingsSidebar.telemetryConfig)
-					}
-					Section(header: Text("logging")) {
-						NavigationLink {
-							MeshLog()
-						} label: {
-							Label {
-								Text("mesh.log")
-							} icon: {
-								Image(systemName: "list.bullet.rectangle")
-							}
-						}
-						.tag(SettingsSidebar.meshLog)
-						if #available (iOS 17.4, *) {
-							NavigationLink {
-								AppLog()
-							} label: {
-								Label {
-									Text("Debug Logs")
-								} icon: {
-									Image(systemName: "stethoscope")
-								}
-							}
-							.tag(SettingsSidebar.appLog)
-						}
-					}
+					deviceConfigurationSection
+					moduleConfigurationSection
+					loggingSection
 #if DEBUG
-					Section(header: Text("Developers")) {
-						NavigationLink {
-							AppData()
-						} label: {
-							Label {
-								Text("App Files")
-							} icon: {
-								Image(systemName: "folder")
-							}
-						}
-						.tag(SettingsSidebar.appData)
-					}
+					developersSection
 #endif
-					Section(header: Text("Firmware")) {
-						NavigationLink {
-							Firmware(node: nodes.first(where: { $0.num == preferredNodeNum }))
-						} label: {
-							Label {
-								Text("Firmware Updates")
-							} icon: {
-								Image(systemName: "arrow.up.arrow.down.square")
-							}
-						}
-						.tag(SettingsSidebar.about)
-						.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
+					firmwareSection
+				}
+			}
+			.navigationDestination(for: SettingsNavigationState.self) { destination in
+				let node = nodes.first(where: { $0.num == preferredNodeNum })
+				switch destination {
+				case .about:
+					AboutMeshtastic()
+				case .appSettings:
+					AppSettings()
+				case .routes:
+					if #available(iOS 17.0, *) {
+						Routes()
 					}
+				case .routeRecorder:
+					if #available(iOS 17.0, *) {
+						RouteRecorder()
+					}
+				case .lora:
+					LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }))
+				case .channels:
+					Channels(node: node)
+				case .shareQRCode:
+					ShareChannels(node: node)
+				case .user:
+					UserConfig(node: node)
+				case .bluetooth:
+					BluetoothConfig(node: node)
+				case .device:
+					DeviceConfig(node: node)
+				case .display:
+					DisplayConfig(node: node)
+				case .network:
+					NetworkConfig(node: node)
+				case .position:
+					PositionConfig(node: node)
+				case .power:
+					PowerConfig(node: node)
+				case .ambientLighting:
+					if #available(iOS 17.0, *) {
+						AmbientLightingConfig(node: node)
+					}
+				case .cannedMessages:
+					CannedMessagesConfig(node: node)
+				case .detectionSensor:
+					DetectionSensorConfig(node: node)
+				case .externalNotification:
+					ExternalNotificationConfig(node: node)
+				case .mqtt:
+					MQTTConfig(node: node)
+				case .rangeTest:
+					RangeTestConfig(node: node)
+				case .paxCounter:
+					PaxCounterConfig(node: node)
+				case .ringtone:
+					RtttlConfig(node: node)
+				case .serial:
+					SerialConfig(node: node)
+				case .storeAndForward:
+					StoreForwardConfig(node: node)
+				case .telemetry:
+					TelemetryConfig(node: node)
+				case .meshLog:
+					MeshLog()
+				case .debugLogs:
+					if #available(iOS 17.4, *) {
+						AppLog()
+					}
+				case .appFiles:
+					AppData()
+				case .firmwareUpdates:
+					Firmware(node: node)
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { newConnectedNode in
@@ -489,18 +502,11 @@ struct Settings: View {
 					}
 				}
 			}
-			.listStyle(GroupedListStyle())
+			.listStyle(.insetGrouped)
 			.navigationTitle("settings")
-			.navigationBarItems(leading:
-				MeshtasticLogo()
+			.navigationBarItems(
+				leading: MeshtasticLogo()
 			)
-		}
-		detail: {
-			if #available (iOS 17, *) {
-				ContentUnavailableView("select.menu.item", systemImage: "gear")
-			} else {
-				Text("select.menu.item")
-			}
 		}
 	}
 }

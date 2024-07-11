@@ -13,7 +13,10 @@ import CoreData
 struct NodeMap: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	@StateObject var appState = AppState.shared
+
+	@ObservedObject
+	var router: Router
+	
 	@State var selectedMapLayer: MapLayer = UserDefaults.mapLayer
 	@State var enableMapRecentering: Bool = UserDefaults.enableMapRecentering
 	@State var enableMapRouteLines: Bool = UserDefaults.enableMapRouteLines

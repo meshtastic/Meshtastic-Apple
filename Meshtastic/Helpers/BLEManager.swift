@@ -12,10 +12,12 @@ import OSLog
 // ---------------------------------------------------------------------------------------
 class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate, ObservableObject {
 
+	var appState: AppState
+
 	var context: NSManagedObjectContext?
 
-	static let shared = BLEManager()
 	private var centralManager: CBCentralManager!
+
 	@Published var peripherals: [Peripheral] = []
 	@Published var connectedPeripheral: Peripheral!
 	@Published var lastConnectionError: String
@@ -24,7 +26,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	@Published var automaticallyReconnect: Bool = true
 	@Published var mqttProxyConnected: Bool = false
 	@Published var mqttError: String = ""
-	@StateObject var appState = AppState.shared
 	public var minimumVersion = "2.0.0"
 	public var connectedVersion: String
 	public var isConnecting: Bool = false
@@ -52,8 +53,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	let LEGACY_LOGRADIO_UUID = CBUUID(string: "0x6C6FD238-78FA-436B-AACF-15C5BE1EF2E2")
 	let LOGRADIO_UUID = CBUUID(string: "0x5a3d6e49-06e6-4423-9944-e9de8cdf9547")
 
-	// MARK: init BLEManager
-	override init() {
+	// MARK: init
+	
+	init(
+		appState: AppState
+	) {
+		self.appState = appState
 		self.lastConnectionError = ""
 		self.connectedVersion = "0.0.0"
 		super.init()
@@ -238,7 +243,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							subtitle: "\(peripheral.name ?? "unknown".localized)",
 							content: e.localizedDescription,
 							target: "bluetooth",
-							path: "meshtastic://bluetooth"
+							path: "meshtastic:///bluetooth"
 						)
 					]
 					manager.schedule()
@@ -258,7 +263,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							subtitle: "\(peripheral.name ?? "unknown".localized)",
 							content: e.localizedDescription,
 							target: "bluetooth",
-							path: "meshtastic://bluetooth"
+							path: "meshtastic:///bluetooth"
 						)
 					]
 					manager.schedule()
@@ -726,7 +731,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						let version = decodedInfo.metadata.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: decodedInfo.metadata.firmwareVersion))]
 						nowKnown = true
 						connectedVersion = String(version.dropLast())
-						appState.firmwareVersion = connectedVersion
 						UserDefaults.firmwareVersion = connectedVersion
 					}
 					let supportedVersion = connectedVersion == "0.0.0" ||  self.minimumVersion.compare(connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(connectedVersion, options: .numeric) == .orderedSame
@@ -739,7 +743,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// Log any other unknownApp calls
 				if !nowKnown { MeshLogger.log("🕸️ MESH PACKET received for Unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")") }
 			case .textMessageApp, .detectionSensorApp:
-				textMessageAppPacket(packet: decodedInfo.packet, wantRangeTestPackets: wantRangeTestPackets, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
+				textMessageAppPacket(
+					packet: decodedInfo.packet,
+					wantRangeTestPackets: wantRangeTestPackets,
+					connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0),
+					context: context!,
+					appState: appState
+				)
 			case .remoteHardwareApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .positionApp:
@@ -754,7 +764,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				adminAppPacket(packet: decodedInfo.packet, context: context!)
 			case .replyApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Reply App handling as a text message")
-				textMessageAppPacket(packet: decodedInfo.packet, wantRangeTestPackets: wantRangeTestPackets, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
+				textMessageAppPacket(
+					packet: decodedInfo.packet,
+					wantRangeTestPackets: wantRangeTestPackets,
+					connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0),
+					context: context!,
+					appState: appState
+				)
 			case .ipTunnelApp:
 				// MeshLogger.log("🕸️ MESH PACKET received for IP Tunnel App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 				MeshLogger.log("🕸️ MESH PACKET received for IP Tunnel App UNHANDLED UNHANDLED")
@@ -769,7 +785,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 			case .rangeTestApp:
 				if wantRangeTestPackets {
-					textMessageAppPacket(packet: decodedInfo.packet, wantRangeTestPackets: true, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
+					textMessageAppPacket(
+						packet: decodedInfo.packet,
+						wantRangeTestPackets: true,
+						connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0),
+						context: context!,
+						appState: appState
+					)
 				} else {
 					MeshLogger.log("🕸️ MESH PACKET received for Range Test App Range testing is disabled.")
 				}
@@ -893,12 +915,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								}
 							}
 							// Set initial unread message badge states
-							let appState = AppState.shared
 							appState.unreadChannelMessages = fetchedNodeInfo[0].myInfo?.unreadMessages ?? 0
 							appState.unreadDirectMessages = fetchedNodeInfo[0].user?.unreadMessages ?? 0
-							// appState.connectedNode = fetchedNodeInfo[0]
-							UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
-
 						}
 						if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].rangeTestConfig?.enabled == true {
 							wantRangeTestPackets = true
@@ -1117,6 +1135,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return success
 	}
 
+	@MainActor 
 	public func getPositionFromPhoneGPS(destNum: Int64) -> Position? {
 		var positionPacket = Position()
 		if #available(iOS 17.0, macOS 14.0, *) {
@@ -1162,6 +1181,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return positionPacket
 	}
 
+	@MainActor
 	public func setFixedPosition(fromUser: UserEntity, channel: Int32) -> Bool {
 		var adminPacket = AdminMessage()
 		guard let positionPacket = getPositionFromPhoneGPS(destNum: fromUser.num) else {
@@ -1216,6 +1236,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return false
 	}
 
+	@MainActor
 	public func sendPosition(channel: Int32, destNum: Int64, wantResponse: Bool) -> Bool {
 		let fromNodeNum = connectedPeripheral.num
 		guard let positionPacket = getPositionFromPhoneGPS(destNum: destNum) else {
@@ -1256,6 +1277,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			return false
 		}
 	}
+
+	@MainActor
 	@objc func positionTimerFired(timer: Timer) {
 		// Check for connected node
 		if connectedPeripheral != nil {
@@ -3060,10 +3083,24 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
 			case .routerTextDirect:
 				MeshLogger.log("💬 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
-				textMessageAppPacket(packet: packet, wantRangeTestPackets: false, connectedNode: connectedNodeNum, storeForward: true, context: context)
+				textMessageAppPacket(
+					packet: packet,
+					wantRangeTestPackets: false,
+					connectedNode: connectedNodeNum,
+					storeForward: true,
+					context: context,
+					appState: appState
+				)
 			case .routerTextBroadcast:
 				MeshLogger.log("✉️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
-				textMessageAppPacket(packet: packet, wantRangeTestPackets: false, connectedNode: connectedNodeNum, storeForward: true, context: context)
+				textMessageAppPacket(
+					packet: packet,
+					wantRangeTestPackets: false,
+					connectedNode: connectedNodeNum,
+					storeForward: true,
+					context: context,
+					appState: appState
+				)
 			}
 		}
 	}

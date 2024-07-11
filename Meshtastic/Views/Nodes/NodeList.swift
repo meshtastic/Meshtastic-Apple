@@ -9,8 +9,15 @@ import CoreLocation
 import OSLog
 
 struct NodeList: View {
+	@Environment(\.managedObjectContext)
+	var context
 
-	@StateObject var appState = AppState.shared
+	@EnvironmentObject
+	var bleManager: BLEManager
+
+	@ObservedObject
+	var router: Router
+
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
 	@State private var searchText = ""
@@ -37,14 +44,11 @@ struct NodeList: View {
 
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 
-	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
-
 	@FetchRequest(
 		sortDescriptors: [
 			NSSortDescriptor(key: "favorite", ascending: false),
 			NSSortDescriptor(key: "lastHeard", ascending: false),
-			NSSortDescriptor(key: "user.longName", ascending: true),
+			NSSortDescriptor(key: "user.longName", ascending: true)
 		],
 		animation: .spring
 	)
@@ -198,7 +202,6 @@ struct NodeList: View {
 			} else {
 				Text("Select something to view")
 			}
-
 		}
 		.navigationSplitViewStyle(.balanced)
 		.onChange(of: searchText) { _ in
@@ -242,31 +245,22 @@ struct NodeList: View {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: (appState.navigationPath)) { newPath in
-
-			guard let deepLink = newPath else {
-				return
-			}
-			if deepLink.hasPrefix("meshtastic://nodes") {
-
-				if let urlComponent = URLComponents(string: deepLink) {
-					let queryItems = urlComponent.queryItems
-					let nodeNum = queryItems?.first(where: { $0.name == "nodenum" })?.value
-					if nodeNum == nil {
-						Logger.data.debug("nodeNum not found")
-					} else {
-						selectedNode = nodes.first(where: { $0.num == Int64(nodeNum ?? "-1") })
-						AppState.shared.navigationPath = nil
-					}
-				}
+		.onChange(of: distanceFilter) { _ in
+			Task {
+				await searchNodeList()
 			}
 		}
 		.onAppear {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
+
 			Task {
 				await searchNodeList()
+			}
+			// Handle deep link routing
+			if case .nodes(let selected) = router.navigationState, let selectedNodeNum = selected {
+				self.selectedNode = getNodeInfo(id: selectedNodeNum, context: context)
 			}
 		}
 	}

@@ -14,7 +14,6 @@ import TipKit
 
 struct UserList: View {
 
-	@StateObject var appState = AppState.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@State private var searchText = ""
@@ -161,7 +160,6 @@ struct UserList: View {
 							Button(role: .destructive) {
 								deleteUserMessages(user: userSelection!, context: context)
 								context.refresh(node!.user!, mergeChanges: true)
-								UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 							} label: {
 								Text("delete")
 							}

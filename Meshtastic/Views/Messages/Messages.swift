@@ -14,9 +14,32 @@ import TipKit
 
 struct Messages: View {
 
-	@StateObject var appState = AppState.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+
+	@ObservedObject
+	var router: Router
+
+	@Binding
+	var unreadChannelMessages: Int
+
+	@Binding
+	var unreadDirectMessages: Int
+	
+	// Aliases the navigation state for the NavigationSplitView sidebar selection
+	private var messagesSelection: Binding<MessagesNavigationState?> {
+		Binding(
+			get: {
+				guard case .messages(let state) = router.navigationState else {
+					return nil
+				}
+				return state
+			},
+			set: { newValue in
+				router.navigationState = .messages(newValue)
+			}
+		)
+	}
 
 	@State var node: NodeInfoEntity?
 	@State private var userSelection: UserEntity? // Nothing selected by default.
@@ -24,42 +47,39 @@ struct Messages: View {
 
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 
-	enum MessagesSidebar {
-		case groupMessages
-		case directMessages
-	}
-
 	var body: some View {
-
 		NavigationSplitView(columnVisibility: $columnVisibility) {
-			// Sidebar
-			List {
-				NavigationLink {
-					ChannelList(node: node)
-				} label: {
-					Image(systemName: "person.3")
-						.symbolRenderingMode(.hierarchical)
-						.foregroundColor(.accentColor)
-						.brightness(0.2)
-						.font(.title)
-					Text("channels")
-						.font(.title2)
-						.badge(appState.unreadChannelMessages)
-						.padding(.vertical)
+			List(selection: messagesSelection) {
+				NavigationLink(value: MessagesNavigationState.channels()) {
+					Label {
+						Text("channels")
+							.badge(unreadChannelMessages)
+							.font(.title2)
+							.padding()
+					} icon: {
+						Image(systemName: "person.3")
+							.symbolRenderingMode(.hierarchical)
+							.foregroundColor(.accentColor)
+							.font(.title2)
+							.padding()
+					}
+
 				}
-				NavigationLink {
-					UserList(node: node)
-				} label: {
-					Image(systemName: "person.circle")
-						.symbolRenderingMode(.hierarchical)
-						.foregroundColor(.accentColor)
-						.brightness(0.2)
-						.font(.largeTitle)
-					Text("direct.messages")
-						.font(.title2)
-						.badge(appState.unreadDirectMessages)
-						.padding(.vertical)
+				NavigationLink(value: MessagesNavigationState.directMessages()) {
+					Label {
+						Text("direct.messages")
+							.badge(unreadDirectMessages)
+							.font(.title2)
+							.padding()
+					} icon: {
+						Image(systemName: "person.circle")
+							.symbolRenderingMode(.hierarchical)
+							.foregroundColor(.accentColor)
+							.font(.title2)
+							.padding()
+					}
 				}
+
 				if #available(iOS 17.0, macOS 14.0, *) {
 					TipView(MessagesTip(), arrowEdge: .top)
 				}
@@ -67,48 +87,33 @@ struct Messages: View {
 			.navigationTitle("messages")
 			.navigationBarTitleDisplayMode(.large)
 			.navigationBarItems(leading: MeshtasticLogo())
-			.onChange(of: (appState.navigationPath)) { newPath in
-
-				if (newPath?.hasPrefix("meshtastic://messages")) != nil {
-
-					if let urlComponent = URLComponents(string: newPath ?? "") {
-						let queryItems = urlComponent.queryItems
-						let messageId = queryItems?.first(where: { $0.name == "messageId" })?.value
-						let channel = queryItems?.first(where: { $0.name == "channel" })?.value
-
-						if let channel {
-							Logger.services.info("Deep Link Channel \(channel)")
-							//	selectedNode = nodes.first(where: { $0.num == Int64(nodeNum ?? "-1") })
-							//	AppState.shared.navigationPath = nil
-						} else {
-							Logger.services.info("Channel Deep Link not found")
-						}
-					}
-				}
-			}
 			.onAppear {
 				if self.bleManager.context == nil {
 					self.bleManager.context = context
 				}
-				if UserDefaults.preferredPeripheralId.count > 0 {
-					let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
-					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(UserDefaults.preferredPeripheralNum))
-					do {
-						let fetchedNode = try context.fetch(fetchNodeInfoRequest)
-						// Found a node, check it for a region
-						if !fetchedNode.isEmpty {
-							node = fetchedNode[0]
-						}
-					} catch {
 
-					}
+				let nodeId = Int64(UserDefaults.preferredPeripheralNum)
+				if nodeId > 0 {
+					node = getNodeInfo(id: nodeId, context: context)
 				}
 			}
-
 		} content: {
-
+			if case .messages(let state) = router.navigationState {
+				switch state {
+				case .channels:
+					// TODO: support linking to the channel
+					ChannelList(node: node)
+				case .directMessages(userNum: let userNum, messageId: _):
+					UserList(
+						node: node,
+						selectedUserNum: userNum
+					)
+				default:
+					EmptyView()
+				}
+			}
 		} detail: {
-
+			
 		}
 	}
 }

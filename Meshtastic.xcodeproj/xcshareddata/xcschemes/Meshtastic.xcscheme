@@ -33,7 +33,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "DDC2E16926CE248F0042C5E4"
+               BlueprintIdentifier = "25F5D5C62C4375A8008036E3"
                BuildableName = "MeshtasticTests.xctest"
                BlueprintName = "MeshtasticTests"
                ReferencedContainer = "container:Meshtastic.xcodeproj">

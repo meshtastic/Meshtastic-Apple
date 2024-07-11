@@ -6,75 +6,69 @@ import SwiftUI
 
 @available(iOS 17.0, *)
 struct ContentView: View {
+	@ObservedObject
+	var appState: AppState
 
-	@StateObject var appState = AppState.shared
+	private var tabBinding: Binding<NavigationState.Tab> {
+		Binding(
+			get: {
+				appState.router.navigationState.tab
+			},
+			set: { newValue in
+				appState.router.navigationState.tab = newValue
+			}
+		)
+	}
+
 	var body: some View {
-		TabView(selection: $appState.tabSelection) {
-			Messages()
-				.tabItem {
-					Label("messages", systemImage: "message")
-				}
-				.tag(Tab.contacts)
-				.badge(appState.unreadDirectMessages + appState.unreadChannelMessages)
+		TabView(selection: tabBinding) {
+			Messages(
+				router: appState.router,
+				unreadChannelMessages: $appState.unreadChannelMessages,
+				unreadDirectMessages: $appState.unreadDirectMessages
+			)
+			.tabItem {
+				Label("messages", systemImage: "message")
+			}
+			.tag(NavigationState.Tab.messages)
+			.badge(appState.totalUnreadMessages)
+
 			Connect()
 				.tabItem {
 					Label("bluetooth", systemImage: "antenna.radiowaves.left.and.right")
 				}
-				.tag(Tab.ble)
-			NodeList()
-				.tabItem {
-					Label("nodes", systemImage: "flipphone")
-				}
-				.tag(Tab.nodes)
-			if #available(iOS 17.0, macOS 14.0, *) {
-				if UserDefaults.mapUseLegacy {
-					NodeMap()
-						.tabItem {
-							Label("map", systemImage: "map")
-						}
-						.tag(Tab.map)
-				} else {
-					MeshMap()
-						.tabItem {
-							Label("map", systemImage: "map")
-						}
-						.tag(Tab.map)
-				}
-			} else {
-				NodeMap()
+				.tag(NavigationState.Tab.bluetooth)
+
+			NodeList(
+				router: appState.router
+			)
+			.tabItem {
+				Label("nodes", systemImage: "flipphone")
+			}
+			.tag(NavigationState.Tab.nodes)
+
+			if #available(iOS 17.0, macOS 14.0, *), !UserDefaults.mapUseLegacy {
+				MeshMap(router: appState.router)
 					.tabItem {
 						Label("map", systemImage: "map")
 					}
-					.tag(Tab.map)
+					.tag(NavigationState.Tab.map)
+			} else {
+				NodeMap(router: appState.router)
+					.tabItem {
+						Label("map", systemImage: "map")
+					}
+					.tag(NavigationState.Tab.map)
 			}
-			Settings()
-				.tabItem {
-					Label("settings", systemImage: "gear")
-						.font(.title)
-				}
-				.tag(Tab.settings)
+
+			Settings(
+				router: appState.router
+			)
+			.tabItem {
+				Label("settings", systemImage: "gear")
+					.font(.title)
+			}
+			.tag(NavigationState.Tab.settings)
 		}
 	}
-}
-// #Preview {
-//	if #available(iOS 17.0, *) {
-//	//	ContentView(deepLinkManager: .init())
-//	} else {
-//		// Fallback on earlier versions
-//	}
-// }
-
-// struct ContentView_Previews: PreviewProvider {
-//	static var previews: some View {
-//		ContentView()
-//	}
-// }
-
-enum Tab: Hashable {
-	case contacts
-	case messages
-	case map
-	case ble
-	case nodes
-	case settings
 }

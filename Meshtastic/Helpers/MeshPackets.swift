@@ -710,7 +710,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 							subtitle: "AKA \(telemetry.nodeTelemetry?.user?.shortName ?? "UNK")",
 							content: "Time to charge your radio, there is \(telemetry.batteryLevel)% battery remaining.",
 							target: "nodes",
-							path: "meshtastic://nodes?nodenum=\(telemetry.nodeTelemetry?.num ?? 0)"
+							path: "meshtastic:///nodes?nodenum=\(telemetry.nodeTelemetry?.num ?? 0)"
 						)
 					]
 					manager.schedule()
@@ -744,7 +744,14 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 	}
 }
 
-func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connectedNode: Int64, storeForward: Bool = false, context: NSManagedObjectContext) {
+func textMessageAppPacket(
+	packet: MeshPacket,
+	wantRangeTestPackets: Bool,
+	connectedNode: Int64,
+	storeForward: Bool = false,
+	context: NSManagedObjectContext,
+	appState: AppState
+) {
 
 	var messageText = String(bytes: packet.decoded.payload, encoding: .utf8)
 	let rangeRef = Reference(Int.self)
@@ -828,12 +835,10 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 					if packet.decoded.portnum == PortNum.detectionSensorApp && !UserDefaults.enableDetectionNotifications {
 						return
 					}
-					let appState = AppState.shared
 					if newMessage.fromUser != nil && newMessage.toUser != nil {
 						// Set Unread Message Indicators
 						if packet.to == connectedNode {
 							appState.unreadDirectMessages = newMessage.toUser?.unreadMessages ?? 0
-							UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 						}
 						if !(newMessage.fromUser?.mute ?? false) {
 							// Create an iOS Notification for the received DM message and schedule it immediately
@@ -845,7 +850,7 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 									subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 									content: messageText!,
 									target: "messages",
-									path: "meshtastic://messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)"
+									path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)"
 								)
 							]
 							manager.schedule()
@@ -860,7 +865,6 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 							let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
 							if !fetchedMyInfo.isEmpty {
 								appState.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
-								UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 
 								for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
 									if channel.index == newMessage.channel {
@@ -876,7 +880,7 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 												content: messageText!,
 												target: "messages",
-												path: "meshtastic://messages?channel=\(newMessage.channel)&messageId=\(newMessage.messageId)")
+												path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.messageId)")
 										]
 										manager.schedule()
 										Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
@@ -941,10 +945,10 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 							subtitle: "\(icon) \(waypoint.name ?? "Dropped Pin")",
 							content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")",
 							target: "map",
-							path: "meshtastic://map?waypontid=\(waypoint.id)"
+							path: "meshtastic:///map?waypointid=\(waypoint.id)"
 						)
 					]
-					Logger.data.debug("meshtastic://map?waypontid=\(waypoint.id)")
+					Logger.data.debug("meshtastic:///map?waypointid=\(waypoint.id)")
 					manager.schedule()
 				} catch {
 					context.rollback()

@@ -11,22 +11,44 @@ import TipKit
 @main
 struct MeshtasticAppleApp: App {
 
-	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self) var appDelegate
-	let persistenceController = PersistenceController.shared
-	@ObservedObject private var bleManager: BLEManager = BLEManager.shared
+	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self)
+	private var appDelegate
+
+	@ObservedObject
+	var appState: AppState
+
+	@ObservedObject
+	private var bleManager: BLEManager
+
+	private let persistenceController: PersistenceController
 
 	@Environment(\.scenePhase) var scenePhase
-
 	@State var saveChannels = false
 	@State var incomingUrl: URL?
 	@State var channelSettings: String?
 	@State var addChannels = false
-	@StateObject var appState = AppState.shared
+
+	init() {
+		let persistenceController = PersistenceController.shared
+		let appState = AppState(
+			router: Router()
+		)
+		self._appState = ObservedObject(wrappedValue: appState)
+
+		self.bleManager = BLEManager(appState: appState)
+		self.persistenceController = persistenceController
+
+		// Wire up router
+		self.appDelegate.router = appState.router
+	}
 
     var body: some Scene {
         WindowGroup {
-			ContentView()
+			ContentView(
+				appState: appState
+			)
 			.environment(\.managedObjectContext, persistenceController.container.viewContext)
+			.environmentObject(appState)
 			.environmentObject(bleManager)
 			.sheet(isPresented: $saveChannels) {
 				SaveChannelQRCode(channelSetLink: channelSettings ?? "Empty Channel URL", addChannels: addChannels, bleManager: bleManager)
@@ -34,14 +56,13 @@ struct MeshtasticAppleApp: App {
 					.presentationDragIndicator(.visible)
 			}
 			.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
-
 				Logger.mesh.debug("URL received \(userActivity)")
 				self.incomingUrl = userActivity.webpageURL
 
 				if (self.incomingUrl?.absoluteString.lowercased().contains("meshtastic.org/e/#")) != nil {
 					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
 						self.addChannels = Bool(self.incomingUrl?["add"] ?? "false") ?? false
-						if ((self.incomingUrl?.absoluteString.lowercased().contains("?")) != nil) {
+						if (self.incomingUrl?.absoluteString.lowercased().contains("?")) != nil {
 							guard let cs = components.last!.components(separatedBy: "?").first else {
 								return
 							}
@@ -83,15 +104,8 @@ struct MeshtasticAppleApp: App {
 					}
 					self.saveChannels = true
 					Logger.mesh.debug("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link")")
-				} else if url.absoluteString.lowercased().contains("meshtastic://") {
-					appState.navigationPath = url.absoluteString
-					let path = appState.navigationPath ?? ""
-					if path.starts(with: "meshtastic://map") {
-						AppState.shared.tabSelection = Tab.map
-					} else if path.starts(with: "meshtastic://nodes") {
-						AppState.shared.tabSelection = Tab.nodes
-					}
-
+				} else if url.absoluteString.lowercased().contains("meshtastic:///") {
+					appState.router.route(url: url)
 				} else {
 					saveChannels = false
 					Logger.mesh.debug("User wants to import a MBTILES offline map file: \(self.incomingUrl?.absoluteString ?? "No Tiles link")")
@@ -178,14 +192,4 @@ struct MeshtasticAppleApp: App {
 			}
 		}
 	}
-}
-
-class AppState: ObservableObject {
-	static let shared = AppState()
-
-	@Published var tabSelection: Tab = .ble
-	@Published var unreadDirectMessages: Int = 0
-	@Published var unreadChannelMessages: Int = 0
-	@Published var firmwareVersion: String = "0.0.0"
-	@Published var navigationPath: String?
 }

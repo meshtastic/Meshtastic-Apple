@@ -10,10 +10,11 @@ import CoreData
 import OSLog
 
 struct UserMessageList: View {
-	@StateObject var appState = AppState.shared
-	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
 
+	@EnvironmentObject var appState: AppState
+	@EnvironmentObject var bleManager: BLEManager
+	@Environment(\.managedObjectContext) var context
+	
 	// Keyboard State
 	@FocusState var messageFieldFocused: Bool
 	// View State Items
@@ -64,7 +65,6 @@ struct UserMessageList: View {
 
 										TapbackResponses(message: message) {
 											appState.unreadDirectMessages = user.unreadMessages
-											UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 										}
 
 										HStack {
@@ -102,7 +102,6 @@ struct UserMessageList: View {
 											try context.save()
 											Logger.data.info("📖 [App] Read message \(message.messageId) ")
 											appState.unreadDirectMessages = user.unreadMessages
-											UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 
 										} catch {
 											Logger.data.error("Failed to read message \(message.messageId): \(error.localizedDescription)")
