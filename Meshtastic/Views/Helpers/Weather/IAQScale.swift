@@ -11,6 +11,8 @@ struct IAQScale: View {
 
 	var body: some View {
 		VStack(alignment: .leading) {
+			Text("Indoor Air Quality (IAQ)")
+				.font(.title3)
 			ForEach(Iaq.allCases) { iaq in
 				HStack {
 					RoundedRectangle(cornerRadius: 5)
@@ -22,11 +24,6 @@ struct IAQScale: View {
 			}
 		}
 		.padding()
-		.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-//		.overlay(
-//			RoundedRectangle(cornerRadius: 20)
-//				.stroke(.secondary, lineWidth: 5)
-//		)
 	}
 }
 

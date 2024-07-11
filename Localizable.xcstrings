@@ -8531,6 +8531,9 @@
     "Indoor Air Quality" : {
 
     },
+    "Indoor Air Quality (IAQ)" : {
+
+    },
     "inputevent.back" : {
       "extractionState" : "migrated",
       "localizations" : {

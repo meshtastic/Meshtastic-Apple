@@ -603,8 +603,8 @@
 				DD5E523E298F5A9E00D21B61 /* AirQualityIndex.swift */,
 				DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */,
 				DDA9515D2BC6F56F00CEA535 /* IndoorAirQuality.swift */,
-				DD41A61429AB0035003C5A37 /* NodeWeatherForecast.swift */,
 				DD354FD82BD96A0B0061A25F /* IAQScale.swift */,
+				DD41A61429AB0035003C5A37 /* NodeWeatherForecast.swift */,
 			);
 			path = Weather;
 			sourceTree = "<group>";
