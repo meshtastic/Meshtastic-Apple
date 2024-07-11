@@ -20,6 +20,7 @@ struct NodeInfoItem: View {
 
 	var body: some View {
 		HStack {
+			Spacer()
 			CircleText(
 				text: node.user?.shortName ?? "?",
 				color: Color(UIColor(hex: UInt32(node.num))),
@@ -68,6 +69,7 @@ struct NodeInfoItem: View {
 				BatteryGauge(node: node)
 					.padding()
 			}
+			Spacer()
 		}
 		.padding(.leading)
 	}
