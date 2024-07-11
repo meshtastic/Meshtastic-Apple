@@ -157,6 +157,12 @@ struct NodeDetail: View {
 						}
 					}
 				}
+				
+			//	if node.hasEnvironmentMetrics {
+					Section("Environment") {
+						LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
+					}
+			//	}
 
 				Section("Logs") {
 					// Metrics

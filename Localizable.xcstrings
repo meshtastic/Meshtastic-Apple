@@ -6954,6 +6954,9 @@
     "Enter DFU Mode" : {
 
     },
+    "Environment" : {
+
+    },
     "Environment Metrics Log" : {
 
     },
@@ -8264,6 +8267,9 @@
 
     },
     "Humidity" : {
+
+    },
+    "HUMIDITY" : {
 
     },
     "hybrid" : {
@@ -20838,6 +20844,9 @@
 
     },
     "The compass heading on the screen outside of the circle will always point north." : {
+
+    },
+    "The dew point is %@ right now." : {
 
     },
     "The fastest that position updates will be sent if the minimum distance has been satisfied" : {
