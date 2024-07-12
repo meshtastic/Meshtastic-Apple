@@ -19,6 +19,10 @@ struct LocalWeatherConditions: View {
 	@State private var dewPoint: String = ""
 	@State private var humidity: Int?
 	@State private var pressure: Measurement<UnitPressure>?
+	@State private var windSpeed: String = ""
+	@State private var windGust: String = ""
+	@State private var windDirection: Measurement<UnitAngle>?
+	@State private var windCompassDirection: String = ""
 	@State private var symbolName: String = "cloud.fill"
 	@State private var attributionLink: URL?
 	@State private var attributionLogo: URL?
@@ -30,6 +34,8 @@ struct LocalWeatherConditions: View {
 				LazyVGrid(columns: gridItemLayout) {
 					WeatherConditionsCompactWidget(temperature: temperature, symbolName: symbolName, description: condition?.description.uppercased() ?? "??")
 					HumidityCompactWidget(humidity: humidity ?? 0, dewPoint: dewPoint)
+					PressureCompactWidget(pressure: String(pressure?.value ?? 0.0 / 100), unit: pressure?.unit.symbol ?? "??")
+					WindCompactWidget(speed: windSpeed, gust: windGust, direction: windCompassDirection)
 				}
 			}
 			.task {
@@ -47,6 +53,10 @@ struct LocalWeatherConditions: View {
 						dewPoint = measurementFormatter.string(from: weather.currentWeather.dewPoint)
 						humidity = Int(weather.currentWeather.humidity * 100)
 						pressure = weather.currentWeather.pressure
+						windSpeed = measurementFormatter.string(from: weather.currentWeather.wind.speed)//weather.currentWeather.wind.speed
+						windGust = measurementFormatter.string(from: weather.currentWeather.wind.gust ?? Measurement(value: 0.0, unit: weather.currentWeather.wind.gust!.unit))
+						windDirection = weather.currentWeather.wind.direction
+						windCompassDirection = weather.currentWeather.wind.compassDirection.description
 						symbolName = weather.currentWeather.symbolName
 						let attribution = try await WeatherService.shared.attribution
 						attributionLink = attribution.legalPageURL
@@ -112,6 +122,53 @@ struct HumidityCompactWidget: View {
 					.lineLimit(3)
 					.fixedSize(horizontal: false, vertical: true)
 					.font(.caption)
+			}
+			.padding(.horizontal)
+			.frame(maxWidth: .infinity)
+			.frame(height: 175)
+			.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+		}
+	}
+}
+
+struct PressureCompactWidget: View {
+	let pressure: String
+	let unit: String
+	var body: some View {
+		ZStack(alignment: .topLeading) {
+			VStack(alignment: .leading) {
+				Label { Text("PRESSURE") } icon: { Image(systemName: "gauge").symbolRenderingMode(.multicolor) }
+					.font(.caption2)
+				Text(pressure)
+					.font(.system(size: 35))
+					.padding(.bottom)
+				Text(unit)
+					.padding(.top)
+			}
+			.padding(.horizontal)
+			.frame(maxWidth: .infinity)
+			.frame(height: 175)
+			.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+		}
+	}
+}
+
+
+struct WindCompactWidget: View {
+	let speed: String
+	let gust: String
+	let direction: String
+	var body: some View {
+		ZStack(alignment: .topLeading) {
+			VStack(alignment: .leading) {
+				Label { Text("WIND") } icon: { Image(systemName: "wind").symbolRenderingMode(.multicolor) }
+					.font(.caption)
+				Text("\(direction)")
+					.font(.caption)
+					.padding(.bottom, 10)
+				Text(speed)
+					.font(.system(size: 35))
+				Text("Gusts \(gust)")
 			}
 			.padding(.horizontal)
 			.frame(maxWidth: .infinity)
