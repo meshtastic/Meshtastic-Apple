@@ -38,6 +38,7 @@ struct LocalWeatherConditions: View {
 					WindCompactWidget(speed: windSpeed, gust: windGust, direction: windCompassDirection)
 				}
 			}
+			.padding(.top)
 			.task {
 				do {
 					if location != nil {
@@ -53,7 +54,7 @@ struct LocalWeatherConditions: View {
 						dewPoint = measurementFormatter.string(from: weather.currentWeather.dewPoint)
 						humidity = Int(weather.currentWeather.humidity * 100)
 						pressure = weather.currentWeather.pressure
-						windSpeed = measurementFormatter.string(from: weather.currentWeather.wind.speed)//weather.currentWeather.wind.speed
+						windSpeed = measurementFormatter.string(from: weather.currentWeather.wind.speed)
 						windGust = measurementFormatter.string(from: weather.currentWeather.wind.gust ?? Measurement(value: 0.0, unit: weather.currentWeather.wind.gust!.unit))
 						windDirection = weather.currentWeather.wind.direction
 						windCompassDirection = weather.currentWeather.wind.compassDirection.description
@@ -98,7 +99,7 @@ struct WeatherConditionsCompactWidget: View {
 				Label { Text(description) } icon: { Image(systemName: symbolName).symbolRenderingMode(.multicolor) }
 					.font(.caption)
 				Text(temperature)
-					.font(.system(size: 90))
+					.font(temperature.length < 4 ? .system(size: 90) : .system(size: 60) )
 			}
 			.frame(maxWidth: .infinity)
 			.frame(height: 175)
@@ -140,7 +141,7 @@ struct PressureCompactWidget: View {
 				Label { Text("PRESSURE") } icon: { Image(systemName: "gauge").symbolRenderingMode(.multicolor) }
 					.font(.caption2)
 				Text(pressure)
-					.font(.system(size: 35))
+					.font(pressure.length < 7 ? .system(size: 35) : .system(size: 30) )
 					.padding(.bottom)
 				Text(unit)
 					.padding(.top)
