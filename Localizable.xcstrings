@@ -8237,6 +8237,9 @@
     "Hide Alerts" : {
 
     },
+    "HIGH" : {
+
+    },
     "History Return Max" : {
 
     },
@@ -11361,6 +11364,9 @@
           }
         }
       }
+    },
+    "LOW" : {
+
     },
     "Managed Device" : {
 

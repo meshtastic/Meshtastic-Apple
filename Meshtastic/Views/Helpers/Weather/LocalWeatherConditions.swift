@@ -34,7 +34,7 @@ struct LocalWeatherConditions: View {
 				LazyVGrid(columns: gridItemLayout) {
 					WeatherConditionsCompactWidget(temperature: temperature, symbolName: symbolName, description: condition?.description.uppercased() ?? "??")
 					HumidityCompactWidget(humidity: humidity ?? 0, dewPoint: dewPoint)
-					PressureCompactWidget(pressure: String(pressure?.value ?? 0.0 / 100), unit: pressure?.unit.symbol ?? "??")
+					PressureCompactWidget(pressure: String(pressure?.value ?? 0.0 / 100), unit: pressure?.unit.symbol ?? "??", low: pressure?.value ?? 0.0 <= 1009.144)
 					WindCompactWidget(speed: windSpeed, gust: windGust, direction: windCompassDirection)
 				}
 			}
@@ -135,6 +135,7 @@ struct HumidityCompactWidget: View {
 struct PressureCompactWidget: View {
 	let pressure: String
 	let unit: String
+	let low: Bool
 	var body: some View {
 		ZStack(alignment: .topLeading) {
 			VStack(alignment: .leading) {
@@ -142,9 +143,9 @@ struct PressureCompactWidget: View {
 					.font(.caption2)
 				Text(pressure)
 					.font(pressure.length < 7 ? .system(size: 35) : .system(size: 30) )
+				Text(low ? "LOW" : "HIGH")
 					.padding(.bottom)
 				Text(unit)
-					.padding(.top)
 			}
 			.padding(.horizontal)
 			.frame(maxWidth: .infinity)
