@@ -12,6 +12,7 @@ struct AppSettings: View {
 	@State var totalDownloadedTileSize = ""
 	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var isPresentingDeleteMapTilesConfirm = false
+	@AppStorage("environmentEnableWeatherKit") private var  environmentEnableWeatherKit: Bool = true
 	var body: some View {
 		VStack {
 			Form {
@@ -21,6 +22,14 @@ struct AppSettings: View {
 						if let url = URL(string: UIApplication.openSettingsURLString) {
 							UIApplication.shared.open(url)
 						}
+					}
+				}
+				Section(header: Text("environment")) {
+					VStack(alignment: .leading) {
+						Toggle(isOn: $environmentEnableWeatherKit) {
+							Label("Weather Conditions", systemImage: "cloud.sun")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
 				}
 				Section(header: Text("App Data")) {

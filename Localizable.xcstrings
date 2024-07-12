@@ -6964,6 +6964,9 @@
     "Enter DFU Mode" : {
 
     },
+    "environment" : {
+
+    },
     "Environment" : {
 
     },
@@ -22387,6 +22390,9 @@
 
     },
     "Waypoint Options" : {
+
+    },
+    "Weather Conditions" : {
 
     },
     "Web Flasher" : {

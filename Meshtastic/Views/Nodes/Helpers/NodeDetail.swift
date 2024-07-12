@@ -10,6 +10,7 @@ import CoreLocation
 import OSLog
 
 struct NodeDetail: View {
+	private let gridItemLayout = Array(repeating: GridItem(.flexible(), spacing: 10), count: 2)
 	private static let relativeFormatter: RelativeDateTimeFormatter = {
 		let formatter = RelativeDateTimeFormatter()
 		formatter.unitsStyle = .full
@@ -157,9 +158,20 @@ struct NodeDetail: View {
 						}
 					}
 				}
-				if node.hasPositions || node.hasEnvironmentMetrics {
+				if node.hasPositions && UserDefaults.environmentEnableWeatherKit || node.hasEnvironmentMetrics {
 					Section("Environment") {
-						LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
+						if !node.hasEnvironmentMetrics {
+							LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
+						} else {
+							VStack {
+								LazyVGrid(columns: gridItemLayout) {
+									WeatherConditionsCompactWidget(temperature: String(node.latestEnvironmentMetrics?.temperature.formattedTemperature() ?? "99°"), symbolName: "cloud.sun", description: "TEMP")
+									HumidityCompactWidget(humidity: Int(node.latestEnvironmentMetrics?.relativeHumidity ?? 0), dewPoint: "99°")
+									PressureCompactWidget(pressure: String(node.latestEnvironmentMetrics?.barometricPressure ?? 0.0), unit: "mbar")
+									// WindCompactWidget(speed: windSpeed, gust: windGust, direction: windCompassDirection)
+								}
+							}
+						}
 					}
 				}
 				Section("Logs") {
