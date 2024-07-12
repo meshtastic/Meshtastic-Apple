@@ -16,6 +16,7 @@ struct NodeListFilter: View {
 	@Binding var viaMqtt: Bool
 	@Binding var isOnline: Bool
 	@Binding var isFavorite: Bool
+	@Binding var isEnvironment: Bool
 	@Binding var distanceFilter: Bool
 	@Binding var maximumDistance: Double
 	@Binding var hopsAway: Double
@@ -70,6 +71,19 @@ struct NodeListFilter: View {
 							Image(systemName: "star.fill")
 								.foregroundColor(.yellow)
 								.symbolRenderingMode(.hierarchical)
+						}
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.listRowSeparator(.visible)
+
+					Toggle(isOn: $isEnvironment) {
+
+						Label {
+							Text("Environment")
+						} icon: {
+
+							Image(systemName: "cloud.sun")
+								.symbolRenderingMode(.multicolor)
 						}
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))

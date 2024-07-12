@@ -22,6 +22,7 @@ struct UserList: View {
 	@State private var viaMqtt = true
 	@State private var isOnline = false
 	@State private var isFavorite = false
+	@State private var isEnvironment = false
 	@State private var distanceFilter = false
 	@State private var maxDistance: Double = 800000
 	@State private var hopsAway: Double = -1.0
@@ -171,7 +172,7 @@ struct UserList: View {
 			.listStyle(.plain)
 			.navigationTitle(String.localizedStringWithFormat("contacts %@".localized, String(users.count == 0 ? 0 : users.count - 1)))
 			.sheet(isPresented: $isEditingFilters) {
-				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isFavorite: $isFavorite, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
+				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isFavorite: $isFavorite, isEnvironment: $isEnvironment, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
 			}
 			.onChange(of: searchText) { _ in
 				searchUserList()
