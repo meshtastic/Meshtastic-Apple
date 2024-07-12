@@ -1,10 +1,3 @@
-//
-//  NodeListFilter.swift
-//  Meshtastic
-//
-//  Created by Garth Vander Houwen on 3/25/24.
-//
-
 import Foundation
 import SwiftUI
 
@@ -16,7 +9,7 @@ struct NodeListFilter: View {
 	@Binding
 	var isOnline: Bool
 	@Binding
-	var viaMqtt: Bool
+	var ignoreMQTT: Bool
 	@State
 	var editMode = EditMode.active
 
@@ -51,9 +44,9 @@ struct NodeListFilter: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 
-					Toggle(isOn: $viaMqtt) {
+					Toggle(isOn: $ignoreMQTT) {
 						Label {
-							Text("Via Mqtt")
+							Text("Ignore MQTT")
 						} icon: {
 							Image(systemName: "dot.radiowaves.up.forward")
 						}

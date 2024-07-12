@@ -1,51 +1,64 @@
-//
-//  LoRaSignalStrength.swift
-//  Meshtastic
-//
-//  Created by Garth Vander Houwen on 5/15/23.
-//
 import Foundation
 import SwiftUI
 
 struct LoRaSignalStrengthMeter: View {
-	var snr: Float
-	var rssi: Int32
-	var preset: ModemPresets
-	var compact: Bool
-	var body: some View {
+	private var snr: Float
+	private var rssi: Int32
+	private var preset: ModemPresets
+	private var compact: Bool
 
+	@Environment(\.colorScheme)
+	private var colorScheme: ColorScheme
+
+	private var gradient: Gradient {
+		if colorScheme == .dark {
+			return Gradient(colors: [.black, .white])
+		}
+		else {
+			return Gradient(colors: [.white, .black])
+		}
+	}
+
+	var body: some View {
 		if snr != 0.0 && rssi != 0 {
 			let signalStrength = getLoRaSignalStrength(snr: snr, rssi: rssi, preset: preset)
-			let gradient = Gradient(colors: [.red, .orange, .yellow, .green])
+
 			if !compact {
 				VStack {
 					LoRaSignalStrengthIndicator(signalStrength: signalStrength)
-					Text("Signal \(signalStrength.description)").font(.footnote)
+
+					Text("Signal \(signalStrength.description)")
+						.font(.footnote)
+
 					Text("SNR \(String(format: "%.2f", snr))dB")
 						.foregroundColor(getSnrColor(snr: snr, preset: ModemPresets.longFast))
 						.font(.caption2)
+
 					Text("RSSI \(rssi)dB")
 						.foregroundColor(getRssiColor(rssi: rssi))
 						.font(.caption2)
 				}
 			} else {
 				VStack {
-					Gauge(value: Double(signalStrength.rawValue), in: 0...3) {
-					} currentValueLabel: {
-						Image(systemName: "dot.radiowaves.left.and.right")
-							.font(.callout)
-							.frame(width: 30)
-						Text("Signal \(signalStrength.description)")
-							.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-							.foregroundColor(.gray)
-							.fixedSize()
+					Gauge(
+						value: Double(signalStrength.rawValue),
+						in: 0...3
+					) {
+						// no-op
 					}
 					.gaugeStyle(.accessoryLinear)
-					.tint(gradient)
 					.font(.caption)
+					.tint(gradient)
 				}
 			}
 		}
+	}
+
+	init(snr: Float, rssi: Int32, preset: ModemPresets, compact: Bool = true) {
+		self.snr = snr
+		self.rssi = rssi
+		self.preset = preset
+		self.compact = compact
 	}
 }
 

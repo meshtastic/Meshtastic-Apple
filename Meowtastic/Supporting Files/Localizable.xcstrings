@@ -2716,9 +2716,6 @@
         }
       }
     },
-    "Channel" : {
-
-    },
     "Channel 0 Included" : {
 
     },
@@ -4533,6 +4530,7 @@
 
     },
     "connected" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8197,9 +8195,6 @@
     "Hops Away %d) dB" : {
 
     },
-    "Hops Away:" : {
-
-    },
     "Hour" : {
 
     },
@@ -11177,9 +11172,6 @@
       }
     },
     "Logs" : {
-
-    },
-    "Logs:" : {
 
     },
     "Long Name" : {
@@ -17392,9 +17384,6 @@
     "Role" : {
 
     },
-    "Role: %@" : {
-
-    },
     "Root Topic" : {
 
     },
@@ -22195,9 +22184,6 @@
           }
         }
       }
-    },
-    "Via Mqtt" : {
-
     },
     "Volt" : {
 

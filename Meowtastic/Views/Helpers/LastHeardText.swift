@@ -1,10 +1,5 @@
 import SwiftUI
-//
-//  LastHeardText.swift
-//  Meshtastic Apple
-//
-//  Created by Garth Vander Houwen on 5/25/22.
-//
+
 struct LastHeardText: View {
 	var lastHeard: Date?
 
@@ -16,6 +11,7 @@ struct LastHeardText: View {
 		}
 	}
 }
+
 struct LastHeardText_Previews: PreviewProvider {
 	static var previews: some View {
 		LastHeardText(lastHeard: Date())

@@ -1,10 +1,3 @@
-//
-//  UserDefaults.swift
-//  Meshtastic
-//
-//  Copyright(c) Garth Vander Houwen 4/24/23.
-//
-
 import Foundation
 
 @propertyWrapper
@@ -72,6 +65,9 @@ extension UserDefaults {
 		case modemPreset
 		case firmwareVersion
 		case testIntEnum
+		case filterFavorite
+		case filterOnline
+		case ignoreMQTT
 	}
 
 	func reset() {
@@ -164,6 +160,15 @@ extension UserDefaults {
 
 	@UserDefault(.testIntEnum, defaultValue: .one)
 	static var testIntEnum: TestIntEnum
+
+	@UserDefault(.filterFavorite, defaultValue: false)
+	static var filterFavorite: Bool
+
+	@UserDefault(.filterOnline, defaultValue: false)
+	static var filterOnline: Bool
+
+	@UserDefault(.ignoreMQTT, defaultValue: false)
+	static var ignoreMQTT: Bool
 }
 
 enum TestIntEnum: Int, Decodable {

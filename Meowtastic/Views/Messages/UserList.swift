@@ -25,11 +25,11 @@ struct UserList: View {
 	@State
 	private var searchText = ""
 	@State
-	private var isFavorite = false
+	private var isFavorite = UserDefaults.filterFavorite
 	@State
-	private var isOnline = false
+	private var isOnline = UserDefaults.filterOnline
 	@State
-	private var viaMqtt = true
+	private var ignoreMQTT = UserDefaults.ignoreMQTT
 	@State
 	private var userSelection: UserEntity? // Nothing selected by default.
 	@State
@@ -68,19 +68,30 @@ struct UserList: View {
 					if self.bleManager.context == nil {
 						self.bleManager.context = context
 					}
-					searchUserList()
+
+					Task {
+						await updateFilter()
+					}
 				}
 				.onChange(of: searchText, initial: true) {
-					searchUserList()
+					Task {
+						await updateFilter()
+					}
 				}
 				.onChange(of: isFavorite, initial: false) {
-					searchUserList()
+					Task {
+						await updateFilter()
+					}
 				}
 				.onChange(of: isOnline, initial: false) {
-					searchUserList()
+					Task {
+						await updateFilter()
+					}
 				}
-				.onChange(of: viaMqtt, initial: false) {
-					searchUserList()
+				.onChange(of: ignoreMQTT, initial: false) {
+					Task {
+						await updateFilter()
+					}
 				}
 				.onChange(of: selectedUserNum) { newUserNum in
 					userSelection = users.first(where: {
@@ -92,7 +103,7 @@ struct UserList: View {
 						filterTitle: "Contact Filters",
 						isFavorite: $isFavorite,
 						isOnline: $isOnline,
-						viaMqtt: $viaMqtt
+						ignoreMQTT: $ignoreMQTT
 					)
 				}
 		}
@@ -100,101 +111,119 @@ struct UserList: View {
 
 	@ViewBuilder
 	private var userList: some View {
-		List {
-			ForEach(users) { user in
-				let mostRecent = user.messageList.last
-				let lastMessageTime = Date(
-					timeIntervalSince1970: TimeInterval(Int64(mostRecent?.messageTimestamp ?? 0))
-				)
+		List(
+			users.filter { user in
+				guard isFavorite || isOnline || ignoreMQTT else {
+					return true
+				}
 
-				let lastMessageDay = Calendar.current.dateComponents(
-					[.day],
-					from: lastMessageTime
-				).day ?? 0
+				guard let userNode = user.userNode else {
+					return false
+				}
 
-				let currentDay = Calendar.current.dateComponents(
-					[.day],
-					from: Date()
-				).day ?? 0
+				if (isFavorite && userNode.favorite)
+					|| (isOnline && userNode.isOnline)
+					|| (ignoreMQTT && !userNode.viaMqtt)
+				{
+					return true
+				}
 
-				if  user.num != bleManager.connectedPeripheral?.num ?? 0 {
-					NavigationLink(destination: UserMessageList(user: user)) {
-						ZStack {
-							Image(systemName: "circle.fill")
-								.opacity(user.unreadMessages > 0 ? 1 : 0)
-								.font(.system(size: 10))
-								.foregroundColor(.accentColor)
-								.brightness(0.2)
-						}
+				return false
+			},
+			id: \.self
+		) { user in
+			let mostRecent = user.messageList.last
+			let lastMessageTime = Date(
+				timeIntervalSince1970: TimeInterval(Int64(mostRecent?.messageTimestamp ?? 0))
+			)
 
-						Avatar(
-							user.shortName ?? "?",
-							background: Color(UIColor(hex: UInt32(user.num)))
-						)
+			let lastMessageDay = Calendar.current.dateComponents(
+				[.day],
+				from: lastMessageTime
+			).day ?? 0
 
-						VStack(alignment: .leading) {
-							HStack {
-								Text(user.longName ?? "unknown".localized)
-									.font(.headline)
+			let currentDay = Calendar.current.dateComponents(
+				[.day],
+				from: Date()
+			).day ?? 0
 
-								Spacer()
+			if  user.num != bleManager.connectedPeripheral?.num ?? 0 {
+				NavigationLink(destination: UserMessageList(user: user)) {
+					ZStack {
+						Image(systemName: "circle.fill")
+							.opacity(user.unreadMessages > 0 ? 1 : 0)
+							.font(.system(size: 10))
+							.foregroundColor(.accentColor)
+							.brightness(0.2)
+					}
 
-								if user.userNode?.favorite ?? false {
-									Image(systemName: "star.fill")
-										.foregroundColor(.yellow)
-								}
+					Avatar(
+						user.shortName ?? "?",
+						background: Color(UIColor(hex: UInt32(user.num)))
+					)
 
-								if user.messageList.count > 0 {
-									if lastMessageDay == currentDay {
-										Text(lastMessageTime, style: .time )
-											.font(.footnote)
-											.foregroundColor(.secondary)
-									}
-									else if lastMessageDay == (currentDay - 1) {
-										Text("Yesterday")
-											.font(.footnote)
-											.foregroundColor(.secondary)
-									}
-									else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-										Text(lastMessageTime.formattedDate(format: dateFormatString))
-											.font(.footnote)
-											.foregroundColor(.secondary)
-									}
-									else if lastMessageDay < (currentDay - 1800) {
-										Text(lastMessageTime.formattedDate(format: dateFormatString))
-											.font(.footnote)
-											.foregroundColor(.secondary)
-									}
-								}
+					VStack(alignment: .leading) {
+						HStack {
+							Text(user.longName ?? "unknown".localized)
+								.font(.headline)
+
+							Spacer()
+
+							if user.userNode?.favorite ?? false {
+								Image(systemName: "star.fill")
+									.foregroundColor(.yellow)
 							}
 
 							if user.messageList.count > 0 {
-								HStack(alignment: .top) {
-									Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
+								if lastMessageDay == currentDay {
+									Text(lastMessageTime, style: .time )
+										.font(.footnote)
+										.foregroundColor(.secondary)
+								}
+								else if lastMessageDay == (currentDay - 1) {
+									Text("Yesterday")
+										.font(.footnote)
+										.foregroundColor(.secondary)
+								}
+								else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+									Text(lastMessageTime.formattedDate(format: dateFormatString))
+										.font(.footnote)
+										.foregroundColor(.secondary)
+								}
+								else if lastMessageDay < (currentDay - 1800) {
+									Text(lastMessageTime.formattedDate(format: dateFormatString))
 										.font(.footnote)
 										.foregroundColor(.secondary)
 								}
 							}
 						}
-					}
-					.frame(height: 62)
-					.contextMenu {
-						getContextMenu(for: user)
-					}
-					.confirmationDialog(
-						"This conversation will be deleted.",
-						isPresented: $isPresentingDeleteUserMessagesConfirm,
-						titleVisibility: .visible
-					) {
-						Button(role: .destructive) {
-							deleteUserMessages(user: userSelection!, context: context)
-							context.refresh(node!.user!, mergeChanges: true)
 
-							let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
-							UNUserNotificationCenter.current().setBadgeCount(badge)
-						} label: {
-							Text("delete")
+						if user.messageList.count > 0 {
+							HStack(alignment: .top) {
+								Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
+									.font(.footnote)
+									.foregroundColor(.secondary)
+							}
 						}
+					}
+				}
+				.frame(height: 62)
+				.contextMenu {
+					getContextMenu(for: user)
+				}
+				.confirmationDialog(
+					"This conversation will be deleted.",
+					isPresented: $isPresentingDeleteUserMessagesConfirm,
+					titleVisibility: .visible
+				) {
+					Button(role: .destructive) {
+						deleteUserMessages(user: userSelection!, context: context)
+						context.refresh(node!.user!, mergeChanges: true)
+
+						let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
+						UNUserNotificationCenter.current().setBadgeCount(badge)
+					} label: {
+						Text("delete")
 					}
 				}
 			}
@@ -297,8 +326,11 @@ struct UserList: View {
 		}
 	}
 
-	private func searchUserList() {
-		/// Case Insensitive Search Text Predicates
+	private func updateFilter() async {
+		UserDefaults.filterFavorite = isFavorite
+		UserDefaults.filterOnline = isOnline
+		UserDefaults.ignoreMQTT = ignoreMQTT
+
 		let searchPredicates = [
 			"userId",
 			"numString",
@@ -309,48 +341,10 @@ struct UserList: View {
 			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
 		}
 
-		/// Create a compound predicate using each text search preicate as an OR
-		let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
-
-		/// Create an array of predicates to hold our AND predicates
-		var predicates: [NSPredicate] = []
-
-		/// Favorites
-		if isFavorite {
-			let isFavoritePredicate = NSPredicate(format: "userNode.favorite == YES")
-			predicates.append(isFavoritePredicate)
+		if !searchText.isEmpty {
+			users.nsPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
 		}
-
-		/// Online
-		if isOnline {
-			let isOnlinePredicate = NSPredicate(
-				format: "userNode.lastHeard >= %@",
-				Calendar.current.date(byAdding: .minute, value: -15, to: Date())! as NSDate
-			)
-			predicates.append(isOnlinePredicate)
-		}
-
-		/// Mqtt
-		if viaMqtt {
-			let mqttPredicate = NSPredicate(format: "userNode.viaMqtt == YES")
-			predicates.append(mqttPredicate)
-		}
-
-		if predicates.count > 0 || !searchText.isEmpty {
-			if !searchText.isEmpty {
-				let filterPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)
-
-				users.nsPredicate = NSCompoundPredicate(
-					type: .and,
-					subpredicates: [
-						NSCompoundPredicate(type: .or, subpredicates: searchPredicates),
-						filterPredicates
-					]
-				)
-			} else {
-				users.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: predicates)
-			}
-		} else {
+		else {
 			users.nsPredicate = nil
 		}
 	}

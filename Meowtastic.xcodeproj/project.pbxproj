@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		08DD7E4C2C41ABD800548159 /* Meowtastic.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E4A2C41ABD800548159 /* Meowtastic.xcdatamodeld */; };
 		08DD7E512C41B0BA00548159 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E502C41B0BA00548159 /* AppState.swift */; };
+		08DD7E532C41CBBD00548159 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 08DD7E522C41CBBD00548159 /* Localizable.xcstrings */; };
+		08DD7E552C41D63800548159 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E542C41D63800548159 /* AppConstants.swift */; };
 		251926852C3BA97800249DF5 /* FavoriteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */; };
 		251926872C3BAE2200249DF5 /* NodeAlertsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */; };
 		2519268A2C3BB1B200249DF5 /* ExchangePositionsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */; };
@@ -19,7 +21,6 @@
 		259792262C2F114500AD1659 /* PositionEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */; };
 		259792272C2F114500AD1659 /* TraceRouteEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE5B4052B227E3200FCDD05 /* TraceRouteEntityExtension.swift */; };
 		25A978BA2C13F8ED0003AAE7 /* MeshtasticProtobufs in Frameworks */ = {isa = PBXBuildFile; productRef = 25A978B92C13F8ED0003AAE7 /* MeshtasticProtobufs */; };
-		25AECD4F2C2F723200862C8E /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 25AECD4E2C2F723200862C8E /* Localizable.xcstrings */; };
 		25F26B1E2C2F610D00C9CD9D /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB0C2C285F00007E03CA /* Logger.swift */; };
 		25F26B1F2C2F611300C9CD9D /* AppData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB152C28B1E4007E03CA /* AppData.swift */; };
 		6D825E622C34786C008DBEE4 /* CommonRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D825E612C34786C008DBEE4 /* CommonRegex.swift */; };
@@ -205,13 +206,14 @@
 /* Begin PBXFileReference section */
 		08DD7E4B2C41ABD800548159 /* V1.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = V1.xcdatamodel; sourceTree = "<group>"; };
 		08DD7E502C41B0BA00548159 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		08DD7E522C41CBBD00548159 /* Localizable.xcstrings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		08DD7E542C41D63800548159 /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
 		251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteNodeButton.swift; sourceTree = "<group>"; };
 		251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeAlertsButton.swift; sourceTree = "<group>"; };
 		251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangePositionsButton.swift; sourceTree = "<group>"; };
 		2519268B2C3BB52000249DF5 /* TraceRouteButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRouteButton.swift; sourceTree = "<group>"; };
 		2519268F2C3CB44900249DF5 /* ClientHistoryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientHistoryButton.swift; sourceTree = "<group>"; };
 		251926912C3CB52300249DF5 /* DeleteNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteNodeButton.swift; sourceTree = "<group>"; };
-		25AECD4E2C2F723200862C8E /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		6D825E612C34786C008DBEE4 /* CommonRegex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonRegex.swift; sourceTree = "<group>"; };
 		6DA39D8D2A92DC52007E311C /* MeowtasticAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeowtasticAppDelegate.swift; sourceTree = "<group>"; };
 		6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorLog.swift; sourceTree = "<group>"; };
@@ -335,7 +337,7 @@
 		DDB8F4132A9EE5F000230ECE /* ChannelList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelList.swift; sourceTree = "<group>"; };
 		DDC2E15426CE248E0042C5E4 /* Meowtastic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Meowtastic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC2E15726CE248E0042C5E4 /* MeowtasticApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeowtasticApp.swift; sourceTree = "<group>"; };
-		DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../Assets.xcassets; sourceTree = "<group>"; };
+		DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DDC2E15E26CE248F0042C5E4 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		DDC2E16526CE248F0042C5E4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -404,8 +406,11 @@
 		08DD7E4D2C41AC8F00548159 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				08DD7E522C41CBBD00548159 /* Localizable.xcstrings */,
+				DDB75A192A05EB67006ED576 /* alpha.png */,
+				DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */,
+				DD0E21002B8A6BC500F2D100 /* DeviceHardware.json */,
 				DDC2E16526CE248F0042C5E4 /* Info.plist */,
-				25AECD4E2C2F723200862C8E /* Localizable.xcstrings */,
 				DD90860A26F645B700DC5189 /* Meowtastic.entitlements */,
 				08DD7E4A2C41ABD800548159 /* Meowtastic.xcdatamodeld */,
 				DDDBC87A2BC62E4E001E8DF7 /* Settings.bundle */,
@@ -676,10 +681,10 @@
 				DDC2E18826CE24EE0042C5E4 /* Model */,
 				DDC4D5662754996200A4208E /* Persistence */,
 				DDC2E15D26CE248F0042C5E4 /* Preview Content */,
-				DDC2E18926CE24F70042C5E4 /* Resources */,
 				08DD7E4D2C41AC8F00548159 /* Supporting Files */,
 				DDC2E18726CE24E40042C5E4 /* Views */,
 				08DD7E502C41B0BA00548159 /* AppState.swift */,
+				08DD7E542C41D63800548159 /* AppConstants.swift */,
 			);
 			path = Meowtastic;
 			sourceTree = "<group>";
@@ -712,16 +717,6 @@
 				DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */,
 			);
 			path = Model;
-			sourceTree = "<group>";
-		};
-		DDC2E18926CE24F70042C5E4 /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-				DDB75A192A05EB67006ED576 /* alpha.png */,
-				DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */,
-				DD0E21002B8A6BC500F2D100 /* DeviceHardware.json */,
-			);
-			path = Resources;
 			sourceTree = "<group>";
 		};
 		DDC2E18B26CE25A70042C5E4 /* Messages */ = {
@@ -903,7 +898,6 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
-				Base,
 			);
 			mainGroup = DDC2E14B26CE248E0042C5E4;
 			packageReferences = (
@@ -927,8 +921,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */,
-				25AECD4F2C2F723200862C8E /* Localizable.xcstrings in Resources */,
 				DDB75A1A2A05EB67006ED576 /* alpha.png in Resources */,
+				08DD7E532C41CBBD00548159 /* Localizable.xcstrings in Resources */,
 				DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */,
 				DD0E21012B8A6F1300F2D100 /* DeviceHardware.json in Resources */,
 				DDDBC87B2BC62E4E001E8DF7 /* Settings.bundle in Resources */,
@@ -1014,6 +1008,7 @@
 				DDDB26462AACC0B7003AFCB7 /* NodeInfoItem.swift in Sources */,
 				DD2AD8A8296D2DF9001FF0E7 /* MapViewSwiftUI.swift in Sources */,
 				DDE5B4042B2279A700FCDD05 /* TraceRouteLog.swift in Sources */,
+				08DD7E552C41D63800548159 /* AppConstants.swift in Sources */,
 				DD6193792863875F00E59241 /* SerialConfig.swift in Sources */,
 				DDDB263F2AABEE20003AFCB7 /* NodeList.swift in Sources */,
 				DDD5BB0B2C285E45007E03CA /* LogDetail.swift in Sources */,

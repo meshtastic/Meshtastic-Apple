@@ -31,11 +31,11 @@ struct NodeList: View {
 	@State
 	private var searchText = ""
 	@State
-	private var isFavorite = false
+	private var isFavorite = UserDefaults.filterFavorite
 	@State
-	private var isOnline = false
+	private var isOnline = UserDefaults.filterOnline
 	@State
-	private var viaMqtt = true
+	private var ignoreMQTT = UserDefaults.ignoreMQTT
 
 	@ViewBuilder
 	func contextMenuActions(
@@ -86,14 +86,6 @@ struct NodeList: View {
 					)
 					.navigationBarItems(
 						trailing: ZStack {
-							if UIDevice.current.userInterfaceIdiom != .phone {
-								Button {
-									columnVisibility = .detailOnly
-								} label: {
-									Image(systemName: "rectangle")
-								}
-							}
-
 							ConnectedDevice(
 								bluetoothOn: bleManager.isSwitchedOn,
 								deviceConnected: bleManager.connectedPeripheral != nil,
@@ -117,27 +109,27 @@ struct NodeList: View {
 			}
 
 			Task {
-				await searchNodeList()
+				await updateFilter()
 			}
 		}
 		.onChange(of: searchText, initial: true) {
 			Task {
-				await searchNodeList()
-			}
-		}
-		.onChange(of: viaMqtt, initial: false) {
-			Task {
-				await searchNodeList()
-			}
-		}
-		.onChange(of: isOnline, initial: false) {
-			Task {
-				await searchNodeList()
+				await updateFilter()
 			}
 		}
 		.onChange(of: isFavorite, initial: false) {
 			Task {
-				await searchNodeList()
+				await updateFilter()
+			}
+		}
+		.onChange(of: isOnline, initial: false) {
+			Task {
+				await updateFilter()
+			}
+		}
+		.onChange(of: ignoreMQTT, initial: false) {
+			Task {
+				await updateFilter()
 			}
 		}
 		.onChange(of: appState.navigationPath, initial: true) {
@@ -172,7 +164,24 @@ struct NodeList: View {
 			$0.num == connectedNodeNum
 		})
 
-		List(nodes, id: \.self, selection: $selectedNode) { node in
+		List(
+			nodes.filter { node in
+				guard isFavorite || isOnline || ignoreMQTT else {
+					return true
+				}
+
+				if (isFavorite && node.favorite)
+					|| (isOnline && node.isOnline)
+					|| (ignoreMQTT && !node.viaMqtt)
+				{
+					return true
+				}
+
+				return false
+			},
+			id: \.self,
+			selection: $selectedNode
+		) { node in
 			NodeListItem(
 				connected: bleManager.connectedPeripheral?.num ?? -1 == node.num,
 				connectedNode: bleManager.connectedPeripheral?.num ?? -1,
@@ -189,7 +198,7 @@ struct NodeList: View {
 			NodeListFilter(
 				isFavorite: $isFavorite,
 				isOnline: $isOnline,
-				viaMqtt: $viaMqtt
+				ignoreMQTT: $ignoreMQTT
 			)
 		}
 		.safeAreaInset(edge: .bottom, alignment: .trailing) {
@@ -240,8 +249,11 @@ struct NodeList: View {
 		)
 	}
 
-	private func searchNodeList() async {
-		/// Case Insensitive Search Text Predicates
+	private func updateFilter() async {
+		UserDefaults.filterFavorite = isFavorite
+		UserDefaults.filterOnline = isOnline
+		UserDefaults.ignoreMQTT = ignoreMQTT
+
 		let searchPredicates = [
 			"user.userId",
 			"user.numString",
@@ -252,48 +264,10 @@ struct NodeList: View {
 			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
 		}
 
-		let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
-		var predicates: [NSPredicate] = []
-
-		/// MQTT
-		if !viaMqtt {
-			let mqttPredicate = NSPredicate(format: "viaMqtt == NO")
-			predicates.append(mqttPredicate)
+		if !searchText.isEmpty {
+			nodes.nsPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
 		}
-
-		/// Online
-		if isOnline {
-			let isOnlinePredicate = NSPredicate(
-				format: "lastHeard >= %@",
-				Calendar.current.date(
-					byAdding: .minute,
-					value: -15,
-					to: Date()
-				)! as NSDate
-			)
-			predicates.append(isOnlinePredicate)
-		}
-
-		/// Favorites
-		if isFavorite {
-			let isFavoritePredicate = NSPredicate(format: "favorite == YES")
-			predicates.append(isFavoritePredicate)
-		}
-
-		if predicates.count > 0 || !searchText.isEmpty {
-			if !searchText.isEmpty {
-				let filterPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)
-				nodes.nsPredicate = NSCompoundPredicate(
-					type: .and,
-					subpredicates: [
-						textSearchPredicate,
-						filterPredicates
-					]
-				)
-			} else {
-				nodes.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: predicates)
-			}
-		} else {
+		else {
 			nodes.nsPredicate = nil
 		}
 	}
