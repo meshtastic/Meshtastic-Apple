@@ -162,7 +162,6 @@ struct NodeDetail: View {
 					Section("Environment") {
 						if !node.hasEnvironmentMetrics {
 							LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
-							//	.padding(.top)
 						} else {
 							VStack {
 								if node.latestEnvironmentMetrics?.iaq ?? -1 > 0 {
@@ -181,7 +180,7 @@ struct NodeDetail: View {
 										WindCompactWidget(speed: String(node.latestEnvironmentMetrics?.windSpeed ?? 0.0), gust: String(node.latestEnvironmentMetrics?.windGust ?? 0.0), direction: "")
 									}
 								}
-								.padding(.bottom)
+								.padding(node.latestEnvironmentMetrics?.iaq ?? -1 > 0 ? .bottom : .vertical)
 							}
 						}
 					}
