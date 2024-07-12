@@ -177,3 +177,4 @@ struct WindCompactWidget: View {
 		}
 	}
 }
+

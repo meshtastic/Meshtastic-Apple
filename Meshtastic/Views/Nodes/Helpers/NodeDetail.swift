@@ -164,11 +164,13 @@ struct NodeDetail: View {
 							LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
 						} else {
 							VStack {
+								IndoorAirQuality(iaq: Int(node.latestEnvironmentMetrics?.iaq ?? 0), displayMode: .gradient)
+									.padding(.vertical)
 								LazyVGrid(columns: gridItemLayout) {
 									WeatherConditionsCompactWidget(temperature: String(node.latestEnvironmentMetrics?.temperature.formattedTemperature() ?? "99°"), symbolName: "cloud.sun", description: "TEMP")
 									HumidityCompactWidget(humidity: Int(node.latestEnvironmentMetrics?.relativeHumidity ?? 0), dewPoint: "99°")
 									PressureCompactWidget(pressure: String(node.latestEnvironmentMetrics?.barometricPressure ?? 0.0), unit: "mbar")
-									// WindCompactWidget(speed: windSpeed, gust: windGust, direction: windCompassDirection)
+									//WindCompactWidget(speed: String(node.latestEnvironmentMetrics?.windSpeed ?? 0.0), gust: String(node.latestEnvironmentMetrics?.windGust ?? 0.0), direction: "")
 								}
 							}
 						}

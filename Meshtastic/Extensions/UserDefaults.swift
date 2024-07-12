@@ -162,7 +162,6 @@ extension UserDefaults {
 
 	@UserDefault(.firmwareVersion, defaultValue: "0.0.0")
 	static var firmwareVersion: String
-	
 	@UserDefault(.environmentEnableWeatherKit, defaultValue: false)
 	static var environmentEnableWeatherKit: Bool
 
