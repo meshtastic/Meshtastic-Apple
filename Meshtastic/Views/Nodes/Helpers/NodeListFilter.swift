@@ -35,6 +35,7 @@ struct NodeListFilter: View {
 						} icon: {
 							Image(systemName: "dot.radiowaves.left.and.right")
 								.rotationEffect(.degrees(-90))
+								.symbolRenderingMode(.multicolor)
 						}
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -44,6 +45,7 @@ struct NodeListFilter: View {
 							Text("Via Mqtt")
 						} icon: {
 							Image(systemName: "dot.radiowaves.up.forward")
+								.symbolRenderingMode(.multicolor)
 						}
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -69,8 +71,7 @@ struct NodeListFilter: View {
 						} icon: {
 
 							Image(systemName: "star.fill")
-								.foregroundColor(.yellow)
-								.symbolRenderingMode(.hierarchical)
+								.symbolRenderingMode(.multicolor)
 						}
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -81,7 +82,6 @@ struct NodeListFilter: View {
 						Label {
 							Text("Environment")
 						} icon: {
-
 							Image(systemName: "cloud.sun")
 								.symbolRenderingMode(.multicolor)
 						}

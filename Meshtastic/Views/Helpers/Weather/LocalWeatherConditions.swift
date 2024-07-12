@@ -161,7 +161,7 @@ struct WindCompactWidget: View {
 	var body: some View {
 		ZStack(alignment: .topLeading) {
 			VStack(alignment: .leading) {
-				Label { Text("WIND") } icon: { Image(systemName: "wind").symbolRenderingMode(.multicolor) }
+				Label { Text("WIND") } icon: { Image(systemName: "wind").foregroundColor(.accentColor) }
 					.font(.caption)
 				Text("\(direction)")
 					.font(.caption)

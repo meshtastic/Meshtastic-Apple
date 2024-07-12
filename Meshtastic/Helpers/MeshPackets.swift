@@ -676,6 +676,11 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.temperature = telemetryMessage.environmentMetrics.temperature
 					telemetry.current = telemetryMessage.environmentMetrics.current
 					telemetry.voltage = telemetryMessage.environmentMetrics.voltage
+					telemetry.weight = telemetryMessage.environmentMetrics.weight
+					telemetry.windSpeed = telemetryMessage.environmentMetrics.windSpeed
+				//	telemetry.windGust = telemetryMessage.environmentMetrics.windGust
+				//	telemetry.windLull = telemetryMessage.environmentMetrics.windLull
+					telemetry.windDirection = Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.windDirection)
 					telemetry.metricsType = 1
 				}
 				telemetry.snr = packet.rxSnr
