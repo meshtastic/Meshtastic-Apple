@@ -15,23 +15,21 @@ struct LocalWeatherConditions: View {
 	/// Weather
 	/// The current weather condition for the city.
 	@State private var condition: WeatherCondition?
-	@State private var temperature: Measurement<UnitTemperature>?
-	@State private var temperatureCompact: String?
-	@State private var dewPoint: Measurement<UnitTemperature>?
-	@State private var dewPointString: String?
+	@State private var temperature: String = ""
+	@State private var dewPoint: String = ""
 	@State private var humidity: Int?
 	@State private var pressure: Measurement<UnitPressure>?
 	@State private var symbolName: String = "cloud.fill"
 	@State private var attributionLink: URL?
 	@State private var attributionLogo: URL?
-	
+
 	@Environment(\.colorScheme) var colorScheme: ColorScheme
 	var body: some View {
 		if location != nil {
 			VStack {
 				LazyVGrid(columns: gridItemLayout) {
-					WeatherConditionsCompactWidget(temperature: temperatureCompact ?? "??", symbolName: symbolName, description: condition?.description.uppercased() ?? "??")
-					HumidityCompactWidget(humidity: humidity ?? 0, dewPoint: temperatureCompact ?? "?")
+					WeatherConditionsCompactWidget(temperature: temperature, symbolName: symbolName, description: condition?.description.uppercased() ?? "??")
+					HumidityCompactWidget(humidity: humidity ?? 0, dewPoint: dewPoint)
 				}
 			}
 			.task {
@@ -43,10 +41,10 @@ struct LocalWeatherConditions: View {
 						numFormatter.maximumFractionDigits = 0
 						measurementFormatter.numberFormatter = numFormatter
 						measurementFormatter.unitStyle = .short
+						measurementFormatter.locale = Locale.current
 						condition = weather.currentWeather.condition
-						temperature = weather.currentWeather.temperature
-						temperatureCompact = measurementFormatter.string(from: dewPoint ?? Measurement<UnitTemperature>(value: 0, unit: .celsius))
-						dewPoint = weather.currentWeather.dewPoint
+						temperature = measurementFormatter.string(from: weather.currentWeather.temperature)
+						dewPoint = measurementFormatter.string(from: weather.currentWeather.dewPoint)
 						humidity = Int(weather.currentWeather.humidity * 100)
 						pressure = weather.currentWeather.pressure
 						symbolName = weather.currentWeather.symbolName
