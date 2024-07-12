@@ -10,6 +10,7 @@ import WeatherKit
 import OSLog
 
 struct LocalWeatherConditions: View {
+	private let gridItemLayout = Array(repeating: GridItem(.flexible(), spacing: 10), count: 2)
 	@State var location: CLLocation?
 	/// Weather
 	/// The current weather condition for the city.
@@ -23,64 +24,15 @@ struct LocalWeatherConditions: View {
 	@State private var symbolName: String = "cloud.fill"
 	@State private var attributionLink: URL?
 	@State private var attributionLogo: URL?
-
+	
 	@Environment(\.colorScheme) var colorScheme: ColorScheme
 	var body: some View {
 		if location != nil {
-			ZStack {
-				VStack {
-					HStack {
-						VStack {
-							VStack(alignment: .leading) {
-								Text(temperatureCompact ?? "??")
-									.font(.largeTitle)
-								Text(condition?.description ?? "??")
-									.font(.title3)
-								Image(systemName: symbolName).resizable()
-									.aspectRatio(contentMode: .fit)
-									.frame(width: 40, height: 40)
-							}
-							.padding()
-						}
-						.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-						.frame(maxWidth: 225, maxHeight: 225)
-
-						VStack {
-							VStack(alignment: .leading) {
-								Label { Text("HUMIDITY") } icon: { Image(systemName: "humidity").symbolRenderingMode(.multicolor) }
-									.font(.caption)
-								VStack(alignment: .leading) {
-									Text("\(humidity ?? 0)%")
-										.font(.largeTitle)
-										.padding(.bottom)
-									Text("The dew point is \(temperatureCompact ?? "?") right now.")
-										.lineLimit(3)
-										.fixedSize(horizontal: false, vertical: true)
-										.font(.caption)
-								}
-							}
-							.padding()
-						}
-						.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-						.frame(maxWidth: 225, maxHeight: 225)
-					}
-				}
-			}
 			VStack {
-				HStack {
-					AsyncImage(url: attributionLogo) { image in
-						image
-							.resizable()
-							.scaledToFit()
-					} placeholder: {
-						ProgressView()
-							.controlSize(.mini)
-					}
-					.frame(height: 10)
-					Link("Other data sources", destination: attributionLink ?? URL(string: "https://weather-data.apple.com/legal-attribution.html")!)
-						.font(.caption2)
+				LazyVGrid(columns: gridItemLayout) {
+					WeatherConditionsCompactWidget(temperature: temperatureCompact ?? "??", symbolName: symbolName, description: condition?.description.uppercased() ?? "??")
+					HumidityCompactWidget(humidity: humidity ?? 0, dewPoint: temperatureCompact ?? "?")
 				}
-				.padding(5)
 			}
 			.task {
 				do {
@@ -108,7 +60,65 @@ struct LocalWeatherConditions: View {
 					symbolName = "cloud.fill"
 				}
 			}
-			.padding(5)
+			VStack {
+				HStack {
+					AsyncImage(url: attributionLogo) { image in
+						image
+							.resizable()
+							.scaledToFit()
+					} placeholder: {
+						ProgressView()
+							.controlSize(.mini)
+					}
+					.frame(height: 10)
+					Link("Other data sources", destination: attributionLink ?? URL(string: "https://weather-data.apple.com/legal-attribution.html")!)
+						.font(.caption2)
+				}
+				.padding(2)
+			}
+		}
+	}
+}
+
+struct WeatherConditionsCompactWidget: View {
+	let temperature: String
+	let symbolName: String
+	let description: String
+	var body: some View {
+		ZStack(alignment: .topLeading) {
+			VStack(alignment: .leading) {
+				Label { Text(description) } icon: { Image(systemName: symbolName).symbolRenderingMode(.multicolor) }
+					.font(.caption)
+				Text(temperature)
+					.font(.system(size: 90))
+			}
+			.frame(maxWidth: .infinity)
+			.frame(height: 175)
+			.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+		}
+	}
+}
+
+struct HumidityCompactWidget: View {
+	let humidity: Int
+	let dewPoint: String
+	var body: some View {
+		ZStack(alignment: .topLeading) {
+			VStack(alignment: .leading) {
+				Label { Text("HUMIDITY") } icon: { Image(systemName: "humidity").symbolRenderingMode(.multicolor) }
+					.font(.caption)
+				Text("\(humidity)%")
+					.font(.largeTitle)
+					.padding(.bottom)
+				Text("The dew point is \(dewPoint) right now.")
+					.lineLimit(3)
+					.fixedSize(horizontal: false, vertical: true)
+					.font(.caption)
+			}
+			.padding(.horizontal)
+			.frame(maxWidth: .infinity)
+			.frame(height: 175)
+			.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 		}
 	}
 }
