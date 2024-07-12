@@ -678,15 +678,14 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.voltage = telemetryMessage.environmentMetrics.voltage
 					telemetry.weight = telemetryMessage.environmentMetrics.weight
 					telemetry.windSpeed = telemetryMessage.environmentMetrics.windSpeed
-				//	telemetry.windGust = telemetryMessage.environmentMetrics.windGust
-				//	telemetry.windLull = telemetryMessage.environmentMetrics.windLull
+					telemetry.windGust = telemetryMessage.environmentMetrics.windGust
+					telemetry.windLull = telemetryMessage.environmentMetrics.windLull
 					telemetry.windDirection = Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.windDirection)
 					telemetry.metricsType = 1
 				}
 				telemetry.snr = packet.rxSnr
 				telemetry.rssi = packet.rxRssi
 				telemetry.time = Date(timeIntervalSince1970: TimeInterval(Int64(truncatingIfNeeded: telemetryMessage.time)))
-				
 				guard let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as? NSMutableOrderedSet else {
 					return
 				}
@@ -807,6 +806,9 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 			}
 			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
 				newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
+				if packet.rxTime > 0 {
+					newMessage.fromUser?.userNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+				}
 			}
 			newMessage.messagePayload = messageText
 			newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: messageText!)

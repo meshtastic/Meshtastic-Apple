@@ -758,6 +758,9 @@ public struct ModuleConfig {
 
       /// NMEA messages specifically tailored for CalTopo
       case caltopo // = 5
+
+      /// Ecowitt WS85 weather station
+      case ws85 // = 6
       case UNRECOGNIZED(Int)
 
       public init() {
@@ -772,6 +775,7 @@ public struct ModuleConfig {
         case 3: self = .textmsg
         case 4: self = .nmea
         case 5: self = .caltopo
+        case 6: self = .ws85
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -784,6 +788,7 @@ public struct ModuleConfig {
         case .textmsg: return 3
         case .nmea: return 4
         case .caltopo: return 5
+        case .ws85: return 6
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1208,6 +1213,7 @@ extension ModuleConfig.SerialConfig.Serial_Mode: CaseIterable {
     .textmsg,
     .nmea,
     .caltopo,
+    .ws85,
   ]
 }
 
@@ -2081,6 +2087,7 @@ extension ModuleConfig.SerialConfig.Serial_Mode: SwiftProtobuf._ProtoNameProvidi
     3: .same(proto: "TEXTMSG"),
     4: .same(proto: "NMEA"),
     5: .same(proto: "CALTOPO"),
+    6: .same(proto: "WS85"),
   ]
 }
 

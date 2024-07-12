@@ -2165,26 +2165,20 @@ public struct FromRadio {
   ///
   /// The packet id, used to allow the phone to request missing read packets from the FIFO,
   /// see our bluetooth docs
-  public var id: UInt32 {
-    get {return _storage._id}
-    set {_uniqueStorage()._id = newValue}
-  }
+  public var id: UInt32 = 0
 
   ///
   /// Log levels, chosen to match python logging conventions.
-  public var payloadVariant: OneOf_PayloadVariant? {
-    get {return _storage._payloadVariant}
-    set {_uniqueStorage()._payloadVariant = newValue}
-  }
+  public var payloadVariant: FromRadio.OneOf_PayloadVariant? = nil
 
   ///
   /// Log levels, chosen to match python logging conventions.
   public var packet: MeshPacket {
     get {
-      if case .packet(let v)? = _storage._payloadVariant {return v}
+      if case .packet(let v)? = payloadVariant {return v}
       return MeshPacket()
     }
-    set {_uniqueStorage()._payloadVariant = .packet(newValue)}
+    set {payloadVariant = .packet(newValue)}
   }
 
   ///
@@ -2192,10 +2186,10 @@ public struct FromRadio {
   /// NOTE: This ID must not change - to keep (minimal) compatibility with <1.2 version of android apps.
   public var myInfo: MyNodeInfo {
     get {
-      if case .myInfo(let v)? = _storage._payloadVariant {return v}
+      if case .myInfo(let v)? = payloadVariant {return v}
       return MyNodeInfo()
     }
-    set {_uniqueStorage()._payloadVariant = .myInfo(newValue)}
+    set {payloadVariant = .myInfo(newValue)}
   }
 
   ///
@@ -2203,30 +2197,30 @@ public struct FromRadio {
   /// starts over with the first node in our DB
   public var nodeInfo: NodeInfo {
     get {
-      if case .nodeInfo(let v)? = _storage._payloadVariant {return v}
+      if case .nodeInfo(let v)? = payloadVariant {return v}
       return NodeInfo()
     }
-    set {_uniqueStorage()._payloadVariant = .nodeInfo(newValue)}
+    set {payloadVariant = .nodeInfo(newValue)}
   }
 
   ///
   /// Include a part of the config (was: RadioConfig radio)
   public var config: Config {
     get {
-      if case .config(let v)? = _storage._payloadVariant {return v}
+      if case .config(let v)? = payloadVariant {return v}
       return Config()
     }
-    set {_uniqueStorage()._payloadVariant = .config(newValue)}
+    set {payloadVariant = .config(newValue)}
   }
 
   ///
   /// Set to send debug console output over our protobuf stream
   public var logRecord: LogRecord {
     get {
-      if case .logRecord(let v)? = _storage._payloadVariant {return v}
+      if case .logRecord(let v)? = payloadVariant {return v}
       return LogRecord()
     }
-    set {_uniqueStorage()._payloadVariant = .logRecord(newValue)}
+    set {payloadVariant = .logRecord(newValue)}
   }
 
   ///
@@ -2236,10 +2230,10 @@ public struct FromRadio {
   /// NOTE: This ID must not change - to keep (minimal) compatibility with <1.2 version of android apps.
   public var configCompleteID: UInt32 {
     get {
-      if case .configCompleteID(let v)? = _storage._payloadVariant {return v}
+      if case .configCompleteID(let v)? = payloadVariant {return v}
       return 0
     }
-    set {_uniqueStorage()._payloadVariant = .configCompleteID(newValue)}
+    set {payloadVariant = .configCompleteID(newValue)}
   }
 
   ///
@@ -2249,80 +2243,80 @@ public struct FromRadio {
   /// NOTE: This ID must not change - to keep (minimal) compatibility with <1.2 version of android apps.
   public var rebooted: Bool {
     get {
-      if case .rebooted(let v)? = _storage._payloadVariant {return v}
+      if case .rebooted(let v)? = payloadVariant {return v}
       return false
     }
-    set {_uniqueStorage()._payloadVariant = .rebooted(newValue)}
+    set {payloadVariant = .rebooted(newValue)}
   }
 
   ///
   /// Include module config
   public var moduleConfig: ModuleConfig {
     get {
-      if case .moduleConfig(let v)? = _storage._payloadVariant {return v}
+      if case .moduleConfig(let v)? = payloadVariant {return v}
       return ModuleConfig()
     }
-    set {_uniqueStorage()._payloadVariant = .moduleConfig(newValue)}
+    set {payloadVariant = .moduleConfig(newValue)}
   }
 
   ///
   /// One packet is sent for each channel
   public var channel: Channel {
     get {
-      if case .channel(let v)? = _storage._payloadVariant {return v}
+      if case .channel(let v)? = payloadVariant {return v}
       return Channel()
     }
-    set {_uniqueStorage()._payloadVariant = .channel(newValue)}
+    set {payloadVariant = .channel(newValue)}
   }
 
   ///
   /// Queue status info
   public var queueStatus: QueueStatus {
     get {
-      if case .queueStatus(let v)? = _storage._payloadVariant {return v}
+      if case .queueStatus(let v)? = payloadVariant {return v}
       return QueueStatus()
     }
-    set {_uniqueStorage()._payloadVariant = .queueStatus(newValue)}
+    set {payloadVariant = .queueStatus(newValue)}
   }
 
   ///
   /// File Transfer Chunk
   public var xmodemPacket: XModem {
     get {
-      if case .xmodemPacket(let v)? = _storage._payloadVariant {return v}
+      if case .xmodemPacket(let v)? = payloadVariant {return v}
       return XModem()
     }
-    set {_uniqueStorage()._payloadVariant = .xmodemPacket(newValue)}
+    set {payloadVariant = .xmodemPacket(newValue)}
   }
 
   ///
   /// Device metadata message
   public var metadata: DeviceMetadata {
     get {
-      if case .metadata(let v)? = _storage._payloadVariant {return v}
+      if case .metadata(let v)? = payloadVariant {return v}
       return DeviceMetadata()
     }
-    set {_uniqueStorage()._payloadVariant = .metadata(newValue)}
+    set {payloadVariant = .metadata(newValue)}
   }
 
   ///
   /// MQTT Client Proxy Message (device sending to client / phone for publishing to MQTT)
   public var mqttClientProxyMessage: MqttClientProxyMessage {
     get {
-      if case .mqttClientProxyMessage(let v)? = _storage._payloadVariant {return v}
+      if case .mqttClientProxyMessage(let v)? = payloadVariant {return v}
       return MqttClientProxyMessage()
     }
-    set {_uniqueStorage()._payloadVariant = .mqttClientProxyMessage(newValue)}
+    set {payloadVariant = .mqttClientProxyMessage(newValue)}
   }
 
   ///
   /// File system manifest messages
   public var fileInfo: FileInfo {
     get {
-      if case .fileInfo(let v)? = _storage._payloadVariant {return v}
+      if case .fileInfo(let v)? = payloadVariant {return v}
       return FileInfo()
     }
-    set {_uniqueStorage()._payloadVariant = .fileInfo(newValue)}
+    set {payloadVariant = .fileInfo(newValue)}
   }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -2450,8 +2444,6 @@ public struct FromRadio {
   }
 
   public init() {}
-
-  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 ///
@@ -4303,305 +4295,263 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     15: .same(proto: "fileInfo"),
   ]
 
-  fileprivate class _StorageClass {
-    var _id: UInt32 = 0
-    var _payloadVariant: FromRadio.OneOf_PayloadVariant?
-
-    #if swift(>=5.10)
-      // This property is used as the initial default value for new instances of the type.
-      // The type itself is protecting the reference to its storage via CoW semantics.
-      // This will force a copy to be made of this reference when the first mutation occurs;
-      // hence, it is safe to mark this as `nonisolated(unsafe)`.
-      static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
-
-    private init() {}
-
-    init(copying source: _StorageClass) {
-      _id = source._id
-      _payloadVariant = source._payloadVariant
-    }
-  }
-
-  fileprivate mutating func _uniqueStorage() -> _StorageClass {
-    if !isKnownUniquelyReferenced(&_storage) {
-      _storage = _StorageClass(copying: _storage)
-    }
-    return _storage
-  }
-
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    _ = _uniqueStorage()
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      while let fieldNumber = try decoder.nextFieldNumber() {
-        // The use of inline closures is to circumvent an issue where the compiler
-        // allocates stack space for every case branch when no optimizations are
-        // enabled. https://github.com/apple/swift-protobuf/issues/1034
-        switch fieldNumber {
-        case 1: try { try decoder.decodeSingularUInt32Field(value: &_storage._id) }()
-        case 2: try {
-          var v: MeshPacket?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .packet(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .packet(v)
-          }
-        }()
-        case 3: try {
-          var v: MyNodeInfo?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .myInfo(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .myInfo(v)
-          }
-        }()
-        case 4: try {
-          var v: NodeInfo?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .nodeInfo(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .nodeInfo(v)
-          }
-        }()
-        case 5: try {
-          var v: Config?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .config(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .config(v)
-          }
-        }()
-        case 6: try {
-          var v: LogRecord?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .logRecord(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .logRecord(v)
-          }
-        }()
-        case 7: try {
-          var v: UInt32?
-          try decoder.decodeSingularUInt32Field(value: &v)
-          if let v = v {
-            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .configCompleteID(v)
-          }
-        }()
-        case 8: try {
-          var v: Bool?
-          try decoder.decodeSingularBoolField(value: &v)
-          if let v = v {
-            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .rebooted(v)
-          }
-        }()
-        case 9: try {
-          var v: ModuleConfig?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .moduleConfig(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .moduleConfig(v)
-          }
-        }()
-        case 10: try {
-          var v: Channel?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .channel(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .channel(v)
-          }
-        }()
-        case 11: try {
-          var v: QueueStatus?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .queueStatus(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .queueStatus(v)
-          }
-        }()
-        case 12: try {
-          var v: XModem?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .xmodemPacket(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .xmodemPacket(v)
-          }
-        }()
-        case 13: try {
-          var v: DeviceMetadata?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .metadata(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .metadata(v)
-          }
-        }()
-        case 14: try {
-          var v: MqttClientProxyMessage?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .mqttClientProxyMessage(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .mqttClientProxyMessage(v)
-          }
-        }()
-        case 15: try {
-          var v: FileInfo?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .fileInfo(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .fileInfo(v)
-          }
-        }()
-        default: break
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.id) }()
+      case 2: try {
+        var v: MeshPacket?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .packet(let m) = current {v = m}
         }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .packet(v)
+        }
+      }()
+      case 3: try {
+        var v: MyNodeInfo?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .myInfo(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .myInfo(v)
+        }
+      }()
+      case 4: try {
+        var v: NodeInfo?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .nodeInfo(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .nodeInfo(v)
+        }
+      }()
+      case 5: try {
+        var v: Config?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .config(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .config(v)
+        }
+      }()
+      case 6: try {
+        var v: LogRecord?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .logRecord(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .logRecord(v)
+        }
+      }()
+      case 7: try {
+        var v: UInt32?
+        try decoder.decodeSingularUInt32Field(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .configCompleteID(v)
+        }
+      }()
+      case 8: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .rebooted(v)
+        }
+      }()
+      case 9: try {
+        var v: ModuleConfig?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .moduleConfig(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .moduleConfig(v)
+        }
+      }()
+      case 10: try {
+        var v: Channel?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .channel(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .channel(v)
+        }
+      }()
+      case 11: try {
+        var v: QueueStatus?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .queueStatus(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .queueStatus(v)
+        }
+      }()
+      case 12: try {
+        var v: XModem?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .xmodemPacket(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .xmodemPacket(v)
+        }
+      }()
+      case 13: try {
+        var v: DeviceMetadata?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .metadata(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .metadata(v)
+        }
+      }()
+      case 14: try {
+        var v: MqttClientProxyMessage?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .mqttClientProxyMessage(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .mqttClientProxyMessage(v)
+        }
+      }()
+      case 15: try {
+        var v: FileInfo?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .fileInfo(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .fileInfo(v)
+        }
+      }()
+      default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every if/case branch local when no optimizations
-      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-      // https://github.com/apple/swift-protobuf/issues/1182
-      if _storage._id != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._id, fieldNumber: 1)
-      }
-      switch _storage._payloadVariant {
-      case .packet?: try {
-        guard case .packet(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-      }()
-      case .myInfo?: try {
-        guard case .myInfo(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-      }()
-      case .nodeInfo?: try {
-        guard case .nodeInfo(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
-      }()
-      case .config?: try {
-        guard case .config(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
-      }()
-      case .logRecord?: try {
-        guard case .logRecord(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
-      }()
-      case .configCompleteID?: try {
-        guard case .configCompleteID(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 7)
-      }()
-      case .rebooted?: try {
-        guard case .rebooted(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularBoolField(value: v, fieldNumber: 8)
-      }()
-      case .moduleConfig?: try {
-        guard case .moduleConfig(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
-      }()
-      case .channel?: try {
-        guard case .channel(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
-      }()
-      case .queueStatus?: try {
-        guard case .queueStatus(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
-      }()
-      case .xmodemPacket?: try {
-        guard case .xmodemPacket(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
-      }()
-      case .metadata?: try {
-        guard case .metadata(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
-      }()
-      case .mqttClientProxyMessage?: try {
-        guard case .mqttClientProxyMessage(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 14)
-      }()
-      case .fileInfo?: try {
-        guard case .fileInfo(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 15)
-      }()
-      case nil: break
-      }
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.id != 0 {
+      try visitor.visitSingularUInt32Field(value: self.id, fieldNumber: 1)
+    }
+    switch self.payloadVariant {
+    case .packet?: try {
+      guard case .packet(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    }()
+    case .myInfo?: try {
+      guard case .myInfo(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    }()
+    case .nodeInfo?: try {
+      guard case .nodeInfo(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+    }()
+    case .config?: try {
+      guard case .config(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+    }()
+    case .logRecord?: try {
+      guard case .logRecord(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+    }()
+    case .configCompleteID?: try {
+      guard case .configCompleteID(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 7)
+    }()
+    case .rebooted?: try {
+      guard case .rebooted(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 8)
+    }()
+    case .moduleConfig?: try {
+      guard case .moduleConfig(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
+    }()
+    case .channel?: try {
+      guard case .channel(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
+    }()
+    case .queueStatus?: try {
+      guard case .queueStatus(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
+    }()
+    case .xmodemPacket?: try {
+      guard case .xmodemPacket(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
+    }()
+    case .metadata?: try {
+      guard case .metadata(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
+    }()
+    case .mqttClientProxyMessage?: try {
+      guard case .mqttClientProxyMessage(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 14)
+    }()
+    case .fileInfo?: try {
+      guard case .fileInfo(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 15)
+    }()
+    case nil: break
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: FromRadio, rhs: FromRadio) -> Bool {
-    if lhs._storage !== rhs._storage {
-      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
-        let _storage = _args.0
-        let rhs_storage = _args.1
-        if _storage._id != rhs_storage._id {return false}
-        if _storage._payloadVariant != rhs_storage._payloadVariant {return false}
-        return true
-      }
-      if !storagesAreEqual {return false}
-    }
+    if lhs.id != rhs.id {return false}
+    if lhs.payloadVariant != rhs.payloadVariant {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
