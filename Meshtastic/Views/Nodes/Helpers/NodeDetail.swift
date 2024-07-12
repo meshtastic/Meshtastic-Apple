@@ -165,15 +165,17 @@ struct NodeDetail: View {
 							//	.padding(.top)
 						} else {
 							VStack {
-								IndoorAirQuality(iaq: Int(node.latestEnvironmentMetrics?.iaq ?? 0), displayMode: .gradient)
-									.padding(.vertical)
+								if node.latestEnvironmentMetrics?.iaq ?? -1 > 0 {
+									IndoorAirQuality(iaq: Int(node.latestEnvironmentMetrics?.iaq ?? 0), displayMode: .gradient)
+										.padding(.vertical)
+								}
 								LazyVGrid(columns: gridItemLayout) {
 									WeatherConditionsCompactWidget(temperature: String(node.latestEnvironmentMetrics?.temperature.shortFormattedTemperature() ?? "99°"), symbolName: "cloud.sun", description: "TEMP")
 									if node.latestEnvironmentMetrics?.relativeHumidity ?? 0.0 > 0.0 {
 										HumidityCompactWidget(humidity: Int(node.latestEnvironmentMetrics?.relativeHumidity ?? 0.0), dewPoint: String(format: "%.0f", calculateDewPoint(temp: node.latestEnvironmentMetrics?.temperature ?? 0.0, relativeHumidity: node.latestEnvironmentMetrics?.relativeHumidity ?? 0.0)) + "°")
 									}
 									if node.latestEnvironmentMetrics?.barometricPressure ?? 0.0 > 0.0 {
-										PressureCompactWidget(pressure: String(format: "%.2f", node.latestEnvironmentMetrics?.barometricPressure ?? 0.0), unit: "mbar", low: node.latestEnvironmentMetrics?.barometricPressure ?? 0.0 <= 1009.144)
+										PressureCompactWidget(pressure: String(format: "%.2f", node.latestEnvironmentMetrics?.barometricPressure ?? 0.0), unit: "hPA", low: node.latestEnvironmentMetrics?.barometricPressure ?? 0.0 <= 1009.144)
 									}
 									if node.latestEnvironmentMetrics?.windSpeed ?? 0.0 > 0.0 {
 										WindCompactWidget(speed: String(node.latestEnvironmentMetrics?.windSpeed ?? 0.0), gust: String(node.latestEnvironmentMetrics?.windGust ?? 0.0), direction: "")
