@@ -21,7 +21,7 @@ struct MQTTIcon: View {
 			return "arrow.down.circle.fill"
 		}
 		else {
-			return "circle.fill"
+			return "slash.circle"
 		}
 	}
 

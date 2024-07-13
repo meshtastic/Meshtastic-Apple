@@ -81,4 +81,12 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 			break
 		}
 	}
+
+	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+		// no-op
+	}
+
+	func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
+		// no-op
+	}
 }
