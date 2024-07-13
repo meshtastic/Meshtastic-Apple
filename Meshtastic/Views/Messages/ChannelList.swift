@@ -102,7 +102,7 @@ struct ChannelList: View {
 		VStack {
 			// Display Contacts for the rest of the non admin channels
 			if let node, let myInfo = node.myInfo, let channels = myInfo.channels?.array as? [ChannelEntity] {
-				List(channels, id: \.self) { (channel: ChannelEntity) in
+				List(channels, id: \.self, selection: $channelSelection) { (channel: ChannelEntity) in
 					if !restrictedChannels.contains(channel.name?.lowercased() ?? "") {
 						makeNavigationLink(myInfo: myInfo, channel: channel)
 							.frame(height: 62)

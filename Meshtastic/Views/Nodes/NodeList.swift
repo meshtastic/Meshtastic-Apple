@@ -24,7 +24,7 @@ struct NodeList: View {
 	@State private var hopsAway: Double = -1.0
 	@State private var roleFilter = false
 	@State private var deviceRoles: Set<Int> = []
-	
+
 	var boolFilters: [Bool] {[
 		isOnline,
 		isFavorite,
@@ -46,7 +46,7 @@ struct NodeList: View {
 			NSSortDescriptor(key: "lastHeard", ascending: false),
 			NSSortDescriptor(key: "user.longName", ascending: true),
 		],
-		animation: .default
+		animation: .spring
 	)
 	var nodes: FetchedResults<NodeInfoEntity>
 
@@ -299,7 +299,6 @@ struct NodeList: View {
 			let hopsAwayPredicate = NSPredicate(format: "hopsAway > 0 AND hopsAway <= %i", Int32(hopsAway))
 			predicates.append(hopsAwayPredicate)
 		}
-
 		/// Online
 		if isOnline {
 			let isOnlinePredicate = NSPredicate(format: "lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -15, to: Date())! as NSDate)
@@ -333,7 +332,6 @@ struct NodeList: View {
 				predicates.append(distancePredicate)
 			}
 		}
-
 		if predicates.count > 0 || !searchText.isEmpty {
 			if !searchText.isEmpty {
 				let filterPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)
