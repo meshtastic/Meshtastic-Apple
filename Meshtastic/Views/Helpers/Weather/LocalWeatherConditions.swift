@@ -94,17 +94,15 @@ struct WeatherConditionsCompactWidget: View {
 	let symbolName: String
 	let description: String
 	var body: some View {
-		ViewThatFits {
-			VStack(alignment: .leading) {
-				Label { Text(description) } icon: { Image(systemName: symbolName).symbolRenderingMode(.multicolor) }
-					.font(.caption)
-				Text(temperature)
-					.font(temperature.length < 4 ? .system(size: 90) : .system(size: 60) )
-			}
-			.frame(maxWidth: .infinity)
-			.frame(height: 175)
-			.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+		VStack(alignment: .leading) {
+			Label { Text(description) } icon: { Image(systemName: symbolName).symbolRenderingMode(.multicolor) }
+				.font(.caption)
+			Text(temperature)
+				.font(temperature.length < 4 ? .system(size: 90) : .system(size: 60) )
 		}
+		.frame(maxWidth: .infinity)
+		.frame(height: 175)
+		.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 	}
 }
 
@@ -112,23 +110,21 @@ struct HumidityCompactWidget: View {
 	let humidity: Int
 	let dewPoint: String
 	var body: some View {
-		ViewThatFits {
-			VStack(alignment: .leading) {
-				Label { Text("HUMIDITY") } icon: { Image(systemName: "humidity").symbolRenderingMode(.multicolor) }
-					.font(.caption)
-				Text("\(humidity)%")
-					.font(.largeTitle)
-					.padding(.bottom)
-				Text("The dew point is \(dewPoint) right now.")
-					.lineLimit(3)
-					.fixedSize(horizontal: false, vertical: true)
-					.font(.caption)
-			}
-			.padding(.horizontal)
-			.frame(maxWidth: .infinity)
-			.frame(height: 175)
-			.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+		VStack(alignment: .leading) {
+			Label { Text("HUMIDITY") } icon: { Image(systemName: "humidity").symbolRenderingMode(.multicolor) }
+				.font(.caption)
+			Text("\(humidity)%")
+				.font(.largeTitle)
+				.padding(.bottom)
+			Text("The dew point is \(dewPoint) right now.")
+				.lineLimit(3)
+				.fixedSize(horizontal: false, vertical: true)
+				.font(.caption)
 		}
+		.padding(.horizontal)
+		.frame(maxWidth: .infinity)
+		.frame(height: 175)
+		.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 	}
 }
 
@@ -137,21 +133,19 @@ struct PressureCompactWidget: View {
 	let unit: String
 	let low: Bool
 	var body: some View {
-		ViewThatFits {
-			VStack(alignment: .leading) {
-				Label { Text("PRESSURE") } icon: { Image(systemName: "gauge").symbolRenderingMode(.multicolor) }
-					.font(.caption2)
-				Text(pressure)
-					.font(pressure.length < 7 ? .system(size: 35) : .system(size: 30) )
-				Text(low ? "LOW" : "HIGH")
-					.padding(.bottom)
-				Text(unit)
-			}
-			.padding(.horizontal)
-			.frame(maxWidth: .infinity)
-			.frame(height: 175)
-			.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+		VStack(alignment: .leading) {
+			Label { Text("PRESSURE") } icon: { Image(systemName: "gauge").symbolRenderingMode(.multicolor) }
+				.font(.caption2)
+			Text(pressure)
+				.font(pressure.length < 7 ? .system(size: 35) : .system(size: 30) )
+			Text(low ? "LOW" : "HIGH")
+				.padding(.bottom)
+			Text(unit)
 		}
+		.padding(.horizontal)
+		.frame(maxWidth: .infinity)
+		.frame(height: 175)
+		.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 	}
 }
 
@@ -160,22 +154,20 @@ struct WindCompactWidget: View {
 	let gust: String
 	let direction: String
 	var body: some View {
-		ViewThatFits {
-			VStack(alignment: .leading) {
-				Label { Text("WIND") } icon: { Image(systemName: "wind").foregroundColor(.accentColor) }
-					.font(.caption)
-				Text("\(direction)")
-					.font(.caption)
-					.padding(.bottom, 10)
-				Text(speed)
-					.font(.system(size: 35))
-				Text("Gusts \(gust)")
-			}
-			.padding(.horizontal)
-			.frame(maxWidth: .infinity)
-			.frame(height: 175)
-			.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+		VStack(alignment: .leading) {
+			Label { Text("WIND") } icon: { Image(systemName: "wind").foregroundColor(.accentColor) }
+				.font(.caption)
+			Text("\(direction)")
+				.font(.caption)
+				.padding(.bottom, 10)
+			Text(speed)
+				.font(.system(size: 35))
+			Text("Gusts \(gust)")
 		}
+		.padding(.horizontal)
+		.frame(maxWidth: .infinity)
+		.frame(height: 175)
+		.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 	}
 }
 
