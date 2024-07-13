@@ -1,10 +1,3 @@
-//
-//  Connect.swift
-//  Meshtastic Apple
-//
-//  Copyright(c) Garth Vander Houwen 8/18/21.
-//
-
 import SwiftUI
 import MapKit
 import CoreData
@@ -31,19 +24,22 @@ struct Connect: View {
 
 	init () {
 		let notificationCenter = UNUserNotificationCenter.current()
-		notificationCenter.getNotificationSettings(completionHandler: { (settings) in
-			if settings.authorizationStatus == .notDetermined {
-				UNUserNotificationCenter.current().requestAuthorization(
-					options: [.alert, .badge, .sound]
-				) { success, error in
-					if success {
-						Logger.services.info("Notifications are all set!")
-					} else if let error = error {
-						Logger.services.error("\(error.localizedDescription)")
+
+		notificationCenter.getNotificationSettings(
+			completionHandler: { settings in
+				if settings.authorizationStatus == .notDetermined {
+					UNUserNotificationCenter.current().requestAuthorization(
+						options: [.alert, .badge, .sound]
+					) { success, error in
+						if success {
+							Logger.services.info("Notifications are all set!")
+						} else if let error = error {
+							Logger.services.error("\(error.localizedDescription)")
+						}
 					}
 				}
 			}
-		})
+		)
 	}
 
 	var body: some View {
@@ -51,7 +47,9 @@ struct Connect: View {
 			VStack {
 				List {
 					if bleManager.isSwitchedOn {
-						Section(header: Text("connected.radio").font(.title)) {
+						Section(
+							header: Text("connected.radio").font(.title)
+						) {
 							if
 								let connectedPeripheral = bleManager.connectedPeripheral,
 								connectedPeripheral.peripheral.state == .connected
@@ -89,15 +87,14 @@ struct Connect: View {
 												.foregroundColor(.green)
 										} else {
 											HStack {
-												if #available(iOS 17.0, macOS 14.0, *) {
-													Image(systemName: "square.stack.3d.down.forward")
-														.symbolRenderingMode(.multicolor)
-														.symbolEffect(
-															.variableColor.reversing.cumulative,
-															options: .repeat(20).speed(3)
-														)
-														.foregroundColor(.orange)
-												}
+												Image(systemName: "square.stack.3d.down.forward")
+													.symbolRenderingMode(.multicolor)
+													.symbolEffect(
+														.variableColor.reversing.cumulative,
+														options: .repeat(20).speed(3)
+													)
+													.foregroundColor(.orange)
+
 												Text("communicating")
 													.font(.callout)
 													.foregroundColor(.orange)
@@ -277,14 +274,14 @@ struct Connect: View {
 							}
 						}
 					} else {
-						Text("bluetooth.off")
+						Text("Bluetooth Off")
 							.foregroundColor(.red)
 							.font(.title)
 					}
 				}
 				.padding(.bottom, 10)
 			}
-			.navigationTitle("bluetooth")
+			.navigationTitle("Bluetooth")
 			.navigationBarItems(
 				leading: MeshtasticLogo(),
 				trailing: ZStack {
@@ -296,22 +293,16 @@ struct Connect: View {
 				}
 			)
 		}
-		.sheet(
-			isPresented: $invalidFirmwareVersion,
-			onDismiss: didDismissSheet
-		) {
-			InvalidVersion(
-				minimumVersion: self.bleManager.minimumVersion,
-				version: self.bleManager.connectedVersion
-			)
-				.presentationDetents([.large])
-				.presentationDragIndicator(.automatic)
-		}
-		.onChange(of: (self.bleManager.invalidVersion)) { _ in
+		.onAppear(perform: {
+			if self.bleManager.context == nil {
+				self.bleManager.context = context
+			}
+		})
+		.onChange(of: bleManager.invalidVersion) {
 			invalidFirmwareVersion = self.bleManager.invalidVersion
 		}
-		.onChange(of: (self.bleManager.isSubscribed)) { sub in
-			if UserDefaults.preferredPeripheralId.count > 0 && sub {
+		.onChange(of: bleManager.isSubscribed) {
+			if UserDefaults.preferredPeripheralId.count > 0 && bleManager.isSubscribed {
 				let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 				fetchNodeInfoRequest.predicate = NSPredicate(
 					format: "num == %lld",
@@ -331,11 +322,17 @@ struct Connect: View {
 				}
 			}
 		}
-		.onAppear(perform: {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
-		})
+		.sheet(
+			isPresented: $invalidFirmwareVersion,
+			onDismiss: didDismissSheet
+		) {
+			InvalidVersion(
+				minimumVersion: bleManager.minimumVersion,
+				version: bleManager.connectedVersion
+			)
+			.presentationDetents([.large])
+			.presentationDragIndicator(.automatic)
+		}
 	}
 
 	func didDismissSheet() {

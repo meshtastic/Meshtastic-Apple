@@ -67,7 +67,7 @@ struct NodeMapContent: MapContent {
 				.foregroundStyle(
 					Color(.white).opacity(0.3)
 				)
-				.stroke(.black.opacity(0.8), lineWidth: 5)
+				.stroke(.white.opacity(0.8), lineWidth: 5)
 
 			Annotation(
 				coordinate: latest.coordinate,

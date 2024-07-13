@@ -1801,6 +1801,12 @@
         }
       }
     },
+    "Bluetooth" : {
+
+    },
+    "Bluetooth Off" : {
+
+    },
     "bluetooth.config" : {
       "localizations" : {
         "de" : {
@@ -2036,6 +2042,7 @@
       }
     },
     "bluetooth.off" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

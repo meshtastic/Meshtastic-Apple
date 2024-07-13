@@ -54,30 +54,30 @@ struct MeshMap: View {
 						LongPressGesture(minimumDuration: 0.5)
 							.sequenced(before: SpatialTapGesture(coordinateSpace: .local))
 							.onEnded { value in
-							switch value {
-							case let .second(_, tapValue):
-								guard let point = tapValue?.location else {
-									Logger.services.error("Unable to retreive tap location from gesture data.")
-									return
-								}
+								switch value {
+								case let .second(_, tapValue):
+									guard let point = tapValue?.location else {
+										Logger.services.error("Unable to retreive tap location from gesture data.")
+										return
+									}
 
-								guard let coordinate = reader.convert(point, from: .local) else {
-									Logger.services.error("Unable to convert local point to coordinate on map.")
-									return
-								}
+									guard let coordinate = reader.convert(point, from: .local) else {
+										Logger.services.error("Unable to convert local point to coordinate on map.")
+										return
+									}
 
-								newWaypointCoord = coordinate
-								editingWaypoint = WaypointEntity(context: context)
-								editingWaypoint!.name = "Waypoint Pin"
-								editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
-								editingWaypoint!.latitudeI = Int32((newWaypointCoord?.latitude ?? 0) * 1e7)
-								editingWaypoint!.longitudeI = Int32((newWaypointCoord?.longitude ?? 0) * 1e7)
-								editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
-								editingWaypoint!.id = 0
-								Logger.services.debug("Long press occured at Lat: \(coordinate.latitude) Long: \(coordinate.longitude)")
-							default: return
-							}
-					})
+									newWaypointCoord = coordinate
+									editingWaypoint = WaypointEntity(context: context)
+									editingWaypoint!.name = "Waypoint Pin"
+									editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
+									editingWaypoint!.latitudeI = Int32((newWaypointCoord?.latitude ?? 0) * 1e7)
+									editingWaypoint!.longitudeI = Int32((newWaypointCoord?.longitude ?? 0) * 1e7)
+									editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
+									editingWaypoint!.id = 0
+									Logger.services.debug("Long press occured at Lat: \(coordinate.latitude) Long: \(coordinate.longitude)")
+								default: return
+								}
+							})
 				}
 			}
 			.sheet(item: $selectedPosition) { selection in
@@ -131,7 +131,11 @@ struct MeshMap: View {
 		.navigationBarItems(
 			leading: MeshtasticLogo(),
 			trailing: ZStack {
-				ConnectedDevice(ble: bleManager)
+				ConnectedDevice(
+					ble: bleManager,
+					mqttProxyConnected: bleManager.mqttProxyConnected,
+					mqttTopic: bleManager.mqttManager.topic
+				)
 			}
 		)
 		.onAppear {

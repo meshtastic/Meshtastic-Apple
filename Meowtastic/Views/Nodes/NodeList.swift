@@ -82,7 +82,7 @@ struct NodeList: View {
 					)
 					.navigationBarItems(
 						trailing: ZStack {
-							ConnectedDevice(ble: bleManager, phoneOnly: true)
+							ConnectedDevice(ble: bleManager)
 						}
 					)
 				}
@@ -225,7 +225,7 @@ struct NodeList: View {
 		.navigationBarItems(
 			leading: MeshtasticLogo(),
 			trailing: ZStack {
-				ConnectedDevice(ble: bleManager, phoneOnly: true)
+				ConnectedDevice(ble: bleManager)
 			}
 		)
 	}

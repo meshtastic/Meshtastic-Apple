@@ -1,10 +1,3 @@
-//
-//  MQTTIcon.swift
-//  Meshtastic
-//
-//  Created by Matthew Davies on 4/1/24.
-//
-
 import Foundation
 import SwiftUI
 
@@ -14,42 +7,57 @@ struct MQTTIcon: View {
 	var downlink: Bool = false
 	var topic: String = ""
 
-	@State var isPopoverOpen = false
+	@State
+	var isPopoverOpen = false
+
+	private var icon: String {
+		if uplink && downlink {
+			return "arrow.up.arrow.down.circle.fill"
+		}
+		else if uplink {
+			return "arrow.up.circle.fill"
+		}
+		else if downlink {
+			return "arrow.down.circle.fill"
+		}
+		else {
+			return "circle.fill"
+		}
+	}
+
+	private var color: Color {
+		connected ? .green : .gray
+	}
 
 	var body: some View {
-		Button( action: {
-			if topic.length > 0 {self.isPopoverOpen.toggle()}
-		}) {
-			// the last one defaults to just showing up/down if it isn't specified b/c on the mqtt config screen, there's no information about uplink/downlink and no good alternative icon
-			Image(systemName: uplink && downlink ? "arrow.up.arrow.down.circle.fill" : uplink ? "arrow.up.circle.fill" : downlink ? "arrow.down.circle.fill" : "arrow.up.arrow.down.circle.fill")
-				.imageScale(.large)
-				.foregroundColor(connected ? .green : .gray)
-				.symbolRenderingMode(.hierarchical)
-		}.popover(isPresented: self.$isPopoverOpen, arrowEdge: .bottom, content: {
-			VStack(spacing: 0.5) {
-				Text("Topic: " + topic)
-					.padding(20)
-				Button("close", action: { self.isPopoverOpen = false }).padding([.bottom], 20)
+		Button(action: {
+			if topic.length > 0 {
+				self.isPopoverOpen.toggle()
 			}
-			.presentationCompactAdaptation(.popover)
-		})
-	}
-}
-
-struct MQTTIcon_Previews: PreviewProvider {
-	static var previews: some View {
-		VStack {
-			MQTTIcon(connected: true)
-			MQTTIcon(connected: false)
-
-			MQTTIcon(connected: true, uplink: true, downlink: true)
-			MQTTIcon(connected: false, uplink: true, downlink: true)
-
-			MQTTIcon(connected: true, uplink: true)
-			MQTTIcon(connected: false, uplink: true)
-
-			MQTTIcon(connected: true, downlink: true)
-			MQTTIcon(connected: false, downlink: true)
-		}.previewLayout(.fixed(width: 25, height: 220))
+		}) {
+			Image(systemName: icon)
+				.foregroundColor(color)
+				.padding(6)
+				.background(color.opacity(0.3))
+				.clipShape(Circle())
+		}
+		.popover(
+			isPresented: self.$isPopoverOpen,
+			arrowEdge: .bottom,
+			content: {
+				VStack(spacing: 0.5) {
+					Text("Topic: " + topic)
+						.padding(20)
+					Button(
+						"close",
+						action: {
+							self.isPopoverOpen = false
+						}
+					)
+					.padding([.bottom], 20)
+				}
+				.presentationCompactAdaptation(.popover)
+			}
+		)
 	}
 }
