@@ -14,16 +14,6 @@ struct NodeList: View {
 	@State
 	var isEditingFilters = false
 
-	@FetchRequest(
-		sortDescriptors: [
-			NSSortDescriptor(key: "favorite", ascending: false),
-			NSSortDescriptor(key: "lastHeard", ascending: false),
-			NSSortDescriptor(key: "user.longName", ascending: true),
-		],
-		animation: .default
-	)
-	var nodes: FetchedResults<NodeInfoEntity>
-
 	@State
 	private var columnVisibility = NavigationSplitViewVisibility.all
 	@State
@@ -36,6 +26,16 @@ struct NodeList: View {
 	private var isOnline = UserDefaults.filterOnline
 	@State
 	private var ignoreMQTT = UserDefaults.ignoreMQTT
+
+	@FetchRequest(
+		sortDescriptors: [
+			NSSortDescriptor(key: "favorite", ascending: false),
+			NSSortDescriptor(key: "lastHeard", ascending: false),
+			NSSortDescriptor(key: "user.longName", ascending: true),
+		],
+		animation: .default
+	)
+	private var nodes: FetchedResults<NodeInfoEntity>
 
 	@ViewBuilder
 	func contextMenuActions(
@@ -72,10 +72,6 @@ struct NodeList: View {
 			if let node = selectedNode {
 				NavigationStack {
 					NodeDetail(
-						connectedNode: nodes.first(where: {
-							let connectedNodeNum = Int(bleManager.connectedPeripheral?.num ?? 0)
-							return $0.num == connectedNodeNum
-						}),
 						columnVisibility: columnVisibility,
 						node: node
 					)
@@ -86,12 +82,7 @@ struct NodeList: View {
 					)
 					.navigationBarItems(
 						trailing: ZStack {
-							ConnectedDevice(
-								bluetoothOn: bleManager.isSwitchedOn,
-								deviceConnected: bleManager.connectedPeripheral != nil,
-								name: bleManager.connectedPeripheral?.shortName ?? "?",
-								phoneOnly: true
-							)
+							ConnectedDevice(ble: bleManager, phoneOnly: true)
 						}
 					)
 				}
@@ -221,6 +212,7 @@ struct NodeList: View {
 			.padding(5)
 		}
 		.padding(.bottom, 5)
+		.listStyle(.plain)
 		.searchable(
 			text: $searchText,
 			placement: .automatic,
@@ -228,23 +220,12 @@ struct NodeList: View {
 		)
 		.disableAutocorrection(true)
 		.scrollDismissesKeyboard(.immediately)
-		.navigationTitle(
-			String.localizedStringWithFormat(
-				"nodes %@".localized,
-				String(nodes.count)
-			)
-		)
-		.listStyle(.plain)
+		.navigationTitle("Nodes")
 		.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
 		.navigationBarItems(
 			leading: MeshtasticLogo(),
 			trailing: ZStack {
-				ConnectedDevice(
-					bluetoothOn: bleManager.isSwitchedOn,
-					deviceConnected: bleManager.connectedPeripheral != nil,
-					name: bleManager.connectedPeripheral?.shortName ?? "?",
-					phoneOnly: true
-				)
+				ConnectedDevice(ble: bleManager, phoneOnly: true)
 			}
 		)
 	}

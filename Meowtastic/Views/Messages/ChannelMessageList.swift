@@ -81,9 +81,7 @@ struct ChannelMessageList: View {
 			ToolbarItem(placement: .navigationBarTrailing) {
 				ZStack {
 					ConnectedDevice(
-						bluetoothOn: bleManager.isSwitchedOn,
-						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?",
+						ble: bleManager,
 						mqttProxyConnected: bleManager.mqttProxyConnected && (channel.uplinkEnabled || channel.downlinkEnabled),
 						mqttUplinkEnabled: channel.uplinkEnabled,
 						mqttDownlinkEnabled: channel.downlinkEnabled,

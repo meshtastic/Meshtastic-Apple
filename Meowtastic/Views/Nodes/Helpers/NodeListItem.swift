@@ -91,7 +91,7 @@ struct NodeListItem: View {
 			EmptyView()
 		}
 		else {
-			LoRaSignalStrengthMeter(
+			LoRaSignalMeterView(
 				snr: node.snr,
 				rssi: node.rssi,
 				preset: modemPreset

@@ -196,10 +196,10 @@ struct ShareChannels: View {
 							.padding(.bottom)
 
 							ShareLink("Share QR Code & Link",
-										item: Image(uiImage: qrImage),
-										subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),
-										message: Text(channelsUrl),
-										preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
+									  item: Image(uiImage: qrImage),
+									  subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),
+									  message: Text(channelsUrl),
+									  preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
 															image: Image(uiImage: qrImage))
 							)
 							.buttonStyle(.bordered)
@@ -223,10 +223,12 @@ struct ShareChannels: View {
 			}
 			.navigationTitle("generate.qr.code")
 			.navigationBarTitleDisplayMode(.inline)
-			.navigationBarItems(trailing:
-			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-			})
+			.navigationBarItems(
+				trailing:
+					ZStack {
+						ConnectedDevice(ble: bleManager)
+					}
+			)
 			.onAppear {
 				bleManager.context = context
 				generateChannelSet()

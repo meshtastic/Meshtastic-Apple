@@ -11,6 +11,11 @@
 		08DD7E512C41B0BA00548159 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E502C41B0BA00548159 /* AppState.swift */; };
 		08DD7E532C41CBBD00548159 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 08DD7E522C41CBBD00548159 /* Localizable.xcstrings */; };
 		08DD7E552C41D63800548159 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E542C41D63800548159 /* AppConstants.swift */; };
+		08DD7E592C42658C00548159 /* BLEManager+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E582C42658C00548159 /* BLEManager+Extensions.swift */; };
+		08DD7E5B2C427A5B00548159 /* SimpleNodeMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E5A2C427A5B00548159 /* SimpleNodeMapView.swift */; };
+		08DD7E5D2C42833200548159 /* LoRaSignalStrength.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E5C2C42833200548159 /* LoRaSignalStrength.swift */; };
+		08DD7E5F2C4283A100548159 /* LoRaSignal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E5E2C4283A100548159 /* LoRaSignal.swift */; };
+		08DD7E612C42ABEB00548159 /* NodeInfoEntity+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E602C42ABEB00548159 /* NodeInfoEntity+Extensions.swift */; };
 		251926852C3BA97800249DF5 /* FavoriteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */; };
 		251926872C3BAE2200249DF5 /* NodeAlertsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */; };
 		2519268A2C3BB1B200249DF5 /* ExchangePositionsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */; };
@@ -29,7 +34,6 @@
 		6DEDA55C2A9592F900321D2E /* MessageEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */; };
 		B399E8A42B6F486400E4488E /* RetryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B399E8A32B6F486400E4488E /* RetryButton.swift */; };
 		B3E905B12B71F7F300654D07 /* TextMessageField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E905B02B71F7F300654D07 /* TextMessageField.swift */; };
-		C9697F9D279336B700250207 /* LocalMBTileOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */; };
 		C9697FA527933B8C00250207 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = C9697FA427933B8C00250207 /* SQLite */; };
 		D93068D32B8129510066FBC8 /* MessageContextMenuItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */; };
 		D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D42B812B700066FBC8 /* MessageDestination.swift */; };
@@ -38,7 +42,6 @@
 		D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */; };
 		D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */; };
 		D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93069072B81DF040066FBC8 /* SaveConfigButton.swift */; };
-		D9BC22DB2B7DE8E2006A37D5 /* TileDownloadStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BC22DA2B7DE8E2006A37D5 /* TileDownloadStatus.swift */; };
 		D9C9839D2B79CFD700BDBE6A /* TextMessageSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */; };
 		D9C983A02B79D0E800BDBE6A /* AlertButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */; };
 		D9C983A22B79D1A600BDBE6A /* RequestPositionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */; };
@@ -51,7 +54,7 @@
 		DD15E4F52B8BFC8E00654F61 /* PaxCounterLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */; };
 		DD1925B728CDA5A400720036 /* CannedMessagesConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */; };
 		DD1925B928CDA93900720036 /* SerialConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1925B828CDA93900720036 /* SerialConfigEnums.swift */; };
-		DD1933762B0835D500771CD5 /* PositionAltitudeChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1933752B0835D500771CD5 /* PositionAltitudeChart.swift */; };
+		DD1933762B0835D500771CD5 /* AltitudeHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1933752B0835D500771CD5 /* AltitudeHistoryView.swift */; };
 		DD1933782B084F4200771CD5 /* Measurement.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1933772B084F4200771CD5 /* Measurement.swift */; };
 		DD1B8F402B35E2F10022AABC /* GPSStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1B8F3F2B35E2F10022AABC /* GPSStatus.swift */; };
 		DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */; };
@@ -60,13 +63,12 @@
 		DD2553572855B02500E55709 /* LoRaConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2553562855B02500E55709 /* LoRaConfig.swift */; };
 		DD2553592855B52700E55709 /* PositionConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2553582855B52700E55709 /* PositionConfig.swift */; };
 		DD268D8E2BCC90E2008073AE /* RouteEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD268D8D2BCC90E2008073AE /* RouteEnums.swift */; };
-		DD2AD8A8296D2DF9001FF0E7 /* MapViewSwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */; };
 		DD33DB622B3D27C7003E1EA0 /* FirmwareApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD33DB612B3D27C7003E1EA0 /* FirmwareApi.swift */; };
 		DD3501892852FC3B000FC853 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3501882852FC3B000FC853 /* Settings.swift */; };
 		DD354FD92BD96A0B0061A25F /* IAQScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD354FD82BD96A0B0061A25F /* IAQScale.swift */; };
 		DD3619152B1EF9F900C41C8C /* LocationsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */; };
 		DD3CC6B528E33FD100FA9159 /* ShareChannels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */; };
-		DD3CC6BE28E4CD9800FA9159 /* BatteryGauge.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */; };
+		DD3CC6BE28E4CD9800FA9159 /* BatteryGaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BD28E4CD9800FA9159 /* BatteryGaugeView.swift */; };
 		DD3CC6C028E7A60700FA9159 /* MessagingEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */; };
 		DD3CC6C228EB9D4900FA9159 /* UpdateCoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6C128EB9D4900FA9159 /* UpdateCoreData.swift */; };
 		DD41582628582E9B009B0E59 /* DeviceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41582528582E9B009B0E59 /* DeviceConfig.swift */; };
@@ -99,15 +101,12 @@
 		DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8EBF42285058FA00426DCA /* DisplayConfig.swift */; };
 		DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8ED9C42898D51F00B3B0AB /* NetworkConfig.swift */; };
 		DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */; };
-		DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD90860D26F69BAE00DC5189 /* NodeMap.swift */; };
 		DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */; };
 		DD93800B2BA3F968008BEC06 /* NodeMapContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD93800A2BA3F968008BEC06 /* NodeMapContent.swift */; };
 		DD93800E2BA74D0C008BEC06 /* ChannelForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD93800D2BA74D0C008BEC06 /* ChannelForm.swift */; };
 		DD94B7402ACCE3BE00DCD1D1 /* MapSettingsForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */; };
 		DD964FBD296E6B01007C176F /* EmojiOnlyTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */; };
-		DD964FBF296E76EF007C176F /* WaypointFormMapKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FBE296E76EF007C176F /* WaypointFormMapKit.swift */; };
 		DD964FC2297272AE007C176F /* WaypointEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */; };
-		DD964FC42974767D007C176F /* MapViewFitExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC32974767D007C176F /* MapViewFitExtension.swift */; };
 		DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC52975DBFD007C176F /* QueryCoreData.swift */; };
 		DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */; };
 		DD97E96828EFE9A00056DDA4 /* About.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96728EFE9A00056DDA4 /* About.swift */; };
@@ -129,14 +128,14 @@
 		DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */; };
 		DDB6ABE428B13FFF00384BA1 /* DisplayEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */; };
 		DDB6ABE628B1406100384BA1 /* LoraConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */; };
-		DDB6CCFB2AAF805100945AF6 /* NodeMapSwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6CCFA2AAF805100945AF6 /* NodeMapSwiftUI.swift */; };
+		DDB6CCFB2AAF805100945AF6 /* NodeMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6CCFA2AAF805100945AF6 /* NodeMapView.swift */; };
 		DDB75A0F2A05920E006ED576 /* FileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A0E2A05920E006ED576 /* FileManager.swift */; };
 		DDB75A112A059258006ED576 /* Url.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A102A059258006ED576 /* Url.swift */; };
 		DDB75A142A0593E2006ED576 /* OfflineTileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A132A0593E2006ED576 /* OfflineTileManager.swift */; };
 		DDB75A162A0594AD006ED576 /* TileOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A152A0594AD006ED576 /* TileOverlay.swift */; };
 		DDB75A1A2A05EB67006ED576 /* alpha.png in Resources */ = {isa = PBXBuildFile; fileRef = DDB75A192A05EB67006ED576 /* alpha.png */; };
-		DDB75A1E2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A1D2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift */; };
-		DDB75A212A12B954006ED576 /* LoRaSignalStrength.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A202A12B954006ED576 /* LoRaSignalStrength.swift */; };
+		DDB75A1E2A0B0CD0006ED576 /* LoRaSignalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A1D2A0B0CD0006ED576 /* LoRaSignalView.swift */; };
+		DDB75A212A12B954006ED576 /* LoRaSignalMeterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A202A12B954006ED576 /* LoRaSignalMeterView.swift */; };
 		DDB75A232A13CDA9006ED576 /* BatteryLevelCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A222A13CDA9006ED576 /* BatteryLevelCompact.swift */; };
 		DDB8F4102A9EE5B400230ECE /* Messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB8F40F2A9EE5B400230ECE /* Messages.swift */; };
 		DDB8F4122A9EE5DD00230ECE /* UserList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB8F4112A9EE5DD00230ECE /* UserList.swift */; };
@@ -162,9 +161,7 @@
 		DDDB263F2AABEE20003AFCB7 /* NodeList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB263E2AABEE20003AFCB7 /* NodeList.swift */; };
 		DDDB26422AABF655003AFCB7 /* NodeListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB26412AABF655003AFCB7 /* NodeListItem.swift */; };
 		DDDB26442AAC0206003AFCB7 /* NodeDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB26432AAC0206003AFCB7 /* NodeDetail.swift */; };
-		DDDB26462AACC0B7003AFCB7 /* NodeInfoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB26452AACC0B7003AFCB7 /* NodeInfoItem.swift */; };
-		DDDB26482AACD6D1003AFCB7 /* NodeMapMapkit.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB26472AACD6D1003AFCB7 /* NodeMapMapkit.swift */; };
-		DDDB443629F6287000EE2349 /* MapButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB443529F6287000EE2349 /* MapButtons.swift */; };
+		DDDB26462AACC0B7003AFCB7 /* NodeInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB26452AACC0B7003AFCB7 /* NodeInfoView.swift */; };
 		DDDB444029F79AB000EE2349 /* UserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB443F29F79AB000EE2349 /* UserDefaults.swift */; };
 		DDDB444229F8A88700EE2349 /* Double.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB444129F8A88700EE2349 /* Double.swift */; };
 		DDDB444429F8A8DD00EE2349 /* Float.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB444329F8A8DD00EE2349 /* Float.swift */; };
@@ -208,6 +205,11 @@
 		08DD7E502C41B0BA00548159 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		08DD7E522C41CBBD00548159 /* Localizable.xcstrings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		08DD7E542C41D63800548159 /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
+		08DD7E582C42658C00548159 /* BLEManager+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BLEManager+Extensions.swift"; sourceTree = "<group>"; };
+		08DD7E5A2C427A5B00548159 /* SimpleNodeMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleNodeMapView.swift; sourceTree = "<group>"; };
+		08DD7E5C2C42833200548159 /* LoRaSignalStrength.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignalStrength.swift; sourceTree = "<group>"; };
+		08DD7E5E2C4283A100548159 /* LoRaSignal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignal.swift; sourceTree = "<group>"; };
+		08DD7E602C42ABEB00548159 /* NodeInfoEntity+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NodeInfoEntity+Extensions.swift"; sourceTree = "<group>"; };
 		251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteNodeButton.swift; sourceTree = "<group>"; };
 		251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeAlertsButton.swift; sourceTree = "<group>"; };
 		251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangePositionsButton.swift; sourceTree = "<group>"; };
@@ -220,7 +222,6 @@
 		6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntityExtension.swift; sourceTree = "<group>"; };
 		B399E8A32B6F486400E4488E /* RetryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryButton.swift; sourceTree = "<group>"; };
 		B3E905B02B71F7F300654D07 /* TextMessageField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageField.swift; sourceTree = "<group>"; };
-		C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalMBTileOverlay.swift; sourceTree = "<group>"; };
 		D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageContextMenuItems.swift; sourceTree = "<group>"; };
 		D93068D42B812B700066FBC8 /* MessageDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDestination.swift; sourceTree = "<group>"; };
 		D93068D62B8146690066FBC8 /* MessageText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageText.swift; sourceTree = "<group>"; };
@@ -228,7 +229,6 @@
 		D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerConfig.swift; sourceTree = "<group>"; };
 		D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigHeader.swift; sourceTree = "<group>"; };
 		D93069072B81DF040066FBC8 /* SaveConfigButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveConfigButton.swift; sourceTree = "<group>"; };
-		D9BC22DA2B7DE8E2006A37D5 /* TileDownloadStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileDownloadStatus.swift; sourceTree = "<group>"; };
 		D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageSize.swift; sourceTree = "<group>"; };
 		D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertButton.swift; sourceTree = "<group>"; };
 		D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestPositionButton.swift; sourceTree = "<group>"; };
@@ -240,7 +240,7 @@
 		DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaxCounterLog.swift; sourceTree = "<group>"; };
 		DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannedMessagesConfigEnums.swift; sourceTree = "<group>"; };
 		DD1925B828CDA93900720036 /* SerialConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConfigEnums.swift; sourceTree = "<group>"; };
-		DD1933752B0835D500771CD5 /* PositionAltitudeChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionAltitudeChart.swift; sourceTree = "<group>"; };
+		DD1933752B0835D500771CD5 /* AltitudeHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AltitudeHistoryView.swift; sourceTree = "<group>"; };
 		DD1933772B084F4200771CD5 /* Measurement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Measurement.swift; sourceTree = "<group>"; };
 		DD1B8F3F2B35E2F10022AABC /* GPSStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPSStatus.swift; sourceTree = "<group>"; };
 		DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageList.swift; sourceTree = "<group>"; };
@@ -249,13 +249,12 @@
 		DD2553562855B02500E55709 /* LoRaConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaConfig.swift; sourceTree = "<group>"; };
 		DD2553582855B52700E55709 /* PositionConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionConfig.swift; sourceTree = "<group>"; };
 		DD268D8D2BCC90E2008073AE /* RouteEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteEnums.swift; sourceTree = "<group>"; };
-		DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewSwiftUI.swift; sourceTree = "<group>"; };
 		DD33DB612B3D27C7003E1EA0 /* FirmwareApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareApi.swift; sourceTree = "<group>"; };
 		DD3501882852FC3B000FC853 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		DD354FD82BD96A0B0061A25F /* IAQScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IAQScale.swift; sourceTree = "<group>"; };
 		DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationsHandler.swift; sourceTree = "<group>"; };
 		DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareChannels.swift; sourceTree = "<group>"; };
-		DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryGauge.swift; sourceTree = "<group>"; };
+		DD3CC6BD28E4CD9800FA9159 /* BatteryGaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryGaugeView.swift; sourceTree = "<group>"; };
 		DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagingEnums.swift; sourceTree = "<group>"; };
 		DD3CC6C128EB9D4900FA9159 /* UpdateCoreData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCoreData.swift; sourceTree = "<group>"; };
 		DD41582528582E9B009B0E59 /* DeviceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConfig.swift; sourceTree = "<group>"; };
@@ -293,15 +292,12 @@
 		DD8ED9C42898D51F00B3B0AB /* NetworkConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConfig.swift; sourceTree = "<group>"; };
 		DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutingError.swift; sourceTree = "<group>"; };
 		DD90860A26F645B700DC5189 /* Meowtastic.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Meowtastic.entitlements; sourceTree = "<group>"; };
-		DD90860D26F69BAE00DC5189 /* NodeMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMap.swift; sourceTree = "<group>"; };
 		DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotificationManager.swift; sourceTree = "<group>"; };
 		DD93800A2BA3F968008BEC06 /* NodeMapContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMapContent.swift; sourceTree = "<group>"; };
 		DD93800D2BA74D0C008BEC06 /* ChannelForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelForm.swift; sourceTree = "<group>"; };
 		DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapSettingsForm.swift; sourceTree = "<group>"; };
 		DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiOnlyTextField.swift; sourceTree = "<group>"; };
-		DD964FBE296E76EF007C176F /* WaypointFormMapKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointFormMapKit.swift; sourceTree = "<group>"; };
 		DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointEntityExtension.swift; sourceTree = "<group>"; };
-		DD964FC32974767D007C176F /* MapViewFitExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewFitExtension.swift; sourceTree = "<group>"; };
 		DD964FC52975DBFD007C176F /* QueryCoreData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueryCoreData.swift; sourceTree = "<group>"; };
 		DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticLogo.swift; sourceTree = "<group>"; };
 		DD97E96728EFE9A00056DDA4 /* About.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = About.swift; sourceTree = "<group>"; };
@@ -323,14 +319,14 @@
 		DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionConfigEnums.swift; sourceTree = "<group>"; };
 		DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayEnums.swift; sourceTree = "<group>"; };
 		DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoraConfigEnums.swift; sourceTree = "<group>"; };
-		DDB6CCFA2AAF805100945AF6 /* NodeMapSwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMapSwiftUI.swift; sourceTree = "<group>"; };
+		DDB6CCFA2AAF805100945AF6 /* NodeMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMapView.swift; sourceTree = "<group>"; };
 		DDB75A0E2A05920E006ED576 /* FileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManager.swift; sourceTree = "<group>"; };
 		DDB75A102A059258006ED576 /* Url.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Url.swift; sourceTree = "<group>"; };
 		DDB75A132A0593E2006ED576 /* OfflineTileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineTileManager.swift; sourceTree = "<group>"; };
 		DDB75A152A0594AD006ED576 /* TileOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileOverlay.swift; sourceTree = "<group>"; };
 		DDB75A192A05EB67006ED576 /* alpha.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = alpha.png; sourceTree = "<group>"; };
-		DDB75A1D2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignalStrengthIndicator.swift; sourceTree = "<group>"; };
-		DDB75A202A12B954006ED576 /* LoRaSignalStrength.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignalStrength.swift; sourceTree = "<group>"; };
+		DDB75A1D2A0B0CD0006ED576 /* LoRaSignalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignalView.swift; sourceTree = "<group>"; };
+		DDB75A202A12B954006ED576 /* LoRaSignalMeterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignalMeterView.swift; sourceTree = "<group>"; };
 		DDB75A222A13CDA9006ED576 /* BatteryLevelCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryLevelCompact.swift; sourceTree = "<group>"; };
 		DDB8F40F2A9EE5B400230ECE /* Messages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Messages.swift; sourceTree = "<group>"; };
 		DDB8F4112A9EE5DD00230ECE /* UserList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserList.swift; sourceTree = "<group>"; };
@@ -360,9 +356,7 @@
 		DDDB263E2AABEE20003AFCB7 /* NodeList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeList.swift; sourceTree = "<group>"; };
 		DDDB26412AABF655003AFCB7 /* NodeListItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeListItem.swift; sourceTree = "<group>"; };
 		DDDB26432AAC0206003AFCB7 /* NodeDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetail.swift; sourceTree = "<group>"; };
-		DDDB26452AACC0B7003AFCB7 /* NodeInfoItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoItem.swift; sourceTree = "<group>"; };
-		DDDB26472AACD6D1003AFCB7 /* NodeMapMapkit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMapMapkit.swift; sourceTree = "<group>"; };
-		DDDB443529F6287000EE2349 /* MapButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapButtons.swift; sourceTree = "<group>"; };
+		DDDB26452AACC0B7003AFCB7 /* NodeInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoView.swift; sourceTree = "<group>"; };
 		DDDB443F29F79AB000EE2349 /* UserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaults.swift; sourceTree = "<group>"; };
 		DDDB444129F8A88700EE2349 /* Double.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Double.swift; sourceTree = "<group>"; };
 		DDDB444329F8A8DD00EE2349 /* Float.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Float.swift; sourceTree = "<group>"; };
@@ -431,28 +425,6 @@
 			path = Actions;
 			sourceTree = "<group>";
 		};
-		C9483F6B2773016700998F6B /* MapKitMap */ = {
-			isa = PBXGroup;
-			children = (
-				C9A7BC0E27759A6800760B50 /* Custom */,
-				DDDB26472AACD6D1003AFCB7 /* NodeMapMapkit.swift */,
-				DD964FBE296E76EF007C176F /* WaypointFormMapKit.swift */,
-			);
-			path = MapKitMap;
-			sourceTree = "<group>";
-		};
-		C9A7BC0E27759A6800760B50 /* Custom */ = {
-			isa = PBXGroup;
-			children = (
-				C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */,
-				DD964FC32974767D007C176F /* MapViewFitExtension.swift */,
-				DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */,
-				DDDB443529F6287000EE2349 /* MapButtons.swift */,
-				D9BC22DA2B7DE8E2006A37D5 /* TileDownloadStatus.swift */,
-			);
-			path = Custom;
-			sourceTree = "<group>";
-		};
 		D9C9839E2B79D0C600BDBE6A /* TextMessageField */ = {
 			isa = PBXGroup;
 			children = (
@@ -483,16 +455,16 @@
 		DD47E3CA26F0E50300029299 /* Nodes */ = {
 			isa = PBXGroup;
 			children = (
-				DDDB26402AABEF7B003AFCB7 /* Helpers */,
-				DDDB263E2AABEE20003AFCB7 /* NodeList.swift */,
-				DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */,
-				DDAD49EC2AFB39DC00B4425D /* MeshMap.swift */,
-				DD90860D26F69BAE00DC5189 /* NodeMap.swift */,
-				DD73FD1028750779000852D6 /* PositionLog.swift */,
-				DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */,
+				DDAD49EB2AFAE82500B4425D /* NodeMapMap */,
 				6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */,
+				DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */,
+				DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */,
+				DDAD49EC2AFB39DC00B4425D /* MeshMap.swift */,
+				DDDB263E2AABEE20003AFCB7 /* NodeList.swift */,
 				DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */,
+				DD73FD1028750779000852D6 /* PositionLog.swift */,
 				DDE5B4032B2279A700FCDD05 /* TraceRouteLog.swift */,
+				DDDB26402AABEF7B003AFCB7 /* Helpers */,
 			);
 			path = Nodes;
 			sourceTree = "<group>";
@@ -629,17 +601,18 @@
 			path = Channels;
 			sourceTree = "<group>";
 		};
-		DDAD49EB2AFAE82500B4425D /* Map */ = {
+		DDAD49EB2AFAE82500B4425D /* NodeMapMap */ = {
 			isa = PBXGroup;
 			children = (
-				DDDC22362BA9232C002C44F1 /* MapContent */,
+				DD1933752B0835D500771CD5 /* AltitudeHistoryView.swift */,
 				DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */,
-				DDB6CCFA2AAF805100945AF6 /* NodeMapSwiftUI.swift */,
+				DDB6CCFA2AAF805100945AF6 /* NodeMapView.swift */,
 				DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */,
+				08DD7E5A2C427A5B00548159 /* SimpleNodeMapView.swift */,
 				DD46401F2AFF10F4002A5ECB /* WaypointForm.swift */,
-				DD1933752B0835D500771CD5 /* PositionAltitudeChart.swift */,
+				DDDC22362BA9232C002C44F1 /* MapContent */,
 			);
-			path = Map;
+			path = NodeMapMap;
 			sourceTree = "<group>";
 		};
 		DDB75A122A0593CD006ED576 /* Map */ = {
@@ -700,7 +673,6 @@
 		DDC2E18726CE24E40042C5E4 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				C9483F6B2773016700998F6B /* MapKitMap */,
 				DDC2E18D26CE25CB0042C5E4 /* Helpers */,
 				DD47E3D726F2F21A00029299 /* Bluetooth */,
 				DDC2E18B26CE25A70042C5E4 /* Messages */,
@@ -739,7 +711,7 @@
 		DDC2E18D26CE25CB0042C5E4 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
-				DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */,
+				DD3CC6BD28E4CD9800FA9159 /* BatteryGaugeView.swift */,
 				DDB75A222A13CDA9006ED576 /* BatteryLevelCompact.swift */,
 				DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */,
 				DD47E3D526F17ED900029299 /* Avatar.swift */,
@@ -747,11 +719,13 @@
 				DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */,
 				DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */,
 				DDC3B273283F411B00AC321C /* LastHeardText.swift */,
-				DDB75A202A12B954006ED576 /* LoRaSignalStrength.swift */,
-				DDB75A1D2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift */,
+				DDB75A202A12B954006ED576 /* LoRaSignalMeterView.swift */,
+				DDB75A1D2A0B0CD0006ED576 /* LoRaSignalView.swift */,
 				DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */,
 				DDF45C332BC1A48E005ED5F2 /* MQTTIcon.swift */,
 				DD5E523D298F5A7D00D21B61 /* Weather */,
+				08DD7E5C2C42833200548159 /* LoRaSignalStrength.swift */,
+				08DD7E5E2C4283A100548159 /* LoRaSignal.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -803,12 +777,13 @@
 		DDDB26402AABEF7B003AFCB7 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
-				DDAD49EB2AFAE82500B4425D /* Map */,
+				08DD7E582C42658C00548159 /* BLEManager+Extensions.swift */,
 				DDDB26432AAC0206003AFCB7 /* NodeDetail.swift */,
-				DDDB26452AACC0B7003AFCB7 /* NodeInfoItem.swift */,
-				DDDB26412AABF655003AFCB7 /* NodeListItem.swift */,
+				DDDB26452AACC0B7003AFCB7 /* NodeInfoView.swift */,
 				DDDCD56F2BB26F5C00BE6B60 /* NodeListFilter.swift */,
+				DDDB26412AABF655003AFCB7 /* NodeListItem.swift */,
 				251926882C3BAF2E00249DF5 /* Actions */,
+				08DD7E602C42ABEB00548159 /* NodeInfoEntity+Extensions.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -970,11 +945,10 @@
 				DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */,
 				D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */,
 				DD5E523F298F5A9E00D21B61 /* AirQualityIndex.swift in Sources */,
-				DD964FBF296E76EF007C176F /* WaypointFormMapKit.swift in Sources */,
 				DDD5BB182C2F9C36007E03CA /* OSLogEntryLog.swift in Sources */,
 				DD3501892852FC3B000FC853 /* Settings.swift in Sources */,
+				08DD7E5F2C4283A100548159 /* LoRaSignal.swift in Sources */,
 				DDDC22382BA92344002C44F1 /* MeshMapContent.swift in Sources */,
-				DDDB443629F6287000EE2349 /* MapButtons.swift in Sources */,
 				DD5D0A9C2931B9F200F7EA61 /* EthernetModes.swift in Sources */,
 				6DEDA55A2A957B8E00321D2E /* DetectionSensorLog.swift in Sources */,
 				DD798B072915928D005217CD /* ChannelMessageList.swift in Sources */,
@@ -998,15 +972,13 @@
 				DDDB445229F8ACF900EE2349 /* Date.swift in Sources */,
 				DDC4D568275499A500A4208E /* Persistence.swift in Sources */,
 				DDD6EEAF29BC024700383354 /* Firmware.swift in Sources */,
-				DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */,
 				D9C9839D2B79CFD700BDBE6A /* TextMessageSize.swift in Sources */,
 				DDC94FCE29CF55310082EA6E /* RtttlConfig.swift in Sources */,
 				DD964FBD296E6B01007C176F /* EmojiOnlyTextField.swift in Sources */,
 				DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */,
 				DD354FD92BD96A0B0061A25F /* IAQScale.swift in Sources */,
 				DDDB445429F8AD1600EE2349 /* Data.swift in Sources */,
-				DDDB26462AACC0B7003AFCB7 /* NodeInfoItem.swift in Sources */,
-				DD2AD8A8296D2DF9001FF0E7 /* MapViewSwiftUI.swift in Sources */,
+				DDDB26462AACC0B7003AFCB7 /* NodeInfoView.swift in Sources */,
 				DDE5B4042B2279A700FCDD05 /* TraceRouteLog.swift in Sources */,
 				08DD7E552C41D63800548159 /* AppConstants.swift in Sources */,
 				DD6193792863875F00E59241 /* SerialConfig.swift in Sources */,
@@ -1016,7 +988,7 @@
 				DDE9659C2B1C3B6A00531070 /* RouteRecorder.swift in Sources */,
 				B399E8A42B6F486400E4488E /* RetryButton.swift in Sources */,
 				DDB8F4102A9EE5B400230ECE /* Messages.swift in Sources */,
-				DDDB26482AACD6D1003AFCB7 /* NodeMapMapkit.swift in Sources */,
+				08DD7E592C42658C00548159 /* BLEManager+Extensions.swift in Sources */,
 				DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */,
 				DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */,
 				DD13AA492AB73BF400BA0C98 /* PositionPopover.swift in Sources */,
@@ -1027,7 +999,7 @@
 				DDB75A232A13CDA9006ED576 /* BatteryLevelCompact.swift in Sources */,
 				DDB75A162A0594AD006ED576 /* TileOverlay.swift in Sources */,
 				DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */,
-				DD3CC6BE28E4CD9800FA9159 /* BatteryGauge.swift in Sources */,
+				DD3CC6BE28E4CD9800FA9159 /* BatteryGaugeView.swift in Sources */,
 				DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */,
 				DD3619152B1EF9F900C41C8C /* LocationsHandler.swift in Sources */,
 				DDDB444A29F8AA3A00EE2349 /* CLLocationCoordinate2D.swift in Sources */,
@@ -1056,7 +1028,6 @@
 				D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */,
 				D93068D32B8129510066FBC8 /* MessageContextMenuItems.swift in Sources */,
 				DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */,
-				DD964FC42974767D007C176F /* MapViewFitExtension.swift in Sources */,
 				DD47E3D626F17ED900029299 /* Avatar.swift in Sources */,
 				DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */,
 				DD2553572855B02500E55709 /* LoRaConfig.swift in Sources */,
@@ -1070,7 +1041,6 @@
 				D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */,
 				251926872C3BAE2200249DF5 /* NodeAlertsButton.swift in Sources */,
 				DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */,
-				D9BC22DB2B7DE8E2006A37D5 /* TileDownloadStatus.swift in Sources */,
 				DDD5BB092C285DDC007E03CA /* AppLog.swift in Sources */,
 				DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */,
 				DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */,
@@ -1078,6 +1048,7 @@
 				DDAD49ED2AFB39DC00B4425D /* MeshMap.swift in Sources */,
 				DD8169FB271F1F3A00F4AB02 /* MeshLog.swift in Sources */,
 				DD1B8F402B35E2F10022AABC /* GPSStatus.swift in Sources */,
+				08DD7E612C42ABEB00548159 /* NodeInfoEntity+Extensions.swift in Sources */,
 				DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */,
 				DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */,
 				DD1925B928CDA93900720036 /* SerialConfigEnums.swift in Sources */,
@@ -1087,10 +1058,10 @@
 				DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */,
 				DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */,
 				DDB75A142A0593E2006ED576 /* OfflineTileManager.swift in Sources */,
-				DDB75A1E2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift in Sources */,
+				DDB75A1E2A0B0CD0006ED576 /* LoRaSignalView.swift in Sources */,
 				DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */,
 				DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */,
-				DDB75A212A12B954006ED576 /* LoRaSignalStrength.swift in Sources */,
+				DDB75A212A12B954006ED576 /* LoRaSignalMeterView.swift in Sources */,
 				DD6193752862F6E600E59241 /* ExternalNotificationConfig.swift in Sources */,
 				DD268D8E2BCC90E2008073AE /* RouteEnums.swift in Sources */,
 				251926922C3CB52300249DF5 /* DeleteNodeButton.swift in Sources */,
@@ -1103,15 +1074,14 @@
 				DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */,
 				DD994B69295F88B60013760A /* IntervalEnums.swift in Sources */,
 				DDDCD5702BB26F5C00BE6B60 /* NodeListFilter.swift in Sources */,
-				DD1933762B0835D500771CD5 /* PositionAltitudeChart.swift in Sources */,
+				DD1933762B0835D500771CD5 /* AltitudeHistoryView.swift in Sources */,
 				DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */,
-				DDB6CCFB2AAF805100945AF6 /* NodeMapSwiftUI.swift in Sources */,
+				DDB6CCFB2AAF805100945AF6 /* NodeMapView.swift in Sources */,
 				DD73FD1128750779000852D6 /* PositionLog.swift in Sources */,
 				DD15E4F52B8BFC8E00654F61 /* PaxCounterLog.swift in Sources */,
 				DD3CC6C028E7A60700FA9159 /* MessagingEnums.swift in Sources */,
 				DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */,
 				DDAB580D2B0DAA9E00147258 /* Routes.swift in Sources */,
-				C9697F9D279336B700250207 /* LocalMBTileOverlay.swift in Sources */,
 				D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */,
 				DDA9515E2BC6F56F00CEA535 /* IndoorAirQuality.swift in Sources */,
 				DDDB444E29F8AB0E00EE2349 /* Int.swift in Sources */,
@@ -1121,6 +1091,8 @@
 				DD77093F2AA1B146007A8BF0 /* UIColor.swift in Sources */,
 				DDF6B2482A9AEBF500BA6931 /* StoreForwardConfig.swift in Sources */,
 				DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */,
+				08DD7E5B2C427A5B00548159 /* SimpleNodeMapView.swift in Sources */,
+				08DD7E5D2C42833200548159 /* LoRaSignalStrength.swift in Sources */,
 				DD93800B2BA3F968008BEC06 /* NodeMapContent.swift in Sources */,
 				DD41582A28585C32009B0E59 /* RangeTestConfig.swift in Sources */,
 				DD1925B728CDA5A400720036 /* CannedMessagesConfigEnums.swift in Sources */,

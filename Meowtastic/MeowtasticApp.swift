@@ -27,15 +27,6 @@ struct MeowtasticApp: App {
 			ContentView()
 				.environment(\.managedObjectContext, Persistence.shared.viewContext)
 				.environmentObject(bleManager)
-				.sheet(isPresented: $saveChannels) {
-					SaveChannelQRCode(
-						channelSetLink: channelSettings ?? "Empty Channel URL",
-						addChannels: addChannels,
-						bleManager: bleManager
-					)
-					.presentationDetents([.large])
-					.presentationDragIndicator(.visible)
-				}
 				.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
 					Logger.mesh.debug("URL received \(userActivity)")
 
@@ -153,6 +144,15 @@ struct MeowtasticApp: App {
 						}
 					}
 				})
+				.sheet(isPresented: $saveChannels) {
+					SaveChannelQRCode(
+						channelSetLink: channelSettings ?? "Empty Channel URL",
+						addChannels: addChannels,
+						bleManager: bleManager
+					)
+					.presentationDetents([.large])
+					.presentationDragIndicator(.visible)
+				}
 		}
 		.onChange(of: scenePhase, initial: false) {
 			if scenePhase == .background {

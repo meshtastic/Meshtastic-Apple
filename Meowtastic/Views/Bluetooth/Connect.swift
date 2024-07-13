@@ -289,9 +289,7 @@ struct Connect: View {
 				leading: MeshtasticLogo(),
 				trailing: ZStack {
 					ConnectedDevice(
-						bluetoothOn: bleManager.isSwitchedOn,
-						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: bleManager.connectedPeripheral?.shortName ?? "?",
+						ble: bleManager,
 						mqttProxyConnected: bleManager.mqttProxyConnected,
 						mqttTopic: bleManager.mqttManager.topic
 					)

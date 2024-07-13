@@ -9,8 +9,13 @@ import CoreLocation
 import MapKit
 import SwiftUI
 
-extension WaypointEntity {
+struct WaypointCoordinate: Identifiable {
+	let id: UUID
+	let coordinate: CLLocationCoordinate2D?
+	let waypointId: Int64
+}
 
+extension WaypointEntity {
 	static func allWaypointssFetchRequest() -> NSFetchRequest<WaypointEntity> {
 		let request: NSFetchRequest<WaypointEntity> = WaypointEntity.fetchRequest()
 		request.fetchLimit = 50
@@ -24,7 +29,6 @@ extension WaypointEntity {
 	}
 
 	var latitude: Double? {
-
 		let d = Double(latitudeI)
 		if d == 0 {
 			return 0
@@ -33,7 +37,6 @@ extension WaypointEntity {
 	}
 
 	var longitude: Double? {
-
 		let d = Double(longitudeI)
 		if d == 0 {
 			return 0
@@ -44,9 +47,10 @@ extension WaypointEntity {
 	var waypointCoordinate: CLLocationCoordinate2D? {
 		if latitudeI != 0 && longitudeI != 0 {
 			let coord = CLLocationCoordinate2D(latitude: latitude!, longitude: longitude!)
+
 			return coord
 		} else {
-		   return nil
+			return nil
 		}
 	}
 
@@ -55,22 +59,19 @@ extension WaypointEntity {
 		if waypointCoordinate != nil {
 			pointAnn.coordinate = waypointCoordinate!
 		}
+
 		return pointAnn
 	}
 }
 
 extension WaypointEntity: MKAnnotation {
-	public var coordinate: CLLocationCoordinate2D { waypointCoordinate ?? LocationHelper.DefaultLocation }
+	public var coordinate: CLLocationCoordinate2D {
+		waypointCoordinate ?? LocationHelper.defaultLocation
+	}
 	public var title: String? { name ?? "Dropped Pin" }
 	public var subtitle: String? {
 		(longDescription ?? "") +
 		String(expire != nil ? "\n⌛ Expires \(String(describing: expire?.formatted()))" : "") +
-		String(locked > 0 ? "\n🔒 Locked" : "") }
-}
-
-struct WaypointCoordinate: Identifiable {
-
-	let id: UUID
-	let coordinate: CLLocationCoordinate2D?
-	let waypointId: Int64
+		String(locked > 0 ? "\n🔒 Locked" : "")
+	}
 }

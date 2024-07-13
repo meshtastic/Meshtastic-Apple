@@ -1,26 +1,20 @@
-//
-//  PositionAltitudeChart.swift
-//  Meshtastic
-//
-//  Copyright(c) Garth Vander Houwen 11/17/23.
-//
-
 import SwiftUI
 import Charts
-#if canImport(MapKit)
 import MapKit
-#endif
 
 struct PositionAltitude {
 	let time: Date
 	var altitude: Measurement<UnitLength>
 }
 
-@available(iOS 17.0, macOS 14.0, *)
-struct PositionAltitudeChart: View {
-	@Environment(\.dismiss) private var dismiss
-	@ObservedObject var node: NodeInfoEntity
-	@State private var lineWidth = 2.0
+struct AltitudeHistoryView: View {
+	@ObservedObject
+	var node: NodeInfoEntity
+
+	@Environment(\.dismiss)
+	private var dismiss
+	@State
+	private var lineWidth = 2.0
 
 	var data: [PositionAltitude] {
 		let fiveYearsAgo = Calendar.current.date(byAdding: .year, value: -5, to: Date())
@@ -30,11 +24,14 @@ struct PositionAltitudeChart: View {
 			return []
 		}
 
-		let filteredPositions = positions.filter({$0.time != nil && ($0.time ?? fiveYearsAgo!) > fiveYearsAgo!})
-		return filteredPositions.map {
+		let filteredPositions = positions.filter { position in
+			position.time != nil && (position.time ?? fiveYearsAgo!) > fiveYearsAgo!
+		}
+
+		return filteredPositions.map { position in
 			PositionAltitude(
-				time: $0.time ?? Date(),
-				altitude: Measurement(value: Double($0.altitude), unit: .meters)
+				time: position.time ?? Date(),
+				altitude: Measurement(value: Double(position.altitude), unit: .meters)
 			)
 		}
 	}
@@ -55,23 +52,23 @@ struct PositionAltitudeChart: View {
 			}
 			.chartYAxis {
 				AxisMarks { value in
+					let measurement = value.as(PlottableMeasurement.self)!
+						.measurement
+						.converted(to: UnitLength.meters)
+					let measurementFormatted = measurement.formatted(
+						.measurement(
+							width: .wide,
+							numberFormatStyle: .number.precision(
+								.fractionLength(0)
+							)
+						)
+					)
+
 					AxisGridLine()
-					AxisValueLabel("""
-						\(value.as(PlottableMeasurement.self)!
-							.measurement
-							.converted(to: .meters),
-								format: .measurement(
-									width: .wide,
-									numberFormatStyle: .number.precision(
-										.fractionLength(0))
-									)
-								)
-					""")
+					AxisValueLabel(measurementFormatted)
 				}
 			}
 			.chartXAxis(.visible)
 		}
-		.background(Color(UIColor.secondarySystemBackground))
-		.opacity(/*@START_MENU_TOKEN@*/0.8/*@END_MENU_TOKEN@*/)
 	}
 }

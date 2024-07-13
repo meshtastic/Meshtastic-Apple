@@ -4,9 +4,6 @@
     "" : {
 
     },
-    "\t%@" : {
-
-    },
     " %@" : {
 
     },
@@ -146,16 +143,10 @@
     "%lld Total Detection Events" : {
 
     },
-    "%lld%%" : {
-
-    },
     "%llddb Transmit Power" : {
 
     },
     "%llddBm Transmit Power" : {
-
-    },
-    "< 1%" : {
 
     },
     "🦕 End of life Version 🦖 ☄️" : {
@@ -1246,9 +1237,6 @@
           }
         }
       }
-    },
-    "Attribution:" : {
-
     },
     "automatic.detection" : {
       "extractionState" : "manual",
@@ -6770,13 +6758,7 @@
     "Empty" : {
 
     },
-    "Enable MB Tiles" : {
-
-    },
     "Enable Notifications" : {
-
-    },
-    "Enable Offline Maps" : {
 
     },
     "enabled" : {
@@ -7334,7 +7316,7 @@
         }
       }
     },
-    "First heard" : {
+    "First Heard" : {
 
     },
     "Five Minutes" : {
@@ -10766,7 +10748,7 @@
         }
       }
     },
-    "Last heard" : {
+    "Last Heard" : {
 
     },
     "Latitude" : {
@@ -11372,9 +11354,6 @@
     "Map Tile Data" : {
 
     },
-    "Map Type" : {
-
-    },
     "map.centering" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -11435,6 +11414,7 @@
       }
     },
     "map.recentering" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -15309,9 +15289,6 @@
     "Node Info Broadcast Interval" : {
 
     },
-    "Node Map" : {
-
-    },
     "Node Number" : {
 
     },
@@ -15425,6 +15402,9 @@
           }
         }
       }
+    },
+    "Nodes" : {
+
     },
     "nodes %@" : {
       "extractionState" : "manual",
@@ -15738,9 +15718,6 @@
         }
       }
     },
-    "Offline Maps" : {
-
-    },
     "OK" : {
 
     },
@@ -15897,9 +15874,6 @@
     "OTA Updates are not supported on your platform." : {
 
     },
-    "Other data sources" : {
-
-    },
     "Output pin buzzer GPIO " : {
 
     },
@@ -16027,6 +16001,9 @@
           }
         }
       }
+    },
+    "PAX Counter" : {
+
     },
     "paxcounter.ble" : {
       "localizations" : {
@@ -16289,9 +16266,6 @@
     "Please connect to a radio to configure settings." : {
 
     },
-    "Points of Interest" : {
-
-    },
     "position" : {
       "localizations" : {
         "de" : {
@@ -16351,9 +16325,6 @@
       }
     },
     "Position Flags" : {
-
-    },
-    "Position Log" : {
 
     },
     "Position Log %lld Points" : {
@@ -16545,9 +16516,6 @@
 
     },
     "PWD" : {
-
-    },
-    "Radar" : {
 
     },
     "radio.configuration" : {
@@ -16784,6 +16752,7 @@
       }
     },
     "reboot" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -16840,6 +16809,9 @@
           }
         }
       }
+    },
+    "Reboot" : {
+
     },
     "reboot.node" : {
       "localizations" : {
@@ -17024,7 +16996,7 @@
     "Recording route" : {
 
     },
-    "Refresh device metadata" : {
+    "Refresh Device Metadata" : {
 
     },
     "Region" : {
@@ -18439,9 +18411,6 @@
     "RSSI %ddB" : {
 
     },
-    "RSSI %llddB" : {
-
-    },
     "RX Boosted Gain" : {
 
     },
@@ -19592,9 +19561,6 @@
     "Show Alerts" : {
 
     },
-    "Show Node History" : {
-
-    },
     "Show nodes" : {
 
     },
@@ -19604,16 +19570,10 @@
     "Show on the mesh map." : {
 
     },
-    "Show Route Lines" : {
+    "Shut Down" : {
 
     },
-    "Show Waypoints " : {
-
-    },
-    "Show Weather" : {
-
-    },
-    "Shutdown Node?" : {
+    "Shut Down Node?" : {
 
     },
     "Signal %@" : {
@@ -20797,9 +20757,6 @@
     "The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long." : {
 
     },
-    "The latest MBTiles file shared with meshtastic will be loaded into the map." : {
-
-    },
     "The maximum interval that can elapse without a node broadcasting a position" : {
 
     },
@@ -20846,12 +20803,6 @@
 
     },
     "This will send a current position from your phone and enable fixed position." : {
-
-    },
-    "Tile Server" : {
-
-    },
-    "Tiles above Labels" : {
 
     },
     "Time" : {
@@ -21596,9 +21547,6 @@
     "Trace route sent to %@" : {
 
     },
-    "Traffic" : {
-
-    },
     "Transmit data (txd) GPIO pin" : {
 
     },
@@ -22012,6 +21960,9 @@
         }
       }
     },
+    "Uptime" : {
+
+    },
     "Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead." : {
 
     },
@@ -22088,7 +22039,7 @@
     "User Details" : {
 
     },
-    "User Id" : {
+    "User ID" : {
 
     },
     "user.details" : {

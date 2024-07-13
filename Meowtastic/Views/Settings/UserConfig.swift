@@ -183,10 +183,12 @@ struct UserConfig: View {
 			Spacer()
 		}
 		.navigationTitle("User Config")
-		.navigationBarItems(trailing:
-								ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
+		.navigationBarItems(
+			trailing:
+				ZStack {
+					ConnectedDevice(ble: bleManager)
+				}
+		)
 		.onAppear {
 			self.shortName = node?.user?.shortName ?? ""
 			self.longName = node?.user?.longName ?? ""

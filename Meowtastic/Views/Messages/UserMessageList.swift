@@ -75,11 +75,7 @@ struct UserMessageList: View {
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {
 				ZStack {
-					ConnectedDevice(
-						bluetoothOn: bleManager.isSwitchedOn,
-						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?"
-					)
+					ConnectedDevice(ble: bleManager)
 				}
 			}
 		}

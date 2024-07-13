@@ -47,15 +47,12 @@ extension UserDefaults {
 		case enableMapRecentering
 		case enableMapNodeHistoryPins
 		case enableMapRouteLines
-		case enableMapTraffic
-		case enableMapPointsOfInterest
 		case enableOfflineMaps
 		case enableOfflineMapsMBTiles
 		case mapTileServer
 		case enableOverlayServer
 		case mapOverlayServer
 		case mapTilesAboveLabels
-		case mapUseLegacy
 		case enableDetectionNotifications
 		case detectionSensorRole
 		case enableSmartPosition
@@ -107,12 +104,6 @@ extension UserDefaults {
 	@UserDefault(.enableMapConvexHull, defaultValue: false)
 	static var enableMapConvexHull: Bool
 
-	@UserDefault(.enableMapTraffic, defaultValue: false)
-	static var enableMapTraffic: Bool
-
-	@UserDefault(.enableMapPointsOfInterest, defaultValue: false)
-	static var enableMapPointsOfInterest: Bool
-
 	@UserDefault(.enableOfflineMaps, defaultValue: false)
 	static var enableOfflineMaps: Bool
 
@@ -130,9 +121,6 @@ extension UserDefaults {
 
 	@UserDefault(.mapTilesAboveLabels, defaultValue: false)
 	static var mapTilesAboveLabels: Bool
-
-	@UserDefault(.mapUseLegacy, defaultValue: false)
-	static var mapUseLegacy: Bool
 
 	@UserDefault(.enableDetectionNotifications, defaultValue: false)
 	static var enableDetectionNotifications: Bool

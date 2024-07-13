@@ -222,10 +222,10 @@ struct PositionPopover: View {
 						}
 					}
 
-					BatteryGauge(node: position.nodePosition!)
+					BatteryGaugeView(node: position.nodePosition!)
 				}
 
-				LoRaSignalStrengthMeter(
+				LoRaSignalMeterView(
 					snr: position.nodePosition?.snr ?? 0.0,
 					rssi: position.nodePosition?.rssi ?? 0,
 					preset: ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast,

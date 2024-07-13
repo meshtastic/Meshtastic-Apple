@@ -5,29 +5,21 @@ import OSLog
 
 class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 	static let shared = LocationHelper()
-	var locationManager = CLLocationManager()
-
-	// @Published var region = MKCoordinateRegion()
-	@Published var authorizationStatus: CLAuthorizationStatus?
-	override init() {
-		super.init()
-		locationManager.delegate = self
-		locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
-		locationManager.pausesLocationUpdatesAutomatically = true
-		locationManager.allowsBackgroundLocationUpdates = true
-		locationManager.activityType = .other
-	}
 	// Apple Park
-	static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
+	static let defaultLocation = CLLocationCoordinate2D(
+		latitude: 37.3346,
+		longitude: -122.0090
+	)
 	static var currentLocation: CLLocationCoordinate2D {
 		guard let location = shared.locationManager.location else {
-			return DefaultLocation
+			return defaultLocation
 		}
 		return location.coordinate
 	}
+
 	static var satsInView: Int {
-		// If we have a position we have a sat
 		var sats = 1
+
 		if shared.locationManager.location?.verticalAccuracy ?? 0 > 0 {
 			sats = 4
 			if 0...5 ~= shared.locationManager.location?.horizontalAccuracy ?? 0 {
@@ -41,12 +33,34 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 			} else if 46...60 ~= shared.locationManager.location?.horizontalAccuracy ?? 0 {
 				sats = 5
 			}
-		} else if shared.locationManager.location?.verticalAccuracy ?? 0 < 0 && 60...300 ~= shared.locationManager.location?.horizontalAccuracy ?? 0 {
+		}
+		else if shared.locationManager.location?.verticalAccuracy ?? 0 < 0
+					&& 60...300 ~= shared.locationManager.location?.horizontalAccuracy ?? 0
+		{
 			sats = 3
-		} else if shared.locationManager.location?.verticalAccuracy ?? 0 < 0 && shared.locationManager.location?.horizontalAccuracy ?? 0 > 300 {
+		}
+		else if shared.locationManager.location?.verticalAccuracy ?? 0 < 0
+					&& shared.locationManager.location?.horizontalAccuracy ?? 0 > 300
+		{
 			sats = 2
 		}
+
 		return sats
+	}
+
+	var locationManager = CLLocationManager()
+
+	@Published
+	var authorizationStatus: CLAuthorizationStatus?
+
+	override init() {
+		super.init()
+
+		locationManager.delegate = self
+		locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+		locationManager.pausesLocationUpdatesAutomatically = true
+		locationManager.allowsBackgroundLocationUpdates = true
+		locationManager.activityType = .other
 	}
 
 	func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
@@ -66,11 +80,5 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 		default:
 			break
 		}
-	}
-	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-
-	}
-	func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-		Logger.services.error("Location manager error: \(error.localizedDescription, privacy: .public)")
 	}
 }

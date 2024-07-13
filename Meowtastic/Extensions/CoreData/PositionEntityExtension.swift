@@ -1,10 +1,3 @@
-//
-//  PersistenceEntityExtenstion.swift
-//  Meshtastic
-//
-//  Copyright(c) Garth Vander Houwen 11/28/21.
-//
-
 import CoreData
 import CoreLocation
 import MapKit
@@ -12,7 +5,6 @@ import MeshtasticProtobufs
 import SwiftUI
 
 extension PositionEntity {
-
 	static func allPositionsFetchRequest() -> NSFetchRequest<PositionEntity> {
 		let request: NSFetchRequest<PositionEntity> = PositionEntity.fetchRequest()
 		request.fetchLimit = 1000
@@ -20,11 +12,16 @@ extension PositionEntity {
 		request.includesSubentities = true
 		request.returnsDistinctResults = true
 		request.sortDescriptors = [NSSortDescriptor(key: "time", ascending: false)]
-		let positionPredicate = NSPredicate(format: "nodePosition != nil && (nodePosition.user.shortName != nil || nodePosition.user.shortName != '') && latest == true")
+
+		let positionPredicate = NSPredicate(
+			format: "nodePosition != nil && (nodePosition.user.shortName != nil || nodePosition.user.shortName != '') && latest == true"
+		)
 
 		let pointOfInterest = LocationHelper.currentLocation
 
-		if pointOfInterest.latitude != LocationHelper.DefaultLocation.latitude && pointOfInterest.longitude != LocationHelper.DefaultLocation.longitude {
+		if pointOfInterest.latitude != LocationHelper.defaultLocation.latitude
+			&& pointOfInterest.longitude != LocationHelper.defaultLocation.longitude
+		{
 			let d: Double = UserDefaults.meshMapDistance * 1.1
 			let r: Double = 6371009
 			let meanLatitidue = pointOfInterest.latitude * .pi / 180
@@ -34,7 +31,14 @@ extension PositionEntity {
 			let maxLatitude: Double = pointOfInterest.latitude + deltaLatitude
 			let minLongitude: Double = pointOfInterest.longitude - deltaLongitude
 			let maxLongitude: Double = pointOfInterest.longitude + deltaLongitude
-			let distancePredicate = NSPredicate(format: "(%lf <= (longitudeI / 1e7)) AND ((longitudeI / 1e7) <= %lf) AND (%lf <= (latitudeI / 1e7)) AND ((latitudeI / 1e7) <= %lf)", minLongitude, maxLongitude, minLatitude, maxLatitude)
+			let distancePredicate = NSPredicate(
+				format: "(%lf <= (longitudeI / 1e7)) AND ((longitudeI / 1e7) <= %lf) AND (%lf <= (latitudeI / 1e7)) AND ((latitudeI / 1e7) <= %lf)",
+				minLongitude,
+				maxLongitude,
+				minLatitude,
+				maxLatitude
+			)
+
 			request.predicate = NSCompoundPredicate(type: .and, subpredicates: [positionPredicate, distancePredicate])
 		} else {
 			request.predicate = positionPredicate
@@ -43,7 +47,6 @@ extension PositionEntity {
 	}
 
 	var latitude: Double? {
-
 		let d = Double(latitudeI)
 		if d == 0 {
 			return 0
@@ -52,7 +55,6 @@ extension PositionEntity {
 	}
 
 	var longitude: Double? {
-
 		let d = Double(longitudeI)
 		if d == 0 {
 			return 0
@@ -88,7 +90,7 @@ extension PositionEntity {
 }
 
 extension PositionEntity: MKAnnotation {
-	public var coordinate: CLLocationCoordinate2D { nodeCoordinate ?? LocationHelper.DefaultLocation }
+	public var coordinate: CLLocationCoordinate2D { nodeCoordinate ?? LocationHelper.defaultLocation }
 	public var title: String? {  nodePosition?.user?.shortName ?? "unknown".localized }
 	public var subtitle: String? {  time?.formatted() }
 }

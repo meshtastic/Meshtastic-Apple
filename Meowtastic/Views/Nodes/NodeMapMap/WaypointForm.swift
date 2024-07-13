@@ -328,7 +328,7 @@ struct WaypointForm: View {
 							.padding(.bottom, 5)
 						}
 						/// Distance
-						if LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) > 0.0 {
+						if LocationHelper.currentLocation.distance(from: LocationHelper.defaultLocation) > 0.0 {
 							let metersAway = waypoint.coordinate.distance(from: LocationHelper.currentLocation)
 							Label {
 								Text("distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")

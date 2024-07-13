@@ -30,8 +30,8 @@ struct PaxCounterLog: View {
 				let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
 				let pax = node.pax?.reversed() as? [PaxCounterEntity] ?? []
 				let chartData = pax
-						.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
-						.sorted { $0.time! < $1.time! }
+					.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
+					.sorted { $0.time! < $1.time! }
 				let maxValue = (chartData.map { $0.wifi }.max() ?? 0) + (chartData.map { $0.ble }.max() ?? 0) + 5
 				if chartData.count > 0 {
 					GroupBox(label: Label("\(pax.count) Readings Total", systemImage: "chart.xyaxis.line")) {
@@ -205,10 +205,12 @@ struct PaxCounterLog: View {
 		}
 		.navigationTitle("paxcounter.log")
 		.navigationBarTitleDisplayMode(.inline)
-		.navigationBarItems(trailing:
-			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
+		.navigationBarItems(
+			trailing:
+				ZStack {
+					ConnectedDevice(ble: bleManager)
+				}
+		)
 		.onAppear {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context

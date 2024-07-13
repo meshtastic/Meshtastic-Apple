@@ -369,11 +369,7 @@ struct PositionConfig: View {
 		.navigationTitle("position.config")
 		.navigationBarItems(
 			trailing: ZStack {
-				ConnectedDevice(
-					bluetoothOn: bleManager.isSwitchedOn,
-					deviceConnected: bleManager.connectedPeripheral != nil,
-					name: bleManager.connectedPeripheral?.shortName ?? "?"
-				)
+				ConnectedDevice(ble: bleManager)
 			}
 		)
 		.onAppear {

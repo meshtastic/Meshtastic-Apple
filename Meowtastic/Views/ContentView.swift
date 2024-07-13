@@ -1,74 +1,4 @@
-/*
- Copyright (c) Garth Vander Houwen 2021
- */
-
 import SwiftUI
-
-@available(iOS 17.0, *)
-struct ContentView: View {
-
-	@StateObject var appState = AppState.shared
-	var body: some View {
-		TabView(selection: $appState.tabSelection) {
-			Messages()
-				.tabItem {
-					Label("messages", systemImage: "message")
-				}
-				.tag(Tab.contacts)
-				.badge(appState.unreadDirectMessages + appState.unreadChannelMessages)
-			Connect()
-				.tabItem {
-					Label("bluetooth", systemImage: "antenna.radiowaves.left.and.right")
-				}
-				.tag(Tab.ble)
-			NodeList()
-				.tabItem {
-					Label("nodes", systemImage: "flipphone")
-				}
-				.tag(Tab.nodes)
-			if #available(iOS 17.0, macOS 14.0, *) {
-				if UserDefaults.mapUseLegacy {
-					NodeMap()
-						.tabItem {
-							Label("map", systemImage: "map")
-						}
-						.tag(Tab.map)
-				} else {
-					MeshMap()
-						.tabItem {
-							Label("map", systemImage: "map")
-						}
-						.tag(Tab.map)
-				}
-			} else {
-				NodeMap()
-					.tabItem {
-						Label("map", systemImage: "map")
-					}
-					.tag(Tab.map)
-			}
-			Settings()
-				.tabItem {
-					Label("settings", systemImage: "gear")
-						.font(.title)
-				}
-				.tag(Tab.settings)
-		}
-	}
-}
-// #Preview {
-//	if #available(iOS 17.0, *) {
-//	//	ContentView(deepLinkManager: .init())
-//	} else {
-//		// Fallback on earlier versions
-//	}
-// }
-
-// struct ContentView_Previews: PreviewProvider {
-//	static var previews: some View {
-//		ContentView()
-//	}
-// }
 
 enum Tab: Hashable {
 	case contacts
@@ -77,4 +7,69 @@ enum Tab: Hashable {
 	case ble
 	case nodes
 	case settings
+}
+
+struct ContentView: View {
+	@StateObject
+	private var appState = AppState.shared
+
+	@EnvironmentObject
+	private var bleManager: BLEManager
+
+	@FetchRequest(
+		sortDescriptors: [
+			NSSortDescriptor(key: "favorite", ascending: false),
+			NSSortDescriptor(key: "lastHeard", ascending: false),
+			NSSortDescriptor(key: "user.longName", ascending: true),
+		],
+		animation: .default
+	)
+	private var nodes: FetchedResults<NodeInfoEntity>
+
+	private var nodeCount: Int {
+		if bleManager.isNodeConnected {
+			nodes.count
+		}
+		else {
+			0
+		}
+	}
+
+	var body: some View {
+		if !bleManager.isNodeConnected {
+			Connect()
+		}
+		else {
+			TabView(selection: $appState.tabSelection) {
+				Messages()
+					.tabItem {
+						Label("messages", systemImage: "message")
+					}
+					.tag(Tab.contacts)
+					.badge(appState.unreadDirectMessages + appState.unreadChannelMessages)
+					.badgeProminence(.standard)
+
+				NodeList()
+					.tabItem {
+						Label("nodes", systemImage: "flipphone")
+					}
+					.tag(Tab.nodes)
+					.badge(nodeCount)
+					.badgeProminence(.decreased)
+
+				MeshMap()
+					.tabItem {
+						Label("map", systemImage: "map")
+					}
+					.tag(Tab.map)
+
+				Settings()
+					.tabItem {
+						Label("settings", systemImage: "gear")
+							.font(.title)
+					}
+					.tag(Tab.settings)
+			}
+		}
+	}
 }

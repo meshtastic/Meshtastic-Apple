@@ -50,13 +50,11 @@ struct PaxCounterConfig: View {
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.powerConfig == nil)
 		.navigationTitle("config.module.paxcounter.title")
-		.navigationBarItems(trailing: ZStack {
-			ConnectedDevice(
-				bluetoothOn: bleManager.isSwitchedOn,
-				deviceConnected: bleManager.connectedPeripheral != nil,
-				name: "\(bleManager.connectedPeripheral?.shortName ?? "?")"
-			)
-		})
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(ble: bleManager)
+			}
+		)
 		.onAppear {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context

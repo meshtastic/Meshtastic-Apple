@@ -101,13 +101,11 @@ struct PowerConfig: View {
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.powerConfig == nil)
 		.navigationTitle("config.power.title")
-		.navigationBarItems(trailing: ZStack {
-			ConnectedDevice(
-				bluetoothOn: bleManager.isSwitchedOn,
-				deviceConnected: bleManager.connectedPeripheral != nil,
-				name: "\(bleManager.connectedPeripheral?.shortName ?? "?")"
-			)
-		})
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(ble: bleManager)
+			}
+		)
 		.toolbar {
 			ToolbarItemGroup(placement: .keyboard) {
 				Spacer()

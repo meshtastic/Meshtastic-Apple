@@ -180,10 +180,12 @@ struct DetectionSensorConfig: View {
 			}
 		}
 		.navigationTitle("detection.sensor.config")
-		.navigationBarItems(trailing:
-			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
+		.navigationBarItems(
+			trailing:
+				ZStack {
+					ConnectedDevice(ble: bleManager)
+				}
+		)
 		.onAppear {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context

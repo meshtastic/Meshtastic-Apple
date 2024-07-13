@@ -1,30 +1,24 @@
-//
-//  MapSettingsForm.swift
-//  Meshtastic
-//
-//  Created by Garth Vander Houwen on 10/3/23.
-//
-
 import SwiftUI
-#if canImport(MapKit)
 import MapKit
-#endif
 
-@available(iOS 17.0, macOS 14.0, *)
 struct MapSettingsForm: View {
-	@Environment(\.dismiss) private var dismiss
-	@AppStorage("meshMapShowNodeHistory") private var nodeHistory = false
-	@AppStorage("meshMapShowRouteLines") private var routeLines = false
-	@AppStorage("enableMapConvexHull") private var convexHull = false
-	@AppStorage("enableMapWaypoints") private var waypoints = true
-	@Binding var traffic: Bool
-	@Binding var pointsOfInterest: Bool
-	@Binding var mapLayer: MapLayer
-	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 800000
-	@Binding var meshMap: Bool
+	@Binding
+	var mapLayer: MapLayer
+	@Binding
+	var meshMap: Bool
+
+	@AppStorage("meshMapShowNodeHistory")
+	private var nodeHistory = false
+	@AppStorage("meshMapShowRouteLines")
+	private var routeLines = false
+	@AppStorage("enableMapConvexHull")
+	private var convexHull = false
+	@AppStorage("meshMapDistance")
+	private var meshMapDistance: Double = 800000
+	@Environment(\.dismiss)
+	private var dismiss
 
 	var body: some View {
-
 		NavigationStack {
 			Form {
 				Section(header: Text("Map Options")) {
@@ -38,8 +32,8 @@ struct MapSettingsForm: View {
 					.pickerStyle(SegmentedPickerStyle())
 					.padding(.top, 5)
 					.padding(.bottom, 5)
-					.onChange(of: mapLayer) { newMapLayer in
-						UserDefaults.mapLayer = newMapLayer
+					.onChange(of: mapLayer, initial: false) {
+						UserDefaults.mapLayer = mapLayer
 					}
 
 					if meshMap {
@@ -53,16 +47,8 @@ struct MapSettingsForm: View {
 							}
 							.pickerStyle(DefaultPickerStyle())
 						}
-						.onChange(of: meshMapDistance) { newMeshMapDistance in
-							UserDefaults.meshMapDistance = newMeshMapDistance
-						}
-
-						Toggle(isOn: $waypoints) {
-							Label("Show Waypoints ", systemImage: "signpost.right.and.left")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						.onTapGesture {
-							UserDefaults.enableMapWaypoints = !waypoints
+						.onChange(of: meshMapDistance, initial: false) {
+							UserDefaults.meshMapDistance = meshMapDistance
 						}
 					}
 
@@ -93,29 +79,10 @@ struct MapSettingsForm: View {
 						self.convexHull.toggle()
 						UserDefaults.enableMapConvexHull = self.convexHull
 					}
-
-					Toggle(isOn: $traffic) {
-						Label("Traffic", systemImage: "car")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.onTapGesture {
-						self.traffic.toggle()
-						UserDefaults.enableMapTraffic = self.traffic
-					}
-
-					Toggle(isOn: $pointsOfInterest) {
-						Label("Points of Interest", systemImage: "mappin.and.ellipse")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.onTapGesture {
-						self.pointsOfInterest.toggle()
-						UserDefaults.enableMapPointsOfInterest = self.pointsOfInterest
-					}
 				}
 			}
 		}
 		.presentationDetents([.fraction(meshMap ? 0.55 : 0.45), .fraction(0.65)])
 		.presentationDragIndicator(.visible)
-
 	}
 }

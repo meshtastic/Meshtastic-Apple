@@ -90,9 +90,9 @@ struct MeshMapContent: MapContent {
 			   let positions = nodePosition.positions,
 			   let nodePositions = Array(positions) as? [PositionEntity] {
 				if showRouteLines {
-					let routeCoords = nodePositions.compactMap({(pos) -> CLLocationCoordinate2D in
-						return pos.nodeCoordinate ?? LocationHelper.DefaultLocation
-					})
+					let routeCoords = nodePositions.compactMap {pos -> CLLocationCoordinate2D in
+						pos.nodeCoordinate ?? LocationHelper.defaultLocation
+					}
 					let gradient = LinearGradient(
 						colors: [Color(nodeColor.lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
 						startPoint: .leading, endPoint: .trailing
@@ -104,8 +104,9 @@ struct MeshMapContent: MapContent {
 					MapPolyline(coordinates: routeCoords)
 						.stroke(gradient, style: dashed)
 				}
+
 				if showNodeHistory {
-					ForEach(nodePositions, id: \.self) { (mappin: PositionEntity) in
+					ForEach(nodePositions, id: \.self) { mappin in
 						if mappin.latest == false && mappin.nodePosition?.favorite ?? false {
 							let pf = PositionFlags(rawValue: Int(mappin.nodePosition?.metadata?.positionFlags ?? 771))
 							let headingDegrees = Angle.degrees(Double(mappin.heading))
@@ -154,9 +155,9 @@ struct MeshMapContent: MapContent {
 		ForEach(routes) { route in
 			if let routeLocations = route.locations, let locations = Array(routeLocations) as? [LocationEntity] {
 				let routeCoords = locations.compactMap {(loc) -> CLLocationCoordinate2D in
-					return loc.locationCoordinate ?? LocationHelper.DefaultLocation
+					return loc.locationCoordinate ?? LocationHelper.defaultLocation
 				}
-				Annotation("Start", coordinate: routeCoords.first ?? LocationHelper.DefaultLocation) {
+				Annotation("Start", coordinate: routeCoords.first ?? LocationHelper.defaultLocation) {
 					ZStack {
 						Circle()
 							.fill(Color(.green))
@@ -165,7 +166,7 @@ struct MeshMapContent: MapContent {
 					}
 				}
 				.annotationTitles(.automatic)
-				Annotation("Finish", coordinate: routeCoords.last ?? LocationHelper.DefaultLocation) {
+				Annotation("Finish", coordinate: routeCoords.last ?? LocationHelper.defaultLocation) {
 					ZStack {
 						Circle()
 							.fill(Color(.black))

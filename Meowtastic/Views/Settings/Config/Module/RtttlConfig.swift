@@ -18,7 +18,7 @@ struct RtttlConfig: View {
 	@State var hasChanges = false
 	@State var ringtone: String = ""
 
-    var body: some View {
+	var body: some View {
 		VStack {
 			Form {
 				ConfigHeader(title: "ringtone", config: \.rtttlConfig, node: node, onAppear: setRtttLConfigValue)
@@ -62,10 +62,12 @@ struct RtttlConfig: View {
 				}
 			}
 			.navigationTitle("config.ringtone.title")
-			.navigationBarItems(trailing:
-				ZStack {
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-			})
+			.navigationBarItems(
+				trailing:
+					ZStack {
+						ConnectedDevice(ble: bleManager)
+					}
+			)
 			.onAppear {
 				if self.bleManager.context == nil {
 					self.bleManager.context = context
@@ -85,7 +87,7 @@ struct RtttlConfig: View {
 				}
 			}
 		}
-    }
+	}
 	func setRtttLConfigValue() {
 		self.ringtone = node?.rtttlConfig?.ringtone ?? ""
 		self.hasChanges = false

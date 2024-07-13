@@ -66,8 +66,12 @@ struct TraceRouteLog: View {
 
 						if selectedRoute?.response ?? false {
 							if selectedRoute?.hasPositions ?? false {
-								Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
-									Annotation("You", coordinate: selectedRoute?.coordinate ?? LocationHelper.DefaultLocation) {
+								Map(
+									position: $position,
+									bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity),
+									scope: mapScope
+								) {
+									Annotation("You", coordinate: selectedRoute?.coordinate ?? LocationHelper.defaultLocation) {
 										ZStack {
 											Circle()
 												.fill(Color(.green))
@@ -78,9 +82,18 @@ struct TraceRouteLog: View {
 									.annotationTitles(.automatic)
 									// Direct Trace Route
 									if selectedRoute?.response ?? false && selectedRoute?.hops?.count ?? 0 == 0 {
-										if selectedRoute?.node?.positions?.count ?? 0 > 0, let mostRecent = selectedRoute?.node?.positions?.lastObject as? PositionEntity {
-											let traceRouteCoords: [CLLocationCoordinate2D] = [selectedRoute?.coordinate ?? LocationsHandler.DefaultLocation, mostRecent.coordinate]
-											Annotation(selectedRoute?.node?.user?.shortName ?? "???", coordinate: mostRecent.nodeCoordinate ?? LocationHelper.DefaultLocation) {
+										if
+											selectedRoute?.node?.positions?.count ?? 0 > 0,
+											let mostRecent = selectedRoute?.node?.positions?.lastObject as? PositionEntity
+										{
+											let traceRouteCoords: [CLLocationCoordinate2D] = [
+												selectedRoute?.coordinate ?? LocationsHandler.DefaultLocation,
+												mostRecent.coordinate
+											]
+											Annotation(
+												selectedRoute?.node?.user?.shortName ?? "???",
+												coordinate: mostRecent.nodeCoordinate ?? LocationHelper.defaultLocation
+											) {
 												ZStack {
 													Circle()
 														.fill(Color(.black))
@@ -105,7 +118,7 @@ struct TraceRouteLog: View {
 								/// Distance
 								if selectedRoute?.node?.positions?.count ?? 0 > 0,
 								   selectedRoute?.coordinate != nil,
-									let mostRecent = selectedRoute?.node?.positions?.lastObject as? PositionEntity {
+								   let mostRecent = selectedRoute?.node?.positions?.lastObject as? PositionEntity {
 
 									let startPoint = CLLocation(latitude: selectedRoute?.coordinate?.latitude ?? LocationsHandler.DefaultLocation.latitude, longitude: selectedRoute?.coordinate?.longitude ?? LocationsHandler.DefaultLocation.longitude)
 
@@ -141,10 +154,12 @@ struct TraceRouteLog: View {
 			}
 			.navigationTitle("Trace Route Log")
 		}
-		.navigationBarItems(trailing:
-								ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
+		.navigationBarItems(
+			trailing:
+				ZStack {
+					ConnectedDevice(ble: bleManager)
+				}
+		)
 		.onAppear {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context

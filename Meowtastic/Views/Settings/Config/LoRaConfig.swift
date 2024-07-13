@@ -104,31 +104,31 @@ struct LoRaConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
-					 if !usePreset {
-						 HStack {
-							 Picker("Bandwidth", selection: $bandwidth) {
-								 ForEach(Bandwidths.allCases) { bw in
-									 Text(bw.description)
-										 .tag(bw.rawValue == 250 ? 0 : bw.rawValue)
-								 }
-							 }
-						 }
-						 HStack {
-							 Picker("Spread Factor", selection: $spreadFactor) {
-								 ForEach(7..<13) {
-									 Text("\($0)")
-										 .tag($0 == 12 ? 0 : $0)
-								 }
-							 }
-						 }
-						 HStack {
-							 Picker("Coding Rate", selection: $codingRate) {
-								 ForEach(5..<9) {
-									 Text("\($0)")
-										 .tag($0 == 8 ? 0 : $0)
-								 }
-							 }
-						 }
+					if !usePreset {
+						HStack {
+							Picker("Bandwidth", selection: $bandwidth) {
+								ForEach(Bandwidths.allCases) { bw in
+									Text(bw.description)
+										.tag(bw.rawValue == 250 ? 0 : bw.rawValue)
+								}
+							}
+						}
+						HStack {
+							Picker("Spread Factor", selection: $spreadFactor) {
+								ForEach(7..<13) {
+									Text("\($0)")
+										.tag($0 == 12 ? 0 : $0)
+								}
+							}
+						}
+						HStack {
+							Picker("Coding Rate", selection: $codingRate) {
+								ForEach(5..<9) {
+									Text("\($0)")
+										.tag($0 == 8 ? 0 : $0)
+								}
+							}
+						}
 					}
 					VStack(alignment: .leading) {
 						Picker("Number of hops", selection: $hopLimit) {
@@ -221,10 +221,12 @@ struct LoRaConfig: View {
 			}
 		}
 		.navigationTitle("lora.config")
-		.navigationBarItems(trailing:
-								ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
+		.navigationBarItems(
+			trailing:
+				ZStack {
+					ConnectedDevice(ble: bleManager)
+				}
+		)
 		.onAppear {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
