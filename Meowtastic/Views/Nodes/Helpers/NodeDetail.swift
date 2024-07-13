@@ -41,6 +41,19 @@ struct NodeDetail: View {
 			.lastObject
 		as? TelemetryEntity
 	}
+	private var hasAnyLog: Bool {
+		if
+			node.hasDeviceMetrics,
+			node.hasEnvironmentMetrics,
+			node.hasDetectionSensorMetrics,
+			node.hasPax,
+			let routes = node.traceRoutes, routes.count > 0
+		{
+			return true
+		}
+
+		return false
+	}
 
 	var body: some View {
 		NavigationStack {
@@ -53,8 +66,10 @@ struct NodeDetail: View {
 					nodeInfo
 				}
 
-				Section("Logs") {
-					logs
+				if hasAnyLog {
+					Section("Logs") {
+						logs
+					}
 				}
 
 				Section("Actions") {

@@ -63,9 +63,9 @@ struct NodeMapContent: MapContent {
 			let precision = PositionPrecision(rawValue: Int(latest.precisionBits))
 			let radius: CLLocationDistance = precision?.precisionMeters ?? 0.0
 
-			MapCircle(center: latest.coordinate, radius: max(30, radius))
+			MapCircle(center: latest.coordinate, radius: max(66.6, radius))
 				.foregroundStyle(
-					Color(.black).opacity(0.5)
+					Color(.white).opacity(0.3)
 				)
 				.stroke(.black.opacity(0.8), lineWidth: 5)
 

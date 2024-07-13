@@ -1,10 +1,3 @@
-//
-//  Messages.swift
-//  Meshtastic
-//
-//  Copyright(c) Garth Vander Houwen 8/29/23.
-//
-
 import SwiftUI
 import CoreData
 import OSLog
@@ -34,18 +27,18 @@ struct Messages: View {
 
 	var body: some View {
 		NavigationSplitView(columnVisibility: $columnVisibility) {
-			// Sidebar
 			List {
 				NavigationLink {
 					ChannelList(node: node)
 				} label: {
-					Image(systemName: "person.3")
-						.symbolRenderingMode(.hierarchical)
+					Image(systemName: "person.3.fill")
+						.resizable()
+						.scaledToFit()
+						.symbolRenderingMode(.multicolor)
 						.foregroundColor(.accentColor)
-						.brightness(0.2)
-						.font(.title)
-	
-					Text("channels")
+						.frame(width: 32, height: 32)
+
+					Text("Channels")
 						.font(.title2)
 						.badge(appState.unreadChannelMessages)
 						.padding(.vertical)
@@ -54,36 +47,17 @@ struct Messages: View {
 				NavigationLink {
 					UserList(node: node)
 				} label: {
-					Image(systemName: "person.circle")
-						.symbolRenderingMode(.hierarchical)
+					Image(systemName: "message.fill")
+						.resizable()
+						.scaledToFit()
+						.symbolRenderingMode(.multicolor)
 						.foregroundColor(.accentColor)
-						.brightness(0.2)
-						.font(.largeTitle)
+						.frame(width: 32, height: 32)
 
-					Text("direct.messages")
+					Text("Direct Messages")
 						.font(.title2)
 						.badge(appState.unreadDirectMessages)
 						.padding(.vertical)
-				}
-			}
-			.navigationTitle("messages")
-			.navigationBarTitleDisplayMode(.large)
-			.navigationBarItems(leading: MeshtasticLogo())
-			.onChange(of: (appState.navigationPath)) { newPath in
-				if (newPath?.hasPrefix("meshtastic://messages")) != nil {
-					if let urlComponent = URLComponents(string: newPath ?? "") {
-						let queryItems = urlComponent.queryItems
-						let messageId = queryItems?.first(where: { $0.name == "messageId" })?.value
-						let channel = queryItems?.first(where: { $0.name == "channel" })?.value
-
-						if let channel {
-							Logger.services.info("Deep Link Channel \(channel)")
-							//	selectedNode = nodes.first(where: { $0.num == Int64(nodeNum ?? "-1") })
-							//	AppState.shared.navigationPath = nil
-						} else {
-							Logger.services.info("Channel Deep Link not found")
-						}
-					}
 				}
 			}
 			.onAppear {
@@ -98,17 +72,31 @@ struct Messages: View {
 						Int64(UserDefaults.preferredPeripheralNum)
 					)
 
-					do {
-						let fetchedNode = try context.fetch(fetchNodeInfoRequest)
-						// Found a node, check it for a region
-						if !fetchedNode.isEmpty {
-							node = fetchedNode[0]
-						}
-					} catch {
-
+					let fetchedNode = try? context.fetch(fetchNodeInfoRequest)
+					if let fetchedNode, !fetchedNode.isEmpty {
+						node = fetchedNode[0]
 					}
 				}
 			}
+			.onChange(of: appState.navigationPath, initial: true) {
+				if (appState.navigationPath?.hasPrefix("meshtastic://messages")) != nil {
+					if let urlComponent = URLComponents(string: appState.navigationPath ?? "") {
+						let queryItems = urlComponent.queryItems
+						let channel = queryItems?.first(where: {
+							$0.name == "channel"
+						})?.value
+
+						if let channel {
+							Logger.services.info("Deep Link Channel \(channel)")
+						} else {
+							Logger.services.info("Channel Deep Link not found")
+						}
+					}
+				}
+			}
+			.navigationTitle("Messages")
+			.navigationBarTitleDisplayMode(.large)
+			.navigationBarItems(leading: MeshtasticLogo())
 		} content: { } detail: { }
 	}
 }

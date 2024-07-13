@@ -2704,6 +2704,9 @@
         }
       }
     },
+    "Channel #%d" : {
+
+    },
     "Channel 0 Included" : {
 
     },
@@ -3029,6 +3032,9 @@
           }
         }
       }
+    },
+    "Channels" : {
+
     },
     "Channels being added from the QR code did not save. When adding channels the names must be unique." : {
 
@@ -6250,7 +6256,11 @@
     "Dilution of precision (DOP) PDOP used by default" : {
 
     },
+    "Direct Messages" : {
+
+    },
     "direct.messages" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -16507,6 +16517,9 @@
 
     },
     "Primary" : {
+
+    },
+    "Primary Channel" : {
 
     },
     "Primary GPIO" : {

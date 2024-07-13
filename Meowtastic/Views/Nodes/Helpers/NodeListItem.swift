@@ -14,26 +14,24 @@ struct NodeListItem: View {
 
 	var body: some View {
 		NavigationLink(value: node) {
-			LazyVStack(alignment: .leading) {
-				HStack(alignment: .center) {
-					avatar
+			HStack(alignment: .center) {
+				avatar
 
-					VStack(alignment: .leading, spacing: 4) {
-						name
-						signalStrength
+				VStack(alignment: .leading, spacing: 4) {
+					name
+					signalStrength
 
-						lastHeard
-							.padding(.top, 8)
+					lastHeard
+						.padding(.top, 8)
 
-						if node.positions?.count ?? 0 > 0 && connectedNode != node.num {
-							distance
-						}
-
-						details
-							.padding(.top, 8)
+					if node.positions?.count ?? 0 > 0 && connectedNode != node.num {
+						distance
 					}
-					.frame(maxWidth: .infinity, alignment: .leading)
+
+					details
+						.padding(.top, 8)
 				}
+				.frame(maxWidth: .infinity, alignment: .leading)
 			}
 		}
 	}

@@ -22,13 +22,25 @@ struct ChannelMessageList: View {
 	@State
 	private var replyMessageId: Int64 = 0
 
+	private var screenTitle: String {
+		if let name = channel.name, !name.isEmpty {
+			name.camelCaseToWords()
+		}
+		else {
+			if channel.role == 1 {
+				"Primary Channel"
+			}
+			else {
+				"Channel #\(channel.index)"
+			}
+		}
+	}
+
 	var body: some View {
 		VStack {
 			ScrollViewReader { scrollView in
 				ScrollView {
-					LazyVStack {
-						messageList
-					}
+					messageList
 				}
 				.padding([.top])
 				.scrollDismissesKeyboard(.immediately)
@@ -41,14 +53,11 @@ struct ChannelMessageList: View {
 						scrollView.scrollTo(channel.allPrivateMessages.last!.messageId)
 					}
 				}
-				.onChange(
-					of: channel.allPrivateMessages,
-					perform: { _ in
-						if channel.allPrivateMessages.count > 0 {
-							scrollView.scrollTo(channel.allPrivateMessages.last!.messageId)
-						}
+				.onChange(of: channel.allPrivateMessages, initial: true) {
+					if channel.allPrivateMessages.count > 0 {
+						scrollView.scrollTo(channel.allPrivateMessages.last!.messageId)
 					}
-				)
+				}
 			}
 
 			TextMessageField(
@@ -63,19 +72,8 @@ struct ChannelMessageList: View {
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
 			ToolbarItem(placement: .principal) {
-				HStack {
-					Avatar(
-						String(channel.index),
-						background: .accentColor,
-						size: 44
-					).fixedSize()
-
-					Text(
-						String(channel.name ?? "unknown".localized)
-							.camelCaseToWords()
-					)
+				Text(screenTitle)
 					.font(.headline)
-				}
 			}
 
 			ToolbarItem(placement: .navigationBarTrailing) {
@@ -94,7 +92,7 @@ struct ChannelMessageList: View {
 
 	@ViewBuilder
 	private var messageList: some View {
-		ForEach(channel.allPrivateMessages) { (message: MessageEntity) in
+		ForEach(channel.allPrivateMessages) { message in
 			let currentUser = (Int64(preferredPeripheralNum) == message.fromUser?.num ? true : false)
 
 			if message.replyID > 0 {
@@ -123,15 +121,14 @@ struct ChannelMessageList: View {
 				if currentUser {
 					Spacer(minLength: 50)
 				}
-
-				if !currentUser {
+				else {
 					Avatar(
 						message.fromUser?.shortName ?? "?",
 						background: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))),
 						size: 44
 					)
-						.padding(.all, 5)
-						.offset(y: -7)
+					.padding(.all, 5)
+					.offset(y: -7)
 				}
 
 				VStack(alignment: currentUser ? .trailing : .leading) {
@@ -141,9 +138,9 @@ struct ChannelMessageList: View {
 						Text(
 							"\(message.fromUser?.longName ?? "unknown".localized ) (\(message.fromUser?.userId ?? "?"))"
 						)
-							.font(.caption)
-							.foregroundColor(.gray)
-							.offset(y: 8)
+						.font(.caption)
+						.foregroundColor(.gray)
+						.offset(y: 8)
 					}
 
 					HStack {
