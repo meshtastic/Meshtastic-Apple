@@ -128,10 +128,7 @@ struct SerialConfig: View {
 			}
 			.navigationTitle("serial.config")
 			.navigationBarItems(
-				trailing:
-					ZStack {
-						ConnectedDevice(ble: bleManager)
-					}
+				trailing: ConnectedDevice(ble: bleManager)
 			)
 			.onAppear {
 				if self.bleManager.context == nil {

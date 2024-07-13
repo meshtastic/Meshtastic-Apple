@@ -272,10 +272,7 @@ struct MQTTConfig: View {
 		}
 		.navigationTitle("mqtt.config")
 		.navigationBarItems(
-			trailing:
-				ZStack {
-					ConnectedDevice(ble: bleManager)
-				}
+			trailing: ConnectedDevice(ble: bleManager)
 		)
 		.onChange(of: address) { newAddress in
 			if node != nil && node?.mqttConfig != nil {

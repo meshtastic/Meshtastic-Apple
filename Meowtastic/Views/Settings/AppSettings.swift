@@ -91,10 +91,7 @@ struct AppSettings: View {
 		}
 		.navigationTitle("appsettings")
 		.navigationBarItems(
-			trailing:
-				ZStack {
-					ConnectedDevice(ble: bleManager)
-				}
+			trailing: ConnectedDevice(ble: bleManager)
 		)
 		.onAppear {
 			if self.bleManager.context == nil {

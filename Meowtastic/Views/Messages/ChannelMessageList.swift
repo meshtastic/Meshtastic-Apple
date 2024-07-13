@@ -77,15 +77,11 @@ struct ChannelMessageList: View {
 			}
 
 			ToolbarItem(placement: .navigationBarTrailing) {
-				ZStack {
-					ConnectedDevice(
-						ble: bleManager,
-						mqttProxyConnected: bleManager.mqttProxyConnected && (channel.uplinkEnabled || channel.downlinkEnabled),
-						mqttUplinkEnabled: channel.uplinkEnabled,
-						mqttDownlinkEnabled: channel.downlinkEnabled,
-						mqttTopic: bleManager.mqttManager.topic
-					)
-				}
+				ConnectedDevice(
+					ble: bleManager,
+					mqttUplinkEnabled: channel.uplinkEnabled,
+					mqttDownlinkEnabled: channel.downlinkEnabled
+				)
 			}
 		}
 	}

@@ -98,13 +98,7 @@ struct Messages: View {
 			.navigationBarTitleDisplayMode(.large)
 			.navigationBarItems(
 				leading: MeshtasticLogo(),
-				trailing: ZStack {
-					ConnectedDevice(
-						ble: bleManager,
-						mqttProxyConnected: bleManager.mqttProxyConnected,
-						mqttTopic: bleManager.mqttManager.topic
-					)
-				}
+				trailing: ConnectedDevice(ble: bleManager)
 			)
 		} content: { } detail: { }
 	}

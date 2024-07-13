@@ -74,9 +74,7 @@ struct UserMessageList: View {
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {
-				ZStack {
-					ConnectedDevice(ble: bleManager)
-				}
+				ConnectedDevice(ble: bleManager)
 			}
 		}
 	}

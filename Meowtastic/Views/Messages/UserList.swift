@@ -48,12 +48,6 @@ struct UserList: View {
 	var body: some View {
 		VStack {
 			userList
-				.navigationTitle(
-					String.localizedStringWithFormat(
-						"contacts %@".localized,
-						String(users.count == 0 ? 0 : users.count - 1)
-					)
-				)
 				.safeAreaInset(edge: .bottom, alignment: .trailing) {
 					filterButton
 				}
@@ -93,11 +87,22 @@ struct UserList: View {
 						await updateFilter()
 					}
 				}
-				.onChange(of: selectedUserNum) { newUserNum in
+				.onChange(of: selectedUserNum) {
 					userSelection = users.first(where: {
-						$0.num == newUserNum
+						$0.num == selectedUserNum
 					})
 				}
+				.navigationTitle(
+					String.localizedStringWithFormat(
+						"contacts %@".localized,
+						String(users.count == 0 ? 0 : users.count - 1)
+					)
+				)
+				.navigationBarTitleDisplayMode(.large)
+				.navigationBarItems(
+					leading: MeshtasticLogo(),
+					trailing: ConnectedDevice(ble: bleManager)
+				)
 				.sheet(isPresented: $isEditingFilters) {
 					NodeListFilter(
 						filterTitle: "Contact Filters",

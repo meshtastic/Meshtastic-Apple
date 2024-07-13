@@ -63,10 +63,7 @@ struct RtttlConfig: View {
 			}
 			.navigationTitle("config.ringtone.title")
 			.navigationBarItems(
-				trailing:
-					ZStack {
-						ConnectedDevice(ble: bleManager)
-					}
+				trailing: ConnectedDevice(ble: bleManager)
 			)
 			.onAppear {
 				if self.bleManager.context == nil {

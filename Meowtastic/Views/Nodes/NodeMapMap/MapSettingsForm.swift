@@ -11,10 +11,6 @@ struct MapSettingsForm: View {
 	private var nodeHistory = false
 	@AppStorage("meshMapShowRouteLines")
 	private var routeLines = false
-	@AppStorage("enableMapConvexHull")
-	private var convexHull = false
-	@AppStorage("meshMapDistance")
-	private var meshMapDistance: Double = 800000
 	@Environment(\.dismiss)
 	private var dismiss
 
@@ -36,53 +32,28 @@ struct MapSettingsForm: View {
 						UserDefaults.mapLayer = mapLayer
 					}
 
-					if meshMap {
-						HStack {
-							Label("Show nodes", systemImage: "lines.measurement.horizontal")
-							Picker("", selection: $meshMapDistance) {
-								ForEach(MeshMapDistances.allCases) { di in
-									Text(di.description)
-										.tag(di.id)
-								}
-							}
-							.pickerStyle(DefaultPickerStyle())
+					if !meshMap {
+						Toggle(isOn: $nodeHistory) {
+							Label("Node History", systemImage: "building.columns.fill")
 						}
-						.onChange(of: meshMapDistance, initial: false) {
-							UserDefaults.meshMapDistance = meshMapDistance
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.onTapGesture {
+							self.nodeHistory.toggle()
+							UserDefaults.enableMapNodeHistoryPins = self.nodeHistory
 						}
-					}
 
-					Toggle(isOn: $nodeHistory) {
-						Label("Node History", systemImage: "building.columns.fill")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.onTapGesture {
-						self.nodeHistory.toggle()
-						UserDefaults.enableMapNodeHistoryPins = self.nodeHistory
-					}
-
-					Toggle(isOn: $routeLines) {
-						Label("Route Lines", systemImage: "road.lanes")
-					}
-
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.onTapGesture {
-						self.routeLines.toggle()
-						UserDefaults.enableMapRouteLines = self.routeLines
-					}
-
-					Toggle(isOn: $convexHull) {
-						Label("Convex Hull", systemImage: "button.angledbottom.horizontal.right")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.onTapGesture {
-						self.convexHull.toggle()
-						UserDefaults.enableMapConvexHull = self.convexHull
+						Toggle(isOn: $routeLines) {
+							Label("Route Lines", systemImage: "road.lanes")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.onTapGesture {
+							self.routeLines.toggle()
+							UserDefaults.enableMapRouteLines = self.routeLines
+						}
 					}
 				}
 			}
 		}
-		.presentationDetents([.fraction(meshMap ? 0.55 : 0.45), .fraction(0.65)])
 		.presentationDragIndicator(.visible)
 	}
 }

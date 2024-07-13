@@ -1304,6 +1304,7 @@
 
     },
     "available.radios" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1441,9 +1442,6 @@
       }
     },
     "Baud" : {
-
-    },
-    "BLE RSSI: %lld" : {
 
     },
     "BLE: %@" : {
@@ -1686,6 +1684,7 @@
       }
     },
     "ble.name" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3187,6 +3186,7 @@
 
     },
     "close" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4593,6 +4593,7 @@
 
     },
     "connected.radio" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4651,6 +4652,7 @@
       }
     },
     "connecting" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4707,6 +4709,9 @@
           }
         }
       }
+    },
+    "Connecting" : {
+
     },
     "Connection Attempt %lld of 10" : {
 
@@ -4833,9 +4838,6 @@
 
     },
     "Controls the blinking LED on the device.  For most devices this will control one of the up to 4 LEDS, the charger and GPS LEDs are not controllable." : {
-
-    },
-    "Convex Hull" : {
 
     },
     "Coordinate" : {
@@ -6386,6 +6388,9 @@
         }
       }
     },
+    "Disconnect" : {
+
+    },
     "dismiss.keyboard" : {
       "localizations" : {
         "de" : {
@@ -7216,7 +7221,11 @@
     "Firmware Updates" : {
 
     },
+    "Firmware:" : {
+
+    },
     "firmware.version" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10764,6 +10773,9 @@
           }
         }
       }
+    },
+    "Known Device" : {
+
     },
     "Last Heard" : {
 
@@ -15091,6 +15103,9 @@
     "Name" : {
 
     },
+    "Name:" : {
+
+    },
     "Nearby Topics" : {
 
     },
@@ -15485,7 +15500,11 @@
     "Not a valid route file" : {
 
     },
+    "Not Connected" : {
+
+    },
     "not.connected" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18431,6 +18450,9 @@
     "RSSI %ddB" : {
 
     },
+    "RSSI: %lld" : {
+
+    },
     "RX Boosted Gain" : {
 
     },
@@ -19327,10 +19349,14 @@
     "Set" : {
 
     },
+    "Set Region" : {
+
+    },
     "Set the GPIO pins for RXD and TXD." : {
 
     },
     "set.region" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -19579,9 +19605,6 @@
 
     },
     "Show Alerts" : {
-
-    },
-    "Show nodes" : {
 
     },
     "Show on device screen" : {
@@ -22155,6 +22178,9 @@
           }
         }
       }
+    },
+    "Visible Nodes" : {
+
     },
     "Volt" : {
 

@@ -121,10 +121,7 @@ struct DetectionSensorLog: View {
 		.navigationTitle("detection.sensor.log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(
-			trailing:
-				ZStack {
-					ConnectedDevice(ble: bleManager)
-				}
+			trailing: ConnectedDevice(ble: bleManager)
 		)
 		.onAppear {
 			if self.bleManager.context == nil {

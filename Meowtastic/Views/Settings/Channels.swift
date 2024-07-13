@@ -301,10 +301,7 @@ struct Channels: View {
 		}
 		.navigationTitle("channels")
 		.navigationBarItems(
-			trailing:
-				ZStack {
-					ConnectedDevice(ble: bleManager)
-				}
+			trailing: ConnectedDevice(ble: bleManager)
 		)
 		.onAppear {
 			if self.bleManager.context == nil {

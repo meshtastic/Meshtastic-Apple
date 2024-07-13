@@ -224,10 +224,7 @@ struct ShareChannels: View {
 			.navigationTitle("generate.qr.code")
 			.navigationBarTitleDisplayMode(.inline)
 			.navigationBarItems(
-				trailing:
-					ZStack {
-						ConnectedDevice(ble: bleManager)
-					}
+				trailing: ConnectedDevice(ble: bleManager)
 			)
 			.onAppear {
 				bleManager.context = context

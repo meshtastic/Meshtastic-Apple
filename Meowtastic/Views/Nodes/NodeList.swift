@@ -81,9 +81,7 @@ struct NodeList: View {
 						displayMode: .inline
 					)
 					.navigationBarItems(
-						trailing: ZStack {
-							ConnectedDevice(ble: bleManager)
-						}
+						trailing: ConnectedDevice(ble: bleManager)
 					)
 				}
 
@@ -224,9 +222,7 @@ struct NodeList: View {
 		.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
 		.navigationBarItems(
 			leading: MeshtasticLogo(),
-			trailing: ZStack {
-				ConnectedDevice(ble: bleManager)
-			}
+			trailing: ConnectedDevice(ble: bleManager)
 		)
 	}
 

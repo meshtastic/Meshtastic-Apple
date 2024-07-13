@@ -28,12 +28,15 @@ struct MeshMap: View {
 	@State var isMeshMap = true
 
 	var body: some View {
-
 		NavigationStack {
 			ZStack {
 				MapReader { reader in
 					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
-						MeshMapContent(showUserLocation: $showUserLocation, showTraffic: $showTraffic, showPointsOfInterest: $showPointsOfInterest, selectedMapLayer: $selectedMapLayer, selectedPosition: $selectedPosition, selectedWaypoint: $selectedWaypoint)
+						MeshMapContent(
+							showUserLocation: $showUserLocation,
+							selectedMapLayer: $selectedMapLayer,
+							selectedPosition: $selectedPosition
+						)
 
 					}
 					.mapScope(mapScope)
@@ -130,13 +133,7 @@ struct MeshMap: View {
 		}
 		.navigationBarItems(
 			leading: MeshtasticLogo(),
-			trailing: ZStack {
-				ConnectedDevice(
-					ble: bleManager,
-					mqttProxyConnected: bleManager.mqttProxyConnected,
-					mqttTopic: bleManager.mqttManager.topic
-				)
-			}
+			trailing: ConnectedDevice(ble: bleManager)
 		)
 		.onAppear {
 			UIApplication.shared.isIdleTimerDisabled = true

@@ -102,9 +102,7 @@ struct PowerConfig: View {
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.powerConfig == nil)
 		.navigationTitle("config.power.title")
 		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(ble: bleManager)
-			}
+			trailing: ConnectedDevice(ble: bleManager)
 		)
 		.toolbar {
 			ToolbarItemGroup(placement: .keyboard) {

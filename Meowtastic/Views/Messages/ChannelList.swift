@@ -104,6 +104,11 @@ struct ChannelList: View {
 			}
 		}
 		.navigationTitle("Channels")
+		.navigationBarTitleDisplayMode(.large)
+		.navigationBarItems(
+			leading: MeshtasticLogo(),
+			trailing: ConnectedDevice(ble: bleManager)
+		)
 	}
 
 	@ViewBuilder

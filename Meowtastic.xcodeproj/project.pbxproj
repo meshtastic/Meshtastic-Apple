@@ -16,6 +16,7 @@
 		08DD7E5D2C42833200548159 /* LoRaSignalStrength.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E5C2C42833200548159 /* LoRaSignalStrength.swift */; };
 		08DD7E5F2C4283A100548159 /* LoRaSignal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E5E2C4283A100548159 /* LoRaSignal.swift */; };
 		08DD7E612C42ABEB00548159 /* NodeInfoEntity+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E602C42ABEB00548159 /* NodeInfoEntity+Extensions.swift */; };
+		08DD7E632C42D8B300548159 /* MQTTConnectionIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E622C42D8B300548159 /* MQTTConnectionIcon.swift */; };
 		251926852C3BA97800249DF5 /* FavoriteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */; };
 		251926872C3BAE2200249DF5 /* NodeAlertsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */; };
 		2519268A2C3BB1B200249DF5 /* ExchangePositionsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */; };
@@ -179,7 +180,7 @@
 		DDE0F7C5295F77B700B8AAB3 /* AppSettingsEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE0F7C4295F77B700B8AAB3 /* AppSettingsEnums.swift */; };
 		DDE5B4042B2279A700FCDD05 /* TraceRouteLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE5B4032B2279A700FCDD05 /* TraceRouteLog.swift */; };
 		DDE9659C2B1C3B6A00531070 /* RouteRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE9659B2B1C3B6A00531070 /* RouteRecorder.swift */; };
-		DDF45C342BC1A48E005ED5F2 /* MQTTIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF45C332BC1A48E005ED5F2 /* MQTTIcon.swift */; };
+		DDF45C342BC1A48E005ED5F2 /* MQTTChannelIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF45C332BC1A48E005ED5F2 /* MQTTChannelIcon.swift */; };
 		DDF45C372BC46A5A005ED5F2 /* TimeZone.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF45C362BC46A5A005ED5F2 /* TimeZone.swift */; };
 		DDF6B2482A9AEBF500BA6931 /* StoreForwardConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF6B2472A9AEBF500BA6931 /* StoreForwardConfig.swift */; };
 		DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF924C926FBB953009FE055 /* ConnectedDevice.swift */; };
@@ -210,6 +211,7 @@
 		08DD7E5C2C42833200548159 /* LoRaSignalStrength.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignalStrength.swift; sourceTree = "<group>"; };
 		08DD7E5E2C4283A100548159 /* LoRaSignal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignal.swift; sourceTree = "<group>"; };
 		08DD7E602C42ABEB00548159 /* NodeInfoEntity+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NodeInfoEntity+Extensions.swift"; sourceTree = "<group>"; };
+		08DD7E622C42D8B300548159 /* MQTTConnectionIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MQTTConnectionIcon.swift; sourceTree = "<group>"; };
 		251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteNodeButton.swift; sourceTree = "<group>"; };
 		251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeAlertsButton.swift; sourceTree = "<group>"; };
 		251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangePositionsButton.swift; sourceTree = "<group>"; };
@@ -375,7 +377,7 @@
 		DDE5B4032B2279A700FCDD05 /* TraceRouteLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRouteLog.swift; sourceTree = "<group>"; };
 		DDE5B4052B227E3200FCDD05 /* TraceRouteEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRouteEntityExtension.swift; sourceTree = "<group>"; };
 		DDE9659B2B1C3B6A00531070 /* RouteRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteRecorder.swift; sourceTree = "<group>"; };
-		DDF45C332BC1A48E005ED5F2 /* MQTTIcon.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MQTTIcon.swift; sourceTree = "<group>"; };
+		DDF45C332BC1A48E005ED5F2 /* MQTTChannelIcon.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MQTTChannelIcon.swift; sourceTree = "<group>"; };
 		DDF45C362BC46A5A005ED5F2 /* TimeZone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeZone.swift; sourceTree = "<group>"; };
 		DDF6B2472A9AEBF500BA6931 /* StoreForwardConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreForwardConfig.swift; sourceTree = "<group>"; };
 		DDF924C926FBB953009FE055 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
@@ -722,10 +724,11 @@
 				DDB75A202A12B954006ED576 /* LoRaSignalMeterView.swift */,
 				DDB75A1D2A0B0CD0006ED576 /* LoRaSignalView.swift */,
 				DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */,
-				DDF45C332BC1A48E005ED5F2 /* MQTTIcon.swift */,
+				DDF45C332BC1A48E005ED5F2 /* MQTTChannelIcon.swift */,
 				DD5E523D298F5A7D00D21B61 /* Weather */,
 				08DD7E5C2C42833200548159 /* LoRaSignalStrength.swift */,
 				08DD7E5E2C4283A100548159 /* LoRaSignal.swift */,
+				08DD7E622C42D8B300548159 /* MQTTConnectionIcon.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -994,7 +997,7 @@
 				DD13AA492AB73BF400BA0C98 /* PositionPopover.swift in Sources */,
 				6DEDA55C2A9592F900321D2E /* MessageEntityExtension.swift in Sources */,
 				DDDB444229F8A88700EE2349 /* Double.swift in Sources */,
-				DDF45C342BC1A48E005ED5F2 /* MQTTIcon.swift in Sources */,
+				DDF45C342BC1A48E005ED5F2 /* MQTTChannelIcon.swift in Sources */,
 				DDA9515A2BC6624100CEA535 /* TelemetryWeather.swift in Sources */,
 				DDB75A232A13CDA9006ED576 /* BatteryLevelCompact.swift in Sources */,
 				DDB75A162A0594AD006ED576 /* TileOverlay.swift in Sources */,
@@ -1030,6 +1033,7 @@
 				DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */,
 				DD47E3D626F17ED900029299 /* Avatar.swift in Sources */,
 				DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */,
+				08DD7E632C42D8B300548159 /* MQTTConnectionIcon.swift in Sources */,
 				DD2553572855B02500E55709 /* LoRaConfig.swift in Sources */,
 				DDB6ABD928B0A4BA00384BA1 /* BluetoothModes.swift in Sources */,
 				DDD9E4E4284B208E003777C5 /* UserEntityExtension.swift in Sources */,

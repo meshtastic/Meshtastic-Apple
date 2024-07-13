@@ -196,10 +196,7 @@ struct EnvironmentMetricsLog: View {
 		.navigationTitle("Environment Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(
-			trailing:
-				ZStack {
-					ConnectedDevice(ble: bleManager)
-				}
+			trailing: ConnectedDevice(ble: bleManager)
 		)
 		.onAppear {
 			if self.bleManager.context == nil {
