@@ -51,7 +51,7 @@ struct NodeListItem: View {
 					Spacer()
 					Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
 						.font(.system(size: 24))
-						.foregroundColor(.gray)
+						.foregroundColor(colorScheme == .dark ? .white : .gray)
 						.background(
 							Circle()
 								.foregroundColor(colorScheme == .dark ? .black : .white)
@@ -63,7 +63,7 @@ struct NodeListItem: View {
 					Spacer()
 					Image(systemName: "star.circle.fill")
 						.font(.system(size: 24))
-						.foregroundColor(.gray)
+						.foregroundColor(colorScheme == .dark ? .white : .gray)
 						.background(
 							Circle()
 								.foregroundColor(colorScheme == .dark ? .black : .white)

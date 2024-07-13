@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct Avatar: View {
-    private let text: String
+    private let name: String?
     private let background: Color
 	private let size: CGFloat
 
@@ -11,20 +11,29 @@ struct Avatar: View {
 				.fill(background)
 				.frame(width: size, height: size)
 
-			Text(text)
-				.frame(width: size * 0.9, height: size * 0.9, alignment: .center)
-				.foregroundColor(background.isLight() ? .black : .white)
-				.minimumScaleFactor(0.001)
-				.font(.system(size: 1300))
+			if let name = name {
+				Text(name)
+					.frame(width: size * 0.9, height: size * 0.9, alignment: .center)
+					.foregroundColor(background.isLight() ? .black : .white)
+					.minimumScaleFactor(0.001)
+					.font(.system(size: 1300))
+			}
+			else {
+				Image(systemName: "questionmark")
+					.frame(width: size * 0.9, height: size * 0.9, alignment: .center)
+					.foregroundColor(background.isLight() ? .black : .white)
+					.minimumScaleFactor(0.001)
+					.font(.system(size: 1300))
+			}
         }
     }
 
 	init(
-		_ text: String,
+		_ name: String?,
 		background: Color,
 		size: CGFloat = 45
 	) {
-		self.text = text
+		self.name = name
 		self.background = background
 		self.size = size
 	}

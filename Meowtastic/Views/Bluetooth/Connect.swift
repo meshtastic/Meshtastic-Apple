@@ -98,7 +98,7 @@ struct Connect: View {
 	@ViewBuilder
 	private var connectedDevice: some View {
 		Section(
-			header: Text("Known Device")
+			header: Text("Known Devices")
 				.font(.title)
 		) {
 			if

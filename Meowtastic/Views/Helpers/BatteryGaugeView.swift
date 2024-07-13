@@ -5,6 +5,7 @@ struct BatteryGaugeView: View {
 	@ObservedObject
 	var node: NodeInfoEntity
 
+	private let withLabels: Bool
 	private let minValue = 0.0
 	private let maxValue = 100.00
 	private let gaugeGradient = Gradient(colors: [.red, .orange, .green])
@@ -17,49 +18,51 @@ struct BatteryGaugeView: View {
 			let mostRecent = deviceMetrics.lastObject as? TelemetryEntity
 			let batteryLevel = Double(mostRecent?.batteryLevel ?? 0)
 
-			VStack {
-				if batteryLevel > 100.0 {
-					Image(systemName: "powerplug")
-						.font(.largeTitle)
-						.foregroundColor(.accentColor)
-						.symbolRenderingMode(.hierarchical)
-				} else {
-					Gauge(value: batteryLevel, in: minValue...maxValue) {
-						if batteryLevel < 10 {
-							Label("Battery Level %", systemImage: "battery.0")
-						} else if batteryLevel < 25 {
-							Label("Battery Level %", systemImage: "battery.25")
-						} else if batteryLevel < 50 {
-							Label("Battery Level %", systemImage: "battery.50")
-						} else if batteryLevel < 75 {
-							Label("Battery Level %", systemImage: "battery.75")
-						} else if batteryLevel <= 99 {
-							Label("Battery Level %", systemImage: "battery.100")
-						} else {
-							Label("Battery Level %", systemImage: "battery.100.bolt")
-						}
-					} currentValueLabel: {
-						if let voltage = mostRecent?.voltage, voltage > 0.00 {
-							let voltageFormatted = String(format: "%.2f", voltage) + "V"
+			HStack {
+				if withLabels {
+					Image(systemName: "battery.75percent")
+						.font(.body)
+						.frame(width: 32)
+				}
 
-							Text(voltageFormatted)
-								.font(.footnote)
-								.lineLimit(1)
-								.fixedSize()
-								.minimumScaleFactor(0.5)
-								.padding(4)
-						}
-						else {
-							EmptyView()
-						}
-					}
+				Gauge(value: min(batteryLevel, 100), in: minValue...maxValue) { }
+					.gaugeStyle(.accessoryLinear)
 					.tint(gaugeGradient)
-					.gaugeStyle(.accessoryCircular)
+
+				if withLabels {
+					if let voltage = mostRecent?.voltage, voltage > 0 {
+						let voltageFormatted = String(format: "%.2f", voltage) + "V"
+						
+						Text(voltageFormatted)
+							.font(.footnote)
+							.lineLimit(1)
+							.fixedSize(horizontal: true, vertical: false)
+							.minimumScaleFactor(0.5)
+							.padding(4)
+					}
+					else {
+						let socFormatted = String(format: "%.1f", batteryLevel) + "%"
+						
+						Text(socFormatted)
+							.font(.footnote)
+							.lineLimit(1)
+							.fixedSize(horizontal: true, vertical: false)
+							.minimumScaleFactor(0.5)
+							.padding(4)
+					}
 				}
 			}
 		}
 		else {
 			EmptyView()
 		}
+	}
+
+	init(
+		node: NodeInfoEntity,
+		withLabels: Bool = false
+	) {
+		self.node = node
+		self.withLabels = withLabels
 	}
 }

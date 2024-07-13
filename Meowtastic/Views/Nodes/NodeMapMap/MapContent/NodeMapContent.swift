@@ -75,7 +75,7 @@ struct NodeMapContent: MapContent {
 			) {
 				Image(systemName: "flipphone")
 					.font(.system(size: 32))
-					.foregroundColor(node.color)
+					.foregroundColor(.white)
 				.onTapGesture {
 					selectedPosition = selectedPosition == latest ? nil : latest
 				}
@@ -105,8 +105,8 @@ struct NodeMapContent: MapContent {
 		}
 		let gradient = LinearGradient(
 			colors: [
-				node.color.opacity(0.50),
-				node.color.opacity(0.10)
+				Color.white.opacity(0.50),
+				Color.white.opacity(0.10)
 			],
 			startPoint: .leading,
 			endPoint: .trailing

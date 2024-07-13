@@ -1380,9 +1380,6 @@
     "Batt" : {
 
     },
-    "Battery Level %" : {
-
-    },
     "battery.level" : {
       "localizations" : {
         "de" : {
@@ -10774,7 +10771,7 @@
         }
       }
     },
-    "Known Device" : {
+    "Known Devices" : {
 
     },
     "Last Heard" : {
