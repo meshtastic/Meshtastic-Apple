@@ -209,9 +209,6 @@ struct UserList: View {
 				userSelection = users.first(where: { $0.num == newUserNum })
 			}
 			.onAppear {
-				if self.bleManager.context == nil {
-					self.bleManager.context = context
-				}
 				searchUserList()
 			}
 			.safeAreaInset(edge: .bottom, alignment: .trailing) {

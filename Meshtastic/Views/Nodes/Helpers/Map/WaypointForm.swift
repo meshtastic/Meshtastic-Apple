@@ -184,11 +184,11 @@ struct WaypointForm: View {
 
 						Menu {
 							Button("For me", action: {
-								bleManager.context!.delete(waypoint)
+								bleManager.context.delete(waypoint)
 								do {
-									try bleManager.context!.save()
+									try bleManager.context.save()
 								} catch {
-									bleManager.context!.rollback()
+									bleManager.context.rollback()
 								}
 								dismiss() })
 							Button("For everyone", action: {
@@ -213,11 +213,11 @@ struct WaypointForm: View {
 								newWaypoint.expire = UInt32(1)
 								if bleManager.sendWaypoint(waypoint: newWaypoint) {
 
-									bleManager.context!.delete(waypoint)
+									bleManager.context.delete(waypoint)
 									do {
-										try bleManager.context!.save()
+										try bleManager.context.save()
 									} catch {
-										bleManager.context!.rollback()
+										bleManager.context.rollback()
 									}
 									dismiss()
 								} else {
@@ -351,7 +351,7 @@ struct WaypointForm: View {
 		}
 		.onAppear {
 			if waypoint.id > 0 {
-				let waypoint  = getWaypoint(id: Int64(waypoint.id), context: bleManager.context!)
+				let waypoint  = getWaypoint(id: Int64(waypoint.id), context: bleManager.context)
 				name = waypoint.name ?? "Dropped Pin"
 				description = waypoint.longDescription ?? ""
 				icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")

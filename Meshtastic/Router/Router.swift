@@ -2,6 +2,7 @@ import CoreData
 import OSLog
 import SwiftUI
 
+@MainActor
 class Router: ObservableObject {
 
 	@Published

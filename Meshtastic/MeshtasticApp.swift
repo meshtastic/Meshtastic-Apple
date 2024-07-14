@@ -35,7 +35,10 @@ struct MeshtasticAppleApp: App {
 		)
 		self._appState = ObservedObject(wrappedValue: appState)
 
-		self.bleManager = BLEManager(appState: appState)
+		self.bleManager = BLEManager(
+			appState: appState,
+			context: persistenceController.container.viewContext
+		)
 		self.persistenceController = persistenceController
 
 		// Wire up router
@@ -45,7 +48,8 @@ struct MeshtasticAppleApp: App {
     var body: some Scene {
         WindowGroup {
 			ContentView(
-				appState: appState
+				appState: appState,
+				router: appState.router
 			)
 			.environment(\.managedObjectContext, persistenceController.container.viewContext)
 			.environmentObject(appState)

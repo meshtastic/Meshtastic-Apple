@@ -251,10 +251,6 @@ struct NodeList: View {
 			}
 		}
 		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
-
 			Task {
 				await searchNodeList()
 			}

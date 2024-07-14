@@ -8,20 +8,19 @@ import SwiftUI
 struct ContentView: View {
 	@ObservedObject
 	var appState: AppState
+	
+	@ObservedObject
+	var router: Router
 
-	private var tabBinding: Binding<NavigationState.Tab> {
-		Binding(
+	var body: some View {
+		TabView(selection: Binding(
 			get: {
 				appState.router.navigationState.tab
 			},
 			set: { newValue in
 				appState.router.navigationState.tab = newValue
 			}
-		)
-	}
-
-	var body: some View {
-		TabView(selection: tabBinding) {
+		)) {
 			Messages(
 				router: appState.router,
 				unreadChannelMessages: $appState.unreadChannelMessages,

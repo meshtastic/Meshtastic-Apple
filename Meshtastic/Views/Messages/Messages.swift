@@ -88,10 +88,6 @@ struct Messages: View {
 			.navigationBarTitleDisplayMode(.large)
 			.navigationBarItems(leading: MeshtasticLogo())
 			.onAppear {
-				if self.bleManager.context == nil {
-					self.bleManager.context = context
-				}
-
 				let nodeId = Int64(UserDefaults.preferredPeripheralNum)
 				if nodeId > 0 {
 					node = getNodeInfo(id: nodeId, context: context)
@@ -113,7 +109,7 @@ struct Messages: View {
 				}
 			}
 		} detail: {
-			
+
 		}
 	}
 }

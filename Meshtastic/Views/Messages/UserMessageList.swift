@@ -115,9 +115,6 @@ struct UserMessageList: View {
 				.padding([.top])
 				.scrollDismissesKeyboard(.immediately)
 				.onAppear {
-					if self.bleManager.context == nil {
-						self.bleManager.context = context
-					}
 					if user.messageList.count > 0 {
 						scrollView.scrollTo(user.messageList.last!.messageId)
 					}
