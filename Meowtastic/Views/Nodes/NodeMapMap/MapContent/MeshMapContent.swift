@@ -34,7 +34,7 @@ struct MeshMapContent: MapContent {
 	@MapContentBuilder
 	var body: some MapContent {
 		ForEach(positions, id: \.id) { position in
-			if let nodeName = position.nodePosition?.user?.shortName?.trimmingCharacters(in: .whitespacesAndNewlines) {
+			if let nodeName = position.nodePosition?.user?.shortName {
 				Annotation(
 					coordinate: position.coordinate,
 					anchor: .center

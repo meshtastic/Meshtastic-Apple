@@ -26,8 +26,6 @@ struct MapSettingsForm: View {
 						}
 					}
 					.pickerStyle(SegmentedPickerStyle())
-					.padding(.top, 5)
-					.padding(.bottom, 5)
 					.onChange(of: mapLayer, initial: false) {
 						UserDefaults.mapLayer = mapLayer
 					}
@@ -54,6 +52,9 @@ struct MapSettingsForm: View {
 				}
 			}
 		}
+		.presentationDetents([
+			.medium
+		])
 		.presentationDragIndicator(.visible)
 	}
 }

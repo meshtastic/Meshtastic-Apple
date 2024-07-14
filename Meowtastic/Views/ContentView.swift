@@ -43,7 +43,7 @@ struct ContentView: View {
 			TabView(selection: $appState.tabSelection) {
 				Messages()
 					.tabItem {
-						Label("messages", systemImage: "message")
+						Image(systemName: "message")
 					}
 					.tag(Tab.contacts)
 					.badge(appState.unreadDirectMessages + appState.unreadChannelMessages)
@@ -51,7 +51,7 @@ struct ContentView: View {
 
 				NodeList()
 					.tabItem {
-						Label("nodes", systemImage: "flipphone")
+						Image(systemName: "flipphone")
 					}
 					.tag(Tab.nodes)
 					.badge(nodeCount)
@@ -59,14 +59,13 @@ struct ContentView: View {
 
 				MeshMap()
 					.tabItem {
-						Label("map", systemImage: "map")
+						Image(systemName: "map")
 					}
 					.tag(Tab.map)
 
 				Settings()
 					.tabItem {
-						Label("settings", systemImage: "gear")
-							.font(.title)
+						Image(systemName: "gearshape")
 					}
 					.tag(Tab.settings)
 			}

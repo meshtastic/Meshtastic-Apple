@@ -287,13 +287,16 @@ struct ChannelMessageList: View {
 
 	private func getSenderColor(message: MessageEntity) -> Color {
 		if let num = message.fromUser?.num {
-			Color(
-				UIColor(hex: UInt32(num))
-			)
+			if message.fromUser?.userNode?.isOnline ?? false {
+				return Color(
+					UIColor(hex: UInt32(num))
+				)
+			} else {
+				return Color.gray.opacity(0.7)
+			}
 		}
 		else {
-			Color.accentColor
+			return Color.accentColor
 		}
-
 	}
 }

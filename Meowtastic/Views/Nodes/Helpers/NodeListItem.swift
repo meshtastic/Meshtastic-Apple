@@ -160,12 +160,17 @@ struct NodeListItem: View {
 					.frame(width: 32)
 			}
 			else if node.hopsAway > 0 {
-				HStack {
-					Image(systemName: "\(node.hopsAway).square")
-						.font(.body)
-						.foregroundColor(.gray)
-						.frame(width: 32)
-				}
+				Image(systemName: "\(node.hopsAway).square")
+					.font(.body)
+					.foregroundColor(.gray)
+					.frame(width: 32)
+			}
+
+			if node.hasPositions {
+				Image(systemName: "mappin.and.ellipse")
+					.font(.body)
+					.foregroundColor(.gray)
+					.frame(width: 32)
 			}
 
 			if node.isStoreForwardRouter {

@@ -115,9 +115,6 @@
     "%@%%" : {
 
     },
-    "%@°F" : {
-
-    },
     "%d" : {
 
     },
@@ -4836,25 +4833,12 @@
     "Controls the blinking LED on the device.  For most devices this will control one of the up to 4 LEDS, the charger and GPS LEDs are not controllable." : {
 
     },
-    "Coordinate" : {
-
-    },
     "Coordinate %@, %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "Coordinate %1$@, %2$@"
-          }
-        }
-      }
-    },
-    "Coordinates: %@, %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Coordinates: %1$@, %2$@"
           }
         }
       }
@@ -4918,12 +4902,6 @@
       }
     },
     "Counter Clockwise Rotary Event" : {
-
-    },
-    "Create Waypoint" : {
-
-    },
-    "Created: %@" : {
 
     },
     "current" : {
@@ -5002,9 +4980,6 @@
 
     },
     "Currently the reccomended way to update ESP32 devices is using the web flasher on a desktop computer from a chrome based browser. It does not work on mobile devices or over BLE." : {
-
-    },
-    "Date" : {
 
     },
     "Debug" : {
@@ -5155,9 +5130,6 @@
 
     },
     "Delete Node" : {
-
-    },
-    "Description" : {
 
     },
     "Details" : {
@@ -6711,9 +6683,6 @@
         }
       }
     },
-    "Editing Waypoint" : {
-
-    },
     "Elev. Gain" : {
 
     },
@@ -6944,15 +6913,6 @@
 
     },
     "Exchange Positions" : {
-
-    },
-    "Expire" : {
-
-    },
-    "Expires" : {
-
-    },
-    "Expires: %@" : {
 
     },
     "export" : {
@@ -7357,12 +7317,6 @@
 
     },
     "For all Mqtt functionality other than the map report you must also set uplink and downlink for each channel you want to bridge over Mqtt." : {
-
-    },
-    "For everyone" : {
-
-    },
-    "For me" : {
 
     },
     "Frequency" : {
@@ -8202,9 +8156,6 @@
     "Hops Away %d) dB" : {
 
     },
-    "Hour" : {
-
-    },
     "Hourly Duty Cycle" : {
 
     },
@@ -8360,9 +8311,6 @@
 
     },
     "IAQ %lld" : {
-
-    },
-    "Icon" : {
 
     },
     "If DOP is set, use HDOP / VDOP values instead of PDOP" : {
@@ -10803,12 +10751,6 @@
     "Line Series" : {
 
     },
-    "Location: %@" : {
-
-    },
-    "Locked" : {
-
-    },
     "Log Levels" : {
 
     },
@@ -11316,6 +11258,7 @@
 
     },
     "map" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11915,6 +11858,9 @@
           }
         }
       }
+    },
+    "Mesh" : {
+
     },
     "mesh.live.activity" : {
       "extractionState" : "stale",
@@ -14501,6 +14447,7 @@
       }
     },
     "messages" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -15387,6 +15334,7 @@
       }
     },
     "nodes" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18899,9 +18847,6 @@
         }
       }
     },
-    "Send" : {
-
-    },
     "Send ASCII bell with alert message. Useful for triggering external notification on bell." : {
 
     },
@@ -21975,9 +21920,6 @@
         }
       }
     },
-    "Updated: %@" : {
-
-    },
     "Uplink Enabled" : {
 
     },
@@ -22312,9 +22254,6 @@
 
     },
     "Wake Screen on tap or motion" : {
-
-    },
-    "Waypoint Options" : {
 
     },
     "Web Flasher" : {

@@ -1,5 +1,4 @@
 import SwiftUI
-import WeatherKit
 import MapKit
 import CoreLocation
 import OSLog

@@ -3,7 +3,6 @@ import MapKit
 import CoreData
 
 struct NodeMapContent: MapContent {
-
 	@ObservedObject
 	var node: NodeInfoEntity
 	@Namespace
@@ -78,9 +77,9 @@ struct NodeMapContent: MapContent {
 
 			MapCircle(center: latest.coordinate, radius: max(66.6, radius))
 				.foregroundStyle(
-					Color(nodeColor).opacity(0.3)
+					Color(nodeColor).opacity(0.25)
 				)
-				.stroke(nodeColor.opacity(0.8), lineWidth: 5)
+				.stroke(nodeColor.opacity(0.5), lineWidth: 2)
 
 			Annotation(
 				coordinate: latest.coordinate,
@@ -119,14 +118,14 @@ struct NodeMapContent: MapContent {
 
 		let gradientBackground = LinearGradient(
 			colors: [
-				nodeColor.opacity(0.5),
-				nodeColor.opacity(0.25)
+				nodeColor.opacity(0.30),
+				nodeColor.opacity(0.20)
 			],
 			startPoint: .leading,
 			endPoint: .trailing
 		)
 		let strokeBackground = StrokeStyle(
-			lineWidth: 9,
+			lineWidth: 7,
 			lineCap: .round,
 			lineJoin: .round
 		)
@@ -140,7 +139,7 @@ struct NodeMapContent: MapContent {
 			endPoint: .trailing
 		)
 		let strokeMain = StrokeStyle(
-			lineWidth: 5,
+			lineWidth: 3,
 			lineCap: .round,
 			lineJoin: .round
 		)
