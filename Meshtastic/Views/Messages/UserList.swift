@@ -33,19 +33,20 @@ struct UserList: View {
 		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false),
 						  NSSortDescriptor(key: "userNode.favorite", ascending: false),
 						  NSSortDescriptor(key: "longName", ascending: true)],
-		animation: .default)
-
+		animation: .default
+	)
 	private var users: FetchedResults<UserEntity>
-	@State var node: NodeInfoEntity?
-	@State var selectedUserNum: Int64?
-	@State private var userSelection: UserEntity? // Nothing selected by default.
+
+	@Binding var node: NodeInfoEntity?
+	@Binding var userSelection: UserEntity?
+
 	@State private var isPresentingDeleteUserMessagesConfirm: Bool = false
 
 	var body: some View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 		VStack {
-			List {
+			List(selection: $userSelection) {
 				if #available(iOS 17.0, macOS 14.0, *) {
 					TipView(ContactsTip(), arrowEdge: .bottom)
 				}
@@ -54,8 +55,8 @@ struct UserList: View {
 					let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 					let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 					let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
-					if  user.num != bleManager.connectedPeripheral?.num ?? 0 {
-						NavigationLink(destination: UserMessageList(user: user)) {
+					if user.num != bleManager.connectedPeripheral?.num ?? 0 {
+						NavigationLink(value: user) {
 							ZStack {
 								Image(systemName: "circle.fill")
 									.opacity(user.unreadMessages > 0 ? 1 : 0)
@@ -204,9 +205,6 @@ struct UserList: View {
 			}
 			.onChange(of: distanceFilter) { _ in
 				searchUserList()
-			}
-			.onChange(of: selectedUserNum) { newUserNum in
-				userSelection = users.first(where: { $0.num == newUserNum })
 			}
 			.onAppear {
 				searchUserList()

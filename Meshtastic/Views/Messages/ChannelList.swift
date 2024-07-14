@@ -14,9 +14,12 @@ struct ChannelList: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 
-	@State var node: NodeInfoEntity?
+	@Binding
+	var node: NodeInfoEntity?
 
-	@State private var channelSelection: ChannelEntity? // Nothing selected by default.
+	@Binding
+	var channelSelection: ChannelEntity?
+
 	@State private var isPresentingDeleteChannelMessagesConfirm: Bool = false
 
 	@State private var isPresentingTraceRouteSentAlert = false
@@ -24,14 +27,14 @@ struct ChannelList: View {
 	var restrictedChannels = ["gpio", "mqtt", "serial"]
 
 	@ViewBuilder
-	private func makeNavigationLink(
+	private func makeChannelRow(
 		myInfo: MyInfoEntity,
 		channel: ChannelEntity
 	) -> some View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 
-		NavigationLink(destination: ChannelMessageList(myInfo: myInfo, channel: channel)) {
+		NavigationLink(value: channel) {
 			let mostRecent = channel.allPrivateMessages.last(where: { $0.channel == channel.index })
 			let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 			let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
@@ -101,51 +104,50 @@ struct ChannelList: View {
 		VStack {
 			// Display Contacts for the rest of the non admin channels
 			if let node, let myInfo = node.myInfo, let channels = myInfo.channels?.array as? [ChannelEntity] {
-				List(channels, id: \.self, selection: $channelSelection) { (channel: ChannelEntity) in
-					if !restrictedChannels.contains(channel.name?.lowercased() ?? "") {
-						makeNavigationLink(myInfo: myInfo, channel: channel)
-							.frame(height: 62)
-							.contextMenu {
-								if channel.allPrivateMessages.count > 0 {
-									Button(role: .destructive) {
-										isPresentingDeleteChannelMessagesConfirm = true
-										channelSelection = channel
-									} label: {
-										Label("Delete Messages", systemImage: "trash")
-									}
-								}
-								Button {
-									channel.mute = !channel.mute
-
-									do {
-										let adminMessageId =  bleManager.saveChannel(channel: channel.protoBuf, fromUser: node.user!, toUser: node.user!)
-										if adminMessageId > 0 {
-											context.refresh(channel, mergeChanges: true)
+				List(selection: $channelSelection) {
+					ForEach(channels) { (channel: ChannelEntity) in
+						if !restrictedChannels.contains(channel.name?.lowercased() ?? "") {
+							makeChannelRow(myInfo: myInfo, channel: channel)
+								.frame(height: 62)
+								.contextMenu {
+									if channel.allPrivateMessages.count > 0 {
+										Button(role: .destructive) {
+											isPresentingDeleteChannelMessagesConfirm = true
+											channelSelection = channel
+										} label: {
+											Label("Delete Messages", systemImage: "trash")
 										}
-
-										try context.save()
-
-									} catch {
-										context.rollback()
-										Logger.data.error("💥 Save Channel Mute Error")
 									}
-								} label: {
-									Label(channel.mute ? "Show Alerts" : "Hide Alerts", systemImage: channel.mute ? "bell" : "bell.slash")
+									Button {
+										channel.mute = !channel.mute
+										do {
+											let adminMessageId =  bleManager.saveChannel(channel: channel.protoBuf, fromUser: node.user!, toUser: node.user!)
+											if adminMessageId > 0 {
+												context.refresh(channel, mergeChanges: true)
+											}
+											try context.save()
+										} catch {
+											context.rollback()
+											Logger.data.error("💥 Save Channel Mute Error")
+										}
+									} label: {
+										Label(channel.mute ? "Show Alerts" : "Hide Alerts", systemImage: channel.mute ? "bell" : "bell.slash")
+									}
 								}
-							}
-							.confirmationDialog(
-								"This conversation will be deleted.",
-								isPresented: $isPresentingDeleteChannelMessagesConfirm,
-								titleVisibility: .visible
-							) {
-								Button(role: .destructive) {
-									deleteChannelMessages(channel: channelSelection!, context: context)
-									context.refresh(myInfo, mergeChanges: true)
-									channelSelection = nil
-								} label: {
-									Text("delete")
+								.confirmationDialog(
+									"This conversation will be deleted.",
+									isPresented: $isPresentingDeleteChannelMessagesConfirm,
+									titleVisibility: .visible
+								) {
+									Button(role: .destructive) {
+										deleteChannelMessages(channel: channelSelection!, context: context)
+										context.refresh(myInfo, mergeChanges: true)
+										channelSelection = nil
+									} label: {
+										Text("delete")
+									}
 								}
-							}
+						}
 					}
 				}
 				.padding([.top, .bottom])

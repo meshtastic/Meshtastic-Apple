@@ -1,3 +1,4 @@
+import Combine
 import CoreData
 import OSLog
 import SwiftUI
@@ -8,10 +9,16 @@ class Router: ObservableObject {
 	@Published
 	var navigationState: NavigationState
 
+	private var cancellables: Set<AnyCancellable> = []
+
 	init(
 		navigationState: NavigationState = .bluetooth
 	) {
 		self.navigationState = navigationState
+
+		$navigationState.sink { destination in
+			Logger.services.info("Routed to \(String(describing: destination))")
+		}.store(in: &cancellables)
 	}
 
 	func route(to destination: NavigationState) {
