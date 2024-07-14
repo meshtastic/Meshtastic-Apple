@@ -23,10 +23,23 @@ struct NodeMapContent: MapContent {
 	@State
 	var isMeshMap = false
 
+	private let historyColor = Color.accentColor
+
+	@Environment(\.colorScheme)
+	private var colorScheme: ColorScheme
 	@AppStorage("meshMapShowNodeHistory")
 	private var showNodeHistory = false
 	@AppStorage("mapLayer")
 	private var selectedMapLayer: MapLayer = .standard
+
+	private var nodeColor: Color {
+		if colorScheme == .dark {
+			.white
+		}
+		else {
+			.black
+		}
+	}
 
 	private var positions: [PositionEntity] {
 		if let positionArray = node.positions?.array as? [PositionEntity] {
@@ -65,9 +78,9 @@ struct NodeMapContent: MapContent {
 
 			MapCircle(center: latest.coordinate, radius: max(66.6, radius))
 				.foregroundStyle(
-					Color(.white).opacity(0.3)
+					Color(nodeColor).opacity(0.3)
 				)
-				.stroke(.white.opacity(0.8), lineWidth: 5)
+				.stroke(nodeColor.opacity(0.8), lineWidth: 5)
 
 			Annotation(
 				coordinate: latest.coordinate,
@@ -75,7 +88,7 @@ struct NodeMapContent: MapContent {
 			) {
 				Image(systemName: "flipphone")
 					.font(.system(size: 32))
-					.foregroundColor(.white)
+					.foregroundColor(nodeColor)
 				.onTapGesture {
 					selectedPosition = selectedPosition == latest ? nil : latest
 				}
@@ -103,22 +116,39 @@ struct NodeMapContent: MapContent {
 		let coordinates = positionsFiltered.compactMap { position -> CLLocationCoordinate2D? in
 			position.nodeCoordinate
 		}
-		let gradient = LinearGradient(
+
+		let gradientBackground = LinearGradient(
 			colors: [
-				Color.white.opacity(0.9),
-				Color.white.opacity(0.5)
+				nodeColor.opacity(0.5),
+				nodeColor.opacity(0.25)
 			],
 			startPoint: .leading,
 			endPoint: .trailing
 		)
-		let stroke = StrokeStyle(
+		let strokeBackground = StrokeStyle(
+			lineWidth: 9,
+			lineCap: .round,
+			lineJoin: .round
+		)
+
+		let gradientMain = LinearGradient(
+			colors: [
+				historyColor.opacity(1.0),
+				historyColor.opacity(0.5)
+			],
+			startPoint: .leading,
+			endPoint: .trailing
+		)
+		let strokeMain = StrokeStyle(
 			lineWidth: 5,
 			lineCap: .round,
 			lineJoin: .round
 		)
 
 		MapPolyline(coordinates: coordinates)
-			.stroke(gradient, style: stroke)
+			.stroke(gradientBackground, style: strokeBackground)
+		MapPolyline(coordinates: coordinates)
+			.stroke(gradientMain, style: strokeMain)
 	}
 
 	private func getFlags(for position: PositionEntity) -> PositionFlags {
