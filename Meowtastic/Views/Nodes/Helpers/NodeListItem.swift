@@ -14,7 +14,7 @@ struct NodeListItem: View {
 
 	var body: some View {
 		NavigationLink(value: node) {
-			HStack(alignment: .center) {
+			HStack(alignment: .top) {
 				avatar
 
 				VStack(alignment: .leading, spacing: 4) {

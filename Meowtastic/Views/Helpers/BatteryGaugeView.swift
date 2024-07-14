@@ -21,8 +21,7 @@ struct BatteryGaugeView: View {
 			HStack {
 				if withLabels {
 					Image(systemName: "battery.75percent")
-						.font(.body)
-						.frame(width: 32)
+						.font(.footnote)
 				}
 
 				Gauge(value: min(batteryLevel, 100), in: minValue...maxValue) { }
@@ -36,9 +35,8 @@ struct BatteryGaugeView: View {
 						Text(voltageFormatted)
 							.font(.footnote)
 							.lineLimit(1)
-							.fixedSize(horizontal: true, vertical: false)
 							.minimumScaleFactor(0.5)
-							.padding(4)
+							.frame(width: 40)
 					}
 					else {
 						let socFormatted = String(format: "%.0f", batteryLevel) + "%"
@@ -46,9 +44,8 @@ struct BatteryGaugeView: View {
 						Text(socFormatted)
 							.font(.footnote)
 							.lineLimit(1)
-							.fixedSize(horizontal: true, vertical: false)
 							.minimumScaleFactor(0.5)
-							.padding(4)
+							.frame(width: 40)
 					}
 				}
 			}

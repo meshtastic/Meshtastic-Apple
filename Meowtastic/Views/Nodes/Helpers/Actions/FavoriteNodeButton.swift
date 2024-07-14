@@ -41,7 +41,7 @@ struct FavoriteNodeButton: View {
 			Label {
 				Text(node.favorite ? "Remove from favorites" : "Add to favorites")
 			} icon: {
-				Image(systemName: node.favorite ? "star.fill" : "star")
+				Image(systemName: node.favorite ? "star.slash" : "star")
 					.symbolRenderingMode(.monochrome)
 					.foregroundColor(.accentColor)
 			}

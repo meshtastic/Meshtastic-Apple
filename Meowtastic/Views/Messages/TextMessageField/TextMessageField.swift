@@ -2,90 +2,70 @@ import SwiftUI
 import OSLog
 
 struct TextMessageField: View {
-	static let maxbytes = 228
-
 	let destination: MessageDestination
 	let onSubmit: () -> Void
 
-	@EnvironmentObject
-	var bleManager: BLEManager
+	private let maxBytes = 228
+
 	@Binding
 	var replyMessageId: Int64
 	@FocusState.Binding
 	var isFocused: Bool
 
+	@EnvironmentObject
+	private var bleManager: BLEManager
+	@Environment(\.colorScheme)
+	private var colorScheme: ColorScheme
 	@State
 	private var typingMessage = ""
 	@State
-	private var totalBytes = 0
-	@State
 	private var sendPositionWithMessage = false
+	@State
+	private var totalBytes = 0
 
 	var body: some View {
-		HStack(alignment: .top) {
-			ZStack {
-				TextField("message", text: $typingMessage, axis: .vertical)
-					.onChange(
-						of: typingMessage,
-						perform: { value in
-							totalBytes = value.utf8.count
-							// Only mess with the value if it is too big
-							if totalBytes > Self.maxbytes {
-								typingMessage = String(typingMessage.dropLast())
-							}
-						}
-					)
-					.keyboardType(.default)
-					.toolbar {
-						ToolbarItemGroup(placement: .keyboard) {
-							Button("dismiss.keyboard") {
-								isFocused = false
-							}
-							.font(.subheadline)
-
-							if destination.showAlertButton {
-								Spacer()
-								AlertButton {
-									typingMessage += "🔔 Alert Bell Character! \u{7}"
-								}
-							}
-
-							Spacer()
-
-							RequestPositionButton(action: requestPosition)
-							TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes)
-						}
+		HStack(alignment: .center, spacing: 8) {
+			TextField("Message", text: $typingMessage, axis: .vertical)
+				.font(.body)
+				.padding(.leading, 4)
+				.multilineTextAlignment(.leading)
+				.keyboardType(.default)
+				.keyboardShortcut(.defaultAction)
+				.focused($isFocused)
+				.onSubmit {
+					if typingMessage.isEmpty || totalBytes > maxBytes {
+						return
 					}
-					.padding(.horizontal, 8)
-					.focused($isFocused)
-					.multilineTextAlignment(.leading)
-					.frame(minHeight: 50)
-					.keyboardShortcut(.defaultAction)
-					.onSubmit { }
 
-				Text(typingMessage)
-					.opacity(0)
-					.padding(.all, 0)
-			}
-			.overlay(
-				RoundedRectangle(cornerRadius: 20)
-					.stroke(.tertiary, lineWidth: 1)
-			)
-			.padding(.bottom, 15)
+					sendMessage()
+				}
+				.onChange(of: typingMessage, initial: true) {
+					totalBytes = typingMessage.utf8.count
+				}
 
 			Button(action: sendMessage) {
-				Image(systemName: "arrow.up.circle.fill")
-					.font(.largeTitle)
+				Image(systemName: "paperplane.circle")
+					.resizable()
+					.scaledToFit()
 					.foregroundColor(.accentColor)
+					.frame(width: 32, height: 32)
 			}
+			.disabled(typingMessage.isEmpty || totalBytes > maxBytes)
 		}
-		.padding(.all, 15)
+		.padding(.all, 4)
+		.background(colorScheme == .dark ? Color.black.opacity(0.85) : Color.white.opacity(0.85))
+		.overlay(
+			overallShape
+				.stroke(.tertiary, lineWidth: 1)
+		)
+		.clipShape(
+			overallShape
+		)
 	}
 
-	private func requestPosition() {
-		let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
-		sendPositionWithMessage = true
-		typingMessage =  "📍 " + userLongName + " \(destination.positionShareMessage)."
+	@ViewBuilder
+	private var overallShape: RoundedRectangle {
+		RoundedRectangle(cornerRadius: 24)
 	}
 
 	private func sendMessage() {
@@ -101,6 +81,7 @@ struct TextMessageField: View {
 			typingMessage = ""
 			isFocused = false
 			replyMessageId = 0
+
 			onSubmit()
 
 			if sendPositionWithMessage {
@@ -119,13 +100,6 @@ struct TextMessageField: View {
 }
 
 private extension MessageDestination {
-	var positionShareMessage: String {
-		switch self {
-		case .user: return "has shared their position and requested a response with your position"
-		case .channel: return "has shared their position with you"
-		}
-	}
-
 	var positionDestNum: Int64 {
 		switch self {
 		case let .user(user): return user.num

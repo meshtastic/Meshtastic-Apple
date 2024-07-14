@@ -76,10 +76,6 @@ struct NodeList: View {
 						node: node
 					)
 					.edgesIgnoringSafeArea([.leading, .trailing])
-					.navigationBarTitle(
-						String(node.user?.longName ?? "unknown".localized),
-						displayMode: .inline
-					)
 					.navigationBarItems(
 						trailing: ConnectedDevice(ble: bleManager)
 					)
@@ -89,7 +85,10 @@ struct NodeList: View {
 				 ContentUnavailableView("select.node", systemImage: "flipphone")
 			 }
 		} detail: {
-			ContentUnavailableView("", systemImage: "line.3.horizontal")
+			ContentUnavailableView(
+				"Can't load node info",
+				systemImage: "slash.circle"
+			)
 		}
 		.navigationSplitViewStyle(.balanced)
 		.onAppear {

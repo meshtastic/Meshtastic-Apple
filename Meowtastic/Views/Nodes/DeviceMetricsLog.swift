@@ -209,11 +209,7 @@ struct DeviceMetricsLog: View {
 					.padding(.trailing)
 				}
 			} else {
-				if #available (iOS 17, *) {
-					ContentUnavailableView("No Device Metrics", systemImage: "slash.circle")
-				} else {
-					Text("No Device Metrics")
-				}
+				ContentUnavailableView("No Device Metrics", systemImage: "slash.circle")
 			}
 		}
 		.navigationTitle("device.metrics.log")

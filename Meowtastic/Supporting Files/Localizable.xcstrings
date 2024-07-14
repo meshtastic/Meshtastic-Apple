@@ -112,16 +112,6 @@
         }
       }
     },
-    "%@: %lld / %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@: %2$lld / %3$lld"
-          }
-        }
-      }
-    },
     "%@%%" : {
 
     },
@@ -290,6 +280,9 @@
       }
     },
     "Accuracy %@" : {
+
+    },
+    "ACK Error" : {
 
     },
     "Ack SNR: %@ dB" : {
@@ -2289,6 +2282,9 @@
     "Call Sign must not be empty" : {
 
     },
+    "Can't load node info" : {
+
+    },
     "cancel" : {
       "localizations" : {
         "de" : {
@@ -2706,6 +2702,9 @@
           }
         }
       }
+    },
+    "Channel" : {
+
     },
     "Channel #%d" : {
 
@@ -14382,6 +14381,7 @@
 
     },
     "message" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14438,6 +14438,9 @@
           }
         }
       }
+    },
+    "Message" : {
+
     },
     "message.details" : {
       "localizations" : {
@@ -18920,6 +18923,9 @@
     "Sensor Options" : {
 
     },
+    "Sent" : {
+
+    },
     "Sequence number" : {
 
     },
@@ -22244,6 +22250,7 @@
       }
     },
     "waiting" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

@@ -32,9 +32,8 @@ struct Messages: View {
 					ChannelList(node: node)
 				} label: {
 					Image(systemName: "person.3.fill")
-						.resizable()
-						.scaledToFit()
-						.symbolRenderingMode(.multicolor)
+						.font(.title2)
+						.symbolRenderingMode(.monochrome)
 						.foregroundColor(.accentColor)
 						.frame(width: 32, height: 32)
 
@@ -48,9 +47,8 @@ struct Messages: View {
 					UserList(node: node)
 				} label: {
 					Image(systemName: "message.fill")
-						.resizable()
-						.scaledToFit()
-						.symbolRenderingMode(.multicolor)
+						.font(.title2)
+						.symbolRenderingMode(.monochrome)
 						.foregroundColor(.accentColor)
 						.frame(width: 32, height: 32)
 

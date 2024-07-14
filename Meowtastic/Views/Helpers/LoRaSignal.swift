@@ -3,13 +3,13 @@ import SwiftUI
 
 final class LoRaSignal {
 	static func getStrength(snr: Float, rssi: Int32, preset: ModemPresets) -> LoRaSignalStrength {
-		if rssi > -115 && snr > (preset.snrLimit()) {
+		if rssi > -115 && snr > preset.snrLimit() {
 			return .good
 		}
-		else if rssi < -126 && snr < (preset.snrLimit() - 7.5) {
+		else if rssi < -126 && snr < preset.snrLimit() - 7.5 {
 			return .none
 		}
-		else if rssi <= -120 || snr <= (preset.snrLimit() - 5.5) {
+		else if rssi <= -120 || snr <= preset.snrLimit() - 5.5 {
 			return .bad
 		}
 		else {
@@ -27,7 +27,7 @@ final class LoRaSignal {
 		else if rssi > -126 {
 			return .orange
 		}
-		else { // None
+		else {
 			return .red
 		}
 	}

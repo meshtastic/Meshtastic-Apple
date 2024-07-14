@@ -117,6 +117,7 @@ struct UserMessageList: View {
 						HStack {
 							MessageText(
 								message: message,
+								originalMessage: nil,
 								tapBackDestination: .user(user),
 								isCurrentUser: currentUser
 							) {

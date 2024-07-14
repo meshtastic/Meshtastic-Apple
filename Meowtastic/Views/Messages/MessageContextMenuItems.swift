@@ -2,14 +2,27 @@ import SwiftUI
 import CoreData
 
 struct MessageContextMenuItems: View {
-	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
-
 	let message: MessageEntity
 	let tapBackDestination: MessageDestination
 	let isCurrentUser: Bool
-	@Binding var isShowingDeleteConfirmation: Bool
 	let onReply: () -> Void
+
+	private let dateFormatString = {
+		let format = DateFormatter.dateFormat(
+			fromTemplate: "yyMMddjmmssa",
+			options: 0,
+			locale: Locale.current
+		)
+
+		return format ?? "MM/dd/YY j:mm:ss:a"
+	}()
+
+	@Binding
+	var isShowingDeleteConfirmation: Bool
+	@Environment(\.managedObjectContext)
+	private var context
+	@EnvironmentObject
+	private var bleManager: BLEManager
 
 	var body: some View {
 		VStack {
@@ -51,9 +64,14 @@ struct MessageContextMenuItems: View {
 		Menu("message.details") {
 			VStack {
 				let messageDate = Date(timeIntervalSince1970: TimeInterval(message.messageTimestamp))
-				Text("\(messageDate.formattedDate(format: MessageText.dateFormatString))").foregroundColor(.gray)
+				Text(messageDate.formattedDate(format: dateFormatString))
+					.foregroundColor(.gray)
 			}
-			if !isCurrentUser && !(message.fromUser?.userNode?.viaMqtt ?? false) &&  message.fromUser?.userNode?.hopsAway ?? -1 == 0 {
+
+			if !isCurrentUser
+				&& !(message.fromUser?.userNode?.viaMqtt ?? false)
+				&&  message.fromUser?.userNode?.hopsAway ?? -1 == 0
+			{
 				VStack {
 					Text("SNR \(String(format: "%.2f", message.snr)) dB")
 					Text("RSSI \(String(format: "%.2f", message.rssi)) dBm")
@@ -69,13 +87,14 @@ struct MessageContextMenuItems: View {
 					Text("received.ack.real") + Text(": \(message.realACK ? "✔️" : "")")
 				}
 			} else if isCurrentUser && message.ackError == 0 {
-				// Empty Error
-				Text("waiting")
+				Text("Sent")
 			} else if isCurrentUser && message.ackError > 0 {
 				let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
-				Text("\(ackErrorVal?.display ?? "Empty Ack Error")")
+
+				Text("\(ackErrorVal?.display ?? "ACK Error")")
 					.fixedSize(horizontal: false, vertical: true)
 			}
+
 			if isCurrentUser {
 				VStack {
 					let ackDate = Date(timeIntervalSince1970: TimeInterval(message.ackTimestamp))
@@ -86,6 +105,7 @@ struct MessageContextMenuItems: View {
 					}
 				}
 			}
+
 			if message.ackSNR != 0 {
 				VStack {
 					Text("Ack SNR: \(String(format: "%.2f", message.ackSNR)) dB")

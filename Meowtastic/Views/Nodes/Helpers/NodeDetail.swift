@@ -198,27 +198,6 @@ struct NodeDetail: View {
 		}
 
 		if
-			let firstHeard = node.firstHeard,
-			firstHeard.timeIntervalSince1970 > 0,
-			let firstHeardFormatted = relativeFormatter.string(for: firstHeard)
-		{
-			HStack {
-				Label {
-					Text("First Heard")
-				} icon: {
-					Image(systemName: "clock")
-						.symbolRenderingMode(.monochrome)
-						.foregroundColor(.accentColor)
-				}
-
-				Spacer()
-
-				Text(firstHeardFormatted)
-					.textSelection(.enabled)
-			}
-		}
-
-		if
 			let lastHeard = node.lastHeard,
 			lastHeard.timeIntervalSince1970 > 0 ,
 			let lastHeardFormatted = relativeFormatter.string(for: lastHeard)
@@ -227,7 +206,7 @@ struct NodeDetail: View {
 				Label {
 					Text("Last Heard")
 				} icon: {
-					Image(systemName: "clock.arrow.circlepath")
+					Image(systemName: "waveform.path.ecg")
 						.symbolRenderingMode(.monochrome)
 						.foregroundColor(.accentColor)
 				}
@@ -235,6 +214,27 @@ struct NodeDetail: View {
 				Spacer()
 
 				Text(lastHeardFormatted)
+					.textSelection(.enabled)
+			}
+		}
+
+		if
+			let firstHeard = node.firstHeard,
+			firstHeard.timeIntervalSince1970 > 0,
+			let firstHeardFormatted = relativeFormatter.string(for: firstHeard)
+		{
+			HStack {
+				Label {
+					Text("First Heard")
+				} icon: {
+					Image(systemName: "eye")
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
+				}
+
+				Spacer()
+
+				Text(firstHeardFormatted)
 					.textSelection(.enabled)
 			}
 		}

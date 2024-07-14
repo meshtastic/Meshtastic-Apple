@@ -17,6 +17,15 @@ struct ChannelMessageList: View {
 	@ObservedObject
 	var channel: ChannelEntity
 
+	private let textFieldPlaceholderID = "text_field_placeholder"
+	private let dateFormatter = {
+		let formatter = DateFormatter()
+		formatter.dateStyle = .medium
+		formatter.timeStyle = .short
+
+		return formatter
+	}()
+
 	@AppStorage("preferredPeripheralNum")
 	private var preferredPeripheralNum = -1
 	@State
@@ -37,27 +46,23 @@ struct ChannelMessageList: View {
 	}
 
 	var body: some View {
-		VStack {
+		ZStack(alignment: .bottom) {
 			ScrollViewReader { scrollView in
-				ScrollView {
-					messageList
-				}
-				.padding([.top])
-				.scrollDismissesKeyboard(.immediately)
-				.onAppear {
-					if self.bleManager.context == nil {
-						self.bleManager.context = context
-					}
+				messageList
+					.scrollDismissesKeyboard(.interactively)
+					.scrollIndicators(.hidden)
+					.onAppear {
+						if self.bleManager.context == nil {
+							self.bleManager.context = context
+						}
 
-					if channel.allPrivateMessages.count > 0 {
-						scrollView.scrollTo(channel.allPrivateMessages.last!.messageId)
+						scrollView.scrollTo(textFieldPlaceholderID)
 					}
-				}
-				.onChange(of: channel.allPrivateMessages, initial: true) {
-					if channel.allPrivateMessages.count > 0 {
-						scrollView.scrollTo(channel.allPrivateMessages.last!.messageId)
+					.onChange(of: channel.allPrivateMessages, initial: true) {
+						if !channel.allPrivateMessages.isEmpty {
+							scrollView.scrollTo(channel.allPrivateMessages.last!.messageId)
+						}
 					}
-				}
 			}
 
 			TextMessageField(
@@ -68,6 +73,9 @@ struct ChannelMessageList: View {
 				replyMessageId: $replyMessageId,
 				isFocused: $messageFieldFocused
 			)
+			.frame(alignment: .bottom)
+			.padding(.horizontal, 20)
+			.padding(.bottom, 8)
 		}
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
@@ -88,135 +96,204 @@ struct ChannelMessageList: View {
 
 	@ViewBuilder
 	private var messageList: some View {
-		ForEach(channel.allPrivateMessages) { message in
-			let currentUser = (Int64(preferredPeripheralNum) == message.fromUser?.num ? true : false)
+		List {
+			ForEach(channel.allPrivateMessages, id: \.messageId) { message in
+				messageView(for: message)
+					.id(message.messageId)
+					.frame(width: .infinity)
+					.listRowSeparator(.hidden)
+					.listRowBackground(Color.clear)
+					.scrollContentBackground(.hidden)
+			}
 
-			if message.replyID > 0 {
-				let messageReply = channel.allPrivateMessages.first(where: {
-					$0.messageId == message.replyID
-				})
+			Rectangle()
+				.id(textFieldPlaceholderID)
+				.foregroundColor(.clear)
+				.frame(height: 48)
+				.listRowSeparator(.hidden)
+				.listRowBackground(Color.clear)
+				.scrollContentBackground(.hidden)
+		}
+		.listStyle(.plain)
+	}
+
+	@ViewBuilder
+	private func messageView(for message: MessageEntity) -> some View {
+		let isCurrentUser = isCurrentUser(message: message, preferredNum: preferredPeripheralNum)
+
+		HStack(alignment: .top, spacing: 16) {
+			if isCurrentUser {
+				Spacer()
+					.frame(minWidth: 80)
+			}
+			else {
+				Avatar(
+					getSenderName(message: message, short: true),
+					background: getSenderColor(message: message),
+					size: 64
+				)
+			}
+
+			VStack(alignment: isCurrentUser ? .trailing : .leading) {
+				let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
+
+				if !isCurrentUser && message.fromUser != nil {
+					HStack(spacing: 4) {
+						Image(systemName: "person")
+							.font(.caption)
+							.foregroundColor(.gray)
+
+						Text(getSenderName(message: message))
+							.font(.caption)
+							.lineLimit(1)
+							.foregroundColor(.gray)
+
+						Image(systemName: "clock")
+							.font(.caption)
+							.foregroundColor(.gray)
+							.padding(.leading, 8)
+
+						Text(dateFormatter.string(from: message.timestamp))
+							.font(.caption)
+							.lineLimit(1)
+							.foregroundColor(.gray)
+					}
+				}
 
 				HStack {
-					Text(messageReply?.messagePayload ?? "EMPTY MESSAGE")
-						.foregroundColor(.accentColor)
-						.font(.caption2)
-						.padding(10)
-						.overlay(
-							RoundedRectangle(cornerRadius: 18)
-								.stroke(Color.blue, lineWidth: 0.5)
-						)
+					MessageText(
+						message: message,
+						originalMessage: getOriginalMessage(for: message),
+						tapBackDestination: .channel(channel),
+						isCurrentUser: isCurrentUser
+					) {
+						replyMessageId = message.messageId
+						messageFieldFocused = true
+					}
 
-					Image(systemName: "arrowshape.turn.up.left.fill")
-						.symbolRenderingMode(.hierarchical)
-						.imageScale(.large).foregroundColor(.accentColor)
-						.padding(.trailing)
+					if isCurrentUser && message.canRetry {
+						RetryButton(message: message, destination: .channel(channel))
+					}
 				}
+
+				TapbackResponses(message: message) {
+					appState.unreadChannelMessages = myInfo.unreadMessages
+
+					let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
+					UNUserNotificationCenter.current().setBadgeCount(badge)
+
+					context.refresh(myInfo, mergeChanges: true)
+				}
+
+				messageStatus(for: message, isDetectionSensorMessage: isDetectionSensorMessage)
 			}
-
-			HStack(alignment: .bottom) {
-				if currentUser {
-					Spacer(minLength: 50)
-				}
-				else {
-					Avatar(
-						message.fromUser?.shortName ?? "?",
-						background: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))),
-						size: 44
-					)
-					.padding(.all, 5)
-					.offset(y: -7)
-				}
-
-				VStack(alignment: currentUser ? .trailing : .leading) {
-					let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
-
-					if !currentUser && message.fromUser != nil {
-						Text(
-							"\(message.fromUser?.longName ?? "unknown".localized ) (\(message.fromUser?.userId ?? "?"))"
-						)
-						.font(.caption)
-						.foregroundColor(.gray)
-						.offset(y: 8)
-					}
-
-					HStack {
-						MessageText(
-							message: message,
-							tapBackDestination: .channel(channel),
-							isCurrentUser: currentUser
-						) {
-							self.replyMessageId = message.messageId
-							self.messageFieldFocused = true
-						}
-
-						if currentUser && message.canRetry {
-							RetryButton(message: message, destination: .channel(channel))
-						}
-					}
-
-					TapbackResponses(message: message) {
-						appState.unreadChannelMessages = myInfo.unreadMessages
-
-						let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
-						UNUserNotificationCenter.current().setBadgeCount(badge)
-
-						context.refresh(myInfo, mergeChanges: true)
-					}
-
-					HStack {
-						if currentUser && message.receivedACK {
-							// Ack Received
-							Text("Acknowledged")
-								.font(.caption2)
-								.foregroundColor(.gray)
-						} else if currentUser && message.ackError == 0 {
-							// Empty Error
-							Text("Waiting to be acknowledged. . .")
-								.font(.caption2)
-								.foregroundColor(.orange)
-						} else if currentUser && message.ackError > 0 {
-							let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
-
-							Text("\(ackErrorVal?.display ?? "Empty Ack Error")")
-								.fixedSize(horizontal: false, vertical: true)
-								.font(.caption2)
-								.foregroundColor(.red)
-						} else if isDetectionSensorMessage {
-							let messageDate = message.timestamp
-							Text(" \(messageDate.formattedDate(format: MessageText.dateFormatString))").font(.caption2).foregroundColor(.gray)
-						}
-					}
-				}
-				.padding(.bottom)
-				.id(channel.allPrivateMessages.firstIndex(of: message))
-
-				if !currentUser {
-					Spacer(minLength: 50)
-				}
-			}
-			.padding([.leading, .trailing])
-			.frame(maxWidth: .infinity)
 			.id(message.messageId)
-			.onAppear {
-				if !message.read {
-					message.read = true
 
-					do {
-						try context.save()
-
-						Logger.data.info("📖 [App] Read message \(message.messageId) ")
-
-						appState.unreadChannelMessages = myInfo.unreadMessages
-
-						let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
-						UNUserNotificationCenter.current().setBadgeCount(badge)
-
-						context.refresh(myInfo, mergeChanges: true)
-					} catch {
-						Logger.data.error("Failed to read message \(message.messageId): \(error.localizedDescription)")
-					}
-				}
+			if !isCurrentUser {
+				Spacer()
 			}
 		}
+		.frame(maxWidth: .infinity)
+		.onAppear {
+			guard !message.read else {
+				return
+			}
+
+			message.read = true
+			try? context.save()
+
+			appState.unreadChannelMessages = myInfo.unreadMessages
+
+			let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
+			UNUserNotificationCenter.current().setBadgeCount(badge)
+
+			context.refresh(myInfo, mergeChanges: true)
+
+		}
+	}
+
+	@ViewBuilder
+	private func messageStatus(for message: MessageEntity, isDetectionSensorMessage: Bool) -> some View {
+		if isCurrentUser(message: message, preferredNum: preferredPeripheralNum) {
+			if message.receivedACK {
+				Text("Acknowledged")
+					.font(.caption2)
+					.foregroundColor(.gray)
+			} else if message.ackError == 0 {
+				Text("Sent")
+					.font(.caption2)
+					.foregroundColor(.orange)
+			} else if message.ackError > 0 {
+				if let ackError = RoutingError(
+					rawValue: Int(message.ackError)
+				) {
+					Text(ackError.display)
+						.fixedSize(horizontal: false, vertical: true)
+						.font(.caption2)
+						.foregroundColor(.red)
+				}
+				else {
+					Text("ACK Error")
+						.fixedSize(horizontal: false, vertical: true)
+						.font(.caption2)
+						.foregroundColor(.red)
+				}
+			}
+		} else if isDetectionSensorMessage {
+			Text(dateFormatter.string(from: message.timestamp))
+				.font(.footnote)
+				.foregroundColor(.gray)
+		}
+	}
+
+	private func getOriginalMessage(for message: MessageEntity) -> String? {
+		if message.replyID > 0,
+		   let messageReply = channel.allPrivateMessages.first(where: {
+			   $0.messageId == message.replyID
+		   }),
+		   let messagePayload = messageReply.messagePayload
+		{
+			return messagePayload
+		}
+
+		return nil
+	}
+
+	private func isCurrentUser(message: MessageEntity, preferredNum: Int) -> Bool {
+		Int64(preferredNum) == message.fromUser?.num
+	}
+
+	private func getSenderName(message: MessageEntity, short: Bool = false) -> String {
+		let shortName = message.fromUser?.shortName
+		let longName = message.fromUser?.longName
+
+		if short {
+			if let shortName {
+				return shortName
+			}
+			else {
+				return ""
+			}
+		}
+		else {
+			if let longName {
+				return longName
+			}
+			else {
+				return "Unknown Name"
+			}
+		}
+	}
+
+	private func getSenderColor(message: MessageEntity) -> Color {
+		if let num = message.fromUser?.num {
+			Color(
+				UIColor(hex: UInt32(num))
+			)
+		}
+		else {
+			Color.accentColor
+		}
+
 	}
 }

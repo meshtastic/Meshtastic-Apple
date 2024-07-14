@@ -16,12 +16,6 @@ struct UserList: View {
 	@State
 	var selectedUserNum: Int64?
 
-	private let dateFormatString = DateFormatter.dateFormat(
-		fromTemplate: "yyMMdd",
-		options: 0,
-		locale: Locale.current
-	)!
-
 	@State
 	private var searchText = ""
 	@State
@@ -45,73 +39,79 @@ struct UserList: View {
 	)
 	private var users: FetchedResults<UserEntity>
 
-	var body: some View {
-		VStack {
-			userList
-				.safeAreaInset(edge: .bottom, alignment: .trailing) {
-					filterButton
-				}
-				.searchable(
-					text: $searchText,
-					placement: users.count > 10 ? .navigationBarDrawer(displayMode: .always) : .automatic,
-					prompt: "Find a contact"
-				)
-				.disableAutocorrection(true)
-				.scrollDismissesKeyboard(.immediately)
-				.onAppear {
-					if self.bleManager.context == nil {
-						self.bleManager.context = context
-					}
+	private let dateFormatter = {
+		let formatter = DateFormatter()
+		formatter.dateStyle = .none
+		formatter.timeStyle = .short
 
-					Task {
-						await updateFilter()
-					}
+		return formatter
+	}()
+
+	var body: some View {
+		userList
+			.safeAreaInset(edge: .bottom, alignment: .trailing) {
+				filterButton
+			}
+			.searchable(
+				text: $searchText,
+				placement: users.count > 10 ? .navigationBarDrawer(displayMode: .always) : .automatic,
+				prompt: "Find a contact"
+			)
+			.disableAutocorrection(true)
+			.scrollDismissesKeyboard(.immediately)
+			.onAppear {
+				if self.bleManager.context == nil {
+					self.bleManager.context = context
 				}
-				.onChange(of: searchText, initial: true) {
-					Task {
-						await updateFilter()
-					}
+
+				Task {
+					await updateFilter()
 				}
-				.onChange(of: isFavorite, initial: false) {
-					Task {
-						await updateFilter()
-					}
+			}
+			.onChange(of: searchText, initial: true) {
+				Task {
+					await updateFilter()
 				}
-				.onChange(of: isOnline, initial: false) {
-					Task {
-						await updateFilter()
-					}
+			}
+			.onChange(of: isFavorite, initial: false) {
+				Task {
+					await updateFilter()
 				}
-				.onChange(of: ignoreMQTT, initial: false) {
-					Task {
-						await updateFilter()
-					}
+			}
+			.onChange(of: isOnline, initial: false) {
+				Task {
+					await updateFilter()
 				}
-				.onChange(of: selectedUserNum) {
-					userSelection = users.first(where: {
-						$0.num == selectedUserNum
-					})
+			}
+			.onChange(of: ignoreMQTT, initial: false) {
+				Task {
+					await updateFilter()
 				}
-				.navigationTitle(
-					String.localizedStringWithFormat(
-						"contacts %@".localized,
-						String(users.count == 0 ? 0 : users.count - 1)
-					)
+			}
+			.onChange(of: selectedUserNum) {
+				userSelection = users.first(where: {
+					$0.num == selectedUserNum
+				})
+			}
+			.navigationTitle(
+				String.localizedStringWithFormat(
+					"contacts %@".localized,
+					String(users.count == 0 ? 0 : users.count - 1)
 				)
-				.navigationBarTitleDisplayMode(.large)
-				.navigationBarItems(
-					leading: MeshtasticLogo(),
-					trailing: ConnectedDevice(ble: bleManager)
+			)
+			.navigationBarTitleDisplayMode(.large)
+			.navigationBarItems(
+				leading: MeshtasticLogo(),
+				trailing: ConnectedDevice(ble: bleManager)
+			)
+			.sheet(isPresented: $isEditingFilters) {
+				NodeListFilter(
+					filterTitle: "Contact Filters",
+					isFavorite: $isFavorite,
+					isOnline: $isOnline,
+					ignoreMQTT: $ignoreMQTT
 				)
-				.sheet(isPresented: $isEditingFilters) {
-					NodeListFilter(
-						filterTitle: "Contact Filters",
-						isFavorite: $isFavorite,
-						isOnline: $isOnline,
-						ignoreMQTT: $ignoreMQTT
-					)
-				}
-		}
+			}
 	}
 
 	@ViewBuilder
@@ -181,7 +181,7 @@ struct UserList: View {
 
 							if user.messageList.count > 0 {
 								if lastMessageDay == currentDay {
-									Text(lastMessageTime, style: .time )
+									Text(lastMessageTime, style: .time)
 										.font(.footnote)
 										.foregroundColor(.secondary)
 								}
@@ -191,12 +191,12 @@ struct UserList: View {
 										.foregroundColor(.secondary)
 								}
 								else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-									Text(lastMessageTime.formattedDate(format: dateFormatString))
+									Text(dateFormatter.string(from: lastMessageTime))
 										.font(.footnote)
 										.foregroundColor(.secondary)
 								}
 								else if lastMessageDay < (currentDay - 1800) {
-									Text(lastMessageTime.formattedDate(format: dateFormatString))
+									Text(dateFormatter.string(from: lastMessageTime))
 										.font(.footnote)
 										.foregroundColor(.secondary)
 								}
@@ -233,7 +233,6 @@ struct UserList: View {
 				}
 			}
 		}
-		.listStyle(.plain)
 	}
 
 	private var filterIcon: String {

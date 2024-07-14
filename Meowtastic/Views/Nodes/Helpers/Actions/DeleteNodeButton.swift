@@ -20,7 +20,6 @@ struct DeleteNodeButton: View {
 			} icon: {
 				Image(systemName: "trash")
 					.symbolRenderingMode(.monochrome)
-					.foregroundColor(.accentColor)
 			}
 		}
 		.confirmationDialog(

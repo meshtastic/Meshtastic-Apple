@@ -15,11 +15,13 @@ struct ChannelList: View {
 	@State
 	var node: NodeInfoEntity?
 
-	private let dateFormatString = DateFormatter.dateFormat(
-		fromTemplate: "yyMMdd",
-		options: 0,
-		locale: Locale.current
-	) ?? "MM/dd/YY"
+	private let dateFormatter = {
+		let formatter = DateFormatter()
+		formatter.dateStyle = .none
+		formatter.timeStyle = .short
+
+		return formatter
+	}()
 
 	@State
 	private var channelSelection: ChannelEntity? // Nothing selected by default.
@@ -29,13 +31,26 @@ struct ChannelList: View {
 	private var isPresentingTraceRouteSentAlert = false
 
 	var body: some View {
-		VStack {
-			if
-				let node,
-				let myInfo = node.myInfo,
-				let channels = myInfo.channels?.array as? [ChannelEntity]
-			{
-				List(channels, id: \.self) { channel in
+		List {
+			channelList
+		}
+		.navigationTitle("Channels")
+		.navigationBarTitleDisplayMode(.large)
+		.navigationBarItems(
+			leading: MeshtasticLogo(),
+			trailing: ConnectedDevice(ble: bleManager)
+		)
+	}
+
+	@ViewBuilder
+	private var channelList: some View {
+		if
+			let node,
+			let myInfo = node.myInfo,
+			let channels = myInfo.channels?.array as? [ChannelEntity]
+		{
+			Section(header: Text("Channel")) {
+				ForEach(channels, id: \.self) { channel in
 					if !restrictedChannels.contains(channel.name?.lowercased() ?? "") {
 						makeNavigationLink(myInfo: myInfo, channel: channel)
 							.frame(height: 62)
@@ -58,7 +73,7 @@ struct ChannelList: View {
 											fromUser: node.user!,
 											toUser: node.user!
 										)
-										
+
 										if adminMessageId > 0 {
 											context.refresh(channel, mergeChanges: true)
 										}
@@ -99,16 +114,8 @@ struct ChannelList: View {
 							}
 					}
 				}
-				.padding([.top, .bottom])
-				.listStyle(.plain)
 			}
 		}
-		.navigationTitle("Channels")
-		.navigationBarTitleDisplayMode(.large)
-		.navigationBarItems(
-			leading: MeshtasticLogo(),
-			trailing: ConnectedDevice(ble: bleManager)
-		)
 	}
 
 	@ViewBuilder
@@ -116,9 +123,9 @@ struct ChannelList: View {
 		myInfo: MyInfoEntity,
 		channel: ChannelEntity
 	) -> some View {
-		NavigationLink(
-			destination: ChannelMessageList(myInfo: myInfo, channel: channel)
-		) {
+		NavigationLink {
+			ChannelMessageList(myInfo: myInfo, channel: channel)
+		} label: {
 			let mostRecent = channel.allPrivateMessages.last(where: {
 				$0.channel == channel.index
 			})
@@ -159,11 +166,11 @@ struct ChannelList: View {
 								.font(.footnote)
 								.foregroundColor(.secondary)
 						} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-							Text(lastMessageTime.formattedDate(format: dateFormatString))
+							Text(dateFormatter.string(from: lastMessageTime))
 								.font(.footnote)
 								.foregroundColor(.secondary)
 						} else if lastMessageDay < (currentDay - 1800) {
-							Text(lastMessageTime.formattedDate(format: dateFormatString))
+							Text(dateFormatter.string(from: lastMessageTime))
 								.font(.footnote)
 								.foregroundColor(.secondary)
 						}

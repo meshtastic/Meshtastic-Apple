@@ -105,8 +105,8 @@ struct NodeMapContent: MapContent {
 		}
 		let gradient = LinearGradient(
 			colors: [
-				Color.white.opacity(0.50),
-				Color.white.opacity(0.10)
+				Color.white.opacity(0.9),
+				Color.white.opacity(0.5)
 			],
 			startPoint: .leading,
 			endPoint: .trailing

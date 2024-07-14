@@ -19,8 +19,7 @@ struct LoRaSignalMeterView: View {
 				HStack {
 					if withLabels {
 						Image(systemName: "cellularbars")
-							.font(.body)
-							.frame(width: 32)
+							.font(.footnote)
 					}
 
 					Gauge(
@@ -37,9 +36,8 @@ struct LoRaSignalMeterView: View {
 						Text(snrFormatted)
 							.font(.footnote)
 							.lineLimit(1)
-							.fixedSize(horizontal: true, vertical: false)
 							.minimumScaleFactor(0.5)
-							.padding(4)
+							.frame(width: 40)
 					}
 				}
 			} else {
