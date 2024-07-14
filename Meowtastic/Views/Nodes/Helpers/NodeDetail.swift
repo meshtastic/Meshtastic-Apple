@@ -58,11 +58,11 @@ struct NodeDetail: View {
 	var body: some View {
 		NavigationStack {
 			List {
-				Section("Hardware") {
+				Section("Info") {
 					hardwareInfo
 				}
 
-				Section("Node") {
+				Section("Details") {
 					nodeInfo
 				}
 
@@ -123,7 +123,8 @@ struct NodeDetail: View {
 					Text("User ID")
 				} icon: {
 					Image(systemName: "person")
-						.symbolRenderingMode(.multicolor)
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
 				}
 
 				Spacer()
@@ -138,6 +139,8 @@ struct NodeDetail: View {
 				Text("Node Number")
 			} icon: {
 				Image(systemName: "number")
+					.symbolRenderingMode(.monochrome)
+					.foregroundColor(.accentColor)
 			}
 
 			Spacer()
@@ -152,12 +155,29 @@ struct NodeDetail: View {
 					Text("Role")
 				} icon: {
 					Image(systemName: deviceRole.systemName)
-						.symbolRenderingMode(.multicolor)
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
 				}
 
 				Spacer()
 
 				Text(deviceRole.name)
+			}
+		}
+
+		if let hwModel = node.user?.hwModel {
+			HStack {
+				Label {
+					Text("Hardware")
+				} icon: {
+					Image(systemName: "flipphone")
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
+				}
+
+				Spacer()
+
+				Text(hwModel)
 			}
 		}
 
@@ -167,7 +187,8 @@ struct NodeDetail: View {
 					Text("Firmware")
 				} icon: {
 					Image(systemName: "memorychip")
-						.symbolRenderingMode(.multicolor)
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
 				}
 
 				Spacer()
@@ -186,7 +207,8 @@ struct NodeDetail: View {
 					Text("First Heard")
 				} icon: {
 					Image(systemName: "clock")
-						.symbolRenderingMode(.multicolor)
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
 				}
 
 				Spacer()
@@ -206,7 +228,8 @@ struct NodeDetail: View {
 					Text("Last Heard")
 				} icon: {
 					Image(systemName: "clock.arrow.circlepath")
-						.symbolRenderingMode(.multicolor)
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
 				}
 
 				Spacer()
@@ -226,7 +249,8 @@ struct NodeDetail: View {
 					Text("Uptime")
 				} icon: {
 					Image(systemName: "hourglass")
-						.symbolRenderingMode(.multicolor)
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
 				}
 
 				Spacer()
@@ -247,7 +271,8 @@ struct NodeDetail: View {
 					Text("Device Metrics Log")
 				} icon: {
 					Image(systemName: "flipphone")
-						.symbolRenderingMode(.multicolor)
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
 				}
 			}
 		}
@@ -260,7 +285,8 @@ struct NodeDetail: View {
 					Text("Environment Metrics Log")
 				} icon: {
 					Image(systemName: "cloud.sun.rain")
-						.symbolRenderingMode(.multicolor)
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
 				}
 			}
 		}
@@ -273,7 +299,8 @@ struct NodeDetail: View {
 					Text("Trace Route Log")
 				} icon: {
 					Image(systemName: "signpost.right.and.left")
-						.symbolRenderingMode(.multicolor)
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
 				}
 			}
 		}
@@ -286,7 +313,8 @@ struct NodeDetail: View {
 					Text("Detection Sensor Log")
 				} icon: {
 					Image(systemName: "sensor")
-						.symbolRenderingMode(.multicolor)
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
 				}
 			}
 		}
@@ -299,7 +327,8 @@ struct NodeDetail: View {
 					Text("PAX Counter")
 				} icon: {
 					Image(systemName: "figure.walk.motion")
-						.symbolRenderingMode(.multicolor)
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
 				}
 			}
 		}
@@ -373,7 +402,8 @@ struct NodeDetail: View {
 					Text("Refresh Device Metadata")
 				} icon: {
 					Image(systemName: "arrow.clockwise")
-						.symbolRenderingMode(.multicolor)
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
 				}
 			}
 		}
@@ -385,7 +415,8 @@ struct NodeDetail: View {
 				Text("Reboot")
 			} icon: {
 				Image(systemName: "arrow.triangle.2.circlepath")
-					.symbolRenderingMode(.multicolor)
+					.symbolRenderingMode(.monochrome)
+					.foregroundColor(.accentColor)
 			}
 		}.confirmationDialog(
 			"are.you.sure",
@@ -410,7 +441,8 @@ struct NodeDetail: View {
 					Text("Shut Down")
 				} icon: {
 					Image(systemName: "power")
-						.symbolRenderingMode(.multicolor)
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
 				}
 			}.confirmationDialog(
 				"are.you.sure",

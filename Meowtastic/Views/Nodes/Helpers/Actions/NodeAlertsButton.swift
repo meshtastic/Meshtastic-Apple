@@ -26,7 +26,8 @@ struct NodeAlertsButton: View {
 				Text(user.mute ? "Show alerts" : "Hide alerts")
 			} icon: {
 				Image(systemName: user.mute ? "bell.slash" : "bell")
-					.symbolRenderingMode(.hierarchical)
+					.symbolRenderingMode(.monochrome)
+					.foregroundColor(.accentColor)
 			}
 		}
 	}

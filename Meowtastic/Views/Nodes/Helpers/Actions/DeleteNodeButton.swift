@@ -4,11 +4,8 @@ import SwiftUI
 
 struct DeleteNodeButton: View {
 	var bleManager: BLEManager
-
 	var context: NSManagedObjectContext
-
 	var connectedNode: NodeInfoEntity
-
 	var node: NodeInfoEntity
 
 	@State
@@ -22,7 +19,8 @@ struct DeleteNodeButton: View {
 				Text("Delete Node")
 			} icon: {
 				Image(systemName: "trash")
-					.symbolRenderingMode(.multicolor)
+					.symbolRenderingMode(.monochrome)
+					.foregroundColor(.accentColor)
 			}
 		}
 		.confirmationDialog(

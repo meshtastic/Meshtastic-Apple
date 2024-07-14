@@ -11,7 +11,10 @@ struct FavoriteNodeButton: View {
 
 	var body: some View {
 		Button {
-			guard let connectedNodeNum = bleManager.connectedPeripheral?.num else { return }
+			guard let connectedNodeNum = bleManager.connectedPeripheral?.num else {
+				return
+			}
+
 			let success = if node.favorite {
 				bleManager.removeFavoriteNode(
 					node: node,
@@ -31,6 +34,7 @@ struct FavoriteNodeButton: View {
 					context.rollback()
 					Logger.data.error("Save Node Favorite Error")
 				}
+
 				Logger.data.debug("Favorited a node")
 			}
 		} label: {
@@ -38,7 +42,8 @@ struct FavoriteNodeButton: View {
 				Text(node.favorite ? "Remove from favorites" : "Add to favorites")
 			} icon: {
 				Image(systemName: node.favorite ? "star.fill" : "star")
-					.symbolRenderingMode(.multicolor)
+					.symbolRenderingMode(.monochrome)
+					.foregroundColor(.accentColor)
 			}
 		}
 	}

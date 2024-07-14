@@ -2,9 +2,7 @@ import SwiftUI
 
 struct ClientHistoryButton: View {
 	var bleManager: BLEManager
-
 	var connectedNode: NodeInfoEntity
-
 	var node: NodeInfoEntity
 
 	@State

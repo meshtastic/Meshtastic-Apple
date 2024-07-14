@@ -22,7 +22,6 @@ struct NodeInfoView: View {
 				if let longName = node.user?.longName {
 					Text(longName)
 						.lineLimit(1)
-						.fixedSize(horizontal: true, vertical: false)
 						.font(.title)
 						.minimumScaleFactor(0.5)
 				}

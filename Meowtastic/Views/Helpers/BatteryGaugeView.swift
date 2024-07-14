@@ -32,7 +32,7 @@ struct BatteryGaugeView: View {
 				if withLabels {
 					if let voltage = mostRecent?.voltage, voltage > 0 {
 						let voltageFormatted = String(format: "%.2f", voltage) + "V"
-						
+
 						Text(voltageFormatted)
 							.font(.footnote)
 							.lineLimit(1)
@@ -41,8 +41,8 @@ struct BatteryGaugeView: View {
 							.padding(4)
 					}
 					else {
-						let socFormatted = String(format: "%.1f", batteryLevel) + "%"
-						
+						let socFormatted = String(format: "%.0f", batteryLevel) + "%"
+
 						Text(socFormatted)
 							.font(.footnote)
 							.lineLimit(1)

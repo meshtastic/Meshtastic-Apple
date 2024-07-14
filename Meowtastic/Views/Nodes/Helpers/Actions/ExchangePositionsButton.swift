@@ -3,13 +3,12 @@ import SwiftUI
 
 struct ExchangePositionsButton: View {
 	var bleManager: BLEManager
-
 	var node: NodeInfoEntity
 
 	@State
-	private var isPresentingPositionSentAlert: Bool = false
+	private var isPresentingPositionSentAlert = false
 
-    var body: some View {
+	var body: some View {
 		Button {
 			isPresentingPositionSentAlert = bleManager.sendPosition(
 				channel: node.channel,
@@ -21,15 +20,17 @@ struct ExchangePositionsButton: View {
 				Text("Exchange Positions")
 			} icon: {
 				Image(systemName: "arrow.triangle.2.circlepath")
-					.symbolRenderingMode(.hierarchical)
+					.symbolRenderingMode(.monochrome)
+					.foregroundColor(.accentColor)
 			}
 		}.alert(
 			"Position Sent",
 			isPresented: $isPresentingPositionSentAlert
 		) {
-			Button("OK") {	}.keyboardShortcut(.defaultAction)
+			Button("OK") { }
+				.keyboardShortcut(.defaultAction)
 		} message: {
 			Text("Your position has been sent with a request for a response with their position.")
 		}
-    }
+	}
 }

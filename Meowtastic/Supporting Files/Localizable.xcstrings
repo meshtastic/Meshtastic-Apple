@@ -5161,6 +5161,9 @@
     "Description" : {
 
     },
+    "Details" : {
+
+    },
     "Detection" : {
 
     },
@@ -8499,6 +8502,9 @@
 
     },
     "Indoor Air Quality (IAQ)" : {
+
+    },
+    "Info" : {
 
     },
     "inputevent.back" : {
@@ -15298,9 +15304,6 @@
           }
         }
       }
-    },
-    "Node" : {
-
     },
     "Node Core Data Backup %@/%@ - %@ - %@" : {
       "localizations" : {
