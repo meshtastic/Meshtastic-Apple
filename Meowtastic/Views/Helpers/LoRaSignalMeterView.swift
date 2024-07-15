@@ -6,6 +6,7 @@ struct LoRaSignalMeterView: View {
 	private var rssi: Int32
 	private var preset: ModemPresets
 	private var compact: Bool
+	private var color: Color?
 	private var withLabels: Bool
 
 	@Environment(\.colorScheme)
@@ -22,14 +23,26 @@ struct LoRaSignalMeterView: View {
 							.font(.footnote)
 					}
 
-					Gauge(
-						value: Double(signalStrength.rawValue),
-						in: 0...3
-					) { }
-						.gaugeStyle(.accessoryLinear)
-						.tint(
-							Gradient(colors: [.clear, .accentColor])
-						)
+					if let color {
+						Gauge(
+							value: Double(signalStrength.rawValue),
+							in: 0...3
+						) { }
+							.gaugeStyle(.accessoryLinear)
+							.tint(
+								color
+							)
+					}
+					else {
+						Gauge(
+							value: Double(signalStrength.rawValue),
+							in: 0...3
+						) { }
+							.gaugeStyle(.accessoryLinear)
+							.tint(
+								Gradient(colors: [.clear, .accentColor])
+							)
+					}
 
 					if withLabels {
 						let snrFormatted = String(format: "%.0f", snr) + "dB"
@@ -42,13 +55,19 @@ struct LoRaSignalMeterView: View {
 				}
 			} else {
 				VStack {
+					let preset = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
 					LoRaSignalView(signalStrength: signalStrength)
 
 					Text("Signal \(signalStrength.description)")
 						.font(.footnote)
 
 					Text("SNR \(String(format: "%.2f", snr))dB")
-						.foregroundColor(LoRaSignal.getSnrColor(snr: snr, preset: ModemPresets.longFast))
+						.foregroundColor(
+							LoRaSignal.getSnrColor(
+								snr: snr,
+								preset: preset
+							)
+						)
 						.font(.caption2)
 
 					Text("RSSI \(rssi)dB")
@@ -64,12 +83,14 @@ struct LoRaSignalMeterView: View {
 		rssi: Int32,
 		preset: ModemPresets,
 		compact: Bool = true,
+		color: Color? = nil,
 		withLabels: Bool = false
 	) {
 		self.snr = snr
 		self.rssi = rssi
 		self.preset = preset
 		self.compact = compact
+		self.color = color
 		self.withLabels = withLabels
 	}
 }

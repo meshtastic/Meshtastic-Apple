@@ -183,6 +183,20 @@ struct MessageView: View {
 	@ViewBuilder
 	private var messageTime: some View {
 		HStack(spacing: 4) {
+			/* disabled, for some reason it shows full signal for all messages; that can't be true
+			let loraPreset = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
+
+			LoRaSignalMeterView(
+				snr: message.snr,
+				rssi: message.rssi,
+				preset: loraPreset,
+				compact: true,
+				color: statusForegroundColor,
+				withLabels: false
+			)
+			.frame(width: 32)
+			 */
+
 			Image(systemName: "clock")
 				.font(.system(size: statusFontSize))
 				.foregroundColor(statusForegroundColor)
