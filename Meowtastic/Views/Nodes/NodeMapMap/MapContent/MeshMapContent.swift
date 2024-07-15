@@ -70,13 +70,14 @@ struct MeshMapContent: MapContent {
 			.padding(.all, 8)
 
 			if let hops = position.nodePosition?.hopsAway, hops >= 0 {
+				let color = color(for: position)
 				if hops == 0 {
 					HStack(spacing: 0) {
 						Spacer()
 						Image(systemName: "wifi.circle.fill")
 							.font(.system(size: 20))
-							.background(color(for: position))
-							.foregroundColor(colorScheme == .dark ? .white.opacity(0.5) : .gray.opacity(0.5))
+							.background(color)
+							.foregroundColor(color.isLight() ? .black.opacity(0.5) : .white.opacity(0.5))
 							.clipShape(Circle())
 					}
 				}
@@ -85,8 +86,8 @@ struct MeshMapContent: MapContent {
 						Spacer()
 						Image(systemName: "\(hops).circle.fill")
 							.font(.system(size: 20))
-							.background(color(for: position))
-							.foregroundColor(colorScheme == .dark ? .white.opacity(0.5) : .gray.opacity(0.5))
+							.background(color)
+							.foregroundColor(color.isLight() ? .black.opacity(0.5) : .white.opacity(0.5))
 							.clipShape(Circle())
 					}
 				}
