@@ -4,6 +4,7 @@ import CoreLocation
 import OSLog
 
 struct NodeDetail: View {
+	var isInSheet = false
 	var columnVisibility = NavigationSplitViewVisibility.all
 
 	@Environment(\.managedObjectContext)
@@ -71,17 +72,19 @@ struct NodeDetail: View {
 					}
 				}
 
-				Section("Actions") {
-					actions
-				}
+				if !isInSheet {
+					Section("Actions") {
+						actions
+					}
 
-				if
-					let connectedNode,
-					let nodeMetadata = node.metadata,
-					self.bleManager.connectedPeripheral != nil
-				{
-					Section("Administration") {
-						admin(node: connectedNode, metadata: nodeMetadata)
+					if
+						let connectedNode,
+						let nodeMetadata = node.metadata,
+						self.bleManager.connectedPeripheral != nil
+					{
+						Section("Administration") {
+							admin(node: connectedNode, metadata: nodeMetadata)
+						}
 					}
 				}
 			}
@@ -100,18 +103,27 @@ struct NodeDetail: View {
 			NodeInfoView(node: node)
 
 			if node.hasPositions {
-				NavigationLink {
-					NodeMapView(node: node)
-				} label: {
+				if isInSheet {
 					SimpleNodeMapView(node: node)
-						.frame(width: .infinity, height: 200)
+						.frame(width: .infinity, height: 120)
 						.cornerRadius(8)
 						.padding(.top, 8)
 						.disabled(true)
+						.toolbar(.hidden)
+				}
+				else {
+					NavigationLink {
+						NodeMapView(node: node)
+					} label: {
+						SimpleNodeMapView(node: node)
+							.frame(width: .infinity, height: 200)
+							.cornerRadius(8)
+							.padding(.top, 8)
+							.disabled(true)
+					}
 				}
 			}
 		}
-
 	}
 
 	@ViewBuilder

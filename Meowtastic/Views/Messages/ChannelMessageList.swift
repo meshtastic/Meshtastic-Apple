@@ -18,18 +18,14 @@ struct ChannelMessageList: View {
 	var channel: ChannelEntity
 
 	private let textFieldPlaceholderID = "text_field_placeholder"
-	private let dateFormatter = {
-		let formatter = DateFormatter()
-		formatter.dateStyle = .medium
-		formatter.timeStyle = .short
-
-		return formatter
-	}()
 
 	@AppStorage("preferredPeripheralNum")
 	private var preferredPeripheralNum = -1
 	@State
 	private var replyMessageId: Int64 = 0
+	@State
+	private var nodeDetail: NodeInfoEntity?
+
 	@FetchRequest(
 		sortDescriptors: [
 			NSSortDescriptor(key: "favorite", ascending: false),
@@ -87,7 +83,7 @@ struct ChannelMessageList: View {
 				isFocused: $messageFieldFocused
 			)
 			.frame(alignment: .bottom)
-			.padding(.horizontal, 20)
+			.padding(.horizontal, 16)
 			.padding(.bottom, 8)
 		}
 		.navigationBarTitleDisplayMode(.inline)
@@ -104,6 +100,10 @@ struct ChannelMessageList: View {
 					mqttDownlinkEnabled: channel.downlinkEnabled
 				)
 			}
+		}
+		.sheet(item: $nodeDetail) { detail in
+			NodeDetail(isInSheet: true, node: detail)
+				.presentationDetents([.medium])
 		}
 	}
 
@@ -135,10 +135,10 @@ struct ChannelMessageList: View {
 		let isCurrentUser = isCurrentUser(message: message, preferredNum: preferredPeripheralNum)
 		let sourceNode = message.fromUser?.userNode
 
-		HStack(alignment: .top, spacing: 4) {
+		HStack(alignment: .top, spacing: 8) {
 			if isCurrentUser {
 				Spacer()
-					.frame(minWidth: 80)
+					.frame(minWidth: 64)
 			}
 			else {
 				VStack(alignment: .center) {
@@ -150,36 +150,34 @@ struct ChannelMessageList: View {
 
 					if let connectedNode, let sourceNode {
 						NodeIconListView(connectedNode: connectedNode, small: true, node: sourceNode)
-							.frame(width: 64)
 					}
 				}
-				.frame(width: 80)
+				.frame(width: 64)
+				.onTapGesture {
+					if sourceNode != nil {
+						nodeDetail = sourceNode
+					}
+				}
 			}
 
 			VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 2) {
-				let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
-
-				if !isCurrentUser && message.fromUser != nil {
+				if !isCurrentUser {
 					HStack(spacing: 4) {
-						Image(systemName: "person")
-							.font(.caption)
-							.foregroundColor(.gray)
+						if message.fromUser != nil {
+							Image(systemName: "person")
+								.font(.caption)
+								.foregroundColor(.gray)
 
-						Text(getSenderName(message: message))
-							.font(.caption)
-							.lineLimit(1)
-							.foregroundColor(.gray)
-
-						Image(systemName: "clock")
-							.font(.caption)
-							.foregroundColor(.gray)
-							.padding(.leading, 8)
-
-						Text(dateFormatter.string(from: message.timestamp))
-							.font(.caption)
-							.lineLimit(1)
-							.foregroundColor(.gray)
-							.fixedSize(horizontal: true, vertical: false)
+							Text(getSenderName(message: message))
+								.font(.caption)
+								.lineLimit(1)
+								.foregroundColor(.gray)
+						}
+						else {
+							Image(systemName: "person.fill.questionmark")
+								.font(.caption)
+								.foregroundColor(.gray)
+						}
 					}
 				}
 
@@ -207,8 +205,6 @@ struct ChannelMessageList: View {
 
 					context.refresh(myInfo, mergeChanges: true)
 				}
-
-				messageStatus(for: message, isDetectionSensorMessage: isDetectionSensorMessage)
 			}
 			.id(message.messageId)
 
@@ -232,40 +228,6 @@ struct ChannelMessageList: View {
 
 			context.refresh(myInfo, mergeChanges: true)
 
-		}
-	}
-
-	@ViewBuilder
-	private func messageStatus(for message: MessageEntity, isDetectionSensorMessage: Bool) -> some View {
-		if isCurrentUser(message: message, preferredNum: preferredPeripheralNum) {
-			if message.receivedACK {
-				Text("Acknowledged")
-					.font(.caption2)
-					.foregroundColor(.gray)
-			} else if message.ackError == 0 {
-				Text("Sent")
-					.font(.caption2)
-					.foregroundColor(.orange)
-			} else if message.ackError > 0 {
-				if let ackError = RoutingError(
-					rawValue: Int(message.ackError)
-				) {
-					Text(ackError.display)
-						.fixedSize(horizontal: false, vertical: true)
-						.font(.caption2)
-						.foregroundColor(.red)
-				}
-				else {
-					Text("ACK Error")
-						.fixedSize(horizontal: false, vertical: true)
-						.font(.caption2)
-						.foregroundColor(.red)
-				}
-			}
-		} else if isDetectionSensorMessage {
-			Text(dateFormatter.string(from: message.timestamp))
-				.font(.footnote)
-				.foregroundColor(.gray)
 		}
 	}
 
@@ -309,17 +271,15 @@ struct ChannelMessageList: View {
 	}
 
 	private func getSenderColor(message: MessageEntity) -> Color {
-		if let num = message.fromUser?.num {
-			if message.fromUser?.userNode?.isOnline ?? false {
-				return Color(
-					UIColor(hex: UInt32(num))
-				)
-			} else {
-				return Color.gray.opacity(0.7)
-			}
+		if
+			let num = message.fromUser?.num,
+			message.fromUser?.userNode?.isOnline ?? false
+		{
+			return Color(
+				UIColor(hex: UInt32(num))
+			)
 		}
-		else {
-			return Color.accentColor
-		}
+
+		return Color.gray.opacity(0.7)
 	}
 }

@@ -7,26 +7,27 @@ struct Avatar: View {
 
 	var body: some View {
 		ZStack(alignment: .center) {
-			if let name = name {
+			if let name = name, !name.isEmpty {
 				Text(name)
 					.font(.system(size: 128, weight: .heavy, design: .rounded))
 					.foregroundColor(background.isLight() ? .black : .white)
+					.lineLimit(1)
 					.minimumScaleFactor(0.1)
-					.padding(.all, 8)
+					.padding(.all, size / 8)
 					.frame(width: size, height: size)
 			}
 			else {
 				Image(systemName: "questionmark")
-					.font(.system(size: 128, weight: .heavy, design: .rounded))
+					.resizable()
+					.scaledToFit()
 					.foregroundColor(background.isLight() ? .black : .white)
-					.minimumScaleFactor(0.1)
-					.padding(.all, 8)
+					.padding(.all, size / 8)
 					.frame(width: size, height: size)
 			}
 		}
 		.background(background)
 		.clipShape(
-			RoundedRectangle(cornerRadius: size / 4)
+			RoundedRectangle(cornerRadius: size / 4, style: .continuous)
 		)
 	}
 

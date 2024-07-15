@@ -10,12 +10,6 @@
     " Whether or not use INPUT_PULLUP mode for GPIO pin. Only applicable if the board uses pull-up resistors on the pin" : {
 
     },
-    ": %@" : {
-
-    },
-    ": %d" : {
-
-    },
     ".dot" : {
 
     },
@@ -277,18 +271,6 @@
       }
     },
     "Accuracy %@" : {
-
-    },
-    "ACK Error" : {
-
-    },
-    "Ack SNR: %@ dB" : {
-
-    },
-    "Ack Time: %@" : {
-
-    },
-    "Acknowledged" : {
 
     },
     "Acknowledged by another node" : {
@@ -4844,6 +4826,7 @@
       }
     },
     "copy" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4900,6 +4883,9 @@
           }
         }
       }
+    },
+    "Copy message text" : {
+
     },
     "Counter Clockwise Rotary Event" : {
 
@@ -8151,9 +8137,6 @@
 
     },
     "History Return Window" : {
-
-    },
-    "Hops Away %d) dB" : {
 
     },
     "Hourly Duty Cycle" : {
@@ -14385,10 +14368,8 @@
         }
       }
     },
-    "Message" : {
-
-    },
     "message.details" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -16868,6 +16849,7 @@
 
     },
     "received.ack" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -16926,6 +16908,7 @@
       }
     },
     "received.ack.real" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -17096,6 +17079,7 @@
 
     },
     "reply" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -17152,6 +17136,9 @@
           }
         }
       }
+    },
+    "Reply" : {
+
     },
     "Request Admin: %@" : {
 
@@ -18395,9 +18382,6 @@
         }
       }
     },
-    "RSSI %@ dBm" : {
-
-    },
     "RSSI %ddB" : {
 
     },
@@ -18866,9 +18850,6 @@
 
     },
     "Sensor Options" : {
-
-    },
-    "Sent" : {
 
     },
     "Sequence number" : {
@@ -19577,9 +19558,6 @@
 
     },
     "SNR" : {
-
-    },
-    "SNR %@ dB" : {
 
     },
     "SNR %@dB" : {
@@ -21678,6 +21656,9 @@
           }
         }
       }
+    },
+    "Unknown ACK error" : {
+
     },
     "unknown.age" : {
       "localizations" : {

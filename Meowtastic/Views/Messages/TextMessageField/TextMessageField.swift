@@ -23,15 +23,33 @@ struct TextMessageField: View {
 	@State
 	private var totalBytes = 0
 
+	private var backgroundColor: Color {
+		let opacity: Double
+		if totalBytes == 0 {
+			opacity = 0.85
+		}
+		else {
+			opacity = 1.00
+		}
+
+		if colorScheme == .dark {
+			return Color.black.opacity(opacity)
+		}
+		else {
+			return Color.white.opacity(opacity)
+		}
+	}
+
 	var body: some View {
-		HStack(alignment: .center, spacing: 8) {
-			TextField("Message", text: $typingMessage, axis: .vertical)
+		HStack(alignment: .top, spacing: 8) {
+			TextField("", text: $typingMessage, axis: .vertical)
 				.font(.body)
-				.padding(.leading, 4)
 				.multilineTextAlignment(.leading)
 				.keyboardType(.default)
 				.keyboardShortcut(.defaultAction)
-				.focused($isFocused)
+				.focused($isFocused, equals: true)
+				.padding(.leading, 8)
+				.padding(.vertical, 4)
 				.onSubmit {
 					if typingMessage.isEmpty || totalBytes > maxBytes {
 						return
@@ -43,17 +61,27 @@ struct TextMessageField: View {
 					totalBytes = typingMessage.utf8.count
 				}
 
-			Button(action: sendMessage) {
-				Image(systemName: "paperplane.circle")
-					.resizable()
-					.scaledToFit()
-					.foregroundColor(.accentColor)
-					.frame(width: 32, height: 32)
+			VStack(alignment: .center, spacing: 0) {
+				let remaining = maxBytes - totalBytes
+
+				Button(action: sendMessage) {
+					Image(systemName: "paperplane.circle")
+						.resizable()
+						.scaledToFit()
+						.foregroundColor(.accentColor)
+						.frame(width: 32, height: 32)
+				}
+				.disabled(typingMessage.isEmpty || remaining <= 0)
+
+				Text(String(remaining))
+					.font(.system(size: 8, design: .rounded))
+					.fontWeight(remaining < 24 ? .bold : .regular)
+					.foregroundColor(remaining < 24 ? .red : .gray)
+					.padding(.top, 4)
 			}
-			.disabled(typingMessage.isEmpty || totalBytes > maxBytes)
 		}
-		.padding(.all, 4)
-		.background(colorScheme == .dark ? Color.black.opacity(0.85) : Color.white.opacity(0.85))
+		.padding(.all, 2)
+		.background(backgroundColor)
 		.overlay(
 			overallShape
 				.stroke(.tertiary, lineWidth: 1)
@@ -61,11 +89,21 @@ struct TextMessageField: View {
 		.clipShape(
 			overallShape
 		)
+		.onTapGesture {
+			isFocused = true
+		}
 	}
 
 	@ViewBuilder
-	private var overallShape: RoundedRectangle {
-		RoundedRectangle(cornerRadius: 24)
+	private var overallShape: UnevenRoundedRectangle {
+		let radii = RectangleCornerRadii(
+			topLeading: 18,
+			bottomLeading: 18,
+			bottomTrailing: 0,
+			topTrailing: 18
+		)
+
+		UnevenRoundedRectangle(cornerRadii: radii, style: .circular)
 	}
 
 	private func sendMessage() {
