@@ -178,7 +178,7 @@
         </uniquenessConstraints>
     </entity>
     <entity name="MQTTConfigEntity" representedClassName="MQTTConfigEntity" syncable="YES" codeGenerationType="class">
-        <attribute name="address" optional="YES" attributeType="String" maxValueString="30"/>
+        <attribute name="address" optional="YES" attributeType="String"/>
         <attribute name="enabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="encryptionEnabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="jsonEnabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>

@@ -665,7 +665,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.voltage = telemetryMessage.deviceMetrics.voltage
 					telemetry.uptimeSeconds = Int32(telemetryMessage.deviceMetrics.uptimeSeconds)
 					telemetry.metricsType = 0
-					Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.deviceMetrics.channelUtilization) Airtime: \(telemetryMessage.deviceMetrics.airUtilTx) for Node: \(packet.from.toHex())")
+					Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.deviceMetrics.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.deviceMetrics.airUtilTx, privacy: .public)) for Node: \(packet.from.toHex(), privacy: .public))")
 				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) {
 					// Environment Metrics
 					telemetry.barometricPressure = telemetryMessage.environmentMetrics.barometricPressure
