@@ -50,7 +50,6 @@ struct MeshMap: View {
 							selectedMapLayer: $selectedMapLayer,
 							selectedPosition: $selectedPosition
 						)
-
 					}
 					.mapScope(mapScope)
 					.mapStyle(mapStyle)
@@ -96,9 +95,11 @@ struct MeshMap: View {
 					return
 				}
 			}
-			.sheet(item: $selectedPosition) { selection in
-				PositionPopover(position: selection, popover: false)
-					.padding()
+			.sheet(item: $selectedPosition) { position in
+				if let node = selectedPosition?.nodePosition {
+					NodeDetail(isInSheet: true, node: node)
+						.presentationDetents([.medium])
+				}
 			}
 			.sheet(isPresented: $isEditingSettings) {
 				MapSettingsForm(mapLayer: $selectedMapLayer, meshMap: $isMeshMap)

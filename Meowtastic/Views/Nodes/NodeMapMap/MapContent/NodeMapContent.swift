@@ -18,8 +18,6 @@ struct NodeMapContent: MapContent {
 	@State
 	var isEditingSettings = false
 	@State
-	var selectedPosition: PositionEntity?
-	@State
 	var isMeshMap = false
 
 	private let historyColor = Color.accentColor
@@ -88,15 +86,6 @@ struct NodeMapContent: MapContent {
 				Image(systemName: "flipphone")
 					.font(.system(size: 32))
 					.foregroundColor(nodeColor)
-				.onTapGesture {
-					selectedPosition = selectedPosition == latest ? nil : latest
-				}
-				.popover(item: $selectedPosition) { selection in
-					PositionPopover(position: selection)
-						.padding()
-						.opacity(0.8)
-						.presentationCompactAdaptation(.popover)
-				}
 			} label: { }
 				.tag(latest.time)
 				.annotationTitles(.automatic)

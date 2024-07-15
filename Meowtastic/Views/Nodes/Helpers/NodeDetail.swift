@@ -14,7 +14,10 @@ struct NodeDetail: View {
 	@ObservedObject
 	var node: NodeInfoEntity
 
-	private let relativeFormatter: RelativeDateTimeFormatter = {
+	private let distanceFormatter = MKDistanceFormatter()
+	private let detailInfoFont = Font.system(size: 12, weight: .regular, design: .rounded)
+	private let detailIconSize: CGFloat = 12
+	private let relativeDateFormatter: RelativeDateTimeFormatter = {
 		let formatter = RelativeDateTimeFormatter()
 		formatter.unitsStyle = .full
 
@@ -31,6 +34,9 @@ struct NodeDetail: View {
 			id: bleManager.connectedPeripheral?.num ?? -1,
 			context: context
 		)
+	}
+	private var nodePosition: PositionEntity? {
+		node.positions?.lastObject as? PositionEntity
 	}
 	private var nodeTelemetry: TelemetryEntity? {
 		node
@@ -104,25 +110,128 @@ struct NodeDetail: View {
 
 			if node.hasPositions {
 				if isInSheet {
-					SimpleNodeMapView(node: node)
-						.frame(width: .infinity, height: 120)
-						.cornerRadius(8)
-						.padding(.top, 8)
-						.disabled(true)
-						.toolbar(.hidden)
+					VStack(alignment: .leading, spacing: 8) {
+						SimpleNodeMapView(node: node)
+							.frame(width: .infinity, height: 120)
+							.cornerRadius(8)
+							.padding(.top, 8)
+							.disabled(true)
+							.toolbar(.hidden)
+
+						locationInfo
+							.padding(.horizontal, 8)
+					}
 				}
 				else {
 					NavigationLink {
 						NodeMapView(node: node)
 					} label: {
-						SimpleNodeMapView(node: node)
-							.frame(width: .infinity, height: 200)
-							.cornerRadius(8)
-							.padding(.top, 8)
-							.disabled(true)
+						VStack(alignment: .leading, spacing: 8) {
+							SimpleNodeMapView(node: node)
+								.frame(width: .infinity, height: 200)
+								.cornerRadius(8)
+								.padding(.top, 8)
+								.disabled(true)
+
+							locationInfo
+								.padding(.horizontal, 8)
+						}
 					}
 				}
 			}
+		}
+	}
+
+	@ViewBuilder
+	private var locationInfo: some View {
+		if let position = nodePosition {
+			HStack(alignment: .center, spacing: 8) {
+				if position.speed > 0 {
+					let speed = Measurement(
+						value: Double(position.speed),
+						unit: UnitSpeed.kilometersPerHour
+					)
+					let speedFormatted = speed.formatted(
+						.measurement(
+							width: .abbreviated,
+							numberFormatStyle: .number.precision(.fractionLength(0))
+						)
+					)
+					let heading = Angle.degrees(
+						Double(position.heading)
+					)
+					let headingDegrees = Measurement(
+						value: heading.degrees,
+						unit: UnitAngle.degrees
+					)
+					let headingFormatted = headingDegrees.formatted(
+						.measurement(
+							width: .narrow,
+							numberFormatStyle: .number.precision(.fractionLength(0))
+						)
+					)
+
+					Image(systemName: "gauge.open.with.lines.needle.33percent")
+						.font(detailInfoFont)
+						.foregroundColor(.gray)
+						.frame(width: detailIconSize)
+					
+					Text(speedFormatted)
+						.font(detailInfoFont)
+						.foregroundColor(.gray)
+					
+					Spacer()
+						.frame(width: 8)
+
+					Image(systemName: "safari")
+						.font(detailInfoFont)
+						.foregroundColor(.gray)
+						.frame(width: detailIconSize)
+					
+					Text(headingFormatted)
+						.font(detailInfoFont)
+						.foregroundColor(.gray)
+					
+					Spacer()
+						.frame(width: 8)
+				}
+
+				let altitudeFormatted = distanceFormatter.string(
+					fromDistance: Double(position.altitude)
+				)
+
+				Image(systemName: "mountain.2")
+					.font(detailInfoFont)
+					.foregroundColor(.gray)
+					.frame(width: detailIconSize)
+
+				Text(altitudeFormatted)
+					.font(detailInfoFont)
+					.foregroundColor(.gray)
+
+				let precision = PositionPrecision(rawValue: Int(position.precisionBits))?.precisionMeters
+				if let precision {
+					let precisionFormatted = distanceFormatter.string(
+						fromDistance: Double(precision)
+					)
+
+					Spacer()
+						.frame(width: 8)
+
+					Image(systemName: "scope")
+						.font(detailInfoFont)
+						.foregroundColor(.gray)
+						.frame(width: detailIconSize)
+
+					Text(precisionFormatted)
+						.font(detailInfoFont)
+						.foregroundColor(.gray)
+				}
+
+			}
+		}
+		else {
+			EmptyView()
 		}
 	}
 
@@ -211,7 +320,7 @@ struct NodeDetail: View {
 		if
 			let lastHeard = node.lastHeard,
 			lastHeard.timeIntervalSince1970 > 0 ,
-			let lastHeardFormatted = relativeFormatter.string(for: lastHeard)
+			let lastHeardFormatted = relativeDateFormatter.string(for: lastHeard)
 		{
 			HStack {
 				Label {
@@ -232,7 +341,7 @@ struct NodeDetail: View {
 		if
 			let firstHeard = node.firstHeard,
 			firstHeard.timeIntervalSince1970 > 0,
-			let firstHeardFormatted = relativeFormatter.string(for: firstHeard)
+			let firstHeardFormatted = relativeDateFormatter.string(for: firstHeard)
 		{
 			HStack {
 				Label {

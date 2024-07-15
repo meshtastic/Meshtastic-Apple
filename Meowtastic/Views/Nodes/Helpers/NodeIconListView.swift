@@ -34,13 +34,13 @@ struct NodeIconListView: View {
 			}
 
 			if node.hopsAway == 0 {
-				Image(systemName: "wifi.square")
+				Image(systemName: "wifi.circle")
 					.font(detailInfoFont)
 					.foregroundColor(.gray)
 					.frame(width: detailIconSize)
 			}
 			else {
-				Image(systemName: "\(node.hopsAway).square")
+				Image(systemName: "\(node.hopsAway).circle")
 					.font(detailInfoFont)
 					.foregroundColor(.gray)
 					.frame(width: detailIconSize)

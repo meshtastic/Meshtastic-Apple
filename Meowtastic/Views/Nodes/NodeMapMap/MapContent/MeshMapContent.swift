@@ -24,32 +24,20 @@ struct MeshMapContent: MapContent {
 	@State
 	private var scale: CGFloat = 0.5
 
-	@FetchRequest(
-		sortDescriptors: [
-			NSSortDescriptor(key: "name", ascending: true)
-		],
-		predicate: NSPredicate(format: "enabled == true", ""),
-		animation: .none
-	)
-	private var routes: FetchedResults<RouteEntity>
-
 	@MapContentBuilder
 	var body: some MapContent {
 		ForEach(positions, id: \.id) { position in
-			if let nodeName = position.nodePosition?.user?.shortName {
+			if
+				let node = position.nodePosition,
+				let nodeName = node.user?.shortName
+			{
 				Annotation(
 					coordinate: position.coordinate,
 					anchor: .center
 				) {
-					avatar(for: position, name: nodeName)
+					avatar(for: node, name: nodeName)
 						.onTapGesture { location in
-							selectedPosition = (selectedPosition == position ? nil : position)
-						}
-						.popover(item: $selectedPosition) { selection in
-							PositionPopover(position: selection)
-								.padding()
-								.opacity(0.8)
-								.presentationCompactAdaptation(.popover)
+							selectedPosition = selectedPosition == position ? nil : position
 						}
 				} label: { }
 					.tag(position.time)
@@ -60,18 +48,18 @@ struct MeshMapContent: MapContent {
 	}
 
 	@ViewBuilder
-	private func avatar(for position: PositionEntity, name: String) -> some View {
+	private func avatar(for node: NodeInfoEntity, name: String) -> some View {
 		ZStack(alignment: .top) {
 			Avatar(
 				name,
-				background: color(for: position),
+				background: color(for: node),
 				size: 48
 			)
 			.padding(.all, 8)
 
-			if let hops = position.nodePosition?.hopsAway, hops >= 0 {
-				let color = color(for: position)
-				if hops == 0 {
+			if node.hopsAway >= 0 {
+				let color = color(for: node)
+				if node.hopsAway == 0 {
 					HStack(spacing: 0) {
 						Spacer()
 						Image(systemName: "wifi.circle.fill")
@@ -84,7 +72,7 @@ struct MeshMapContent: MapContent {
 				else {
 					HStack(spacing: 0) {
 						Spacer()
-						Image(systemName: "\(hops).circle.fill")
+						Image(systemName: "\(node.hopsAway).circle.fill")
 							.font(.system(size: 20))
 							.background(color)
 							.foregroundColor(color.isLight() ? .black.opacity(0.5) : .white.opacity(0.5))
@@ -96,10 +84,10 @@ struct MeshMapContent: MapContent {
 		.frame(width: 64, height: 64)
 	}
 
-	private func color(for position: PositionEntity) -> Color {
-		if let isOnline = position.nodePosition?.isOnline, isOnline {
+	private func color(for node: NodeInfoEntity) -> Color {
+		if node.isOnline {
 			return Color(
-				UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
+				UIColor(hex: UInt32(node.num))
 			)
 		}
 		else {
