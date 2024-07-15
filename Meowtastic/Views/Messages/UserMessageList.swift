@@ -115,7 +115,7 @@ struct UserMessageList: View {
 
 					VStack(alignment: currentUser ? .trailing : .leading) {
 						HStack {
-							MessageText(
+							MessageView(
 								message: message,
 								originalMessage: nil,
 								tapBackDestination: .user(user),

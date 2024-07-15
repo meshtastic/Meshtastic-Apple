@@ -2,7 +2,7 @@ import MeshtasticProtobufs
 import OSLog
 import SwiftUI
 
-struct MessageText: View {
+struct MessageView: View {
 	let message: MessageEntity
 	let originalMessage: String?
 	let tapBackDestination: MessageDestination
@@ -41,6 +41,25 @@ struct MessageText: View {
 		}
 	}
 
+	private var corners: RectangleCornerRadii {
+		if isCurrentUser {
+			RectangleCornerRadii(
+				topLeading: 8,
+				bottomLeading: 8,
+				bottomTrailing: 0,
+				topTrailing: 8
+			)
+		}
+		else {
+			RectangleCornerRadii(
+				topLeading: 0,
+				bottomLeading: 8,
+				bottomTrailing: 8,
+				topTrailing: 8
+			)
+		}
+	}
+
 	var body: some View {
 		ZStack(alignment: .topLeading) {
 			let markdownText = LocalizedStringKey(
@@ -54,7 +73,9 @@ struct MessageText: View {
 					.tint(linkColor)
 					.padding(.all, 16)
 					.background(backgroundColor)
-					.cornerRadius(8)
+					.clipShape(
+						UnevenRoundedRectangle(cornerRadii: corners)
+					)
 					.overlay {
 						let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
 

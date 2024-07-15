@@ -30,6 +30,15 @@ struct ChannelMessageList: View {
 	private var preferredPeripheralNum = -1
 	@State
 	private var replyMessageId: Int64 = 0
+	@FetchRequest(
+		sortDescriptors: [
+			NSSortDescriptor(key: "favorite", ascending: false),
+			NSSortDescriptor(key: "lastHeard", ascending: false),
+			NSSortDescriptor(key: "user.longName", ascending: true),
+		],
+		animation: .default
+	)
+	private var nodes: FetchedResults<NodeInfoEntity>
 
 	private var screenTitle: String {
 		if let name = channel.name, !name.isEmpty {
@@ -45,6 +54,10 @@ struct ChannelMessageList: View {
 		}
 	}
 
+	private var connectedNode: Int64? {
+		bleManager.connectedPeripheral?.num
+	}
+
 	var body: some View {
 		ZStack(alignment: .bottom) {
 			ScrollViewReader { scrollView in
@@ -52,8 +65,8 @@ struct ChannelMessageList: View {
 					.scrollDismissesKeyboard(.interactively)
 					.scrollIndicators(.hidden)
 					.onAppear {
-						if self.bleManager.context == nil {
-							self.bleManager.context = context
+						if bleManager.context == nil {
+							bleManager.context = context
 						}
 
 						scrollView.scrollTo(textFieldPlaceholderID)
@@ -120,21 +133,30 @@ struct ChannelMessageList: View {
 	@ViewBuilder
 	private func messageView(for message: MessageEntity) -> some View {
 		let isCurrentUser = isCurrentUser(message: message, preferredNum: preferredPeripheralNum)
+		let sourceNode = message.fromUser?.userNode
 
-		HStack(alignment: .top, spacing: 16) {
+		HStack(alignment: .top, spacing: 4) {
 			if isCurrentUser {
 				Spacer()
 					.frame(minWidth: 80)
 			}
 			else {
-				Avatar(
-					getSenderName(message: message, short: true),
-					background: getSenderColor(message: message),
-					size: 64
-				)
+				VStack(alignment: .center) {
+					Avatar(
+						getSenderName(message: message, short: true),
+						background: getSenderColor(message: message),
+						size: 64
+					)
+
+					if let connectedNode, let sourceNode {
+						NodeIconListView(connectedNode: connectedNode, small: true, node: sourceNode)
+							.frame(width: 64)
+					}
+				}
+				.frame(width: 80)
 			}
 
-			VStack(alignment: isCurrentUser ? .trailing : .leading) {
+			VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 2) {
 				let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
 
 				if !isCurrentUser && message.fromUser != nil {
@@ -157,11 +179,12 @@ struct ChannelMessageList: View {
 							.font(.caption)
 							.lineLimit(1)
 							.foregroundColor(.gray)
+							.fixedSize(horizontal: true, vertical: false)
 					}
 				}
 
 				HStack {
-					MessageText(
+					MessageView(
 						message: message,
 						originalMessage: getOriginalMessage(for: message),
 						tapBackDestination: .channel(channel),

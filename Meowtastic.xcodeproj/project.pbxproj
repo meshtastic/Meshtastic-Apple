@@ -17,6 +17,7 @@
 		08DD7E5F2C4283A100548159 /* LoRaSignal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E5E2C4283A100548159 /* LoRaSignal.swift */; };
 		08DD7E612C42ABEB00548159 /* NodeInfoEntity+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E602C42ABEB00548159 /* NodeInfoEntity+Extensions.swift */; };
 		08DD7E632C42D8B300548159 /* MQTTConnectionIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E622C42D8B300548159 /* MQTTConnectionIcon.swift */; };
+		08DD7E652C45310B00548159 /* NodeIconListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E642C45310B00548159 /* NodeIconListView.swift */; };
 		251926852C3BA97800249DF5 /* FavoriteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */; };
 		251926872C3BAE2200249DF5 /* NodeAlertsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */; };
 		2519268A2C3BB1B200249DF5 /* ExchangePositionsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */; };
@@ -38,7 +39,7 @@
 		C9697FA527933B8C00250207 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = C9697FA427933B8C00250207 /* SQLite */; };
 		D93068D32B8129510066FBC8 /* MessageContextMenuItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */; };
 		D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D42B812B700066FBC8 /* MessageDestination.swift */; };
-		D93068D72B8146690066FBC8 /* MessageText.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D62B8146690066FBC8 /* MessageText.swift */; };
+		D93068D72B8146690066FBC8 /* MessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D62B8146690066FBC8 /* MessageView.swift */; };
 		D93068D92B81509C0066FBC8 /* TapbackResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D82B81509C0066FBC8 /* TapbackResponses.swift */; };
 		D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */; };
 		D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */; };
@@ -209,6 +210,7 @@
 		08DD7E5E2C4283A100548159 /* LoRaSignal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignal.swift; sourceTree = "<group>"; };
 		08DD7E602C42ABEB00548159 /* NodeInfoEntity+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NodeInfoEntity+Extensions.swift"; sourceTree = "<group>"; };
 		08DD7E622C42D8B300548159 /* MQTTConnectionIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MQTTConnectionIcon.swift; sourceTree = "<group>"; };
+		08DD7E642C45310B00548159 /* NodeIconListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeIconListView.swift; sourceTree = "<group>"; };
 		251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteNodeButton.swift; sourceTree = "<group>"; };
 		251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeAlertsButton.swift; sourceTree = "<group>"; };
 		251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangePositionsButton.swift; sourceTree = "<group>"; };
@@ -223,7 +225,7 @@
 		B3E905B02B71F7F300654D07 /* TextMessageField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageField.swift; sourceTree = "<group>"; };
 		D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageContextMenuItems.swift; sourceTree = "<group>"; };
 		D93068D42B812B700066FBC8 /* MessageDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDestination.swift; sourceTree = "<group>"; };
-		D93068D62B8146690066FBC8 /* MessageText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageText.swift; sourceTree = "<group>"; };
+		D93068D62B8146690066FBC8 /* MessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageView.swift; sourceTree = "<group>"; };
 		D93068D82B81509C0066FBC8 /* TapbackResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapbackResponses.swift; sourceTree = "<group>"; };
 		D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerConfig.swift; sourceTree = "<group>"; };
 		D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigHeader.swift; sourceTree = "<group>"; };
@@ -694,7 +696,7 @@
 				DDB8F4112A9EE5DD00230ECE /* UserList.swift */,
 				DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */,
 				B399E8A32B6F486400E4488E /* RetryButton.swift */,
-				D93068D62B8146690066FBC8 /* MessageText.swift */,
+				D93068D62B8146690066FBC8 /* MessageView.swift */,
 				D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */,
 				D93068D82B81509C0066FBC8 /* TapbackResponses.swift */,
 			);
@@ -778,6 +780,7 @@
 				DDDB26412AABF655003AFCB7 /* NodeListItem.swift */,
 				251926882C3BAF2E00249DF5 /* Actions */,
 				08DD7E602C42ABEB00548159 /* NodeInfoEntity+Extensions.swift */,
+				08DD7E642C45310B00548159 /* NodeIconListView.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1045,6 +1048,7 @@
 				DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */,
 				DD1925B928CDA93900720036 /* SerialConfigEnums.swift in Sources */,
 				251926852C3BA97800249DF5 /* FavoriteNodeButton.swift in Sources */,
+				08DD7E652C45310B00548159 /* NodeIconListView.swift in Sources */,
 				D9C983A02B79D0E800BDBE6A /* AlertButton.swift in Sources */,
 				DD86D4112881D16900BAEB7A /* WriteCsvFile.swift in Sources */,
 				DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */,
@@ -1091,7 +1095,7 @@
 				DDDB444429F8A8DD00EE2349 /* Float.swift in Sources */,
 				DDAB580F2B0DAFBC00147258 /* LocationEntityExtension.swift in Sources */,
 				B3E905B12B71F7F300654D07 /* TextMessageField.swift in Sources */,
-				D93068D72B8146690066FBC8 /* MessageText.swift in Sources */,
+				D93068D72B8146690066FBC8 /* MessageView.swift in Sources */,
 				DDC2E15826CE248E0042C5E4 /* MeowtasticApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

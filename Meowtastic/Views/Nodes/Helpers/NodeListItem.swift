@@ -9,6 +9,9 @@ struct NodeListItem: View {
 	@ObservedObject
 	var node: NodeInfoEntity
 
+	private let detailInfoFont = Font.system(size: 14, weight: .regular, design: .rounded)
+	private let detailIconSize: CGFloat = 16
+
 	@Environment(\.colorScheme)
 	private var colorScheme: ColorScheme
 
@@ -28,7 +31,7 @@ struct NodeListItem: View {
 						distance
 					}
 
-					details
+					NodeIconListView(connectedNode: connectedNode, node: node)
 						.padding(.top, 8)
 				}
 				.frame(maxWidth: .infinity, alignment: .leading)
@@ -101,11 +104,11 @@ struct NodeListItem: View {
 	private var lastHeard: some View {
 		HStack {
 			Image(systemName: node.isOnline ? "info.circle.fill" : "moon.circle.fill")
-				.font(.body)
+				.font(detailInfoFont)
 				.foregroundColor(node.isOnline ? .green : .gray)
 
 			LastHeardText(lastHeard: node.lastHeard)
-				.font(.body)
+				.font(detailInfoFont)
 				.foregroundColor(.gray)
 		}
 	}
@@ -132,80 +135,13 @@ struct NodeListItem: View {
 					let metersAway = nodeCoord.distance(from: myCoord)
 
 					Image(systemName: "mappin.and.ellipse.circle.fill")
-						.font(.body)
+						.font(detailInfoFont)
 						.foregroundColor(.gray)
 
 					DistanceText(meters: metersAway)
-						.font(.body)
+						.font(detailInfoFont)
 						.foregroundColor(.gray)
 				}
-			}
-		}
-	}
-
-	@ViewBuilder
-	private var details: some View {
-		HStack(alignment: .center, spacing: 8) {
-			if let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))?.systemName {
-				Image(systemName: role)
-					.font(.body)
-					.foregroundColor(.gray)
-					.frame(width: 32)
-			}
-
-			if node.viaMqtt && connectedNode != node.num {
-				Image(systemName: "dot.radiowaves.up.forward")
-					.font(.body)
-					.foregroundColor(.gray)
-					.frame(width: 32)
-			}
-			else if node.hopsAway > 0 {
-				Image(systemName: "\(node.hopsAway).square")
-					.font(.body)
-					.foregroundColor(.gray)
-					.frame(width: 32)
-			}
-
-			if node.hasPositions {
-				Image(systemName: "mappin.and.ellipse")
-					.font(.body)
-					.foregroundColor(.gray)
-					.frame(width: 32)
-			}
-
-			if node.isStoreForwardRouter {
-				Image(systemName: "envelope.arrow.triangle.branch")
-					.font(.body)
-					.foregroundColor(.gray)
-					.frame(width: 32)
-			}
-
-			if node.hasDeviceMetrics {
-				Image(systemName: "flipphone")
-					.font(.body)
-					.foregroundColor(.gray)
-					.frame(width: 32)
-			}
-
-			if node.hasEnvironmentMetrics {
-				Image(systemName: "cloud.sun.rain")
-					.font(.body)
-					.foregroundColor(.gray)
-					.frame(width: 32)
-			}
-
-			if node.hasDetectionSensorMetrics {
-				Image(systemName: "sensor")
-					.font(.body)
-					.foregroundColor(.gray)
-					.frame(width: 32)
-			}
-
-			if node.hasTraceRoutes {
-				Image(systemName: "signpost.right.and.left")
-					.font(.body)
-					.foregroundColor(.gray)
-					.frame(width: 32)
 			}
 		}
 	}

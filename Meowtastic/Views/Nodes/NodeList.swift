@@ -208,7 +208,6 @@ struct NodeList: View {
 			.controlSize(.regular)
 			.padding(5)
 		}
-		.padding(.bottom, 5)
 		.listStyle(.plain)
 		.searchable(
 			text: $searchText,

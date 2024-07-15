@@ -1,11 +1,9 @@
 import SwiftUI
 
 enum Tab: Hashable {
-	case contacts
 	case messages
-	case map
-	case ble
 	case nodes
+	case map
 	case settings
 }
 
@@ -45,7 +43,7 @@ struct ContentView: View {
 					.tabItem {
 						Image(systemName: "message")
 					}
-					.tag(Tab.contacts)
+					.tag(Tab.messages)
 					.badge(appState.unreadDirectMessages + appState.unreadChannelMessages)
 					.badgeProminence(.standard)
 
