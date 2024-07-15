@@ -9,7 +9,6 @@ struct Messages: View {
 	var context
 	@EnvironmentObject
 	var bleManager: BLEManager
-
 	@State
 	var node: NodeInfoEntity?
 
@@ -31,31 +30,33 @@ struct Messages: View {
 				NavigationLink {
 					ChannelList(node: node)
 				} label: {
-					Image(systemName: "person.3.fill")
-						.font(.title2)
-						.symbolRenderingMode(.monochrome)
-						.foregroundColor(.accentColor)
-						.frame(width: 32, height: 32)
+					HStack(spacing: 8) {
+						Image(systemName: "person.3.fill")
+							.font(.title2)
+							.symbolRenderingMode(.monochrome)
+							.foregroundColor(.accentColor)
+							.frame(width: 48, height: 48)
 
-					Text("Channels")
-						.font(.title2)
-						.badge(appState.unreadChannelMessages)
-						.padding(.vertical)
+						Text("Channels")
+							.font(.headline)
+							.badge(appState.unreadChannelMessages)
+					}
 				}
 
 				NavigationLink {
 					UserList(node: node)
 				} label: {
-					Image(systemName: "message.fill")
-						.font(.title2)
-						.symbolRenderingMode(.monochrome)
-						.foregroundColor(.accentColor)
-						.frame(width: 32, height: 32)
+					HStack(spacing: 8) {
+						Image(systemName: "message.fill")
+							.font(.title2)
+							.symbolRenderingMode(.monochrome)
+							.foregroundColor(.accentColor)
+							.frame(width: 48, height: 48)
 
-					Text("Direct Messages")
-						.font(.title2)
-						.badge(appState.unreadDirectMessages)
-						.padding(.vertical)
+						Text("Direct Messages")
+							.font(.headline)
+							.badge(appState.unreadDirectMessages)
+					}
 				}
 			}
 			.onAppear {

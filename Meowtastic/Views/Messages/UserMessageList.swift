@@ -1,10 +1,3 @@
-//
-//  UserMessageList.swift
-//  MeshtasticApple
-//
-//  Created by Garth Vander Houwen on 12/24/21.
-//
-
 import SwiftUI
 import CoreData
 import OSLog
@@ -27,30 +20,25 @@ struct UserMessageList: View {
 	var body: some View {
 		VStack {
 			ScrollViewReader { scrollView in
-				ScrollView {
-					LazyVStack {
-						messageList
-					}
-				}
-				.padding([.top])
-				.scrollDismissesKeyboard(.immediately)
-				.onAppear {
-					if self.bleManager.context == nil {
-						self.bleManager.context = context
-					}
+				messageList
+					.padding([.top])
+					.scrollDismissesKeyboard(.immediately)
+					.onAppear {
+						if self.bleManager.context == nil {
+							self.bleManager.context = context
+						}
 
-					if user.messageList.count > 0 {
-						scrollView.scrollTo(user.messageList.last!.messageId)
-					}
-				}
-				.onChange(
-					of: user.messageList,
-					perform: { _ in
 						if user.messageList.count > 0 {
 							scrollView.scrollTo(user.messageList.last!.messageId)
 						}
 					}
-				)
+					.onChange(of: user.messageList) {
+						guard !user.messageList.isEmpty else {
+							return
+						}
+
+						scrollView.scrollTo(user.messageList.last!.messageId)
+					}
 			}
 
 			TextMessageField(
@@ -65,12 +53,8 @@ struct UserMessageList: View {
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
 			ToolbarItem(placement: .principal) {
-				HStack {
-					Avatar(
-						user.shortName ?? "?",
-						background: Color(UIColor(hex: UInt32(user.num))),
-						size: 44
-					)
+				if let name = user.longName {
+					Text(name)
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {
@@ -81,7 +65,7 @@ struct UserMessageList: View {
 
 	@ViewBuilder
 	private var messageList: some View {
-		ForEach(user.messageList) { message in
+		List(user.messageList) { message in
 			if user.num != bleManager.connectedPeripheral?.num ?? -1 {
 				let currentUser = (Int64(UserDefaults.preferredPeripheralNum) == message.fromUser?.num ?? -1 ? true : false)
 
@@ -175,24 +159,17 @@ struct UserMessageList: View {
 				.frame(maxWidth: .infinity)
 				.id(message.messageId)
 				.onAppear {
-					if !message.read {
-						message.read = true
-
-						do {
-							try context.save()
-
-							Logger.data.info("📖 [App] Read message \(message.messageId) ")
-
-							appState.unreadDirectMessages = user.unreadMessages
-
-							let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
-							UNUserNotificationCenter.current().setBadgeCount(badge)
-						} catch {
-							Logger.data.error(
-								"Failed to read message \(message.messageId): \(error.localizedDescription)"
-							)
-						}
+					guard !message.read else {
+						return
 					}
+
+					message.read = true
+					try? context.save()
+
+					appState.unreadDirectMessages = user.unreadMessages
+
+					let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
+					UNUserNotificationCenter.current().setBadgeCount(badge)
 				}
 			}
 		}

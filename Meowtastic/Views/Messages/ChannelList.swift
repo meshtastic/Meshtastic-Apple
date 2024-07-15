@@ -31,15 +31,13 @@ struct ChannelList: View {
 	private var isPresentingTraceRouteSentAlert = false
 
 	var body: some View {
-		List {
-			channelList
-		}
-		.navigationTitle("Channels")
-		.navigationBarTitleDisplayMode(.large)
-		.navigationBarItems(
-			leading: MeshtasticLogo(),
-			trailing: ConnectedDevice(ble: bleManager)
-		)
+		channelList
+			.navigationTitle("Channels")
+			.navigationBarTitleDisplayMode(.large)
+			.navigationBarItems(
+				leading: MeshtasticLogo(),
+				trailing: ConnectedDevice(ble: bleManager)
+			)
 	}
 
 	@ViewBuilder
@@ -49,70 +47,67 @@ struct ChannelList: View {
 			let myInfo = node.myInfo,
 			let channels = myInfo.channels?.array as? [ChannelEntity]
 		{
-			Section(header: Text("Channel")) {
-				ForEach(channels, id: \.self) { channel in
-					if !restrictedChannels.contains(channel.name?.lowercased() ?? "") {
-						makeNavigationLink(myInfo: myInfo, channel: channel)
-							.frame(height: 62)
-							.contextMenu {
-								if channel.allPrivateMessages.count > 0 {
-									Button(role: .destructive) {
-										isPresentingDeleteChannelMessagesConfirm = true
-										channelSelection = channel
-									} label: {
-										Label("Delete Messages", systemImage: "trash")
-									}
-								}
-
-								Button {
-									channel.mute = !channel.mute
-
-									do {
-										let adminMessageId =  bleManager.saveChannel(
-											channel: channel.protoBuf,
-											fromUser: node.user!,
-											toUser: node.user!
-										)
-
-										if adminMessageId > 0 {
-											context.refresh(channel, mergeChanges: true)
-										}
-
-										try context.save()
-									} catch {
-										context.rollback()
-										Logger.data.error("💥 Save Channel Mute Error")
-									}
-								} label: {
-									Label(
-										channel.mute ? "Show Alerts" : "Hide Alerts",
-										systemImage: channel.mute ? "bell" : "bell.slash"
-									)
-								}
+			List(channels, id: \.self) { channel in
+				if !restrictedChannels.contains(channel.name?.lowercased() ?? "") {
+					makeNavigationLink(myInfo: myInfo, channel: channel)
+						.onAppear {
+							if self.bleManager.context == nil {
+								self.bleManager.context = context
 							}
-							.confirmationDialog(
-								"This conversation will be deleted.",
-								isPresented: $isPresentingDeleteChannelMessagesConfirm,
-								titleVisibility: .visible
-							) {
+						}
+						.contextMenu {
+							if channel.allPrivateMessages.count > 0 {
 								Button(role: .destructive) {
-									deleteChannelMessages(channel: channelSelection!, context: context)
-									context.refresh(myInfo, mergeChanges: true)
-
-									let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
-									UNUserNotificationCenter.current().setBadgeCount(badge)
-
-									channelSelection = nil
+									isPresentingDeleteChannelMessagesConfirm = true
+									channelSelection = channel
 								} label: {
-									Text("delete")
+									Label("Delete Messages", systemImage: "trash")
 								}
 							}
-							.onAppear {
-								if self.bleManager.context == nil {
-									self.bleManager.context = context
+
+							Button {
+								channel.mute = !channel.mute
+
+								let adminMessageId =  bleManager.saveChannel(
+									channel: channel.protoBuf,
+									fromUser: node.user!,
+									toUser: node.user!
+								)
+
+								if adminMessageId > 0 {
+									context.refresh(channel, mergeChanges: true)
 								}
+
+								do {
+									try context.save()
+								} catch {
+									context.rollback()
+									Logger.data.error("💥 Save Channel Mute Error")
+								}
+							} label: {
+								Label(
+									channel.mute ? "Show Alerts" : "Hide Alerts",
+									systemImage: channel.mute ? "bell" : "bell.slash"
+								)
 							}
-					}
+						}
+						.confirmationDialog(
+							"This conversation will be deleted.",
+							isPresented: $isPresentingDeleteChannelMessagesConfirm,
+							titleVisibility: .visible
+						) {
+							Button(role: .destructive) {
+								deleteChannelMessages(channel: channelSelection!, context: context)
+								context.refresh(myInfo, mergeChanges: true)
+
+								let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
+								UNUserNotificationCenter.current().setBadgeCount(badge)
+
+								channelSelection = nil
+							} label: {
+								Text("delete")
+							}
+						}
 				}
 			}
 		}
@@ -196,7 +191,7 @@ struct ChannelList: View {
 				background: .accentColor,
 				size: 64
 			)
-			.padding(.all, 4)
+			.padding(.all, 8)
 
 			if channel.unreadMessages > 0 {
 				HStack(spacing: 0) {
@@ -208,6 +203,6 @@ struct ChannelList: View {
 				}
 			}
 		}
-		.frame(width: 72, height: 72)
+		.frame(width: 80, height: 80)
 	}
 }

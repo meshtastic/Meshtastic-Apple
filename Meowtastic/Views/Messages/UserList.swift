@@ -10,20 +10,14 @@ struct UserList: View {
 	@EnvironmentObject
 	var bleManager: BLEManager
 	@State
-	var isEditingFilters = false
-	@State
 	var node: NodeInfoEntity?
 	@State
 	var selectedUserNum: Int64?
 
+	@Environment(\.colorScheme)
+	private var colorScheme: ColorScheme
 	@State
 	private var searchText = ""
-	@State
-	private var isFavorite = UserDefaults.filterFavorite
-	@State
-	private var isOnline = UserDefaults.filterOnline
-	@State
-	private var ignoreMQTT = UserDefaults.ignoreMQTT
 	@State
 	private var userSelection: UserEntity? // Nothing selected by default.
 	@State
@@ -49,14 +43,6 @@ struct UserList: View {
 
 	var body: some View {
 		userList
-			.safeAreaInset(edge: .bottom, alignment: .trailing) {
-				filterButton
-			}
-			.searchable(
-				text: $searchText,
-				placement: users.count > 10 ? .navigationBarDrawer(displayMode: .always) : .automatic,
-				prompt: "Find a contact"
-			)
 			.disableAutocorrection(true)
 			.scrollDismissesKeyboard(.immediately)
 			.onAppear {
@@ -68,22 +54,7 @@ struct UserList: View {
 					await updateFilter()
 				}
 			}
-			.onChange(of: searchText, initial: true) {
-				Task {
-					await updateFilter()
-				}
-			}
-			.onChange(of: isFavorite, initial: false) {
-				Task {
-					await updateFilter()
-				}
-			}
-			.onChange(of: isOnline, initial: false) {
-				Task {
-					await updateFilter()
-				}
-			}
-			.onChange(of: ignoreMQTT, initial: false) {
+			.onChange(of: searchText) {
 				Task {
 					await updateFilter()
 				}
@@ -93,6 +64,11 @@ struct UserList: View {
 					$0.num == selectedUserNum
 				})
 			}
+			.searchable(
+				text: $searchText,
+				placement: users.count > 10 ? .navigationBarDrawer(displayMode: .always) : .automatic,
+				prompt: "Find a contact"
+			)
 			.navigationTitle(
 				String.localizedStringWithFormat(
 					"contacts %@".localized,
@@ -104,36 +80,21 @@ struct UserList: View {
 				leading: MeshtasticLogo(),
 				trailing: ConnectedDevice(ble: bleManager)
 			)
-			.sheet(isPresented: $isEditingFilters) {
-				NodeListFilter(
-					filterTitle: "Contact Filters",
-					isFavorite: $isFavorite,
-					isOnline: $isOnline,
-					ignoreMQTT: $ignoreMQTT
-				)
-			}
 	}
 
 	@ViewBuilder
 	private var userList: some View {
 		List(
 			users.filter { user in
-				guard isFavorite || isOnline || ignoreMQTT else {
-					return true
-				}
-
-				guard let userNode = user.userNode else {
+				guard user.userNode != nil else {
 					return false
 				}
 
-				if (isFavorite && userNode.favorite)
-					|| (isOnline && userNode.isOnline)
-					|| (ignoreMQTT && !userNode.viaMqtt)
-				{
-					return true
+				if let num = bleManager.connectedPeripheral?.num, user.num == num {
+					return false
 				}
 
-				return false
+				return true
 			},
 			id: \.self
 		) { user in
@@ -152,62 +113,50 @@ struct UserList: View {
 				from: Date()
 			).day ?? 0
 
-			if  user.num != bleManager.connectedPeripheral?.num ?? 0 {
+			if user.num != bleManager.connectedPeripheral?.num ?? 0 {
 				NavigationLink(destination: UserMessageList(user: user)) {
-					ZStack {
-						Image(systemName: "circle.fill")
-							.opacity(user.unreadMessages > 0 ? 1 : 0)
-							.font(.system(size: 10))
-							.foregroundColor(.accentColor)
-							.brightness(0.2)
-					}
+					HStack(spacing: 8) {
+						avatar(for: user)
 
-					Avatar(
-						user.shortName ?? "?",
-						background: Color(UIColor(hex: UInt32(user.num)))
-					)
+						VStack(alignment: .leading) {
+							HStack(alignment: .top) {
+								Text(user.longName ?? "Unknown user".localized)
+									.lineLimit(1)
+									.font(.headline)
+									.minimumScaleFactor(0.5)
 
-					VStack(alignment: .leading) {
-						HStack {
-							Text(user.longName ?? "unknown".localized)
-								.font(.headline)
+								Spacer()
 
-							Spacer()
-
-							if user.userNode?.favorite ?? false {
-								Image(systemName: "star.fill")
-									.foregroundColor(.yellow)
+								if user.messageList.count > 0 {
+									if lastMessageDay == currentDay {
+										Text(lastMessageTime, style: .time)
+											.font(.footnote)
+											.foregroundColor(.secondary)
+									}
+									else if lastMessageDay == (currentDay - 1) {
+										Text("Yesterday")
+											.font(.footnote)
+											.foregroundColor(.secondary)
+									}
+									else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+										Text(dateFormatter.string(from: lastMessageTime))
+											.font(.footnote)
+											.foregroundColor(.secondary)
+									}
+									else if lastMessageDay < (currentDay - 1800) {
+										Text(dateFormatter.string(from: lastMessageTime))
+											.font(.footnote)
+											.foregroundColor(.secondary)
+									}
+								}
 							}
 
 							if user.messageList.count > 0 {
-								if lastMessageDay == currentDay {
-									Text(lastMessageTime, style: .time)
+								HStack(alignment: .top) {
+									Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
 										.font(.footnote)
 										.foregroundColor(.secondary)
 								}
-								else if lastMessageDay == (currentDay - 1) {
-									Text("Yesterday")
-										.font(.footnote)
-										.foregroundColor(.secondary)
-								}
-								else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-									Text(dateFormatter.string(from: lastMessageTime))
-										.font(.footnote)
-										.foregroundColor(.secondary)
-								}
-								else if lastMessageDay < (currentDay - 1800) {
-									Text(dateFormatter.string(from: lastMessageTime))
-										.font(.footnote)
-										.foregroundColor(.secondary)
-								}
-							}
-						}
-
-						if user.messageList.count > 0 {
-							HStack(alignment: .top) {
-								Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
-									.font(.footnote)
-									.foregroundColor(.secondary)
 							}
 						}
 					}
@@ -235,33 +184,57 @@ struct UserList: View {
 		}
 	}
 
-	private var filterIcon: String {
-		if isEditingFilters {
-			return "line.3.horizontal.decrease.circle.fill"
-		}
-		else {
-			return "line.3.horizontal.decrease.circle"
-		}
-	}
-
 	@ViewBuilder
-	private var filterButton: some View {
-		HStack {
-			Button(action: {
-				withAnimation {
-					isEditingFilters = !isEditingFilters
-				}
-			}) {
-				Image(systemName: filterIcon)
-					.padding(.vertical, 5)
-			}
-			.tint(Color(UIColor.secondarySystemBackground))
-			.foregroundColor(.accentColor)
-			.buttonStyle(.borderedProminent)
+	private func avatar(for user: UserEntity) -> some View {
+		ZStack(alignment: .top) {
+			Avatar(
+				user.shortName,
+				background: getUserColor(for: user),
+				size: 64
+			)
+			.padding(.all, 8)
 
+			if user.unreadMessages > 0 {
+				HStack(spacing: 0) {
+					Spacer()
+
+					Text(String(user.unreadMessages))
+						.font(.system(size: 24))
+						.foregroundColor(.white)
+						.background(
+							Circle()
+								.foregroundColor(.red)
+						)
+				}
+			}
+			else if user.userNode?.favorite ?? false {
+				HStack(spacing: 0) {
+					Spacer()
+
+					Image(systemName: "star.circle.fill")
+						.font(.system(size: 24))
+						.foregroundColor(colorScheme == .dark ? .white : .gray)
+						.background(
+							Circle()
+								.foregroundColor(colorScheme == .dark ? .black : .white)
+						)
+				}
+			}
+			else if !(user.userNode?.isOnline ?? false) {
+				HStack(spacing: 0) {
+					Spacer()
+
+					Image(systemName: "network.slash")
+						.font(.system(size: 24))
+						.foregroundColor(colorScheme == .dark ? .white : .gray)
+						.background(
+							Circle()
+								.foregroundColor(colorScheme == .dark ? .black : .white)
+						)
+				}
+			}
 		}
-		.controlSize(.regular)
-		.padding(5)
+		.frame(width: 80, height: 80)
 	}
 
 	@ViewBuilder
@@ -331,10 +304,6 @@ struct UserList: View {
 	}
 
 	private func updateFilter() async {
-		UserDefaults.filterFavorite = isFavorite
-		UserDefaults.filterOnline = isOnline
-		UserDefaults.ignoreMQTT = ignoreMQTT
-
 		let searchPredicates = [
 			"userId",
 			"numString",
@@ -351,5 +320,18 @@ struct UserList: View {
 		else {
 			users.nsPredicate = nil
 		}
+	}
+
+	private func getUserColor(for user: UserEntity) -> Color {
+		if
+			let num = user.userNode?.num,
+			user.userNode?.isOnline ?? false
+		{
+			return Color(
+				UIColor(hex: UInt32(num))
+			)
+		}
+
+		return Color.gray.opacity(0.7)
 	}
 }

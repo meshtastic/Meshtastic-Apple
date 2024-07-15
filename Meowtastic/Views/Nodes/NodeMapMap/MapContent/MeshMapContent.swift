@@ -19,6 +19,11 @@ struct MeshMapContent: MapContent {
 	)
 	var positions: FetchedResults<PositionEntity>
 
+	@Environment(\.colorScheme)
+	private var colorScheme: ColorScheme
+	@State
+	private var scale: CGFloat = 0.5
+
 	@FetchRequest(
 		sortDescriptors: [
 			NSSortDescriptor(key: "name", ascending: true)
@@ -28,9 +33,6 @@ struct MeshMapContent: MapContent {
 	)
 	private var routes: FetchedResults<RouteEntity>
 
-	@State
-	private var scale: CGFloat = 0.5
-
 	@MapContentBuilder
 	var body: some MapContent {
 		ForEach(positions, id: \.id) { position in
@@ -39,8 +41,7 @@ struct MeshMapContent: MapContent {
 					coordinate: position.coordinate,
 					anchor: .center
 				) {
-					Avatar(nodeName, background: color(for: position))
-						.font(.system(size: 32))
+					avatar(for: position, name: nodeName)
 						.onTapGesture { location in
 							selectedPosition = (selectedPosition == position ? nil : position)
 						}
@@ -56,6 +57,42 @@ struct MeshMapContent: MapContent {
 					.annotationSubtitles(.automatic)
 			}
 		}
+	}
+
+	@ViewBuilder
+	private func avatar(for position: PositionEntity, name: String) -> some View {
+		ZStack(alignment: .top) {
+			Avatar(
+				name,
+				background: color(for: position),
+				size: 48
+			)
+			.padding(.all, 8)
+
+			if let hops = position.nodePosition?.hopsAway, hops >= 0 {
+				if hops == 0 {
+					HStack(spacing: 0) {
+						Spacer()
+						Image(systemName: "wifi.circle.fill")
+							.font(.system(size: 20))
+							.background(color(for: position))
+							.foregroundColor(colorScheme == .dark ? .white.opacity(0.5) : .gray.opacity(0.5))
+							.clipShape(Circle())
+					}
+				}
+				else {
+					HStack(spacing: 0) {
+						Spacer()
+						Image(systemName: "\(hops).circle.fill")
+							.font(.system(size: 20))
+							.background(color(for: position))
+							.foregroundColor(colorScheme == .dark ? .white.opacity(0.5) : .gray.opacity(0.5))
+							.clipShape(Circle())
+					}
+				}
+			}
+		}
+		.frame(width: 64, height: 64)
 	}
 
 	private func color(for position: PositionEntity) -> Color {

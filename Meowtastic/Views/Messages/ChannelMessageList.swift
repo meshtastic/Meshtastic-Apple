@@ -227,7 +227,6 @@ struct ChannelMessageList: View {
 			UNUserNotificationCenter.current().setBadgeCount(badge)
 
 			context.refresh(myInfo, mergeChanges: true)
-
 		}
 	}
 
