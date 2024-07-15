@@ -277,69 +277,130 @@ public struct EnvironmentMetrics {
 
   ///
   /// Temperature measured
-  public var temperature: Float = 0
+  public var temperature: Float {
+    get {return _storage._temperature}
+    set {_uniqueStorage()._temperature = newValue}
+  }
 
   ///
   /// Relative humidity percent measured
-  public var relativeHumidity: Float = 0
+  public var relativeHumidity: Float {
+    get {return _storage._relativeHumidity}
+    set {_uniqueStorage()._relativeHumidity = newValue}
+  }
 
   ///
   /// Barometric pressure in hPA measured
-  public var barometricPressure: Float = 0
+  public var barometricPressure: Float {
+    get {return _storage._barometricPressure}
+    set {_uniqueStorage()._barometricPressure = newValue}
+  }
 
   ///
   /// Gas resistance in MOhm measured
-  public var gasResistance: Float = 0
+  public var gasResistance: Float {
+    get {return _storage._gasResistance}
+    set {_uniqueStorage()._gasResistance = newValue}
+  }
 
   ///
   /// Voltage measured (To be depreciated in favor of PowerMetrics in Meshtastic 3.x)
-  public var voltage: Float = 0
+  public var voltage: Float {
+    get {return _storage._voltage}
+    set {_uniqueStorage()._voltage = newValue}
+  }
 
   ///
   /// Current measured (To be depreciated in favor of PowerMetrics in Meshtastic 3.x)
-  public var current: Float = 0
+  public var current: Float {
+    get {return _storage._current}
+    set {_uniqueStorage()._current = newValue}
+  }
 
   /// 
   /// relative scale IAQ value as measured by Bosch BME680 . value 0-500.
   /// Belongs to Air Quality but is not particle but VOC measurement. Other VOC values can also be put in here.
-  public var iaq: UInt32 = 0
+  public var iaq: UInt32 {
+    get {return _storage._iaq}
+    set {_uniqueStorage()._iaq = newValue}
+  }
 
   ///
   /// RCWL9620 Doppler Radar Distance Sensor, used for water level detection. Float value in mm.
-  public var distance: Float = 0
+  public var distance: Float {
+    get {return _storage._distance}
+    set {_uniqueStorage()._distance = newValue}
+  }
 
   ///
   /// VEML7700 high accuracy ambient light(Lux) digital 16-bit resolution sensor.
-  public var lux: Float = 0
+  public var lux: Float {
+    get {return _storage._lux}
+    set {_uniqueStorage()._lux = newValue}
+  }
 
   ///
   /// VEML7700 high accuracy white light(irradiance) not calibrated digital 16-bit resolution sensor.
-  public var whiteLux: Float = 0
+  public var whiteLux: Float {
+    get {return _storage._whiteLux}
+    set {_uniqueStorage()._whiteLux = newValue}
+  }
 
   ///
   /// Infrared lux
-  public var irLux: Float = 0
+  public var irLux: Float {
+    get {return _storage._irLux}
+    set {_uniqueStorage()._irLux = newValue}
+  }
 
   ///
   /// Ultraviolet lux
-  public var uvLux: Float = 0
+  public var uvLux: Float {
+    get {return _storage._uvLux}
+    set {_uniqueStorage()._uvLux = newValue}
+  }
 
   ///
   /// Wind direction in degrees
   /// 0 degrees = North, 90 = East, etc...
-  public var windDirection: UInt32 = 0
+  public var windDirection: UInt32 {
+    get {return _storage._windDirection}
+    set {_uniqueStorage()._windDirection = newValue}
+  }
 
   ///
   /// Wind speed in m/s
-  public var windSpeed: Float = 0
+  public var windSpeed: Float {
+    get {return _storage._windSpeed}
+    set {_uniqueStorage()._windSpeed = newValue}
+  }
 
   ///
   /// Weight in KG
-  public var weight: Float = 0
+  public var weight: Float {
+    get {return _storage._weight}
+    set {_uniqueStorage()._weight = newValue}
+  }
+
+  ///
+  /// Wind gust in m/s
+  public var windGust: Float {
+    get {return _storage._windGust}
+    set {_uniqueStorage()._windGust = newValue}
+  }
+
+  ///
+  /// Wind lull in m/s
+  public var windLull: Float {
+    get {return _storage._windLull}
+    set {_uniqueStorage()._windLull = newValue}
+  }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 ///
@@ -678,99 +739,183 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     13: .standard(proto: "wind_direction"),
     14: .standard(proto: "wind_speed"),
     15: .same(proto: "weight"),
+    16: .standard(proto: "wind_gust"),
+    17: .standard(proto: "wind_lull"),
   ]
 
+  fileprivate class _StorageClass {
+    var _temperature: Float = 0
+    var _relativeHumidity: Float = 0
+    var _barometricPressure: Float = 0
+    var _gasResistance: Float = 0
+    var _voltage: Float = 0
+    var _current: Float = 0
+    var _iaq: UInt32 = 0
+    var _distance: Float = 0
+    var _lux: Float = 0
+    var _whiteLux: Float = 0
+    var _irLux: Float = 0
+    var _uvLux: Float = 0
+    var _windDirection: UInt32 = 0
+    var _windSpeed: Float = 0
+    var _weight: Float = 0
+    var _windGust: Float = 0
+    var _windLull: Float = 0
+
+    #if swift(>=5.10)
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _temperature = source._temperature
+      _relativeHumidity = source._relativeHumidity
+      _barometricPressure = source._barometricPressure
+      _gasResistance = source._gasResistance
+      _voltage = source._voltage
+      _current = source._current
+      _iaq = source._iaq
+      _distance = source._distance
+      _lux = source._lux
+      _whiteLux = source._whiteLux
+      _irLux = source._irLux
+      _uvLux = source._uvLux
+      _windDirection = source._windDirection
+      _windSpeed = source._windSpeed
+      _weight = source._weight
+      _windGust = source._windGust
+      _windLull = source._windLull
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularFloatField(value: &self.temperature) }()
-      case 2: try { try decoder.decodeSingularFloatField(value: &self.relativeHumidity) }()
-      case 3: try { try decoder.decodeSingularFloatField(value: &self.barometricPressure) }()
-      case 4: try { try decoder.decodeSingularFloatField(value: &self.gasResistance) }()
-      case 5: try { try decoder.decodeSingularFloatField(value: &self.voltage) }()
-      case 6: try { try decoder.decodeSingularFloatField(value: &self.current) }()
-      case 7: try { try decoder.decodeSingularUInt32Field(value: &self.iaq) }()
-      case 8: try { try decoder.decodeSingularFloatField(value: &self.distance) }()
-      case 9: try { try decoder.decodeSingularFloatField(value: &self.lux) }()
-      case 10: try { try decoder.decodeSingularFloatField(value: &self.whiteLux) }()
-      case 11: try { try decoder.decodeSingularFloatField(value: &self.irLux) }()
-      case 12: try { try decoder.decodeSingularFloatField(value: &self.uvLux) }()
-      case 13: try { try decoder.decodeSingularUInt32Field(value: &self.windDirection) }()
-      case 14: try { try decoder.decodeSingularFloatField(value: &self.windSpeed) }()
-      case 15: try { try decoder.decodeSingularFloatField(value: &self.weight) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularFloatField(value: &_storage._temperature) }()
+        case 2: try { try decoder.decodeSingularFloatField(value: &_storage._relativeHumidity) }()
+        case 3: try { try decoder.decodeSingularFloatField(value: &_storage._barometricPressure) }()
+        case 4: try { try decoder.decodeSingularFloatField(value: &_storage._gasResistance) }()
+        case 5: try { try decoder.decodeSingularFloatField(value: &_storage._voltage) }()
+        case 6: try { try decoder.decodeSingularFloatField(value: &_storage._current) }()
+        case 7: try { try decoder.decodeSingularUInt32Field(value: &_storage._iaq) }()
+        case 8: try { try decoder.decodeSingularFloatField(value: &_storage._distance) }()
+        case 9: try { try decoder.decodeSingularFloatField(value: &_storage._lux) }()
+        case 10: try { try decoder.decodeSingularFloatField(value: &_storage._whiteLux) }()
+        case 11: try { try decoder.decodeSingularFloatField(value: &_storage._irLux) }()
+        case 12: try { try decoder.decodeSingularFloatField(value: &_storage._uvLux) }()
+        case 13: try { try decoder.decodeSingularUInt32Field(value: &_storage._windDirection) }()
+        case 14: try { try decoder.decodeSingularFloatField(value: &_storage._windSpeed) }()
+        case 15: try { try decoder.decodeSingularFloatField(value: &_storage._weight) }()
+        case 16: try { try decoder.decodeSingularFloatField(value: &_storage._windGust) }()
+        case 17: try { try decoder.decodeSingularFloatField(value: &_storage._windLull) }()
+        default: break
+        }
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.temperature != 0 {
-      try visitor.visitSingularFloatField(value: self.temperature, fieldNumber: 1)
-    }
-    if self.relativeHumidity != 0 {
-      try visitor.visitSingularFloatField(value: self.relativeHumidity, fieldNumber: 2)
-    }
-    if self.barometricPressure != 0 {
-      try visitor.visitSingularFloatField(value: self.barometricPressure, fieldNumber: 3)
-    }
-    if self.gasResistance != 0 {
-      try visitor.visitSingularFloatField(value: self.gasResistance, fieldNumber: 4)
-    }
-    if self.voltage != 0 {
-      try visitor.visitSingularFloatField(value: self.voltage, fieldNumber: 5)
-    }
-    if self.current != 0 {
-      try visitor.visitSingularFloatField(value: self.current, fieldNumber: 6)
-    }
-    if self.iaq != 0 {
-      try visitor.visitSingularUInt32Field(value: self.iaq, fieldNumber: 7)
-    }
-    if self.distance != 0 {
-      try visitor.visitSingularFloatField(value: self.distance, fieldNumber: 8)
-    }
-    if self.lux != 0 {
-      try visitor.visitSingularFloatField(value: self.lux, fieldNumber: 9)
-    }
-    if self.whiteLux != 0 {
-      try visitor.visitSingularFloatField(value: self.whiteLux, fieldNumber: 10)
-    }
-    if self.irLux != 0 {
-      try visitor.visitSingularFloatField(value: self.irLux, fieldNumber: 11)
-    }
-    if self.uvLux != 0 {
-      try visitor.visitSingularFloatField(value: self.uvLux, fieldNumber: 12)
-    }
-    if self.windDirection != 0 {
-      try visitor.visitSingularUInt32Field(value: self.windDirection, fieldNumber: 13)
-    }
-    if self.windSpeed != 0 {
-      try visitor.visitSingularFloatField(value: self.windSpeed, fieldNumber: 14)
-    }
-    if self.weight != 0 {
-      try visitor.visitSingularFloatField(value: self.weight, fieldNumber: 15)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      if _storage._temperature != 0 {
+        try visitor.visitSingularFloatField(value: _storage._temperature, fieldNumber: 1)
+      }
+      if _storage._relativeHumidity != 0 {
+        try visitor.visitSingularFloatField(value: _storage._relativeHumidity, fieldNumber: 2)
+      }
+      if _storage._barometricPressure != 0 {
+        try visitor.visitSingularFloatField(value: _storage._barometricPressure, fieldNumber: 3)
+      }
+      if _storage._gasResistance != 0 {
+        try visitor.visitSingularFloatField(value: _storage._gasResistance, fieldNumber: 4)
+      }
+      if _storage._voltage != 0 {
+        try visitor.visitSingularFloatField(value: _storage._voltage, fieldNumber: 5)
+      }
+      if _storage._current != 0 {
+        try visitor.visitSingularFloatField(value: _storage._current, fieldNumber: 6)
+      }
+      if _storage._iaq != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._iaq, fieldNumber: 7)
+      }
+      if _storage._distance != 0 {
+        try visitor.visitSingularFloatField(value: _storage._distance, fieldNumber: 8)
+      }
+      if _storage._lux != 0 {
+        try visitor.visitSingularFloatField(value: _storage._lux, fieldNumber: 9)
+      }
+      if _storage._whiteLux != 0 {
+        try visitor.visitSingularFloatField(value: _storage._whiteLux, fieldNumber: 10)
+      }
+      if _storage._irLux != 0 {
+        try visitor.visitSingularFloatField(value: _storage._irLux, fieldNumber: 11)
+      }
+      if _storage._uvLux != 0 {
+        try visitor.visitSingularFloatField(value: _storage._uvLux, fieldNumber: 12)
+      }
+      if _storage._windDirection != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._windDirection, fieldNumber: 13)
+      }
+      if _storage._windSpeed != 0 {
+        try visitor.visitSingularFloatField(value: _storage._windSpeed, fieldNumber: 14)
+      }
+      if _storage._weight != 0 {
+        try visitor.visitSingularFloatField(value: _storage._weight, fieldNumber: 15)
+      }
+      if _storage._windGust != 0 {
+        try visitor.visitSingularFloatField(value: _storage._windGust, fieldNumber: 16)
+      }
+      if _storage._windLull != 0 {
+        try visitor.visitSingularFloatField(value: _storage._windLull, fieldNumber: 17)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: EnvironmentMetrics, rhs: EnvironmentMetrics) -> Bool {
-    if lhs.temperature != rhs.temperature {return false}
-    if lhs.relativeHumidity != rhs.relativeHumidity {return false}
-    if lhs.barometricPressure != rhs.barometricPressure {return false}
-    if lhs.gasResistance != rhs.gasResistance {return false}
-    if lhs.voltage != rhs.voltage {return false}
-    if lhs.current != rhs.current {return false}
-    if lhs.iaq != rhs.iaq {return false}
-    if lhs.distance != rhs.distance {return false}
-    if lhs.lux != rhs.lux {return false}
-    if lhs.whiteLux != rhs.whiteLux {return false}
-    if lhs.irLux != rhs.irLux {return false}
-    if lhs.uvLux != rhs.uvLux {return false}
-    if lhs.windDirection != rhs.windDirection {return false}
-    if lhs.windSpeed != rhs.windSpeed {return false}
-    if lhs.weight != rhs.weight {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._temperature != rhs_storage._temperature {return false}
+        if _storage._relativeHumidity != rhs_storage._relativeHumidity {return false}
+        if _storage._barometricPressure != rhs_storage._barometricPressure {return false}
+        if _storage._gasResistance != rhs_storage._gasResistance {return false}
+        if _storage._voltage != rhs_storage._voltage {return false}
+        if _storage._current != rhs_storage._current {return false}
+        if _storage._iaq != rhs_storage._iaq {return false}
+        if _storage._distance != rhs_storage._distance {return false}
+        if _storage._lux != rhs_storage._lux {return false}
+        if _storage._whiteLux != rhs_storage._whiteLux {return false}
+        if _storage._irLux != rhs_storage._irLux {return false}
+        if _storage._uvLux != rhs_storage._uvLux {return false}
+        if _storage._windDirection != rhs_storage._windDirection {return false}
+        if _storage._windSpeed != rhs_storage._windSpeed {return false}
+        if _storage._weight != rhs_storage._weight {return false}
+        if _storage._windGust != rhs_storage._windGust {return false}
+        if _storage._windLull != rhs_storage._windLull {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
