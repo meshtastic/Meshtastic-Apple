@@ -68,7 +68,16 @@ struct NodeList: View {
 				user: user
 			)
 		}
+
 		if let connectedNode {
+			ExchangePositionsButton(
+				bleManager: bleManager,
+				node: node
+			)
+			TraceRouteButton(
+				bleManager: bleManager,
+				node: node
+			)
 			DeleteNodeButton(
 				bleManager: bleManager,
 				context: context,

@@ -1217,9 +1217,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	}
 
 	public func sendPosition(channel: Int32, destNum: Int64, wantResponse: Bool) -> Bool {
-		var success = false
 		let fromNodeNum = connectedPeripheral.num
 		guard let positionPacket = getPositionFromPhoneGPS(destNum: destNum) else {
+			Logger.services.error("Unable to get position data from device GPS to send to node")
 			return false
 		}
 
@@ -1234,6 +1234,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			dataMessage.wantResponse = wantResponse
 			meshPacket.decoded = dataMessage
 		} else {
+			Logger.services.error("Failed to serialize position packet data")
 			return false
 		}
 
@@ -1241,15 +1242,19 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
 		guard let binaryData: Data = try? toRadio.serializedData() else {
+			Logger.services.error("Failed to serialize position packet")
 			return false
 		}
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			success = true
+			
 			let logString = String.localizedStringWithFormat("mesh.log.sharelocation %@".localized, String(fromNodeNum))
 			Logger.services.debug("📍 \(logString)")
+			return true
+		} else {
+			Logger.services.error("Device no longer connected. Unable to send position information.")
+			return false
 		}
-		return success
 	}
 	@objc func positionTimerFired(timer: Timer) {
 		// Check for connected node
