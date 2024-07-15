@@ -10,6 +10,7 @@ import CoreLocation
 import OSLog
 
 struct NodeDetail: View {
+	private let gridItemLayout = Array(repeating: GridItem(.flexible(), spacing: 10), count: 2)
 	private static let relativeFormatter: RelativeDateTimeFormatter = {
 		let formatter = RelativeDateTimeFormatter()
 		formatter.unitsStyle = .full
@@ -157,7 +158,33 @@ struct NodeDetail: View {
 						}
 					}
 				}
-
+				if node.hasPositions && UserDefaults.environmentEnableWeatherKit || node.hasEnvironmentMetrics {
+					Section("Environment") {
+						if !node.hasEnvironmentMetrics {
+							LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
+						} else {
+							VStack {
+								if node.latestEnvironmentMetrics?.iaq ?? -1 > 0 {
+									IndoorAirQuality(iaq: Int(node.latestEnvironmentMetrics?.iaq ?? 0), displayMode: .gradient)
+										.padding(.vertical)
+								}
+								LazyVGrid(columns: gridItemLayout) {
+									WeatherConditionsCompactWidget(temperature: String(node.latestEnvironmentMetrics?.temperature.shortFormattedTemperature() ?? "99°"), symbolName: "cloud.sun", description: "TEMP")
+									if node.latestEnvironmentMetrics?.relativeHumidity ?? 0.0 > 0.0 {
+										HumidityCompactWidget(humidity: Int(node.latestEnvironmentMetrics?.relativeHumidity ?? 0.0), dewPoint: String(format: "%.0f", calculateDewPoint(temp: node.latestEnvironmentMetrics?.temperature ?? 0.0, relativeHumidity: node.latestEnvironmentMetrics?.relativeHumidity ?? 0.0)) + "°")
+									}
+									if node.latestEnvironmentMetrics?.barometricPressure ?? 0.0 > 0.0 {
+										PressureCompactWidget(pressure: String(format: "%.2f", node.latestEnvironmentMetrics?.barometricPressure ?? 0.0), unit: "hPA", low: node.latestEnvironmentMetrics?.barometricPressure ?? 0.0 <= 1009.144)
+									}
+									if node.latestEnvironmentMetrics?.windSpeed ?? 0.0 > 0.0 {
+										WindCompactWidget(speed: String(node.latestEnvironmentMetrics?.windSpeed ?? 0.0), gust: String(node.latestEnvironmentMetrics?.windGust ?? 0.0), direction: "")
+									}
+								}
+								.padding(node.latestEnvironmentMetrics?.iaq ?? -1 > 0 ? .bottom : .vertical)
+							}
+						}
+					}
+				}
 				Section("Logs") {
 					// Metrics
 					NavigationLink {

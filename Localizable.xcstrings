@@ -73,6 +73,16 @@
         }
       }
     },
+    "%@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
     "%@ %lld" : {
       "localizations" : {
         "en" : {
@@ -6954,6 +6964,12 @@
     "Enter DFU Mode" : {
 
     },
+    "environment" : {
+
+    },
+    "Environment" : {
+
+    },
     "Environment Metrics Log" : {
 
     },
@@ -8082,6 +8098,9 @@
         }
       }
     },
+    "Gusts %@" : {
+
+    },
     "Hardware" : {
 
     },
@@ -8218,6 +8237,9 @@
     "Hide Alerts" : {
 
     },
+    "HIGH" : {
+
+    },
     "History Return Max" : {
 
     },
@@ -8264,6 +8286,9 @@
 
     },
     "Humidity" : {
+
+    },
+    "HUMIDITY" : {
 
     },
     "hybrid" : {
@@ -11339,6 +11364,9 @@
           }
         }
       }
+    },
+    "LOW" : {
+
     },
     "Managed Device" : {
 
@@ -16578,6 +16606,9 @@
     "Press Pin" : {
 
     },
+    "PRESSURE" : {
+
+    },
     "Primary" : {
 
     },
@@ -20840,6 +20871,9 @@
     "The compass heading on the screen outside of the circle will always point north." : {
 
     },
+    "The dew point is %@ right now." : {
+
+    },
     "The fastest that position updates will be sent if the minimum distance has been satisfied" : {
 
     },
@@ -22364,6 +22398,9 @@
     "Waypoint Options" : {
 
     },
+    "Weather Conditions" : {
+
+    },
     "Web Flasher" : {
 
     },
@@ -22383,6 +22420,9 @@
 
     },
     "WiFi Options" : {
+
+    },
+    "WIND" : {
 
     },
     "x" : {

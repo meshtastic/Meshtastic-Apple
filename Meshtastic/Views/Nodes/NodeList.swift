@@ -18,11 +18,20 @@ struct NodeList: View {
 	@State private var viaMqtt = true
 	@State private var isOnline = false
 	@State private var isFavorite = false
+	@State private var isEnvironment = false
 	@State private var distanceFilter = false
 	@State private var maxDistance: Double = 800000
 	@State private var hopsAway: Double = -1.0
 	@State private var roleFilter = false
 	@State private var deviceRoles: Set<Int> = []
+
+	var boolFilters: [Bool] {[
+		isOnline,
+		isFavorite,
+		isEnvironment,
+		distanceFilter,
+		roleFilter
+	]}
 
 	@State var isEditingFilters = false
 
@@ -37,7 +46,7 @@ struct NodeList: View {
 			NSSortDescriptor(key: "lastHeard", ascending: false),
 			NSSortDescriptor(key: "user.longName", ascending: true),
 		],
-		animation: .default
+		animation: .spring
 	)
 	var nodes: FetchedResults<NodeInfoEntity>
 
@@ -92,6 +101,7 @@ struct NodeList: View {
 					viaMqtt: $viaMqtt,
 					isOnline: $isOnline,
 					isFavorite: $isFavorite,
+					isEnvironment: $isEnvironment,
 					distanceFilter: $distanceFilter,
 					maximumDistance: $maxDistance,
 					hopsAway: $hopsAway,
@@ -203,6 +213,11 @@ struct NodeList: View {
 				await searchNodeList()
 			}
 		}
+		.onChange(of: boolFilters) { _ in
+			Task {
+				await searchNodeList()
+			}
+		}
 		.onChange(of: [deviceRoles]) { _ in
 			Task {
 				await searchNodeList()
@@ -213,22 +228,7 @@ struct NodeList: View {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: isOnline) { _ in
-			Task {
-				await searchNodeList()
-			}
-		}
-		.onChange(of: isFavorite) { _ in
-			Task {
-				await searchNodeList()
-			}
-		}
 		.onChange(of: maxDistance) { _ in
-			Task {
-				await searchNodeList()
-			}
-		}
-		.onChange(of: distanceFilter) { _ in
 			Task {
 				await searchNodeList()
 			}
@@ -299,7 +299,6 @@ struct NodeList: View {
 			let hopsAwayPredicate = NSPredicate(format: "hopsAway > 0 AND hopsAway <= %i", Int32(hopsAway))
 			predicates.append(hopsAwayPredicate)
 		}
-
 		/// Online
 		if isOnline {
 			let isOnlinePredicate = NSPredicate(format: "lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -15, to: Date())! as NSDate)
@@ -309,6 +308,11 @@ struct NodeList: View {
 		if isFavorite {
 			let isFavoritePredicate = NSPredicate(format: "favorite == YES")
 			predicates.append(isFavoritePredicate)
+		}
+		/// Environment
+		if isEnvironment {
+			let environmentPredicate = NSPredicate(format: "SUBQUERY(telemetries, $tel, $tel.metricsType == 1).@count > 0")
+			predicates.append(environmentPredicate)
 		}
 		/// Distance
 		if distanceFilter {
@@ -328,7 +332,6 @@ struct NodeList: View {
 				predicates.append(distancePredicate)
 			}
 		}
-
 		if predicates.count > 0 || !searchText.isEmpty {
 			if !searchText.isEmpty {
 				let filterPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)

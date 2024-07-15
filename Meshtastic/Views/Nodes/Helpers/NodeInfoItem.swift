@@ -62,7 +62,7 @@ struct NodeInfoItem: View {
 						.foregroundColor(getRssiColor(rssi: node.rssi))
 						.font(.caption2)
 				}
-				.frame(minWidth: 90, maxWidth: 180)
+				.frame(minWidth: 100, maxWidth: 140)
 			}
 
 			if node.telemetries?.count ?? 0 > 0 {
