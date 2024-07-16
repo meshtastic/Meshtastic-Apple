@@ -135,10 +135,9 @@ struct ChannelMessageList: View {
 		let isCurrentUser = isCurrentUser(message: message, preferredNum: preferredPeripheralNum)
 		let sourceNode = message.fromUser?.userNode
 
-		HStack(alignment: .top, spacing: 8) {
+		HStack(alignment: isCurrentUser ? .bottom : .top, spacing: 8) {
 			if isCurrentUser {
 				Spacer()
-					.frame(minWidth: 64)
 			}
 			else {
 				VStack(alignment: .center) {
@@ -208,7 +207,14 @@ struct ChannelMessageList: View {
 			}
 			.id(message.messageId)
 
-			if !isCurrentUser {
+			if isCurrentUser {
+				Avatar(
+					getSenderName(message: message, short: true),
+					background: getSenderColor(message: message),
+					size: 64
+				)
+			}
+			else {
 				Spacer()
 			}
 		}
