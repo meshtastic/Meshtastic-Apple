@@ -83,7 +83,7 @@ class Router: ObservableObject {
 			.first(where: { $0.name == "nodenum" })?
 			.value
 			.flatMap(Int64.init)
-		route(to: .nodes(selectedNodeNum: nodeId))
+		route(to: .nodes(NodeListNavigationState(selectedNodeNum: nodeId, details: .deviceMetricsLog)))
 	}
 
 	private func routeMap(_ components: URLComponents) {

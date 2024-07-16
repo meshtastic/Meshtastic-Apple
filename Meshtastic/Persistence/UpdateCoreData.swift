@@ -363,11 +363,11 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 							manager.notifications = [
 								Notification(
 									id: (UUID().uuidString),
-									title: "New Node",
+									title: "Position Exchange",
 									subtitle: "\(packet.from.toHex())",
-									content: "New Node has been discovered",
+									content: "From User has shared their location with you.",
 									target: "nodes",
-									path: "meshtastic:///nodes?nodenum=\(packet.from)&map=true"
+									path: "meshtastic:///nodes?nodenum=\(packet.from)&detail=nodeMap"
 								)
 							]
 							manager.schedule()
