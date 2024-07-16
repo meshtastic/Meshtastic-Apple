@@ -264,7 +264,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			if fetchedNode[0].user == nil {
 				let newUser = createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
 				fetchedNode[0].user! = newUser
-				
+			
 			}
 			do {
 				try context.save()
@@ -365,7 +365,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 									id: (UUID().uuidString),
 									title: "Position Exchange",
 									subtitle: "\(packet.from.toHex())",
-									content: "From User has shared their location with you.",
+									content: "\(packet.from.toHex()) has shared their location with you.",
 									target: "nodes",
 									path: "meshtastic:///nodes?nodenum=\(packet.from)&detail=nodeMap"
 								)

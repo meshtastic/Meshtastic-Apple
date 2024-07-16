@@ -83,7 +83,10 @@ class Router: ObservableObject {
 			.first(where: { $0.name == "nodenum" })?
 			.value
 			.flatMap(Int64.init)
-		route(to: .nodes(NodeListNavigationState(selectedNodeNum: nodeId, details: .deviceMetricsLog)))
+		let detail = components.queryItems?
+			.first(where: { $0.name == "detail" })?
+			.value
+		route(to: .nodes(NodeListNavigationState(selectedNodeNum: nodeId, details: detail != nil ? NodeDetails(rawValue: detail!) : nil)))
 	}
 
 	private func routeMap(_ components: URLComponents) {

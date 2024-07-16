@@ -16,7 +16,7 @@ struct NodeMap: View {
 
 	@ObservedObject
 	var router: Router
-	
+
 	@State var selectedMapLayer: MapLayer = UserDefaults.mapLayer
 	@State var enableMapRecentering: Bool = UserDefaults.enableMapRecentering
 	@State var enableMapRouteLines: Bool = UserDefaults.enableMapRouteLines
