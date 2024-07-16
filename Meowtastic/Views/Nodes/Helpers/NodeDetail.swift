@@ -48,12 +48,11 @@ struct NodeDetail: View {
 		as? TelemetryEntity
 	}
 	private var hasAnyLog: Bool {
-		if
-			node.hasDeviceMetrics,
-			node.hasEnvironmentMetrics,
-			node.hasDetectionSensorMetrics,
-			node.hasPax,
-			let routes = node.traceRoutes, routes.count > 0
+		if node.hasDeviceMetrics
+			|| node.hasEnvironmentMetrics
+			|| node.hasDetectionSensorMetrics
+			|| node.hasPax
+			|| node.traceRoutes?.count ?? 0 > 0
 		{
 			return true
 		}
@@ -285,35 +284,50 @@ struct NodeDetail: View {
 			}
 		}
 
-		if let hwModel = node.user?.hwModel {
+		if let num = connectedNode?.num, num != node.num {
 			HStack {
 				Label {
-					Text("Hardware")
+					Text("Network")
 				} icon: {
-					Image(systemName: "flipphone")
-						.symbolRenderingMode(.monochrome)
-						.foregroundColor(.accentColor)
+					if node.viaMqtt {
+						Image(systemName: "network")
+							.symbolRenderingMode(.monochrome)
+							.foregroundColor(.accentColor)
+					}
+					else {
+						Image(systemName: "antenna.radiowaves.left.and.right")
+							.symbolRenderingMode(.monochrome)
+							.foregroundColor(.accentColor)
+					}
 				}
 
 				Spacer()
 
-				Text(hwModel)
+				if node.viaMqtt {
+					Text("MQTT")
+				}
+				else {
+					Text("LoRa")
+				}
 			}
-		}
 
-		if let metadata = node.metadata, let firmwareVersion = metadata.firmwareVersion {
 			HStack {
 				Label {
-					Text("Firmware")
+					Text("Hops")
 				} icon: {
-					Image(systemName: "memorychip")
+					Image(systemName: "hare")
 						.symbolRenderingMode(.monochrome)
 						.foregroundColor(.accentColor)
 				}
 
 				Spacer()
 
-				Text("v" + firmwareVersion)
+				if node.hopsAway == 0 {
+					Text("Direct visibility")
+				}
+				else {
+					Text("\(node.hopsAway) hops")
+				}
 			}
 		}
 
@@ -359,6 +373,38 @@ struct NodeDetail: View {
 			}
 		}
 
+		if let hwModel = node.user?.hwModel {
+			HStack {
+				Label {
+					Text("Hardware")
+				} icon: {
+					Image(systemName: "flipphone")
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
+				}
+
+				Spacer()
+
+				Text(hwModel)
+			}
+		}
+
+		if let metadata = node.metadata, let firmwareVersion = metadata.firmwareVersion {
+			HStack {
+				Label {
+					Text("Firmware")
+				} icon: {
+					Image(systemName: "memorychip")
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
+				}
+
+				Spacer()
+
+				Text("v" + firmwareVersion)
+			}
+		}
+
 		if let nodeTelemetry, nodeTelemetry.uptimeSeconds > 0 {
 			let now = Date.now
 			let later = now + TimeInterval(nodeTelemetry.uptimeSeconds)
@@ -383,6 +429,20 @@ struct NodeDetail: View {
 
 	@ViewBuilder
 	private var logs: some View {
+		if let routes = node.traceRoutes, routes.count > 0 {
+			NavigationLink {
+				TraceRouteLog(node: node)
+			} label: {
+				Label {
+					Text("Trace Route Log")
+				} icon: {
+					Image(systemName: "signpost.right.and.left")
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
+				}
+			}
+		}
+
 		if node.hasDeviceMetrics {
 			NavigationLink {
 				DeviceMetricsLog(node: node)
@@ -390,7 +450,7 @@ struct NodeDetail: View {
 				Label {
 					Text("Device Metrics Log")
 				} icon: {
-					Image(systemName: "flipphone")
+					Image(systemName: "ruler")
 						.symbolRenderingMode(.monochrome)
 						.foregroundColor(.accentColor)
 				}
@@ -405,20 +465,6 @@ struct NodeDetail: View {
 					Text("Environment Metrics Log")
 				} icon: {
 					Image(systemName: "cloud.sun.rain")
-						.symbolRenderingMode(.monochrome)
-						.foregroundColor(.accentColor)
-				}
-			}
-		}
-
-		if let routes = node.traceRoutes, routes.count > 0 {
-			NavigationLink {
-				TraceRouteLog(node: node)
-			} label: {
-				Label {
-					Text("Trace Route Log")
-				} icon: {
-					Image(systemName: "signpost.right.and.left")
 						.symbolRenderingMode(.monochrome)
 						.foregroundColor(.accentColor)
 				}

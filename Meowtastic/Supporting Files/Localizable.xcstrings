@@ -112,6 +112,9 @@
     "%d" : {
 
     },
+    "%d hops" : {
+
+    },
     "%d%%" : {
 
     },
@@ -6222,6 +6225,9 @@
     "Direct Messages" : {
 
     },
+    "Direct visibility" : {
+
+    },
     "direct.messages" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -8134,6 +8140,9 @@
 
     },
     "History Return Window" : {
+
+    },
+    "Hops" : {
 
     },
     "Hourly Duty Cycle" : {
@@ -11175,6 +11184,9 @@
           }
         }
       }
+    },
+    "LoRa" : {
+
     },
     "lora.config" : {
       "localizations" : {
@@ -15097,6 +15109,9 @@
           }
         }
       }
+    },
+    "Network" : {
+
     },
     "network.config" : {
       "localizations" : {
