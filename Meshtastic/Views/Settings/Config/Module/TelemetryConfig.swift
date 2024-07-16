@@ -91,7 +91,7 @@ struct TelemetryConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(.hidden)
-					Text("How often power metrics are sent out over the mesh. Default is 3015 minutes.")
+					Text("How often power metrics are sent out over the mesh. Default is 30 minutes.")
 						.foregroundColor(.gray)
 						.font(.callout)
 					.listRowSeparator(.visible)
