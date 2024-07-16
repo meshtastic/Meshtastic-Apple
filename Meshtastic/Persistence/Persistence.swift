@@ -142,11 +142,11 @@ extension NSPersistentContainer {
 	 /// - Parameter backupURL: A file URL containing backup copies of all currently loaded persistent stores.
 	 /// - Throws: `CopyPersistentStoreError` in various situations.
 	 /// - Returns: Nothing. If no errors are thrown, the restore is complete.
-	 func restorePersistentStore(from backupURL: URL) throws -> Void {
+	 func restorePersistentStore(from backupURL: URL) throws {
 		 guard backupURL.isFileURL else {
 			 throw CopyPersistentStoreErrors.invalidSource("Backup URL must be a file URL")
 		 }
-		 
+
 		 var isDirectory: ObjCBool = false
 		 if FileManager.default.fileExists(atPath: backupURL.path, isDirectory: &isDirectory) {
 			 if !isDirectory.boolValue {
@@ -185,7 +185,7 @@ extension NSPersistentContainer {
 	///   - overwriting: If `true`, any existing copies of the persistent store will be replaced or updated. If `false`, existing copies will not be changed or remoted. When this is `false`, the destination persistent store file must not already exist.
 	/// - Throws: `CopyPersistentStoreError`
 	/// - Returns: Nothing. If no errors are thrown, all loaded persistent stores will be copied to the destination directory.
-	func copyPersistentStores(to destinationURL: URL, overwriting: Bool = false) throws -> Void {
+	func copyPersistentStores(to destinationURL: URL, overwriting: Bool = false) throws {
 
 		guard !destinationURL.relativeString.contains("/0/") else {
 			throw CopyPersistentStoreErrors.invalidDestination("Invalid 0 Node Id")
