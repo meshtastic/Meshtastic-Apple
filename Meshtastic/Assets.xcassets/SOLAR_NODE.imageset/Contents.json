@@ -1,19 +1,8 @@
 {
   "images" : [
     {
-      "filename" : "solarnode.jpeg",
-      "idiom" : "universal",
-      "scale" : "1x"
-    },
-    {
-      "filename" : "solarnode 1.jpeg",
-      "idiom" : "universal",
-      "scale" : "2x"
-    },
-    {
-      "filename" : "solar_node.jpeg",
-      "idiom" : "universal",
-      "scale" : "3x"
+      "filename" : "solar_node.png",
+      "idiom" : "universal"
     }
   ],
   "info" : {

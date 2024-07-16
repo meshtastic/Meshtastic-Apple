@@ -29,7 +29,7 @@ struct NodeInfoItem: View {
 			if let user = node.user {
 				VStack(alignment: .center) {
 					if user.hwModel != "UNSET" {
-						Image(user.hwModel ?? "unset".localized)
+						Image(user.hardwareImage ?? "UNSET")
 							.resizable()
 							.aspectRatio(contentMode: .fit)
 							.frame(width: 75, height: 75)

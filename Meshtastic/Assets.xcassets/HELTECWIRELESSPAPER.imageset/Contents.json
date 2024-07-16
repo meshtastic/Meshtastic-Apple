@@ -2,18 +2,7 @@
   "images" : [
     {
       "filename" : "Paper-Meshtastic-2 copy.jpg",
-      "idiom" : "universal",
-      "scale" : "1x"
-    },
-    {
-      "filename" : "Paper-Meshtastic-2 copy 1.jpg",
-      "idiom" : "universal",
-      "scale" : "2x"
-    },
-    {
-      "filename" : "Paper-Meshtastic-2 copy 2.jpg",
-      "idiom" : "universal",
-      "scale" : "3x"
+      "idiom" : "universal"
     }
   ],
   "info" : {
