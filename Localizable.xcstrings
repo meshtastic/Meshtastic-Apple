@@ -73,6 +73,16 @@
         }
       }
     },
+    "%@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
     "%@ %lld" : {
       "localizations" : {
         "en" : {
@@ -6954,6 +6964,12 @@
     "Enter DFU Mode" : {
 
     },
+    "environment" : {
+
+    },
+    "Environment" : {
+
+    },
     "Environment Metrics Log" : {
 
     },
@@ -7365,6 +7381,9 @@
           }
         }
       }
+    },
+    "First heard" : {
+
     },
     "Five Minutes" : {
 
@@ -8079,6 +8098,9 @@
         }
       }
     },
+    "Gusts %@" : {
+
+    },
     "Hardware" : {
 
     },
@@ -8215,6 +8237,9 @@
     "Hide Alerts" : {
 
     },
+    "HIGH" : {
+
+    },
     "History Return Max" : {
 
     },
@@ -8261,6 +8286,9 @@
 
     },
     "Humidity" : {
+
+    },
+    "HUMIDITY" : {
 
     },
     "hybrid" : {
@@ -8526,6 +8554,9 @@
       }
     },
     "Indoor Air Quality" : {
+
+    },
+    "Indoor Air Quality (IAQ)" : {
 
     },
     "inputevent.back" : {
@@ -10798,6 +10829,9 @@
         }
       }
     },
+    "Last heard" : {
+
+    },
     "Latitude" : {
 
     },
@@ -11330,6 +11364,9 @@
           }
         }
       }
+    },
+    "LOW" : {
+
     },
     "Managed Device" : {
 
@@ -16569,6 +16606,9 @@
     "Press Pin" : {
 
     },
+    "PRESSURE" : {
+
+    },
     "Primary" : {
 
     },
@@ -20831,6 +20871,9 @@
     "The compass heading on the screen outside of the circle will always point north." : {
 
     },
+    "The dew point is %@ right now." : {
+
+    },
     "The fastest that position updates will be sent if the minimum distance has been satisfied" : {
 
     },
@@ -21713,7 +21756,6 @@
 
     },
     "unknown" : {
-      "extractionState" : "migrated",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -22356,6 +22398,9 @@
     "Waypoint Options" : {
 
     },
+    "Weather Conditions" : {
+
+    },
     "Web Flasher" : {
 
     },
@@ -22375,6 +22420,9 @@
 
     },
     "WiFi Options" : {
+
+    },
+    "WIND" : {
 
     },
     "x" : {

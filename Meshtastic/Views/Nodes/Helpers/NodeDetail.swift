@@ -10,11 +10,18 @@ import CoreLocation
 import OSLog
 
 struct NodeDetail: View {
+	private let gridItemLayout = Array(repeating: GridItem(.flexible(), spacing: 10), count: 2)
+	private static let relativeFormatter: RelativeDateTimeFormatter = {
+		let formatter = RelativeDateTimeFormatter()
+		formatter.unitsStyle = .full
+		return formatter
+	}()
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
+	@State private var dateFormatRelative: Bool = true
 
 	// The node the device is currently connected to
 	var connectedNode: NodeInfoEntity?
@@ -24,40 +31,6 @@ struct NodeDetail: View {
 	var node: NodeInfoEntity
 
 	var columnVisibility = NavigationSplitViewVisibility.all
-
-	var favoriteNodeAction: some View {
-		let connectedNodeNum = bleManager.connectedPeripheral?.num ?? 0
-		return Button {
-			let success = if node.favorite {
-				bleManager.removeFavoriteNode(
-					node: node,
-					connectedNodeNum: Int64(connectedNodeNum)
-				)
-			} else {
-				bleManager.setFavoriteNode(
-					node: node,
-					connectedNodeNum: Int64(connectedNodeNum)
-				)
-			}
-			if success {
-				node.favorite = !node.favorite
-				do {
-					try context.save()
-				} catch {
-					context.rollback()
-					Logger.data.error("Save Node Favorite Error")
-				}
-				Logger.data.debug("Favorited a node")
-			}
-		} label: {
-			Label {
-				Text(node.favorite ? "Remove from favorites" : "Add to favorites")
-			} icon: {
-				Image(systemName: node.favorite ? "star.fill" : "star")
-					.symbolRenderingMode(.multicolor)
-			}
-		}
-	}
 
 	var body: some View {
 		NavigationStack {
@@ -96,6 +69,33 @@ struct NodeDetail: View {
 						.textSelection(.enabled)
 					}
 
+					if let metadata = node.metadata {
+						HStack {
+							Label {
+								Text("firmware.version")
+							} icon: {
+								Image(systemName: "memorychip")
+									.symbolRenderingMode(.multicolor)
+							}
+							Spacer()
+
+							Text(metadata.firmwareVersion ?? "unknown".localized)
+						}
+					}
+
+					if let role = node.user?.role, let deviceRole = DeviceRoles(rawValue: Int(role)) {
+						HStack {
+							Label {
+								Text("Role")
+							} icon: {
+								Image(systemName: deviceRole.systemName)
+									.symbolRenderingMode(.multicolor)
+							}
+							Spacer()
+							Text(deviceRole.name)
+						}
+					}
+
 					if let dm = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity, dm.uptimeSeconds > 0 {
 						HStack {
 							Label {
@@ -111,25 +111,80 @@ struct NodeDetail: View {
 							let later = now + TimeInterval(dm.uptimeSeconds)
 							let uptime = (now..<later).formatted(.components(style: .narrow))
 							Text(uptime)
-							.textSelection(.enabled)
+								.textSelection(.enabled)
 						}
 					}
 
-					if let metadata = node.metadata {
+					if let firstHeard = node.firstHeard, firstHeard.timeIntervalSince1970 > 0 {
 						HStack {
 							Label {
-								Text("firmware.version")
+								Text("First heard")
 							} icon: {
-								Image(systemName: "memorychip")
+								Image(systemName: "clock")
+									.symbolRenderingMode(.multicolor)
+							}
+							Spacer()
+							if dateFormatRelative, let text = Self.relativeFormatter.string(for: firstHeard) {
+								Text(text)
+									.textSelection(.enabled)
+							} else {
+								Text(firstHeard.formatted())
+									.textSelection(.enabled)
+							}
+						}.onTapGesture {
+							dateFormatRelative.toggle()
+						}
+					}
+
+					if let lastHeard = node.lastHeard, lastHeard.timeIntervalSince1970 > 0 {
+						HStack {
+							Label {
+								Text("Last heard")
+							} icon: {
+								Image(systemName: "clock.arrow.circlepath")
 									.symbolRenderingMode(.multicolor)
 							}
 							Spacer()
 
-							Text(metadata.firmwareVersion ?? "unknown".localized)
+							if dateFormatRelative, let text = Self.relativeFormatter.string(for: lastHeard) {
+								Text(text)
+									.textSelection(.enabled)
+							} else {
+								Text(lastHeard.formatted())
+									.textSelection(.enabled)
+							}
+						}.onTapGesture {
+							dateFormatRelative.toggle()
 						}
 					}
 				}
-
+				if node.hasPositions && UserDefaults.environmentEnableWeatherKit || node.hasEnvironmentMetrics {
+					Section("Environment") {
+						if !node.hasEnvironmentMetrics {
+							LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
+						} else {
+							VStack {
+								if node.latestEnvironmentMetrics?.iaq ?? -1 > 0 {
+									IndoorAirQuality(iaq: Int(node.latestEnvironmentMetrics?.iaq ?? 0), displayMode: .gradient)
+										.padding(.vertical)
+								}
+								LazyVGrid(columns: gridItemLayout) {
+									WeatherConditionsCompactWidget(temperature: String(node.latestEnvironmentMetrics?.temperature.shortFormattedTemperature() ?? "99°"), symbolName: "cloud.sun", description: "TEMP")
+									if node.latestEnvironmentMetrics?.relativeHumidity ?? 0.0 > 0.0 {
+										HumidityCompactWidget(humidity: Int(node.latestEnvironmentMetrics?.relativeHumidity ?? 0.0), dewPoint: String(format: "%.0f", calculateDewPoint(temp: node.latestEnvironmentMetrics?.temperature ?? 0.0, relativeHumidity: node.latestEnvironmentMetrics?.relativeHumidity ?? 0.0)) + "°")
+									}
+									if node.latestEnvironmentMetrics?.barometricPressure ?? 0.0 > 0.0 {
+										PressureCompactWidget(pressure: String(format: "%.2f", node.latestEnvironmentMetrics?.barometricPressure ?? 0.0), unit: "hPA", low: node.latestEnvironmentMetrics?.barometricPressure ?? 0.0 <= 1009.144)
+									}
+									if node.latestEnvironmentMetrics?.windSpeed ?? 0.0 > 0.0 {
+										WindCompactWidget(speed: String(node.latestEnvironmentMetrics?.windSpeed ?? 0.0), gust: String(node.latestEnvironmentMetrics?.windGust ?? 0.0), direction: "")
+									}
+								}
+								.padding(node.latestEnvironmentMetrics?.iaq ?? -1 > 0 ? .bottom : .vertical)
+							}
+						}
+					}
+				}
 				Section("Logs") {
 					// Metrics
 					NavigationLink {

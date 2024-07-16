@@ -10,6 +10,14 @@ import CoreData
 
 extension NodeInfoEntity {
 
+	var latestPosition: PositionEntity? {
+		return self.positions?.lastObject as? PositionEntity
+	}
+
+	var latestEnvironmentMetrics: TelemetryEntity? {
+		return self.telemetries?.filtered(using: NSPredicate(format: "metricsType == 1")).lastObject as? TelemetryEntity
+	}
+
 	var hasPositions: Bool {
 		return positions?.count ?? 0 > 0
 	}

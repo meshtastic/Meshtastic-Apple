@@ -20,6 +20,7 @@ struct NodeInfoItem: View {
 
 	var body: some View {
 		HStack {
+			Spacer()
 			CircleText(
 				text: node.user?.shortName ?? "?",
 				color: Color(UIColor(hex: UInt32(node.num))),
@@ -28,7 +29,7 @@ struct NodeInfoItem: View {
 			if let user = node.user {
 				VStack(alignment: .center) {
 					if user.hwModel != "UNSET" {
-						Image(user.hwModel ?? "unset".localized)
+						Image(user.hardwareImage ?? "UNSET")
 							.resizable()
 							.aspectRatio(contentMode: .fit)
 							.frame(width: 75, height: 75)
@@ -61,6 +62,7 @@ struct NodeInfoItem: View {
 						.foregroundColor(getRssiColor(rssi: node.rssi))
 						.font(.caption2)
 				}
+				.frame(minWidth: 100, maxWidth: 140)
 			}
 
 			if node.telemetries?.count ?? 0 > 0 {
@@ -69,5 +71,6 @@ struct NodeInfoItem: View {
 			}
 			Spacer()
 		}
+		.padding(.leading)
 	}
 }

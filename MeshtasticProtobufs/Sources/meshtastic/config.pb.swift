@@ -1087,7 +1087,10 @@ public struct Config {
     ///
     /// When enabled, the `modem_preset` fields will be adhered to, else the `bandwidth`/`spread_factor`/`coding_rate`
     /// will be taked from their respective manually defined fields
-    public var usePreset: Bool = false
+    public var usePreset: Bool {
+      get {return _storage._usePreset}
+      set {_uniqueStorage()._usePreset = newValue}
+    }
 
     ///
     /// Either modem_config or bandwidth/spreading/coding will be specified - NOT BOTH.
@@ -1095,51 +1098,78 @@ public struct Config {
     /// Because protobufs take ZERO space when the value is zero this works out nicely.
     /// This value is replaced by bandwidth/spread_factor/coding_rate.
     /// If you'd like to experiment with other options add them to MeshRadio.cpp in the device code.
-    public var modemPreset: Config.LoRaConfig.ModemPreset = .longFast
+    public var modemPreset: Config.LoRaConfig.ModemPreset {
+      get {return _storage._modemPreset}
+      set {_uniqueStorage()._modemPreset = newValue}
+    }
 
     ///
     /// Bandwidth in MHz
     /// Certain bandwidth numbers are 'special' and will be converted to the
     /// appropriate floating point value: 31 -> 31.25MHz
-    public var bandwidth: UInt32 = 0
+    public var bandwidth: UInt32 {
+      get {return _storage._bandwidth}
+      set {_uniqueStorage()._bandwidth = newValue}
+    }
 
     ///
     /// A number from 7 to 12.
     /// Indicates number of chirps per symbol as 1<<spread_factor.
-    public var spreadFactor: UInt32 = 0
+    public var spreadFactor: UInt32 {
+      get {return _storage._spreadFactor}
+      set {_uniqueStorage()._spreadFactor = newValue}
+    }
 
     ///
     /// The denominator of the coding rate.
     /// ie for 4/5, the value is 5. 4/8 the value is 8.
-    public var codingRate: UInt32 = 0
+    public var codingRate: UInt32 {
+      get {return _storage._codingRate}
+      set {_uniqueStorage()._codingRate = newValue}
+    }
 
     ///
     /// This parameter is for advanced users with advanced test equipment, we do not recommend most users use it.
     /// A frequency offset that is added to to the calculated band center frequency.
     /// Used to correct for crystal calibration errors.
-    public var frequencyOffset: Float = 0
+    public var frequencyOffset: Float {
+      get {return _storage._frequencyOffset}
+      set {_uniqueStorage()._frequencyOffset = newValue}
+    }
 
     ///
     /// The region code for the radio (US, CN, EU433, etc...)
-    public var region: Config.LoRaConfig.RegionCode = .unset
+    public var region: Config.LoRaConfig.RegionCode {
+      get {return _storage._region}
+      set {_uniqueStorage()._region = newValue}
+    }
 
     ///
     /// Maximum number of hops. This can't be greater than 7.
     /// Default of 3
     /// Attempting to set a value > 7 results in the default
-    public var hopLimit: UInt32 = 0
+    public var hopLimit: UInt32 {
+      get {return _storage._hopLimit}
+      set {_uniqueStorage()._hopLimit = newValue}
+    }
 
     ///
     /// Disable TX from the LoRa radio. Useful for hot-swapping antennas and other tests.
     /// Defaults to false
-    public var txEnabled: Bool = false
+    public var txEnabled: Bool {
+      get {return _storage._txEnabled}
+      set {_uniqueStorage()._txEnabled = newValue}
+    }
 
     ///
     /// If zero, then use default max legal continuous power (ie. something that won't
     /// burn out the radio hardware)
     /// In most cases you should use zero here.
     /// Units are in dBm.
-    public var txPower: Int32 = 0
+    public var txPower: Int32 {
+      get {return _storage._txPower}
+      set {_uniqueStorage()._txPower = newValue}
+    }
 
     ///
     /// This controls the actual hardware frequency the radio transmits on.
@@ -1149,17 +1179,26 @@ public struct Config {
     /// algorithm to derive the channel number")
     /// If using the hash algorithm the channel number will be: hash(channel_name) %
     /// NUM_CHANNELS (Where num channels depends on the regulatory region).
-    public var channelNum: UInt32 = 0
+    public var channelNum: UInt32 {
+      get {return _storage._channelNum}
+      set {_uniqueStorage()._channelNum = newValue}
+    }
 
     ///
     /// If true, duty cycle limits will be exceeded and thus you're possibly not following
     /// the local regulations if you're not a HAM.
     /// Has no effect if the duty cycle of the used region is 100%.
-    public var overrideDutyCycle: Bool = false
+    public var overrideDutyCycle: Bool {
+      get {return _storage._overrideDutyCycle}
+      set {_uniqueStorage()._overrideDutyCycle = newValue}
+    }
 
     ///
     /// If true, sets RX boosted gain mode on SX126X based radios
-    public var sx126XRxBoostedGain: Bool = false
+    public var sx126XRxBoostedGain: Bool {
+      get {return _storage._sx126XRxBoostedGain}
+      set {_uniqueStorage()._sx126XRxBoostedGain = newValue}
+    }
 
     ///
     /// This parameter is for advanced users and licensed HAM radio operators.
@@ -1167,17 +1206,33 @@ public struct Config {
     /// will still be applied. This will allow you to use out-of-band frequencies.
     /// Please respect your local laws and regulations. If you are a HAM, make sure you
     /// enable HAM mode and turn off encryption.
-    public var overrideFrequency: Float = 0
+    public var overrideFrequency: Float {
+      get {return _storage._overrideFrequency}
+      set {_uniqueStorage()._overrideFrequency = newValue}
+    }
+
+    ///
+    /// If true, disable the build-in PA FAN using pin define in RF95_FAN_EN.
+    public var paFanDisabled: Bool {
+      get {return _storage._paFanDisabled}
+      set {_uniqueStorage()._paFanDisabled = newValue}
+    }
 
     ///
     /// For testing it is useful sometimes to force a node to never listen to
     /// particular other nodes (simulating radio out of range). All nodenums listed
     /// in ignore_incoming will have packets they send dropped on receive (by router.cpp)
-    public var ignoreIncoming: [UInt32] = []
+    public var ignoreIncoming: [UInt32] {
+      get {return _storage._ignoreIncoming}
+      set {_uniqueStorage()._ignoreIncoming = newValue}
+    }
 
     ///
     /// If true, the device will not process any packets received via LoRa that passed via MQTT anywhere on the path towards it.
-    public var ignoreMqtt: Bool = false
+    public var ignoreMqtt: Bool {
+      get {return _storage._ignoreMqtt}
+      set {_uniqueStorage()._ignoreMqtt = newValue}
+    }
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1391,6 +1446,8 @@ public struct Config {
     }
 
     public init() {}
+
+    fileprivate var _storage = _StorageClass.defaultInstance
   }
 
   public struct BluetoothConfig {
@@ -2443,106 +2500,184 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     12: .standard(proto: "override_duty_cycle"),
     13: .standard(proto: "sx126x_rx_boosted_gain"),
     14: .standard(proto: "override_frequency"),
+    15: .standard(proto: "pa_fan_disabled"),
     103: .standard(proto: "ignore_incoming"),
     104: .standard(proto: "ignore_mqtt"),
   ]
 
+  fileprivate class _StorageClass {
+    var _usePreset: Bool = false
+    var _modemPreset: Config.LoRaConfig.ModemPreset = .longFast
+    var _bandwidth: UInt32 = 0
+    var _spreadFactor: UInt32 = 0
+    var _codingRate: UInt32 = 0
+    var _frequencyOffset: Float = 0
+    var _region: Config.LoRaConfig.RegionCode = .unset
+    var _hopLimit: UInt32 = 0
+    var _txEnabled: Bool = false
+    var _txPower: Int32 = 0
+    var _channelNum: UInt32 = 0
+    var _overrideDutyCycle: Bool = false
+    var _sx126XRxBoostedGain: Bool = false
+    var _overrideFrequency: Float = 0
+    var _paFanDisabled: Bool = false
+    var _ignoreIncoming: [UInt32] = []
+    var _ignoreMqtt: Bool = false
+
+    #if swift(>=5.10)
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _usePreset = source._usePreset
+      _modemPreset = source._modemPreset
+      _bandwidth = source._bandwidth
+      _spreadFactor = source._spreadFactor
+      _codingRate = source._codingRate
+      _frequencyOffset = source._frequencyOffset
+      _region = source._region
+      _hopLimit = source._hopLimit
+      _txEnabled = source._txEnabled
+      _txPower = source._txPower
+      _channelNum = source._channelNum
+      _overrideDutyCycle = source._overrideDutyCycle
+      _sx126XRxBoostedGain = source._sx126XRxBoostedGain
+      _overrideFrequency = source._overrideFrequency
+      _paFanDisabled = source._paFanDisabled
+      _ignoreIncoming = source._ignoreIncoming
+      _ignoreMqtt = source._ignoreMqtt
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularBoolField(value: &self.usePreset) }()
-      case 2: try { try decoder.decodeSingularEnumField(value: &self.modemPreset) }()
-      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.bandwidth) }()
-      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.spreadFactor) }()
-      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.codingRate) }()
-      case 6: try { try decoder.decodeSingularFloatField(value: &self.frequencyOffset) }()
-      case 7: try { try decoder.decodeSingularEnumField(value: &self.region) }()
-      case 8: try { try decoder.decodeSingularUInt32Field(value: &self.hopLimit) }()
-      case 9: try { try decoder.decodeSingularBoolField(value: &self.txEnabled) }()
-      case 10: try { try decoder.decodeSingularInt32Field(value: &self.txPower) }()
-      case 11: try { try decoder.decodeSingularUInt32Field(value: &self.channelNum) }()
-      case 12: try { try decoder.decodeSingularBoolField(value: &self.overrideDutyCycle) }()
-      case 13: try { try decoder.decodeSingularBoolField(value: &self.sx126XRxBoostedGain) }()
-      case 14: try { try decoder.decodeSingularFloatField(value: &self.overrideFrequency) }()
-      case 103: try { try decoder.decodeRepeatedUInt32Field(value: &self.ignoreIncoming) }()
-      case 104: try { try decoder.decodeSingularBoolField(value: &self.ignoreMqtt) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularBoolField(value: &_storage._usePreset) }()
+        case 2: try { try decoder.decodeSingularEnumField(value: &_storage._modemPreset) }()
+        case 3: try { try decoder.decodeSingularUInt32Field(value: &_storage._bandwidth) }()
+        case 4: try { try decoder.decodeSingularUInt32Field(value: &_storage._spreadFactor) }()
+        case 5: try { try decoder.decodeSingularUInt32Field(value: &_storage._codingRate) }()
+        case 6: try { try decoder.decodeSingularFloatField(value: &_storage._frequencyOffset) }()
+        case 7: try { try decoder.decodeSingularEnumField(value: &_storage._region) }()
+        case 8: try { try decoder.decodeSingularUInt32Field(value: &_storage._hopLimit) }()
+        case 9: try { try decoder.decodeSingularBoolField(value: &_storage._txEnabled) }()
+        case 10: try { try decoder.decodeSingularInt32Field(value: &_storage._txPower) }()
+        case 11: try { try decoder.decodeSingularUInt32Field(value: &_storage._channelNum) }()
+        case 12: try { try decoder.decodeSingularBoolField(value: &_storage._overrideDutyCycle) }()
+        case 13: try { try decoder.decodeSingularBoolField(value: &_storage._sx126XRxBoostedGain) }()
+        case 14: try { try decoder.decodeSingularFloatField(value: &_storage._overrideFrequency) }()
+        case 15: try { try decoder.decodeSingularBoolField(value: &_storage._paFanDisabled) }()
+        case 103: try { try decoder.decodeRepeatedUInt32Field(value: &_storage._ignoreIncoming) }()
+        case 104: try { try decoder.decodeSingularBoolField(value: &_storage._ignoreMqtt) }()
+        default: break
+        }
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.usePreset != false {
-      try visitor.visitSingularBoolField(value: self.usePreset, fieldNumber: 1)
-    }
-    if self.modemPreset != .longFast {
-      try visitor.visitSingularEnumField(value: self.modemPreset, fieldNumber: 2)
-    }
-    if self.bandwidth != 0 {
-      try visitor.visitSingularUInt32Field(value: self.bandwidth, fieldNumber: 3)
-    }
-    if self.spreadFactor != 0 {
-      try visitor.visitSingularUInt32Field(value: self.spreadFactor, fieldNumber: 4)
-    }
-    if self.codingRate != 0 {
-      try visitor.visitSingularUInt32Field(value: self.codingRate, fieldNumber: 5)
-    }
-    if self.frequencyOffset != 0 {
-      try visitor.visitSingularFloatField(value: self.frequencyOffset, fieldNumber: 6)
-    }
-    if self.region != .unset {
-      try visitor.visitSingularEnumField(value: self.region, fieldNumber: 7)
-    }
-    if self.hopLimit != 0 {
-      try visitor.visitSingularUInt32Field(value: self.hopLimit, fieldNumber: 8)
-    }
-    if self.txEnabled != false {
-      try visitor.visitSingularBoolField(value: self.txEnabled, fieldNumber: 9)
-    }
-    if self.txPower != 0 {
-      try visitor.visitSingularInt32Field(value: self.txPower, fieldNumber: 10)
-    }
-    if self.channelNum != 0 {
-      try visitor.visitSingularUInt32Field(value: self.channelNum, fieldNumber: 11)
-    }
-    if self.overrideDutyCycle != false {
-      try visitor.visitSingularBoolField(value: self.overrideDutyCycle, fieldNumber: 12)
-    }
-    if self.sx126XRxBoostedGain != false {
-      try visitor.visitSingularBoolField(value: self.sx126XRxBoostedGain, fieldNumber: 13)
-    }
-    if self.overrideFrequency != 0 {
-      try visitor.visitSingularFloatField(value: self.overrideFrequency, fieldNumber: 14)
-    }
-    if !self.ignoreIncoming.isEmpty {
-      try visitor.visitPackedUInt32Field(value: self.ignoreIncoming, fieldNumber: 103)
-    }
-    if self.ignoreMqtt != false {
-      try visitor.visitSingularBoolField(value: self.ignoreMqtt, fieldNumber: 104)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      if _storage._usePreset != false {
+        try visitor.visitSingularBoolField(value: _storage._usePreset, fieldNumber: 1)
+      }
+      if _storage._modemPreset != .longFast {
+        try visitor.visitSingularEnumField(value: _storage._modemPreset, fieldNumber: 2)
+      }
+      if _storage._bandwidth != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._bandwidth, fieldNumber: 3)
+      }
+      if _storage._spreadFactor != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._spreadFactor, fieldNumber: 4)
+      }
+      if _storage._codingRate != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._codingRate, fieldNumber: 5)
+      }
+      if _storage._frequencyOffset != 0 {
+        try visitor.visitSingularFloatField(value: _storage._frequencyOffset, fieldNumber: 6)
+      }
+      if _storage._region != .unset {
+        try visitor.visitSingularEnumField(value: _storage._region, fieldNumber: 7)
+      }
+      if _storage._hopLimit != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._hopLimit, fieldNumber: 8)
+      }
+      if _storage._txEnabled != false {
+        try visitor.visitSingularBoolField(value: _storage._txEnabled, fieldNumber: 9)
+      }
+      if _storage._txPower != 0 {
+        try visitor.visitSingularInt32Field(value: _storage._txPower, fieldNumber: 10)
+      }
+      if _storage._channelNum != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._channelNum, fieldNumber: 11)
+      }
+      if _storage._overrideDutyCycle != false {
+        try visitor.visitSingularBoolField(value: _storage._overrideDutyCycle, fieldNumber: 12)
+      }
+      if _storage._sx126XRxBoostedGain != false {
+        try visitor.visitSingularBoolField(value: _storage._sx126XRxBoostedGain, fieldNumber: 13)
+      }
+      if _storage._overrideFrequency != 0 {
+        try visitor.visitSingularFloatField(value: _storage._overrideFrequency, fieldNumber: 14)
+      }
+      if _storage._paFanDisabled != false {
+        try visitor.visitSingularBoolField(value: _storage._paFanDisabled, fieldNumber: 15)
+      }
+      if !_storage._ignoreIncoming.isEmpty {
+        try visitor.visitPackedUInt32Field(value: _storage._ignoreIncoming, fieldNumber: 103)
+      }
+      if _storage._ignoreMqtt != false {
+        try visitor.visitSingularBoolField(value: _storage._ignoreMqtt, fieldNumber: 104)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Config.LoRaConfig, rhs: Config.LoRaConfig) -> Bool {
-    if lhs.usePreset != rhs.usePreset {return false}
-    if lhs.modemPreset != rhs.modemPreset {return false}
-    if lhs.bandwidth != rhs.bandwidth {return false}
-    if lhs.spreadFactor != rhs.spreadFactor {return false}
-    if lhs.codingRate != rhs.codingRate {return false}
-    if lhs.frequencyOffset != rhs.frequencyOffset {return false}
-    if lhs.region != rhs.region {return false}
-    if lhs.hopLimit != rhs.hopLimit {return false}
-    if lhs.txEnabled != rhs.txEnabled {return false}
-    if lhs.txPower != rhs.txPower {return false}
-    if lhs.channelNum != rhs.channelNum {return false}
-    if lhs.overrideDutyCycle != rhs.overrideDutyCycle {return false}
-    if lhs.sx126XRxBoostedGain != rhs.sx126XRxBoostedGain {return false}
-    if lhs.overrideFrequency != rhs.overrideFrequency {return false}
-    if lhs.ignoreIncoming != rhs.ignoreIncoming {return false}
-    if lhs.ignoreMqtt != rhs.ignoreMqtt {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._usePreset != rhs_storage._usePreset {return false}
+        if _storage._modemPreset != rhs_storage._modemPreset {return false}
+        if _storage._bandwidth != rhs_storage._bandwidth {return false}
+        if _storage._spreadFactor != rhs_storage._spreadFactor {return false}
+        if _storage._codingRate != rhs_storage._codingRate {return false}
+        if _storage._frequencyOffset != rhs_storage._frequencyOffset {return false}
+        if _storage._region != rhs_storage._region {return false}
+        if _storage._hopLimit != rhs_storage._hopLimit {return false}
+        if _storage._txEnabled != rhs_storage._txEnabled {return false}
+        if _storage._txPower != rhs_storage._txPower {return false}
+        if _storage._channelNum != rhs_storage._channelNum {return false}
+        if _storage._overrideDutyCycle != rhs_storage._overrideDutyCycle {return false}
+        if _storage._sx126XRxBoostedGain != rhs_storage._sx126XRxBoostedGain {return false}
+        if _storage._overrideFrequency != rhs_storage._overrideFrequency {return false}
+        if _storage._paFanDisabled != rhs_storage._paFanDisabled {return false}
+        if _storage._ignoreIncoming != rhs_storage._ignoreIncoming {return false}
+        if _storage._ignoreMqtt != rhs_storage._ignoreMqtt {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

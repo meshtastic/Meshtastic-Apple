@@ -15,6 +15,13 @@ extension Float {
 		mf.numberFormatter.maximumFractionDigits = 0
 		return mf.string(from: temperature)
 	}
+	func shortFormattedTemperature() -> String {
+		let temperature = Measurement<UnitTemperature>(value: Double(self), unit: .celsius)
+		let mf = MeasurementFormatter()
+		mf.unitStyle = .short
+		mf.numberFormatter.maximumFractionDigits = 0
+		return mf.string(from: temperature)
+	}
 	func localeTemperature() -> Double {
 		let temperature = Measurement<UnitTemperature>(value: Double(self), unit: .celsius)
 		let locale = NSLocale.current as NSLocale

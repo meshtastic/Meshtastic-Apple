@@ -1,19 +1,8 @@
 {
   "images" : [
     {
-      "filename" : "heltecwsl 2.png",
-      "idiom" : "universal",
-      "scale" : "1x"
-    },
-    {
-      "filename" : "heltecwsl 1.png",
-      "idiom" : "universal",
-      "scale" : "2x"
-    },
-    {
       "filename" : "heltecwsl.png",
-      "idiom" : "universal",
-      "scale" : "3x"
+      "idiom" : "universal"
     }
   ],
   "info" : {
