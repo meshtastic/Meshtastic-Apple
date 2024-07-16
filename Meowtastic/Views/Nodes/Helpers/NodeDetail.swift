@@ -326,7 +326,7 @@ struct NodeDetail: View {
 					Text("Direct visibility")
 				}
 				else {
-					Text("\(node.hopsAway) hops")
+					Text("\(node.hopsAway) hop(s)")
 				}
 			}
 		}
