@@ -1,19 +1,8 @@
 {
   "images" : [
     {
-      "filename" : "RAK 6.png",
-      "idiom" : "universal",
-      "scale" : "1x"
-    },
-    {
-      "filename" : "RAK 5.png",
-      "idiom" : "universal",
-      "scale" : "2x"
-    },
-    {
       "filename" : "RAK 4.png",
-      "idiom" : "universal",
-      "scale" : "3x"
+      "idiom" : "universal"
     }
   ],
   "info" : {
