@@ -54,6 +54,13 @@ struct NodeList: View {
 	)
 	var nodes: FetchedResults<NodeInfoEntity>
 
+	var connectedNode: NodeInfoEntity? {
+		getNodeInfo(
+			id: bleManager.connectedPeripheral?.num ?? 0,
+			context: context
+		)
+	}
+
 	@ViewBuilder
 	func contextMenuActions(
 		node: NodeInfoEntity,
@@ -93,8 +100,6 @@ struct NodeList: View {
 
 	var body: some View {
 		NavigationSplitView(columnVisibility: $columnVisibility) {
-			let connectedNodeNum = Int(bleManager.connectedPeripheral?.num ?? 0)
-			let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
 			List(nodes, id: \.self, selection: $selectedNode) { node in
 				NodeListItem(
 					node: node,
@@ -161,10 +166,7 @@ struct NodeList: View {
 			if let node = selectedNode {
 				NavigationStack {
 					NodeDetail(
-						connectedNode: nodes.first(where: {
-							let connectedNodeNum = Int(bleManager.connectedPeripheral?.num ?? 0)
-							return $0.num == connectedNodeNum
-						}),
+						connectedNode: connectedNode,
 						node: node,
 						columnVisibility: columnVisibility
 					)
@@ -188,7 +190,6 @@ struct NodeList: View {
 						}
 					)
 				}
-
 			 } else {
 				 if #available (iOS 17, *) {
 					 ContentUnavailableView("select.node", systemImage: "flipphone")
@@ -250,13 +251,19 @@ struct NodeList: View {
 				await searchNodeList()
 			}
 		}
+		.onChange(of: router.navigationState) { _ in
+			// Handle deep link routing
+			if case .nodes(let selected) = router.navigationState {
+				self.selectedNode = selected.flatMap {
+					getNodeInfo(id: $0, context: context)
+				}
+			} else {
+				self.selectedNode = nil
+			}
+		}
 		.onAppear {
 			Task {
 				await searchNodeList()
-			}
-			// Handle deep link routing
-			if case .nodes(let selected) = router.navigationState, let selectedNodeNum = selected {
-				self.selectedNode = getNodeInfo(id: selectedNodeNum, context: context)
 			}
 		}
 	}
