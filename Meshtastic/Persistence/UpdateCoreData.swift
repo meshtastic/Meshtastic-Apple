@@ -357,6 +357,21 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					do {
 						try context.save()
 						Logger.data.info("💾 [Position] Saved from Position App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
+						// Notification for DM Positions (position exchange)
+						if packet.from != 4294967295 {
+							let manager = LocalNotificationManager()
+							manager.notifications = [
+								Notification(
+									id: (UUID().uuidString),
+									title: "New Node",
+									subtitle: "\(packet.from.toHex())",
+									content: "New Node has been discovered",
+									target: "nodes",
+									path: "meshtastic:///nodes?nodenum=\(packet.from)&map=true"
+								)
+							]
+							manager.schedule()
+						}
 					} catch {
 						context.rollback()
 						let nsError = error as NSError
