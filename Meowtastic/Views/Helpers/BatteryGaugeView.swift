@@ -16,36 +16,67 @@ struct BatteryGaugeView: View {
 				using: NSPredicate(format: "metricsType == 0")
 			)
 			let mostRecent = deviceMetrics.lastObject as? TelemetryEntity
-			let batteryLevel = Double(mostRecent?.batteryLevel ?? 0)
 
-			HStack {
-				if withLabels {
-					Image(systemName: "battery.75percent")
-						.font(.footnote)
-				}
+			let batteryLevel = mostRecent?.batteryLevel
+			let voltage = mostRecent?.voltage
 
-				Gauge(value: min(batteryLevel, 100), in: minValue...maxValue) { }
-					.gaugeStyle(.accessoryLinear)
-					.tint(gaugeGradient)
-
-				if withLabels {
-					if let voltage = mostRecent?.voltage, voltage > 0 {
-						let voltageFormatted = String(format: "%.2f", voltage) + "V"
-
-						Text(voltageFormatted)
-							.font(.footnote)
-							.lineLimit(1)
-							.minimumScaleFactor(0.5)
-							.frame(width: 40)
+			if let voltage, let batteryLevel, voltage > 0 || batteryLevel > 0 {
+				HStack {
+					if withLabels {
+						if batteryLevel > 100 {
+							Image(systemName: "powerplug.fill")
+								.font(.footnote)
+						}
+						else {
+							if batteryLevel <= 10 {
+								Image(systemName: "battery.0percent")
+									.font(.footnote)
+							}
+							else if batteryLevel <= 35 {
+								Image(systemName: "battery.25percent")
+									.font(.footnote)
+							}
+							else if batteryLevel <= 60 {
+								Image(systemName: "battery.50percent")
+									.font(.footnote)
+							}
+							else if batteryLevel <= 85 {
+								Image(systemName: "battery.75percent")
+									.font(.footnote)
+							}
+							else {
+								Image(systemName: "battery.100percent")
+									.font(.footnote)
+							}
+						}
 					}
-					else {
-						let socFormatted = String(format: "%.0f", batteryLevel) + "%"
 
-						Text(socFormatted)
-							.font(.footnote)
-							.lineLimit(1)
-							.minimumScaleFactor(0.5)
-							.frame(width: 40)
+					Gauge(
+						value: min(Double(batteryLevel), 100),
+						in: minValue...maxValue
+					) { }
+						.gaugeStyle(.accessoryLinear)
+						.tint(gaugeGradient)
+
+					if withLabels {
+						if let voltage = mostRecent?.voltage, voltage > 0, voltage <= 100 {
+							let voltageFormatted = String(format: "%.1f", voltage) + "V"
+
+							Text(voltageFormatted)
+								.font(.footnote)
+								.lineLimit(1)
+								.minimumScaleFactor(0.5)
+								.frame(width: 40)
+						}
+						else {
+							let socFormatted = String(format: "%.0f", batteryLevel) + "%"
+
+							Text(socFormatted)
+								.font(.footnote)
+								.lineLimit(1)
+								.minimumScaleFactor(0.5)
+								.frame(width: 40)
+						}
 					}
 				}
 			}
