@@ -19,6 +19,7 @@
 		25A978BA2C13F8ED0003AAE7 /* MeshtasticProtobufs in Frameworks */ = {isa = PBXBuildFile; productRef = 25A978B92C13F8ED0003AAE7 /* MeshtasticProtobufs */; };
 		25A978BC2C13F90D0003AAE7 /* MeshtasticProtobufs in Frameworks */ = {isa = PBXBuildFile; productRef = 25A978BB2C13F90D0003AAE7 /* MeshtasticProtobufs */; };
 		25AECD4F2C2F723200862C8E /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 25AECD4E2C2F723200862C8E /* Localizable.xcstrings */; };
+		25C49D902C471AEA0024FBD1 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C49D8F2C471AEA0024FBD1 /* Constants.swift */; };
 		25F26B1E2C2F610D00C9CD9D /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB0C2C285F00007E03CA /* Logger.swift */; };
 		25F26B1F2C2F611300C9CD9D /* AppData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB152C28B1E4007E03CA /* AppData.swift */; };
 		6D825E622C34786C008DBEE4 /* CommonRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D825E612C34786C008DBEE4 /* CommonRegex.swift */; };
@@ -236,6 +237,7 @@
 		2519268F2C3CB44900249DF5 /* ClientHistoryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientHistoryButton.swift; sourceTree = "<group>"; };
 		251926912C3CB52300249DF5 /* DeleteNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteNodeButton.swift; sourceTree = "<group>"; };
 		25AECD4E2C2F723200862C8E /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		25C49D8F2C471AEA0024FBD1 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		6D825E612C34786C008DBEE4 /* CommonRegex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonRegex.swift; sourceTree = "<group>"; };
 		6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAppDelegate.swift; sourceTree = "<group>"; };
 		6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorLog.swift; sourceTree = "<group>"; };
@@ -917,6 +919,7 @@
 				DDDB444529F8A96500EE2349 /* Character.swift */,
 				DDDB444929F8AA3A00EE2349 /* CLLocationCoordinate2D.swift */,
 				DDDB444B29F8AAA600EE2349 /* Color.swift */,
+				25C49D8F2C471AEA0024FBD1 /* Constants.swift */,
 				DDDB445329F8AD1600EE2349 /* Data.swift */,
 				DDDB445129F8ACF900EE2349 /* Date.swift */,
 				DDDB444129F8A88700EE2349 /* Double.swift */,
@@ -1187,6 +1190,7 @@
 				DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */,
 				DD3619152B1EF9F900C41C8C /* LocationsHandler.swift in Sources */,
 				DDDB444A29F8AA3A00EE2349 /* CLLocationCoordinate2D.swift in Sources */,
+				25C49D902C471AEA0024FBD1 /* Constants.swift in Sources */,
 				DD41582628582E9B009B0E59 /* DeviceConfig.swift in Sources */,
 				DDF45C372BC46A5A005ED5F2 /* TimeZone.swift in Sources */,
 				DD007BAE2AA4E91200F5FA12 /* MyInfoEntityExtension.swift in Sources */,
