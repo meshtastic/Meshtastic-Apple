@@ -36,7 +36,7 @@ struct MeshMap: View {
 	var body: some View {
 		NavigationStack {
 			ZStack {
-				MapReader { reader in
+				MapReader { _ in
 					Map(
 						position: $position,
 						bounds: MapCameraBounds(
@@ -56,8 +56,13 @@ struct MeshMap: View {
 					.mapControls {
 						MapScaleView(scope: mapScope)
 							.mapControlVisibility(.automatic)
+
+						MapUserLocationButton(scope: mapScope)
+							.mapControlVisibility(.visible)
+
 						MapPitchToggle(scope: mapScope)
 							.mapControlVisibility(.automatic)
+
 						MapCompass(scope: mapScope)
 							.mapControlVisibility(.automatic)
 					}
@@ -95,8 +100,8 @@ struct MeshMap: View {
 					return
 				}
 			}
-			.sheet(item: $selectedPosition) { position in
-				if let node = selectedPosition?.nodePosition {
+			.popover(item: $selectedPosition) { position in
+				if let node = position.nodePosition {
 					NodeDetail(isInSheet: true, node: node)
 						.presentationDetents([.medium])
 				}
