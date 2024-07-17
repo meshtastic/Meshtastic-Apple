@@ -87,21 +87,26 @@ struct Messages: View {
 			.navigationTitle("messages")
 			.navigationBarTitleDisplayMode(.large)
 			.navigationBarItems(leading: MeshtasticLogo())
-			.onAppear {
-				setupNavigationState()
-			}
 		} content: {
 			if case .messages(.channels) = router.navigationState {
 				ChannelList(node: $node, channelSelection: $channelSelection)
 			} else if case .messages(.directMessages) = router.navigationState {
 				UserList(node: $node, userSelection: $userSelection)
+			} else if case .messages(nil) = router.navigationState {
+				Text("Select a conversation type")
 			}
 		} detail: {
 			if let myInfo = node?.myInfo, let channelSelection {
 				ChannelMessageList(myInfo: myInfo, channel: channelSelection)
 			} else if let userSelection {
 				UserMessageList(user: userSelection)
+			} else if case .messages(.channels) = router.navigationState {
+				Text("Select a channel")
+			} else if case .messages(.directMessages) = router.navigationState {
+				Text("Select a conversation")
 			}
+		}.onChange(of: router.navigationState) { _ in
+			setupNavigationState()
 		}
 	}
 
@@ -115,23 +120,30 @@ struct Messages: View {
 			return
 		}
 
-		if let state {
-			switch state {
-			case .channels(channelId: let channelId, messageId: _):
-				if let channelId {
-					channelSelection = node?.myInfo?.channels?.first(where: { channel in
-						guard let channel = channel as? ChannelEntity else { return false }
-						return channel.id == channelId
-					}) as? ChannelEntity
-				}
-			case .directMessages(userNum: let userNum, messageId: _):
-				if let userNum {
-					userSelection = getUser(id: userNum, context: context)
-				}
-			}
-		} else {
+		guard let state else {
 			channelSelection = nil
 			userSelection = nil
+			return
+		}
+
+		switch state {
+		case .channels(channelId: let channelId, messageId: _):
+			if let channelId {
+				channelSelection = node?.myInfo?.channels?.first(where: { channel in
+					guard let channel = channel as? ChannelEntity else { return false }
+					return channel.id == channelId
+				}) as? ChannelEntity
+			} else {
+				channelSelection = nil
+				userSelection = nil
+			}
+		case .directMessages(userNum: let userNum, messageId: _):
+			if let userNum {
+				userSelection = getUser(id: userNum, context: context)
+			} else {
+				channelSelection = nil
+				userSelection = nil
+			}
 		}
 	}
 }
