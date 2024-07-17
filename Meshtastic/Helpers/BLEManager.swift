@@ -1009,7 +1009,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					if toUserNum > 0 {
 						meshPacket.to = UInt32(toUserNum)
 					} else {
-						meshPacket.to = Constants.emptyNodeNum
+						meshPacket.to = Constants.maximumNodeNum
 					}
 					meshPacket.channel = UInt32(channel)
 					meshPacket.from	= UInt32(fromUserNum)
@@ -1057,7 +1057,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var success = false
 		let fromNodeNum = UInt32(connectedPeripheral.num)
 		var meshPacket = MeshPacket()
-		meshPacket.to = Constants.emptyNodeNum
+		meshPacket.to = Constants.maximumNodeNum
 		meshPacket.from	= fromNodeNum
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()

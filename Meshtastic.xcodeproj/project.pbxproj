@@ -919,6 +919,7 @@
 				DDDB444529F8A96500EE2349 /* Character.swift */,
 				DDDB444929F8AA3A00EE2349 /* CLLocationCoordinate2D.swift */,
 				DDDB444B29F8AAA600EE2349 /* Color.swift */,
+				25C49D8F2C471AEA0024FBD1 /* Constants.swift */,
 				DDDB445329F8AD1600EE2349 /* Data.swift */,
 				DDDB445129F8ACF900EE2349 /* Date.swift */,
 				DDDB444129F8A88700EE2349 /* Double.swift */,
@@ -934,7 +935,6 @@
 				DDD5BB172C2F9C36007E03CA /* OSLogEntryLog.swift */,
 				DDF45C362BC46A5A005ED5F2 /* TimeZone.swift */,
 				DDD5BB0C2C285F00007E03CA /* Logger.swift */,
-				25C49D8F2C471AEA0024FBD1 /* Constants.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";

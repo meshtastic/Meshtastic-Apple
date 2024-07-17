@@ -799,7 +799,7 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 				newMessage.replyID = Int64(packet.decoded.replyID)
 			}
 
-			if fetchedUsers.first(where: { $0.num == packet.to }) != nil && packet.to != Constants.emptyNodeNum {
+			if fetchedUsers.first(where: { $0.num == packet.to }) != nil && packet.to != Constants.maximumNodeNum {
 				if !storeForwardBroadcast {
 					newMessage.toUser = fetchedUsers.first(where: { $0.num == packet.to })
 				}
@@ -812,7 +812,7 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 			}
 			newMessage.messagePayload = messageText
 			newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: messageText!)
-			if packet.to != Constants.emptyNodeNum && newMessage.fromUser != nil {
+			if packet.to != Constants.maximumNodeNum && newMessage.fromUser != nil {
 				newMessage.fromUser?.lastMessage = Date()
 			}
 			var messageSaved = false
