@@ -192,6 +192,9 @@
     "8" : {
 
     },
+    "10% Airtime" : {
+
+    },
     "25" : {
 
     },
@@ -672,6 +675,9 @@
           }
         }
       }
+    },
+    "Airtime" : {
+
     },
     "AirTm" : {
 
@@ -1405,6 +1411,9 @@
       }
     },
     "Backup Database" : {
+
+    },
+    "Bad" : {
 
     },
     "Bandwidth" : {
@@ -8264,13 +8273,13 @@
     "How long the screen remains on after the user button is pressed or messages are received." : {
 
     },
-    "How often device metrics are sent out over the mesh. Default is 15 minutes." : {
+    "How often device metrics are sent out over the mesh. Default is 30 minutes." : {
 
     },
-    "How often power metrics are sent out over the mesh. Default is 15 minutes." : {
+    "How often power metrics are sent out over the mesh. Default is 30 minutes." : {
 
     },
-    "How often sensor metrics are sent out over the mesh. Default is 15 minutes." : {
+    "How often sensor metrics are sent out over the mesh. Default is 30 minutes." : {
 
     },
     "How often should we try to get a GPS position." : {
@@ -10842,9 +10851,6 @@
 
     },
     "Licensed Operator" : {
-
-    },
-    "Limit" : {
 
     },
     "Limit all periodic broadcast intervals especially telemetry and position. If you need to increase hops, do it on nodes at the edges, not the ones in the middle. MQTT is not advised when you are duty cycle restricted because the gateway node is then doing all the work." : {
@@ -15225,6 +15231,12 @@
           }
         }
       }
+    },
+    "Network Status Orange" : {
+
+    },
+    "Network Status Red" : {
+
     },
     "network.config" : {
       "localizations" : {
