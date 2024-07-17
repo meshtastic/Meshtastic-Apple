@@ -136,8 +136,6 @@
 		DDB75A212A12B954006ED576 /* LoRaSignalMeterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A202A12B954006ED576 /* LoRaSignalMeterView.swift */; };
 		DDB75A232A13CDA9006ED576 /* BatteryLevelCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A222A13CDA9006ED576 /* BatteryLevelCompact.swift */; };
 		DDB8F4102A9EE5B400230ECE /* Messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB8F40F2A9EE5B400230ECE /* Messages.swift */; };
-		DDB8F4122A9EE5DD00230ECE /* UserList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB8F4112A9EE5DD00230ECE /* UserList.swift */; };
-		DDB8F4142A9EE5F000230ECE /* ChannelList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB8F4132A9EE5F000230ECE /* ChannelList.swift */; };
 		DDC2E15826CE248E0042C5E4 /* MeowtasticApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E15726CE248E0042C5E4 /* MeowtasticApp.swift */; };
 		DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */; };
 		DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15E26CE248F0042C5E4 /* Preview Assets.xcassets */; };
@@ -325,8 +323,6 @@
 		DDB75A202A12B954006ED576 /* LoRaSignalMeterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignalMeterView.swift; sourceTree = "<group>"; };
 		DDB75A222A13CDA9006ED576 /* BatteryLevelCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryLevelCompact.swift; sourceTree = "<group>"; };
 		DDB8F40F2A9EE5B400230ECE /* Messages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Messages.swift; sourceTree = "<group>"; };
-		DDB8F4112A9EE5DD00230ECE /* UserList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserList.swift; sourceTree = "<group>"; };
-		DDB8F4132A9EE5F000230ECE /* ChannelList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelList.swift; sourceTree = "<group>"; };
 		DDC2E15426CE248E0042C5E4 /* Meowtastic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Meowtastic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC2E15726CE248E0042C5E4 /* MeowtasticApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeowtasticApp.swift; sourceTree = "<group>"; };
 		DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -687,10 +683,8 @@
 			isa = PBXGroup;
 			children = (
 				D9C9839E2B79D0C600BDBE6A /* TextMessageField */,
-				DDB8F4132A9EE5F000230ECE /* ChannelList.swift */,
 				DD798B062915928D005217CD /* ChannelMessageList.swift */,
 				DDB8F40F2A9EE5B400230ECE /* Messages.swift */,
-				DDB8F4112A9EE5DD00230ECE /* UserList.swift */,
 				DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */,
 				B399E8A32B6F486400E4488E /* RetryButton.swift */,
 				D93068D62B8146690066FBC8 /* MessageView.swift */,
@@ -950,7 +944,6 @@
 				6D825E622C34786C008DBEE4 /* CommonRegex.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
 				DDDB444C29F8AAA600EE2349 /* Color.swift in Sources */,
-				DDB8F4122A9EE5DD00230ECE /* UserList.swift in Sources */,
 				DDB75A0F2A05920E006ED576 /* FileManager.swift in Sources */,
 				DD1933782B084F4200771CD5 /* Measurement.swift in Sources */,
 				DD4F23CD28779A3C001D37CB /* EnvironmentMetricsLog.swift in Sources */,
@@ -1003,7 +996,6 @@
 				DD3CC6C228EB9D4900FA9159 /* UpdateCoreData.swift in Sources */,
 				DDE0F7C5295F77B700B8AAB3 /* AppSettingsEnums.swift in Sources */,
 				DDB6ABE628B1406100384BA1 /* LoraConfigEnums.swift in Sources */,
-				DDB8F4142A9EE5F000230ECE /* ChannelList.swift in Sources */,
 				DDD43FE32A78C8900083A3E9 /* MqttClientProxyManager.swift in Sources */,
 				DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */,
 				08DD7E4C2C41ABD800548159 /* Meowtastic.xcdatamodeld in Sources */,

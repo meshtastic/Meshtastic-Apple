@@ -29,34 +29,6 @@ struct NodeList: View {
 	)
 	private var nodes: FetchedResults<NodeInfoEntity>
 
-	@ViewBuilder
-	func contextMenuActions(
-		node: NodeInfoEntity,
-		connectedNode: NodeInfoEntity?
-	) -> some View {
-		FavoriteNodeButton(
-			bleManager: bleManager,
-			context: context,
-			node: node
-		)
-
-		if let user = node.user {
-			NodeAlertsButton(
-				context: context,
-				node: node,
-				user: user
-			)
-		}
-		if let connectedNode {
-			DeleteNodeButton(
-				bleManager: bleManager,
-				context: context,
-				connectedNode: connectedNode,
-				node: node
-			)
-		}
-	}
-
 	var body: some View {
 		NavigationSplitView(columnVisibility: $columnVisibility) {
 			List(selection: $selectedNode) {
@@ -89,7 +61,6 @@ struct NodeList: View {
 						trailing: ConnectedDevice(ble: bleManager)
 					)
 				}
-
 			 } else {
 				 ContentUnavailableView("select.node", systemImage: "flipphone")
 			 }
@@ -177,11 +148,40 @@ struct NodeList: View {
 	private func listHeader(title: String, nodesCount: Int) -> some View {
 		HStack(alignment: .center) {
 			Text(title)
+				.fontDesign(.rounded)
 
 			Spacer()
 
 			Text(String(nodesCount))
-				.fontWeight(.bold)
+				.fontDesign(.rounded)
+		}
+	}
+
+	@ViewBuilder
+	private func contextMenuActions(
+		node: NodeInfoEntity,
+		connectedNode: NodeInfoEntity?
+	) -> some View {
+		FavoriteNodeButton(
+			bleManager: bleManager,
+			context: context,
+			node: node
+		)
+
+		if let user = node.user {
+			NodeAlertsButton(
+				context: context,
+				node: node,
+				user: user
+			)
+		}
+		if let connectedNode {
+			DeleteNodeButton(
+				bleManager: bleManager,
+				context: context,
+				connectedNode: connectedNode,
+				node: node
+			)
 		}
 	}
 
