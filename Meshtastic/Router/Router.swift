@@ -17,7 +17,7 @@ class Router: ObservableObject {
 		self.navigationState = navigationState
 
 		$navigationState.sink { destination in
-			Logger.services.info("Routed to \(String(describing: destination))")
+			Logger.services.info("🛣 Routed to \(String(describing: destination), privacy: .public)")
 		}.store(in: &cancellables)
 	}
 
@@ -27,11 +27,11 @@ class Router: ObservableObject {
 
 	func route(url: URL) {
 		guard url.scheme == "meshtastic" else {
-			Logger.services.error("Received routing URL \(url) with invalid scheme. Ignoring route.")
+			Logger.services.error("🛣 Received routing URL \(url, privacy: .public) with invalid scheme. Ignoring route.")
 			return
 		}
 		guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
-			Logger.services.error("Received routing URL \(url) with invalid host path. Ignoring route.")
+			Logger.services.error("🛣 Received routing URL \(url, privacy: .public) with invalid host path. Ignoring route.")
 			return
 		}
 
