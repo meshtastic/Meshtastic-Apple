@@ -85,9 +85,6 @@ struct AmbientLightingConfig: View {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 			})
 			.onAppear {
-				if self.bleManager.context == nil {
-					self.bleManager.context = context
-				}
 				setAmbientLightingConfigValue()
 				// Need to request a Ambient Lighting Config from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.ambientLightingConfig == nil {

@@ -199,11 +199,6 @@ struct EnvironmentMetricsLog: View {
 			ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
-		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
-		}
 		.fileExporter(
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),

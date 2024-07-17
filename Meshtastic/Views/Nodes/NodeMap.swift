@@ -13,7 +13,10 @@ import CoreData
 struct NodeMap: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	@StateObject var appState = AppState.shared
+
+	@ObservedObject
+	var router: Router
+	
 	@State var selectedMapLayer: MapLayer = UserDefaults.mapLayer
 	@State var enableMapRecentering: Bool = UserDefaults.enableMapRecentering
 	@State var enableMapRouteLines: Bool = UserDefaults.enableMapRouteLines
@@ -240,9 +243,6 @@ struct NodeMap: View {
 		})
 		.onAppear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = true
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
 		})
 		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false

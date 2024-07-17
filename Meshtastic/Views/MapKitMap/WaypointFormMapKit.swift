@@ -122,7 +122,7 @@ struct WaypointFormMapKit: View {
 				// Loading a waypoint from edit
 				if coordinate.waypointId > 0 {
 					newWaypoint.id = UInt32(coordinate.waypointId)
-					let waypoint  = getWaypoint(id: Int64(coordinate.waypointId), context: bleManager.context!)
+					let waypoint  = getWaypoint(id: Int64(coordinate.waypointId), context: bleManager.context)
 					newWaypoint.latitudeI = waypoint.latitudeI
 					newWaypoint.longitudeI = waypoint.longitudeI
 				} else {
@@ -179,12 +179,12 @@ struct WaypointFormMapKit: View {
 
 				Menu {
 					Button("For me", action: {
-						let waypoint  = getWaypoint(id: Int64(coordinate.waypointId), context: bleManager.context!)
-						bleManager.context!.delete(waypoint)
+						let waypoint = getWaypoint(id: Int64(coordinate.waypointId), context: bleManager.context)
+						bleManager.context.delete(waypoint)
 					 do {
-						 try bleManager.context!.save()
+						 try bleManager.context.save()
 					 } catch {
-						 bleManager.context!.rollback()
+						 bleManager.context.rollback()
 					 }
 					 dismiss() })
 					Button("For everyone", action: {
@@ -230,7 +230,7 @@ struct WaypointFormMapKit: View {
 		}
 		.onAppear {
 			if coordinate.waypointId > 0 {
-				let waypoint  = getWaypoint(id: Int64(coordinate.waypointId), context: bleManager.context!)
+				let waypoint  = getWaypoint(id: Int64(coordinate.waypointId), context: bleManager.context)
 				name = waypoint.name ?? "Dropped Pin"
 				description = waypoint.longDescription ?? ""
 				icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")

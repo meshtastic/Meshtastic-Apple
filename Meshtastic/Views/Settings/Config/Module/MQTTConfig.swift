@@ -357,9 +357,6 @@ struct MQTTConfig: View {
 			}
 		}
 		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
 			setMqttValues()
 			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.mqttConfig == nil {

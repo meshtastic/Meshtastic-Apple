@@ -18799,6 +18799,15 @@
     "Secondary" : {
 
     },
+    "Select a channel" : {
+
+    },
+    "Select a conversation" : {
+
+    },
+    "Select a conversation type" : {
+
+    },
     "Select a Trace Route" : {
 
     },
@@ -18865,6 +18874,7 @@
       }
     },
     "select.menu.item" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
