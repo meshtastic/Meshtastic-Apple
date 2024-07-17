@@ -144,7 +144,8 @@ struct ChannelMessageList: View {
 					Avatar(
 						getSenderName(message: message, short: true),
 						background: getSenderColor(message: message),
-						size: 64
+						size: 64,
+						corners: isCurrentUser ? (true, true, false, true) : nil
 					)
 
 					if let connectedNode, let sourceNode {

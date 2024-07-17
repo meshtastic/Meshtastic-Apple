@@ -4,6 +4,28 @@ struct Avatar: View {
     private let name: String?
     private let background: Color
 	private let size: CGFloat
+	private let corners: (Bool, Bool, Bool, Bool)?
+
+	private var radii: RectangleCornerRadii {
+		let radius = size / 4
+
+		if let corners {
+			return RectangleCornerRadii(
+				topLeading: corners.0 ? radius : 0,
+				bottomLeading: corners.1 ? radius : 0,
+				bottomTrailing: corners.2 ? radius : 0,
+				topTrailing: corners.3 ? radius : 0
+			)
+		}
+		else {
+			return RectangleCornerRadii(
+				topLeading: radius,
+				bottomLeading: radius,
+				bottomTrailing: radius,
+				topTrailing: radius
+			)
+		}
+	}
 
 	var body: some View {
 		ZStack(alignment: .center) {
@@ -27,17 +49,19 @@ struct Avatar: View {
 		}
 		.background(background)
 		.clipShape(
-			RoundedRectangle(cornerRadius: size / 4, style: .continuous)
+			UnevenRoundedRectangle(cornerRadii: radii, style: .continuous)
 		)
 	}
 
 	init(
 		_ name: String?,
 		background: Color,
-		size: CGFloat = 45
+		size: CGFloat = 45,
+		corners: (Bool, Bool, Bool, Bool)? = nil
 	) {
 		self.name = name
 		self.background = background
 		self.size = size
+		self.corners = corners
 	}
 }

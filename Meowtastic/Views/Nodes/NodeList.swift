@@ -29,9 +29,28 @@ struct NodeList: View {
 	)
 	private var nodes: FetchedResults<NodeInfoEntity>
 
+	private var connectedNode: NodeInfoEntity? {
+		getNodeInfo(
+			id: connectedNodeNum,
+			context: context
+		)
+	}
+	private var connectedNodeNum: Int64 {
+		Int64(bleManager.connectedPeripheral?.num ?? 0)
+	}
+	private var suggestedNodes: [NodeInfoEntity] {
+		let connectedNodeNum = Int(bleManager.connectedPeripheral?.num ?? 0)
+		return nodes.filter { node in
+				node.favorite
+				|| node.num == connectedNodeNum
+				|| (node.isOnline && !node.viaMqtt && node.hopsAway == 0)
+		}
+	}
+
 	var body: some View {
 		NavigationSplitView(columnVisibility: $columnVisibility) {
 			List(selection: $selectedNode) {
+				suggestedList()
 				nodeList(online: true)
 				nodeList(online: false)
 			}
@@ -61,9 +80,9 @@ struct NodeList: View {
 						trailing: ConnectedDevice(ble: bleManager)
 					)
 				}
-			 } else {
-				 ContentUnavailableView("select.node", systemImage: "flipphone")
-			 }
+			} else {
+				ContentUnavailableView("select.node", systemImage: "flipphone")
+			}
 		} detail: {
 			ContentUnavailableView(
 				"Can't load node info",
@@ -111,9 +130,34 @@ struct NodeList: View {
 	}
 
 	@ViewBuilder
+	private func suggestedList() -> some View {
+		Section(
+			header: listHeader(
+				title: "In Case of Apocalypse",
+				nodesCount: suggestedNodes.count
+			)
+		) {
+			ForEach(suggestedNodes, id: \.self) { node in
+				NodeListItem(
+					connected: connectedNodeNum == node.num,
+					connectedNode: connectedNodeNum,
+					node: node
+				)
+				.contextMenu {
+					contextMenuActions(
+						node: node,
+						connectedNode: connectedNode
+					)
+				}
+			}
+		}
+		.headerProminence(.increased)
+	}
+
+	@ViewBuilder
 	private func nodeList(online: Bool = true) -> some View {
 		let nodeList = nodes.filter { node in
-			node.isOnline == online
+			!suggestedNodes.contains(node) &&  node.isOnline == online
 		}
 
 		Section(
@@ -122,7 +166,6 @@ struct NodeList: View {
 				nodesCount: nodeList.count
 			)
 		) {
-			let connectedNodeNum = Int(bleManager.connectedPeripheral?.num ?? 0)
 			let connectedNode = nodes.first(where: {
 				$0.num == connectedNodeNum
 			})

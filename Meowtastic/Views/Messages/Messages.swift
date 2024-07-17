@@ -234,7 +234,147 @@ struct Messages: View {
 				.fontDesign(.rounded)
 		}
 	}
-	
+
+	@ViewBuilder
+	private func makeChannelLink(
+		for channel: ChannelEntity,
+		myInfo: MyInfoEntity
+	) -> some View {
+		NavigationLink {
+			ChannelMessageList(myInfo: myInfo, channel: channel)
+		} label: {
+			let mostRecent = channel.allPrivateMessages.last(where: {
+				$0.channel == channel.index
+			})
+			let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
+			let lastMessageTime = Date(
+				timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0)))
+			)
+			let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
+
+			avatar(for: channel)
+
+			VStack(alignment: .leading) {
+				HStack(spacing: 8) {
+					if let name = channel.name, !name.isEmpty {
+						Text(String(name).camelCaseToWords())
+							.font(.headline)
+					}
+					else {
+						if channel.role == 1 {
+							Text("Primary Channel")
+								.font(.headline)
+						}
+						else {
+							Text("Channel #\(channel.index)")
+								.font(.headline)
+						}
+					}
+
+					Spacer()
+
+					if channel.allPrivateMessages.count > 0 {
+						if lastMessageDay == currentDay {
+							Text(lastMessageTime, style: .time )
+								.font(.footnote)
+								.foregroundColor(.secondary)
+						} else if  lastMessageDay == (currentDay - 1) {
+							Text("Yesterday")
+								.font(.footnote)
+								.foregroundColor(.secondary)
+						} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+							Text(dateFormatter.string(from: lastMessageTime))
+								.font(.footnote)
+								.foregroundColor(.secondary)
+						} else if lastMessageDay < (currentDay - 1800) {
+							Text(dateFormatter.string(from: lastMessageTime))
+								.font(.footnote)
+								.foregroundColor(.secondary)
+						}
+					}
+				}
+
+				if channel.allPrivateMessages.count > 0 {
+					HStack(alignment: .top) {
+						Text("\(mostRecent != nil ? mostRecent!.messagePayload! : "")")
+							.lineLimit(3)
+							.font(.footnote)
+							.foregroundColor(.secondary)
+					}
+				}
+			}
+		}
+	}
+
+	@ViewBuilder
+	private func makeUserLink(for user: UserEntity) -> some View {
+		let mostRecent = user.messageList.last
+		let lastMessageTime = Date(
+			timeIntervalSince1970: TimeInterval(Int64(mostRecent?.messageTimestamp ?? 0))
+		)
+
+		let lastMessageDay = Calendar.current.dateComponents(
+			[.day],
+			from: lastMessageTime
+		).day ?? 0
+
+		let currentDay = Calendar.current.dateComponents(
+			[.day],
+			from: Date()
+		).day ?? 0
+
+		NavigationLink {
+			UserMessageList(user: user)
+		} label: {
+			HStack(spacing: 8) {
+				avatar(for: user)
+
+				VStack(alignment: .leading) {
+					HStack(alignment: .top) {
+						Text(user.longName ?? "Unknown user".localized)
+							.lineLimit(1)
+							.font(.headline)
+							.minimumScaleFactor(0.5)
+
+						Spacer()
+
+						if user.messageList.count > 0 {
+							if lastMessageDay == currentDay {
+								Text(lastMessageTime, style: .time)
+									.font(.footnote)
+									.foregroundColor(.secondary)
+							}
+							else if lastMessageDay == (currentDay - 1) {
+								Text("Yesterday")
+									.font(.footnote)
+									.foregroundColor(.secondary)
+							}
+							else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+								Text(dateFormatter.string(from: lastMessageTime))
+									.font(.footnote)
+									.foregroundColor(.secondary)
+							}
+							else if lastMessageDay < (currentDay - 1800) {
+								Text(dateFormatter.string(from: lastMessageTime))
+									.font(.footnote)
+									.foregroundColor(.secondary)
+							}
+						}
+					}
+
+					if user.messageList.count > 0 {
+						HStack(alignment: .top) {
+							Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
+								.font(.footnote)
+								.foregroundColor(.secondary)
+						}
+					}
+				}
+			}
+		}
+	}
+
+
 	@ViewBuilder
 	private func avatar(for user: UserEntity) -> some View {
 		ZStack(alignment: .top) {
@@ -287,146 +427,30 @@ struct Messages: View {
 		}
 		.frame(width: 80, height: 80)
 	}
-	
+
 	@ViewBuilder
-	private func makeChannelLink(
-		for channel: ChannelEntity,
-		myInfo: MyInfoEntity
-	) -> some View {
-		NavigationLink {
-			ChannelMessageList(myInfo: myInfo, channel: channel)
-		} label: {
-			let mostRecent = channel.allPrivateMessages.last(where: {
-				$0.channel == channel.index
-			})
-			let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
-			let lastMessageTime = Date(
-				timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0)))
+	private func avatar(for channel: ChannelEntity) -> some View {
+		ZStack(alignment: .top) {
+			Avatar(
+				String(channel.index),
+				background: .accentColor,
+				size: 64
 			)
-			let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
+			.padding([.top, .bottom, .trailing], 12)
 
-			channelIcon(channel: channel)
-
-			VStack(alignment: .leading) {
-				HStack(spacing: 8) {
-					if let name = channel.name, !name.isEmpty {
-						Text(String(name).camelCaseToWords())
-							.font(.headline)
-					}
-					else {
-						if channel.role == 1 {
-							Text("Primary Channel")
-								.font(.headline)
-						}
-						else {
-							Text("Channel #\(channel.index)")
-								.font(.headline)
-						}
-					}
-
+			if channel.unreadMessages > 0 {
+				HStack(spacing: 0) {
 					Spacer()
 
-					if channel.allPrivateMessages.count > 0 {
-						if lastMessageDay == currentDay {
-							Text(lastMessageTime, style: .time )
-								.font(.footnote)
-								.foregroundColor(.secondary)
-						} else if  lastMessageDay == (currentDay - 1) {
-							Text("Yesterday")
-								.font(.footnote)
-								.foregroundColor(.secondary)
-						} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-							Text(dateFormatter.string(from: lastMessageTime))
-								.font(.footnote)
-								.foregroundColor(.secondary)
-						} else if lastMessageDay < (currentDay - 1800) {
-							Text(dateFormatter.string(from: lastMessageTime))
-								.font(.footnote)
-								.foregroundColor(.secondary)
-						}
-					}
-				}
-				
-				if channel.allPrivateMessages.count > 0 {
-					HStack(alignment: .top) {
-						Text("\(mostRecent != nil ? mostRecent!.messagePayload! : "")")
-							.lineLimit(3)
-							.font(.footnote)
-							.foregroundColor(.secondary)
-					}
+					Image(systemName: "circle.fill")
+						.font(.system(size: 24))
+						.foregroundColor(.red)
 				}
 			}
 		}
+		.frame(width: 80, height: 80)
 	}
 
-	@ViewBuilder
-	private func makeUserLink(for user: UserEntity) -> some View {
-		let mostRecent = user.messageList.last
-		let lastMessageTime = Date(
-			timeIntervalSince1970: TimeInterval(Int64(mostRecent?.messageTimestamp ?? 0))
-		)
-
-		let lastMessageDay = Calendar.current.dateComponents(
-			[.day],
-			from: lastMessageTime
-		).day ?? 0
-
-		let currentDay = Calendar.current.dateComponents(
-			[.day],
-			from: Date()
-		).day ?? 0
-
-		NavigationLink {
-			UserMessageList(user: user)
-		} label: {
-			HStack(spacing: 8) {
-				avatar(for: user)
-				
-				VStack(alignment: .leading) {
-					HStack(alignment: .top) {
-						Text(user.longName ?? "Unknown user".localized)
-							.lineLimit(1)
-							.font(.headline)
-							.minimumScaleFactor(0.5)
-
-						Spacer()
-
-						if user.messageList.count > 0 {
-							if lastMessageDay == currentDay {
-								Text(lastMessageTime, style: .time)
-									.font(.footnote)
-									.foregroundColor(.secondary)
-							}
-							else if lastMessageDay == (currentDay - 1) {
-								Text("Yesterday")
-									.font(.footnote)
-									.foregroundColor(.secondary)
-							}
-							else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-								Text(dateFormatter.string(from: lastMessageTime))
-									.font(.footnote)
-									.foregroundColor(.secondary)
-							}
-							else if lastMessageDay < (currentDay - 1800) {
-								Text(dateFormatter.string(from: lastMessageTime))
-									.font(.footnote)
-									.foregroundColor(.secondary)
-							}
-						}
-					}
-					
-					if user.messageList.count > 0 {
-						HStack(alignment: .top) {
-							Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
-								.font(.footnote)
-								.foregroundColor(.secondary)
-						}
-					}
-				}
-			}
-		}
-	}
-	
 	@ViewBuilder
 	private func getContextMenu(for user: UserEntity) -> some View {
 		Button {
@@ -492,30 +516,7 @@ struct Messages: View {
 			}
 		}
 	}
-	
-	@ViewBuilder
-	private func channelIcon(channel: ChannelEntity) -> some View {
-		ZStack(alignment: .top) {
-			Avatar(
-				String(channel.index),
-				background: .accentColor,
-				size: 64
-			)
-			.padding(.all, 8)
-			
-			if channel.unreadMessages > 0 {
-				HStack(spacing: 0) {
-					Spacer()
-					
-					Image(systemName: "circle.fill")
-						.font(.system(size: 16))
-						.foregroundColor(.red)
-				}
-			}
-		}
-		.frame(width: 80, height: 80)
-	}
-	
+
 	private func getUserColor(for user: UserEntity) -> Color {
 		if
 			let num = user.userNode?.num,
