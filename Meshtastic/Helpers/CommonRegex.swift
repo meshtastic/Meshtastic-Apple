@@ -8,8 +8,7 @@
 import Foundation
 import RegexBuilder
 
-class CommonRegex
-{
+class CommonRegex {
 	static let COORDS_REGEX = Regex {
 			Capture {
 			 Regex {

@@ -682,6 +682,10 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.windLull = telemetryMessage.environmentMetrics.windLull
 					telemetry.windDirection = Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.windDirection)
 					telemetry.metricsType = 1
+				} else {
+					
+					/// Other unhandled telemetry packets
+					return
 				}
 				telemetry.snr = packet.rxSnr
 				telemetry.rssi = packet.rxRssi
