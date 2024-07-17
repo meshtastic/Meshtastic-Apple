@@ -18,15 +18,17 @@ struct ContentView: View {
 		sortDescriptors: [
 			NSSortDescriptor(key: "favorite", ascending: false),
 			NSSortDescriptor(key: "lastHeard", ascending: false),
-			NSSortDescriptor(key: "user.longName", ascending: true),
+			NSSortDescriptor(key: "user.longName", ascending: true)
 		],
 		animation: .default
 	)
 	private var nodes: FetchedResults<NodeInfoEntity>
 
-	private var nodeCount: Int {
+	private var nodeOnlineCount: Int {
 		if bleManager.isNodeConnected {
-			nodes.count
+			nodes.filter { node in
+				node.isOnline
+			}.count
 		}
 		else {
 			0
@@ -52,7 +54,7 @@ struct ContentView: View {
 						Image(systemName: "flipphone")
 					}
 					.tag(Tab.nodes)
-					.badge(nodeCount)
+					.badge(nodeOnlineCount)
 					.badgeProminence(.decreased)
 
 				MeshMap()

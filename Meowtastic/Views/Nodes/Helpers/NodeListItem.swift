@@ -47,7 +47,7 @@ struct NodeListItem: View {
 				background: Color(UIColor(hex: UInt32(node.num))),
 				size: 64
 			)
-			.padding(.all, 8)
+			.padding([.top, .bottom, .trailing], 10)
 
 			if connected {
 				HStack(spacing: 0) {
@@ -84,6 +84,7 @@ struct NodeListItem: View {
 			.fontWeight(.medium)
 			.font(.title2)
 			.minimumScaleFactor(0.5)
+			.frame(width: .infinity)
 	}
 
 	@ViewBuilder

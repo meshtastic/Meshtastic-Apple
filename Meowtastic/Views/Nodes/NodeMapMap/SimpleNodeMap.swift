@@ -2,7 +2,7 @@ import SwiftUI
 import CoreLocation
 import MapKit
 
-struct SimpleNodeMapView: View {
+struct SimpleNodeMap: View {
 	@Environment(\.managedObjectContext)
 	var context
 	@EnvironmentObject

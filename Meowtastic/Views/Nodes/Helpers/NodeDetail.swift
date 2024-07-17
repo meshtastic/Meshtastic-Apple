@@ -110,7 +110,7 @@ struct NodeDetail: View {
 			if node.hasPositions {
 				if isInSheet {
 					VStack(alignment: .leading, spacing: 8) {
-						SimpleNodeMapView(node: node)
+						SimpleNodeMap(node: node)
 							.frame(width: .infinity, height: 120)
 							.cornerRadius(8)
 							.padding(.top, 8)
@@ -123,10 +123,10 @@ struct NodeDetail: View {
 				}
 				else {
 					NavigationLink {
-						NodeMapView(node: node)
+						NodeMap(node: node)
 					} label: {
 						VStack(alignment: .leading, spacing: 8) {
-							SimpleNodeMapView(node: node)
+							SimpleNodeMap(node: node)
 								.frame(width: .infinity, height: 200)
 								.cornerRadius(8)
 								.padding(.top, 8)

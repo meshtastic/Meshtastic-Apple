@@ -330,7 +330,6 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				Logger.data.error("Fetch MyInfo Error")
 			}
 		} else if nodeInfo.num > 0 {
-
 			fetchedNode[0].id = Int64(nodeInfo.num)
 			fetchedNode[0].num = Int64(nodeInfo.num)
 			fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))

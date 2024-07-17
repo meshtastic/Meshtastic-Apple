@@ -12,7 +12,7 @@
 		08DD7E532C41CBBD00548159 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 08DD7E522C41CBBD00548159 /* Localizable.xcstrings */; };
 		08DD7E552C41D63800548159 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E542C41D63800548159 /* AppConstants.swift */; };
 		08DD7E592C42658C00548159 /* BLEManager+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E582C42658C00548159 /* BLEManager+Extensions.swift */; };
-		08DD7E5B2C427A5B00548159 /* SimpleNodeMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E5A2C427A5B00548159 /* SimpleNodeMapView.swift */; };
+		08DD7E5B2C427A5B00548159 /* SimpleNodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E5A2C427A5B00548159 /* SimpleNodeMap.swift */; };
 		08DD7E5D2C42833200548159 /* LoRaSignalStrength.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E5C2C42833200548159 /* LoRaSignalStrength.swift */; };
 		08DD7E5F2C4283A100548159 /* LoRaSignal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E5E2C4283A100548159 /* LoRaSignal.swift */; };
 		08DD7E612C42ABEB00548159 /* NodeInfoEntity+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E602C42ABEB00548159 /* NodeInfoEntity+Extensions.swift */; };
@@ -127,7 +127,7 @@
 		DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */; };
 		DDB6ABE428B13FFF00384BA1 /* DisplayEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */; };
 		DDB6ABE628B1406100384BA1 /* LoraConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */; };
-		DDB6CCFB2AAF805100945AF6 /* NodeMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6CCFA2AAF805100945AF6 /* NodeMapView.swift */; };
+		DDB6CCFB2AAF805100945AF6 /* NodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6CCFA2AAF805100945AF6 /* NodeMap.swift */; };
 		DDB75A0F2A05920E006ED576 /* FileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A0E2A05920E006ED576 /* FileManager.swift */; };
 		DDB75A112A059258006ED576 /* Url.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A102A059258006ED576 /* Url.swift */; };
 		DDB75A142A0593E2006ED576 /* OfflineTileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A132A0593E2006ED576 /* OfflineTileManager.swift */; };
@@ -205,7 +205,7 @@
 		08DD7E522C41CBBD00548159 /* Localizable.xcstrings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		08DD7E542C41D63800548159 /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
 		08DD7E582C42658C00548159 /* BLEManager+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BLEManager+Extensions.swift"; sourceTree = "<group>"; };
-		08DD7E5A2C427A5B00548159 /* SimpleNodeMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleNodeMapView.swift; sourceTree = "<group>"; };
+		08DD7E5A2C427A5B00548159 /* SimpleNodeMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleNodeMap.swift; sourceTree = "<group>"; };
 		08DD7E5C2C42833200548159 /* LoRaSignalStrength.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignalStrength.swift; sourceTree = "<group>"; };
 		08DD7E5E2C4283A100548159 /* LoRaSignal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignal.swift; sourceTree = "<group>"; };
 		08DD7E602C42ABEB00548159 /* NodeInfoEntity+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NodeInfoEntity+Extensions.swift"; sourceTree = "<group>"; };
@@ -317,7 +317,7 @@
 		DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionConfigEnums.swift; sourceTree = "<group>"; };
 		DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayEnums.swift; sourceTree = "<group>"; };
 		DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoraConfigEnums.swift; sourceTree = "<group>"; };
-		DDB6CCFA2AAF805100945AF6 /* NodeMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMapView.swift; sourceTree = "<group>"; };
+		DDB6CCFA2AAF805100945AF6 /* NodeMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMap.swift; sourceTree = "<group>"; };
 		DDB75A0E2A05920E006ED576 /* FileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManager.swift; sourceTree = "<group>"; };
 		DDB75A102A059258006ED576 /* Url.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Url.swift; sourceTree = "<group>"; };
 		DDB75A132A0593E2006ED576 /* OfflineTileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineTileManager.swift; sourceTree = "<group>"; };
@@ -602,9 +602,9 @@
 			children = (
 				DD1933752B0835D500771CD5 /* AltitudeHistoryView.swift */,
 				DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */,
-				DDB6CCFA2AAF805100945AF6 /* NodeMapView.swift */,
+				DDB6CCFA2AAF805100945AF6 /* NodeMap.swift */,
 				DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */,
-				08DD7E5A2C427A5B00548159 /* SimpleNodeMapView.swift */,
+				08DD7E5A2C427A5B00548159 /* SimpleNodeMap.swift */,
 				DDDC22362BA9232C002C44F1 /* MapContent */,
 			);
 			path = NodeMapMap;
@@ -1072,7 +1072,7 @@
 				DDDCD5702BB26F5C00BE6B60 /* NodeListFilter.swift in Sources */,
 				DD1933762B0835D500771CD5 /* AltitudeHistoryView.swift in Sources */,
 				DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */,
-				DDB6CCFB2AAF805100945AF6 /* NodeMapView.swift in Sources */,
+				DDB6CCFB2AAF805100945AF6 /* NodeMap.swift in Sources */,
 				DD73FD1128750779000852D6 /* PositionLog.swift in Sources */,
 				DD15E4F52B8BFC8E00654F61 /* PaxCounterLog.swift in Sources */,
 				DD3CC6C028E7A60700FA9159 /* MessagingEnums.swift in Sources */,
@@ -1087,7 +1087,7 @@
 				DD77093F2AA1B146007A8BF0 /* UIColor.swift in Sources */,
 				DDF6B2482A9AEBF500BA6931 /* StoreForwardConfig.swift in Sources */,
 				DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */,
-				08DD7E5B2C427A5B00548159 /* SimpleNodeMapView.swift in Sources */,
+				08DD7E5B2C427A5B00548159 /* SimpleNodeMap.swift in Sources */,
 				08DD7E5D2C42833200548159 /* LoRaSignalStrength.swift in Sources */,
 				DD93800B2BA3F968008BEC06 /* NodeMapContent.swift in Sources */,
 				DD41582A28585C32009B0E59 /* RangeTestConfig.swift in Sources */,

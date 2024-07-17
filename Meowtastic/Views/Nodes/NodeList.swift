@@ -11,8 +11,6 @@ struct NodeList: View {
 	var bleManager: BLEManager
 	@StateObject
 	var appState = AppState.shared
-	@State
-	var isEditingFilters = false
 
 	@State
 	private var columnVisibility = NavigationSplitViewVisibility.all
@@ -20,18 +18,12 @@ struct NodeList: View {
 	private var selectedNode: NodeInfoEntity?
 	@State
 	private var searchText = ""
-	@State
-	private var isFavorite = UserDefaults.filterFavorite
-	@State
-	private var isOnline = UserDefaults.filterOnline
-	@State
-	private var ignoreMQTT = UserDefaults.ignoreMQTT
 
 	@FetchRequest(
 		sortDescriptors: [
 			NSSortDescriptor(key: "favorite", ascending: false),
 			NSSortDescriptor(key: "lastHeard", ascending: false),
-			NSSortDescriptor(key: "user.longName", ascending: true),
+			NSSortDescriptor(key: "user.longName", ascending: true)
 		],
 		animation: .default
 	)
@@ -67,7 +59,24 @@ struct NodeList: View {
 
 	var body: some View {
 		NavigationSplitView(columnVisibility: $columnVisibility) {
-			nodeList
+			List(selection: $selectedNode) {
+				nodeList(online: true)
+				nodeList(online: false)
+			}
+			.listStyle(.automatic)
+			.searchable(
+				text: $searchText,
+				placement: .automatic,
+				prompt: "Find a node"
+			)
+			.disableAutocorrection(true)
+			.scrollDismissesKeyboard(.immediately)
+			.navigationTitle("Nodes")
+			.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
+			.navigationBarItems(
+				leading: MeshtasticLogo(),
+				trailing: ConnectedDevice(ble: bleManager)
+			)
 		} content: {
 			if let node = selectedNode {
 				NavigationStack {
@@ -105,21 +114,6 @@ struct NodeList: View {
 				await updateFilter()
 			}
 		}
-		.onChange(of: isFavorite, initial: false) {
-			Task {
-				await updateFilter()
-			}
-		}
-		.onChange(of: isOnline, initial: false) {
-			Task {
-				await updateFilter()
-			}
-		}
-		.onChange(of: ignoreMQTT, initial: false) {
-			Task {
-				await updateFilter()
-			}
-		}
 		.onChange(of: appState.navigationPath, initial: true) {
 			guard let navigationPath = appState.navigationPath else {
 				return
@@ -146,89 +140,51 @@ struct NodeList: View {
 	}
 
 	@ViewBuilder
-	private var nodeList: some View {
-		let connectedNodeNum = Int(bleManager.connectedPeripheral?.num ?? 0)
-		let connectedNode = nodes.first(where: {
-			$0.num == connectedNodeNum
-		})
+	private func nodeList(online: Bool = true) -> some View {
+		let nodeList = nodes.filter { node in
+			node.isOnline == online
+		}
 
-		List(
-			nodes.filter { node in
-				guard isFavorite || isOnline || ignoreMQTT else {
-					return true
-				}
-
-				if (isFavorite && node.favorite)
-					|| (isOnline && node.isOnline)
-					|| (ignoreMQTT && !node.viaMqtt)
-				{
-					return true
-				}
-
-				return false
-			},
-			id: \.self,
-			selection: $selectedNode
-		) { node in
-			NodeListItem(
-				connected: bleManager.connectedPeripheral?.num ?? -1 == node.num,
-				connectedNode: bleManager.connectedPeripheral?.num ?? -1,
-				node: node
+		Section(
+			header: listHeader(
+				title: online ? "Online" : "Offline",
+				nodesCount: nodeList.count
 			)
-			.contextMenu {
-				contextMenuActions(
-					node: node,
-					connectedNode: connectedNode
+		) {
+			let connectedNodeNum = Int(bleManager.connectedPeripheral?.num ?? 0)
+			let connectedNode = nodes.first(where: {
+				$0.num == connectedNodeNum
+			})
+
+			ForEach(nodeList, id: \.self) { node in
+				NodeListItem(
+					connected: bleManager.connectedPeripheral?.num ?? -1 == node.num,
+					connectedNode: bleManager.connectedPeripheral?.num ?? -1,
+					node: node
 				)
-			}
-		}
-		.sheet(isPresented: $isEditingFilters) {
-			NodeListFilter(
-				isFavorite: $isFavorite,
-				isOnline: $isOnline,
-				ignoreMQTT: $ignoreMQTT
-			)
-		}
-		.safeAreaInset(edge: .bottom, alignment: .trailing) {
-			HStack {
-				Button(action: {
-					withAnimation {
-						isEditingFilters = !isEditingFilters
-					}
-				}) {
-					Image(
-						systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill"
+				.contextMenu {
+					contextMenuActions(
+						node: node,
+						connectedNode: connectedNode
 					)
-						.padding(.vertical, 5)
 				}
-				.tint(Color(UIColor.secondarySystemBackground))
-				.foregroundColor(.accentColor)
-				.buttonStyle(.borderedProminent)
 			}
-			.controlSize(.regular)
-			.padding(5)
 		}
-		.listStyle(.plain)
-		.searchable(
-			text: $searchText,
-			placement: .automatic,
-			prompt: "Find a node"
-		)
-		.disableAutocorrection(true)
-		.scrollDismissesKeyboard(.immediately)
-		.navigationTitle("Nodes")
-		.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
-		.navigationBarItems(
-			leading: MeshtasticLogo(),
-			trailing: ConnectedDevice(ble: bleManager)
-		)
+	}
+
+	@ViewBuilder
+	private func listHeader(title: String, nodesCount: Int) -> some View {
+		HStack(alignment: .center) {
+			Text(title)
+
+			Spacer()
+
+			Text(String(nodesCount))
+				.fontWeight(.bold)
+		}
 	}
 
 	private func updateFilter() async {
-		UserDefaults.filterFavorite = isFavorite
-		UserDefaults.filterOnline = isOnline
-		UserDefaults.ignoreMQTT = ignoreMQTT
-
 		let searchPredicates = [
 			"user.userId",
 			"user.numString",
