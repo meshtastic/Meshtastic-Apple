@@ -13,12 +13,14 @@ SwiftUI client applications for iOS, iPadOS and macOS.
 This project is currently using **Xcode 15.4**. 
 
 1. Clone the repo.
+2. Set up git hooks to automatically lint the project when you commit changes.
 2. Open `Meshtastic.xcworkspace`
 2. Build and run the `Meshtastic` target.
 
 ```sh
 git clone git@github.com:meshtastic/Meshtastic-Apple.git
 cd Meshtastic-Apple
+./scripts/setup-hooks.sh
 open Meshtastic.xcworkspace
 ```
 

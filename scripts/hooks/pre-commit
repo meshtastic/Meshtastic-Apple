@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./scripts/lint/lint-fix-changes.sh
