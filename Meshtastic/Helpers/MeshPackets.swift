@@ -290,7 +290,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				newUser.isLicensed = nodeInfo.user.isLicensed
 				newUser.role = Int32(nodeInfo.user.role.rawValue)
 				newNode.user = newUser
-			} else if nodeInfo.num > Int16.max {
+			} else if nodeInfo.num > Constants.minimumNodeNum {
 				let newUser = createUser(num: Int64(nodeInfo.num), context: context)
 				newNode.user = newUser
 			}
@@ -355,7 +355,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				fetchedNode[0].user!.role = Int32(nodeInfo.user.role.rawValue)
 				fetchedNode[0].user!.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
 			} else {
-				if fetchedNode[0].user == nil && nodeInfo.num > Int16.max {
+				if fetchedNode[0].user == nil && nodeInfo.num > Constants.minimumNodeNum {
 
 					let newUser = createUser(num: Int64(nodeInfo.num), context: context)
 					fetchedNode[0].user = newUser
@@ -682,6 +682,10 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.windLull = telemetryMessage.environmentMetrics.windLull
 					telemetry.windDirection = Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.windDirection)
 					telemetry.metricsType = 1
+				} else {
+					
+					/// Other unhandled telemetry packets
+					return
 				}
 				telemetry.snr = packet.rxSnr
 				telemetry.rssi = packet.rxRssi
@@ -806,7 +810,7 @@ func textMessageAppPacket(
 				newMessage.replyID = Int64(packet.decoded.replyID)
 			}
 
-			if fetchedUsers.first(where: { $0.num == packet.to }) != nil && packet.to != 4294967295 {
+			if fetchedUsers.first(where: { $0.num == packet.to }) != nil && packet.to != Constants.maximumNodeNum {
 				if !storeForwardBroadcast {
 					newMessage.toUser = fetchedUsers.first(where: { $0.num == packet.to })
 				}
@@ -819,7 +823,7 @@ func textMessageAppPacket(
 			}
 			newMessage.messagePayload = messageText
 			newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: messageText!)
-			if packet.to != 4294967295 && newMessage.fromUser != nil {
+			if packet.to != Constants.maximumNodeNum && newMessage.fromUser != nil {
 				newMessage.fromUser?.lastMessage = Date()
 			}
 			var messageSaved = false

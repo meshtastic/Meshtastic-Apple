@@ -23,7 +23,7 @@ extension ExternalNotificationConfigEntity {
 		self.nagTimeout = Int32(config.nagTimeout)
 		self.useI2SAsBuzzer = config.useI2SAsBuzzer
 	}
-	
+
 	func update(with config: ModuleConfig.ExternalNotificationConfig) {
 		enabled = config.enabled
 		usePWM = config.usePwm

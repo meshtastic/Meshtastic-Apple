@@ -18,7 +18,7 @@ struct DeviceMetricsLog: View {
 	@State var exportString = ""
 
 	@State private var batteryChartColor: Color = .blue
-	@State private var airtimeChartColor: Color = .orange
+	@State private var airtimeChartColor: Color = .yellow
 	@State private var channelUtilizationChartColor: Color = .green
 	@ObservedObject var node: NodeInfoEntity
 
@@ -57,9 +57,17 @@ struct DeviceMetricsLog: View {
 								.accessibilityValue("X: \(point.time!), Y: \(point.channelUtilization)")
 								.foregroundStyle(channelUtilizationChartColor)
 
-								RuleMark(y: .value("Limit", 10))
+								RuleMark(y: .value("10% Airtime", 10))
 									.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
-									.foregroundStyle(airtimeChartColor)
+									.foregroundStyle(.yellow)
+								
+								RuleMark(y: .value("Network Status Orange", 25))
+									.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
+									.foregroundStyle(.orange)
+					
+								RuleMark(y: .value("Network Status Red", 50))
+									.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
+									.foregroundStyle(.red)
 
 								Plot {
 									PointMark(
@@ -79,9 +87,9 @@ struct DeviceMetricsLog: View {
 						.chartXAxis(.automatic)
 						.chartYScale(domain: 0...100)
 						.chartForegroundStyleScale([
-							"Battery Level": .blue,
-							"Channel Utilization": .green,
-							"Airtime": .orange
+							"Battery Level": batteryChartColor,
+							"Channel Utilization": channelUtilizationChartColor,
+							"Airtime": airtimeChartColor
 						])
 						.chartLegend(position: .automatic, alignment: .bottom)
 					}

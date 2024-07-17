@@ -35,7 +35,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	var timeoutTimer: Timer?
 	var timeoutTimerCount = 0
 	var positionTimer: Timer?
-	static let emptyNodeNum: UInt32 = 4294967295
 	let mqttManager = MqttClientProxyManager.shared
 	var wantRangeTestPackets = false
 	var wantStoreAndForwardPackets = false
@@ -567,7 +566,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			Logger.radio.debug("📟 \(log, privacy: .public)")
 		}
 	}
-	
+
 	func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
 
 		if let error {
@@ -608,8 +607,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					message = "DEBUG | \(message)"
 				}
 				handleRadioLog(radioLog: message)
-			}
-			catch {
+			} catch {
 				// Ignore fail to parse as LogRecord
 			}
 
@@ -1028,7 +1026,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					if toUserNum > 0 {
 						meshPacket.to = UInt32(toUserNum)
 					} else {
-						meshPacket.to = Self.emptyNodeNum
+						meshPacket.to = Constants.maximumNodeNum
 					}
 					meshPacket.channel = UInt32(channel)
 					meshPacket.from	= UInt32(fromUserNum)
@@ -1076,7 +1074,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var success = false
 		let fromNodeNum = UInt32(connectedPeripheral.num)
 		var meshPacket = MeshPacket()
-		meshPacket.to = Self.emptyNodeNum
+		meshPacket.to = Constants.maximumNodeNum
 		meshPacket.from	= fromNodeNum
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()

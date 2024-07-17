@@ -1,19 +1,8 @@
 {
   "images" : [
     {
-      "filename" : "tbeam_supreme 2.jpg",
-      "idiom" : "universal",
-      "scale" : "1x"
-    },
-    {
-      "filename" : "tbeam_supreme 1.jpg",
-      "idiom" : "universal",
-      "scale" : "2x"
-    },
-    {
-      "filename" : "tbeam_supreme.jpg",
-      "idiom" : "universal",
-      "scale" : "3x"
+      "filename" : "tbeam_supreme.png",
+      "idiom" : "universal"
     }
   ],
   "info" : {
