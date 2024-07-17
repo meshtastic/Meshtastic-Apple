@@ -96,16 +96,6 @@
     "%@ hPa" : {
 
     },
-    "%@, %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@, %2$@"
-          }
-        }
-      }
-    },
     "%@%%" : {
 
     },
@@ -654,9 +644,6 @@
 
     },
     "Altitude is Mean Sea Level" : {
-
-    },
-    "Altitude: %@" : {
 
     },
     "Always point north" : {
@@ -18527,9 +18514,6 @@
     "Sats Estimate %lld" : {
 
     },
-    "Sats in view: %@" : {
-
-    },
     "save" : {
       "localizations" : {
         "de" : {
@@ -18865,9 +18849,6 @@
 
     },
     "Sequence number" : {
-
-    },
-    "Sequence: %@" : {
 
     },
     "serial" : {
@@ -19582,9 +19563,6 @@
 
     },
     "Speed %@" : {
-
-    },
-    "Speed: %@" : {
 
     },
     "Spread Factor" : {

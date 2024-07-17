@@ -170,6 +170,7 @@ struct NodeList: View {
 				}
 			}
 		}
+		.headerProminence(.increased)
 	}
 
 	@ViewBuilder

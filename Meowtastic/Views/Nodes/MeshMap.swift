@@ -100,8 +100,8 @@ struct MeshMap: View {
 					return
 				}
 			}
-			.sheet(item: $selectedPosition) { position in
-				if let node = selectedPosition?.nodePosition {
+			.popover(item: $selectedPosition) { position in
+				if let node = position.nodePosition {
 					NodeDetail(isInSheet: true, node: node)
 						.presentationDetents([.medium])
 				}
