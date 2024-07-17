@@ -110,6 +110,6 @@ struct PaxCounterConfig: View {
 
 	private func setPaxValues() {
 		enabled = node?.paxCounterConfig?.enabled ?? enabled
-		paxcounterUpdateInterval = Int(node?.paxCounterConfig?.updateInterval ?? 900)
+		paxcounterUpdateInterval = Int(node?.paxCounterConfig?.updateInterval ?? 1800)
 	}
 }
