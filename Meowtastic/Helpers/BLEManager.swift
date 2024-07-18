@@ -3264,15 +3264,35 @@ extension BLEManager: CBCentralManagerDelegate {
 	}
 
 	// Called each time a peripheral is discovered
-	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
-
-		if self.automaticallyReconnect && peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" {
+	func centralManager(
+		_ central: CBCentralManager,
+		didDiscover peripheral: CBPeripheral,
+		advertisementData: [String: Any],
+		rssi RSSI: NSNumber
+	) {
+		if
+			automaticallyReconnect
+				&& peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? ""
+		{
 			self.connectTo(peripheral: peripheral)
 			Logger.services.info("✅ [BLE] Reconnecting to prefered peripheral: \(peripheral.name ?? "Unknown", privacy: .public)")
 		}
+
 		let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String
-		let device = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: name ?? "Unknown", shortName: "?", longName: name ?? "Unknown", firmwareVersion: "Unknown", rssi: RSSI.intValue, lastUpdate: Date(), peripheral: peripheral)
-		let index = peripherals.map { $0.peripheral }.firstIndex(of: peripheral)
+		let device = Peripheral(
+			id: peripheral.identifier.uuidString,
+			num: 0,
+			name: name ?? "Unknown",
+			shortName: "?",
+			longName: name ?? "Unknown",
+			firmwareVersion: "Unknown",
+			rssi: RSSI.intValue,
+			lastUpdate: Date(),
+			peripheral: peripheral
+		)
+		let index = peripherals.map {
+			$0.peripheral
+		}.firstIndex(of: peripheral)
 
 		if let peripheralIndex = index {
 			peripherals[peripheralIndex] = device

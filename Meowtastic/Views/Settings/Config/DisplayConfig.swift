@@ -30,7 +30,7 @@ struct DisplayConfig: View {
 
 	var body: some View {
 		Form {
-			ConfigHeader(title: "Display", config: \.displayConfig, node: node, onAppear: setDisplayValues)
+			ConfigHeader(title: "Display", config: \.displayConfig, node: node)
 
 			Section(header: Text("Device Screen")) {
 				VStack(alignment: .leading) {
@@ -75,6 +75,7 @@ struct DisplayConfig: View {
 				}
 				.pickerStyle(DefaultPickerStyle())
 			}
+
 			Section(header: Text("Timing & Format")) {
 				VStack(alignment: .leading) {
 					Picker("Screen on for", selection: $screenOnSeconds ) {

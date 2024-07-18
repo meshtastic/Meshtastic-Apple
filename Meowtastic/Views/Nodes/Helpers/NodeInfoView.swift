@@ -1,6 +1,4 @@
 import SwiftUI
-import CoreLocation
-import MapKit
 
 struct NodeInfoView: View {
 	var modemPreset: ModemPresets = ModemPresets(

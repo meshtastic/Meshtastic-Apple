@@ -49,7 +49,7 @@ struct MQTTConfig: View {
 					}
 				}
 
-				ConfigHeader(title: "MQTT", config: \.mqttConfig, node: node, onAppear: setMqttValues)
+				ConfigHeader(title: "MQTT", config: \.mqttConfig, node: node)
 
 				Section(header: Text("options")) {
 

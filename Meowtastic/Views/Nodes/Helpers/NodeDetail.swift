@@ -1,6 +1,5 @@
 import SwiftUI
 import MapKit
-import CoreLocation
 import OSLog
 
 struct NodeDetail: View {

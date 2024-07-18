@@ -7,7 +7,6 @@ struct ConfigHeader<T>: View {
 	let title: String
 	let config: KeyPath<NodeInfoEntity, T?>
 	let node: NodeInfoEntity?
-	let onAppear: () -> Void
 
 	var body: some View {
 		if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
@@ -24,7 +23,6 @@ struct ConfigHeader<T>: View {
 			} else {
 				Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
 					.font(.title3)
-					.onAppear(perform: onAppear)
 			}
 		} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? -1 {
 			Text("Configuration for: \(node?.user?.longName ?? "Unknown")")

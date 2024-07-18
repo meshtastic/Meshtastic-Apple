@@ -9,7 +9,6 @@ import OSLog
 import SwiftUI
 
 struct ExternalNotificationConfig: View {
-
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var goBack
@@ -37,10 +36,9 @@ struct ExternalNotificationConfig: View {
 	var body: some View {
 		VStack {
 			Form {
-				ConfigHeader(title: "External notification", config: \.externalNotificationConfig, node: node, onAppear: setExternalNotificationValues)
+				ConfigHeader(title: "External notification", config: \.externalNotificationConfig, node: node)
 
 				Section(header: Text("options")) {
-
 					Toggle(isOn: $enabled) {
 						Label("enabled", systemImage: "megaphone")
 					}
@@ -68,6 +66,7 @@ struct ExternalNotificationConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
+
 				Section(header: Text("Advanced GPIO Options")) {
 					Section(header: Text("Primary GPIO")
 						.font(.caption)

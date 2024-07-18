@@ -25,7 +25,7 @@ struct RangeTestConfig: View {
 	var body: some View {
 		VStack {
 			Form {
-				ConfigHeader(title: "Range", config: \.rangeTestConfig, node: node, onAppear: setRangeTestValues)
+				ConfigHeader(title: "Range", config: \.rangeTestConfig, node: node)
 
 				Section(header: Text("options")) {
 					Toggle(isOn: $enabled) {

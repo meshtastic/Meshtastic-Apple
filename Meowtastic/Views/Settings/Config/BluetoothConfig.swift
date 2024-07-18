@@ -28,7 +28,7 @@ struct BluetoothConfig: View {
 	}()
 	var body: some View {
 		Form {
-			ConfigHeader(title: "Bluetooth", config: \.bluetoothConfig, node: node, onAppear: setBluetoothValues)
+			ConfigHeader(title: "Bluetooth", config: \.bluetoothConfig, node: node)
 
 			Section(header: Text("options")) {
 				Toggle(isOn: $enabled) {

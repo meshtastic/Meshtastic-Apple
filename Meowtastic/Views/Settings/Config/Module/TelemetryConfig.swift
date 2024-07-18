@@ -30,7 +30,7 @@ struct TelemetryConfig: View {
 	var body: some View {
 		VStack {
 			Form {
-				ConfigHeader(title: "Telemetry", config: \.telemetryConfig, node: node, onAppear: setTelemetryValues)
+				ConfigHeader(title: "Telemetry", config: \.telemetryConfig, node: node)
 
 				Section(header: Text("update.interval")) {
 					Picker("Device Metrics", selection: $deviceUpdateInterval ) {

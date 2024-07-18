@@ -21,7 +21,7 @@ struct RtttlConfig: View {
 	var body: some View {
 		VStack {
 			Form {
-				ConfigHeader(title: "ringtone", config: \.rtttlConfig, node: node, onAppear: setRtttLConfigValue)
+				ConfigHeader(title: "ringtone", config: \.rtttlConfig, node: node)
 
 				Section(header: Text("options")) {
 					HStack {

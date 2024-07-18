@@ -26,7 +26,7 @@ struct PowerConfig: View {
 
 	var body: some View {
 		Form {
-			ConfigHeader(title: "config.power.title", config: \.powerConfig, node: node, onAppear: setPowerValues)
+			ConfigHeader(title: "config.power.title", config: \.powerConfig, node: node)
 
 			Section {
 				if (currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3) || (currentDevice?.architecture == .nrf52840 && (node?.deviceConfig?.role ?? 0 == 5 || node?.deviceConfig?.role ?? 0 == 6)) {

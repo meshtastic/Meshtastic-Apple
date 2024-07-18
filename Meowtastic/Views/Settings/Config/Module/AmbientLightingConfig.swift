@@ -25,13 +25,13 @@ struct AmbientLightingConfig: View {
 	@State var blue = 0
 	@State private var color = Color(red: 51, green: 199, blue: 88) // Color(.sRGB, red: 0.98, green: 0.9, blue: 0.2)
 	@State private var components: Color.Resolved?
+
 	var body: some View {
 		VStack {
 			Form {
-				ConfigHeader(title: "Ambient Lighting", config: \.ambientLightingConfig, node: node, onAppear: setAmbientLightingConfigValue)
+				ConfigHeader(title: "Ambient Lighting", config: \.ambientLightingConfig, node: node)
 
 				Section(header: Text("options")) {
-
 					Toggle(isOn: $ledState) {
 						Label("LED State", systemImage: ledState ? "lightbulb.led.fill" : "lightbulb.led")
 						Text("The state of the LED (on/off)")
@@ -44,6 +44,7 @@ struct AmbientLightingConfig: View {
 						ColorPicker("Color", selection: $color, supportsOpacity: false)
 							.padding(5)
 					}
+
 					HStack {
 						Image(systemName: "directcurrent")
 							.foregroundColor(.accentColor)
@@ -87,7 +88,9 @@ struct AmbientLightingConfig: View {
 				if self.bleManager.context == nil {
 					self.bleManager.context = context
 				}
+
 				setAmbientLightingConfigValue()
+
 				// Need to request a Ambient Lighting Config from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.ambientLightingConfig == nil {
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
@@ -103,13 +106,15 @@ struct AmbientLightingConfig: View {
 			}
 		}
 	}
+
 	func setAmbientLightingConfigValue() {
-		self.ledState = node?.ambientLightingConfig?.ledState ?? false
-		self.current = Int(node?.ambientLightingConfig?.current ?? 10)
 		let red = Double(node?.ambientLightingConfig?.red ?? 255)
 		let green = Double(node?.ambientLightingConfig?.green ?? 255)
 		let blue = Double(node?.ambientLightingConfig?.blue ?? 255)
+
+		hasChanges = false
+		ledState = node?.ambientLightingConfig?.ledState ?? false
+		current = Int(node?.ambientLightingConfig?.current ?? 10)
 		color = Color(red: red / 255.0, green: green / 255.0, blue: blue / 255.0)
-		self.hasChanges = false
 	}
 }

@@ -1,5 +1,4 @@
 import SwiftUI
-import CoreLocation
 import OSLog
 
 struct NodeList: View {

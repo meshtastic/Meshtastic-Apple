@@ -28,7 +28,7 @@ struct NetworkConfig: View {
 	var body: some View {
 		VStack {
 			Form {
-				ConfigHeader(title: "Network", config: \.networkConfig, node: node, onAppear: setNetworkValues)
+				ConfigHeader(title: "Network", config: \.networkConfig, node: node)
 
 				if node != nil && node?.metadata?.hasWifi ?? false {
 					Section(header: Text("WiFi Options")) {

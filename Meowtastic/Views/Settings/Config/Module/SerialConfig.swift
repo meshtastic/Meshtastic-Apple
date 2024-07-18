@@ -31,10 +31,9 @@ struct SerialConfig: View {
 	var body: some View {
 		VStack {
 			Form {
-				ConfigHeader(title: "Serial", config: \.serialConfig, node: node, onAppear: setSerialValues)
+				ConfigHeader(title: "Serial", config: \.serialConfig, node: node)
 
 				Section(header: Text("options")) {
-
 					Toggle(isOn: $enabled) {
 						Label("enabled", systemImage: "terminal")
 					}
@@ -71,8 +70,8 @@ struct SerialConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 				}
-				Section(header: Text("GPIO")) {
 
+				Section(header: Text("GPIO")) {
 					Picker("Receive data (rxd) GPIO pin", selection: $rxd) {
 						ForEach(0..<49) {
 							if $0 == 0 {
@@ -96,6 +95,7 @@ struct SerialConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(.hidden)
+
 					Text("Set the GPIO pins for RXD and TXD.")
 						.foregroundColor(.gray)
 						.font(.callout)
@@ -134,7 +134,9 @@ struct SerialConfig: View {
 				if self.bleManager.context == nil {
 					self.bleManager.context = context
 				}
+
 				setSerialValues()
+
 				// Need to request a SerialModuleConfig from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.serialConfig == nil {
 					Logger.mesh.debug("empty serial module config")
@@ -146,63 +148,48 @@ struct SerialConfig: View {
 
 			}
 			.onChange(of: enabled) { newEnabled in
-
 				if node != nil && node!.serialConfig != nil {
-
 					if newEnabled != node!.serialConfig!.enabled { hasChanges = true	}
 				}
 			}
 			.onChange(of: echo) { newEcho in
-
 				if node != nil && node!.serialConfig != nil {
-
 					if newEcho != node!.serialConfig!.echo { hasChanges = true	}
 				}
 			}
 			.onChange(of: rxd) { newRxd in
-
 				if node != nil && node!.serialConfig != nil {
-
 					if newRxd != node!.serialConfig!.rxd { hasChanges = true	}
 				}
 			}
 			.onChange(of: txd) { newTxd in
-
 				if node != nil && node!.serialConfig != nil {
-
 					if newTxd != node!.serialConfig!.txd { hasChanges = true	}
 				}
 			}
 			.onChange(of: baudRate) { newBaud in
-
 				if node != nil && node!.serialConfig != nil {
-
 					if newBaud != node!.serialConfig!.baudRate { hasChanges = true	}
 				}
 			}
 			.onChange(of: timeout) { newTimeout in
-
 				if node != nil && node!.serialConfig != nil {
-
 					if newTimeout != node!.serialConfig!.timeout { hasChanges = true	}
 				}
 			}
 			.onChange(of: overrideConsoleSerialPort) { newOverrideConsoleSerialPort in
-
 				if node != nil && node!.serialConfig != nil {
-
 					if newOverrideConsoleSerialPort != node!.serialConfig!.overrideConsoleSerialPort { hasChanges = true	}
 				}
 			}
 			.onChange(of: mode) { newMode in
-
 				if node != nil && node!.serialConfig != nil {
-
 					if newMode != node!.serialConfig!.mode { hasChanges = true	}
 				}
 			}
 		}
 	}
+
 	func setSerialValues() {
 		self.enabled = node?.serialConfig?.enabled ?? false
 		self.echo = node?.serialConfig?.echo ?? false

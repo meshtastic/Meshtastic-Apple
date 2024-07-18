@@ -32,16 +32,16 @@ struct StoreForwardConfig: View {
 	var body: some View {
 		VStack {
 			Form {
-				ConfigHeader(title: "storeforward", config: \.storeForwardConfig, node: node, onAppear: setStoreAndForwardValues)
+				ConfigHeader(title: "storeforward", config: \.storeForwardConfig, node: node)
 
 				Section(header: Text("options")) {
-
 					Toggle(isOn: $enabled) {
 						Label("enabled", systemImage: "envelope.arrow.triangle.branch")
 						Text("Enables the store and forward module. Store and forward must be enabled on both client and router devices.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
+
 					if enabled {
 						HStack {
 							Picker(selection: $isRouter, label: Text("Role")) {
@@ -153,6 +153,7 @@ struct StoreForwardConfig: View {
 					_ = bleManager.requestStoreAndForwardModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
+
 			setStoreAndForwardValues()
 		}
 		.onChange(of: enabled) { newEnabled in

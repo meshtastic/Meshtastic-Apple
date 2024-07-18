@@ -34,17 +34,19 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 				sats = 5
 			}
 		}
-		else if shared.locationManager.location?.verticalAccuracy ?? 0 < 0
-					&& 60...300 ~= shared.locationManager.location?.horizontalAccuracy ?? 0
+		else if
+			shared.locationManager.location?.verticalAccuracy ?? 0 < 0
+				&& 60...300 ~= shared.locationManager.location?.horizontalAccuracy ?? 0
 		{
 			sats = 3
 		}
-		else if shared.locationManager.location?.verticalAccuracy ?? 0 < 0
-					&& shared.locationManager.location?.horizontalAccuracy ?? 0 > 300
+		else if
+			shared.locationManager.location?.verticalAccuracy ?? 0 < 0
+				&& shared.locationManager.location?.horizontalAccuracy ?? 0 > 300
 		{
 			sats = 2
 		}
-
+		
 		return sats
 	}
 

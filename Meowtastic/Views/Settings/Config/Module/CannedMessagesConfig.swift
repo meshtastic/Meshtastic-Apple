@@ -37,21 +37,19 @@ struct CannedMessagesConfig: View {
 	/// Generate input event on Press of this kind.
 	@State var inputbrokerEventPress = 0
 	@State var messages = ""
+
 	var body: some View {
 		VStack {
 			Form {
-				ConfigHeader(title: "Canned messages", config: \.cannedMessageConfig, node: node, onAppear: setCannedMessagesValues)
+				ConfigHeader(title: "Canned messages", config: \.cannedMessageConfig, node: node)
 
 				Section(header: Text("options")) {
-
 					Toggle(isOn: $enabled) {
-
 						Label("enabled", systemImage: "list.bullet.rectangle.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
 					Toggle(isOn: $sendBell) {
-
 						Label("Send Bell", systemImage: "bell")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))

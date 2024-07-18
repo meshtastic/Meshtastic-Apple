@@ -35,7 +35,7 @@ struct DeviceConfig: View {
 	var body: some View {
 		VStack {
 			Form {
-				ConfigHeader(title: "Device", config: \.deviceConfig, node: node, onAppear: setDeviceValues)
+				ConfigHeader(title: "Device", config: \.deviceConfig, node: node)
 
 				Section(header: Text("options")) {
 					VStack(alignment: .leading) {
