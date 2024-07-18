@@ -35,7 +35,6 @@ struct DeviceMetricsLog: View {
 						.sorted { $0.time! < $1.time! }
 				if chartData.count > 0 {
 					GroupBox(label: Label("\(deviceMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
-
 						Chart {
 							ForEach(chartData, id: \.self) { point in
 								Plot {
@@ -104,18 +103,21 @@ struct DeviceMetricsLog: View {
 						TableColumn("battery.level") { dm in
 							HStack {
 								Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+									.fontWeight(.semibold)
 								Spacer()
+								Image(systemName: "bolt")
+									.symbolRenderingMode(.multicolor)
+									.foregroundStyle(.yellow)
+								Text("Voltage \(String(format: "%.2f", dm.voltage)) ")
+									.foregroundStyle(.gray)
+								BatteryCompact(batteryLevel: dm.batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
 							}
 							.font(.caption)
 							HStack {
-								if dm.batteryLevel > 100 {
-									Text("PWD")
-								} else {
-									Text("Batt \(String(dm.batteryLevel))%")
-								}
-								Text("Volt \(String(format: "%.2f", dm.voltage)) ")
-								Text("ChUtil \(String(format: "%.2f", dm.channelUtilization))% ")
-								Text("AirTm \(String(format: "%.2f", dm.airUtilTx))%")
+								Text("Channel Utilization \(String(format: "%.2f", dm.channelUtilization))% ")
+									.foregroundColor(dm.channelUtilization < 25 ? .gray : (dm.channelUtilization > 50 ? .red : .orange))
+								Text("Airtime \(String(format: "%.2f", dm.airUtilTx))%")
+									.foregroundColor(.gray)
 								Spacer()
 							}
 							.font(.caption)

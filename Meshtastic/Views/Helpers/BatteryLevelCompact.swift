@@ -19,61 +19,7 @@ struct BatteryLevelCompact: View {
 		let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
 		let batteryLevel = mostRecent?.batteryLevel ?? 0
 		if deviceMetrics?.count ?? 0 > 0 {
-			HStack(alignment: .center, spacing: 0) {
-				if batteryLevel == 100 {
-					Image(systemName: "battery.100.bolt")
-						.font(iconFont)
-						.foregroundColor(color)
-						.symbolRenderingMode(.hierarchical)
-				} else if batteryLevel < 100 && batteryLevel > 74 {
-
-					Image(systemName: "battery.75")
-						.font(iconFont)
-						.foregroundColor(color)
-						.symbolRenderingMode(.hierarchical)
-				} else if batteryLevel < 75 && batteryLevel > 49 {
-
-					Image(systemName: "battery.50")
-						.font(iconFont)
-						.foregroundColor(color)
-						.symbolRenderingMode(.hierarchical)
-				} else if batteryLevel < 50 && batteryLevel > 14 {
-
-					Image(systemName: "battery.25")
-						.font(iconFont)
-						.foregroundColor(color)
-						.symbolRenderingMode(.hierarchical)
-				} else if batteryLevel < 15 && batteryLevel > 0 {
-
-					Image(systemName: "battery.0")
-						.font(iconFont)
-						.foregroundColor(color)
-						.symbolRenderingMode(.hierarchical)
-				} else if batteryLevel == 0 {
-					Image(systemName: "battery.0")
-						.font(iconFont)
-						.foregroundColor(.red)
-						.symbolRenderingMode(.hierarchical)
-				} else if batteryLevel > 100 {
-					Image(systemName: "powerplug")
-						.font(iconFont)
-						.foregroundColor(color)
-						.symbolRenderingMode(.hierarchical)
-				}
-				if batteryLevel > 100 {
-					Text("PWD")
-						.foregroundStyle(.gray)
-						.font(font)
-				} else if batteryLevel == 100 {
-					Text("CHG")
-						.foregroundStyle(.gray)
-						.font(font)
-				} else {
-					Text("\(batteryLevel)%")
-						.foregroundStyle(.gray)
-						.font(font)
-				}
-			}
+			BatteryCompact(batteryLevel: batteryLevel, font: font, iconFont: iconFont, color: color)
 		}
 	}
 }

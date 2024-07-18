@@ -68,6 +68,7 @@
 		DD3501892852FC3B000FC853 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3501882852FC3B000FC853 /* Settings.swift */; };
 		DD354FD92BD96A0B0061A25F /* IAQScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD354FD82BD96A0B0061A25F /* IAQScale.swift */; };
 		DD3619152B1EF9F900C41C8C /* LocationsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */; };
+		DD3CC24C2C498D6C001BD3A2 /* BatteryCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC24B2C498D6C001BD3A2 /* BatteryCompact.swift */; };
 		DD3CC6B528E33FD100FA9159 /* ShareChannels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */; };
 		DD3CC6BC28E366DF00FA9159 /* Meshtastic.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */; };
 		DD3CC6BE28E4CD9800FA9159 /* BatteryGauge.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */; };
@@ -248,12 +249,12 @@
 		2519268F2C3CB44900249DF5 /* ClientHistoryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientHistoryButton.swift; sourceTree = "<group>"; };
 		251926912C3CB52300249DF5 /* DeleteNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteNodeButton.swift; sourceTree = "<group>"; };
 		25AECD4E2C2F723200862C8E /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		25C49D8F2C471AEA0024FBD1 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		25F5D5BD2C3F6D87008036E3 /* NavigationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationState.swift; sourceTree = "<group>"; };
 		25F5D5BF2C3F6DA6008036E3 /* Router.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Router.swift; sourceTree = "<group>"; };
 		25F5D5C12C3F6E4B008036E3 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		25F5D5C72C4375A8008036E3 /* MeshtasticTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MeshtasticTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		25F5D5D02C4375DF008036E3 /* RouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouterTests.swift; sourceTree = "<group>"; };
-		25C49D8F2C471AEA0024FBD1 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		6D825E612C34786C008DBEE4 /* CommonRegex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonRegex.swift; sourceTree = "<group>"; };
 		6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAppDelegate.swift; sourceTree = "<group>"; };
 		6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorLog.swift; sourceTree = "<group>"; };
@@ -307,6 +308,7 @@
 		DD3619132B1EE20700C41C8C /* MeshtasticDataModelV21.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV21.xcdatamodel; sourceTree = "<group>"; };
 		DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationsHandler.swift; sourceTree = "<group>"; };
 		DD398EBD2B93F640002B4C51 /* MeshtasticDataModelV 29.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 29.xcdatamodel"; sourceTree = "<group>"; };
+		DD3CC24B2C498D6C001BD3A2 /* BatteryCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryCompact.swift; sourceTree = "<group>"; };
 		DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareChannels.swift; sourceTree = "<group>"; };
 		DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModel.xcdatamodel; sourceTree = "<group>"; };
 		DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryGauge.swift; sourceTree = "<group>"; };
@@ -882,6 +884,7 @@
 			isa = PBXGroup;
 			children = (
 				DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */,
+				DD3CC24B2C498D6C001BD3A2 /* BatteryCompact.swift */,
 				DDB75A222A13CDA9006ED576 /* BatteryLevelCompact.swift */,
 				DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */,
 				DD47E3D526F17ED900029299 /* CircleText.swift */,
@@ -1320,6 +1323,7 @@
 				DDB75A112A059258006ED576 /* Url.swift in Sources */,
 				DDAD49ED2AFB39DC00B4425D /* MeshMap.swift in Sources */,
 				DD8169FB271F1F3A00F4AB02 /* MeshLog.swift in Sources */,
+				DD3CC24C2C498D6C001BD3A2 /* BatteryCompact.swift in Sources */,
 				DD1B8F402B35E2F10022AABC /* GPSStatus.swift in Sources */,
 				DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */,
 				DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */,
