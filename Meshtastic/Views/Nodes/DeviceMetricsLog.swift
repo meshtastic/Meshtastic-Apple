@@ -113,7 +113,7 @@ struct DeviceMetricsLog: View {
 							.font(.caption)
 							HStack {
 								Text("Channel Utilization \(String(format: "%.2f", dm.channelUtilization))% ")
-									.foregroundColor(dm.channelUtilization < 25 ? .secondary : (dm.channelUtilization > 50 ? .red : .orange))
+									.foregroundColor(dm.channelUtilization < 25 ? (dm.channelUtilization > 10 ? .yellow : .secondary)  : (dm.channelUtilization > 50 ? .red : .orange))
 								Text("Airtime \(String(format: "%.2f", dm.airUtilTx))%")
 									.foregroundColor(.secondary)
 								Spacer()
@@ -137,7 +137,7 @@ struct DeviceMetricsLog: View {
 						}
 						TableColumn("channel.utilization") { dm in
 							Text("\(String(format: "%.2f", dm.channelUtilization))%")
-								.foregroundColor(dm.channelUtilization < 25 ? .secondary : (dm.channelUtilization > 50 ? .red : .orange))
+								.foregroundColor(dm.channelUtilization < 25 ? (dm.channelUtilization > 10 ? .yellow : .secondary)  : (dm.channelUtilization > 50 ? .red : .orange))
 						}
 						TableColumn("airtime") { dm in
 							Text("\(String(format: "%.2f", dm.airUtilTx))%")
