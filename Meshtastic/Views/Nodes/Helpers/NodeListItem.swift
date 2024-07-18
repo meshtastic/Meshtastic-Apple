@@ -35,15 +35,14 @@ struct NodeListItem: View {
 							if node.favorite {
 								Spacer()
 								Image(systemName: "star.fill")
-									.foregroundColor(.yellow)
+									.symbolRenderingMode(.multicolor)
 							}
 						}
 						if connected {
 							HStack {
 								Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
 									.font(.callout)
-									.symbolRenderingMode(.hierarchical)
-									.foregroundColor(.green)
+									.symbolRenderingMode(.multicolor)
 									.frame(width: 30)
 								Text("connected")
 									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
@@ -53,7 +52,7 @@ struct NodeListItem: View {
 						HStack {
 							Image(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill")
 								.font(.callout)
-								.symbolRenderingMode(.hierarchical)
+								.symbolRenderingMode(.multicolor)
 								.foregroundColor(node.isOnline ? .green : .orange)
 								.frame(width: 30)
 							LastHeardText(lastHeard: node.lastHeard)
@@ -64,7 +63,7 @@ struct NodeListItem: View {
 							let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
 							Image(systemName: role?.systemName ?? "figure")
 								.font(.callout)
-								.symbolRenderingMode(.hierarchical)
+								.symbolRenderingMode(.multicolor)
 								.frame(width: 30)
 							Text("Role: \(role?.name ?? "unknown".localized)")
 								.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
@@ -75,11 +74,11 @@ struct NodeListItem: View {
 							HStack {
 								Image(systemName: "envelope.arrow.triangle.branch")
 									.font(.callout)
-									.symbolRenderingMode(.hierarchical)
+									.symbolRenderingMode(.multicolor)
 									.frame(width: 30)
 								Text("storeforward".localized)
 									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-									.foregroundColor(.gray)
+									.foregroundColor(.secondary)
 							}
 						}
 
@@ -94,7 +93,7 @@ struct NodeListItem: View {
 												let metersAway = nodeCoord.distance(from: myCoord)
 												Image(systemName: "lines.measurement.horizontal")
 													.font(.callout)
-													.symbolRenderingMode(.hierarchical)
+													.symbolRenderingMode(.multicolor)
 													.frame(width: 30)
 												DistanceText(meters: metersAway)
 													.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
@@ -109,11 +108,11 @@ struct NodeListItem: View {
 											let metersAway = nodeCoord.distance(from: myCoord)
 											Image(systemName: "lines.measurement.horizontal")
 												.font(.callout)
-												.symbolRenderingMode(.hierarchical)
+												.symbolRenderingMode(.multicolor)
 												.frame(width: 30)
 											DistanceText(meters: metersAway)
 												.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-												.foregroundColor(.gray)
+												.foregroundColor(.secondary)
 										}
 									}
 								}
@@ -124,18 +123,17 @@ struct NodeListItem: View {
 								HStack {
 									Image(systemName: "\(node.channel).circle.fill")
 										.font(.title2)
-										.symbolRenderingMode(.hierarchical)
+										.symbolRenderingMode(.multicolor)
 										.frame(width: 30)
-										.foregroundColor(.accentColor)
 									Text("Channel")
-										.foregroundColor(.gray)
+										.foregroundColor(.secondary)
 										.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 								}
 							}
 
 							if node.viaMqtt && connectedNode != node.num {
 								Image(systemName: "dot.radiowaves.up.forward")
-									.symbolRenderingMode(.hierarchical)
+									.symbolRenderingMode(.multicolor)
 									.font(.callout)
 									.frame(width: 30)
 								Text("MQTT")
@@ -165,7 +163,7 @@ struct NodeListItem: View {
 										.frame(width: 30)
 								}
 								if node.hasEnvironmentMetrics {
-									Image(systemName: "cloud.sun.rain")
+									Image(systemName: "cloud.sun.rain.fill")
 										.symbolRenderingMode(.hierarchical)
 										.font(.callout)
 										.frame(width: 30)
@@ -190,13 +188,13 @@ struct NodeListItem: View {
 							HStack {
 								Image(systemName: "hare")
 									.font(.callout)
-									.symbolRenderingMode(.hierarchical)
+									.symbolRenderingMode(.multicolor)
 								Text("Hops Away:")
-									.foregroundColor(.gray)
+									.foregroundColor(.secondary)
 									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 								Image(systemName: "\(node.hopsAway).square")
 									.font(.title2)
-									.symbolRenderingMode(.hierarchical)
+									.symbolRenderingMode(.multicolor)
 							}
 						} else {
 							if node.snr != 0 && !node.viaMqtt {
