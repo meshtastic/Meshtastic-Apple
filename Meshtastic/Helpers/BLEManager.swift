@@ -1061,7 +1061,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 				}
 			} catch {
-
+				Logger.data.error("💥 Send message failure \(self.connectedPeripheral.num.toHex(), privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
 			}
 		}
 		return success

@@ -679,7 +679,7 @@
     "Airtime" : {
 
     },
-    "AirTm" : {
+    "AirTm %@%%" : {
 
     },
     "Alert" : {
@@ -1428,7 +1428,7 @@
     "Barometric Pressure" : {
 
     },
-    "Batt" : {
+    "Batt %@%%" : {
 
     },
     "Battery Level %" : {
@@ -3091,7 +3091,7 @@
     "CHG" : {
 
     },
-    "ChUtil" : {
+    "ChUtil %@%% " : {
 
     },
     "Clear" : {
@@ -22292,7 +22292,7 @@
     "Via Mqtt" : {
 
     },
-    "Volt" : {
+    "Volt %@ " : {
 
     },
     "voltage" : {
