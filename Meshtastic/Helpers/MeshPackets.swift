@@ -648,6 +648,10 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 		} else {
 			// If it is the connected node
 		}
+		if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) {
+			/// Other unhandled telemetry packets
+			return
+		}
 
 		let telemetry = TelemetryEntity(context: context)
 
@@ -657,6 +661,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 		do {
 			let fetchedNode = try context.fetch(fetchNodeTelemetryRequest)
 			if fetchedNode.count == 1 {
+				/// Currently only Device Metrics and Environment Telemetry are supported in the app
 				if telemetryMessage.variant == Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) {
 					// Device Metrics
 					telemetry.airUtilTx = telemetryMessage.deviceMetrics.airUtilTx
@@ -665,7 +670,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.voltage = telemetryMessage.deviceMetrics.voltage
 					telemetry.uptimeSeconds = Int32(telemetryMessage.deviceMetrics.uptimeSeconds)
 					telemetry.metricsType = 0
-					Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.deviceMetrics.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.deviceMetrics.airUtilTx, privacy: .public)) for Node: \(packet.from.toHex(), privacy: .public))")
+					Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.deviceMetrics.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.deviceMetrics.airUtilTx, privacy: .public) for Node: \(packet.from.toHex(), privacy: .public))")
 				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) {
 					// Environment Metrics
 					telemetry.barometricPressure = telemetryMessage.environmentMetrics.barometricPressure
@@ -682,10 +687,6 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.windLull = telemetryMessage.environmentMetrics.windLull
 					telemetry.windDirection = Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.windDirection)
 					telemetry.metricsType = 1
-				} else {
-					
-					/// Other unhandled telemetry packets
-					return
 				}
 				telemetry.snr = packet.rxSnr
 				telemetry.rssi = packet.rxRssi
