@@ -2,12 +2,13 @@ import SwiftUI
 import CoreLocation
 
 struct NodeListItem: View {
+	@ObservedObject
+	var node: NodeInfoEntity
+
 	var connected: Bool
 	var connectedNode: Int64
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
-
-	@ObservedObject
-	var node: NodeInfoEntity
+	var showBattery: Bool = false
 
 	private let detailInfoFont = Font.system(size: 14, weight: .regular, design: .rounded)
 	private let detailIconSize: CGFloat = 16
@@ -23,6 +24,7 @@ struct NodeListItem: View {
 				VStack(alignment: .leading, spacing: 4) {
 					name
 					signalStrength
+					battery
 
 					lastHeard
 						.padding(.top, 8)
@@ -96,7 +98,21 @@ struct NodeListItem: View {
 			LoRaSignalMeterView(
 				snr: node.snr,
 				rssi: node.rssi,
-				preset: modemPreset
+				preset: modemPreset,
+				withLabels: true
+			)
+		}
+	}
+
+	@ViewBuilder
+	private var battery: some View {
+		if !showBattery {
+			EmptyView()
+		}
+		else {
+			BatteryGaugeView(
+				node: node,
+				withLabels: true
 			)
 		}
 	}

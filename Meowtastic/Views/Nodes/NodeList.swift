@@ -139,9 +139,10 @@ struct NodeList: View {
 		) {
 			ForEach(suggestedNodes, id: \.self) { node in
 				NodeListItem(
+					node: node,
 					connected: connectedNodeNum == node.num,
 					connectedNode: connectedNodeNum,
-					node: node
+					showBattery: true
 				)
 				.contextMenu {
 					contextMenuActions(
@@ -172,9 +173,9 @@ struct NodeList: View {
 
 			ForEach(nodeList, id: \.self) { node in
 				NodeListItem(
+					node: node,
 					connected: bleManager.connectedPeripheral?.num ?? -1 == node.num,
-					connectedNode: bleManager.connectedPeripheral?.num ?? -1,
-					node: node
+					connectedNode: bleManager.connectedPeripheral?.num ?? -1
 				)
 				.contextMenu {
 					contextMenuActions(

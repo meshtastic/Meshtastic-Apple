@@ -1,9 +1,11 @@
 import SwiftUI
 
 struct Avatar: View {
-    private let name: String?
-    private let background: Color
+	private let name: String?
+	private let background: Color
 	private let size: CGFloat
+
+	// swiftlint:disable:next large_tuple
 	private let corners: (Bool, Bool, Bool, Bool)?
 
 	private var radii: RectangleCornerRadii {
@@ -53,6 +55,7 @@ struct Avatar: View {
 		)
 	}
 
+	// swiftlint:disable large_tuple
 	init(
 		_ name: String?,
 		background: Color,

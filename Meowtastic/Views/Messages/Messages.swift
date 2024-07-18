@@ -93,7 +93,7 @@ struct Messages: View {
 			)
 		}
 	}
-	
+
 	@ViewBuilder
 	private var channelList: some View {
 		if

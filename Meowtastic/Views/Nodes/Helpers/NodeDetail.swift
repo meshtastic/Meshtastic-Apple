@@ -174,11 +174,11 @@ struct NodeDetail: View {
 						.font(detailInfoFont)
 						.foregroundColor(.gray)
 						.frame(width: detailIconSize)
-					
+
 					Text(speedFormatted)
 						.font(detailInfoFont)
 						.foregroundColor(.gray)
-					
+
 					Spacer()
 						.frame(width: 8)
 
@@ -186,11 +186,11 @@ struct NodeDetail: View {
 						.font(detailInfoFont)
 						.foregroundColor(.gray)
 						.frame(width: detailIconSize)
-					
+
 					Text(headingFormatted)
 						.font(detailInfoFont)
 						.foregroundColor(.gray)
-					
+
 					Spacer()
 						.frame(width: 8)
 				}
@@ -333,7 +333,7 @@ struct NodeDetail: View {
 
 		if
 			let lastHeard = node.lastHeard,
-			lastHeard.timeIntervalSince1970 > 0 ,
+			lastHeard.timeIntervalSince1970 > 0,
 			let lastHeardFormatted = relativeDateFormatter.string(for: lastHeard)
 		{
 			HStack {
