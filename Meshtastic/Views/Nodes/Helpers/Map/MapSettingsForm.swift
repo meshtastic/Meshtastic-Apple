@@ -13,6 +13,7 @@ import MapKit
 @available(iOS 17.0, macOS 14.0, *)
 struct MapSettingsForm: View {
 	@Environment(\.dismiss) private var dismiss
+	@State private var currentDetent = PresentationDetent.medium
 	@AppStorage("meshMapShowNodeHistory") private var nodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var routeLines = false
 	@AppStorage("enableMapConvexHull") private var convexHull = false
@@ -121,8 +122,10 @@ Spacer()
 				.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.fraction(meshMap ? 0.55 : 0.45), .fraction(0.65)])
+		.presentationDetents([.medium, .large], selection: $currentDetent)
+		.presentationContentInteraction(.scrolls)
 		.presentationDragIndicator(.visible)
+		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 
 	}
 }

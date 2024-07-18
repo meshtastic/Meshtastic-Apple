@@ -213,7 +213,9 @@ struct PositionPopover: View {
 #endif
 			}
 		}
-		.presentationDetents([.fraction(0.65), .fraction(0.75), .fraction(0.85)])
+		.presentationDetents([.medium, .large])
+		.presentationContentInteraction(.scrolls)
 		.presentationDragIndicator(.visible)
+		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 	}
 }
