@@ -98,60 +98,8 @@ struct DeviceMetricsLog: View {
 				}
 				let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMdjmma", options: 0, locale: Locale.current)
 				let dateFormatString = (localeDateFormat ?? "M/d/YY j:mma").replacingOccurrences(of: ",", with: "")
-				/// New SwiftUI Table
-				if #available(iOS 17.4, macOS 14.4, *) {
-					Table(deviceMetrics, selection: $selection, sortOrder: $sortOrder) {
-						if idiom == .phone {
-							TableColumn("battery.level") { dm in
-								HStack {
-									Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
-									Spacer()
-								}
-								.font(.caption)
-								HStack {
-									if dm.batteryLevel > 100 {
-										Text("PWD")
-									} else {
-										Text("Batt \(String(dm.batteryLevel))%")
-									}
-									Text("Volt \(String(format: "%.2f", dm.voltage)) ")
-									Text("ChUtil \(String(format: "%.2f", dm.channelUtilization))% ")
-									Text("AirTm \(String(format: "%.2f", dm.airUtilTx))%")
-									Spacer()
-								}
-								.font(.caption2)
-							}
-							.width(ideal: 200, max: .infinity)
-						} else {
-							TableColumn("battery.level") { dm in
-								if dm.batteryLevel > 100 {
-									Text("Powered")
-								} else {
-									Text("\(String(dm.batteryLevel))%")
-								}
-							}
-							TableColumn("voltage") { dm in
-								Text("\(String(format: "%.2f", dm.voltage))")
-							}
-							TableColumn("channel.utilization") { dm in
-								Text("\(String(format: "%.2f", dm.channelUtilization))%")
-							}
-							TableColumn("airtime") { dm in
-								Text("\(String(format: "%.2f", dm.airUtilTx))%")
-							}
-							TableColumn("uptime") { dm in
-								let now = Date.now
-								let later = now + TimeInterval(dm.uptimeSeconds)
-								let components = (now..<later).formatted(.components(style: .narrow))
-								Text(components)
-							}
-							TableColumn("timestamp") { dm in
-								Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
-							}
-							.width(min: 180)
-						}
-					}
-				} else if idiom == .phone {
+				if idiom == .phone {
+					/// Single Cell Compact display for phones
 					Table(deviceMetrics, selection: $selection, sortOrder: $sortOrder) {
 						TableColumn("battery.level") { dm in
 							HStack {
@@ -170,11 +118,12 @@ struct DeviceMetricsLog: View {
 								Text("AirTm \(String(format: "%.2f", dm.airUtilTx))%")
 								Spacer()
 							}
-							.font(.caption2)
+							.font(.caption)
 						}
 						.width(ideal: 200, max: .infinity)
 					}
 				} else {
+					/// Multi Column table for ipads and mac
 					Table(deviceMetrics, selection: $selection, sortOrder: $sortOrder) {
 						TableColumn("battery.level") { dm in
 							if dm.batteryLevel > 100 {
