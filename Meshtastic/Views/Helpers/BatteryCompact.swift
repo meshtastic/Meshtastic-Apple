@@ -18,49 +18,49 @@ struct BatteryCompact: View {
 				Image(systemName: "battery.100.bolt")
 					.font(iconFont)
 					.foregroundColor(color)
-					.symbolRenderingMode(.hierarchical)
+					.symbolRenderingMode(.multicolor)
 			} else if batteryLevel < 100 && batteryLevel > 74 {
 				Image(systemName: "battery.75")
 					.font(iconFont)
 					.foregroundColor(color)
-					.symbolRenderingMode(.hierarchical)
+					.symbolRenderingMode(.multicolor)
 			} else if batteryLevel < 75 && batteryLevel > 49 {
 				Image(systemName: "battery.50")
 					.font(iconFont)
 					.foregroundColor(color)
-					.symbolRenderingMode(.hierarchical)
+					.symbolRenderingMode(.multicolor)
 			} else if batteryLevel < 50 && batteryLevel > 14 {
 				Image(systemName: "battery.25")
 					.font(iconFont)
 					.foregroundColor(color)
-					.symbolRenderingMode(.hierarchical)
+					.symbolRenderingMode(.multicolor)
 			} else if batteryLevel < 15 && batteryLevel > 0 {
 				Image(systemName: "battery.0")
 					.font(iconFont)
 					.foregroundColor(color)
-					.symbolRenderingMode(.hierarchical)
+					.symbolRenderingMode(.multicolor)
 			} else if batteryLevel == 0 {
 				Image(systemName: "battery.0")
 					.font(iconFont)
 					.foregroundColor(.red)
-					.symbolRenderingMode(.hierarchical)
+					.symbolRenderingMode(.multicolor)
 			} else if batteryLevel > 100 {
 				Image(systemName: "powerplug")
 					.font(iconFont)
 					.foregroundColor(color)
-					.symbolRenderingMode(.hierarchical)
+					.symbolRenderingMode(.multicolor)
 			}
 			if batteryLevel > 100 {
 				Text("PWD")
-					.foregroundStyle(.gray)
+					.foregroundStyle(.secondary)
 					.font(font)
 			} else if batteryLevel == 100 {
 				Text("CHG")
-					.foregroundStyle(.gray)
+					.foregroundStyle(.secondary)
 					.font(font)
 			} else {
 				Text("\(batteryLevel)%")
-					.foregroundStyle(.gray)
+					.foregroundStyle(.secondary)
 					.font(font)
 			}
 		}

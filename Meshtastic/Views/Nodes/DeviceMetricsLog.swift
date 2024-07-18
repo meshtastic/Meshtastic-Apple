@@ -107,17 +107,15 @@ struct DeviceMetricsLog: View {
 								Spacer()
 								Image(systemName: "bolt")
 									.symbolRenderingMode(.multicolor)
-									.foregroundStyle(.yellow)
 								Text("Voltage \(String(format: "%.2f", dm.voltage)) ")
-									.foregroundStyle(.gray)
 								BatteryCompact(batteryLevel: dm.batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
 							}
 							.font(.caption)
 							HStack {
 								Text("Channel Utilization \(String(format: "%.2f", dm.channelUtilization))% ")
-									.foregroundColor(dm.channelUtilization < 25 ? .gray : (dm.channelUtilization > 50 ? .red : .orange))
+									.foregroundColor(dm.channelUtilization < 25 ? .secondary : (dm.channelUtilization > 50 ? .red : .orange))
 								Text("Airtime \(String(format: "%.2f", dm.airUtilTx))%")
-									.foregroundColor(.gray)
+									.foregroundColor(.secondary)
 								Spacer()
 							}
 							.font(.caption)
@@ -139,6 +137,7 @@ struct DeviceMetricsLog: View {
 						}
 						TableColumn("channel.utilization") { dm in
 							Text("\(String(format: "%.2f", dm.channelUtilization))%")
+								.foregroundColor(dm.channelUtilization < 25 ? .secondary : (dm.channelUtilization > 50 ? .red : .orange))
 						}
 						TableColumn("airtime") { dm in
 							Text("\(String(format: "%.2f", dm.airUtilTx))%")
@@ -149,6 +148,7 @@ struct DeviceMetricsLog: View {
 							let components = (now..<later).formatted(.components(style: .narrow))
 							Text(components)
 						}
+						.width(min: 100)
 						TableColumn("timestamp") { dm in
 							Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 						}
