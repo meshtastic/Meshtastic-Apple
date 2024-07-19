@@ -90,15 +90,12 @@ public func deleteChannelMessages(channel: ChannelEntity, context: NSManagedObje
 }
 
 public func deleteUserMessages(user: UserEntity, context: NSManagedObjectContext) {
-
-	do {
-		let objects = user.messageList
-		for object in objects {
-			context.delete(object)
+	if let messageList = user.messageList {
+		for message in messageList {
+			context.delete(message)
 		}
-		try context.save()
-	} catch let error as NSError {
-		Logger.data.error("\(error.localizedDescription)")
+
+		try? context.save()
 	}
 }
 

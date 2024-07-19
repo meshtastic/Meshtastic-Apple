@@ -4,7 +4,7 @@ import OSLog
 
 struct Messages: View {
 	var restrictedChannels = ["gpio", "mqtt", "serial"]
-	
+
 	@Environment(\.managedObjectContext)
 	var context
 	@EnvironmentObject
@@ -14,15 +14,15 @@ struct Messages: View {
 
 	@State
 	var node: NodeInfoEntity?
-	
+
 	private let dateFormatter = {
 		let formatter = DateFormatter()
 		formatter.dateStyle = .none
 		formatter.timeStyle = .short
-		
+
 		return formatter
 	}()
-	
+
 	@Environment(\.colorScheme)
 	private var colorScheme: ColorScheme
 	@State
@@ -37,7 +37,7 @@ struct Messages: View {
 	private var isPresentingTraceRouteSentAlert = false
 	@State
 	private var isPresentingDeleteUserMessagesConfirm = false
-	
+
 	@FetchRequest(
 		sortDescriptors: [
 			NSSortDescriptor(key: "lastMessage", ascending: false),
@@ -174,21 +174,21 @@ struct Messages: View {
 			.headerProminence(.increased)
 		}
 	}
-	
+
 	@ViewBuilder
 	private var userList: some View {
 		let userList = users.filter { user in
 			guard user.userNode != nil else {
 				return false
 			}
-			
+
 			if let num = bleManager.connectedPeripheral?.num, user.num == num {
 				return false
 			}
-			
+
 			return true
 		}
-		
+
 		Section(
 			header: listHeader(
 				title: "Users",
@@ -196,10 +196,12 @@ struct Messages: View {
 			)
 		) {
 			ForEach(userList, id: \.self) { user in
+				let lastMessage = getLastMessage(for: user)
+				
 				if user.num != bleManager.connectedPeripheral?.num ?? 0 {
-					makeUserLink(for: user)
+					makeUserLink(for: user, lastMessage: lastMessage)
 						.contextMenu {
-							getContextMenu(for: user)
+							getContextMenu(for: user, hasMessages: lastMessage != nil)
 						}
 						.confirmationDialog(
 							"This conversation will be deleted.",
@@ -209,7 +211,7 @@ struct Messages: View {
 							Button(role: .destructive) {
 								deleteUserMessages(user: userSelection!, context: context)
 								context.refresh(node!.user!, mergeChanges: true)
-								
+
 								let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
 								UNUserNotificationCenter.current().setBadgeCount(badge)
 							} label: {
@@ -221,15 +223,15 @@ struct Messages: View {
 		}
 		.headerProminence(.increased)
 	}
-	
+
 	@ViewBuilder
 	private func listHeader(title: String, nodesCount: Int) -> some View {
 		HStack(alignment: .center) {
 			Text(title)
 				.fontDesign(.rounded)
-			
+
 			Spacer()
-			
+
 			Text(String(nodesCount))
 				.fontDesign(.rounded)
 		}
@@ -307,10 +309,9 @@ struct Messages: View {
 	}
 
 	@ViewBuilder
-	private func makeUserLink(for user: UserEntity) -> some View {
-		let mostRecent = user.messageList.last
+	private func makeUserLink(for user: UserEntity, lastMessage: MessageEntity?) -> some View {
 		let lastMessageTime = Date(
-			timeIntervalSince1970: TimeInterval(Int64(mostRecent?.messageTimestamp ?? 0))
+			timeIntervalSince1970: TimeInterval(Int64(lastMessage?.messageTimestamp ?? 0))
 		)
 
 		let lastMessageDay = Calendar.current.dateComponents(
@@ -338,7 +339,7 @@ struct Messages: View {
 
 						Spacer()
 
-						if user.messageList.count > 0 {
+						if let lastMessage {
 							if lastMessageDay == currentDay {
 								Text(lastMessageTime, style: .time)
 									.font(.footnote)
@@ -362,18 +363,15 @@ struct Messages: View {
 						}
 					}
 
-					if user.messageList.count > 0 {
-						HStack(alignment: .top) {
-							Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
-								.font(.footnote)
-								.foregroundColor(.secondary)
-						}
+					if let lastMessage {
+						Text(lastMessage.messagePayload!)
+							.font(.footnote)
+							.foregroundColor(.secondary)
 					}
 				}
 			}
 		}
 	}
-
 
 	@ViewBuilder
 	private func avatar(for user: UserEntity) -> some View {
@@ -452,7 +450,7 @@ struct Messages: View {
 	}
 
 	@ViewBuilder
-	private func getContextMenu(for user: UserEntity) -> some View {
+	private func getContextMenu(for user: UserEntity, hasMessages: Bool) -> some View {
 		Button {
 			if node != nil && !(user.userNode?.favorite ?? false) {
 				let success = bleManager.setFavoriteNode(
@@ -507,7 +505,7 @@ struct Messages: View {
 			)
 		}
 		
-		if user.messageList.count > 0 {
+		if hasMessages {
 			Button(role: .destructive) {
 				isPresentingDeleteUserMessagesConfirm = true
 				userSelection = user
@@ -547,5 +545,9 @@ struct Messages: View {
 		else {
 			users.nsPredicate = nil
 		}
+	}
+	
+	private func getLastMessage(for user: UserEntity) -> MessageEntity? {
+		return user.messageList?.last
 	}
 }

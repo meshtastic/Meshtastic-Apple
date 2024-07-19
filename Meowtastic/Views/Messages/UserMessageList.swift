@@ -27,17 +27,11 @@ struct UserMessageList: View {
 						if self.bleManager.context == nil {
 							self.bleManager.context = context
 						}
-
-						if user.messageList.count > 0 {
-							scrollView.scrollTo(user.messageList.last!.messageId)
-						}
 					}
-					.onChange(of: user.messageList) {
-						guard !user.messageList.isEmpty else {
-							return
+					.onChange(of: user.messageList, initial: true) {
+						if let messageId = user.messageList?.last?.messageId {
+							scrollView.scrollTo(messageId)
 						}
-
-						scrollView.scrollTo(user.messageList.last!.messageId)
 					}
 			}
 
@@ -65,113 +59,118 @@ struct UserMessageList: View {
 
 	@ViewBuilder
 	private var messageList: some View {
-		List(user.messageList) { message in
-			if user.num != bleManager.connectedPeripheral?.num ?? -1 {
-				let currentUser = (Int64(UserDefaults.preferredPeripheralNum) == message.fromUser?.num ?? -1 ? true : false)
-
-				if message.replyID > 0 {
-					let messageReply = user.messageList.first(where: {
-						$0.messageId == message.replyID
-					})
-
-					HStack {
-						Text(messageReply?.messagePayload ?? "EMPTY MESSAGE")
-							.foregroundColor(.accentColor)
-							.font(.caption2)
-							.padding(10)
-							.overlay(
-								RoundedRectangle(cornerRadius: 18)
-									.stroke(Color.blue, lineWidth: 0.5)
-							)
-
-						Image(systemName: "arrowshape.turn.up.left.fill")
-							.symbolRenderingMode(.hierarchical)
-							.imageScale(.large)
-							.foregroundColor(.accentColor)
-							.padding(.trailing)
-					}
-				}
-
-				HStack(alignment: .top) {
-					if currentUser {
-						Spacer(minLength: 50)
-					}
-
-					VStack(alignment: currentUser ? .trailing : .leading) {
+		if let messageList = user.messageList {
+			List(messageList) { message in
+				if user.num != bleManager.connectedPeripheral?.num ?? -1 {
+					let currentUser = (Int64(UserDefaults.preferredPeripheralNum) == message.fromUser?.num ?? -1 ? true : false)
+					
+					if message.replyID > 0 {
+						let messageReply = messageList.first(where: {
+							$0.messageId == message.replyID
+						})
+						
 						HStack {
-							MessageView(
-								message: message,
-								originalMessage: nil,
-								tapBackDestination: .user(user),
-								isCurrentUser: currentUser
-							) {
-								self.replyMessageId = message.messageId
-								self.messageFieldFocused = true
-							}
-
-							if currentUser && message.canRetry || (message.receivedACK && !message.realACK) {
-								RetryButton(message: message, destination: .user(user))
-							}
+							Text(messageReply?.messagePayload ?? "EMPTY MESSAGE")
+								.foregroundColor(.accentColor)
+								.font(.caption2)
+								.padding(10)
+								.overlay(
+									RoundedRectangle(cornerRadius: 18)
+										.stroke(Color.blue, lineWidth: 0.5)
+								)
+							
+							Image(systemName: "arrowshape.turn.up.left.fill")
+								.symbolRenderingMode(.hierarchical)
+								.imageScale(.large)
+								.foregroundColor(.accentColor)
+								.padding(.trailing)
 						}
-
-						TapbackResponses(message: message) {
-							appState.unreadDirectMessages = user.unreadMessages
-
-							let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
-							UNUserNotificationCenter.current().setBadgeCount(badge)
+					}
+					
+					HStack(alignment: .top) {
+						if currentUser {
+							Spacer(minLength: 50)
 						}
-
-						HStack {
-							let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
-
-							if currentUser && message.receivedACK {
-								// Ack Received
-								if message.realACK {
-									Text("\(ackErrorVal?.display ?? "Empty Ack Error")")
-										.font(.caption2)
-										.foregroundColor(.gray)
-								} else {
-									Text("Acknowledged by another node")
-										.font(.caption2)
-										.foregroundColor(.orange)
+						
+						VStack(alignment: currentUser ? .trailing : .leading) {
+							HStack {
+								MessageView(
+									message: message,
+									originalMessage: nil,
+									tapBackDestination: .user(user),
+									isCurrentUser: currentUser
+								) {
+									self.replyMessageId = message.messageId
+									self.messageFieldFocused = true
 								}
-							} else if currentUser && message.ackError == 0 {
-								// Empty Error
-								Text("Waiting to be acknowledged. . .")
-									.font(.caption2)
-									.foregroundColor(.yellow)
-							} else if currentUser && message.ackError > 0 {
-								Text("\(ackErrorVal?.display ?? "Empty Ack Error")")
-									.fixedSize(horizontal: false, vertical: true)
-									.font(.caption2)
-									.foregroundColor(.red)
+								
+								if currentUser && message.canRetry || (message.receivedACK && !message.realACK) {
+									RetryButton(message: message, destination: .user(user))
+								}
+							}
+							
+							TapbackResponses(message: message) {
+								appState.unreadDirectMessages = user.unreadMessages
+								
+								let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
+								UNUserNotificationCenter.current().setBadgeCount(badge)
+							}
+							
+							HStack {
+								let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
+								
+								if currentUser && message.receivedACK {
+									// Ack Received
+									if message.realACK {
+										Text("\(ackErrorVal?.display ?? "Empty Ack Error")")
+											.font(.caption2)
+											.foregroundColor(.gray)
+									} else {
+										Text("Acknowledged by another node")
+											.font(.caption2)
+											.foregroundColor(.orange)
+									}
+								} else if currentUser && message.ackError == 0 {
+									// Empty Error
+									Text("Waiting to be acknowledged. . .")
+										.font(.caption2)
+										.foregroundColor(.yellow)
+								} else if currentUser && message.ackError > 0 {
+									Text("\(ackErrorVal?.display ?? "Empty Ack Error")")
+										.fixedSize(horizontal: false, vertical: true)
+										.font(.caption2)
+										.foregroundColor(.red)
+								}
 							}
 						}
+						.padding(.bottom)
+						.id(messageList.firstIndex(of: message))
+						
+						if !currentUser {
+							Spacer(minLength: 50)
+						}
 					}
-					.padding(.bottom)
-					.id(user.messageList.firstIndex(of: message))
-
-					if !currentUser {
-						Spacer(minLength: 50)
+					.padding([.leading, .trailing])
+					.frame(maxWidth: .infinity)
+					.id(message.messageId)
+					.onAppear {
+						guard !message.read else {
+							return
+						}
+						
+						message.read = true
+						try? context.save()
+						
+						appState.unreadDirectMessages = user.unreadMessages
+						
+						let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
+						UNUserNotificationCenter.current().setBadgeCount(badge)
 					}
-				}
-				.padding([.leading, .trailing])
-				.frame(maxWidth: .infinity)
-				.id(message.messageId)
-				.onAppear {
-					guard !message.read else {
-						return
-					}
-
-					message.read = true
-					try? context.save()
-
-					appState.unreadDirectMessages = user.unreadMessages
-
-					let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
-					UNUserNotificationCenter.current().setBadgeCount(badge)
 				}
 			}
+		}
+		else {
+			EmptyView()
 		}
 	}
 }
