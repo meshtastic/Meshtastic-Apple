@@ -7,8 +7,8 @@ extension UserEntity {
 		value(forKey: "allMessages") as? [MessageEntity]
 	}
 
-	var sensorMessageList: [MessageEntity] {
-		value(forKey: "detectionSensorMessages") as? [MessageEntity] ?? [MessageEntity]()
+	var sensorMessageList: [MessageEntity]? {
+		value(forKey: "detectionSensorMessages") as? [MessageEntity]
 	}
 
 	var unreadMessages: Int {
