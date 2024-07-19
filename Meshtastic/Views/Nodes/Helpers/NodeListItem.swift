@@ -42,7 +42,8 @@ struct NodeListItem: View {
 							HStack {
 								Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
 									.font(.callout)
-									.symbolRenderingMode(.multicolor)
+									.symbolRenderingMode(.hierarchical)
+									.foregroundColor(.green)
 									.frame(width: 30)
 								Text("connected")
 									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
@@ -52,7 +53,7 @@ struct NodeListItem: View {
 						HStack {
 							Image(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill")
 								.font(.callout)
-								.symbolRenderingMode(.multicolor)
+								.symbolRenderingMode(.hierarchical)
 								.foregroundColor(node.isOnline ? .green : .orange)
 								.frame(width: 30)
 							LastHeardText(lastHeard: node.lastHeard)
@@ -63,7 +64,7 @@ struct NodeListItem: View {
 							let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
 							Image(systemName: role?.systemName ?? "figure")
 								.font(.callout)
-								.symbolRenderingMode(.multicolor)
+								.symbolRenderingMode(.hierarchical)
 								.frame(width: 30)
 							Text("Role: \(role?.name ?? "unknown".localized)")
 								.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)

@@ -23,7 +23,7 @@ struct MQTTIcon: View {
 			// the last one defaults to just showing up/down if it isn't specified b/c on the mqtt config screen, there's no information about uplink/downlink and no good alternative icon
 			Image(systemName: uplink && downlink ? "arrow.up.arrow.down.circle.fill" : uplink ? "arrow.up.circle.fill" : downlink ? "arrow.down.circle.fill" : "arrow.up.arrow.down.circle.fill")
 				.imageScale(.large)
-				.foregroundColor(connected ? .green : .gray)
+				.foregroundColor(connected ? .green : .secondary)
 				.symbolRenderingMode(.hierarchical)
 		}.popover(isPresented: self.$isPopoverOpen, arrowEdge: .bottom, content: {
 			VStack(spacing: 0.5) {
