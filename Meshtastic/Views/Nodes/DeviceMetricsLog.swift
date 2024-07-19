@@ -87,13 +87,13 @@ struct DeviceMetricsLog: View {
 						.chartXAxis(.automatic)
 						.chartYScale(domain: 0...100)
 						.chartForegroundStyleScale([
-							"Battery Level": batteryChartColor,
+							idiom == .phone ? "Battery" : "Battery Level": batteryChartColor,
 							"Channel Utilization": channelUtilizationChartColor,
 							"Airtime": airtimeChartColor
 						])
 						.chartLegend(position: .automatic, alignment: .bottom)
 					}
-					.frame(minHeight: 250)
+					.frame(minHeight: 240)
 				}
 				let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMdjmma", options: 0, locale: Locale.current)
 				let dateFormatString = (localeDateFormat ?? "M/d/YY j:mma").replacingOccurrences(of: ",", with: "")
@@ -107,6 +107,7 @@ struct DeviceMetricsLog: View {
 									.fontWeight(.semibold)
 								Spacer()
 								Image(systemName: "bolt")
+									.font(.caption)
 									.symbolRenderingMode(.multicolor)
 								Text("Volts \(String(format: "%.2f", dm.voltage)) ")
 									.font(.caption2)
