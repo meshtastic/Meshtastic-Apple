@@ -103,14 +103,15 @@ struct DeviceMetricsLog: View {
 						TableColumn("battery.level") { dm in
 							HStack {
 								Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+									.font(.caption)
 									.fontWeight(.semibold)
 								Spacer()
 								Image(systemName: "bolt")
 									.symbolRenderingMode(.multicolor)
-								Text("Voltage \(String(format: "%.2f", dm.voltage)) ")
+								Text("Volts \(String(format: "%.2f", dm.voltage)) ")
+									.font(.caption2)
 								BatteryCompact(batteryLevel: dm.batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
 							}
-							.font(.caption)
 							HStack {
 								Text("Channel Utilization \(String(format: "%.2f", dm.channelUtilization))% ")
 									.foregroundColor(dm.channelUtilization < 25 ? (dm.channelUtilization > 10 ? .yellow : .secondary)  : (dm.channelUtilization > 50 ? .red : .orange))
