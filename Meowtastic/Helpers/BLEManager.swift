@@ -1049,99 +1049,97 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			let messageUsers = UserEntity.fetchRequest()
 			messageUsers.predicate = NSPredicate(format: "num IN %@", [fromUserNum, Int64(toUserNum)])
 
-			do {
+			let fetchedUsers = try? context.fetch(messageUsers)
+			if let fetchedUsers, fetchedUsers.isEmpty {
+				Logger.data.error("🚫 Message Users Not Found, Fail")
+				success = false
+			} else if let fetchedUsers, fetchedUsers.count >= 1 {
+				let newMessage = MessageEntity(context: context)
+				newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+				newMessage.messageTimestamp = Int32(Date().timeIntervalSince1970)
+				newMessage.receivedACK = false
+				newMessage.read = true
+				if toUserNum > 0 {
+					newMessage.toUser = fetchedUsers.first(where: { user in
+						user.num == toUserNum
+					})
+					newMessage.toUser?.lastMessage = Date()
+				}
+				newMessage.fromUser = fetchedUsers.first(where: { user in
+					user.num == fromUserNum
+				})
+				newMessage.isEmoji = isEmoji
+				newMessage.admin = false
+				newMessage.channel = channel
+				if replyID > 0 {
+					newMessage.replyID = replyID
+				}
+				newMessage.messagePayload = message
+				newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: message)
+				newMessage.read = true
 
-				let fetchedUsers = try context.fetch(messageUsers)
-				if fetchedUsers.isEmpty {
+				let dataType = PortNum.textMessageApp
+				var messageQuotesReplaced = message.replacingOccurrences(of: "’", with: "'")
+				messageQuotesReplaced = message.replacingOccurrences(of: "”", with: "\"")
+				let payloadData: Data = messageQuotesReplaced.data(using: String.Encoding.utf8)!
 
-					Logger.data.error("🚫 Message Users Not Found, Fail")
-					success = false
-				} else if fetchedUsers.count >= 1 {
+				var dataMessage = DataMessage()
+				dataMessage.payload = payloadData
+				dataMessage.portnum = dataType
 
-					let newMessage = MessageEntity(context: context)
-					newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
-					newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
-					newMessage.receivedACK = false
-					newMessage.read = true
-					if toUserNum > 0 {
-						newMessage.toUser = fetchedUsers.first(where: { $0.num == toUserNum })
-						newMessage.toUser?.lastMessage = Date()
-					}
-					newMessage.fromUser = fetchedUsers.first(where: { $0.num == fromUserNum })
-					newMessage.isEmoji = isEmoji
-					newMessage.admin = false
-					newMessage.channel = channel
-					if replyID > 0 {
-						newMessage.replyID = replyID
-					}
-					newMessage.messagePayload = message
-					newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: message)
-					newMessage.read = true
+				var meshPacket = MeshPacket()
+				meshPacket.id = UInt32(newMessage.messageId)
+				if toUserNum > 0 {
+					meshPacket.to = UInt32(toUserNum)
+				} else {
+					meshPacket.to = Self.emptyNodeNum
+				}
+				meshPacket.channel = UInt32(channel)
+				meshPacket.from	= UInt32(fromUserNum)
+				meshPacket.decoded = dataMessage
+				meshPacket.decoded.emoji = isEmoji ? 1 : 0
+				if replyID > 0 {
+					meshPacket.decoded.replyID = UInt32(replyID)
+				}
+				meshPacket.wantAck = true
 
-					let dataType = PortNum.textMessageApp
-					var messageQuotesReplaced = message.replacingOccurrences(of: "’", with: "'")
-					messageQuotesReplaced = message.replacingOccurrences(of: "”", with: "\"")
-					let payloadData: Data = messageQuotesReplaced.data(using: String.Encoding.utf8)!
+				var toRadio: ToRadio!
+				toRadio = ToRadio()
+				toRadio.packet = meshPacket
+				guard let binaryData: Data = try? toRadio.serializedData() else {
+					return false
+				}
 
-					var dataMessage = DataMessage()
-					dataMessage.payload = payloadData
-					dataMessage.portnum = dataType
+				if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
+					connectedPeripheral.peripheral.writeValue(
+						binaryData,
+						for: toRadio_characteristic,
+						type: .withResponse
+					)
 
-					var meshPacket = MeshPacket()
-					meshPacket.id = UInt32(newMessage.messageId)
-					if toUserNum > 0 {
-						meshPacket.to = UInt32(toUserNum)
-					} else {
-						meshPacket.to = Self.emptyNodeNum
-					}
-					meshPacket.channel = UInt32(channel)
-					meshPacket.from	= UInt32(fromUserNum)
-					meshPacket.decoded = dataMessage
-					meshPacket.decoded.emoji = isEmoji ? 1 : 0
-					if replyID > 0 {
-						meshPacket.decoded.replyID = UInt32(replyID)
-					}
-					meshPacket.wantAck = true
+					let logString = String.localizedStringWithFormat(
+						"mesh.log.textmessage.sent %@ %@ %@".localized,
+						String(newMessage.messageId),
+						fromUserNum.toHex(),
+						toUserNum.toHex()
+					)
 
-					var toRadio: ToRadio!
-					toRadio = ToRadio()
-					toRadio.packet = meshPacket
-					guard let binaryData: Data = try? toRadio.serializedData() else {
-						return false
-					}
-					if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected
-					{
-						connectedPeripheral.peripheral.writeValue(
-							binaryData,
-							for:toRadio_characteristic,
-							type: .withResponse
-						)
-	
-						let logString = String.localizedStringWithFormat(
-							"mesh.log.textmessage.sent %@ %@ %@".localized,
-							String(newMessage.messageId),
-							fromUserNum.toHex(),
-							toUserNum.toHex()
-						)
+					MeshLogger.log("💬 \(logString)")
 
-						MeshLogger.log("💬 \(logString)")
-						do {
-							try context.save()
-							Logger.data.info("💾 Saved a new sent message from \(self.connectedPeripheral.num.toHex(), privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
-							success = true
+					do {
+						try context.save()
+						Logger.data.info("💾 Saved a new sent message from \(self.connectedPeripheral.num.toHex(), privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
+						success = true
+					} catch {
+						context.rollback()
 
-						} catch {
-							context.rollback()
-
-							let nsError = error as NSError
-							Logger.data.error("Unresolved Core Data error in Send Message Function your database is corrupted running a node db reset should clean up the data. Error: \(nsError, privacy: .public)")
-						}
+						let nsError = error as NSError
+						Logger.data.error("Unresolved Core Data error in Send Message Function your database is corrupted running a node db reset should clean up the data. Error: \(nsError, privacy: .public)")
 					}
 				}
-			} catch {
-
 			}
 		}
+
 		return success
 	}
 
@@ -1159,11 +1157,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from = fromNodeNum
 		meshPacket.wantAck = true
 
-
 		do {
 			dataMessage.payload = try waypoint.serializedData()
 		} catch {
-			// Could not serialiaze the payload
 			return false
 		}
 

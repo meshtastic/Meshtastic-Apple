@@ -1,24 +1,20 @@
-//
-//  ChannelEntityExtension.swift
-//  Meshtastic
-//
-//  Copyright(c) Garth Vander Houwen 11/7/22.
-//
 import Foundation
 import CoreData
 import MeshtasticProtobufs
 
 extension ChannelEntity {
-
-	var allPrivateMessages: [MessageEntity] {
-
-		self.value(forKey: "allPrivateMessages") as? [MessageEntity] ?? [MessageEntity]()
+	var allPrivateMessages: [MessageEntity]? {
+		self.value(forKey: "allPrivateMessages") as? [MessageEntity]
 	}
 
 	var unreadMessages: Int {
-
-		let unreadMessages = allPrivateMessages.filter { ($0 as AnyObject).read == false }
-		return unreadMessages.count
+		guard let allPrivateMessages else {
+			return 0
+		}
+		
+		return allPrivateMessages.filter { message in
+			message.read == false
+		}.count
 	}
 
 	var protoBuf: Channel {
@@ -28,6 +24,7 @@ extension ChannelEntity {
 		channel.settings.psk = self.psk ?? Data()
 		channel.role = Channel.Role(rawValue: Int(self.role)) ?? Channel.Role.secondary
 		channel.settings.moduleSettings.positionPrecision = UInt32(self.positionPrecision)
+
 		return channel
 	}
 }

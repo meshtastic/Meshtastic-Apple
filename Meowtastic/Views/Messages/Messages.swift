@@ -116,7 +116,7 @@ struct Messages: View {
 								}
 							}
 							.contextMenu {
-								if channel.allPrivateMessages.count > 0 {
+								if let allPrivateMessages = channel.allPrivateMessages, !allPrivateMessages.isEmpty {
 									Button(role: .destructive) {
 										isPresentingDeleteChannelMessagesConfirm = true
 										channelSelection = channel
@@ -197,7 +197,7 @@ struct Messages: View {
 		) {
 			ForEach(userList, id: \.num) { user in
 				let lastMessage = getLastMessage(for: user)
-				
+
 				if user.num != bleManager.connectedPeripheral?.num ?? 0 {
 					makeUserLink(for: user, lastMessage: lastMessage)
 						.contextMenu {
@@ -245,19 +245,21 @@ struct Messages: View {
 		NavigationLink {
 			ChannelMessageList(myInfo: myInfo, channel: channel)
 		} label: {
-			let mostRecent = channel.allPrivateMessages.last(where: {
-				$0.channel == channel.index
-			})
 			let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
+
+			let hasMessages = channel.allPrivateMessages?.isEmpty ?? false
+			let lastMessage = channel.allPrivateMessages?.last(where: { message in
+				message.channel == channel.index
+			})
 			let lastMessageTime = Date(
-				timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0)))
+				timeIntervalSince1970: TimeInterval(Int64(lastMessage?.messageTimestamp ?? 0))
 			)
 			let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 
 			avatar(for: channel)
 
 			VStack(alignment: .leading) {
-				HStack(spacing: 8) {
+				HStack(alignment: .top, spacing: 8) {
 					if let name = channel.name, !name.isEmpty {
 						Text(String(name).camelCaseToWords())
 							.font(.headline)
@@ -275,7 +277,7 @@ struct Messages: View {
 
 					Spacer()
 
-					if channel.allPrivateMessages.count > 0 {
+					if hasMessages {
 						if lastMessageDay == currentDay {
 							Text(lastMessageTime, style: .time )
 								.font(.footnote)
@@ -296,13 +298,11 @@ struct Messages: View {
 					}
 				}
 
-				if channel.allPrivateMessages.count > 0 {
-					HStack(alignment: .top) {
-						Text("\(mostRecent != nil ? mostRecent!.messagePayload! : "")")
-							.lineLimit(3)
-							.font(.footnote)
-							.foregroundColor(.secondary)
-					}
+				if hasMessages, let lastMessagePayload = lastMessage?.messagePayload {
+					Text(lastMessagePayload)
+						.lineLimit(3)
+						.font(.footnote)
+						.foregroundColor(.secondary)
 				}
 			}
 		}

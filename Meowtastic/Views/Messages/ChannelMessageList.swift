@@ -68,8 +68,8 @@ struct ChannelMessageList: View {
 						scrollView.scrollTo(textFieldPlaceholderID)
 					}
 					.onChange(of: channel.allPrivateMessages, initial: true) {
-						if !channel.allPrivateMessages.isEmpty {
-							scrollView.scrollTo(channel.allPrivateMessages.last!.messageId)
+						if let allPrivateMessages = channel.allPrivateMessages, !allPrivateMessages.isEmpty {
+							scrollView.scrollTo(allPrivateMessages.last!.messageId)
 						}
 					}
 			}
@@ -110,13 +110,15 @@ struct ChannelMessageList: View {
 	@ViewBuilder
 	private var messageList: some View {
 		List {
-			ForEach(channel.allPrivateMessages, id: \.messageId) { message in
-				messageView(for: message)
-					.id(message.messageId)
-					.frame(width: .infinity)
-					.listRowSeparator(.hidden)
-					.listRowBackground(Color.clear)
-					.scrollContentBackground(.hidden)
+			if let allPrivateMessages = channel.allPrivateMessages {
+				ForEach(allPrivateMessages, id: \.messageId) { message in
+					messageView(for: message)
+						.id(message.messageId)
+						.frame(width: .infinity)
+						.listRowSeparator(.hidden)
+						.listRowBackground(Color.clear)
+						.scrollContentBackground(.hidden)
+				}
 			}
 
 			Rectangle()
@@ -238,11 +240,13 @@ struct ChannelMessageList: View {
 	}
 
 	private func getOriginalMessage(for message: MessageEntity) -> String? {
-		if message.replyID > 0,
-		   let messageReply = channel.allPrivateMessages.first(where: {
-			   $0.messageId == message.replyID
-		   }),
-		   let messagePayload = messageReply.messagePayload
+		if
+			message.replyID > 0,
+			let allPrivateMessages = channel.allPrivateMessages,
+			let messageReply = allPrivateMessages.first(where: { msg in
+				msg.messageId == message.replyID
+			}),
+			let messagePayload = messageReply.messagePayload
 		{
 			return messagePayload
 		}

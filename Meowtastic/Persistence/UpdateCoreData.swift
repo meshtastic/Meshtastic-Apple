@@ -9,7 +9,6 @@ import MeshtasticProtobufs
 import OSLog
 
 public func clearPax(destNum: Int64, context: NSManagedObjectContext) -> Bool {
-
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(destNum))
 
@@ -17,10 +16,10 @@ public func clearPax(destNum: Int64, context: NSManagedObjectContext) -> Bool {
 		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		let newPax = [PaxCounterLog]()
 		fetchedNode[0].pax? = NSOrderedSet(array: newPax)
+
 		do {
 			try context.save()
 			return true
-
 		} catch {
 			context.rollback()
 			return false
@@ -32,7 +31,6 @@ public func clearPax(destNum: Int64, context: NSManagedObjectContext) -> Bool {
 }
 
 public func clearPositions(destNum: Int64, context: NSManagedObjectContext) -> Bool {
-
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(destNum))
 
@@ -40,10 +38,10 @@ public func clearPositions(destNum: Int64, context: NSManagedObjectContext) -> B
 		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		let newPostions = [PositionEntity]()
 		fetchedNode[0].positions? = NSOrderedSet(array: newPostions)
+
 		do {
 			try context.save()
 			return true
-
 		} catch {
 			context.rollback()
 			return false
@@ -55,7 +53,6 @@ public func clearPositions(destNum: Int64, context: NSManagedObjectContext) -> B
 }
 
 public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManagedObjectContext) -> Bool {
-
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(destNum))
 
@@ -63,10 +60,10 @@ public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManage
 		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		let emptyTelemetry = [TelemetryEntity]()
 		fetchedNode[0].telemetries? = NSOrderedSet(array: emptyTelemetry)
+
 		do {
 			try context.save()
 			return true
-
 		} catch {
 			context.rollback()
 			return false
@@ -78,25 +75,27 @@ public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManage
 }
 
 public func deleteChannelMessages(channel: ChannelEntity, context: NSManagedObjectContext) {
-	do {
-		let objects = channel.allPrivateMessages
-		for object in objects {
-			context.delete(object)
-		}
-		try context.save()
-	} catch let error as NSError {
-		Logger.data.error("\(error.localizedDescription)")
+	guard let messages = channel.allPrivateMessages else {
+		return
 	}
+
+	for message in messages {
+		context.delete(message)
+	}
+
+	try? context.save()
 }
 
 public func deleteUserMessages(user: UserEntity, context: NSManagedObjectContext) {
-	if let messageList = user.messageList {
-		for message in messageList {
-			context.delete(message)
-		}
-
-		try? context.save()
+	guard let messageList = user.messageList else {
+		return
 	}
+		
+	for message in messageList {
+		context.delete(message)
+	}
+
+	try? context.save()
 }
 
 public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes: Bool) {
