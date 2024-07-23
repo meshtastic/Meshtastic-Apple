@@ -193,9 +193,6 @@ struct ExternalNotificationConfig: View {
 			trailing: ConnectedDevice(ble: bleManager)
 		)
 		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
 			setExternalNotificationValues()
 			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.externalNotificationConfig == nil {

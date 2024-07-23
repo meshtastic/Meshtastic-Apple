@@ -129,9 +129,6 @@ struct TelemetryConfig: View {
 				trailing: ConnectedDevice(ble: bleManager)
 			)
 			.onAppear {
-				if self.bleManager.context == nil {
-					self.bleManager.context = context
-				}
 				setTelemetryValues()
 				// Need to request a TelemetryModuleConfig from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.telemetryConfig == nil {

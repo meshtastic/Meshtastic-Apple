@@ -4,6 +4,8 @@ import OSLog
 
 @main
 struct MeowtasticApp: App {
+	private let persistence: NSPersistentContainer
+	
 	@UIApplicationDelegateAdaptor(MeowtasticAppDelegate.self)
 	var appDelegate
 	@Environment(\.scenePhase)
@@ -16,16 +18,16 @@ struct MeowtasticApp: App {
 	var channelSettings: String?
 	@State
 	var addChannels = false
-	@StateObject
-	var appState = AppState.shared
 
 	@ObservedObject
-	private var bleManager: BLEManager = BLEManager.shared
+	private var appState: AppState
+	@ObservedObject
+	private var bleManager: BLEManager
 
 	var body: some Scene {
 		WindowGroup {
 			ContentView()
-				.environment(\.managedObjectContext, Persistence.shared.viewContext)
+				.environment(\.managedObjectContext, persistence.viewContext)
 				.environmentObject(bleManager)
 				.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
 					Logger.mesh.debug("URL received \(userActivity)")
@@ -82,13 +84,13 @@ struct MeowtasticApp: App {
 						}
 						self.saveChannels = true
 						Logger.mesh.debug("User wants to open a Channel Settings URL: \(incomingUrl?.absoluteString ?? "No QR Code Link")")
-					} else if url.absoluteString.lowercased().contains("meshtastic://") {
+					} else if url.absoluteString.lowercased().contains("meshtastic:///") {
 						appState.navigationPath = url.absoluteString
 
 						let path = appState.navigationPath ?? ""
-						if path.starts(with: "meshtastic://map") {
+						if path.starts(with: "meshtastic:///map") {
 							AppState.shared.tabSelection = Tab.map
-						} else if path.starts(with: "meshtastic://nodes") {
+						} else if path.starts(with: "meshtastic:///nodes") {
 							AppState.shared.tabSelection = Tab.nodes
 						}
 
@@ -159,5 +161,19 @@ struct MeowtasticApp: App {
 				try? Persistence.shared.viewContext.save()
 			}
 		}
+	}
+
+	init() {
+		let persistence = Persistence.shared
+		self.persistence = persistence
+
+		let appState = AppState()
+		self._appState = ObservedObject(wrappedValue: appState)
+
+		let bleManager = BLEManager(
+			appState: appState,
+			context: persistence.viewContext
+		)
+		self._bleManager = ObservedObject(wrappedValue: bleManager)
 	}
 }

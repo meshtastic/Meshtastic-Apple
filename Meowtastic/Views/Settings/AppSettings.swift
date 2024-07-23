@@ -93,10 +93,5 @@ struct AppSettings: View {
 		.navigationBarItems(
 			trailing: ConnectedDevice(ble: bleManager)
 		)
-		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
-		}
 	}
 }

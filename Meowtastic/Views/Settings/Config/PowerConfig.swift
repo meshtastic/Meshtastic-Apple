@@ -114,11 +114,7 @@ struct PowerConfig: View {
 			}
 		}
 		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
-
-			Api().loadDeviceHardwareData { (hw) in
+			Api().loadDeviceHardwareData { hw in
 
 				for device in hw {
 					let currentHardware = node?.user?.hwModel ?? "UNSET"

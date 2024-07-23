@@ -226,9 +226,6 @@ struct CannedMessagesConfig: View {
 				trailing: ConnectedDevice(ble: bleManager)
 			)
 			.onAppear {
-				if self.bleManager.context == nil {
-					self.bleManager.context = context
-				}
 				setCannedMessagesValues()
 				// Need to request a CannedMessagesModuleConfig from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.cannedMessageConfig == nil {

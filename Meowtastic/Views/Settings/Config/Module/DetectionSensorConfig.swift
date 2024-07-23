@@ -182,9 +182,6 @@ struct DetectionSensorConfig: View {
 			trailing: ConnectedDevice(ble: bleManager)
 		)
 		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
 			setDetectionSensorValues()
 			// Need to request a Detection Sensor Module Config from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.detectionSensorConfig == nil {

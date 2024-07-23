@@ -89,11 +89,6 @@ struct NodeList: View {
 			)
 		}
 		.navigationSplitViewStyle(.balanced)
-		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
-		}
 		.onChange(of: searchText, initial: true) {
 			Task {
 				await updateFilter()
@@ -104,7 +99,7 @@ struct NodeList: View {
 				return
 			}
 
-			if navigationPath.hasPrefix("meshtastic://nodes") {
+			if navigationPath.hasPrefix("meshtastic:///nodes") {
 				if let urlComponent = URLComponents(string: navigationPath) {
 					let queryItems = urlComponent.queryItems
 					let nodeNum = queryItems?.first(where: {

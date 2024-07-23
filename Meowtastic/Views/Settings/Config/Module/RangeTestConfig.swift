@@ -76,9 +76,6 @@ struct RangeTestConfig: View {
 				trailing: ConnectedDevice(ble: bleManager)
 			)
 			.onAppear {
-				if self.bleManager.context == nil {
-					self.bleManager.context = context
-				}
 				setRangeTestValues()
 				// Need to request a RangeTestModule Config from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.rangeTestConfig == nil {

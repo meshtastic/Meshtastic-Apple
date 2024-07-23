@@ -141,10 +141,6 @@ struct StoreForwardConfig: View {
 			trailing: ConnectedDevice(ble: bleManager)
 		)
 		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
-
 			// Need to request a Detection Sensor Module Config from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.storeForwardConfig == nil {
 				Logger.mesh.debug("empty store and forward module config")

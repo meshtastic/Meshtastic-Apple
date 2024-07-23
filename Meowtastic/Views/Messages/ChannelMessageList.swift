@@ -61,10 +61,6 @@ struct ChannelMessageList: View {
 					.scrollDismissesKeyboard(.interactively)
 					.scrollIndicators(.hidden)
 					.onAppear {
-						if bleManager.context == nil {
-							bleManager.context = context
-						}
-
 						scrollView.scrollTo(textFieldPlaceholderID)
 					}
 					.onChange(of: channel.allPrivateMessages, initial: true) {

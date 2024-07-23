@@ -702,7 +702,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 							subtitle: "AKA \(telemetry.nodeTelemetry?.user?.shortName ?? "UNK")",
 							content: "Time to charge your radio, there is \(telemetry.batteryLevel)% battery remaining.",
 							target: "nodes",
-							path: "meshtastic://nodes?nodenum=\(telemetry.nodeTelemetry?.num ?? 0)"
+							path: "meshtastic:///nodes?nodenum=\(telemetry.nodeTelemetry?.num ?? 0)"
 						)
 					]
 					manager.schedule()
@@ -826,7 +826,7 @@ func textMessageAppPacket(
 									subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 									content: messageText!,
 									target: "messages",
-									path: "meshtastic://messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)"
+									path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)"
 								)
 							]
 							manager.schedule()
@@ -856,7 +856,7 @@ func textMessageAppPacket(
 												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 												content: messageText!,
 												target: "messages",
-												path: "meshtastic://messages?channel=\(newMessage.channel)&messageId=\(newMessage.messageId)")
+												path: "meshtastic:///messages?channel=\(newMessage.channel)&messageId=\(newMessage.messageId)")
 										]
 										manager.schedule()
 										Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
@@ -925,11 +925,11 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 							subtitle: "\(icon) \(waypoint.name ?? "Dropped Pin")",
 							content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")",
 							target: "map",
-							path: "meshtastic://map?waypontid=\(waypoint.id)"
+							path: "meshtastic:///map?waypontid=\(waypoint.id)"
 						)
 					]
 
-					Logger.data.debug("meshtastic://map?waypontid=\(waypoint.id)")
+					Logger.data.debug("meshtastic:///map?waypontid=\(waypoint.id)")
 
 					manager.schedule()
 				} catch {

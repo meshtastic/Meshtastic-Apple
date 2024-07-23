@@ -113,9 +113,6 @@ struct NetworkConfig: View {
 			trailing: ConnectedDevice(ble: bleManager)
 		)
 		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
 			setNetworkValues()
 			// Need to request a NetworkConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.networkConfig == nil {

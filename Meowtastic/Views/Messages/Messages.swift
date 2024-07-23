@@ -63,10 +63,6 @@ struct Messages: View {
 				prompt: "Find a contact"
 			)
 			.onAppear {
-				if bleManager.context == nil {
-					bleManager.context = context
-				}
-
 				if UserDefaults.preferredPeripheralId.count > 0 {
 					let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 					fetchNodeInfoRequest.predicate = NSPredicate(
@@ -110,11 +106,6 @@ struct Messages: View {
 				ForEach(channels, id: \.index) { channel in
 					if !restrictedChannels.contains(channel.name?.lowercased() ?? "") {
 						makeChannelLink(for: channel, myInfo: myInfo)
-							.onAppear {
-								if self.bleManager.context == nil {
-									self.bleManager.context = context
-								}
-							}
 							.contextMenu {
 								if let allPrivateMessages = channel.allPrivateMessages, !allPrivateMessages.isEmpty {
 									Button(role: .destructive) {

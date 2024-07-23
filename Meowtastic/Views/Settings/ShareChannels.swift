@@ -226,16 +226,12 @@ struct ShareChannels: View {
 			.navigationBarItems(
 				trailing: ConnectedDevice(ble: bleManager)
 			)
-			.onAppear {
-				bleManager.context = context
-				generateChannelSet()
-			}
-			.onChange(of: includeChannel0) { _ in generateChannelSet()	}
-			.onChange(of: includeChannel1) { _ in generateChannelSet()	}
-			.onChange(of: includeChannel2) { _ in generateChannelSet()	}
-			.onChange(of: includeChannel3) { _ in generateChannelSet()	}
-			.onChange(of: includeChannel4) { _ in generateChannelSet()	}
-			.onChange(of: includeChannel5) { _ in generateChannelSet()	}
+			.onChange(of: includeChannel0) { _ in generateChannelSet() }
+			.onChange(of: includeChannel1) { _ in generateChannelSet() }
+			.onChange(of: includeChannel2) { _ in generateChannelSet() }
+			.onChange(of: includeChannel3) { _ in generateChannelSet() }
+			.onChange(of: includeChannel4) { _ in generateChannelSet() }
+			.onChange(of: includeChannel5) { _ in generateChannelSet() }
 			.onChange(of: includeChannel6) { _ in generateChannelSet() }
 			.onChange(of: includeChannel7) { _ in generateChannelSet() }
 			.onChange(of: replaceChannels) { _ in generateChannelSet() }

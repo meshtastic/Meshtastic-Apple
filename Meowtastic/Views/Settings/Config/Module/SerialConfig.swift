@@ -131,10 +131,6 @@ struct SerialConfig: View {
 				trailing: ConnectedDevice(ble: bleManager)
 			)
 			.onAppear {
-				if self.bleManager.context == nil {
-					self.bleManager.context = context
-				}
-
 				setSerialValues()
 
 				// Need to request a SerialModuleConfig from the remote node before allowing changes

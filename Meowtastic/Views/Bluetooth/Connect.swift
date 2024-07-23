@@ -53,11 +53,6 @@ struct Connect: View {
 				trailing: ConnectedDevice(ble: bleManager)
 			)
 		}
-		.onAppear(perform: {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
-		})
 		.onChange(of: bleManager.invalidVersion) {
 			invalidFirmwareVersion = self.bleManager.invalidVersion
 		}

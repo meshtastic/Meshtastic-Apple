@@ -23,11 +23,6 @@ struct UserMessageList: View {
 				messageList
 					.padding([.top])
 					.scrollDismissesKeyboard(.immediately)
-					.onAppear {
-						if self.bleManager.context == nil {
-							self.bleManager.context = context
-						}
-					}
 					.onChange(of: user.messageList, initial: true) {
 						if let messageId = user.messageList?.last?.messageId {
 							scrollView.scrollTo(messageId)

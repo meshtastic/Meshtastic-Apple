@@ -66,9 +66,6 @@ struct RtttlConfig: View {
 				trailing: ConnectedDevice(ble: bleManager)
 			)
 			.onAppear {
-				if self.bleManager.context == nil {
-					self.bleManager.context = context
-				}
 				setRtttLConfigValue()
 				// Need to request a Rtttl Config from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && (node?.rtttlConfig == nil || node?.rtttlConfig?.ringtone?.count ?? 0 == 0) {

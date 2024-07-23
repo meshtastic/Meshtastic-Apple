@@ -93,11 +93,6 @@ struct NodeDetail: View {
 				}
 			}
 			.listStyle(.insetGrouped)
-			.onAppear {
-				if self.bleManager.context == nil {
-					self.bleManager.context = context
-				}
-			}
 		}
 	}
 

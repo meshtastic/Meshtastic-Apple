@@ -85,10 +85,6 @@ struct AmbientLightingConfig: View {
 				trailing: ConnectedDevice(ble: bleManager)
 			)
 			.onAppear {
-				if self.bleManager.context == nil {
-					self.bleManager.context = context
-				}
-
 				setAmbientLightingConfigValue()
 
 				// Need to request a Ambient Lighting Config from the remote node before allowing changes

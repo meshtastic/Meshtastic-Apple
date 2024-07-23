@@ -180,7 +180,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 								subtitle: "\(newUser.longName ?? "unknown".localized)",
 								content: "New Node has been discovered",
 								target: "nodes",
-								path: "meshtastic://nodes?nodenum=\(newUser.num)"
+								path: "meshtastic:///nodes?nodenum=\(newUser.num)"
 							)
 						]
 						manager.schedule()
