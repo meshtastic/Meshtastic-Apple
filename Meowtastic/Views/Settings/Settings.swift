@@ -10,14 +10,13 @@ import OSLog
 
 struct Settings: View {
 	@Environment(\.managedObjectContext)
-	var context
+	private var context
 	@EnvironmentObject
-	var bleManager: BLEManager
-
+	private var bleManager: BLEManager
 	@State
-	private var selectedNode: Int = 0
+	private var selectedNodeNum: Int = 0
 	@State
-	private var preferredNodeNum: Int = 0
+	private var connectedNodeNum: Int = 0
 	@State
 	private var selection: SettingsSidebar = .about
 
@@ -29,6 +28,38 @@ struct Settings: View {
 		animation: .default
 	)
 	private var nodes: FetchedResults<NodeInfoEntity>
+
+	private var nodeSelected: NodeInfoEntity? {
+		nodes.first(where: { node in
+			node.num == selectedNodeNum
+		})
+	}
+
+	private var nodeConnected: NodeInfoEntity? {
+		nodes.first(where: { node in
+			node.num == connectedNodeNum
+		})
+	}
+
+	private var nodeIsConnected: Bool {
+		guard
+			nodeSelected?.num ?? 0 > 0,
+			let numS = nodeSelected?.num,
+			let numC = nodeConnected?.num
+		else {
+			return false
+		}
+
+		return numS == numC
+	}
+
+	private var nodeHasAdmin: Bool {
+		guard let myInfo = nodeConnected?.myInfo else {
+			return false
+		}
+
+		return myInfo.adminIndex > 0
+	}
 
 	enum SettingsSidebar {
 		case appSettings
@@ -62,71 +93,8 @@ struct Settings: View {
 		case appData
 	}
 
-	var radioConfigurationSection: some View {
-		Section("radio.configuration") {
-			let node = nodes.first(where: { $0.num == preferredNodeNum })
-			if let node,
-				let loRaConfig = node.loRaConfig,
-			    let rc = RegionCodes(rawValue: Int(loRaConfig.regionCode)),
-				let user = node.user,
-				!user.isLicensed,
-			    rc.dutyCycle > 0 && rc.dutyCycle < 100 {
-				Label {
-					Text("Hourly Duty Cycle")
-				} icon: {
-					Image(systemName: "clock.arrow.circlepath")
-						.symbolRenderingMode(.hierarchical)
-						.foregroundColor(.red)
-				}
-				Text("Your region has a \(rc.dutyCycle)% hourly duty cycle, your radio will stop sending packets when it reaches the hourly limit.")
-					.foregroundColor(.orange)
-					.font(.caption)
-				Text("Limit all periodic broadcast intervals especially telemetry and position. If you need to increase hops, do it on nodes at the edges, not the ones in the middle. MQTT is not advised when you are duty cycle restricted because the gateway node is then doing all the work.")
-					.font(.caption2)
-					.foregroundColor(.gray)
-			}
-
-			NavigationLink {
-				LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }))
-			} label: {
-				Label {
-					Text("lora")
-				} icon: {
-					Image(systemName: "dot.radiowaves.left.and.right")
-						.rotationEffect(.degrees(-90))
-				}
-			}
-			.tag(SettingsSidebar.loraConfig)
-
-			NavigationLink {
-				Channels(node: node)
-			} label: {
-				Label {
-					Text("channels")
-				} icon: {
-					Image(systemName: "fibrechannel")
-				}
-			}
-			.tag(SettingsSidebar.channelConfig)
-			.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
-
-			NavigationLink {
-				ShareChannels(node: node)
-			} label: {
-				Label {
-					Text("share.channels")
-				} icon: {
-					Image(systemName: "qrcode")
-				}
-			}
-			.tag(SettingsSidebar.shareChannels)
-			.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
-		}
-	}
-
 	var body: some View {
 		NavigationSplitView {
-			let node = nodes.first(where: { $0.num == preferredNodeNum })
 			List {
 				NavigationLink {
 					AboutMeshtastic()
@@ -138,6 +106,7 @@ struct Settings: View {
 					}
 				}
 				.tag(SettingsSidebar.about)
+
 				NavigationLink {
 					AppSettings()
 				} label: {
@@ -148,39 +117,38 @@ struct Settings: View {
 					}
 				}
 				.tag(SettingsSidebar.appSettings)
-				if #available(iOS 17.0, macOS 14.0, *) {
-					NavigationLink {
-						Routes()
-					} label: {
-						Label {
-							Text("routes")
-						} icon: {
-							Image(systemName: "road.lanes.curved.right")
-						}
+
+				NavigationLink {
+					Routes()
+				} label: {
+					Label {
+						Text("routes")
+					} icon: {
+						Image(systemName: "road.lanes.curved.right")
 					}
-					.tag(SettingsSidebar.routes)
-					NavigationLink {
-						RouteRecorder()
-					} label: {
-						Label {
-							Text("route.recorder")
-						} icon: {
-							Image(systemName: "record.circle")
-								.foregroundColor(.red)
-						}
-					}
-					.tag(SettingsSidebar.routeRecorder)
 				}
+				.tag(SettingsSidebar.routes)
 
-				let hasAdmin = node?.myInfo?.adminIndex ?? 0 > 0 ? true : false
+				NavigationLink {
+					RouteRecorder()
+				} label: {
+					Label {
+						Text("route.recorder")
+					} icon: {
+						Image(systemName: "record.circle")
+							.foregroundColor(.red)
+					}
+				}
+				.tag(SettingsSidebar.routeRecorder)
 
-				if !(node?.deviceConfig?.isManaged ?? false) {
+				if !(nodeConnected?.deviceConfig?.isManaged ?? false) {
 					if bleManager.connectedPeripheral != nil {
 						Section("Configure") {
-							if hasAdmin {
-								Picker("Configuring Node", selection: $selectedNode) {
-									if selectedNode == 0 {
-										Text("Connect to a Node").tag(0)
+							if nodeHasAdmin {
+								Picker("Configuring Node", selection: $selectedNodeNum) {
+									if selectedNodeNum == 0 {
+										Text("Connect to a Node")
+											.tag(0)
 									}
 
 									ForEach(nodes) { node in
@@ -191,14 +159,16 @@ struct Settings: View {
 												Image(systemName: "antenna.radiowaves.left.and.right")
 											}
 											.tag(Int(node.num))
-										} else if node.metadata != nil {
+										}
+										else if node.metadata != nil {
 											Label {
 												Text("Remote: \(node.user?.longName ?? "unknown".localized)")
 											} icon: {
 												Image(systemName: "av.remote")
 											}
 											.tag(Int(node.num))
-										} else if hasAdmin {
+										}
+										else if nodeHasAdmin {
 											Label {
 												Text("Request Admin: \(node.user?.longName ?? "unknown".localized)")
 											} icon: {
@@ -210,13 +180,24 @@ struct Settings: View {
 								}
 								.pickerStyle(.automatic)
 								.labelsHidden()
-								.onChange(of: selectedNode) { newValue in
-									if selectedNode > 0 {
-										let node = nodes.first(where: { $0.num == newValue })
-										let connectedNode = nodes.first(where: { $0.num == preferredNodeNum })
-										preferredNodeNum = Int(connectedNode?.num ?? 0)// Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
-										if connectedNode != nil && connectedNode?.user != nil && connectedNode?.myInfo != nil && node?.user != nil && node?.metadata == nil {
-											let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
+								.onChange(of: selectedNodeNum) {
+									if selectedNodeNum > 0 {
+										connectedNodeNum = Int(nodeConnected?.num ?? 0)
+
+										if
+											let nodeConnected,
+											let user = nodeConnected.user,
+											let myInfo = nodeConnected.myInfo,
+											let userSelected = nodeSelected?.user,
+											let metadataSelected = nodeSelected?.metadata
+										{
+											let adminMessageId =  bleManager.requestDeviceMetadata(
+												fromUser: user,
+												toUser: userSelected,
+												adminIndex: myInfo.adminIndex,
+												context: context
+											)
+
 											if adminMessageId > 0 {
 												Logger.mesh.info("Sent node metadata request from node details")
 											}
@@ -225,15 +206,77 @@ struct Settings: View {
 								}
 							} else {
 								if bleManager.connectedPeripheral != nil {
-									Text("Connected Node \(node?.user?.longName ?? "unknown".localized)")
+									Text("Connected Node \(nodeConnected?.user?.longName ?? "unknown".localized)")
 								}
 							}
 						}
 					}
-					radioConfigurationSection
+
+					Section("radio.configuration") {
+						if
+							let user = nodeConnected?.user,
+							let loRaConfig = nodeConnected?.loRaConfig,
+							let rc = RegionCodes(rawValue: Int(loRaConfig.regionCode)),
+							!user.isLicensed,
+							rc.dutyCycle > 0 && rc.dutyCycle < 100
+						{
+							Label {
+								Text("Hourly Duty Cycle")
+							} icon: {
+								Image(systemName: "clock.arrow.circlepath")
+									.symbolRenderingMode(.hierarchical)
+									.foregroundColor(.red)
+							}
+
+							Text("Your region has a \(rc.dutyCycle)% hourly duty cycle, your radio will stop sending packets when it reaches the hourly limit.")
+								.foregroundColor(.orange)
+								.font(.caption)
+
+							Text("Limit all periodic broadcast intervals especially telemetry and position. If you need to increase hops, do it on nodes at the edges, not the ones in the middle. MQTT is not advised when you are duty cycle restricted because the gateway node is then doing all the work.")
+								.font(.caption2)
+								.foregroundColor(.gray)
+						}
+
+						NavigationLink {
+							LoRaConfig(node: nodeSelected)
+						} label: {
+							Label {
+								Text("lora")
+							} icon: {
+								Image(systemName: "dot.radiowaves.left.and.right")
+									.rotationEffect(.degrees(-90))
+							}
+						}
+						.tag(SettingsSidebar.loraConfig)
+
+						NavigationLink {
+							Channels(node: nodeConnected)
+						} label: {
+							Label {
+								Text("channels")
+							} icon: {
+								Image(systemName: "fibrechannel")
+							}
+						}
+						.tag(SettingsSidebar.channelConfig)
+						.disabled(nodeIsConnected)
+
+						NavigationLink {
+							ShareChannels(node: nodeConnected)
+						} label: {
+							Label {
+								Text("share.channels")
+							} icon: {
+								Image(systemName: "qrcode")
+							}
+						}
+						.tag(SettingsSidebar.shareChannels)
+						.disabled(nodeIsConnected)
+					}
+
 					Section("device.configuration") {
 						NavigationLink {
-							UserConfig(node: nodes.first(where: { $0.num == selectedNode }))
+							UserConfig(node: nodeSelected)
 						} label: {
 							Label {
 								Text("user")
@@ -243,7 +286,7 @@ struct Settings: View {
 						}
 						.tag(SettingsSidebar.userConfig)
 						NavigationLink {
-							BluetoothConfig(node: nodes.first(where: { $0.num == selectedNode }))
+							BluetoothConfig(node: nodeSelected)
 						} label: {
 							Label {
 								Text("bluetooth")
@@ -252,8 +295,9 @@ struct Settings: View {
 							}
 						}
 						.tag(SettingsSidebar.bluetoothConfig)
+
 						NavigationLink {
-							DeviceConfig(node: nodes.first(where: { $0.num == selectedNode }))
+							DeviceConfig(node: nodeSelected)
 						} label: {
 							Label {
 								Text("device")
@@ -262,8 +306,9 @@ struct Settings: View {
 							}
 						}
 						.tag(SettingsSidebar.deviceConfig)
+
 						NavigationLink {
-							DisplayConfig(node: nodes.first(where: { $0.num == selectedNode }))
+							DisplayConfig(node: nodeSelected)
 						} label: {
 							Label {
 								Text("display")
@@ -272,8 +317,9 @@ struct Settings: View {
 							}
 						}
 						.tag(SettingsSidebar.displayConfig)
+
 						NavigationLink {
-							NetworkConfig(node: nodes.first(where: { $0.num == selectedNode }))
+							NetworkConfig(node: nodeSelected)
 						} label: {
 							Label {
 								Text("network")
@@ -282,8 +328,9 @@ struct Settings: View {
 							}
 						}
 						.tag(SettingsSidebar.networkConfig)
+
 						NavigationLink {
-							PositionConfig(node: nodes.first(where: { $0.num == selectedNode }))
+							PositionConfig(node: nodeSelected)
 						} label: {
 							Label {
 								Text("position")
@@ -294,7 +341,7 @@ struct Settings: View {
 						.tag(SettingsSidebar.positionConfig)
 
 						NavigationLink {
-							PowerConfig(node: nodes.first(where: { $0.num == selectedNode }))
+							PowerConfig(node: nodeSelected)
 						} label: {
 							Label {
 								Text("config.power.settings")
@@ -304,21 +351,21 @@ struct Settings: View {
 						}
 						.tag(SettingsSidebar.powerConfig)
 					}
+
 					Section("module.configuration") {
-						if #available(iOS 17.0, macOS 14.0, *) {
-							NavigationLink {
-								AmbientLightingConfig(node: nodes.first(where: { $0.num == selectedNode }))
-							} label: {
-								Label {
-									Text("ambient.lighting")
-								} icon: {
-									Image(systemName: "light.max")
-								}
-							}
-							.tag(SettingsSidebar.ambientLightingConfig)
-						}
 						NavigationLink {
-							CannedMessagesConfig(node: nodes.first(where: { $0.num == selectedNode }))
+							AmbientLightingConfig(node: nodeSelected)
+						} label: {
+							Label {
+								Text("ambient.lighting")
+							} icon: {
+								Image(systemName: "light.max")
+							}
+						}
+						.tag(SettingsSidebar.ambientLightingConfig)
+
+						NavigationLink {
+							CannedMessagesConfig(node: nodeSelected)
 						} label: {
 							Label {
 								Text("canned.messages")
@@ -327,8 +374,9 @@ struct Settings: View {
 							}
 						}
 						.tag(SettingsSidebar.cannedMessagesConfig)
+
 						NavigationLink {
-							DetectionSensorConfig(node: nodes.first(where: { $0.num == selectedNode }))
+							DetectionSensorConfig(node: nodeSelected)
 						} label: {
 							Label {
 								Text("detection.sensor")
@@ -337,8 +385,9 @@ struct Settings: View {
 							}
 						}
 						.tag(SettingsSidebar.detectionSensorConfig)
+
 						NavigationLink {
-							ExternalNotificationConfig(node: nodes.first(where: { $0.num == selectedNode }))
+							ExternalNotificationConfig(node: nodeSelected)
 						} label: {
 							Label {
 								Text("external.notification")
@@ -347,8 +396,9 @@ struct Settings: View {
 							}
 						}
 						.tag(SettingsSidebar.externalNotificationConfig)
+
 						NavigationLink {
-							MQTTConfig(node: nodes.first(where: { $0.num == selectedNode }))
+							MQTTConfig(node: nodeSelected)
 						} label: {
 							Label {
 								Text("mqtt")
@@ -357,8 +407,9 @@ struct Settings: View {
 							}
 						}
 						.tag(SettingsSidebar.mqttConfig)
+
 						NavigationLink {
-							RangeTestConfig(node: nodes.first(where: { $0.num == selectedNode }))
+							RangeTestConfig(node: nodeSelected)
 						} label: {
 							Label {
 								Text("range.test")
@@ -367,9 +418,10 @@ struct Settings: View {
 							}
 						}
 						.tag(SettingsSidebar.rangeTestConfig)
-						if node?.metadata?.hasWifi ?? false {
+
+						if nodeConnected?.metadata?.hasWifi ?? false {
 							NavigationLink {
-								PaxCounterConfig(node: nodes.first(where: { $0.num == selectedNode }))
+								PaxCounterConfig(node: nodeSelected)
 							} label: {
 								Label {
 									Text("config.module.paxcounter.settings")
@@ -379,8 +431,9 @@ struct Settings: View {
 							}
 							.tag(SettingsSidebar.paxCounterConfig)
 						}
+
 						NavigationLink {
-							RtttlConfig(node: nodes.first(where: { $0.num == selectedNode }))
+							RtttlConfig(node: nodeSelected)
 						} label: {
 							Label {
 								Text("ringtone")
@@ -389,8 +442,9 @@ struct Settings: View {
 							}
 						}
 						.tag(SettingsSidebar.ringtoneConfig)
+
 						NavigationLink {
-							SerialConfig(node: nodes.first(where: { $0.num == selectedNode }))
+							SerialConfig(node: nodeSelected)
 						} label: {
 							Label {
 								Text("serial")
@@ -399,8 +453,9 @@ struct Settings: View {
 							}
 						}
 						.tag(SettingsSidebar.serialConfig)
+
 						NavigationLink {
-							StoreForwardConfig(node: nodes.first(where: { $0.num == selectedNode }))
+							StoreForwardConfig(node: nodeSelected)
 						} label: {
 							Label {
 								Text("storeforward")
@@ -409,8 +464,9 @@ struct Settings: View {
 							}
 						}
 						.tag(SettingsSidebar.storeAndForwardConfig)
+
 						NavigationLink {
-							TelemetryConfig(node: nodes.first(where: { $0.num == selectedNode }))
+							TelemetryConfig(node: nodeSelected)
 						} label: {
 							Label {
 								Text("telemetry")
@@ -420,6 +476,7 @@ struct Settings: View {
 						}
 						.tag(SettingsSidebar.telemetryConfig)
 					}
+
 					Section(header: Text("logging")) {
 						NavigationLink {
 							MeshLog()
@@ -431,36 +488,11 @@ struct Settings: View {
 							}
 						}
 						.tag(SettingsSidebar.meshLog)
-						if #available (iOS 17.4, *) {
-							NavigationLink {
-								AppLog()
-							} label: {
-								Label {
-									Text("Debug Logs")
-								} icon: {
-									Image(systemName: "stethoscope")
-								}
-							}
-							.tag(SettingsSidebar.appLog)
-						}
 					}
-#if DEBUG
-					Section(header: Text("Developers")) {
-						NavigationLink {
-							AppData()
-						} label: {
-							Label {
-								Text("App Files")
-							} icon: {
-								Image(systemName: "folder")
-							}
-						}
-						.tag(SettingsSidebar.appData)
-					}
-#endif
+
 					Section(header: Text("Firmware")) {
 						NavigationLink {
-							Firmware(node: nodes.first(where: { $0.num == preferredNodeNum }))
+							Firmware(node: nodeConnected)
 						} label: {
 							Label {
 								Text("Firmware Updates")
@@ -469,30 +501,20 @@ struct Settings: View {
 							}
 						}
 						.tag(SettingsSidebar.about)
-						.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
+						.disabled(nodeIsConnected)
 					}
 				}
 			}
-			.onChange(of: UserDefaults.preferredPeripheralNum ) { newConnectedNode in
-				preferredNodeNum = newConnectedNode
+			.onChange(of: UserDefaults.preferredPeripheralNum, initial: true) {
+				connectedNodeNum = UserDefaults.preferredPeripheralNum
+
 				if nodes.count > 1 {
-					if selectedNode == 0 {
-						self.selectedNode = Int(bleManager.connectedPeripheral != nil ? newConnectedNode : 0)
+					if selectedNodeNum == 0 {
+						selectedNodeNum = Int(bleManager.connectedPeripheral != nil ? connectedNodeNum : 0)
 					}
-				} else {
-					self.selectedNode = Int(bleManager.connectedPeripheral != nil ? newConnectedNode: 0)
 				}
-			}
-			.onAppear {
-				if self.preferredNodeNum <= 0 {
-					self.preferredNodeNum = UserDefaults.preferredPeripheralNum
-					if nodes.count > 1 {
-						if selectedNode == 0 {
-							self.selectedNode = Int(bleManager.connectedPeripheral != nil ? UserDefaults.preferredPeripheralNum : 0)
-						}
-					} else {
-						self.selectedNode = Int(bleManager.connectedPeripheral != nil ? UserDefaults.preferredPeripheralNum : 0)
-					}
+				else {
+					selectedNodeNum = Int(bleManager.connectedPeripheral != nil ? connectedNodeNum: 0)
 				}
 			}
 			.listStyle(GroupedListStyle())
@@ -502,11 +524,7 @@ struct Settings: View {
 			)
 		}
 		detail: {
-			if #available (iOS 17, *) {
-				ContentUnavailableView("select.menu.item", systemImage: "gear")
-			} else {
-				Text("select.menu.item")
-			}
+			ContentUnavailableView("select.menu.item", systemImage: "gear")
 		}
 	}
 }

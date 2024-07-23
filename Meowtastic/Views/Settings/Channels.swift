@@ -20,14 +20,6 @@ func generateChannelKey(size: Int) -> String {
 }
 
 struct Channels: View {
-
-	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
-	@Environment(\.dismiss) private var goBack
-	@Environment(\.sizeCategory) var sizeCategory
-
-	var node: NodeInfoEntity?
-
 	@State var hasChanges = false
 	@State var hasValidKey = true
 	@State private var isPresentingSaveConfirm: Bool = false
@@ -46,24 +38,40 @@ struct Channels: View {
 
 	/// Minimum Version for granular position configuration
 	@State var minimumVersion = "2.2.24"
+	
+	private var node: NodeInfoEntity?
+
+	@Environment(\.managedObjectContext)
+	private var context
+	@EnvironmentObject
+	private var bleManager: BLEManager
+	@Environment(\.dismiss)
+	private var goBack
+	@Environment(\.sizeCategory)
+	private var sizeCategory
 
 	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "favorite", ascending: false),
-						  NSSortDescriptor(key: "lastHeard", ascending: false),
-						  NSSortDescriptor(key: "user.longName", ascending: true)],
+		sortDescriptors: [
+			NSSortDescriptor(key: "favorite", ascending: false),
+			NSSortDescriptor(key: "lastHeard", ascending: false),
+			NSSortDescriptor(key: "user.longName", ascending: true)
+		],
 		animation: .default)
-
-	var nodes: FetchedResults<NodeInfoEntity>
+	private var nodes: FetchedResults<NodeInfoEntity>
+	
+	private var nodeChannels: [ChannelEntity]? {
+		guard let channels = node?.myInfo?.channels else {
+			return nil
+		}
+		
+		return channels.array as? [ChannelEntity]
+	}
 
 	var body: some View {
-
 		VStack {
 			List {
-				if node != nil && node?.myInfo != nil {
-					ForEach(
-						node?.myInfo?.channels?.array as? [ChannelEntity] ?? [],
-						id: \.self
-					) { (channel: ChannelEntity) in
+				if let nodeChannels {
+					ForEach(nodeChannels, id: \.index) { channel in
 						Button(action: {
 							channelIndex = channel.index
 							channelRole = Int(channel.role)
@@ -119,22 +127,19 @@ struct Channels: View {
 										size: 45
 									)
 									.padding(.trailing, 5)
-									.brightness(0.1)
 
-									VStack {
-										HStack {
-											if channel.name?.isEmpty ?? false {
-												if channel.role == 1 {
-													Text(String("PrimaryChannel").camelCaseToWords())
-														.font(.headline)
-												} else {
-													Text(String("Channel \(channel.index)").camelCaseToWords())
-														.font(.headline)
-												}
+									HStack {
+										if channel.name?.isEmpty ?? false {
+											if channel.role == 1 {
+												Text(String("PrimaryChannel").camelCaseToWords())
+													.font(.headline)
 											} else {
-												Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords())
+												Text(String("Channel \(channel.index)").camelCaseToWords())
 													.font(.headline)
 											}
+										} else {
+											Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords())
+												.font(.headline)
 										}
 									}
 								}
@@ -162,7 +167,9 @@ struct Channels: View {
 				.presentationDetents([.large])
 				.presentationDragIndicator(.visible)
 				.onAppear {
-					supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
+					supportedVersion = bleManager.connectedVersion == "0.0.0"
+					||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending
+					|| minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
 				}
 				HStack {
 					Button {
