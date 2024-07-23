@@ -41,16 +41,6 @@
         }
       }
     },
-    "%@ - %@ - %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ - %2$@ - %3$@"
-          }
-        }
-      }
-    },
     "%@ (%@)" : {
       "localizations" : {
         "en" : {
@@ -833,9 +823,6 @@
     "App Data" : {
 
     },
-    "App Files" : {
-
-    },
     "App Settings" : {
 
     },
@@ -1323,9 +1310,6 @@
           }
         }
       }
-    },
-    "Backup Database" : {
-
     },
     "Bandwidth" : {
 
@@ -4958,12 +4942,6 @@
     "Debug Log" : {
 
     },
-    "Debug Logs" : {
-
-    },
-    "Debug Logs%@" : {
-
-    },
     "default" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5246,9 +5224,6 @@
         }
       }
     },
-    "Developers" : {
-
-    },
     "device" : {
       "localizations" : {
         "de" : {
@@ -5306,6 +5281,9 @@
           }
         }
       }
+    },
+    "Device" : {
+
     },
     "Device GPS" : {
 
@@ -5387,6 +5365,7 @@
       }
     },
     "device.configuration" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7074,9 +7053,6 @@
     "Fifteen Minutes" : {
 
     },
-    "File Storage" : {
-
-    },
     "Find a contact" : {
 
     },
@@ -8124,9 +8100,6 @@
 
     },
     "Hops" : {
-
-    },
-    "Hourly Duty Cycle" : {
 
     },
     "How long the screen remains on after the user button is pressed or messages are received." : {
@@ -10715,9 +10688,6 @@
     "Limit" : {
 
     },
-    "Limit all periodic broadcast intervals especially telemetry and position. If you need to increase hops, do it on nodes at the edges, not the ones in the middle. MQTT is not advised when you are duty cycle restricted because the gateway node is then doing all the work." : {
-
-    },
     "Line Series" : {
 
     },
@@ -10725,6 +10695,7 @@
 
     },
     "log.category" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10777,6 +10748,7 @@
       }
     },
     "log.level" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10829,6 +10801,7 @@
       }
     },
     "log.message" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10987,6 +10960,7 @@
       }
     },
     "log.time" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11039,6 +11013,7 @@
       }
     },
     "logging" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14552,7 +14527,11 @@
         }
       }
     },
+    "Module" : {
+
+    },
     "module.configuration" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -15164,9 +15143,6 @@
     "No Environment Metrics" : {
 
     },
-    "No Logs Available" : {
-
-    },
     "No Positions" : {
 
     },
@@ -15225,16 +15201,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "未找到 Meshtastic 中繼點"
-          }
-        }
-      }
-    },
-    "Node Core Data Backup %@/%@ - %@ - %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Node Core Data Backup %1$@/%2$@ - %3$@ - %4$@"
           }
         }
       }
@@ -16099,6 +16065,7 @@
       }
     },
     "phone.gps" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -16482,7 +16449,11 @@
     "PWD" : {
 
     },
+    "Radio" : {
+
+    },
     "radio.configuration" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -17140,9 +17111,6 @@
 
     },
     "Reset NodeDB" : {
-
-    },
-    "restore" : {
 
     },
     "resume" : {
@@ -18635,9 +18603,6 @@
 
     },
     "Screen on for" : {
-
-    },
-    "Search" : {
 
     },
     "Secondary" : {
@@ -22297,9 +22262,6 @@
 
     },
     "Your region has a %lld%% duty cycle. MQTT is not advised when you are duty cycle restricted, the extra traffic will quickly overwhelm your LoRa mesh." : {
-
-    },
-    "Your region has a %lld%% hourly duty cycle, your radio will stop sending packets when it reaches the hourly limit." : {
 
     },
     "Your route file must have both Latitude and Longitude columns and headers." : {
