@@ -956,8 +956,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							let appState = AppState.shared
 							appState.unreadChannelMessages = fetchedNodeInfo[0].myInfo?.unreadMessages ?? 0
 							appState.unreadDirectMessages = fetchedNodeInfo[0].user?.unreadMessages ?? 0
+
 							// appState.connectedNode = fetchedNodeInfo[0]
-							UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
+
+							let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
+							UNUserNotificationCenter.current().setBadgeCount(badge)
 
 						}
 						if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].rangeTestConfig?.enabled == true {

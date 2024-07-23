@@ -1,24 +1,27 @@
-//
-//  MyInfoEntityExtension.swift
-//  Meshtastic
-//
-//  Copyright(c) Garth Vander Houwen 9/3/23.
-//
-
 import Foundation
 
 extension MyInfoEntity {
-
-	var messageList: [MessageEntity] {
-		self.value(forKey: "allMessages") as? [MessageEntity] ?? [MessageEntity]()
+	var messageList: [MessageEntity]? {
+		self.value(forKey: "allMessages") as? [MessageEntity]
 	}
 
 	var unreadMessages: Int {
-		let unreadMessages = messageList.filter { ($0 as AnyObject).read == false && ($0 as AnyObject).isEmoji == false }
-		return unreadMessages.count
+		guard let messageList else {
+			return 0
+		}
+
+		return messageList.filter { message in
+			message.read == false
+		}.count
 	}
+
 	var hasAdmin: Bool {
-		let adminChannel = channels?.filter { ($0 as AnyObject).name?.lowercased() == "admin" }
-		return adminChannel?.count ?? 0 > 0
+		guard let channels else {
+			return false
+		}
+		
+		return channels.filter { channel in
+			(channel as AnyObject).name?.lowercased() == "admin"
+		}.count > 0
 	}
 }
