@@ -8,28 +8,28 @@ struct MessageView: View {
 	let tapBackDestination: MessageDestination
 	let isCurrentUser: Bool
 	let onReply: () -> Void
-	
+
 	private let linkColor = Color(red: 0.4627, green: 0.8392, blue: 1) /* #76d6ff */
 	private let statusFontSize: CGFloat = 12
 	private let dateFormatter = {
 		let formatter = DateFormatter()
 		formatter.dateStyle = .medium
 		formatter.timeStyle = .short
-		
+
 		return formatter
 	}()
-	
+
 	@Environment(\.managedObjectContext)
 	private var context
 	@Environment(\.colorScheme)
 	private var colorScheme: ColorScheme
 	@State
 	private var isShowingDeleteConfirmation = false
-	
+
 	private var isDetectionSensorMessage: Bool {
 		message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
 	}
-	
+
 	private var foregroundColor: Color {
 		if backgroundColor.isLight() {
 			return Color.black
@@ -38,11 +38,11 @@ struct MessageView: View {
 			return Color.white
 		}
 	}
-	
+
 	private var statusForegroundColor: Color {
 		foregroundColor.opacity(0.5)
 	}
-	
+
 	private var backgroundColor: Color {
 		if isCurrentUser {
 			return Color.accentColor
@@ -56,7 +56,7 @@ struct MessageView: View {
 			}
 		}
 	}
-	
+
 	private var corners: RectangleCornerRadii {
 		if isCurrentUser {
 			RectangleCornerRadii(

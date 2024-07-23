@@ -93,10 +93,6 @@ struct NodeList: View {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
-
-			Task {
-				await updateFilter()
-			}
 		}
 		.onChange(of: searchText, initial: true) {
 			Task {
@@ -136,7 +132,7 @@ struct NodeList: View {
 				nodesCount: suggestedNodes.count
 			)
 		) {
-			ForEach(suggestedNodes, id: \.self) { node in
+			ForEach(suggestedNodes, id: \.num) { node in
 				NodeListItem(
 					node: node,
 					connected: connectedNodeNum == node.num,
@@ -170,7 +166,7 @@ struct NodeList: View {
 				$0.num == connectedNodeNum
 			})
 
-			ForEach(nodeList, id: \.self) { node in
+			ForEach(nodeList, id: \.num) { node in
 				NodeListItem(
 					node: node,
 					connected: bleManager.connectedPeripheral?.num ?? -1 == node.num,

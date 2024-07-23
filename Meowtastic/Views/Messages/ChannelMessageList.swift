@@ -30,7 +30,7 @@ struct ChannelMessageList: View {
 		sortDescriptors: [
 			NSSortDescriptor(key: "favorite", ascending: false),
 			NSSortDescriptor(key: "lastHeard", ascending: false),
-			NSSortDescriptor(key: "user.longName", ascending: true),
+			NSSortDescriptor(key: "user.longName", ascending: true)
 		],
 		animation: .default
 	)

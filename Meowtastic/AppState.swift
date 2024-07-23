@@ -5,12 +5,16 @@ class AppState: ObservableObject {
 
 	@Published
 	var tabSelection: Tab = .nodes
+
 	@Published
 	var unreadDirectMessages: Int = 0
+
 	@Published
 	var unreadChannelMessages: Int = 0
+
 	@Published
 	var firmwareVersion: String = "0.0.0"
+
 	@Published
 	var navigationPath: String?
 }

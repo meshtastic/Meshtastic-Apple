@@ -47,7 +47,7 @@ struct Messages: View {
 		animation: .default
 	)
 	private var users: FetchedResults<UserEntity>
-	
+
 	var body: some View {
 		NavigationStack {
 			List(/* selection: $channelSelection */) {
@@ -107,7 +107,7 @@ struct Messages: View {
 					nodesCount: channels.count
 				)
 			) {
-				ForEach(channels, id: \.self) { channel in
+				ForEach(channels, id: \.index) { channel in
 					if !restrictedChannels.contains(channel.name?.lowercased() ?? "") {
 						makeChannelLink(for: channel, myInfo: myInfo)
 							.onAppear {
@@ -124,20 +124,20 @@ struct Messages: View {
 										Label("Delete Messages", systemImage: "trash")
 									}
 								}
-								
+
 								Button {
 									channel.mute = !channel.mute
-									
+
 									let adminMessageId =  bleManager.saveChannel(
 										channel: channel.protoBuf,
 										fromUser: node.user!,
 										toUser: node.user!
 									)
-									
+
 									if adminMessageId > 0 {
 										context.refresh(channel, mergeChanges: true)
 									}
-									
+
 									do {
 										try context.save()
 									} catch {
@@ -159,10 +159,10 @@ struct Messages: View {
 								Button(role: .destructive) {
 									deleteChannelMessages(channel: channelSelection!, context: context)
 									context.refresh(myInfo, mergeChanges: true)
-									
+
 									let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
 									UNUserNotificationCenter.current().setBadgeCount(badge)
-									
+
 									channelSelection = nil
 								} label: {
 									Text("delete")
@@ -195,7 +195,7 @@ struct Messages: View {
 				nodesCount: userList.count
 			)
 		) {
-			ForEach(userList, id: \.self) { user in
+			ForEach(userList, id: \.num) { user in
 				let lastMessage = getLastMessage(for: user)
 				
 				if user.num != bleManager.connectedPeripheral?.num ?? 0 {
