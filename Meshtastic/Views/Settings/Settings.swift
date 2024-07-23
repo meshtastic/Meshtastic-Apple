@@ -502,7 +502,6 @@ struct Settings: View {
 					}
 				}
 			}
-			.listStyle(.insetGrouped)
 			.navigationTitle("settings")
 			.navigationBarItems(
 				leading: MeshtasticLogo()

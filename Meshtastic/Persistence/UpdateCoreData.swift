@@ -263,7 +263,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			}
 			if fetchedNode[0].user == nil {
 				let newUser = createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
-				fetchedNode[0].user! = newUser
+				fetchedNode[0].user? = newUser
 
 			}
 			do {

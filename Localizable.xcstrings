@@ -192,9 +192,6 @@
     "8" : {
 
     },
-    "10% Airtime" : {
-
-    },
     "25" : {
 
     },
@@ -679,7 +676,7 @@
     "Airtime" : {
 
     },
-    "AirTm" : {
+    "Airtime %@%%" : {
 
     },
     "Alert" : {
@@ -1426,9 +1423,6 @@
 
     },
     "Barometric Pressure" : {
-
-    },
-    "Batt" : {
 
     },
     "Battery Level %" : {
@@ -2792,6 +2786,9 @@
     "Channel Role" : {
 
     },
+    "Channel Utilization %@%% " : {
+
+    },
     "channel.role.disabled" : {
       "extractionState" : "migrated",
       "localizations" : {
@@ -3089,9 +3086,6 @@
 
     },
     "CHG" : {
-
-    },
-    "ChUtil" : {
 
     },
     "Clear" : {
@@ -22292,9 +22286,6 @@
     "Via Mqtt" : {
 
     },
-    "Volt" : {
-
-    },
     "voltage" : {
       "localizations" : {
         "de" : {
@@ -22352,6 +22343,9 @@
           }
         }
       }
+    },
+    "Volts %@ " : {
+
     },
     "waiting" : {
       "localizations" : {
