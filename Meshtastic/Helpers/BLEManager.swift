@@ -827,7 +827,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						var hopNodes: [TraceRouteHopEntity] = []
 						for node in routingMessage.route {
 							var hopNode = getNodeInfo(id: Int64(node), context: context)
-							if hopNode == nil && hopNode?.num ?? 0 > 0 {
+							if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
 								hopNode = createNodeInfo(num: Int64(node), context: context)
 							}
 							let traceRouteHop = TraceRouteHopEntity(context: context)
@@ -852,7 +852,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								}
 								hopNodes.append(traceRouteHop)
 							}
-							routeString += "\(hopNode?.user?.longName ?? "unknown".localized) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") --> "
+							routeString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") --> "
 						}
 						routeString += traceRoute?.node?.user?.longName ?? "unknown".localized
 						traceRoute?.routeText = routeString
