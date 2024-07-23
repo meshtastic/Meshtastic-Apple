@@ -33,7 +33,9 @@ struct UserList: View {
 		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false),
 						  NSSortDescriptor(key: "userNode.favorite", ascending: false),
 						  NSSortDescriptor(key: "longName", ascending: true)],
-		animation: .default
+		predicate: NSPredicate(
+		  format: "NOT (userNode.viaMqtt == YES AND userNode.hopsAway > 0)"
+		), animation: .default
 	)
 	private var users: FetchedResults<UserEntity>
 
@@ -244,15 +246,18 @@ struct UserList: View {
 		let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
 		/// Create an array of predicates to hold our AND predicates
 		var predicates: [NSPredicate] = []
-		/// Mqtt
+		/// Mqtt and lora
 		if !(viaLora && viaMqtt) {
 			if viaLora {
 				let loraPredicate = NSPredicate(format: "userNode.viaMqtt == NO")
 				predicates.append(loraPredicate)
 			} else {
-				let mqttPredicate = NSPredicate(format: "userNode.viaMqtt == YES")
+				let mqttPredicate = NSPredicate(format: "userNode.viaMqtt == YES AND userNode.hopsAway == 0")
 				predicates.append(mqttPredicate)
 			}
+		} else {
+			let mqttPredicate = NSPredicate(format: "NOT (userNode.viaMqtt == YES AND userNode.hopsAway > 0)")
+			predicates.append(mqttPredicate)
 		}
 		/// Roles
 		if roleFilter && deviceRoles.count > 0 {
