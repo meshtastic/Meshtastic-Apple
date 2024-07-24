@@ -243,7 +243,9 @@ struct Connect: View {
 					}
 				} else {
 					if bleManager.lastConnectionError.count > 0 {
-						Text(bleManager.lastConnectionError).font(.callout).foregroundColor(.red)
+						Text(bleManager.lastConnectionError)
+							.font(.callout)
+							.foregroundColor(.red)
 					}
 
 					HStack {
