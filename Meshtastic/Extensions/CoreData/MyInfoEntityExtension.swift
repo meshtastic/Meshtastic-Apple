@@ -10,7 +10,11 @@ import Foundation
 extension MyInfoEntity {
 
 	var messageList: [MessageEntity] {
-		self.value(forKey: "allMessages") as? [MessageEntity] ?? [MessageEntity]()
+		let context = PersistenceController.shared.container.viewContext
+		let fetchRequest = MessageEntity.fetchRequest()
+		fetchRequest.predicate = NSPredicate(format: "toUser == nil")
+
+		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
 	}
 
 	var unreadMessages: Int {

@@ -12,18 +12,26 @@ import MeshtasticProtobufs
 extension UserEntity {
 
 	var messageList: [MessageEntity] {
-		self.value(forKey: "allMessages") as? [MessageEntity] ?? [MessageEntity]()
+		let context = PersistenceController.shared.container.viewContext
+		let fetchRequest = MessageEntity.fetchRequest()
+		fetchRequest.predicate = NSPredicate(format: "((toUser == %@) OR (fromUser == %@)) AND toUser != nil AND fromUser != nil AND isEmoji == false AND admin = false AND portNum != 10", self, self)
+
+		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
 	}
 
 	var sensorMessageList: [MessageEntity] {
-		self.value(forKey: "detectionSensorMessages") as? [MessageEntity] ?? [MessageEntity]()
+		let context = PersistenceController.shared.container.viewContext
+		let fetchRequest = MessageEntity.fetchRequest()
+		fetchRequest.predicate = NSPredicate(format: "(fromUser == %@) AND portNum = 10", self)
+
+		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
 	}
 
 	var unreadMessages: Int {
 		let unreadMessages = messageList.filter { ($0 as AnyObject).read == false }
 		return unreadMessages.count
 	}
-	
+
 	var hardwareImage: String? {
 		guard let hwModel else { return nil }
 		switch hwModel {

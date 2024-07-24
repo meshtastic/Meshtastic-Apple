@@ -21,4 +21,12 @@ extension MessageEntity {
 	var canRetry: Bool {
 		return ackError == 9 || ackError == 5 || ackError == 3
 	}
+
+	var tapbacks: [MessageEntity] {
+		let context = PersistenceController.shared.container.viewContext
+		let fetchRequest = MessageEntity.fetchRequest()
+		fetchRequest.predicate = NSPredicate(format: "replyID == %lld AND isEmoji == true", self.messageId)
+
+		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
+	}
 }
