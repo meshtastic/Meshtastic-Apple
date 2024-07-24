@@ -56,13 +56,19 @@ struct RangeTestConfig: View {
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.rangeTestConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode != nil {
+				if let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context) {
 					var rtc = ModuleConfig.RangeTestConfig()
 					rtc.enabled = enabled
 					rtc.save = save
 					rtc.sender = UInt32(sender)
-					let adminMessageId =  bleManager.saveRangeTestModuleConfig(config: rtc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+
+					let adminMessageId =  bleManager.saveRangeTestModuleConfig(
+						config: rtc,
+						fromUser: connectedNode.user!,
+						toUser: node!.user!,
+						adminIndex: connectedNode.myInfo?.adminIndex ?? 0
+					)
+
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save

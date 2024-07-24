@@ -11144,7 +11144,11 @@
     "LoRa" : {
 
     },
+    "LoRa Config" : {
+
+    },
     "lora.config" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

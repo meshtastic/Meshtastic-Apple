@@ -1,13 +1,17 @@
 import SwiftUI
 
 struct SaveConfigButton: View {
-	@EnvironmentObject var bleManager: BLEManager
-
-	@State private var isPresentingSaveConfirm = false
 	let node: NodeInfoEntity?
-	@Binding var hasChanges: Bool
+	@Binding
+	var hasChanges: Bool
 	let onConfirmation: () -> Void
 
+	@EnvironmentObject
+	private var bleManager: BLEManager
+	@State
+	private var isPresentingSaveConfirm = false
+
+	@ViewBuilder
 	var body: some View {
 		Button {
 			isPresentingSaveConfirm = true

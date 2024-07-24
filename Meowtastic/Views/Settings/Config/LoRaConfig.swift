@@ -9,23 +9,23 @@ struct LoRaConfig: View {
 		case frequencyOverride
 	}
 
-	let formatter: NumberFormatter = {
+	private let formatter: NumberFormatter = {
 		let formatter = NumberFormatter()
 		formatter.numberStyle = .decimal
 		formatter.groupingSeparator = ""
 		return formatter
 	}()
 
+	var node: NodeInfoEntity?
+
 	@Environment(\.managedObjectContext)
-	var context
+	private var context
 	@EnvironmentObject
-	var bleManager: BLEManager
+	private var bleManager: BLEManager
 	@Environment(\.dismiss)
 	private var goBack
 	@FocusState
-	var focusedField: Field?
-
-	var node: NodeInfoEntity?
+	private var focusedField: Field?
 
 	@State var hasChanges = false
 	@State var region: Int = 0
@@ -48,145 +48,23 @@ struct LoRaConfig: View {
 		return formatter
 	}()
 
+	@ViewBuilder
 	var body: some View {
 		VStack {
 			Form {
 				ConfigHeader(title: "LoRa", config: \.loRaConfig, node: node)
 
-				Section(header: Text("Options")) {
-					VStack(alignment: .leading) {
-						Picker("Region", selection: $region ) {
-							ForEach(RegionCodes.allCases) { r in
-								Text(r.description)
-							}
-						}
-						.fixedSize()
-						Text("The region where you will be using your radios.")
-							.foregroundColor(.gray)
-							.font(.callout)
-					}
-					.pickerStyle(DefaultPickerStyle())
-
-					Toggle(isOn: $usePreset) {
-						Label("Use Preset", systemImage: "list.bullet.rectangle")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-					if usePreset {
-						VStack(alignment: .leading) {
-							Picker("Presets", selection: $modemPreset ) {
-								ForEach(ModemPresets.allCases) { m in
-									Text(m.description)
-								}
-							}
-							.pickerStyle(DefaultPickerStyle())
-							.fixedSize()
-							Text("Available modem presets, default is Long Fast.")
-								.foregroundColor(.gray)
-								.font(.callout)
-						}
-					}
-				}
-
-				Section(header: Text("Advanced")) {
-					Toggle(isOn: $ignoreMqtt) {
-						Label("Ignore MQTT", systemImage: "server.rack")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-					Toggle(isOn: $txEnabled) {
-						Label("Transmit Enabled", systemImage: "waveform.path")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-					if !usePreset {
-						HStack {
-							Picker("Bandwidth", selection: $bandwidth) {
-								ForEach(Bandwidths.allCases) { bw in
-									Text(bw.description)
-										.tag(bw.rawValue == 250 ? 0 : bw.rawValue)
-								}
-							}
-						}
-						HStack {
-							Picker("Spread Factor", selection: $spreadFactor) {
-								ForEach(7..<13) {
-									Text("\($0)")
-										.tag($0 == 12 ? 0 : $0)
-								}
-							}
-						}
-						HStack {
-							Picker("Coding Rate", selection: $codingRate) {
-								ForEach(5..<9) {
-									Text("\($0)")
-										.tag($0 == 8 ? 0 : $0)
-								}
-							}
-						}
-					}
-					VStack(alignment: .leading) {
-						Picker("Number of hops", selection: $hopLimit) {
-							ForEach(0..<8) {
-								Text("\($0)")
-									.tag($0)
-							}
-						}
-						Text("Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully. O hop broadcast messages will not get ACKs.")
-							.foregroundColor(.gray)
-							.font(.callout)
-					}
-					.pickerStyle(DefaultPickerStyle())
-
-					VStack(alignment: .leading) {
-						HStack {
-							Text("Frequency Slot")
-								.fixedSize()
-							TextField("Frequency Slot", value: $channelNum, formatter: formatter)
-								.toolbar {
-									ToolbarItemGroup(placement: .keyboard) {
-										Button("dismiss.keyboard") {
-											focusedField = nil
-										}
-										.font(.subheadline)
-									}
-								}
-								.keyboardType(.decimalPad)
-								.scrollDismissesKeyboard(.immediately)
-								.focused($focusedField, equals: .channelNum)
-								.disabled(overrideFrequency > 0.0)
-						}
-						Text("This determines the actual frequency you are transmitting on in the band. If set to 0 this value will be calculated automatically based on the primary channel name.")
-							.foregroundColor(.gray)
-							.font(.callout)
-					}
-
-					Toggle(isOn: $rxBoostedGain) {
-						Label("RX Boosted Gain", systemImage: "waveform.badge.plus")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-					HStack {
-						Label("Frequency Override", systemImage: "waveform.path.ecg")
-						Spacer()
-						TextField("Frequency Override", value: $overrideFrequency, formatter: floatFormatter)
-							.keyboardType(.decimalPad)
-							.scrollDismissesKeyboard(.immediately)
-							.focused($focusedField, equals: .frequencyOverride)
-					}
-
-					HStack {
-						Image(systemName: "antenna.radiowaves.left.and.right")
-							.foregroundColor(.accentColor)
-						Stepper("\(txPower)dBm Transmit Power", value: $txPower, in: 1...30, step: 1)
-							.padding(5)
-					}
-				}
+				sectionOptions
+				sectionAdvanced
 			}
-			.disabled(self.bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
+			.disabled(bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				if let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context) {
+				if
+					let node,
+					let connectedPeripheral = bleManager.connectedPeripheral,
+					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				{
 					var lc = Config.LoRaConfig()
 					lc.hopLimit = UInt32(hopLimit)
 					lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
@@ -202,14 +80,15 @@ struct LoRaConfig: View {
 					lc.overrideFrequency = overrideFrequency
 					lc.ignoreMqtt = ignoreMqtt
 
-					if connectedNode?.num ?? -1 == node?.user?.num ?? 0 {
+					if connectedNode.num == node.user?.num ?? 0 {
 						UserDefaults.modemPreset = modemPreset
 					}
+
 					let adminMessageId = bleManager.saveLoRaConfig(
 						config: lc,
-						fromUser: connectedNode!.user!,
-						toUser: node!.user!,
-						adminIndex: connectedNode?.myInfo?.adminIndex ?? 0
+						fromUser: connectedNode.user!,
+						toUser: node.user!,
+						adminIndex: connectedNode.myInfo?.adminIndex ?? 0
 					)
 
 					if adminMessageId > 0 {
@@ -221,7 +100,7 @@ struct LoRaConfig: View {
 				}
 			}
 		}
-		.navigationTitle("lora.config")
+		.navigationTitle("LoRa Config")
 		.navigationBarItems(
 			trailing: ConnectedDevice(ble: bleManager)
 		)
@@ -229,17 +108,19 @@ struct LoRaConfig: View {
 			setLoRaValues()
 
 			// Need to request a LoRaConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.loRaConfig == nil {
-				Logger.mesh.info("empty lora config")
-
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestLoRaConfig(
-						fromUser: connectedNode!.user!,
-						toUser: node!.user!,
-						adminIndex: connectedNode?.myInfo?.adminIndex ?? 0
-					)
-				}
+			if node?.loRaConfig == nil {
+				Logger.mesh.info("Empty LoRa config")
+			}
+			else if
+				let node,
+				let connectedPeripheral = bleManager.connectedPeripheral,
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+			{
+				bleManager.requestLoRaConfig(
+					fromUser: connectedNode.user!,
+					toUser: node.user!,
+					adminIndex: connectedNode.myInfo?.adminIndex ?? 0
+				)
 			}
 		}
 		.onChange(of: region) {
@@ -282,20 +163,184 @@ struct LoRaConfig: View {
 			hasChanges = true
 		}
 	}
-	func setLoRaValues() {
-		self.hopLimit = Int(node?.loRaConfig?.hopLimit ?? 3)
-		self.region = Int(node?.loRaConfig?.regionCode ?? 0)
-		self.usePreset = node?.loRaConfig?.usePreset ?? true
-		self.modemPreset = Int(node?.loRaConfig?.modemPreset ?? 0)
-		self.txEnabled = node?.loRaConfig?.txEnabled ?? true
-		self.txPower = Int(node?.loRaConfig?.txPower ?? 0)
-		self.channelNum = Int(node?.loRaConfig?.channelNum ?? 0)
-		self.bandwidth = Int(node?.loRaConfig?.bandwidth ?? 0)
-		self.codingRate = Int(node?.loRaConfig?.codingRate ?? 0)
-		self.spreadFactor = Int(node?.loRaConfig?.spreadFactor ?? 0)
-		self.rxBoostedGain = node?.loRaConfig?.sx126xRxBoostedGain ?? false
-		self.overrideFrequency = node?.loRaConfig?.overrideFrequency ?? 0.0
-		self.ignoreMqtt = node?.loRaConfig?.ignoreMqtt ?? false
-		self.hasChanges = false
+
+	@ViewBuilder
+	private var sectionOptions: some View {
+		Section(header: Text("Options")) {
+			VStack(alignment: .leading) {
+				Picker("Region", selection: $region ) {
+					ForEach(RegionCodes.allCases) { region in
+						Text(region.description)
+					}
+				}
+				.fixedSize()
+
+				Text("The region where you will be using your radios.")
+					.foregroundColor(.gray)
+					.font(.callout)
+			}
+			.pickerStyle(DefaultPickerStyle())
+
+			Toggle(isOn: $usePreset) {
+				Label("Use Preset", systemImage: "list.bullet.rectangle")
+			}
+			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+
+			if usePreset {
+				VStack(alignment: .leading) {
+					Picker("Presets", selection: $modemPreset ) {
+						ForEach(ModemPresets.allCases) { m in
+							Text(m.description)
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
+					.fixedSize()
+
+					Text("Available modem presets, default is Long Fast.")
+						.foregroundColor(.gray)
+						.font(.callout)
+				}
+			}
+		}
+	}
+
+	@ViewBuilder
+	private var sectionAdvanced: some View {
+		Section(header: Text("Advanced")) {
+			Toggle(isOn: $ignoreMqtt) {
+				Label("Ignore MQTT", systemImage: "server.rack")
+			}
+			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+
+			Toggle(isOn: $txEnabled) {
+				Label("Transmit Enabled", systemImage: "waveform.path")
+			}
+			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+
+			if !usePreset {
+				HStack {
+					Picker("Bandwidth", selection: $bandwidth) {
+						ForEach(Bandwidths.allCases) { bw in
+							Text(bw.description)
+								.tag(bw.rawValue == 250 ? 0 : bw.rawValue)
+						}
+					}
+				}
+
+				HStack {
+					Picker("Spread Factor", selection: $spreadFactor) {
+						ForEach(7..<13) {
+							Text("\($0)")
+								.tag($0 == 12 ? 0 : $0)
+						}
+					}
+				}
+
+				HStack {
+					Picker("Coding Rate", selection: $codingRate) {
+						ForEach(5..<9) {
+							Text("\($0)")
+								.tag($0 == 8 ? 0 : $0)
+						}
+					}
+				}
+			}
+
+			VStack(alignment: .leading) {
+				Picker("Number of hops", selection: $hopLimit) {
+					ForEach(0..<8) {
+						Text("\($0)")
+							.tag($0)
+					}
+				}
+
+				Text("Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully. O hop broadcast messages will not get ACKs.")
+					.foregroundColor(.gray)
+					.font(.callout)
+			}
+			.pickerStyle(DefaultPickerStyle())
+
+			VStack(alignment: .leading) {
+				HStack {
+					Text("Frequency Slot")
+						.fixedSize()
+
+					TextField("Frequency Slot", value: $channelNum, formatter: formatter)
+						.toolbar {
+							ToolbarItemGroup(placement: .keyboard) {
+								Button("dismiss.keyboard") {
+									focusedField = nil
+								}
+								.font(.subheadline)
+							}
+						}
+						.keyboardType(.decimalPad)
+						.scrollDismissesKeyboard(.immediately)
+						.focused($focusedField, equals: .channelNum)
+						.disabled(overrideFrequency > 0.0)
+				}
+
+				Text("This determines the actual frequency you are transmitting on in the band. If set to 0 this value will be calculated automatically based on the primary channel name.")
+					.foregroundColor(.gray)
+					.font(.callout)
+			}
+
+			Toggle(isOn: $rxBoostedGain) {
+				Label("RX Boosted Gain", systemImage: "waveform.badge.plus")
+			}
+			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+
+			HStack {
+				Label("Frequency Override", systemImage: "waveform.path.ecg")
+				Spacer()
+				TextField("Frequency Override", value: $overrideFrequency, formatter: floatFormatter)
+					.keyboardType(.decimalPad)
+					.scrollDismissesKeyboard(.immediately)
+					.focused($focusedField, equals: .frequencyOverride)
+			}
+
+			HStack {
+				Image(systemName: "antenna.radiowaves.left.and.right")
+					.foregroundColor(.accentColor)
+
+				Stepper("\(txPower)dBm Transmit Power", value: $txPower, in: 1...30, step: 1)
+					.padding(5)
+			}
+		}
+	}
+
+	private func setLoRaValues() {
+		if let config = node?.loRaConfig {
+			hopLimit = Int(config.hopLimit)
+			region = Int(config.regionCode)
+			usePreset = config.usePreset
+			modemPreset = Int(config.modemPreset)
+			txEnabled = config.txEnabled
+			txPower = Int(config.txPower)
+			channelNum = Int(config.channelNum)
+			bandwidth = Int(config.bandwidth)
+			codingRate = Int(config.codingRate)
+			spreadFactor = Int(config.spreadFactor)
+			rxBoostedGain = config.sx126xRxBoostedGain
+			overrideFrequency = config.overrideFrequency
+			ignoreMqtt = config.ignoreMqtt
+		}
+		else {
+			hopLimit = 3
+			region = 0
+			usePreset = true
+			modemPreset = 0
+			txEnabled = true
+			txPower = 0
+			channelNum = 0
+			bandwidth = 0
+			codingRate = 0
+			spreadFactor = 0
+			rxBoostedGain = false
+			overrideFrequency = 0.0
+			ignoreMqtt = false
+		}
+
+		hasChanges = false
 	}
 }

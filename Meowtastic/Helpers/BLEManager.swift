@@ -2625,8 +2625,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return false
 	}
 
+	@discardableResult
 	public func requestLoRaConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
-
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.loraConfig
 

@@ -1,30 +1,18 @@
-//
-//  QueryCoreData.swift
-//  Meshtastic
-//
-//  Created(c) Garth Vander Houwen 1/16/23.
-//
-
 import CoreData
 
 public func getNodeInfo(id: Int64, context: NSManagedObjectContext) -> NodeInfoEntity? {
-
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(id))
 
-	do {
-		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
-		if fetchedNode.count == 1 {
-			return fetchedNode[0]
-		}
-	} catch {
-		return nil
+	let fetchedNode = try? context.fetch(fetchNodeInfoRequest)
+	if let fetchedNode, fetchedNode.count == 1 {
+		return fetchedNode[0]
 	}
+
 	return nil
 }
 
 public func getStoreAndForwardMessageIds(seconds: Int, context: NSManagedObjectContext) -> [UInt32] {
-
 	let time = seconds * -1
 	let fetchMessagesRequest = MessageEntity.fetchRequest()
 	let timeRange = Calendar.current.date(byAdding: .minute, value: time, to: Date())
@@ -39,6 +27,7 @@ public func getStoreAndForwardMessageIds(seconds: Int, context: NSManagedObjectC
 	} catch {
 		return []
 	}
+
 	return []
 }
 
