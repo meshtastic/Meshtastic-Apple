@@ -39,22 +39,14 @@ extension UserDefaults {
 		case provideLocationInterval
 		case mapLayer
 		case meshMapDistance
-		case enableMapWaypoints
 		case meshMapRecentering
 		case meshMapShowNodeHistory
-		case meshMapShowRouteLines
-		case enableMapConvexHull
 		case enableMapRecentering
 		case enableMapNodeHistoryPins
-		case enableMapRouteLines
-		case enableOfflineMaps
-		case enableOfflineMapsMBTiles
-		case mapTileServer
 		case enableOverlayServer
 		case mapOverlayServer
 		case mapTilesAboveLabels
 		case enableDetectionNotifications
-		case detectionSensorRole
 		case enableSmartPosition
 		case newNodeNotifications
 		case lowBatteryNotifications
@@ -89,32 +81,11 @@ extension UserDefaults {
 	@UserDefault(.meshMapDistance, defaultValue: 800000)
 	static var meshMapDistance: Double
 
-	@UserDefault(.enableMapWaypoints, defaultValue: false)
-	static var enableMapWaypoints: Bool
-
 	@UserDefault(.enableMapRecentering, defaultValue: false)
 	static var enableMapRecentering: Bool
 
 	@UserDefault(.enableMapNodeHistoryPins, defaultValue: false)
 	static var enableMapNodeHistoryPins: Bool
-
-	@UserDefault(.enableMapRouteLines, defaultValue: false)
-	static var enableMapRouteLines: Bool
-
-	@UserDefault(.enableMapConvexHull, defaultValue: false)
-	static var enableMapConvexHull: Bool
-
-	@UserDefault(.enableOfflineMaps, defaultValue: false)
-	static var enableOfflineMaps: Bool
-
-	@UserDefault(.enableOfflineMapsMBTiles, defaultValue: false)
-	static var enableOfflineMapsMBTiles: Bool
-
-	@UserDefault(.mapTileServer, defaultValue: .openStreetMap)
-	static var mapTileServer: MapTileServer
-
-	@UserDefault(.enableOverlayServer, defaultValue: false)
-	static var enableOverlayServer: Bool
 
 	@UserDefault(.mapOverlayServer, defaultValue: .baseReReflectivityCurrent)
 	static var mapOverlayServer: MapOverlayServer
@@ -124,9 +95,6 @@ extension UserDefaults {
 
 	@UserDefault(.enableDetectionNotifications, defaultValue: false)
 	static var enableDetectionNotifications: Bool
-
-	@UserDefault(.detectionSensorRole, defaultValue: .sensor)
-	static var detectionSensorRole: DetectionSensorRole
 
 	@UserDefault(.enableSmartPosition, defaultValue: false)
 	static var enableSmartPosition: Bool

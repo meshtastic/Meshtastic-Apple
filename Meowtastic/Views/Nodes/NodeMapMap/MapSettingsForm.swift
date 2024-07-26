@@ -9,8 +9,6 @@ struct MapSettingsForm: View {
 
 	@AppStorage("meshMapShowNodeHistory")
 	private var nodeHistory = false
-	@AppStorage("meshMapShowRouteLines")
-	private var routeLines = false
 	@Environment(\.dismiss)
 	private var dismiss
 
@@ -36,17 +34,9 @@ struct MapSettingsForm: View {
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						.onTapGesture {
-							self.nodeHistory.toggle()
-							UserDefaults.enableMapNodeHistoryPins = self.nodeHistory
-						}
+							nodeHistory.toggle()
 
-						Toggle(isOn: $routeLines) {
-							Label("Route Lines", systemImage: "road.lanes")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						.onTapGesture {
-							self.routeLines.toggle()
-							UserDefaults.enableMapRouteLines = self.routeLines
+							UserDefaults.enableMapNodeHistoryPins = self.nodeHistory
 						}
 					}
 				}

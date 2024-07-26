@@ -6,12 +6,15 @@ import MapKit
 import OSLog
 
 struct AppSettings: View {
-	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
-	@ObservedObject var tileManager = OfflineTileManager.shared
-	@State var totalDownloadedTileSize = ""
-	@State private var isPresentingCoreDataResetConfirm = false
-	@State private var isPresentingDeleteMapTilesConfirm = false
+	@Environment(\.managedObjectContext)
+	private var context
+	@EnvironmentObject
+	private var bleManager: BLEManager
+	@State
+	private var isPresentingCoreDataResetConfirm = false
+	@State
+	private var isPresentingDeleteMapTilesConfirm = false
+
 	var body: some View {
 		VStack {
 			Form {
@@ -23,6 +26,7 @@ struct AppSettings: View {
 						}
 					}
 				}
+
 				Section(header: Text("App Data")) {
 					Button {
 						isPresentingCoreDataResetConfirm = true
@@ -63,33 +67,9 @@ struct AppSettings: View {
 						}
 					}
 				}
-				if totalDownloadedTileSize != "0MB" {
-					Section(header: Text("Map Tile Data")) {
-						Button {
-							isPresentingDeleteMapTilesConfirm = true
-						} label: {
-							Label("\("map.tiles.delete".localized) (\(totalDownloadedTileSize))", systemImage: "trash")
-								.foregroundColor(.red)
-						}
-						.confirmationDialog(
-							"are.you.sure",
-							isPresented: $isPresentingDeleteMapTilesConfirm,
-							titleVisibility: .visible
-						) {
-							Button("Delete all map tiles?", role: .destructive) {
-								tileManager.removeAll()
-								totalDownloadedTileSize = tileManager.getAllDownloadedSize()
-								Logger.services.debug("delete all tiles")
-							}
-						}
-					}
-				}
 			}
-			.onAppear(perform: {
-				totalDownloadedTileSize = tileManager.getAllDownloadedSize()
-			})
 		}
-		.navigationTitle("appsettings")
+		.navigationTitle("App Settings")
 		.navigationBarItems(
 			trailing: ConnectedDevice(ble: bleManager)
 		)

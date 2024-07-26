@@ -7,9 +7,6 @@
     " %@" : {
 
     },
-    " Whether or not use INPUT_PULLUP mode for GPIO pin. Only applicable if the board uses pull-up resistors on the pin" : {
-
-    },
     ".dot" : {
 
     },
@@ -37,26 +34,6 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ - %2$@"
-          }
-        }
-      }
-    },
-    "%@ (%@)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ (%2$@)"
-          }
-        }
-      }
-    },
-    "%@ %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ %2$lld"
           }
         }
       }
@@ -117,18 +94,6 @@
 
     },
     "1 byte" : {
-
-    },
-    "25" : {
-
-    },
-    "50" : {
-
-    },
-    "75" : {
-
-    },
-    "100" : {
 
     },
     "128 bit" : {
@@ -195,7 +160,11 @@
         }
       }
     },
+    "About" : {
+
+    },
     "about.meshtastic" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -262,10 +231,8 @@
     "Actions" : {
 
     },
-    "Active" : {
-
-    },
     "activity" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -323,13 +290,7 @@
         }
       }
     },
-    "Activity" : {
-
-    },
     "Add Channel" : {
-
-    },
-    "Add Channels" : {
 
     },
     "Add to favorites" : {
@@ -468,9 +429,6 @@
     "Advanced Device GPS" : {
 
     },
-    "Advanced GPIO Options" : {
-
-    },
     "Advanced Position Flags" : {
 
     },
@@ -597,24 +555,6 @@
     "Alert" : {
 
     },
-    "Alert GPIO buzzer when receiving a bell" : {
-
-    },
-    "Alert GPIO buzzer when receiving a message" : {
-
-    },
-    "Alert GPIO vibra motor when receiving a bell" : {
-
-    },
-    "Alert GPIO vibra motor when receiving a message" : {
-
-    },
-    "Alert when receiving a bell" : {
-
-    },
-    "Alert when receiving a message" : {
-
-    },
     "All device and app data will be deleted. You will also need to forget your devices under Settings > Bluetooth." : {
 
     },
@@ -698,9 +638,6 @@
         }
       }
     },
-    "Ambient Lightning" : {
-
-    },
     "ambient.lighting" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -761,6 +698,7 @@
       }
     },
     "ambient.lighting.config" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -833,10 +771,14 @@
     "Apple Apps" : {
 
     },
+    "Application" : {
+
+    },
     "Approximate Location" : {
 
     },
     "appsettings" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1387,12 +1329,6 @@
           }
         }
       }
-    },
-    "Baud" : {
-
-    },
-    "BLE: %@" : {
-
     },
     "ble.connection.timeout %d %@" : {
       "extractionState" : "manual",
@@ -2304,9 +2240,6 @@
     "Cancel" : {
 
     },
-    "Canned Messages" : {
-
-    },
     "canned.messages" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2367,6 +2300,7 @@
       }
     },
     "canned.messages.config" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2608,6 +2542,7 @@
 
     },
     "channel" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2666,30 +2601,6 @@
       }
     },
     "Channel #%d" : {
-
-    },
-    "Channel 0 Included" : {
-
-    },
-    "Channel 1 Included" : {
-
-    },
-    "Channel 2 Included" : {
-
-    },
-    "Channel 3 Included" : {
-
-    },
-    "Channel 4 Included" : {
-
-    },
-    "Channel 5 Included" : {
-
-    },
-    "Channel 6 Included" : {
-
-    },
-    "Channel 7 Included" : {
 
     },
     "channel details" : {
@@ -3007,9 +2918,6 @@
     "ChUtil" : {
 
     },
-    "Clear" : {
-
-    },
     "clear.app.data" : {
       "localizations" : {
         "de" : {
@@ -3126,19 +3034,10 @@
         }
       }
     },
-    "Client" : {
-
-    },
     "Client History" : {
 
     },
     "Client History Request Sent" : {
-
-    },
-    "Client options" : {
-
-    },
-    "Clockwise Rotary Event" : {
 
     },
     "close" : {
@@ -3203,9 +3102,6 @@
     "Coding Rate" : {
 
     },
-    "Color" : {
-
-    },
     "communicating" : {
       "localizations" : {
         "de" : {
@@ -3265,6 +3161,7 @@
       }
     },
     "config.module.paxcounter.enabled.description" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3370,6 +3267,7 @@
       }
     },
     "config.module.paxcounter.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3422,6 +3320,7 @@
       }
     },
     "config.module.paxcounter.updateinterval" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3474,6 +3373,7 @@
       }
     },
     "config.module.paxcounter.updateinterval.description" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4259,6 +4159,7 @@
       }
     },
     "config.ringtone.description" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4311,6 +4212,7 @@
       }
     },
     "config.ringtone.label" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4363,6 +4265,7 @@
       }
     },
     "config.ringtone.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4475,18 +4378,6 @@
     "Configuration for: %@" : {
 
     },
-    "Configuration Presets" : {
-
-    },
-    "Configure" : {
-
-    },
-    "Configuring Node" : {
-
-    },
-    "Connect to a Node" : {
-
-    },
     "connected" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4545,9 +4436,6 @@
           }
         }
       }
-    },
-    "Connected Node %@" : {
-
     },
     "connected.radio" : {
       "extractionState" : "stale",
@@ -4791,9 +4679,6 @@
         }
       }
     },
-    "Control Type" : {
-
-    },
     "Controls the blinking LED on the device.  For most devices this will control one of the up to 4 LEDS, the charger and GPS LEDs are not controllable." : {
 
     },
@@ -4869,9 +4754,6 @@
     "Copy message text" : {
 
     },
-    "Counter Clockwise Rotary Event" : {
-
-    },
     "current" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4930,25 +4812,6 @@
           }
         }
       }
-    },
-    "Current Firmware Version: %@" : {
-
-    },
-    "Current Firmware Version: %@, Latest Firmware Version: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Current Firmware Version: %1$@, Latest Firmware Version: %2$@"
-          }
-        }
-      }
-    },
-    "Current: %lld" : {
-
-    },
-    "Currently the reccomended way to update ESP32 devices is using the web flasher on a desktop computer from a chrome based browser. It does not work on mobile devices or over BLE." : {
-
     },
     "Debug" : {
 
@@ -5079,9 +4942,6 @@
     "Delete all environment metrics?" : {
 
     },
-    "Delete all map tiles?" : {
-
-    },
     "Delete all positions?" : {
 
     },
@@ -5103,16 +4963,7 @@
     "Detection event" : {
 
     },
-    "Detection Sensor" : {
-
-    },
     "Detection Sensor Log" : {
-
-    },
-    "Detection sensor messages are received as text messages.  If you enable notifications you will recieve a notification for each detection message received and a corresponding unread message badge." : {
-
-    },
-    "Detection trigger High" : {
 
     },
     "detection.sensor" : {
@@ -5175,6 +5026,7 @@
       }
     },
     "detection.sensor.config" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5310,13 +5162,7 @@
     "Device Logging Enabled" : {
 
     },
-    "Device Metrics" : {
-
-    },
     "Device Metrics Log" : {
-
-    },
-    "Device Model: %@" : {
 
     },
     "Device Role" : {
@@ -6450,9 +6296,6 @@
     "Display" : {
 
     },
-    "Display Fahrenheit" : {
-
-    },
     "Display Mode" : {
 
     },
@@ -6576,9 +6419,6 @@
         }
       }
     },
-    "Distance" : {
-
-    },
     "Documentation" : {
 
     },
@@ -6588,16 +6428,8 @@
     "Downlink Enabled" : {
 
     },
-    "Drag & Drop Firmware Update" : {
-
-    },
-    "Drag & Drop Firmware Update Documentation" : {
-
-    },
-    "Drag & Drop is the recommended way to update firmware for NRF devices. If your iPhone or iPad is USB-C it will work with your regular USB-C charging cable, for lightning devices you need the Apple Lightning to USB camera adaptor." : {
-
-    },
     "echo" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6654,9 +6486,6 @@
           }
         }
       }
-    },
-    "Elev. Gain" : {
-
     },
     "email.address" : {
       "extractionState" : "manual",
@@ -6720,9 +6549,6 @@
     "Empty" : {
 
     },
-    "Enable Notifications" : {
-
-    },
     "enabled" : {
       "localizations" : {
         "de" : {
@@ -6781,15 +6607,6 @@
         }
       }
     },
-    "Enables devices with native I2S audio output to use the RTTTL over speaker like a buzzer. T-Watch S3 and T-Deck for example have this capability." : {
-
-    },
-    "Enables the detection sensor module, it needs to be enabled on both the node with the sensor, and any nodes that you want to receive detection sensor text messages or view the detection sensor log and chart." : {
-
-    },
-    "Enables the store and forward module. Store and forward must be enabled on both client and router devices." : {
-
-    },
     "Enabling Ethernet will disable the bluetooth connection to the app." : {
 
     },
@@ -6799,10 +6616,8 @@
     "Enabling WiFi will disable the bluetooth connection to the app." : {
 
     },
-    "Encoder Press Event" : {
-
-    },
     "encrypted" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6863,9 +6678,6 @@
     "Encryption Enabled" : {
 
     },
-    "Enter DFU Mode" : {
-
-    },
     "Environment Metrics Log" : {
 
     },
@@ -6875,12 +6687,6 @@
     "Erase all device and app data?" : {
 
     },
-    "ESP 32 OTA update is a work in progress, click the button below to send your device a reboot into ota admin message." : {
-
-    },
-    "ESP32 Device Firmware Update" : {
-
-    },
     "Ethernet Options" : {
 
     },
@@ -6888,6 +6694,7 @@
 
     },
     "export" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6944,9 +6751,6 @@
           }
         }
       }
-    },
-    "External Notifications" : {
-
     },
     "external.notification" : {
       "extractionState" : "stale",
@@ -7008,6 +6812,7 @@
       }
     },
     "external.notification.config" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7077,9 +6882,6 @@
     "Favorites" : {
 
     },
-    "Fifteen Minutes" : {
-
-    },
     "Find a contact" : {
 
     },
@@ -7087,6 +6889,7 @@
 
     },
     "finish" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7148,9 +6951,6 @@
 
     },
     "Firmware update docs" : {
-
-    },
-    "Firmware Updates" : {
 
     },
     "Firmware:" : {
@@ -7277,9 +7077,6 @@
     "First Heard" : {
 
     },
-    "Five Minutes" : {
-
-    },
     "Fixed Position" : {
 
     },
@@ -7299,12 +7096,6 @@
 
     },
     "Frequency Slot" : {
-
-    },
-    "Friendly name" : {
-
-    },
-    "Friendly name used to format message sent to mesh. Example: A name \"Motion\" would result in a message \"Motion detected\"" : {
 
     },
     "gas" : {
@@ -7426,6 +7217,7 @@
       }
     },
     "generate.qr.code" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7486,31 +7278,10 @@
     "Get custom waterproof solar and detection sensor router nodes, aluminium desktop nodes and rugged handsets." : {
 
     },
-    "Get NRF DFU from the App Store" : {
-
-    },
-    "Get the latest alpha firmware" : {
-
-    },
-    "Get the latest stable firmware" : {
-
-    },
     "GPIO" : {
 
     },
-    "GPIO Output Duration" : {
-
-    },
-    "GPIO pin for rotary encoder A port." : {
-
-    },
-    "GPIO pin for rotary encoder B port." : {
-
-    },
-    "GPIO pin for rotary encoder Press port." : {
-
-    },
-    "GPIO Pin to monitor" : {
+    "GPS" : {
 
     },
     "GPS EN GPIO" : {
@@ -8120,34 +7891,13 @@
     "Hide Alerts" : {
 
     },
-    "History Return Max" : {
-
-    },
-    "History Return Window" : {
-
-    },
     "Hops" : {
 
     },
     "How long the screen remains on after the user button is pressed or messages are received." : {
 
     },
-    "How often device metrics are sent out over the mesh. Default is 15 minutes." : {
-
-    },
-    "How often power metrics are sent out over the mesh. Default is 15 minutes." : {
-
-    },
-    "How often sensor metrics are sent out over the mesh. Default is 15 minutes." : {
-
-    },
     "How often should we try to get a GPS position." : {
-
-    },
-    "How often to send detection sensor state to mesh regardless of detection. Default is Never." : {
-
-    },
-    "How to update Firmware" : {
 
     },
     "Hum" : {
@@ -8286,25 +8036,14 @@
     "If DOP is set, use HDOP / VDOP values instead of PDOP" : {
 
     },
-    "If enabled, the 'output' Pin will be pulled active high, disabled means active low." : {
-
-    },
-    "If it is hard to access your device's reset button enter DFU mode here." : {
-
-    },
-    "If set, any packets you send will be echoed back to your device." : {
-
-    },
     "If the default region topic is too busy you can choose a more local topic." : {
 
     },
     "Ignore MQTT" : {
 
     },
-    "Import Route" : {
-
-    },
     "include" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8895,9 +8634,6 @@
           }
         }
       }
-    },
-    "Inputs" : {
-
     },
     "interval.eighteen.hours" : {
       "extractionState" : "manual",
@@ -10629,9 +10365,6 @@
     "Key" : {
 
     },
-    "Key Mapping" : {
-
-    },
     "Key Size" : {
 
     },
@@ -10706,9 +10439,6 @@
     "LED Heartbeat" : {
 
     },
-    "LED State" : {
-
-    },
     "Licensed Operator" : {
 
     },
@@ -10716,9 +10446,6 @@
 
     },
     "Line Series" : {
-
-    },
-    "Location" : {
 
     },
     "Log Levels" : {
@@ -11306,9 +11033,6 @@
 
     },
     "Map Report" : {
-
-    },
-    "Map Tile Data" : {
 
     },
     "map.centering" : {
@@ -11905,6 +11629,7 @@
       }
     },
     "mesh.log" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14303,9 +14028,6 @@
         }
       }
     },
-    "Meshtastic Node %@ has shared channels with you" : {
-
-    },
     "Meshtastic® Copyright Meshtastic LLC" : {
 
     },
@@ -14489,22 +14211,14 @@
     "Messages" : {
 
     },
-    "Messages separate with |" : {
-
-    },
     "Minimum Distance" : {
 
     },
     "Minimum Interval" : {
 
     },
-    "Minimum time between detection broadcasts" : {
-
-    },
-    "Mininum time between detection broadcasts. Default is 45 seconds." : {
-
-    },
     "mode" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14561,9 +14275,6 @@
           }
         }
       }
-    },
-    "Module" : {
-
     },
     "module.configuration" : {
       "extractionState" : "stale",
@@ -14977,9 +14688,6 @@
         }
       }
     },
-    "Nag timeout" : {
-
-    },
     "name" : {
       "localizations" : {
         "de" : {
@@ -15037,9 +14745,6 @@
           }
         }
       }
-    },
-    "Name" : {
-
     },
     "Name:" : {
 
@@ -15167,12 +14872,6 @@
         }
       }
     },
-    "Never" : {
-
-    },
-    "Newer firmware is available" : {
-
-    },
     "No Device Metrics" : {
 
     },
@@ -15240,6 +14939,9 @@
           }
         }
       }
+    },
+    "Node" : {
+
     },
     "Node History" : {
 
@@ -15424,9 +15126,6 @@
         }
       }
     },
-    "Not a valid route file" : {
-
-    },
     "Not Connected" : {
 
     },
@@ -15489,16 +15188,10 @@
         }
       }
     },
-    "Notes" : {
-
-    },
     "Num: %@" : {
 
     },
     "Number of hops" : {
-
-    },
-    "Number of records" : {
 
     },
     "Number of satellites" : {
@@ -15749,12 +15442,6 @@
     "Onboarding for licensed operators requires firmware 2.0.20 or greater. Make sure to refer to your local regulations and contact the local amateur frequency coordinators with questions." : {
 
     },
-    "One Hour" : {
-
-    },
-    "One Minute" : {
-
-    },
     "Online" : {
 
     },
@@ -15762,9 +15449,6 @@
 
     },
     "Optional fields to include when assembling position messages. the more fields are included, the larger the message will be - leading to longer airtime and a higher risk of packet loss" : {
-
-    },
-    "Optional GPIO" : {
 
     },
     "options" : {
@@ -15831,21 +15515,6 @@
     "OS Log Entry Details" : {
 
     },
-    "OTA Updates are not supported on the this NRF Device." : {
-
-    },
-    "OTA Updates are not supported on your platform." : {
-
-    },
-    "Output pin buzzer GPIO " : {
-
-    },
-    "Output pin GPIO" : {
-
-    },
-    "Output pin vibra GPIO" : {
-
-    },
     "Override automatic OLED screen detection." : {
 
     },
@@ -15908,6 +15577,7 @@
       }
     },
     "pause" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -16221,12 +15891,6 @@
     "Pin %lld" : {
 
     },
-    "Pin A" : {
-
-    },
-    "Pin B" : {
-
-    },
     "Please connect to a radio to configure settings." : {
 
     },
@@ -16387,16 +16051,7 @@
     "Positions will be provided by your device GPS, if you select disabled or not present you can set a fixed position." : {
 
     },
-    "Power Metrics" : {
-
-    },
     "Power Off" : {
-
-    },
-    "Power Options" : {
-
-    },
-    "Power Screen" : {
 
     },
     "Power Settings" : {
@@ -16470,25 +16125,16 @@
     "Presets" : {
 
     },
-    "Press Pin" : {
-
-    },
     "Primary" : {
 
     },
     "Primary Channel" : {
 
     },
-    "Primary GPIO" : {
-
-    },
     "Project information" : {
 
     },
     "PWD" : {
-
-    },
-    "Radio" : {
 
     },
     "radio.configuration" : {
@@ -16549,9 +16195,6 @@
           }
         }
       }
-    },
-    "Range Test" : {
-
     },
     "range.test" : {
       "extractionState" : "stale",
@@ -16672,6 +16315,7 @@
       }
     },
     "range.test.config" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -16852,9 +16496,6 @@
     "Rebroadcast Mode" : {
 
     },
-    "Receive data (rxd) GPIO pin" : {
-
-    },
     "received.ack" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -16973,9 +16614,6 @@
         }
       }
     },
-    "Recording route" : {
-
-    },
     "Refresh Device Metadata" : {
 
     },
@@ -17067,22 +16705,13 @@
         }
       }
     },
-    "Release Notes" : {
-
-    },
     "Remote administration for: %@" : {
-
-    },
-    "Remote: %@" : {
 
     },
     "Remove" : {
 
     },
     "Remove from favorites" : {
-
-    },
-    "Replace Channels" : {
 
     },
     "reply" : {
@@ -17147,9 +16776,6 @@
     "Reply" : {
 
     },
-    "Request Admin: %@" : {
-
-    },
     "Requires that there be an accelerometer on your device." : {
 
     },
@@ -17157,6 +16783,7 @@
 
     },
     "resume" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -17218,6 +16845,7 @@
 
     },
     "ringtone" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -17274,9 +16902,6 @@
           }
         }
       }
-    },
-    "Ringtone" : {
-
     },
     "ringtone.config" : {
       "extractionState" : "manual",
@@ -17343,19 +16968,11 @@
     "Root Topic" : {
 
     },
-    "Rotary 1" : {
-
-    },
-    "Route Lines" : {
-
-    },
-    "Route recording paused" : {
-
-    },
     "Route: %@" : {
 
     },
     "route.recorder" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -17413,13 +17030,8 @@
         }
       }
     },
-    "Router" : {
-
-    },
-    "Router Options" : {
-
-    },
     "routes" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18580,9 +18192,6 @@
         }
       }
     },
-    "Save" : {
-
-    },
     "Save User Config to %@?" : {
 
     },
@@ -18644,9 +18253,6 @@
           }
         }
       }
-    },
-    "Saves a CSV with the range test message details, currently only available on ESP32 devices with a web server." : {
-
     },
     "Screen on for" : {
 
@@ -18832,27 +18438,6 @@
         }
       }
     },
-    "Send ASCII bell with alert message. Useful for triggering external notification on bell." : {
-
-    },
-    "Send Bell" : {
-
-    },
-    "Send Reboot OTA" : {
-
-    },
-    "Sender Interval" : {
-
-    },
-    "Sensor Metrics" : {
-
-    },
-    "Sensor options" : {
-
-    },
-    "Sensor Options" : {
-
-    },
     "Sequence number" : {
 
     },
@@ -18915,13 +18500,11 @@
         }
       }
     },
-    "Serial" : {
-
-    },
     "Serial Console" : {
 
     },
     "serial.config" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -19286,9 +18869,6 @@
     "Set Region" : {
 
     },
-    "Set the GPIO pins for RXD and TXD." : {
-
-    },
     "set.region" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -19409,10 +18989,7 @@
         }
       }
     },
-    "Share Channels" : {
-
-    },
-    "Share QR Code & Link" : {
+    "Settings" : {
 
     },
     "share.channels" : {
@@ -19545,12 +19122,6 @@
     "Show Alerts" : {
 
     },
-    "Show on device screen" : {
-
-    },
-    "Show on the mesh map." : {
-
-    },
     "Shut Down" : {
 
     },
@@ -19567,9 +19138,6 @@
 
     },
     "SNR %@dB" : {
-
-    },
-    "Specifies how long the monitored GPIO should output." : {
 
     },
     "Speed" : {
@@ -19758,6 +19326,7 @@
       }
     },
     "start" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -19814,15 +19383,6 @@
           }
         }
       }
-    },
-    "State Broadcast Interval" : {
-
-    },
-    "Store and forward clients can request history from routers on the network." : {
-
-    },
-    "Store and forward router devices must also be in the router or router client device role and requires a ESP32 device with PSRAM." : {
-
     },
     "storeforward" : {
       "extractionState" : "stale",
@@ -19883,10 +19443,8 @@
         }
       }
     },
-    "Storeforward" : {
-
-    },
     "storeforward.config" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -19945,6 +19503,7 @@
       }
     },
     "storeforward.heartbeat" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -20059,12 +19618,6 @@
           }
         }
       }
-    },
-    "Supported" : {
-
-    },
-    "Supported I2C Connected sensors will be detected automatically, sensors are BMP280, BME280, BME680, MCP9808, INA219, INA260, LPS22 and SHTC3." : {
-
     },
     "tapback" : {
       "localizations" : {
@@ -20655,10 +20208,8 @@
         }
       }
     },
-    "Telemetry" : {
-
-    },
     "telemetry.config" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -20722,12 +20273,6 @@
     "Temperature" : {
 
     },
-    "Ten Minutes" : {
-
-    },
-    "The amount of time to wait before we consider your packet as done." : {
-
-    },
     "The compass heading on the screen outside of the circle will always point north." : {
 
     },
@@ -20755,16 +20300,10 @@
     "The root topic to use for MQTT." : {
 
     },
-    "The state of the LED (on/off)" : {
-
-    },
     "There has been no response to a request for device metadata over the admin channel for this node." : {
 
     },
     "These settings will %@ channels. The current LoRa Config will be replaced, if there are substantial changes to the LoRa config the device will reboot" : {
-
-    },
-    "Thirty Minutes" : {
 
     },
     "This conversation will be deleted." : {
@@ -20774,9 +20313,6 @@
 
     },
     "This determines the actual frequency you are transmitting on in the band. If set to 0 this value will be calculated automatically based on the primary channel name." : {
-
-    },
-    "This device will send out range test messages on the selected interval." : {
 
     },
     "This message was likely not delivered." : {
@@ -20801,6 +20337,7 @@
 
     },
     "timeout" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21530,9 +21067,6 @@
     "Trace route sent to %@" : {
 
     },
-    "Transmit data (txd) GPIO pin" : {
-
-    },
     "Transmit Enabled" : {
 
     },
@@ -21600,9 +21134,6 @@
           }
         }
       }
-    },
-    "Two Hours" : {
-
     },
     "Un-Favorite" : {
 
@@ -21787,12 +21318,6 @@
         }
       }
     },
-    "Unsupported" : {
-
-    },
-    "Up Down 1" : {
-
-    },
     "Update Interval" : {
 
     },
@@ -21855,6 +21380,7 @@
       }
     },
     "update.interval" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21946,16 +21472,7 @@
     "Uptime" : {
 
     },
-    "Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead." : {
-
-    },
-    "Use I2S As Buzzer" : {
-
-    },
     "Use Preset" : {
-
-    },
-    "Use PWM Buzzer" : {
 
     },
     "user" : {
@@ -22087,9 +21604,6 @@
           }
         }
       }
-    },
-    "Uses pullup resistor" : {
-
     },
     "Utilizes the network connection on your phone to connect to MQTT." : {
 
@@ -22252,9 +21766,6 @@
     "Wake Screen on tap or motion" : {
 
     },
-    "Web Flasher" : {
-
-    },
     "Website" : {
 
     },
@@ -22264,10 +21775,7 @@
     "What licensed operator mode does:\n* Sets the node name to your call sign \n* Broadcasts node info every 10 minutes \n* Overrides frequency, dutycycle and tx power \n* Disables encryption" : {
 
     },
-    "When using in GPIO mode, keep the output on for this long. " : {
-
-    },
-    "Whether or not the GPIO pin state detection is triggered on HIGH (1) or LOW (0)" : {
+    "WiFi" : {
 
     },
     "WiFi Options" : {
@@ -22312,13 +21820,7 @@
     "Yesterday" : {
 
     },
-    "You can also update your Meshtastic device over bluetooth using the Nordic DFU app." : {
-
-    },
     "Your current location will be set as the fixed position and broadcast over the mesh on the position interval." : {
-
-    },
-    "Your Firmware is up to date" : {
 
     },
     "Your MQTT Server must support TLS." : {
@@ -22328,9 +21830,6 @@
 
     },
     "Your region has a %lld%% duty cycle. MQTT is not advised when you are duty cycle restricted, the extra traffic will quickly overwhelm your LoRa mesh." : {
-
-    },
-    "Your route file must have both Latitude and Longitude columns and headers." : {
 
     }
   },

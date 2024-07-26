@@ -38,6 +38,7 @@ struct NodeInfoView: View {
 					withLabels: true
 				)
 			}
+			.frame(maxWidth: .infinity)
 		}
 	}
 
