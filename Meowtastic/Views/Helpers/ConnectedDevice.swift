@@ -65,17 +65,13 @@ struct ConnectedDevice: View {
 
 	@ViewBuilder
 	private func deviceIcon(_ resource: String, color: Color) -> some View {
-		NavigationLink {
-			Connect()
-		} label: {
-			Image(systemName: resource)
-				.resizable()
-				.scaledToFit()
-				.frame(width: 16, height: 16)
-				.foregroundColor(color)
-				.padding(8)
-				.background(color.opacity(0.3))
-				.clipShape(Circle())
-		}
+		Image(systemName: resource)
+			.resizable()
+			.scaledToFit()
+			.frame(width: 16, height: 16)
+			.foregroundColor(color)
+			.padding(8)
+			.background(color.opacity(0.3))
+			.clipShape(Circle())
 	}
 }

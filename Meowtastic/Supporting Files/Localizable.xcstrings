@@ -4558,6 +4558,9 @@
     "Connecting" : {
 
     },
+    "Connection" : {
+
+    },
     "Connection Attempt %lld of 10" : {
 
     },
@@ -6952,9 +6955,6 @@
 
     },
     "Firmware update docs" : {
-
-    },
-    "Firmware:" : {
 
     },
     "firmware.version" : {
@@ -16052,10 +16052,10 @@
     "Positions will be provided by your device GPS, if you select disabled or not present you can set a fixed position." : {
 
     },
-    "Power Off" : {
+    "Power" : {
 
     },
-    "Power Settings" : {
+    "Power Off" : {
 
     },
     "Powered" : {
@@ -18005,7 +18005,7 @@
     "RSSI %ddB" : {
 
     },
-    "RSSI: %@dBm" : {
+    "RSSI: %ddBm" : {
 
     },
     "RSSI: %lld" : {
@@ -18936,6 +18936,7 @@
 
     },
     "settings" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21613,6 +21614,9 @@
       }
     },
     "Utilizes the network connection on your phone to connect to MQTT." : {
+
+    },
+    "v%@" : {
 
     },
     "Vehicle heading" : {

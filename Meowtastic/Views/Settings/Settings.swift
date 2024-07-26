@@ -56,6 +56,8 @@ struct Settings: View {
 	var body: some View {
 		NavigationSplitView {
 			List {
+				connection
+
 				if !nodeIsManaged {
 					nodeConfig
 				}
@@ -75,7 +77,7 @@ struct Settings: View {
 					selectedNodeNum = Int(bleManager.connectedPeripheral != nil ? connectedNodeNum: 0)
 				}
 			}
-			.navigationTitle("settings")
+			.navigationTitle("Settings")
 			.navigationBarItems(
 				leading: MeshtasticLogo(),
 				trailing: ConnectedDevice(ble: bleManager)
@@ -83,6 +85,24 @@ struct Settings: View {
 		}
 		detail: {
 			ContentUnavailableView("select.menu.item", systemImage: "gear")
+		}
+	}
+
+	@ViewBuilder
+	private var connection: some View {
+		NavigationLink {
+			Connect(node: nodeSelected)
+		} label: {
+			Label {
+				Text("Connection")
+			} icon: {
+				if nodeSelected != nil {
+					Image(systemName: "wifi")
+				}
+				else {
+					Image(systemName: "wifi.slash")
+				}
+			}
 		}
 	}
 
@@ -184,7 +204,7 @@ struct Settings: View {
 				PowerConfig(node: nodeSelected)
 			} label: {
 				Label {
-					Text("Power Settings")
+					Text("Power")
 				} icon: {
 					Image(systemName: "powercord")
 				}

@@ -56,7 +56,7 @@ struct Connect: View {
 						.font(.title)
 				}
 			}
-			.navigationTitle("Bluetooth")
+			.navigationTitle("Connection")
 			.navigationBarItems(
 				leading: MeshtasticLogo(),
 				trailing: ConnectedDevice(ble: bleManager)
@@ -125,20 +125,20 @@ struct Connect: View {
 								.font(.title2)
 						}
 
-						Text(bleManager.connectedPeripheral?.peripheral.name ?? "N/A")
-							.font(.callout)
-							.foregroundColor(Color.gray)
-
-						if node != nil {
-							HStack {
-								Text("Firmware:")
+						HStack(spacing: 8) {
+							if let name = bleManager.connectedPeripheral?.peripheral.name {
+								Text(name)
 									.font(.callout)
+									.foregroundColor(Color.gray)
+							}
 
-								Text(node?.metadata?.firmwareVersion ?? "N/A")
+							if let version = node?.metadata?.firmwareVersion {
+								Text("v\(version)")
 									.font(.callout)
 									.foregroundColor(Color.gray)
 							}
 						}
+
 
 						if bleManager.isSubscribed {
 							Text("subscribed")
@@ -337,7 +337,9 @@ struct Connect: View {
 		}
 	}
 
-	init () {
+	init (node: NodeInfoEntity? = nil) {
+		self.node = node
+
 		let notificationCenter = UNUserNotificationCenter.current()
 
 		notificationCenter.getNotificationSettings(

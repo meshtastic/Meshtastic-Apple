@@ -134,6 +134,7 @@ struct MessageView: View {
 						}
 					}
 				}
+				.padding(.top, originalMessage == nil ? 0 : -16)
 				.background(backgroundColor)
 				.clipShape(
 					UnevenRoundedRectangle(cornerRadii: corners, style: .continuous)
@@ -175,7 +176,6 @@ struct MessageView: View {
 
 					Button("Cancel", role: .cancel) { }
 				}
-				.padding(.top, -16)
 			}
 		}
 		.frame(width: .infinity)

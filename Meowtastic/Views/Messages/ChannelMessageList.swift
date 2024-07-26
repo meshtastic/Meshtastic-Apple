@@ -147,7 +147,11 @@ struct ChannelMessageList: View {
 					)
 
 					if let connectedNode, let sourceNode {
-						NodeIconListView(connectedNode: connectedNode, small: true, node: sourceNode)
+						NodeIconListView(
+							connectedNode: connectedNode,
+							small: true,
+							node: sourceNode
+						)
 					}
 				}
 				.frame(width: 64)
@@ -178,8 +182,12 @@ struct ChannelMessageList: View {
 						}
 					}
 				}
+				else {
+					EmptyView()
+				}
 
-				HStack {
+
+				HStack(spacing: 0) {
 					MessageView(
 						message: message,
 						originalMessage: getOriginalMessage(for: message),
@@ -189,6 +197,7 @@ struct ChannelMessageList: View {
 						replyMessageId = message.messageId
 						messageFieldFocused = true
 					}
+					.id(message.messageId)
 
 					if isCurrentUser && message.canRetry {
 						RetryButton(message: message, destination: .channel(channel))
@@ -204,7 +213,6 @@ struct ChannelMessageList: View {
 					context.refresh(myInfo, mergeChanges: true)
 				}
 			}
-			.id(message.messageId)
 
 			if isCurrentUser {
 				Avatar(

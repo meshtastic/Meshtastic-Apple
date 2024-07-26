@@ -307,9 +307,9 @@ struct NodeDetail: View {
 						Text("LoRa")
 
 						if node.rssi != 0 || node.snr != 0 {
-								HStack(spacing: 16) {
+								HStack(spacing: 8) {
 									if node.rssi != 0 {
-										Text("RSSI: \(String(format: "%.1f", node.rssi))dBm")
+										Text("RSSI: \(node.rssi)dBm")
 											.font(.system(size: 10, weight: .light))
 											.foregroundColor(.gray)
 									}
