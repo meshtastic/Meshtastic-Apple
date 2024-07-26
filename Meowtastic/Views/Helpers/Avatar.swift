@@ -36,7 +36,7 @@ struct Avatar: View {
 					.font(.system(size: 128, weight: .heavy, design: .rounded))
 					.foregroundColor(background.isLight() ? .black : .white)
 					.lineLimit(1)
-					.minimumScaleFactor(0.1)
+					.minimumScaleFactor(0.01)
 					.padding(.all, size / 8)
 					.frame(width: size, height: size)
 			}
@@ -55,11 +55,11 @@ struct Avatar: View {
 		)
 	}
 
-	// swiftlint:disable large_tuple
 	init(
 		_ name: String?,
 		background: Color,
 		size: CGFloat = 45,
+		// swiftlint:disable:next large_tuple
 		corners: (Bool, Bool, Bool, Bool)? = nil
 	) {
 		self.name = name
