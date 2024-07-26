@@ -8,9 +8,16 @@ import SwiftUI
 struct ContentView: View {
 	@ObservedObject
 	var appState: AppState
-	
+
 	@ObservedObject
 	var router: Router
+
+//	@AppStorage("isFirstLaunch")
+	@State
+	var isFirstLaunch: Bool = true
+
+	@State
+	var isShowingOnboardingFlow: Bool = false
 
 	var body: some View {
 		TabView(selection: Binding(
@@ -68,6 +75,17 @@ struct ContentView: View {
 					.font(.title)
 			}
 			.tag(NavigationState.Tab.settings)
-		}
+		}.onAppear {
+			if isFirstLaunch {
+				isShowingOnboardingFlow = true
+			}
+		}.sheet(
+			isPresented: $isShowingOnboardingFlow,
+			onDismiss: {
+				isFirstLaunch = false
+			}, content: {
+				OnboardingView()
+			}
+		)
 	}
 }

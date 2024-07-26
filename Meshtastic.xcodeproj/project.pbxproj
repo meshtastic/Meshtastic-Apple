@@ -20,6 +20,7 @@
 		25A978BC2C13F90D0003AAE7 /* MeshtasticProtobufs in Frameworks */ = {isa = PBXBuildFile; productRef = 25A978BB2C13F90D0003AAE7 /* MeshtasticProtobufs */; };
 		25AECD4F2C2F723200862C8E /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 25AECD4E2C2F723200862C8E /* Localizable.xcstrings */; };
 		25C49D902C471AEA0024FBD1 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C49D8F2C471AEA0024FBD1 /* Constants.swift */; };
+		25CEC8E52C54536000B5F7C9 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25CEC8E42C54536000B5F7C9 /* OnboardingView.swift */; };
 		25F26B1E2C2F610D00C9CD9D /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB0C2C285F00007E03CA /* Logger.swift */; };
 		25F26B1F2C2F611300C9CD9D /* AppData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB152C28B1E4007E03CA /* AppData.swift */; };
 		25F5D5BE2C3F6D87008036E3 /* NavigationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5BD2C3F6D87008036E3 /* NavigationState.swift */; };
@@ -250,6 +251,7 @@
 		251926912C3CB52300249DF5 /* DeleteNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteNodeButton.swift; sourceTree = "<group>"; };
 		25AECD4E2C2F723200862C8E /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		25C49D8F2C471AEA0024FBD1 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		25CEC8E42C54536000B5F7C9 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		25F5D5BD2C3F6D87008036E3 /* NavigationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationState.swift; sourceTree = "<group>"; };
 		25F5D5BF2C3F6DA6008036E3 /* Router.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Router.swift; sourceTree = "<group>"; };
 		25F5D5C12C3F6E4B008036E3 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
@@ -525,6 +527,14 @@
 				251926912C3CB52300249DF5 /* DeleteNodeButton.swift */,
 			);
 			path = Actions;
+			sourceTree = "<group>";
+		};
+		25CEC8E32C54532400B5F7C9 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				25CEC8E42C54536000B5F7C9 /* OnboardingView.swift */,
+			);
+			path = Onboarding;
 			sourceTree = "<group>";
 		};
 		25F5D5BC2C3F6D7B008036E3 /* Router */ = {
@@ -834,6 +844,7 @@
 		DDC2E18726CE24E40042C5E4 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				25CEC8E32C54532400B5F7C9 /* Onboarding */,
 				C9483F6B2773016700998F6B /* MapKitMap */,
 				DDC2E18D26CE25CB0042C5E4 /* Helpers */,
 				DD47E3D726F2F21A00029299 /* Bluetooth */,
@@ -1365,6 +1376,7 @@
 				DDA9515E2BC6F56F00CEA535 /* IndoorAirQuality.swift in Sources */,
 				DDDB444E29F8AB0E00EE2349 /* Int.swift in Sources */,
 				DD3CC6BC28E366DF00FA9159 /* Meshtastic.xcdatamodeld in Sources */,
+				25CEC8E52C54536000B5F7C9 /* OnboardingView.swift in Sources */,
 				DDC4C9FF2A8D982900CE201C /* DetectionSensorConfig.swift in Sources */,
 				D9C983A22B79D1A600BDBE6A /* RequestPositionButton.swift in Sources */,
 				DDDB26442AAC0206003AFCB7 /* NodeDetail.swift in Sources */,

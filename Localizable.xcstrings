@@ -7606,6 +7606,9 @@
     "Get NRF DFU from the App Store" : {
 
     },
+    "Get started" : {
+
+    },
     "Get the latest alpha firmware" : {
 
     },
@@ -14433,6 +14436,9 @@
           }
         }
       }
+    },
+    "Meshtastic" : {
+
     },
     "Meshtastic Node %@ has shared channels with you" : {
 
@@ -22421,6 +22427,9 @@
 
     },
     "Website" : {
+
+    },
+    "Welcome to" : {
 
     },
     "What is Meshtastic?" : {
