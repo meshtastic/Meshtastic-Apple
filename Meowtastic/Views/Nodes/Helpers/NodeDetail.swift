@@ -234,6 +234,7 @@ struct NodeDetail: View {
 			HStack {
 				Label {
 					Text("User ID")
+						.textSelection(.enabled)
 				} icon: {
 					Image(systemName: "person")
 						.symbolRenderingMode(.monochrome)
@@ -250,6 +251,7 @@ struct NodeDetail: View {
 		HStack {
 			Label {
 				Text("Node Number")
+					.textSelection(.enabled)
 			} icon: {
 				Image(systemName: "number")
 					.symbolRenderingMode(.monochrome)
