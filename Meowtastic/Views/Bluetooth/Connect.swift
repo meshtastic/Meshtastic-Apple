@@ -7,22 +7,31 @@ import OSLog
 
 struct Connect: View {
 	@Environment(\.managedObjectContext)
-	var context
+	private var context
 	@EnvironmentObject
-	var bleManager: BLEManager
+	private var bleManager: BLEManager
 
 	@State
-	var node: NodeInfoEntity?
+	private var node: NodeInfoEntity?
 	@State
-	var isUnsetRegion = false
+	private var isUnsetRegion = false
 	@State
-	var invalidFirmwareVersion = false
+	private var invalidFirmwareVersion = false
 	@State
-	var liveActivityStarted = false
+	private var liveActivityStarted = false
 	@State
-	var selectedPeripherialId = ""
+	private var selectedPeripherialId = ""
 
-	private var peripherals: [Peripheral] {
+	@FetchRequest(
+		sortDescriptors: [
+			NSSortDescriptor(key: "favorite", ascending: false),
+			NSSortDescriptor(key: "user.longName", ascending: true)
+		],
+		animation: .default
+	)
+	private var nodes: FetchedResults<NodeInfoEntity>
+
+	private var visibleNodes: [Peripheral] {
 		let peripherals = bleManager.peripherals.filter { device in
 			device.peripheral.state == CBPeripheralState.disconnected
 		}
@@ -36,10 +45,10 @@ struct Connect: View {
 		NavigationStack {
 			List {
 				if bleManager.isSwitchedOn {
-					connectedDevice
+					known
 
-					if !self.bleManager.isConnected && !peripherals.isEmpty {
-						visibleDevices
+					if !visibleNodes.isEmpty {
+						visible
 					}
 				} else {
 					Text("Bluetooth Off")
@@ -91,16 +100,17 @@ struct Connect: View {
 	}
 
 	@ViewBuilder
-	private var connectedDevice: some View {
-		Section(
-			header: Text("Known Devices")
-				.font(.title)
-		) {
+	private var known: some View {
+		Section("Known Devices") {
 			if
 				let connectedPeripheral = bleManager.connectedPeripheral,
 				connectedPeripheral.peripheral.state == .connected
 			{
-				HStack {
+				let node = nodes.first(where: { node in
+					node.num == connectedPeripheral.num
+				})
+
+				HStack(alignment: .top, spacing: 8) {
 					VStack(alignment: .center) {
 						Avatar(
 							node?.user?.shortName ?? "?",
@@ -108,21 +118,16 @@ struct Connect: View {
 							size: 90
 						)
 					}
-					.padding(.trailing)
 
 					VStack(alignment: .leading) {
 						if node != nil {
-							Text(connectedPeripheral.longName).font(.title2)
+							Text(connectedPeripheral.longName)
+								.font(.title2)
 						}
 
-						HStack {
-							Text("Name:")
-								.font(.callout)
-
-							Text(bleManager.connectedPeripheral?.peripheral.name ?? "N/A")
-								.font(.callout)
-								.foregroundColor(Color.gray)
-						}
+						Text(bleManager.connectedPeripheral?.peripheral.name ?? "N/A")
+							.font(.callout)
+							.foregroundColor(Color.gray)
 
 						if node != nil {
 							HStack {
@@ -156,8 +161,6 @@ struct Connect: View {
 						}
 					}
 				}
-				.font(.caption)
-				.foregroundColor(Color.gray)
 				.swipeActions {
 					Button(role: .destructive) {
 						if
@@ -168,7 +171,7 @@ struct Connect: View {
 						}
 					} label: {
 						Label(
-							"disconnect",
+							"Disconnect",
 							systemImage: "antenna.radiowaves.left.and.right.slash"
 						)
 					}
@@ -266,12 +269,12 @@ struct Connect: View {
 	}
 
 	@ViewBuilder
-	private var visibleDevices: some View {
+	private var visible: some View {
 		Section(
 			header: Text("Visible Nodes")
 				.font(.title)
 		) {
-			ForEach(peripherals) { peripheral in
+			ForEach(visibleNodes) { peripheral in
 				HStack {
 					if UserDefaults.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
 						Image(systemName: "star.fill")

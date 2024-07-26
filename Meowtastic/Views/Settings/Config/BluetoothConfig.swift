@@ -132,6 +132,7 @@ struct BluetoothConfig: View {
 			}
 		}
 	}
+
 	func setBluetoothValues() {
 		self.enabled = node?.bluetoothConfig?.enabled ?? true
 		self.mode = Int(node?.bluetoothConfig?.mode ?? 0)

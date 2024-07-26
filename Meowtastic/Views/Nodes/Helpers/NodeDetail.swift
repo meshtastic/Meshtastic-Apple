@@ -301,7 +301,24 @@ struct NodeDetail: View {
 					Text("MQTT")
 				}
 				else {
-					Text("LoRa")
+					VStack(alignment: .trailing, spacing: 4) {
+						Text("LoRa")
+
+						if node.rssi != 0 || node.snr != 0 {
+								HStack(spacing: 16) {
+									if node.rssi != 0 {
+										Text("RSSI: \(String(format: "%.1f", node.rssi))dBm")
+											.font(.system(size: 10, weight: .light))
+											.foregroundColor(.gray)
+									}
+									if node.snr != 0 {
+										Text("SNR: \(String(format: "%.1f", node.snr))dB")
+											.font(.system(size: 10, weight: .light))
+											.foregroundColor(.gray)
+									}
+							}
+						}
+					}
 				}
 			}
 

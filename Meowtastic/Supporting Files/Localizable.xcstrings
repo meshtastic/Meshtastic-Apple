@@ -6116,6 +6116,7 @@
 
     },
     "disconnect" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14746,9 +14747,6 @@
         }
       }
     },
-    "Name:" : {
-
-    },
     "Nearby Topics" : {
 
     },
@@ -14950,6 +14948,9 @@
 
     },
     "Node Number" : {
+
+    },
+    "Node Without a Name" : {
 
     },
     "nodelist.filter.distance %@" : {
@@ -18004,6 +18005,9 @@
     "RSSI %ddB" : {
 
     },
+    "RSSI: %@dBm" : {
+
+    },
     "RSSI: %lld" : {
 
     },
@@ -19138,6 +19142,9 @@
 
     },
     "SNR %@dB" : {
+
+    },
+    "SNR: %@dB" : {
 
     },
     "Speed" : {

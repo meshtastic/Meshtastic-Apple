@@ -85,7 +85,7 @@ struct Settings: View {
 			ContentUnavailableView("select.menu.item", systemImage: "gear")
 		}
 	}
-	
+
 	@ViewBuilder
 	private var nodeConfig: some View {
 		Section("Node") {

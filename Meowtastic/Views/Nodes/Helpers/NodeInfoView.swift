@@ -17,11 +17,22 @@ struct NodeInfoView: View {
 			)
 
 			VStack(alignment: .leading, spacing: 8) {
-				if let longName = node.user?.longName {
-					Text(longName)
-						.lineLimit(1)
-						.font(.title)
-						.minimumScaleFactor(0.5)
+				HStack(alignment: .top, spacing: 0) {
+					if let longName = node.user?.longName {
+						Text(longName)
+							.lineLimit(1)
+							.font(.title)
+							.minimumScaleFactor(0.5)
+					}
+					else {
+						Text("Node Without a Name")
+							.lineLimit(1)
+							.font(.title)
+							.foregroundColor(.gray)
+							.minimumScaleFactor(0.5)
+					}
+
+					Spacer()
 				}
 
 				if node.snr != 0 && !node.viaMqtt {
