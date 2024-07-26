@@ -5,7 +5,7 @@ import OSLog
 @main
 struct MeowtasticApp: App {
 	private let persistence: NSPersistentContainer
-	
+
 	@UIApplicationDelegateAdaptor(MeowtasticAppDelegate.self)
 	var appDelegate
 	@Environment(\.scenePhase)
@@ -168,12 +168,12 @@ struct MeowtasticApp: App {
 		self.persistence = persistence
 
 		let appState = AppState()
-		self._appState = ObservedObject(wrappedValue: appState)
+		self.appState = appState
 
 		let bleManager = BLEManager(
 			appState: appState,
 			context: persistence.viewContext
 		)
-		self._bleManager = ObservedObject(wrappedValue: bleManager)
+		self.bleManager = bleManager
 	}
 }

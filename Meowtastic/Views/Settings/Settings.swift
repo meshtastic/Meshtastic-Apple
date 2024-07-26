@@ -42,15 +42,7 @@ struct Settings: View {
 	}
 
 	private var nodeIsConnected: Bool {
-		guard
-			nodeSelected?.num ?? 0 > 0,
-			let numS = nodeSelected?.num,
-			let numC = nodeConnected?.num
-		else {
-			return false
-		}
-
-		return numS == numC
+		selectedNodeNum > 0 && selectedNodeNum != connectedNodeNum
 	}
 
 	private var nodeHasAdmin: Bool {
@@ -309,7 +301,7 @@ struct Settings: View {
 				LoRaConfig(node: nodeSelected)
 			} label: {
 				Label {
-					Text("lora")
+					Text("LoRa")
 				} icon: {
 					Image(systemName: "dot.radiowaves.left.and.right")
 						.rotationEffect(.degrees(-90))
@@ -318,10 +310,10 @@ struct Settings: View {
 			.tag(SettingsSidebar.loraConfig)
 
 			NavigationLink {
-				Channels()
+				Channels(node: nodeSelected)
 			} label: {
 				Label {
-					Text("channels")
+					Text("Channels")
 				} icon: {
 					Image(systemName: "fibrechannel")
 				}
@@ -333,7 +325,7 @@ struct Settings: View {
 				ShareChannels(node: nodeConnected)
 			} label: {
 				Label {
-					Text("share.channels")
+					Text("Share Channels")
 				} icon: {
 					Image(systemName: "qrcode")
 				}
@@ -350,7 +342,7 @@ struct Settings: View {
 				UserConfig(node: nodeSelected)
 			} label: {
 				Label {
-					Text("user")
+					Text("User")
 				} icon: {
 					Image(systemName: "person.crop.rectangle.fill")
 				}
@@ -361,7 +353,7 @@ struct Settings: View {
 				BluetoothConfig(node: nodeSelected)
 			} label: {
 				Label {
-					Text("bluetooth")
+					Text("Bluetooth")
 				} icon: {
 					Image(systemName: "antenna.radiowaves.left.and.right")
 				}
@@ -372,7 +364,7 @@ struct Settings: View {
 				DeviceConfig(node: nodeSelected)
 			} label: {
 				Label {
-					Text("device")
+					Text("Device")
 				} icon: {
 					Image(systemName: "flipphone")
 				}
@@ -383,7 +375,7 @@ struct Settings: View {
 				DisplayConfig(node: nodeSelected)
 			} label: {
 				Label {
-					Text("display")
+					Text("Display")
 				} icon: {
 					Image(systemName: "display")
 				}
@@ -394,7 +386,7 @@ struct Settings: View {
 				NetworkConfig(node: nodeSelected)
 			} label: {
 				Label {
-					Text("network")
+					Text("Network")
 				} icon: {
 					Image(systemName: "network")
 				}
@@ -405,7 +397,7 @@ struct Settings: View {
 				PositionConfig(node: nodeSelected)
 			} label: {
 				Label {
-					Text("position")
+					Text("Location")
 				} icon: {
 					Image(systemName: "location")
 				}
@@ -416,7 +408,7 @@ struct Settings: View {
 				PowerConfig(node: nodeSelected)
 			} label: {
 				Label {
-					Text("config.power.settings")
+					Text("Power Settings")
 				} icon: {
 					Image(systemName: "bolt.fill")
 				}
@@ -432,7 +424,7 @@ struct Settings: View {
 				AmbientLightingConfig(node: nodeSelected)
 			} label: {
 				Label {
-					Text("ambient.lighting")
+					Text("Ambient Lightning")
 				} icon: {
 					Image(systemName: "light.max")
 				}
@@ -443,7 +435,7 @@ struct Settings: View {
 				CannedMessagesConfig(node: nodeSelected)
 			} label: {
 				Label {
-					Text("canned.messages")
+					Text("Canned Messages")
 				} icon: {
 					Image(systemName: "list.bullet.rectangle.fill")
 				}
@@ -454,7 +446,7 @@ struct Settings: View {
 				DetectionSensorConfig(node: nodeSelected)
 			} label: {
 				Label {
-					Text("detection.sensor")
+					Text("Detection Sensor")
 				} icon: {
 					Image(systemName: "sensor")
 				}
@@ -465,7 +457,7 @@ struct Settings: View {
 				ExternalNotificationConfig(node: nodeSelected)
 			} label: {
 				Label {
-					Text("external.notification")
+					Text("External Notifications")
 				} icon: {
 					Image(systemName: "megaphone")
 				}
@@ -476,7 +468,7 @@ struct Settings: View {
 				MQTTConfig(node: nodeSelected)
 			} label: {
 				Label {
-					Text("mqtt")
+					Text("MQTT")
 				} icon: {
 					Image(systemName: "dot.radiowaves.up.forward")
 				}
@@ -487,7 +479,7 @@ struct Settings: View {
 				RangeTestConfig(node: nodeSelected)
 			} label: {
 				Label {
-					Text("range.test")
+					Text("Range Test")
 				} icon: {
 					Image(systemName: "point.3.connected.trianglepath.dotted")
 				}
@@ -499,7 +491,7 @@ struct Settings: View {
 					PaxCounterConfig(node: nodeSelected)
 				} label: {
 					Label {
-						Text("config.module.paxcounter.settings")
+						Text("PAX Counter")
 					} icon: {
 						Image(systemName: "figure.walk.motion")
 					}
@@ -511,7 +503,7 @@ struct Settings: View {
 				RtttlConfig(node: nodeSelected)
 			} label: {
 				Label {
-					Text("ringtone")
+					Text("Ringtone")
 				} icon: {
 					Image(systemName: "music.note.list")
 				}
@@ -522,7 +514,7 @@ struct Settings: View {
 				SerialConfig(node: nodeSelected)
 			} label: {
 				Label {
-					Text("serial")
+					Text("Serial")
 				} icon: {
 					Image(systemName: "terminal")
 				}
@@ -533,7 +525,7 @@ struct Settings: View {
 				StoreForwardConfig(node: nodeSelected)
 			} label: {
 				Label {
-					Text("storeforward")
+					Text("Storeforward")
 				} icon: {
 					Image(systemName: "envelope.arrow.triangle.branch")
 				}
@@ -544,7 +536,7 @@ struct Settings: View {
 				TelemetryConfig(node: nodeSelected)
 			} label: {
 				Label {
-					Text("telemetry")
+					Text("Telemetry")
 				} icon: {
 					Image(systemName: "chart.xyaxis.line")
 				}

@@ -20,9 +20,11 @@ func generateChannelKey(size: Int) -> String {
 }
 
 struct Channels: View {
+	var node: NodeInfoEntity?
+
 	@State var hasChanges = false
 	@State var hasValidKey = true
-	@State private var isPresentingSaveConfirm: Bool = false
+	@State var isPresentingSaveConfirm: Bool = false
 	@State var channelIndex: Int32 = 0
 	@State var channelName = ""
 	@State var channelKeySize = 16
@@ -35,11 +37,7 @@ struct Channels: View {
 	@State var positionsEnabled = true
 	@State var supportedVersion = true
 	@State var selectedChannel: ChannelEntity?
-
-	/// Minimum Version for granular position configuration
 	@State var minimumVersion = "2.2.24"
-	
-	private var node: NodeInfoEntity?
 
 	@Environment(\.managedObjectContext)
 	private var context
@@ -58,12 +56,12 @@ struct Channels: View {
 		],
 		animation: .default)
 	private var nodes: FetchedResults<NodeInfoEntity>
-	
+
 	private var nodeChannels: [ChannelEntity]? {
 		guard let channels = node?.myInfo?.channels else {
 			return nil
 		}
-		
+
 		return channels.array as? [ChannelEntity]
 	}
 
@@ -76,6 +74,7 @@ struct Channels: View {
 							channelIndex = channel.index
 							channelRole = Int(channel.role)
 							channelKey = channel.psk?.base64EncodedString() ?? ""
+
 							if channelKey.count == 0 {
 								channelKeySize = 0
 							} else if channelKey == "AQ==" {
@@ -89,6 +88,7 @@ struct Channels: View {
 							} else if channelKey.count == 44 {
 								channelKeySize = 32
 							}
+
 							channelName = channel.name ?? ""
 							uplink = channel.uplinkEnabled
 							downlink = channel.downlinkEnabled
@@ -171,6 +171,7 @@ struct Channels: View {
 					||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending
 					|| minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
 				}
+
 				HStack {
 					Button {
 						var channel = Channel()
@@ -266,13 +267,13 @@ struct Channels: View {
 					.padding(.bottom)
 				}
 			}
-			if node?.myInfo?.channels?.array.count ?? 0 < 8 && node != nil {
-				Button {
-					let channelIndexes = node?.myInfo?.channels?.compactMap({(ch) -> Int in
-						return (ch as AnyObject).index
-					})
 
-					let firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
+			if node != nil, let nodeChannels, nodeChannels.count < 8 {
+				Button {
+					let channelIndexes = nodeChannels.compactMap { (channel) -> Int in
+						return (channel as AnyObject).index
+					}
+					let firstChannelIndex = firstMissingChannelIndex(channelIndexes)
 
 					channelKeySize = 16
 					channelName = ""
@@ -298,7 +299,10 @@ struct Channels: View {
 
 					selectedChannel = newChannel
 				} label: {
-					Label("Add Channel", systemImage: "plus.square")
+					Label(
+						"Add Channel",
+						systemImage: "plus.square"
+					)
 				}
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
@@ -306,7 +310,7 @@ struct Channels: View {
 				.padding()
 			}
 		}
-		.navigationTitle("channels")
+		.navigationTitle("Channels")
 		.navigationBarItems(
 			trailing: ConnectedDevice(ble: bleManager)
 		)

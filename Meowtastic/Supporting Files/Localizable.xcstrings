@@ -698,7 +698,11 @@
         }
       }
     },
+    "Ambient Lightning" : {
+
+    },
     "ambient.lighting" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1686,6 +1690,7 @@
       }
     },
     "bluetooth" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2299,7 +2304,11 @@
     "Cancel" : {
 
     },
+    "Canned Messages" : {
+
+    },
     "canned.messages" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2928,6 +2937,7 @@
       }
     },
     "channels" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2984,6 +2994,9 @@
           }
         }
       }
+    },
+    "Channels" : {
+
     },
     "Channels being added from the QR code did not save. When adding channels the names must be unique." : {
 
@@ -3304,6 +3317,7 @@
       }
     },
     "config.module.paxcounter.settings" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5089,6 +5103,9 @@
     "Detection event" : {
 
     },
+    "Detection Sensor" : {
+
+    },
     "Detection Sensor Log" : {
 
     },
@@ -5099,6 +5116,7 @@
 
     },
     "detection.sensor" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5225,6 +5243,7 @@
       }
     },
     "device" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6370,6 +6389,7 @@
       }
     },
     "display" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6426,6 +6446,9 @@
           }
         }
       }
+    },
+    "Display" : {
+
     },
     "Display Fahrenheit" : {
 
@@ -6922,7 +6945,11 @@
         }
       }
     },
+    "External Notifications" : {
+
+    },
     "external.notification" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10691,6 +10718,9 @@
     "Line Series" : {
 
     },
+    "Location" : {
+
+    },
     "Log Levels" : {
 
     },
@@ -11084,6 +11114,7 @@
 
     },
     "lora" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -15017,6 +15048,7 @@
 
     },
     "network" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -16367,6 +16399,9 @@
     "Power Screen" : {
 
     },
+    "Power Settings" : {
+
+    },
     "Powered" : {
 
     },
@@ -16515,7 +16550,11 @@
         }
       }
     },
+    "Range Test" : {
+
+    },
     "range.test" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -17235,6 +17274,9 @@
           }
         }
       }
+    },
+    "Ringtone" : {
+
     },
     "ringtone.config" : {
       "extractionState" : "manual",
@@ -18815,6 +18857,7 @@
 
     },
     "serial" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18871,6 +18914,9 @@
           }
         }
       }
+    },
+    "Serial" : {
+
     },
     "Serial Console" : {
 
@@ -19363,10 +19409,14 @@
         }
       }
     },
+    "Share Channels" : {
+
+    },
     "Share QR Code & Link" : {
 
     },
     "share.channels" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -19775,6 +19825,7 @@
 
     },
     "storeforward" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -19831,6 +19882,9 @@
           }
         }
       }
+    },
+    "Storeforward" : {
+
     },
     "storeforward.config" : {
       "localizations" : {
@@ -20543,6 +20597,7 @@
       }
     },
     "telemetry" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -20599,6 +20654,9 @@
           }
         }
       }
+    },
+    "Telemetry" : {
+
     },
     "telemetry.config" : {
       "localizations" : {
@@ -21901,6 +21959,7 @@
 
     },
     "user" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21957,6 +22016,9 @@
           }
         }
       }
+    },
+    "User" : {
+
     },
     "User Config" : {
 

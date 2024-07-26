@@ -1,3 +1,4 @@
+import MeshtasticProtobufs
 import SwiftUI
 import OSLog
 
@@ -141,7 +142,7 @@ private extension MessageDestination {
 	var positionDestNum: Int64 {
 		switch self {
 		case let .user(user): return user.num
-		case .channel: return Int64(BLEManager.emptyNodeNum)
+		case .channel: return Int64(Constants.maximumNodeNum)
 		}
 	}
 
