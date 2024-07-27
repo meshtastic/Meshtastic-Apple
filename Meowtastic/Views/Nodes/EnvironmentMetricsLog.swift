@@ -171,43 +171,15 @@ struct EnvironmentMetricsLog: View {
 							}
 						}
 					}
-					Button {
-						exportString = telemetryToCsvFile(telemetry: environmentMetrics, metricsType: 1)
-						isExporting = true
-					} label: {
-						Label("save", systemImage: "square.and.arrow.down")
-					}
-					.buttonStyle(.bordered)
-					.buttonBorderShape(.capsule)
-					.controlSize(.large)
-					.padding(.bottom)
-					.padding(.trailing)
 				}
-
 			} else {
 				ContentUnavailableView("No Environment Metrics", systemImage: "slash.circle")
 			}
 		}
-
 		.navigationTitle("Environment Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(
 			trailing: ConnectedDevice(ble: bleManager)
-		)
-		.fileExporter(
-			isPresented: $isExporting,
-			document: CsvDocument(emptyCsv: exportString),
-			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") Environment Metrics Log"),
-			onCompletion: { result in
-				switch result {
-				case .success:
-					self.isExporting = false
-					Logger.services.info("Environment metrics log download succeeded.")
-				case .failure(let error):
-					Logger.services.error("Environment metrics log download failed: \(error.localizedDescription)")
-				}
-			}
 		)
 	}
 }

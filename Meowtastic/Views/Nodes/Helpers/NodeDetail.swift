@@ -130,6 +130,8 @@ struct NodeDetail: View {
 								.padding(.horizontal, 8)
 						}
 					}
+
+					// TODO: add weather info
 				}
 			}
 		}

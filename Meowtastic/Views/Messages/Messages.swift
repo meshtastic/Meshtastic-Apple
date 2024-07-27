@@ -59,7 +59,7 @@ struct Messages: View {
 			.scrollDismissesKeyboard(.immediately)
 			.searchable(
 				text: $searchText,
-				placement: users.count > 10 ? .navigationBarDrawer(displayMode: .always) : .automatic,
+				placement: .navigationBarDrawer(displayMode: .automatic),
 				prompt: "Find a contact"
 			)
 			.onAppear {

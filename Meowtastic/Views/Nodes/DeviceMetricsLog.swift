@@ -195,18 +195,6 @@ struct DeviceMetricsLog: View {
 							}
 						}
 					}
-
-					Button {
-						exportString = telemetryToCsvFile(telemetry: deviceMetrics, metricsType: 0)
-						isExporting = true
-					} label: {
-						Label("save", systemImage: "square.and.arrow.down")
-					}
-					.buttonStyle(.bordered)
-					.buttonBorderShape(.capsule)
-					.controlSize(.large)
-					.padding(.bottom)
-					.padding(.trailing)
 				}
 			} else {
 				ContentUnavailableView("No Device Metrics", systemImage: "slash.circle")
@@ -216,21 +204,6 @@ struct DeviceMetricsLog: View {
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(
 			trailing: ConnectedDevice(ble: bleManager)
-		)
-		.fileExporter(
-			isPresented: $isExporting,
-			document: CsvDocument(emptyCsv: exportString),
-			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \("device.metrics.log".localized)"),
-			onCompletion: { result in
-				switch result {
-				case .success:
-					self.isExporting = false
-					Logger.services.info("Device metrics log download succeeded.")
-				case .failure(let error):
-					Logger.services.error("Device metrics log download failed: \(error.localizedDescription)")
-				}
-			}
 		)
 	}
 }

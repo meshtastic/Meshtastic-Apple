@@ -182,46 +182,19 @@ struct PaxCounterLog: View {
 							}
 						}
 					}
-
-					Button {
-						exportString = paxToCsvFile(pax: pax)
-						isExporting = true
-					} label: {
-						Label("save", systemImage: "square.and.arrow.down")
-					}
-					.buttonStyle(.bordered)
-					.buttonBorderShape(.capsule)
-					.controlSize(.large)
-					.padding(.bottom)
-					.padding(.trailing)
 				}
-			} else {
-				if #available (iOS 17, *) {
-					ContentUnavailableView("paxcounter.content.unavailable", systemImage: "slash.circle")
-				} else {
-					Text("paxcounter.content.unavailable")
-				}
+			}
+			else {
+				ContentUnavailableView(
+					"paxcounter.content.unavailable",
+					systemImage: "slash.circle"
+				)
 			}
 		}
 		.navigationTitle("paxcounter.log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(
 			trailing: ConnectedDevice(ble: bleManager)
-		)
-		.fileExporter(
-			isPresented: $isExporting,
-			document: CsvDocument(emptyCsv: exportString),
-			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \("paxcounter.log".localized)"),
-			onCompletion: { result in
-				switch result {
-				case .success:
-					self.isExporting = false
-					Logger.services.info("PAX Counter log download succeeded")
-				case .failure(let error):
-					Logger.services.error("PAX Counter log download failed: \(error.localizedDescription)")
-				}
-			}
 		)
 	}
 }
