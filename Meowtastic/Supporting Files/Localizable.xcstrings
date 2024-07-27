@@ -15375,6 +15375,9 @@
         }
       }
     },
+    "Offline: %lld nodes" : {
+
+    },
     "OK" : {
 
     },
@@ -15444,6 +15447,9 @@
 
     },
     "Online" : {
+
+    },
+    "Online: %lld nodes" : {
 
     },
     "Open Settings" : {
