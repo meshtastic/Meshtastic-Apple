@@ -1,3 +1,4 @@
+import CoreData
 import SwiftUI
 import OSLog
 
@@ -102,7 +103,7 @@ struct NodeList: View {
 			)
 		}
 		.navigationSplitViewStyle(.balanced)
-		.onAppear {
+		.onChange(of: nodes, initial: true) {
 			Task {
 				await countNodes()
 			}
@@ -376,5 +377,14 @@ struct NodeList: View {
 		else {
 			nodes.nsPredicate = nil
 		}
+	}
+}
+
+extension FetchedResults<NodeInfoEntity>: Equatable {
+	public static func == (
+		lhs: FetchedResults<NodeInfoEntity>,
+		rhs: FetchedResults<NodeInfoEntity>
+	) -> Bool {
+		lhs.elementsEqual(rhs)
 	}
 }
