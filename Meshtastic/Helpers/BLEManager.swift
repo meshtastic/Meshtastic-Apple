@@ -16,7 +16,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 	let context: NSManagedObjectContext
 
-	private var centralManager: CBCentralManager!
+	private lazy var centralManager: CBCentralManager = {
+		CBCentralManager(delegate: self, queue: nil)
+	}()
 
 	@Published var peripherals: [Peripheral] = []
 	@Published var connectedPeripheral: Peripheral!
@@ -64,9 +66,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		self.lastConnectionError = ""
 		self.connectedVersion = "0.0.0"
 		super.init()
-		centralManager = CBCentralManager(delegate: self, queue: nil)
 		mqttManager.delegate = self
-		// centralManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionRestoreIdentifierKey: restoreKey])
 	}
 
 	// MARK: Scanning for BLE Devices
@@ -101,7 +101,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		if timeoutTimerCount == 10 {
 			if connectedPeripheral != nil {
-				self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
+				self.centralManager.cancelPeripheralConnection(connectedPeripheral.peripheral)
 			}
 			connectedPeripheral = nil
 			if self.timeoutTimer != nil {
@@ -132,7 +132,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			disconnectPeripheral()
 		}
 
-		centralManager?.connect(peripheral)
+		centralManager.connect(peripheral)
 		// Invalidate any existing timer
 		if timeoutTimer != nil {
 			timeoutTimer!.invalidate()
@@ -175,7 +175,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			mqttManager.mqttClientProxy?.disconnect()
 		}
 		automaticallyReconnect = reconnect
-		centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
+		centralManager.cancelPeripheralConnection(connectedPeripheral.peripheral)
 		FROMRADIO_characteristic = nil
 		isConnected = false
 		isSubscribed = false
@@ -1132,7 +1132,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return success
 	}
 
-	@MainActor 
+	@MainActor
 	public func getPositionFromPhoneGPS(destNum: Int64) -> Position? {
 		var positionPacket = Position()
 		if #available(iOS 17.0, macOS 14.0, *) {
@@ -1265,7 +1265,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			
+
 			let logString = String.localizedStringWithFormat("mesh.log.sharelocation %@".localized, String(fromNodeNum))
 			Logger.services.debug("📍 \(logString)")
 			return true

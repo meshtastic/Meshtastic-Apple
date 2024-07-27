@@ -47,8 +47,9 @@ import OSLog
 	}
 
 	func startLocationUpdates() {
-		if self.manager.authorizationStatus == .notDetermined {
-			self.manager.requestWhenInUseAuthorization()
+		let status = self.manager.authorizationStatus
+		guard status == .authorizedAlways || status == .authorizedWhenInUse else {
+			return
 		}
 		Logger.services.info("📍 [App] Starting location updates")
 		Task {
@@ -72,7 +73,6 @@ import OSLog
 			} catch {
 				Logger.services.error("💥 [App] Could not start location updates: \(error.localizedDescription)")
 			}
-			return
 		}
 	}
 
