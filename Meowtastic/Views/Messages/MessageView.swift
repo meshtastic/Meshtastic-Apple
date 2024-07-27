@@ -100,10 +100,13 @@ struct MessageView: View {
 						}
 						.padding(.vertical, 4)
 						.padding(.horizontal, 8)
-						.background(colorScheme == .dark ? .black : .white)
+						.background(backgroundColor)
 						.overlay(
 							RoundedRectangle(cornerRadius: 8)
-								.stroke(backgroundColor, lineWidth: 1)
+								.stroke(
+									colorScheme == .dark ? .black : .white,
+									lineWidth: 3
+								)
 						)
 						.clipShape(
 							RoundedRectangle(cornerRadius: 8)
@@ -134,7 +137,6 @@ struct MessageView: View {
 						}
 					}
 				}
-				.padding(.top, originalMessage == nil ? 0 : -16)
 				.background(backgroundColor)
 				.clipShape(
 					UnevenRoundedRectangle(cornerRadii: corners, style: .continuous)
@@ -155,6 +157,7 @@ struct MessageView: View {
 							.offset(x: 20, y: -20)
 					}
 				}
+				.padding(.top, originalMessage == nil ? 0 : -22)
 				.contextMenu {
 					MessageContextMenuItems(
 						isShowingDeleteConfirmation: $isShowingDeleteConfirmation,
