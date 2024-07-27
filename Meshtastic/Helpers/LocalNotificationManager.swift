@@ -9,7 +9,6 @@ class LocalNotificationManager {
     // Step 1 Request Permissions for notifications
     private func requestAuthorization() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
-
             if granted == true && error == nil {
 				self.scheduleNotifications()
             }

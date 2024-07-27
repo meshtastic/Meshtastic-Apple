@@ -28,20 +28,6 @@ struct Connect: View {
 	@State var liveActivityStarted = false
 	@State var selectedPeripherialId = ""
 
-	init () {
-		let notificationCenter = UNUserNotificationCenter.current()
-		notificationCenter.getNotificationSettings(completionHandler: { (settings) in
-		   if settings.authorizationStatus == .notDetermined {
-			   UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
-				   if success {
-					   Logger.services.info("Notifications are all set!")
-				   } else if let error = error {
-					   Logger.services.error("\(error.localizedDescription)")
-				   }
-			   }
-		   }
-		})
-	}
 	var body: some View {
 		NavigationStack {
 			VStack {

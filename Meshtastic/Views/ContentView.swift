@@ -76,9 +76,7 @@ struct ContentView: View {
 			}
 			.tag(NavigationState.Tab.settings)
 		}.onAppear {
-			if isFirstLaunch {
-				isShowingOnboardingFlow = true
-			}
+			isShowingOnboardingFlow = isFirstLaunch
 		}.sheet(
 			isPresented: $isShowingOnboardingFlow,
 			onDismiss: {

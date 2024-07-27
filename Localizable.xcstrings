@@ -1847,6 +1847,9 @@
         }
       }
     },
+    "Bluetooth" : {
+
+    },
     "bluetooth.config" : {
       "localizations" : {
         "de" : {
@@ -6815,10 +6818,22 @@
     "Empty" : {
 
     },
+    "Enable bluetooth" : {
+
+    },
+    "Enable location services" : {
+
+    },
     "Enable MB Tiles" : {
 
     },
+    "Enable notifications" : {
+
+    },
     "Enable Notifications" : {
+
+    },
+    "Enable notifications?" : {
 
     },
     "Enable Offline Maps" : {
@@ -19446,6 +19461,9 @@
     "Set the GPIO pins for RXD and TXD." : {
 
     },
+    "Set up later" : {
+
+    },
     "set.region" : {
       "localizations" : {
         "de" : {
@@ -19564,6 +19582,9 @@
           }
         }
       }
+    },
+    "Setup Bluetooth" : {
+
     },
     "Share QR Code & Link" : {
 
