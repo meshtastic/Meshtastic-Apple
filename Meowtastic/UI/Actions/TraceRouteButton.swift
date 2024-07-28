@@ -15,7 +15,7 @@ struct TraceRouteButton: View {
 			)
 		} label: {
 			Label {
-				Text("Trace Route")
+				Text("Request Trace Route")
 			} icon: {
 				Image(systemName: "signpost.right.and.left")
 					.symbolRenderingMode(.monochrome)

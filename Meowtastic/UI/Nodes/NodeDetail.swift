@@ -6,10 +6,6 @@ struct NodeDetail: View {
 	var isInSheet = false
 	var columnVisibility = NavigationSplitViewVisibility.all
 
-	@Environment(\.managedObjectContext)
-	var context
-	@EnvironmentObject
-	var bleManager: BLEManager
 	@ObservedObject
 	var node: NodeInfoEntity
 
@@ -23,10 +19,15 @@ struct NodeDetail: View {
 		return formatter
 	}()
 
+	@Environment(\.managedObjectContext)
+	private var context
+	@EnvironmentObject
+	private var bleManager: BLEManager
+
 	@State
-	private var showingShutdownConfirm: Bool = false
+	private var showingShutdownConfirm = false
 	@State
-	private var showingRebootConfirm: Bool = false
+	private var showingRebootConfirm = false
 
 	private var connectedNode: NodeInfoEntity? {
 		getNodeInfo(
@@ -325,18 +326,38 @@ struct NodeDetail: View {
 				}
 			}
 
-			if let routes = node.traceRoutes, routes.count > 0 {
-				NavigationLink {
-					TraceRoute(node: node)
-				} label: {
-					Label {
-						Text("Trace Route")
-					} icon: {
-						Image(systemName: "signpost.right.and.left")
-							.symbolRenderingMode(.monochrome)
-							.foregroundColor(.accentColor)
+			if
+				let connectedPeripheral = bleManager.connectedPeripheral,
+				node.num != connectedPeripheral.num
+			{
+				if let routes = node.traceRoutes, routes.count > 0 {
+					NavigationLink {
+						TraceRoute(node: node)
+					} label: {
+						Label {
+							Text("Trace Route")
+						} icon: {
+							Image(systemName: "signpost.right.and.left.fill")
+								.symbolRenderingMode(.monochrome)
+								.foregroundColor(.accentColor)
+						}
 					}
-
+				}
+				else {
+					Button {
+						_ = bleManager.sendTraceRouteRequest(
+							destNum: node.user?.num ?? 0,
+							wantResponse: true
+						)
+					} label: {
+						Label {
+							Text("Request Trace Route")
+						} icon: {
+							Image(systemName: "signpost.right.and.left")
+								.symbolRenderingMode(.monochrome)
+								.foregroundColor(.accentColor)
+						}
+					}
 				}
 			}
 		}
@@ -458,11 +479,6 @@ struct NodeDetail: View {
 			node.num != connectedPeripheral.num
 		{
 			ExchangePositionsButton(
-				bleManager: bleManager,
-				node: node
-			)
-
-			TraceRouteButton(
 				bleManager: bleManager,
 				node: node
 			)

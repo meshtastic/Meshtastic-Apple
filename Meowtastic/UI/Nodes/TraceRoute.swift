@@ -10,7 +10,7 @@ struct TraceRoute: View {
 	private let distanceFormatter = MKDistanceFormatter()
 	private let dateFormatter = {
 		let formatter = DateFormatter()
-		formatter.dateStyle = .short
+		formatter.dateStyle = .medium
 		formatter.timeStyle = .short
 
 		return formatter
@@ -196,7 +196,7 @@ struct TraceRoute: View {
 			trailing: ConnectedDevice(ble: bleManager)
 		)
 	}
-	
+
 	@ViewBuilder
 	private func traceRoute(for route: TraceRouteEntity) -> some View {
 		let hops = route.hops?.array as? [TraceRouteHopEntity]
