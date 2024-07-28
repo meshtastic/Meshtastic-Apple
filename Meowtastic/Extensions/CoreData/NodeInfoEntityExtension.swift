@@ -10,7 +10,7 @@ import CoreData
 
 extension NodeInfoEntity {
 	var hasPositions: Bool {
-		positions?.count ?? 0 > 0
+		return positions?.count ?? 0 > 0
 	}
 
 	var hasDeviceMetrics: Bool {
@@ -24,19 +24,19 @@ extension NodeInfoEntity {
 	}
 
 	var hasDetectionSensorMetrics: Bool {
-		user?.sensorMessageList?.count ?? 0 > 0
+		return user?.sensorMessageList?.count ?? 0 > 0
 	}
 
 	var hasTraceRoutes: Bool {
-		traceRoutes?.count ?? 0 > 0
+		return traceRoutes?.count ?? 0 > 0
 	}
 
 	var hasPax: Bool {
-		pax?.count ?? 0 > 0
+		return pax?.count ?? 0 > 0
 	}
 
 	var isStoreForwardRouter: Bool {
-		storeForwardConfig?.isRouter ?? false
+		return storeForwardConfig?.isRouter ?? false
 	}
 
 	var isOnline: Bool {
@@ -48,26 +48,19 @@ extension NodeInfoEntity {
 	}
 }
 
-public func createNodeInfo(
-	num: Int64,
-	context: NSManagedObjectContext
-) -> NodeInfoEntity {
-	let newUser = UserEntity(context: context)
-	newUser.num = Int64(num)
-
-	let userId = String(format: "%2X", num)
-	newUser.userId = "!\(userId)"
-
-	let last4 = String(userId.suffix(4))
-
-	newUser.longName = "Meshtastic \(last4)"
-	newUser.shortName = last4
-	newUser.hwModel = "UNSET"
+public func createNodeInfo(num: Int64, context: NSManagedObjectContext) -> NodeInfoEntity {
 
 	let newNode = NodeInfoEntity(context: context)
 	newNode.id = Int64(num)
 	newNode.num = Int64(num)
+	let newUser = UserEntity(context: context)
+	newUser.num = Int64(num)
+	let userId = String(format: "%2X", num)
+	newUser.userId = "!\(userId)"
+	let last4 = String(userId.suffix(4))
+	newUser.longName = "Meshtastic \(last4)"
+	newUser.shortName = last4
+	newUser.hwModel = "UNSET"
 	newNode.user = newUser
-
 	return newNode
 }

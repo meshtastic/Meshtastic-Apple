@@ -8,23 +8,22 @@
 import Foundation
 import RegexBuilder
 
-class CommonRegex {
+class CommonRegex
+{
 	static let COORDS_REGEX = Regex {
-		Capture {
-			Regex {
-				"lat="
-				OneOrMore(.digit)
-			}
-		}
-
-
-		Capture {" "}
-		Capture {
-			Regex {
-				"long="
-				OneOrMore(.digit)
-			}
-		}
-	}
-		.anchorsMatchLineEndings()
+			Capture {
+			 Regex {
+				 "lat="
+				 OneOrMore(.digit)
+			 }
+		 }
+		 Capture {" "}
+		 Capture {
+			 Regex {
+				 "long="
+				 OneOrMore(.digit)
+			 }
+		 }
+	 }
+	 .anchorsMatchLineEndings()
 }

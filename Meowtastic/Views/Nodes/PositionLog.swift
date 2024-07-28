@@ -137,13 +137,40 @@ struct PositionLog: View {
 							}
 						}
 					}
+					Button {
+						exportString = positionToCsvFile(positions: node.positions!.array as? [PositionEntity] ?? [])
+						isExporting = true
+					} label: {
+						Label("save", systemImage: "square.and.arrow.down")
+					}
+					.buttonStyle(.bordered)
+					.buttonBorderShape(.capsule)
+					.controlSize(.large)
+					.padding(.bottom)
+					.padding(.trailing)
 				}
-			}
-			else {
-				ContentUnavailableView(
-					"No Positions",
-					systemImage: "mappin.slash"
+				.fileExporter(
+					isPresented: $isExporting,
+					document: CsvDocument(emptyCsv: exportString),
+					contentType: .commaSeparatedText,
+					defaultFilename: String("\(node.user?.longName ?? "Node") Position Log"),
+					onCompletion: { result in
+						switch result {
+						case .success:
+							Logger.services.info("Position log download succeeded.")
+							self.isExporting = false
+						case .failure(let error):
+							Logger.services.error("Position log download failed: \(error.localizedDescription)")
+						}
+					}
 				)
+
+			} else {
+				if #available (iOS 17, *) {
+					ContentUnavailableView("No Positions", systemImage: "mappin.slash")
+				} else {
+					Text("No Positions")
+				}
 			}
 		}
 		.navigationTitle("Position Log \(node.positions?.count ?? 0) Points")

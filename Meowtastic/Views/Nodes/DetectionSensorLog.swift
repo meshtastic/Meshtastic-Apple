@@ -91,13 +91,11 @@ struct DetectionSensorLog: View {
 								.font(.caption)
 								.fontWeight(.bold)
 						}
-						ForEach(detections.filter({ detection in
-							detection.fromUser?.num ?? -1 == node.user?.num ?? 0
-						})) { detection in
+						ForEach(detections.filter( {$0.fromUser?.num ?? -1 == node.user?.num ?? 0})) { d in
 							GridRow {
-								Text(detection.messagePayload ?? "Detected")
+								Text(d.messagePayload ?? "Detected")
 									.font(.caption)
-								Text(detection.timestamp.formattedDate(format: dateFormatString))
+								Text(d.timestamp.formattedDate(format: dateFormatString))
 									.font(.caption)
 							}
 						}
@@ -107,5 +105,38 @@ struct DetectionSensorLog: View {
 				}
 			}
 		}
+		HStack {
+			Button {
+				exportString = detectionsToCsv(detections: chartData)
+				isExporting = true
+			} label: {
+				Label("save", systemImage: "square.and.arrow.down")
+			}
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding(.bottom)
+			.padding(.trailing)
+		}
+		.navigationTitle("detection.sensor.log")
+		.navigationBarTitleDisplayMode(.inline)
+		.navigationBarItems(
+			trailing: ConnectedDevice(ble: bleManager)
+		)
+		.fileExporter(
+			isPresented: $isExporting,
+			document: CsvDocument(emptyCsv: exportString),
+			contentType: .commaSeparatedText,
+			defaultFilename: String("\(node.user?.longName ?? "Node") \("detection.sensor.log".localized)"),
+			onCompletion: { result in
+				switch result {
+				case .success:
+					self.isExporting = false
+					Logger.services.info("Detection Sensor metrics log download succeeded.")
+				case .failure(let error):
+					Logger.services.error("Detection Sensor log download failed: \(error.localizedDescription).")
+				}
+			}
+		)
 	}
 }

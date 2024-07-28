@@ -70,7 +70,7 @@ struct NodeList: View {
 			.listStyle(.automatic)
 			.searchable(
 				text: $searchText,
-				placement: .navigationBarDrawer(displayMode: .automatic),
+				placement: .automatic,
 				prompt: "Find a node"
 			)
 			.disableAutocorrection(true)

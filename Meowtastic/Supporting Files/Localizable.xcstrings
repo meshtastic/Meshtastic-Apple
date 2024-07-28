@@ -7,6 +7,21 @@
     " %@" : {
 
     },
+    ".dot" : {
+
+    },
+    ".gauge" : {
+
+    },
+    ".gradient" : {
+
+    },
+    ".pill" : {
+
+    },
+    ".text" : {
+
+    },
     "(Re)define PIN_GPS_EN for your board." : {
 
     },
@@ -5049,7 +5064,6 @@
       }
     },
     "detection.sensor.log" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
