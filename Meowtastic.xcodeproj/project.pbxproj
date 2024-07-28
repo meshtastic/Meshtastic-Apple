@@ -371,15 +371,16 @@
 			path = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		B233CA082C5662C200CBD7EF /* CirclesOfHell */ = {
+		B233CA082C5662C200CBD7EF /* Circles Of Hell */ = {
 			isa = PBXGroup;
 			children = (
+				DDC2E18826CE24EE0042C5E4 /* Model */,
 				DDC4D5662754996200A4208E /* Persistence */,
 				DDD43FE12A78C86B0083A3E9 /* MQTT */,
 				DDAF8C5226EB1DF10058C060 /* BLEManager.swift */,
 				DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */,
 			);
-			path = CirclesOfHell;
+			path = "Circles Of Hell";
 			sourceTree = "<group>";
 		};
 		B2A5F2E02C5668FD009457AB /* Actions */ = {
@@ -446,6 +447,17 @@
 				B2A5F2E82C5668FD009457AB /* NodeListItem.swift */,
 			);
 			path = List;
+			sourceTree = "<group>";
+		};
+		B2A5F31D2C567F06009457AB /* App */ = {
+			isa = PBXGroup;
+			children = (
+				DDC2E15726CE248E0042C5E4 /* MeowtasticApp.swift */,
+				6DA39D8D2A92DC52007E311C /* MeowtasticAppDelegate.swift */,
+				08DD7E502C41B0BA00548159 /* AppState.swift */,
+				08DD7E542C41D63800548159 /* AppConstants.swift */,
+			);
+			path = App;
 			sourceTree = "<group>";
 		};
 		D9C9839E2B79D0C600BDBE6A /* TextMessageField */ = {
@@ -575,18 +587,12 @@
 		DDC2E15626CE248E0042C5E4 /* Meowtastic */ = {
 			isa = PBXGroup;
 			children = (
-				B233CA082C5662C200CBD7EF /* CirclesOfHell */,
-				DDC2E15726CE248E0042C5E4 /* MeowtasticApp.swift */,
-				6DA39D8D2A92DC52007E311C /* MeowtasticAppDelegate.swift */,
-				DD8ED9C6289CE4A100B3B0AB /* Enums */,
-				DDDB443E29F79A9400EE2349 /* Extensions */,
-				DDC2E1A526CEB32B0042C5E4 /* Helpers */,
-				DDC2E18826CE24EE0042C5E4 /* Model */,
+				B2A5F31D2C567F06009457AB /* App */,
+				B233CA082C5662C200CBD7EF /* Circles Of Hell */,
 				DDC2E15D26CE248F0042C5E4 /* Preview Content */,
 				08DD7E4D2C41AC8F00548159 /* Supporting Files */,
-				DDC2E18726CE24E40042C5E4 /* Views */,
-				08DD7E502C41B0BA00548159 /* AppState.swift */,
-				08DD7E542C41D63800548159 /* AppConstants.swift */,
+				DDC2E18726CE24E40042C5E4 /* UI */,
+				DDC2E1A526CEB32B0042C5E4 /* Utils */,
 			);
 			path = Meowtastic;
 			sourceTree = "<group>";
@@ -599,7 +605,7 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
-		DDC2E18726CE24E40042C5E4 /* Views */ = {
+		DDC2E18726CE24E40042C5E4 /* UI */ = {
 			isa = PBXGroup;
 			children = (
 				DD3CC6BD28E4CD9800FA9159 /* BatteryGaugeView.swift */,
@@ -624,7 +630,7 @@
 				B2A5F2FB2C5668FD009457AB /* Nodes */,
 				DD4A911C2708C57100501B7E /* Settings */,
 			);
-			path = Views;
+			path = UI;
 			sourceTree = "<group>";
 		};
 		DDC2E18826CE24EE0042C5E4 /* Model */ = {
@@ -650,9 +656,11 @@
 			path = Messages;
 			sourceTree = "<group>";
 		};
-		DDC2E1A526CEB32B0042C5E4 /* Helpers */ = {
+		DDC2E1A526CEB32B0042C5E4 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				DD8ED9C6289CE4A100B3B0AB /* Enums */,
+				DDDB443E29F79A9400EE2349 /* Extensions */,
 				DD33DB612B3D27C7003E1EA0 /* FirmwareApi.swift */,
 				DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */,
 				DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */,
@@ -661,7 +669,7 @@
 				DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */,
 				6D825E612C34786C008DBEE4 /* CommonRegex.swift */,
 			);
-			path = Helpers;
+			path = Utils;
 			sourceTree = "<group>";
 		};
 		DDC4D5662754996200A4208E /* Persistence */ = {
