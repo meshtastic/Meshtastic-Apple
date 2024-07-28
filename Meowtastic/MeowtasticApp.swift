@@ -11,8 +11,6 @@ struct MeowtasticApp: App {
 	@Environment(\.scenePhase)
 	var scenePhase
 	@State
-	var saveChannels = false
-	@State
 	var incomingUrl: URL?
 	@State
 	var channelSettings: String?
@@ -56,12 +54,7 @@ struct MeowtasticApp: App {
 							Logger.services.debug("Add Channel \(addChannels)")
 						}
 
-						self.saveChannels = true
 						Logger.mesh.debug("User wants to open a Channel Settings URL: \(incomingUrl?.absoluteString ?? "No QR Code Link")")
-					}
-
-					if self.saveChannels {
-						Logger.mesh.debug("User wants to open Channel Settings URL: \(String(describing: self.incomingUrl!.relativeString))")
 					}
 				}
 				.onOpenURL { url in
@@ -87,7 +80,6 @@ struct MeowtasticApp: App {
 							}
 							Logger.services.debug("Add Channel \(addChannels)")
 						}
-						self.saveChannels = true
 						Logger.mesh.debug("User wants to open a Channel Settings URL: \(incomingUrl?.absoluteString ?? "No QR Code Link")")
 					} else if url.absoluteString.lowercased().contains("meshtastic:///") {
 						appState.navigationPath = url.absoluteString
@@ -99,20 +91,7 @@ struct MeowtasticApp: App {
 							AppState.shared.tabSelection = Tab.nodes
 						}
 
-					} else {
-						saveChannels = false
-						Logger.mesh.debug("User wants to import a MBTILES offline map file: \(incomingUrl?.absoluteString ?? "No Tiles link")")
 					}
-
-				}
-				.sheet(isPresented: $saveChannels) {
-					SaveChannelQRCode(
-						channelSetLink: channelSettings ?? "Empty Channel URL",
-						addChannels: addChannels,
-						bleManager: bleManager
-					)
-					.presentationDetents([.large])
-					.presentationDragIndicator(.visible)
 				}
 		}
 		.onChange(of: scenePhase, initial: false) {

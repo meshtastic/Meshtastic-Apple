@@ -76,7 +76,6 @@ struct NodeList: View {
 			.disableAutocorrection(true)
 			.scrollDismissesKeyboard(.immediately)
 			.navigationTitle("Nodes")
-			.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
 			.navigationBarItems(
 				leading: MeshtasticLogo(),
 				trailing: ConnectedDevice(ble: bleManager)

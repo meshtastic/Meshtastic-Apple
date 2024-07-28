@@ -10,19 +10,9 @@
 		08DD7E512C41B0BA00548159 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E502C41B0BA00548159 /* AppState.swift */; };
 		08DD7E532C41CBBD00548159 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 08DD7E522C41CBBD00548159 /* Localizable.xcstrings */; };
 		08DD7E552C41D63800548159 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E542C41D63800548159 /* AppConstants.swift */; };
-		08DD7E592C42658C00548159 /* BLEManager+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E582C42658C00548159 /* BLEManager+Extensions.swift */; };
-		08DD7E5B2C427A5B00548159 /* SimpleNodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E5A2C427A5B00548159 /* SimpleNodeMap.swift */; };
 		08DD7E5D2C42833200548159 /* LoRaSignalStrength.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E5C2C42833200548159 /* LoRaSignalStrength.swift */; };
 		08DD7E5F2C4283A100548159 /* LoRaSignal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E5E2C4283A100548159 /* LoRaSignal.swift */; };
-		08DD7E612C42ABEB00548159 /* NodeInfoEntity+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E602C42ABEB00548159 /* NodeInfoEntity+Extensions.swift */; };
 		08DD7E632C42D8B300548159 /* MQTTConnectionIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E622C42D8B300548159 /* MQTTConnectionIcon.swift */; };
-		08DD7E652C45310B00548159 /* NodeIconListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E642C45310B00548159 /* NodeIconListView.swift */; };
-		251926852C3BA97800249DF5 /* FavoriteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */; };
-		251926872C3BAE2200249DF5 /* NodeAlertsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */; };
-		2519268A2C3BB1B200249DF5 /* ExchangePositionsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */; };
-		2519268C2C3BB52000249DF5 /* TraceRouteButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2519268B2C3BB52000249DF5 /* TraceRouteButton.swift */; };
-		251926902C3CB44900249DF5 /* ClientHistoryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2519268F2C3CB44900249DF5 /* ClientHistoryButton.swift */; };
-		251926922C3CB52300249DF5 /* DeleteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926912C3CB52300249DF5 /* DeleteNodeButton.swift */; };
 		259792252C2F114500AD1659 /* ChannelEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */; };
 		259792262C2F114500AD1659 /* PositionEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */; };
 		259792272C2F114500AD1659 /* TraceRouteEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE5B4052B227E3200FCDD05 /* TraceRouteEntityExtension.swift */; };
@@ -30,10 +20,30 @@
 		25F26B1E2C2F610D00C9CD9D /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB0C2C285F00007E03CA /* Logger.swift */; };
 		6D825E622C34786C008DBEE4 /* CommonRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D825E612C34786C008DBEE4 /* CommonRegex.swift */; };
 		6DA39D8E2A92DC52007E311C /* MeowtasticAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DA39D8D2A92DC52007E311C /* MeowtasticAppDelegate.swift */; };
-		6DEDA55A2A957B8E00321D2E /* DetectionSensorLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */; };
 		6DEDA55C2A9592F900321D2E /* MessageEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */; };
 		B266DA902C53CEFB0067D317 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B266DA8F2C53CEFB0067D317 /* Constants.swift */; };
 		B266DABC2C53CFD40067D317 /* Meowtastic.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B266DA932C53CFD30067D317 /* Meowtastic.xcdatamodeld */; };
+		B2A5F2FC2C5668FD009457AB /* ClientHistoryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DA2C5668FD009457AB /* ClientHistoryButton.swift */; };
+		B2A5F2FD2C5668FD009457AB /* DeleteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DB2C5668FD009457AB /* DeleteNodeButton.swift */; };
+		B2A5F2FE2C5668FD009457AB /* ExchangePositionsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DC2C5668FD009457AB /* ExchangePositionsButton.swift */; };
+		B2A5F2FF2C5668FD009457AB /* FavoriteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DD2C5668FD009457AB /* FavoriteNodeButton.swift */; };
+		B2A5F3002C5668FD009457AB /* NodeAlertsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DE2C5668FD009457AB /* NodeAlertsButton.swift */; };
+		B2A5F3012C5668FD009457AB /* TraceRouteButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DF2C5668FD009457AB /* TraceRouteButton.swift */; };
+		B2A5F3022C5668FD009457AB /* BLEManager+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2E12C5668FD009457AB /* BLEManager+Extensions.swift */; };
+		B2A5F3032C5668FD009457AB /* NodeDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2E22C5668FD009457AB /* NodeDetail.swift */; };
+		B2A5F3042C5668FD009457AB /* NodeIconListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2E32C5668FD009457AB /* NodeIconListView.swift */; };
+		B2A5F3062C5668FD009457AB /* NodeInfoEntity+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2E52C5668FD009457AB /* NodeInfoEntity+Extensions.swift */; };
+		B2A5F3072C5668FD009457AB /* NodeInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2E62C5668FD009457AB /* NodeInfoView.swift */; };
+		B2A5F3092C5668FD009457AB /* NodeListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2E82C5668FD009457AB /* NodeListItem.swift */; };
+		B2A5F30A2C5668FD009457AB /* MeshMapContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2EA2C5668FD009457AB /* MeshMapContent.swift */; };
+		B2A5F30B2C5668FD009457AB /* NodeMapContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2EB2C5668FD009457AB /* NodeMapContent.swift */; };
+		B2A5F30C2C5668FD009457AB /* AltitudeHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2ED2C5668FD009457AB /* AltitudeHistoryView.swift */; };
+		B2A5F30D2C5668FD009457AB /* MapSettingsForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2EE2C5668FD009457AB /* MapSettingsForm.swift */; };
+		B2A5F30E2C5668FD009457AB /* NodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2EF2C5668FD009457AB /* NodeMap.swift */; };
+		B2A5F30F2C5668FD009457AB /* SimpleNodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2F02C5668FD009457AB /* SimpleNodeMap.swift */; };
+		B2A5F3132C5668FD009457AB /* MeshMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2F52C5668FD009457AB /* MeshMap.swift */; };
+		B2A5F3142C5668FD009457AB /* NodeList.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2F62C5668FD009457AB /* NodeList.swift */; };
+		B2A5F31C2C566D98009457AB /* TraceRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F31B2C566D98009457AB /* TraceRoute.swift */; };
 		B399E8A42B6F486400E4488E /* RetryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B399E8A32B6F486400E4488E /* RetryButton.swift */; };
 		B3E905B12B71F7F300654D07 /* TextMessageField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E905B02B71F7F300654D07 /* TextMessageField.swift */; };
 		C9697FA527933B8C00250207 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = C9697FA427933B8C00250207 /* SQLite */; };
@@ -50,12 +60,9 @@
 		DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */; };
 		DD0D3D222A55CEB10066DB71 /* CocoaMQTT in Frameworks */ = {isa = PBXBuildFile; productRef = DD0D3D212A55CEB10066DB71 /* CocoaMQTT */; };
 		DD0E21012B8A6F1300F2D100 /* DeviceHardware.json in Resources */ = {isa = PBXBuildFile; fileRef = DD0E21002B8A6BC500F2D100 /* DeviceHardware.json */; };
-		DD15E4F52B8BFC8E00654F61 /* PaxCounterLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */; };
 		DD1925B728CDA5A400720036 /* CannedMessagesConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */; };
 		DD1925B928CDA93900720036 /* SerialConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1925B828CDA93900720036 /* SerialConfigEnums.swift */; };
-		DD1933762B0835D500771CD5 /* AltitudeHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1933752B0835D500771CD5 /* AltitudeHistoryView.swift */; };
 		DD1933782B084F4200771CD5 /* Measurement.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1933772B084F4200771CD5 /* Measurement.swift */; };
-		DD1B8F402B35E2F10022AABC /* GPSStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1B8F3F2B35E2F10022AABC /* GPSStatus.swift */; };
 		DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */; };
 		DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2160AE28C5552500C17253 /* MQTTConfig.swift */; };
 		DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */; };
@@ -64,7 +71,6 @@
 		DD268D8E2BCC90E2008073AE /* RouteEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD268D8D2BCC90E2008073AE /* RouteEnums.swift */; };
 		DD33DB622B3D27C7003E1EA0 /* FirmwareApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD33DB612B3D27C7003E1EA0 /* FirmwareApi.swift */; };
 		DD3501892852FC3B000FC853 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3501882852FC3B000FC853 /* Settings.swift */; };
-		DD354FD92BD96A0B0061A25F /* IAQScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD354FD82BD96A0B0061A25F /* IAQScale.swift */; };
 		DD3619152B1EF9F900C41C8C /* LocationsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */; };
 		DD3CC6BE28E4CD9800FA9159 /* BatteryGaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BD28E4CD9800FA9159 /* BatteryGaugeView.swift */; };
 		DD3CC6C028E7A60700FA9159 /* MessagingEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */; };
@@ -73,27 +79,17 @@
 		DD457188293C7E63000C49FB /* BLESignalStrengthIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */; };
 		DD47E3D626F17ED900029299 /* Avatar.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D526F17ED900029299 /* Avatar.swift */; };
 		DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4A911D2708C65400501B7E /* AppSettings.swift */; };
-		DD4F23CD28779A3C001D37CB /* EnvironmentMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */; };
 		DD5D0A9C2931B9F200F7EA61 /* EthernetModes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5D0A9B2931B9F200F7EA61 /* EthernetModes.swift */; };
-		DD5E523F298F5A9E00D21B61 /* AirQualityIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5E523E298F5A9E00D21B61 /* AirQualityIndex.swift */; };
-		DD73FD1128750779000852D6 /* PositionLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD73FD1028750779000852D6 /* PositionLog.swift */; };
-		DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */; };
 		DD77093F2AA1B146007A8BF0 /* UIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD77093E2AA1B146007A8BF0 /* UIColor.swift */; };
 		DD798B072915928D005217CD /* ChannelMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD798B062915928D005217CD /* ChannelMessageList.swift */; };
 		DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */; };
-		DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169FE272476C700F4AB02 /* LogDocument.swift */; };
 		DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AE626F6B38600ABCC23 /* Connect.swift */; };
 		DD86D40A287F04F100BAEB7A /* InvalidVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D409287F04F100BAEB7A /* InvalidVersion.swift */; };
-		DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */; };
-		DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D40E2881BE4C00BAEB7A /* CsvDocument.swift */; };
-		DD86D4112881D16900BAEB7A /* WriteCsvFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D4102881D16900BAEB7A /* WriteCsvFile.swift */; };
 		DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8EBF42285058FA00426DCA /* DisplayConfig.swift */; };
 		DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8ED9C42898D51F00B3B0AB /* NetworkConfig.swift */; };
 		DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */; };
 		DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */; };
-		DD93800B2BA3F968008BEC06 /* NodeMapContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD93800A2BA3F968008BEC06 /* NodeMapContent.swift */; };
 		DD93800E2BA74D0C008BEC06 /* ChannelForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD93800D2BA74D0C008BEC06 /* ChannelForm.swift */; };
-		DD94B7402ACCE3BE00DCD1D1 /* MapSettingsForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */; };
 		DD964FBD296E6B01007C176F /* EmojiOnlyTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */; };
 		DD964FC2297272AE007C176F /* WaypointEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */; };
 		DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC52975DBFD007C176F /* QueryCoreData.swift */; };
@@ -105,9 +101,7 @@
 		DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */; };
 		DDA9515A2BC6624100CEA535 /* TelemetryWeather.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA951592BC6624100CEA535 /* TelemetryWeather.swift */; };
 		DDA9515C2BC6631200CEA535 /* TelemetryEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9515B2BC6631200CEA535 /* TelemetryEnums.swift */; };
-		DDA9515E2BC6F56F00CEA535 /* IndoorAirQuality.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9515D2BC6F56F00CEA535 /* IndoorAirQuality.swift */; };
 		DDAB580F2B0DAFBC00147258 /* LocationEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAB580E2B0DAFBC00147258 /* LocationEntityExtension.swift */; };
-		DDAD49ED2AFB39DC00B4425D /* MeshMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAD49EC2AFB39DC00B4425D /* MeshMap.swift */; };
 		DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5226EB1DF10058C060 /* BLEManager.swift */; };
 		DDB6ABD628AE742000384BA1 /* BluetoothConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */; };
 		DDB6ABD928B0A4BA00384BA1 /* BluetoothModes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */; };
@@ -116,7 +110,6 @@
 		DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */; };
 		DDB6ABE428B13FFF00384BA1 /* DisplayEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */; };
 		DDB6ABE628B1406100384BA1 /* LoraConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */; };
-		DDB6CCFB2AAF805100945AF6 /* NodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6CCFA2AAF805100945AF6 /* NodeMap.swift */; };
 		DDB75A0F2A05920E006ED576 /* FileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A0E2A05920E006ED576 /* FileManager.swift */; };
 		DDB75A112A059258006ED576 /* Url.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A102A059258006ED576 /* Url.swift */; };
 		DDB75A1A2A05EB67006ED576 /* alpha.png in Resources */ = {isa = PBXBuildFile; fileRef = DDB75A192A05EB67006ED576 /* alpha.png */; };
@@ -133,15 +126,8 @@
 		DDC4D568275499A500A4208E /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC4D567275499A500A4208E /* Persistence.swift */; };
 		DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */; };
 		DDD43FE32A78C8900083A3E9 /* MqttClientProxyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD43FE22A78C8900083A3E9 /* MqttClientProxyManager.swift */; };
-		DDD5BB0B2C285E45007E03CA /* LogDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB0A2C285E45007E03CA /* LogDetail.swift */; };
-		DDD5BB102C285FB3007E03CA /* AppLogFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB0F2C285FB3007E03CA /* AppLogFilter.swift */; };
 		DDD5BB182C2F9C36007E03CA /* OSLogEntryLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB172C2F9C36007E03CA /* OSLogEntryLog.swift */; };
-		DDD94A502845C8F5004A87A0 /* DateTimeText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */; };
 		DDD9E4E4284B208E003777C5 /* UserEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */; };
-		DDDB263F2AABEE20003AFCB7 /* NodeList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB263E2AABEE20003AFCB7 /* NodeList.swift */; };
-		DDDB26422AABF655003AFCB7 /* NodeListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB26412AABF655003AFCB7 /* NodeListItem.swift */; };
-		DDDB26442AAC0206003AFCB7 /* NodeDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB26432AAC0206003AFCB7 /* NodeDetail.swift */; };
-		DDDB26462AACC0B7003AFCB7 /* NodeInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB26452AACC0B7003AFCB7 /* NodeInfoView.swift */; };
 		DDDB444029F79AB000EE2349 /* UserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB443F29F79AB000EE2349 /* UserDefaults.swift */; };
 		DDDB444229F8A88700EE2349 /* Double.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB444129F8A88700EE2349 /* Double.swift */; };
 		DDDB444429F8A8DD00EE2349 /* Float.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB444329F8A8DD00EE2349 /* Float.swift */; };
@@ -154,14 +140,10 @@
 		DDDB445229F8ACF900EE2349 /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB445129F8ACF900EE2349 /* Date.swift */; };
 		DDDB445429F8AD1600EE2349 /* Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB445329F8AD1600EE2349 /* Data.swift */; };
 		DDDBC87B2BC62E4E001E8DF7 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = DDDBC87A2BC62E4E001E8DF7 /* Settings.bundle */; };
-		DDDC22382BA92344002C44F1 /* MeshMapContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDC22372BA92344002C44F1 /* MeshMapContent.swift */; };
-		DDDCD5702BB26F5C00BE6B60 /* NodeListFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDCD56F2BB26F5C00BE6B60 /* NodeListFilter.swift */; };
 		DDE0F7C5295F77B700B8AAB3 /* AppSettingsEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE0F7C4295F77B700B8AAB3 /* AppSettingsEnums.swift */; };
-		DDE5B4042B2279A700FCDD05 /* TraceRouteLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE5B4032B2279A700FCDD05 /* TraceRouteLog.swift */; };
 		DDF45C342BC1A48E005ED5F2 /* MQTTChannelIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF45C332BC1A48E005ED5F2 /* MQTTChannelIcon.swift */; };
 		DDF45C372BC46A5A005ED5F2 /* TimeZone.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF45C362BC46A5A005ED5F2 /* TimeZone.swift */; };
 		DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF924C926FBB953009FE055 /* ConnectedDevice.swift */; };
-		DDFEB3BB29900C1200EE7472 /* CurrentConditionsCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */; };
 		DDFFA7472B3A7F3C004730DB /* Bundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFFA7462B3A7F3C004730DB /* Bundle.swift */; };
 /* End PBXBuildFile section */
 
@@ -182,22 +164,11 @@
 		08DD7E502C41B0BA00548159 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		08DD7E522C41CBBD00548159 /* Localizable.xcstrings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		08DD7E542C41D63800548159 /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
-		08DD7E582C42658C00548159 /* BLEManager+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BLEManager+Extensions.swift"; sourceTree = "<group>"; };
-		08DD7E5A2C427A5B00548159 /* SimpleNodeMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleNodeMap.swift; sourceTree = "<group>"; };
 		08DD7E5C2C42833200548159 /* LoRaSignalStrength.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignalStrength.swift; sourceTree = "<group>"; };
 		08DD7E5E2C4283A100548159 /* LoRaSignal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignal.swift; sourceTree = "<group>"; };
-		08DD7E602C42ABEB00548159 /* NodeInfoEntity+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NodeInfoEntity+Extensions.swift"; sourceTree = "<group>"; };
 		08DD7E622C42D8B300548159 /* MQTTConnectionIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MQTTConnectionIcon.swift; sourceTree = "<group>"; };
-		08DD7E642C45310B00548159 /* NodeIconListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeIconListView.swift; sourceTree = "<group>"; };
-		251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteNodeButton.swift; sourceTree = "<group>"; };
-		251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeAlertsButton.swift; sourceTree = "<group>"; };
-		251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangePositionsButton.swift; sourceTree = "<group>"; };
-		2519268B2C3BB52000249DF5 /* TraceRouteButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRouteButton.swift; sourceTree = "<group>"; };
-		2519268F2C3CB44900249DF5 /* ClientHistoryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientHistoryButton.swift; sourceTree = "<group>"; };
-		251926912C3CB52300249DF5 /* DeleteNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteNodeButton.swift; sourceTree = "<group>"; };
 		6D825E612C34786C008DBEE4 /* CommonRegex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonRegex.swift; sourceTree = "<group>"; };
 		6DA39D8D2A92DC52007E311C /* MeowtasticAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeowtasticAppDelegate.swift; sourceTree = "<group>"; };
-		6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorLog.swift; sourceTree = "<group>"; };
 		6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntityExtension.swift; sourceTree = "<group>"; };
 		B266DA8F2C53CEFB0067D317 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		B266DA942C53CFD30067D317 /* MeshtasticDataModelV13.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV13.xcdatamodel; sourceTree = "<group>"; };
@@ -240,6 +211,27 @@
 		B266DAB92C53CFD30067D317 /* MeshtasticDataModelV 36.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 36.xcdatamodel"; sourceTree = "<group>"; };
 		B266DABA2C53CFD30067D317 /* MeshtasticDataModelV14.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV14.xcdatamodel; sourceTree = "<group>"; };
 		B266DABB2C53CFD30067D317 /* MeshtasticDataModelV 23.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 23.xcdatamodel"; sourceTree = "<group>"; };
+		B2A5F2DA2C5668FD009457AB /* ClientHistoryButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ClientHistoryButton.swift; sourceTree = "<group>"; };
+		B2A5F2DB2C5668FD009457AB /* DeleteNodeButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeleteNodeButton.swift; sourceTree = "<group>"; };
+		B2A5F2DC2C5668FD009457AB /* ExchangePositionsButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExchangePositionsButton.swift; sourceTree = "<group>"; };
+		B2A5F2DD2C5668FD009457AB /* FavoriteNodeButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FavoriteNodeButton.swift; sourceTree = "<group>"; };
+		B2A5F2DE2C5668FD009457AB /* NodeAlertsButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeAlertsButton.swift; sourceTree = "<group>"; };
+		B2A5F2DF2C5668FD009457AB /* TraceRouteButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TraceRouteButton.swift; sourceTree = "<group>"; };
+		B2A5F2E12C5668FD009457AB /* BLEManager+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BLEManager+Extensions.swift"; sourceTree = "<group>"; };
+		B2A5F2E22C5668FD009457AB /* NodeDetail.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeDetail.swift; sourceTree = "<group>"; };
+		B2A5F2E32C5668FD009457AB /* NodeIconListView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeIconListView.swift; sourceTree = "<group>"; };
+		B2A5F2E52C5668FD009457AB /* NodeInfoEntity+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NodeInfoEntity+Extensions.swift"; sourceTree = "<group>"; };
+		B2A5F2E62C5668FD009457AB /* NodeInfoView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeInfoView.swift; sourceTree = "<group>"; };
+		B2A5F2E82C5668FD009457AB /* NodeListItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeListItem.swift; sourceTree = "<group>"; };
+		B2A5F2EA2C5668FD009457AB /* MeshMapContent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MeshMapContent.swift; sourceTree = "<group>"; };
+		B2A5F2EB2C5668FD009457AB /* NodeMapContent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeMapContent.swift; sourceTree = "<group>"; };
+		B2A5F2ED2C5668FD009457AB /* AltitudeHistoryView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AltitudeHistoryView.swift; sourceTree = "<group>"; };
+		B2A5F2EE2C5668FD009457AB /* MapSettingsForm.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapSettingsForm.swift; sourceTree = "<group>"; };
+		B2A5F2EF2C5668FD009457AB /* NodeMap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeMap.swift; sourceTree = "<group>"; };
+		B2A5F2F02C5668FD009457AB /* SimpleNodeMap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SimpleNodeMap.swift; sourceTree = "<group>"; };
+		B2A5F2F52C5668FD009457AB /* MeshMap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MeshMap.swift; sourceTree = "<group>"; };
+		B2A5F2F62C5668FD009457AB /* NodeList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeList.swift; sourceTree = "<group>"; };
+		B2A5F31B2C566D98009457AB /* TraceRoute.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TraceRoute.swift; sourceTree = "<group>"; };
 		B399E8A32B6F486400E4488E /* RetryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryButton.swift; sourceTree = "<group>"; };
 		B3E905B02B71F7F300654D07 /* TextMessageField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageField.swift; sourceTree = "<group>"; };
 		D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageContextMenuItems.swift; sourceTree = "<group>"; };
@@ -254,12 +246,9 @@
 		DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntityExtension.swift; sourceTree = "<group>"; };
 		DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntityExtension.swift; sourceTree = "<group>"; };
 		DD0E21002B8A6BC500F2D100 /* DeviceHardware.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = DeviceHardware.json; sourceTree = "<group>"; };
-		DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaxCounterLog.swift; sourceTree = "<group>"; };
 		DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannedMessagesConfigEnums.swift; sourceTree = "<group>"; };
 		DD1925B828CDA93900720036 /* SerialConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConfigEnums.swift; sourceTree = "<group>"; };
-		DD1933752B0835D500771CD5 /* AltitudeHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AltitudeHistoryView.swift; sourceTree = "<group>"; };
 		DD1933772B084F4200771CD5 /* Measurement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Measurement.swift; sourceTree = "<group>"; };
-		DD1B8F3F2B35E2F10022AABC /* GPSStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPSStatus.swift; sourceTree = "<group>"; };
 		DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageList.swift; sourceTree = "<group>"; };
 		DD2160AE28C5552500C17253 /* MQTTConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MQTTConfig.swift; sourceTree = "<group>"; };
 		DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralModel.swift; sourceTree = "<group>"; };
@@ -268,7 +257,6 @@
 		DD268D8D2BCC90E2008073AE /* RouteEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteEnums.swift; sourceTree = "<group>"; };
 		DD33DB612B3D27C7003E1EA0 /* FirmwareApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareApi.swift; sourceTree = "<group>"; };
 		DD3501882852FC3B000FC853 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
-		DD354FD82BD96A0B0061A25F /* IAQScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IAQScale.swift; sourceTree = "<group>"; };
 		DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationsHandler.swift; sourceTree = "<group>"; };
 		DD3CC6BD28E4CD9800FA9159 /* BatteryGaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryGaugeView.swift; sourceTree = "<group>"; };
 		DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagingEnums.swift; sourceTree = "<group>"; };
@@ -279,30 +267,20 @@
 		DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLESignalStrengthIndicator.swift; sourceTree = "<group>"; };
 		DD47E3D526F17ED900029299 /* Avatar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Avatar.swift; sourceTree = "<group>"; };
 		DD4A911D2708C65400501B7E /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
-		DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentMetricsLog.swift; sourceTree = "<group>"; };
 		DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntityExtension.swift; sourceTree = "<group>"; };
 		DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelEntityExtension.swift; sourceTree = "<group>"; };
 		DD5D0A9B2931B9F200F7EA61 /* EthernetModes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthernetModes.swift; sourceTree = "<group>"; };
-		DD5E523E298F5A9E00D21B61 /* AirQualityIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityIndex.swift; sourceTree = "<group>"; };
-		DD73FD1028750779000852D6 /* PositionLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionLog.swift; sourceTree = "<group>"; };
-		DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMetricsLog.swift; sourceTree = "<group>"; };
 		DD77093E2AA1B146007A8BF0 /* UIColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor.swift; sourceTree = "<group>"; };
 		DD798B062915928D005217CD /* ChannelMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelMessageList.swift; sourceTree = "<group>"; };
 		DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshLogger.swift; sourceTree = "<group>"; };
-		DD8169FE272476C700F4AB02 /* LogDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDocument.swift; sourceTree = "<group>"; };
 		DD836AE626F6B38600ABCC23 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
 		DD86D409287F04F100BAEB7A /* InvalidVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvalidVersion.swift; sourceTree = "<group>"; };
-		DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveChannelQRCode.swift; sourceTree = "<group>"; };
-		DD86D40E2881BE4C00BAEB7A /* CsvDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CsvDocument.swift; sourceTree = "<group>"; };
-		DD86D4102881D16900BAEB7A /* WriteCsvFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriteCsvFile.swift; sourceTree = "<group>"; };
 		DD8EBF42285058FA00426DCA /* DisplayConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayConfig.swift; sourceTree = "<group>"; };
 		DD8ED9C42898D51F00B3B0AB /* NetworkConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConfig.swift; sourceTree = "<group>"; };
 		DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutingError.swift; sourceTree = "<group>"; };
 		DD90860A26F645B700DC5189 /* Meowtastic.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Meowtastic.entitlements; sourceTree = "<group>"; };
 		DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotificationManager.swift; sourceTree = "<group>"; };
-		DD93800A2BA3F968008BEC06 /* NodeMapContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMapContent.swift; sourceTree = "<group>"; };
 		DD93800D2BA74D0C008BEC06 /* ChannelForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelForm.swift; sourceTree = "<group>"; };
-		DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapSettingsForm.swift; sourceTree = "<group>"; };
 		DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiOnlyTextField.swift; sourceTree = "<group>"; };
 		DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointEntityExtension.swift; sourceTree = "<group>"; };
 		DD964FC52975DBFD007C176F /* QueryCoreData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueryCoreData.swift; sourceTree = "<group>"; };
@@ -314,9 +292,7 @@
 		DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshPackets.swift; sourceTree = "<group>"; };
 		DDA951592BC6624100CEA535 /* TelemetryWeather.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TelemetryWeather.swift; sourceTree = "<group>"; };
 		DDA9515B2BC6631200CEA535 /* TelemetryEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryEnums.swift; sourceTree = "<group>"; };
-		DDA9515D2BC6F56F00CEA535 /* IndoorAirQuality.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndoorAirQuality.swift; sourceTree = "<group>"; };
 		DDAB580E2B0DAFBC00147258 /* LocationEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationEntityExtension.swift; sourceTree = "<group>"; };
-		DDAD49EC2AFB39DC00B4425D /* MeshMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshMap.swift; sourceTree = "<group>"; };
 		DDAF8C5226EB1DF10058C060 /* BLEManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEManager.swift; sourceTree = "<group>"; };
 		DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothConfig.swift; sourceTree = "<group>"; };
 		DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothModes.swift; sourceTree = "<group>"; };
@@ -325,7 +301,6 @@
 		DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionConfigEnums.swift; sourceTree = "<group>"; };
 		DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayEnums.swift; sourceTree = "<group>"; };
 		DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoraConfigEnums.swift; sourceTree = "<group>"; };
-		DDB6CCFA2AAF805100945AF6 /* NodeMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMap.swift; sourceTree = "<group>"; };
 		DDB75A0E2A05920E006ED576 /* FileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManager.swift; sourceTree = "<group>"; };
 		DDB75A102A059258006ED576 /* Url.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Url.swift; sourceTree = "<group>"; };
 		DDB75A192A05EB67006ED576 /* alpha.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = alpha.png; sourceTree = "<group>"; };
@@ -344,16 +319,9 @@
 		DDC4D567275499A500A4208E /* Persistence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserConfig.swift; sourceTree = "<group>"; };
 		DDD43FE22A78C8900083A3E9 /* MqttClientProxyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MqttClientProxyManager.swift; sourceTree = "<group>"; };
-		DDD5BB0A2C285E45007E03CA /* LogDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDetail.swift; sourceTree = "<group>"; };
 		DDD5BB0C2C285F00007E03CA /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
-		DDD5BB0F2C285FB3007E03CA /* AppLogFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogFilter.swift; sourceTree = "<group>"; };
 		DDD5BB172C2F9C36007E03CA /* OSLogEntryLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSLogEntryLog.swift; sourceTree = "<group>"; };
-		DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateTimeText.swift; sourceTree = "<group>"; };
 		DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserEntityExtension.swift; sourceTree = "<group>"; };
-		DDDB263E2AABEE20003AFCB7 /* NodeList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeList.swift; sourceTree = "<group>"; };
-		DDDB26412AABF655003AFCB7 /* NodeListItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeListItem.swift; sourceTree = "<group>"; };
-		DDDB26432AAC0206003AFCB7 /* NodeDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetail.swift; sourceTree = "<group>"; };
-		DDDB26452AACC0B7003AFCB7 /* NodeInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoView.swift; sourceTree = "<group>"; };
 		DDDB443F29F79AB000EE2349 /* UserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaults.swift; sourceTree = "<group>"; };
 		DDDB444129F8A88700EE2349 /* Double.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Double.swift; sourceTree = "<group>"; };
 		DDDB444329F8A8DD00EE2349 /* Float.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Float.swift; sourceTree = "<group>"; };
@@ -366,15 +334,11 @@
 		DDDB445129F8ACF900EE2349 /* Date.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Date.swift; sourceTree = "<group>"; };
 		DDDB445329F8AD1600EE2349 /* Data.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Data.swift; sourceTree = "<group>"; };
 		DDDBC87A2BC62E4E001E8DF7 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
-		DDDC22372BA92344002C44F1 /* MeshMapContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshMapContent.swift; sourceTree = "<group>"; };
-		DDDCD56F2BB26F5C00BE6B60 /* NodeListFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeListFilter.swift; sourceTree = "<group>"; };
 		DDE0F7C4295F77B700B8AAB3 /* AppSettingsEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsEnums.swift; sourceTree = "<group>"; };
-		DDE5B4032B2279A700FCDD05 /* TraceRouteLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRouteLog.swift; sourceTree = "<group>"; };
 		DDE5B4052B227E3200FCDD05 /* TraceRouteEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRouteEntityExtension.swift; sourceTree = "<group>"; };
 		DDF45C332BC1A48E005ED5F2 /* MQTTChannelIcon.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MQTTChannelIcon.swift; sourceTree = "<group>"; };
 		DDF45C362BC46A5A005ED5F2 /* TimeZone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeZone.swift; sourceTree = "<group>"; };
 		DDF924C926FBB953009FE055 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
-		DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentConditionsCompact.swift; sourceTree = "<group>"; };
 		DDFFA7462B3A7F3C004730DB /* Bundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -407,17 +371,81 @@
 			path = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		251926882C3BAF2E00249DF5 /* Actions */ = {
+		B233CA082C5662C200CBD7EF /* CirclesOfHell */ = {
 			isa = PBXGroup;
 			children = (
-				251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */,
-				251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */,
-				251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */,
-				2519268B2C3BB52000249DF5 /* TraceRouteButton.swift */,
-				2519268F2C3CB44900249DF5 /* ClientHistoryButton.swift */,
-				251926912C3CB52300249DF5 /* DeleteNodeButton.swift */,
+				DDC4D5662754996200A4208E /* Persistence */,
+				DDD43FE12A78C86B0083A3E9 /* MQTT */,
+				DDAF8C5226EB1DF10058C060 /* BLEManager.swift */,
+				DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */,
+			);
+			path = CirclesOfHell;
+			sourceTree = "<group>";
+		};
+		B2A5F2E02C5668FD009457AB /* Actions */ = {
+			isa = PBXGroup;
+			children = (
+				B2A5F2DA2C5668FD009457AB /* ClientHistoryButton.swift */,
+				B2A5F2DB2C5668FD009457AB /* DeleteNodeButton.swift */,
+				B2A5F2DC2C5668FD009457AB /* ExchangePositionsButton.swift */,
+				B2A5F2DD2C5668FD009457AB /* FavoriteNodeButton.swift */,
+				B2A5F2DE2C5668FD009457AB /* NodeAlertsButton.swift */,
+				B2A5F2DF2C5668FD009457AB /* TraceRouteButton.swift */,
 			);
 			path = Actions;
+			sourceTree = "<group>";
+		};
+		B2A5F2EC2C5668FD009457AB /* MapContent */ = {
+			isa = PBXGroup;
+			children = (
+				B2A5F2EA2C5668FD009457AB /* MeshMapContent.swift */,
+				B2A5F2EB2C5668FD009457AB /* NodeMapContent.swift */,
+			);
+			path = MapContent;
+			sourceTree = "<group>";
+		};
+		B2A5F2F12C5668FD009457AB /* Map */ = {
+			isa = PBXGroup;
+			children = (
+				B2A5F2EC2C5668FD009457AB /* MapContent */,
+				B2A5F2ED2C5668FD009457AB /* AltitudeHistoryView.swift */,
+				B2A5F2EE2C5668FD009457AB /* MapSettingsForm.swift */,
+				B2A5F2EF2C5668FD009457AB /* NodeMap.swift */,
+				B2A5F2F02C5668FD009457AB /* SimpleNodeMap.swift */,
+			);
+			path = Map;
+			sourceTree = "<group>";
+		};
+		B2A5F2FB2C5668FD009457AB /* Nodes */ = {
+			isa = PBXGroup;
+			children = (
+				B2A5F31A2C566B69009457AB /* List */,
+				B2A5F2F12C5668FD009457AB /* Map */,
+				B2A5F2F52C5668FD009457AB /* MeshMap.swift */,
+				B2A5F2E22C5668FD009457AB /* NodeDetail.swift */,
+				B2A5F2F62C5668FD009457AB /* NodeList.swift */,
+				B2A5F31B2C566D98009457AB /* TraceRoute.swift */,
+			);
+			path = Nodes;
+			sourceTree = "<group>";
+		};
+		B2A5F3192C566B25009457AB /* App */ = {
+			isa = PBXGroup;
+			children = (
+				DD97E96728EFE9A00056DDA4 /* About.swift */,
+				DD4A911D2708C65400501B7E /* AppSettings.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		B2A5F31A2C566B69009457AB /* List */ = {
+			isa = PBXGroup;
+			children = (
+				B2A5F2E32C5668FD009457AB /* NodeIconListView.swift */,
+				B2A5F2E62C5668FD009457AB /* NodeInfoView.swift */,
+				B2A5F2E82C5668FD009457AB /* NodeListItem.swift */,
+			);
+			path = List;
 			sourceTree = "<group>";
 		};
 		D9C9839E2B79D0C600BDBE6A /* TextMessageField */ = {
@@ -446,64 +474,30 @@
 			path = CoreData;
 			sourceTree = "<group>";
 		};
-		DD47E3CA26F0E50300029299 /* Nodes */ = {
-			isa = PBXGroup;
-			children = (
-				DDAD49EB2AFAE82500B4425D /* NodeMapMap */,
-				6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */,
-				DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */,
-				DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */,
-				DDAD49EC2AFB39DC00B4425D /* MeshMap.swift */,
-				DDDB263E2AABEE20003AFCB7 /* NodeList.swift */,
-				DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */,
-				DD73FD1028750779000852D6 /* PositionLog.swift */,
-				DDE5B4032B2279A700FCDD05 /* TraceRouteLog.swift */,
-				DDDB26402AABEF7B003AFCB7 /* Helpers */,
-			);
-			path = Nodes;
-			sourceTree = "<group>";
-		};
-		DD47E3D726F2F21A00029299 /* Bluetooth */ = {
+		DD47E3D726F2F21A00029299 /* Connection */ = {
 			isa = PBXGroup;
 			children = (
 				DD836AE626F6B38600ABCC23 /* Connect.swift */,
 				DD86D409287F04F100BAEB7A /* InvalidVersion.swift */,
 			);
-			path = Bluetooth;
+			path = Connection;
 			sourceTree = "<group>";
 		};
 		DD4A911C2708C57100501B7E /* Settings */ = {
 			isa = PBXGroup;
 			children = (
-				DDD5BB0E2C285F92007E03CA /* Logs */,
-				DD93800C2BA74CE3008BEC06 /* Channels */,
-				DD97E96728EFE9A00056DDA4 /* About.swift */,
-				DD4A911D2708C65400501B7E /* AppSettings.swift */,
-				DDA0B6B1294CDC55001356EC /* Channels.swift */,
-				DD33DB612B3D27C7003E1EA0 /* FirmwareApi.swift */,
-				DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */,
+				B2A5F3192C566B25009457AB /* App */,
 				DD3501882852FC3B000FC853 /* Settings.swift */,
-				DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */,
-				DD61937A2863876A00E59241 /* Config */,
-				DD1B8F3F2B35E2F10022AABC /* GPSStatus.swift */,
+				DD61937A2863876A00E59241 /* Node */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
 		};
-		DD5E523D298F5A7D00D21B61 /* Weather */ = {
+		DD61937A2863876A00E59241 /* Node */ = {
 			isa = PBXGroup;
 			children = (
-				DD5E523E298F5A9E00D21B61 /* AirQualityIndex.swift */,
-				DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */,
-				DDA9515D2BC6F56F00CEA535 /* IndoorAirQuality.swift */,
-				DD354FD82BD96A0B0061A25F /* IAQScale.swift */,
-			);
-			path = Weather;
-			sourceTree = "<group>";
-		};
-		DD61937A2863876A00E59241 /* Config */ = {
-			isa = PBXGroup;
-			children = (
+				DD93800C2BA74CE3008BEC06 /* Channels */,
+				DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */,
 				DD2160AE28C5552500C17253 /* MQTTConfig.swift */,
 				D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */,
 				D93069072B81DF040066FBC8 /* SaveConfigButton.swift */,
@@ -515,17 +509,7 @@
 				DD8ED9C42898D51F00B3B0AB /* NetworkConfig.swift */,
 				D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */,
 			);
-			path = Config;
-			sourceTree = "<group>";
-		};
-		DD86D40D2881BDB300BAEB7A /* Export */ = {
-			isa = PBXGroup;
-			children = (
-				DD8169FE272476C700F4AB02 /* LogDocument.swift */,
-				DD86D40E2881BE4C00BAEB7A /* CsvDocument.swift */,
-				DD86D4102881D16900BAEB7A /* WriteCsvFile.swift */,
-			);
-			path = Export;
+			path = Node;
 			sourceTree = "<group>";
 		};
 		DD8ED9C6289CE4A100B3B0AB /* Enums */ = {
@@ -564,21 +548,10 @@
 		DD93800C2BA74CE3008BEC06 /* Channels */ = {
 			isa = PBXGroup;
 			children = (
+				DDA0B6B1294CDC55001356EC /* Channels.swift */,
 				DD93800D2BA74D0C008BEC06 /* ChannelForm.swift */,
 			);
 			path = Channels;
-			sourceTree = "<group>";
-		};
-		DDAD49EB2AFAE82500B4425D /* NodeMapMap */ = {
-			isa = PBXGroup;
-			children = (
-				DD1933752B0835D500771CD5 /* AltitudeHistoryView.swift */,
-				DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */,
-				DDB6CCFA2AAF805100945AF6 /* NodeMap.swift */,
-				08DD7E5A2C427A5B00548159 /* SimpleNodeMap.swift */,
-				DDDC22362BA9232C002C44F1 /* MapContent */,
-			);
-			path = NodeMapMap;
 			sourceTree = "<group>";
 		};
 		DDC2E14B26CE248E0042C5E4 = {
@@ -602,14 +575,13 @@
 		DDC2E15626CE248E0042C5E4 /* Meowtastic */ = {
 			isa = PBXGroup;
 			children = (
+				B233CA082C5662C200CBD7EF /* CirclesOfHell */,
 				DDC2E15726CE248E0042C5E4 /* MeowtasticApp.swift */,
 				6DA39D8D2A92DC52007E311C /* MeowtasticAppDelegate.swift */,
 				DD8ED9C6289CE4A100B3B0AB /* Enums */,
-				DD86D40D2881BDB300BAEB7A /* Export */,
 				DDDB443E29F79A9400EE2349 /* Extensions */,
 				DDC2E1A526CEB32B0042C5E4 /* Helpers */,
 				DDC2E18826CE24EE0042C5E4 /* Model */,
-				DDC4D5662754996200A4208E /* Persistence */,
 				DDC2E15D26CE248F0042C5E4 /* Preview Content */,
 				08DD7E4D2C41AC8F00548159 /* Supporting Files */,
 				DDC2E18726CE24E40042C5E4 /* Views */,
@@ -630,12 +602,27 @@
 		DDC2E18726CE24E40042C5E4 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				DDC2E18D26CE25CB0042C5E4 /* Helpers */,
-				DD47E3D726F2F21A00029299 /* Bluetooth */,
-				DDC2E18B26CE25A70042C5E4 /* Messages */,
-				DD47E3CA26F0E50300029299 /* Nodes */,
-				DD4A911C2708C57100501B7E /* Settings */,
+				DD3CC6BD28E4CD9800FA9159 /* BatteryGaugeView.swift */,
+				DDB75A222A13CDA9006ED576 /* BatteryLevelCompact.swift */,
+				DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */,
+				DD47E3D526F17ED900029299 /* Avatar.swift */,
+				DDF924C926FBB953009FE055 /* ConnectedDevice.swift */,
+				DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */,
+				DDC3B273283F411B00AC321C /* LastHeardText.swift */,
+				DDB75A202A12B954006ED576 /* LoRaSignalMeterView.swift */,
+				DDB75A1D2A0B0CD0006ED576 /* LoRaSignalView.swift */,
+				DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */,
+				DDF45C332BC1A48E005ED5F2 /* MQTTChannelIcon.swift */,
+				08DD7E5C2C42833200548159 /* LoRaSignalStrength.swift */,
+				08DD7E5E2C4283A100548159 /* LoRaSignal.swift */,
+				08DD7E622C42D8B300548159 /* MQTTConnectionIcon.swift */,
+				B2A5F2E52C5668FD009457AB /* NodeInfoEntity+Extensions.swift */,
+				B2A5F2E02C5668FD009457AB /* Actions */,
+				DD47E3D726F2F21A00029299 /* Connection */,
 				DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */,
+				DDC2E18B26CE25A70042C5E4 /* Messages */,
+				B2A5F2FB2C5668FD009457AB /* Nodes */,
+				DD4A911C2708C57100501B7E /* Settings */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -663,38 +650,13 @@
 			path = Messages;
 			sourceTree = "<group>";
 		};
-		DDC2E18D26CE25CB0042C5E4 /* Helpers */ = {
-			isa = PBXGroup;
-			children = (
-				DD3CC6BD28E4CD9800FA9159 /* BatteryGaugeView.swift */,
-				DDB75A222A13CDA9006ED576 /* BatteryLevelCompact.swift */,
-				DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */,
-				DD47E3D526F17ED900029299 /* Avatar.swift */,
-				DDF924C926FBB953009FE055 /* ConnectedDevice.swift */,
-				DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */,
-				DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */,
-				DDC3B273283F411B00AC321C /* LastHeardText.swift */,
-				DDB75A202A12B954006ED576 /* LoRaSignalMeterView.swift */,
-				DDB75A1D2A0B0CD0006ED576 /* LoRaSignalView.swift */,
-				DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */,
-				DDF45C332BC1A48E005ED5F2 /* MQTTChannelIcon.swift */,
-				DD5E523D298F5A7D00D21B61 /* Weather */,
-				08DD7E5C2C42833200548159 /* LoRaSignalStrength.swift */,
-				08DD7E5E2C4283A100548159 /* LoRaSignal.swift */,
-				08DD7E622C42D8B300548159 /* MQTTConnectionIcon.swift */,
-			);
-			path = Helpers;
-			sourceTree = "<group>";
-		};
 		DDC2E1A526CEB32B0042C5E4 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
-				DDD43FE12A78C86B0083A3E9 /* MQTT */,
-				DDAF8C5226EB1DF10058C060 /* BLEManager.swift */,
+				DD33DB612B3D27C7003E1EA0 /* FirmwareApi.swift */,
 				DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */,
 				DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */,
 				DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */,
-				DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */,
 				DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */,
 				DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */,
 				6D825E612C34786C008DBEE4 /* CommonRegex.swift */,
@@ -720,33 +682,10 @@
 			path = MQTT;
 			sourceTree = "<group>";
 		};
-		DDD5BB0E2C285F92007E03CA /* Logs */ = {
-			isa = PBXGroup;
-			children = (
-				DDD5BB0A2C285E45007E03CA /* LogDetail.swift */,
-				DDD5BB0F2C285FB3007E03CA /* AppLogFilter.swift */,
-			);
-			path = Logs;
-			sourceTree = "<group>";
-		};
-		DDDB26402AABEF7B003AFCB7 /* Helpers */ = {
-			isa = PBXGroup;
-			children = (
-				08DD7E582C42658C00548159 /* BLEManager+Extensions.swift */,
-				DDDB26432AAC0206003AFCB7 /* NodeDetail.swift */,
-				DDDB26452AACC0B7003AFCB7 /* NodeInfoView.swift */,
-				DDDCD56F2BB26F5C00BE6B60 /* NodeListFilter.swift */,
-				DDDB26412AABF655003AFCB7 /* NodeListItem.swift */,
-				251926882C3BAF2E00249DF5 /* Actions */,
-				08DD7E602C42ABEB00548159 /* NodeInfoEntity+Extensions.swift */,
-				08DD7E642C45310B00548159 /* NodeIconListView.swift */,
-			);
-			path = Helpers;
-			sourceTree = "<group>";
-		};
 		DDDB443E29F79A9400EE2349 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				B2A5F2E12C5668FD009457AB /* BLEManager+Extensions.swift */,
 				DD007BB12AA59B9A00F5FA12 /* CoreData */,
 				DDFFA7462B3A7F3C004730DB /* Bundle.swift */,
 				DDDB444529F8A96500EE2349 /* Character.swift */,
@@ -770,15 +709,6 @@
 				B266DA8F2C53CEFB0067D317 /* Constants.swift */,
 			);
 			path = Extensions;
-			sourceTree = "<group>";
-		};
-		DDDC22362BA9232C002C44F1 /* MapContent */ = {
-			isa = PBXGroup;
-			children = (
-				DDDC22372BA92344002C44F1 /* MeshMapContent.swift */,
-				DD93800A2BA3F968008BEC06 /* NodeMapContent.swift */,
-			);
-			path = MapContent;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -892,65 +822,61 @@
 				25F26B1E2C2F610D00C9CD9D /* Logger.swift in Sources */,
 				259792252C2F114500AD1659 /* ChannelEntityExtension.swift in Sources */,
 				259792262C2F114500AD1659 /* PositionEntityExtension.swift in Sources */,
+				B2A5F2FE2C5668FD009457AB /* ExchangePositionsButton.swift in Sources */,
 				259792272C2F114500AD1659 /* TraceRouteEntityExtension.swift in Sources */,
 				DDDB444829F8A9C900EE2349 /* String.swift in Sources */,
 				DDFFA7472B3A7F3C004730DB /* Bundle.swift in Sources */,
 				DD457188293C7E63000C49FB /* BLESignalStrengthIndicator.swift in Sources */,
 				DDA9515C2BC6631200CEA535 /* TelemetryEnums.swift in Sources */,
-				DDFEB3BB29900C1200EE7472 /* CurrentConditionsCompact.swift in Sources */,
 				DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */,
 				D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */,
-				DD5E523F298F5A9E00D21B61 /* AirQualityIndex.swift in Sources */,
 				DDD5BB182C2F9C36007E03CA /* OSLogEntryLog.swift in Sources */,
 				DD3501892852FC3B000FC853 /* Settings.swift in Sources */,
 				08DD7E5F2C4283A100548159 /* LoRaSignal.swift in Sources */,
-				DDDC22382BA92344002C44F1 /* MeshMapContent.swift in Sources */,
 				B266DABC2C53CFD40067D317 /* Meowtastic.xcdatamodeld in Sources */,
 				DD5D0A9C2931B9F200F7EA61 /* EthernetModes.swift in Sources */,
-				6DEDA55A2A957B8E00321D2E /* DetectionSensorLog.swift in Sources */,
 				DD798B072915928D005217CD /* ChannelMessageList.swift in Sources */,
 				DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */,
 				6D825E622C34786C008DBEE4 /* CommonRegex.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
 				DDDB444C29F8AAA600EE2349 /* Color.swift in Sources */,
+				B2A5F3142C5668FD009457AB /* NodeList.swift in Sources */,
 				DDB75A0F2A05920E006ED576 /* FileManager.swift in Sources */,
 				DD1933782B084F4200771CD5 /* Measurement.swift in Sources */,
-				DD4F23CD28779A3C001D37CB /* EnvironmentMetricsLog.swift in Sources */,
+				B2A5F3022C5668FD009457AB /* BLEManager+Extensions.swift in Sources */,
 				DD93800E2BA74D0C008BEC06 /* ChannelForm.swift in Sources */,
 				DDB6ABD628AE742000384BA1 /* BluetoothConfig.swift in Sources */,
-				251926902C3CB44900249DF5 /* ClientHistoryButton.swift in Sources */,
-				DDD5BB102C285FB3007E03CA /* AppLogFilter.swift in Sources */,
-				DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */,
 				DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */,
 				DDDB445229F8ACF900EE2349 /* Date.swift in Sources */,
 				DDC4D568275499A500A4208E /* Persistence.swift in Sources */,
 				DD964FBD296E6B01007C176F /* EmojiOnlyTextField.swift in Sources */,
-				DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */,
-				DD354FD92BD96A0B0061A25F /* IAQScale.swift in Sources */,
 				DDDB445429F8AD1600EE2349 /* Data.swift in Sources */,
-				DDDB26462AACC0B7003AFCB7 /* NodeInfoView.swift in Sources */,
-				DDE5B4042B2279A700FCDD05 /* TraceRouteLog.swift in Sources */,
 				08DD7E552C41D63800548159 /* AppConstants.swift in Sources */,
-				DDDB263F2AABEE20003AFCB7 /* NodeList.swift in Sources */,
-				DDD5BB0B2C285E45007E03CA /* LogDetail.swift in Sources */,
+				B2A5F3002C5668FD009457AB /* NodeAlertsButton.swift in Sources */,
 				DDA0B6B2294CDC55001356EC /* Channels.swift in Sources */,
 				B399E8A42B6F486400E4488E /* RetryButton.swift in Sources */,
 				DDB8F4102A9EE5B400230ECE /* Messages.swift in Sources */,
-				08DD7E592C42658C00548159 /* BLEManager+Extensions.swift in Sources */,
 				DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */,
 				DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */,
 				6DEDA55C2A9592F900321D2E /* MessageEntityExtension.swift in Sources */,
 				DDDB444229F8A88700EE2349 /* Double.swift in Sources */,
 				DDF45C342BC1A48E005ED5F2 /* MQTTChannelIcon.swift in Sources */,
+				B2A5F30D2C5668FD009457AB /* MapSettingsForm.swift in Sources */,
 				DDA9515A2BC6624100CEA535 /* TelemetryWeather.swift in Sources */,
+				B2A5F3062C5668FD009457AB /* NodeInfoEntity+Extensions.swift in Sources */,
 				DDB75A232A13CDA9006ED576 /* BatteryLevelCompact.swift in Sources */,
+				B2A5F31C2C566D98009457AB /* TraceRoute.swift in Sources */,
+				B2A5F3042C5668FD009457AB /* NodeIconListView.swift in Sources */,
 				DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */,
+				B2A5F3032C5668FD009457AB /* NodeDetail.swift in Sources */,
 				DD3CC6BE28E4CD9800FA9159 /* BatteryGaugeView.swift in Sources */,
 				DD3619152B1EF9F900C41C8C /* LocationsHandler.swift in Sources */,
 				DDDB444A29F8AA3A00EE2349 /* CLLocationCoordinate2D.swift in Sources */,
 				DD41582628582E9B009B0E59 /* DeviceConfig.swift in Sources */,
 				DDF45C372BC46A5A005ED5F2 /* TimeZone.swift in Sources */,
+				B2A5F2FD2C5668FD009457AB /* DeleteNodeButton.swift in Sources */,
 				DD007BAE2AA4E91200F5FA12 /* MyInfoEntityExtension.swift in Sources */,
+				B2A5F3072C5668FD009457AB /* NodeInfoView.swift in Sources */,
 				DD33DB622B3D27C7003E1EA0 /* FirmwareApi.swift in Sources */,
 				DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */,
 				08DD7E512C41B0BA00548159 /* AppState.swift in Sources */,
@@ -959,12 +885,9 @@
 				DDB6ABE628B1406100384BA1 /* LoraConfigEnums.swift in Sources */,
 				DDD43FE32A78C8900083A3E9 /* MqttClientProxyManager.swift in Sources */,
 				DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */,
-				DDDB26422AABF655003AFCB7 /* NodeListItem.swift in Sources */,
 				DDDB444629F8A96500EE2349 /* Character.swift in Sources */,
-				2519268C2C3BB52000249DF5 /* TraceRouteButton.swift in Sources */,
 				DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */,
 				DDB6ABDB28B0AC6000384BA1 /* DistanceText.swift in Sources */,
-				DD94B7402ACCE3BE00DCD1D1 /* MapSettingsForm.swift in Sources */,
 				DD964FC2297272AE007C176F /* WaypointEntityExtension.swift in Sources */,
 				6DA39D8E2A92DC52007E311C /* MeowtasticAppDelegate.swift in Sources */,
 				D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */,
@@ -980,56 +903,45 @@
 				DD97E96828EFE9A00056DDA4 /* About.swift in Sources */,
 				DDDB444029F79AB000EE2349 /* UserDefaults.swift in Sources */,
 				DDB6ABE028B13AC700384BA1 /* DeviceEnums.swift in Sources */,
-				DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */,
+				B2A5F3132C5668FD009457AB /* MeshMap.swift in Sources */,
 				D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */,
-				251926872C3BAE2200249DF5 /* NodeAlertsButton.swift in Sources */,
 				DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */,
 				DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */,
 				DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */,
 				DDB75A112A059258006ED576 /* Url.swift in Sources */,
-				DDAD49ED2AFB39DC00B4425D /* MeshMap.swift in Sources */,
-				DD1B8F402B35E2F10022AABC /* GPSStatus.swift in Sources */,
-				08DD7E612C42ABEB00548159 /* NodeInfoEntity+Extensions.swift in Sources */,
+				B2A5F30C2C5668FD009457AB /* AltitudeHistoryView.swift in Sources */,
+				B2A5F2FC2C5668FD009457AB /* ClientHistoryButton.swift in Sources */,
 				DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */,
 				DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */,
 				DD1925B928CDA93900720036 /* SerialConfigEnums.swift in Sources */,
-				251926852C3BA97800249DF5 /* FavoriteNodeButton.swift in Sources */,
-				08DD7E652C45310B00548159 /* NodeIconListView.swift in Sources */,
 				D9C983A02B79D0E800BDBE6A /* AlertButton.swift in Sources */,
-				DD86D4112881D16900BAEB7A /* WriteCsvFile.swift in Sources */,
 				DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */,
-				DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */,
 				DDB75A1E2A0B0CD0006ED576 /* LoRaSignalView.swift in Sources */,
+				B2A5F3092C5668FD009457AB /* NodeListItem.swift in Sources */,
 				DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */,
 				DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */,
 				DDB75A212A12B954006ED576 /* LoRaSignalMeterView.swift in Sources */,
+				B2A5F2FF2C5668FD009457AB /* FavoriteNodeButton.swift in Sources */,
 				DD268D8E2BCC90E2008073AE /* RouteEnums.swift in Sources */,
-				251926922C3CB52300249DF5 /* DeleteNodeButton.swift in Sources */,
 				DDB6ABE428B13FFF00384BA1 /* DisplayEnums.swift in Sources */,
 				D93068D92B81509C0066FBC8 /* TapbackResponses.swift in Sources */,
-				2519268A2C3BB1B200249DF5 /* ExchangePositionsButton.swift in Sources */,
 				DD86D40A287F04F100BAEB7A /* InvalidVersion.swift in Sources */,
-				DDD94A502845C8F5004A87A0 /* DateTimeText.swift in Sources */,
 				DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */,
 				DD994B69295F88B60013760A /* IntervalEnums.swift in Sources */,
-				DDDCD5702BB26F5C00BE6B60 /* NodeListFilter.swift in Sources */,
-				DD1933762B0835D500771CD5 /* AltitudeHistoryView.swift in Sources */,
-				DDB6CCFB2AAF805100945AF6 /* NodeMap.swift in Sources */,
-				DD73FD1128750779000852D6 /* PositionLog.swift in Sources */,
-				DD15E4F52B8BFC8E00654F61 /* PaxCounterLog.swift in Sources */,
+				B2A5F30F2C5668FD009457AB /* SimpleNodeMap.swift in Sources */,
 				DD3CC6C028E7A60700FA9159 /* MessagingEnums.swift in Sources */,
 				DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */,
+				B2A5F30B2C5668FD009457AB /* NodeMapContent.swift in Sources */,
 				D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */,
-				DDA9515E2BC6F56F00CEA535 /* IndoorAirQuality.swift in Sources */,
 				DDDB444E29F8AB0E00EE2349 /* Int.swift in Sources */,
 				B266DA902C53CEFB0067D317 /* Constants.swift in Sources */,
 				D9C983A22B79D1A600BDBE6A /* RequestPositionButton.swift in Sources */,
-				DDDB26442AAC0206003AFCB7 /* NodeDetail.swift in Sources */,
+				B2A5F30E2C5668FD009457AB /* NodeMap.swift in Sources */,
+				B2A5F30A2C5668FD009457AB /* MeshMapContent.swift in Sources */,
 				DD77093F2AA1B146007A8BF0 /* UIColor.swift in Sources */,
 				DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */,
-				08DD7E5B2C427A5B00548159 /* SimpleNodeMap.swift in Sources */,
 				08DD7E5D2C42833200548159 /* LoRaSignalStrength.swift in Sources */,
-				DD93800B2BA3F968008BEC06 /* NodeMapContent.swift in Sources */,
+				B2A5F3012C5668FD009457AB /* TraceRouteButton.swift in Sources */,
 				DD1925B728CDA5A400720036 /* CannedMessagesConfigEnums.swift in Sources */,
 				DDDB444429F8A8DD00EE2349 /* Float.swift in Sources */,
 				DDAB580F2B0DAFBC00147258 /* LocationEntityExtension.swift in Sources */,

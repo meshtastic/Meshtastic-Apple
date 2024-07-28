@@ -4,6 +4,7 @@ import SwiftUI
 struct LoRaSignalView: View {
 	let signalStrength: LoRaSignalStrength
 
+	@ViewBuilder
 	var body: some View {
 		HStack {
 			ForEach(0..<3) { bar in

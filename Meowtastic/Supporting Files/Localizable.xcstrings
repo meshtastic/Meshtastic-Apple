@@ -4,41 +4,10 @@
     "" : {
 
     },
-    " %@" : {
-
-    },
-    ".dot" : {
-
-    },
-    ".gauge" : {
-
-    },
-    ".gradient" : {
-
-    },
-    ".pill" : {
-
-    },
-    ".text" : {
-
-    },
     "(Re)define PIN_GPS_EN for your board." : {
 
     },
     "%@" : {
-
-    },
-    "%@ - %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ - %2$@"
-          }
-        }
-      }
-    },
-    "%@ away" : {
 
     },
     "%@ can be up to %@ bytes long." : {
@@ -51,22 +20,7 @@
         }
       }
     },
-    "%@ Channels?" : {
-
-    },
     "%@ config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log." : {
-
-    },
-    "%@ dB" : {
-
-    },
-    "%@ hPa" : {
-
-    },
-    "%@%%" : {
-
-    },
-    "%d" : {
 
     },
     "%d hop(s)" : {
@@ -78,10 +32,7 @@
     "%lld" : {
 
     },
-    "%lld Readings Total" : {
-
-    },
-    "%lld Total Detection Events" : {
+    "%lld hop(s)" : {
 
     },
     "%llddb Transmit Power" : {
@@ -221,9 +172,6 @@
           }
         }
       }
-    },
-    "Accuracy %@" : {
-
     },
     "Acknowledged by another node" : {
 
@@ -492,6 +440,7 @@
       }
     },
     "airtime" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -549,9 +498,6 @@
         }
       }
     },
-    "AirTm" : {
-
-    },
     "Alert" : {
 
     },
@@ -561,13 +507,7 @@
     "Allow Position Requests" : {
 
     },
-    "Alt" : {
-
-    },
     "Altitude" : {
-
-    },
-    "Altitude %@" : {
 
     },
     "Altitude Geoidal Separation" : {
@@ -1260,19 +1200,8 @@
     "Bandwidth" : {
 
     },
-    "Bar" : {
-
-    },
-    "Bar Series" : {
-
-    },
-    "Barometric Pressure" : {
-
-    },
-    "Batt" : {
-
-    },
     "battery.level" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2180,6 +2109,7 @@
 
     },
     "cancel" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2538,9 +2468,6 @@
     "Carousel Interval" : {
 
     },
-    "Categories" : {
-
-    },
     "channel" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2790,6 +2717,7 @@
       }
     },
     "channel.utilization" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2909,13 +2837,7 @@
     "Channels" : {
 
     },
-    "Channels being added from the QR code did not save. When adding channels the names must be unique." : {
-
-    },
     "CHG" : {
-
-    },
-    "ChUtil" : {
 
     },
     "clear.app.data" : {
@@ -2977,6 +2899,7 @@
       }
     },
     "clear.log" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4685,16 +4608,6 @@
     "Controls the blinking LED on the device.  For most devices this will control one of the up to 4 LEDS, the charger and GPS LEDs are not controllable." : {
 
     },
-    "Coordinate %@, %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Coordinate %1$@, %2$@"
-          }
-        }
-      }
-    },
     "copy" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4942,12 +4855,6 @@
         }
       }
     },
-    "Delete all environment metrics?" : {
-
-    },
-    "Delete all positions?" : {
-
-    },
     "Delete Message" : {
 
     },
@@ -4958,15 +4865,6 @@
 
     },
     "Details" : {
-
-    },
-    "Detection" : {
-
-    },
-    "Detection event" : {
-
-    },
-    "Detection Sensor Log" : {
 
     },
     "detection.sensor" : {
@@ -5064,6 +4962,7 @@
       }
     },
     "detection.sensor.log" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5163,9 +5062,6 @@
 
     },
     "Device Logging Enabled" : {
-
-    },
-    "Device Metrics Log" : {
 
     },
     "Device Role" : {
@@ -5286,6 +5182,7 @@
       }
     },
     "device.metrics.delete" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5344,6 +5241,7 @@
       }
     },
     "device.metrics.log" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6053,6 +5951,9 @@
     "Dilution of precision (DOP) PDOP used by default" : {
 
     },
+    "Direct" : {
+
+    },
     "Direct visibility" : {
 
     },
@@ -6682,9 +6583,6 @@
     "Encryption Enabled" : {
 
     },
-    "Environment Metrics Log" : {
-
-    },
     "Erase all app data?" : {
 
     },
@@ -6881,9 +6779,6 @@
 
     },
     "Favorite" : {
-
-    },
-    "Favorites" : {
 
     },
     "Find a contact" : {
@@ -7759,12 +7654,6 @@
     "Hardware" : {
 
     },
-    "Heading" : {
-
-    },
-    "Heading: %@" : {
-
-    },
     "heard" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7901,12 +7790,6 @@
     "How often should we try to get a GPS position." : {
 
     },
-    "Hum" : {
-
-    },
-    "Humidity" : {
-
-    },
     "hybrid" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -8024,15 +7907,6 @@
           }
         }
       }
-    },
-    "IAQ" : {
-
-    },
-    "IAQ " : {
-
-    },
-    "IAQ %lld" : {
-
     },
     "If DOP is set, use HDOP / VDOP values instead of PDOP" : {
 
@@ -8154,12 +8028,6 @@
           }
         }
       }
-    },
-    "Indoor Air Quality" : {
-
-    },
-    "Indoor Air Quality (IAQ)" : {
-
     },
     "Info" : {
 
@@ -10434,22 +10302,10 @@
     "Last Heard" : {
 
     },
-    "Latitude" : {
-
-    },
     "LED Heartbeat" : {
 
     },
     "Licensed Operator" : {
-
-    },
-    "Limit" : {
-
-    },
-    "Line Series" : {
-
-    },
-    "Log Levels" : {
 
     },
     "log.category" : {
@@ -10829,16 +10685,10 @@
         }
       }
     },
-    "Logs" : {
-
-    },
     "Long Name" : {
 
     },
     "Long Name: %@" : {
-
-    },
-    "Longitude" : {
 
     },
     "lora" : {
@@ -14689,6 +14539,9 @@
         }
       }
     },
+    "N/A" : {
+
+    },
     "name" : {
       "localizations" : {
         "de" : {
@@ -14870,13 +14723,10 @@
         }
       }
     },
-    "No Device Metrics" : {
-
-    },
-    "No Environment Metrics" : {
-
-    },
     "No Positions" : {
+
+    },
+    "No Response" : {
 
     },
     "no.nodes" : {
@@ -15446,9 +15296,6 @@
     "Onboarding for licensed operators requires firmware 2.0.20 or greater. Make sure to refer to your local regulations and contact the local amateur frequency coordinators with questions." : {
 
     },
-    "Online" : {
-
-    },
     "Online: %lld nodes" : {
 
     },
@@ -15517,9 +15364,6 @@
       }
     },
     "Options" : {
-
-    },
-    "OS Log Entry Details" : {
 
     },
     "Override automatic OLED screen detection." : {
@@ -15642,10 +15486,8 @@
         }
       }
     },
-    "PAX Counter" : {
-
-    },
     "paxcounter.ble" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15668,6 +15510,7 @@
       }
     },
     "paxcounter.content.unavailable" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15690,6 +15533,7 @@
       }
     },
     "paxcounter.delete" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15712,6 +15556,7 @@
       }
     },
     "paxcounter.log" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15734,6 +15579,7 @@
       }
     },
     "paxcounter.total" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15756,6 +15602,7 @@
       }
     },
     "paxcounter.wifi" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15962,9 +15809,6 @@
     "Position Flags" : {
 
     },
-    "Position Log %lld Points" : {
-
-    },
     "Position Packet" : {
 
     },
@@ -16062,9 +15906,6 @@
 
     },
     "Power Off" : {
-
-    },
-    "Powered" : {
 
     },
     "Precise Location" : {
@@ -18138,12 +17979,6 @@
         }
       }
     },
-    "Sats" : {
-
-    },
-    "Sats Estimate %lld" : {
-
-    },
     "save" : {
       "localizations" : {
         "de" : {
@@ -19145,19 +18980,10 @@
     "Smart Position" : {
 
     },
-    "SNR" : {
-
-    },
     "SNR %@dB" : {
 
     },
     "SNR: %@dB" : {
-
-    },
-    "Speed" : {
-
-    },
-    "Speed %@" : {
 
     },
     "Spread Factor" : {
@@ -20281,12 +20107,6 @@
         }
       }
     },
-    "Temp" : {
-
-    },
-    "Temperature" : {
-
-    },
     "The compass heading on the screen outside of the circle will always point north." : {
 
     },
@@ -20317,9 +20137,6 @@
     "There has been no response to a request for device metadata over the admin channel for this node." : {
 
     },
-    "These settings will %@ channels. The current LoRa Config will be replaced, if there are substantial changes to the LoRa config the device will reboot" : {
-
-    },
     "This conversation will be deleted." : {
 
     },
@@ -20339,9 +20156,6 @@
 
     },
     "Time" : {
-
-    },
-    "Time Stamp" : {
 
     },
     "Time Zone" : {
@@ -21063,13 +20877,7 @@
     "TLS Enabled" : {
 
     },
-    "Total" : {
-
-    },
     "Trace Route" : {
-
-    },
-    "Trace Route Log" : {
 
     },
     "Trace route received directly by %@" : {
@@ -21156,6 +20964,7 @@
 
     },
     "unknown" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21217,6 +21026,7 @@
 
     },
     "unknown.age" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21456,6 +21266,7 @@
 
     },
     "uptime" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21657,10 +21468,8 @@
     "Visible Nodes" : {
 
     },
-    "Volt" : {
-
-    },
     "voltage" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21796,42 +21605,6 @@
 
     },
     "WiFi Options" : {
-
-    },
-    "x" : {
-
-    },
-    "X: %@, Y: %d" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "X: %1$@, Y: %2$d"
-          }
-        }
-      }
-    },
-    "X: %@, Y: %f" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "X: %1$@, Y: %2$f"
-          }
-        }
-      }
-    },
-    "X: %@, Y: %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "X: %1$@, Y: %2$lld"
-          }
-        }
-      }
-    },
-    "y" : {
 
     },
     "Yesterday" : {

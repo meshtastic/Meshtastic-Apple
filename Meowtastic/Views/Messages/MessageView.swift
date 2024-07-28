@@ -82,20 +82,20 @@ struct MessageView: View {
 				message.messagePayloadMarkdown ?? (message.messagePayload ?? "EMPTY MESSAGE")
 			)
 			
-			VStack {
+			VStack(alignment: isCurrentUser ? .trailing : .leading) {
 				if let originalMessage {
 					HStack(spacing: 0) {
 						Spacer()
-							.frame(width: 10)
+							.frame(width: 12)
 						
 						HStack() {
 							Image(systemName: "arrowshape.turn.up.left")
-								.font(.body)
+								.font(.system(size: 14))
 								.symbolRenderingMode(.monochrome)
 								.foregroundColor(foregroundColor.opacity(0.8))
 							
 							Text(originalMessage)
-								.font(.footnote)
+								.font(.system(size: 14))
 								.foregroundColor(foregroundColor).opacity(0.8)
 						}
 						.padding(.vertical, 4)
@@ -111,6 +111,9 @@ struct MessageView: View {
 						.clipShape(
 							RoundedRectangle(cornerRadius: 8)
 						)
+
+						Spacer()
+							.frame(width: 12)
 					}
 					.zIndex(1)
 				}

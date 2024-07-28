@@ -46,18 +46,6 @@ struct NodeDetail: View {
 			.lastObject
 		as? TelemetryEntity
 	}
-	private var hasAnyLog: Bool {
-		if node.hasDeviceMetrics
-			|| node.hasEnvironmentMetrics
-			|| node.hasDetectionSensorMetrics
-			|| node.hasPax
-			|| node.traceRoutes?.count ?? 0 > 0
-		{
-			return true
-		}
-
-		return false
-	}
 
 	var body: some View {
 		NavigationStack {
@@ -68,12 +56,6 @@ struct NodeDetail: View {
 
 				Section("Details") {
 					nodeInfo
-				}
-
-				if hasAnyLog {
-					Section("Logs") {
-						logs
-					}
 				}
 
 				if !isInSheet {
@@ -342,6 +324,21 @@ struct NodeDetail: View {
 					Text("\(node.hopsAway) hop(s)")
 				}
 			}
+
+			if let routes = node.traceRoutes, routes.count > 0 {
+				NavigationLink {
+					TraceRoute(node: node)
+				} label: {
+					Label {
+						Text("Trace Route")
+					} icon: {
+						Image(systemName: "signpost.right.and.left")
+							.symbolRenderingMode(.monochrome)
+							.foregroundColor(.accentColor)
+					}
+
+				}
+			}
 		}
 
 		if
@@ -436,79 +433,6 @@ struct NodeDetail: View {
 
 				Text(uptimeFormatted)
 					.textSelection(.enabled)
-			}
-		}
-	}
-
-	@ViewBuilder
-	private var logs: some View {
-		if let routes = node.traceRoutes, routes.count > 0 {
-			NavigationLink {
-				TraceRouteLog(node: node)
-			} label: {
-				Label {
-					Text("Trace Route Log")
-				} icon: {
-					Image(systemName: "signpost.right.and.left")
-						.symbolRenderingMode(.monochrome)
-						.foregroundColor(.accentColor)
-				}
-			}
-		}
-
-		if node.hasDeviceMetrics {
-			NavigationLink {
-				DeviceMetricsLog(node: node)
-			} label: {
-				Label {
-					Text("Device Metrics Log")
-				} icon: {
-					Image(systemName: "ruler")
-						.symbolRenderingMode(.monochrome)
-						.foregroundColor(.accentColor)
-				}
-			}
-		}
-
-		if node.hasEnvironmentMetrics {
-			NavigationLink {
-				EnvironmentMetricsLog(node: node)
-			} label: {
-				Label {
-					Text("Environment Metrics Log")
-				} icon: {
-					Image(systemName: "cloud.sun.rain")
-						.symbolRenderingMode(.monochrome)
-						.foregroundColor(.accentColor)
-				}
-			}
-		}
-
-		if node.hasDetectionSensorMetrics {
-			NavigationLink {
-				DetectionSensorLog(node: node)
-			} label: {
-				Label {
-					Text("Detection Sensor Log")
-				} icon: {
-					Image(systemName: "sensor")
-						.symbolRenderingMode(.monochrome)
-						.foregroundColor(.accentColor)
-				}
-			}
-		}
-
-		if node.hasPax {
-			NavigationLink {
-				PaxCounterLog(node: node)
-			} label: {
-				Label {
-					Text("PAX Counter")
-				} icon: {
-					Image(systemName: "figure.walk.motion")
-						.symbolRenderingMode(.monochrome)
-						.foregroundColor(.accentColor)
-				}
 			}
 		}
 	}
