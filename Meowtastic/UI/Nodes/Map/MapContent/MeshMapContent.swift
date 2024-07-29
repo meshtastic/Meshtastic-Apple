@@ -9,8 +9,6 @@ struct MeshMapContent: MapContent {
 	@Binding
 	var showUserLocation: Bool
 	@Binding
-	var selectedMapLayer: MapLayer
-	@Binding
 	var selectedPosition: PositionEntity?
 
 	@FetchRequest(
@@ -36,7 +34,7 @@ struct MeshMapContent: MapContent {
 					anchor: .center
 				) {
 					avatar(for: node, name: nodeName)
-						.onTapGesture { location in
+						.onTapGesture {
 							selectedPosition = selectedPosition == position ? nil : position
 						}
 				} label: { }
@@ -52,6 +50,7 @@ struct MeshMapContent: MapContent {
 		ZStack(alignment: .top) {
 			Avatar(
 				name,
+				temperature: temperature(for: node),
 				background: color(for: node),
 				size: 48
 			)
@@ -82,6 +81,21 @@ struct MeshMapContent: MapContent {
 			}
 		}
 		.frame(width: 64, height: 64)
+	}
+
+	private func temperature(for node: NodeInfoEntity) -> Double? {
+		let nodeEnvironment = node
+			.telemetries?
+			.filtered(
+				using: NSPredicate(format: "metricsType == 1")
+			)
+			.lastObject as? TelemetryEntity
+
+		guard let temperature = nodeEnvironment?.temperature else {
+			return nil
+		}
+		
+		return Double(temperature)
 	}
 
 	private func color(for node: NodeInfoEntity) -> Color {

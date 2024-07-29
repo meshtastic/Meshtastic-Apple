@@ -242,7 +242,7 @@ struct NodeDetail: View {
 						.frame(width: 8)
 				}
 
-				Image(systemName: "thermometer.medium")
+				Image(systemName: "thermometer.variable")
 					.font(detailInfoFont)
 					.foregroundColor(.gray)
 					.frame(width: detailIconSize)

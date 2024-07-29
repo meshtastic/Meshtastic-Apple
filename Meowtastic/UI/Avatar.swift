@@ -2,6 +2,7 @@ import SwiftUI
 
 struct Avatar: View {
 	private let name: String?
+	private let temperature: Double?
 	private let background: Color
 	private let size: CGFloat
 
@@ -48,6 +49,30 @@ struct Avatar: View {
 					.padding(.all, size / 8)
 					.frame(width: size, height: size)
 			}
+
+			if let temperature {
+				let tempFormatted = String(format: "%.0f", temperature)
+
+				HStack(alignment: .center, spacing: 2) {
+					Text(tempFormatted)
+						.font(.system(size: 10, weight: .semibold, design: .rounded))
+						.foregroundColor(
+							(background.isLight() ? Color.black : Color.white)
+								.opacity(0.8)
+						)
+						.lineLimit(1)
+
+					Image(systemName: "thermometer.variable")
+						.font(.system(size: 7, weight: .semibold, design: .rounded))
+						.foregroundColor(
+							(background.isLight() ? Color.black : Color.white)
+								.opacity(0.8)
+						)
+				}
+				.padding(.horizontal, 6)
+				.padding(.vertical, 2)
+				.frame(width: size, height: size, alignment: .bottomTrailing)
+			}
 		}
 		.background(background)
 		.clipShape(
@@ -57,12 +82,14 @@ struct Avatar: View {
 
 	init(
 		_ name: String?,
+		temperature: Double? = nil,
 		background: Color,
 		size: CGFloat = 45,
 		// swiftlint:disable:next large_tuple
 		corners: (Bool, Bool, Bool, Bool)? = nil
 	) {
 		self.name = name
+		self.temperature = temperature
 		self.background = background
 		self.size = size
 		self.corners = corners

@@ -16,13 +16,11 @@ struct MeshMap: View {
 	@Namespace var mapScope
 	@State
 	var mapStyle = MapStyle.standard(
-		elevation: .flat,
+		elevation: .realistic,
 		emphasis: MapStyle.StandardEmphasis.muted
 	)
 	@State
 	var position = MapCameraPosition.automatic
-	@State
-	var isEditingSettings = false
 	@State
 	var selectedPosition: PositionEntity?
 	@State
@@ -30,8 +28,6 @@ struct MeshMap: View {
 
 	@EnvironmentObject
 	private var bleManager: BLEManager
-	@AppStorage("mapLayer")
-	private var selectedMapLayer: MapLayer = .standard
 
 	var body: some View {
 		NavigationStack {
@@ -47,7 +43,6 @@ struct MeshMap: View {
 					) {
 						MeshMapContent(
 							showUserLocation: $showUserLocation,
-							selectedMapLayer: $selectedMapLayer,
 							selectedPosition: $selectedPosition
 						)
 					}
@@ -69,45 +64,11 @@ struct MeshMap: View {
 					.controlSize(.regular)
 				}
 			}
-			.safeAreaInset(edge: .bottom, alignment: .trailing) {
-				HStack {
-					Button(action: {
-						withAnimation {
-							isEditingSettings = !isEditingSettings
-						}
-					}) {
-						Image(systemName: isEditingSettings ? "info.circle.fill" : "info.circle")
-							.padding(.vertical, 5)
-					}
-					.tint(Color(UIColor.secondarySystemBackground))
-					.foregroundColor(.accentColor)
-					.buttonStyle(.borderedProminent)
-				}
-				.controlSize(.regular)
-				.padding(5)
-			}
-			.onChange(of: selectedMapLayer, initial: true) {
-				UserDefaults.mapLayer = selectedMapLayer
-
-				switch selectedMapLayer {
-				case .standard:
-					mapStyle = MapStyle.standard(elevation: .realistic)
-				case .hybrid:
-					mapStyle = MapStyle.hybrid(elevation: .realistic)
-				case .satellite:
-					mapStyle = MapStyle.imagery(elevation: .realistic)
-				case .offline:
-					return
-				}
-			}
 			.popover(item: $selectedPosition) { position in
 				if let node = position.nodePosition {
 					NodeDetail(isInSheet: true, node: node)
 						.presentationDetents([.medium])
 				}
-			}
-			.sheet(isPresented: $isEditingSettings) {
-				MapSettingsForm(mapLayer: $selectedMapLayer, meshMap: $isMeshMap)
 			}
 			.navigationTitle("Mesh")
 			.navigationBarTitleDisplayMode(.large)

@@ -409,6 +409,7 @@
 				B2A5F2ED2C5668FD009457AB /* AltitudeHistoryView.swift */,
 				B2A5F2EE2C5668FD009457AB /* MapSettingsForm.swift */,
 				B2A5F2EF2C5668FD009457AB /* NodeMap.swift */,
+				B2A5F2F52C5668FD009457AB /* MeshMap.swift */,
 				B2A5F2F02C5668FD009457AB /* SimpleNodeMap.swift */,
 			);
 			path = Map;
@@ -419,7 +420,6 @@
 			children = (
 				B2A5F31A2C566B69009457AB /* List */,
 				B2A5F2F12C5668FD009457AB /* Map */,
-				B2A5F2F52C5668FD009457AB /* MeshMap.swift */,
 				B2A5F2E22C5668FD009457AB /* NodeDetail.swift */,
 				B2A5F2F62C5668FD009457AB /* NodeList.swift */,
 				B2A5F31B2C566D98009457AB /* TraceRoute.swift */,
