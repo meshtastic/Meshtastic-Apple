@@ -3,26 +3,27 @@ import CoreData
 import OSLog
 
 struct UserMessageList: View {
-	@StateObject
-	var appState = AppState.shared
-	@Environment(\.managedObjectContext)
-	var context
-	@EnvironmentObject
-	var bleManager: BLEManager
-	@FocusState
-	var messageFieldFocused: Bool
 	@ObservedObject
 	var user: UserEntity
+
+	@StateObject
+	private var appState = AppState.shared
+	@Environment(\.managedObjectContext)
+	private var context
+	@EnvironmentObject
+	private var bleManager: BLEManager
+	@FocusState
+	private var messageFieldFocused: Bool
 
 	@State
 	private var replyMessageId: Int64 = 0
 
 	var body: some View {
-		VStack {
+		ZStack(alignment: .bottom) {
 			ScrollViewReader { scrollView in
 				messageList
-					.padding([.top])
-					.scrollDismissesKeyboard(.immediately)
+					.scrollDismissesKeyboard(.interactively)
+					.scrollIndicators(.hidden)
 					.onChange(of: user.messageList, initial: true) {
 						if let messageId = user.messageList?.last?.messageId {
 							scrollView.scrollTo(messageId)
@@ -38,12 +39,20 @@ struct UserMessageList: View {
 				replyMessageId: $replyMessageId,
 				isFocused: $messageFieldFocused
 			)
+			.frame(alignment: .bottom)
+			.padding(.horizontal, 16)
+			.padding(.bottom, 8)
 		}
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
 			ToolbarItem(placement: .principal) {
 				if let name = user.longName {
 					Text(name)
+						.font(.headline)
+				}
+				else {
+					Text("DM")
+						.font(.headline)
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {
@@ -57,7 +66,7 @@ struct UserMessageList: View {
 		if let messageList = user.messageList {
 			List(messageList) { message in
 				if user.num != bleManager.connectedPeripheral?.num ?? -1 {
-					let currentUser = (Int64(UserDefaults.preferredPeripheralNum) == message.fromUser?.num ?? -1 ? true : false)
+					let currentUser = Int64(UserDefaults.preferredPeripheralNum) == message.fromUser?.num ?? -1 ? true : false
 					
 					if message.replyID > 0 {
 						let messageReply = messageList.first(where: {
@@ -163,6 +172,7 @@ struct UserMessageList: View {
 					}
 				}
 			}
+			.listStyle(.plain)
 		}
 		else {
 			EmptyView()
