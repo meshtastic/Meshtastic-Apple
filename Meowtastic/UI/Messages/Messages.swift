@@ -48,6 +48,15 @@ struct Messages: View {
 	)
 	private var users: FetchedResults<UserEntity>
 
+	private var badgeBackground: Color {
+		if colorScheme == .dark {
+			Color(red: 28/256, green: 28/256, blue: 30/256)
+		}
+		else {
+			.white
+		}
+	}
+
 	var body: some View {
 		NavigationStack {
 			List(/* selection: $channelSelection */) {
@@ -376,26 +385,37 @@ struct Messages: View {
 			if user.unreadMessages > 0 {
 				HStack(spacing: 0) {
 					Spacer()
-					
-					Text(String(user.unreadMessages))
-						.font(.system(size: 24))
-						.foregroundColor(.white)
-						.background(
-							Circle()
-								.foregroundColor(.red)
-						)
+
+					if user.unreadMessages <= 50 {
+						Image(systemName: "\(user.unreadMessages).circle")
+							.font(.system(size: 24))
+							.foregroundColor(.red)
+							.background(
+								Circle()
+									.foregroundColor(badgeBackground)
+							)
+					}
+					else {
+						Image(systemName: "book.closed.circle.fill")
+							.font(.system(size: 24))
+							.foregroundColor(.red)
+							.background(
+								Circle()
+									.foregroundColor(badgeBackground)
+							)
+					}
 				}
 			}
 			else if user.userNode?.favorite ?? false {
 				HStack(spacing: 0) {
 					Spacer()
-					
+
 					Image(systemName: "star.circle.fill")
 						.font(.system(size: 24))
 						.foregroundColor(colorScheme == .dark ? .white : .gray)
 						.background(
 							Circle()
-								.foregroundColor(colorScheme == .dark ? .black : .white)
+								.foregroundColor(badgeBackground)
 						)
 				}
 			}
@@ -408,7 +428,7 @@ struct Messages: View {
 						.foregroundColor(colorScheme == .dark ? .white : .gray)
 						.background(
 							Circle()
-								.foregroundColor(colorScheme == .dark ? .black : .white)
+								.foregroundColor(badgeBackground)
 						)
 				}
 			}
