@@ -9,8 +9,18 @@ import Foundation
 import CoreData
 
 extension NodeInfoEntity {
+	var latestEnvironmentMetrics: TelemetryEntity? {
+		telemetries?.filtered(
+			using: NSPredicate(format: "metricsType == 1")
+		).lastObject as? TelemetryEntity
+	}
+
 	var hasPositions: Bool {
-		return positions?.count ?? 0 > 0
+		positions?.count ?? 0 > 0
+	}
+
+	var latestPosition: PositionEntity? {
+		positions?.lastObject as? PositionEntity
 	}
 
 	var hasDeviceMetrics: Bool {

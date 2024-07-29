@@ -7,6 +7,8 @@ struct NodeList: View {
 	private var selectedDetailView: String?
 	@Environment(\.managedObjectContext)
 	private var context
+	@Environment(\.colorScheme)
+	private var colorScheme: ColorScheme
 	@EnvironmentObject
 	private var bleManager: BLEManager
 	@StateObject
@@ -141,71 +143,71 @@ struct NodeList: View {
 	private var summary: some View {
 		VStack(alignment: .leading, spacing: 4) {
 			Text("Online: \(onlineNodes) nodes")
-				.font(.system(size: 10, weight: .regular))
-				.foregroundColor(.gray)
+				.font(.system(size: 12, weight: .regular))
+				.foregroundColor(colorScheme == .dark ? .white : .black)
 
 			VStack(alignment: .leading, spacing: 4) {
 				HStack(alignment: .center, spacing: 4) {
 					Image(systemName: "minus")
-						.font(.system(size: 10, weight: .light))
+						.font(.system(size: 12, weight: .light))
 						.foregroundColor(.gray)
 
 					Image(systemName: "star.circle")
-						.font(.system(size: 10, weight: .light))
+						.font(.system(size: 12, weight: .light))
 						.foregroundColor(.gray)
 
 					Text(String(favoriteNodes))
-						.font(.system(size: 10, weight: .light))
+						.font(.system(size: 12, weight: .light))
 						.foregroundColor(.gray)
 				}
 
 				HStack(alignment: .center, spacing: 4) {
 					Image(systemName: "minus")
-						.font(.system(size: 10, weight: .light))
+						.font(.system(size: 12, weight: .light))
 						.foregroundColor(.gray)
 
 					Image(systemName: "antenna.radiowaves.left.and.right.circle")
-						.font(.system(size: 10, weight: .light))
+						.font(.system(size: 12, weight: .light))
 						.foregroundColor(.gray)
 
 					Text(String(loraNodes))
-						.font(.system(size: 10, weight: .light))
+						.font(.system(size: 12, weight: .light))
 						.foregroundColor(.gray)
 
 					Spacer()
 						.frame(width: 4)
 
 					Image(systemName: "1.circle")
-						.font(.system(size: 10, weight: .light))
+						.font(.system(size: 12, weight: .light))
 						.foregroundColor(.gray)
 
 					Text(String(loraSingleHopNodes))
-						.font(.system(size: 10, weight: .light))
+						.font(.system(size: 12, weight: .light))
 						.foregroundColor(.gray)
 
 					Spacer()
 						.frame(width: 4)
 
 					Image(systemName: "plus.circle")
-						.font(.system(size: 10, weight: .light))
+						.font(.system(size: 12, weight: .light))
 						.foregroundColor(.gray)
 
 					Text(String(loraNodes - loraSingleHopNodes))
-						.font(.system(size: 10, weight: .light))
+						.font(.system(size: 12, weight: .light))
 						.foregroundColor(.gray)
 				}
 
 				HStack(alignment: .center, spacing: 4) {
 					Image(systemName: "minus")
-						.font(.system(size: 10, weight: .light))
+						.font(.system(size: 12, weight: .light))
 						.foregroundColor(.gray)
 
 					Image(systemName: "network")
-						.font(.system(size: 10, weight: .light))
+						.font(.system(size: 12, weight: .light))
 						.foregroundColor(.gray)
 
 					Text(String(mqttNodes))
-						.font(.system(size: 10, weight: .light))
+						.font(.system(size: 12, weight: .light))
 						.foregroundColor(.gray)
 				}
 			}
@@ -214,8 +216,8 @@ struct NodeList: View {
 				.foregroundColor(.gray)
 
 			Text("Offline: \(offlineNodes) nodes")
-				.font(.system(size: 10, weight: .regular))
-				.foregroundColor(.gray)
+				.font(.system(size: 12, weight: .regular))
+				.foregroundColor(colorScheme == .dark ? .white : .black)
 		}
 	}
 

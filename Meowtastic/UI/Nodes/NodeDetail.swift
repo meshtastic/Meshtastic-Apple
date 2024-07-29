@@ -44,8 +44,15 @@ struct NodeDetail: View {
 			.filtered(
 				using: NSPredicate(format: "metricsType == 0")
 			)
-			.lastObject
-		as? TelemetryEntity
+			.lastObject as? TelemetryEntity
+	}
+	private var nodeEnvironment: TelemetryEntity? {
+		node
+			.telemetries?
+			.filtered(
+				using: NSPredicate(format: "metricsType == 1")
+			)
+			.lastObject as? TelemetryEntity
 	}
 
 	var body: some View {
@@ -53,6 +60,16 @@ struct NodeDetail: View {
 			List {
 				Section("Info") {
 					hardwareInfo
+
+					if nodePosition != nil {
+						locationInfo
+							.padding(.horizontal, 8)
+					}
+					
+					if nodeEnvironment != nil {
+						environmentInfo
+							.padding(.horizontal, 8)
+					}
 				}
 
 				Section("Details") {
@@ -86,32 +103,22 @@ struct NodeDetail: View {
 
 			if node.hasPositions {
 				if isInSheet {
-					VStack(alignment: .leading, spacing: 8) {
-						SimpleNodeMap(node: node)
-							.frame(width: .infinity, height: 120)
-							.cornerRadius(8)
-							.padding(.top, 8)
-							.disabled(true)
-							.toolbar(.hidden)
-
-						locationInfo
-							.padding(.horizontal, 8)
-					}
+					SimpleNodeMap(node: node)
+						.frame(width: .infinity, height: 120)
+						.cornerRadius(8)
+						.padding(.top, 8)
+						.disabled(true)
+						.toolbar(.hidden)
 				}
 				else {
 					NavigationLink {
 						NodeMap(node: node)
 					} label: {
-						VStack(alignment: .leading, spacing: 8) {
-							SimpleNodeMap(node: node)
-								.frame(width: .infinity, height: 200)
-								.cornerRadius(8)
-								.padding(.top, 8)
-								.disabled(true)
-
-							locationInfo
-								.padding(.horizontal, 8)
-						}
+						SimpleNodeMap(node: node)
+							.frame(width: .infinity, height: 200)
+							.cornerRadius(8)
+							.padding(.top, 8)
+							.disabled(true)
 					}
 				}
 			}
@@ -204,6 +211,69 @@ struct NodeDetail: View {
 						.foregroundColor(.gray)
 				}
 
+			}
+		}
+		else {
+			EmptyView()
+		}
+	}
+
+	@ViewBuilder
+	private var environmentInfo: some View {
+		if let environment = nodeEnvironment {
+			let tempFormatted = String(format: "%.1f", environment.temperature) + "°C"
+			let humidityFormatted = String(format: "%.0f", environment.relativeHumidity) + "%"
+			let pressureFormatted = String(format: "%.1f", environment.barometricPressure) + "hPa"
+			let windFormatted = String(format: "%.0f", environment.windSpeed) + "m/s"
+
+			HStack(alignment: .center, spacing: 8) {
+				if environment.windSpeed != 0 {
+					Image(systemName: "arrow.up.circle")
+						.rotationEffect(.degrees(Double(environment.windDirection)))
+						.font(detailInfoFont)
+						.foregroundColor(.gray)
+						.frame(width: detailIconSize)
+
+					Text(windFormatted)
+						.font(detailInfoFont)
+						.foregroundColor(.gray)
+
+					Spacer()
+						.frame(width: 8)
+				}
+
+				Image(systemName: "thermometer.medium")
+					.font(detailInfoFont)
+					.foregroundColor(.gray)
+					.frame(width: detailIconSize)
+
+				Text(tempFormatted)
+					.font(detailInfoFont)
+					.foregroundColor(.gray)
+
+				Spacer()
+					.frame(width: 8)
+
+				Image(systemName: "humidity")
+					.font(detailInfoFont)
+					.foregroundColor(.gray)
+					.frame(width: detailIconSize)
+
+				Text(humidityFormatted)
+					.font(detailInfoFont)
+					.foregroundColor(.gray)
+
+				Spacer()
+					.frame(width: 8)
+
+				Image(systemName: "cloud.sun")
+					.font(detailInfoFont)
+					.foregroundColor(.gray)
+					.frame(width: detailIconSize)
+
+				Text(pressureFormatted)
+					.font(detailInfoFont)
+					.foregroundColor(.gray)
 			}
 		}
 		else {
