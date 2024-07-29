@@ -525,7 +525,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		if log.starts(with: "DEBUG |") {
 			do {
 				let logString = log
-				if let coordsMatch = try CommonRegex.COORDS_REGEX.firstMatch(in: logString) {
+				if let coordsMatch = try CommonRegex.coordinateRegex.firstMatch(in: logString) {
 					log = "\(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces))"
 					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
 					Logger.radio.debug("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0.replacingOccurrences(of: "[,]", with: "", options: .regularExpression), privacy: .private) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
@@ -540,7 +540,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		} else if log.starts(with: "INFO  |") {
 			do {
 				let logString = log
-				if let coordsMatch = try CommonRegex.COORDS_REGEX.firstMatch(in: logString) {
+				if let coordsMatch = try CommonRegex.coordinateRegex.firstMatch(in: logString) {
 					log = "\(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces))"
 					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
 					Logger.radio.info("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0.replacingOccurrences(of: "[,]", with: "", options: .regularExpression), privacy: .private) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")

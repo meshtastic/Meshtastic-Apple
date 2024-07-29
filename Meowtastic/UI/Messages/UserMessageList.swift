@@ -1,6 +1,6 @@
-import SwiftUI
 import CoreData
 import OSLog
+import SwiftUI
 
 struct UserMessageList: View {
 	@ObservedObject
