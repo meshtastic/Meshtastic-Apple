@@ -222,9 +222,9 @@ struct NodeDetail: View {
 	private var environmentInfo: some View {
 		if let environment = nodeEnvironment {
 			let tempFormatted = String(format: "%.1f", environment.temperature) + "°C"
-			let humidityFormatted = String(format: "%.0f", environment.relativeHumidity) + "%"
-			let pressureFormatted = String(format: "%.1f", environment.barometricPressure) + "hPa"
-			let windFormatted = String(format: "%.0f", environment.windSpeed) + "m/s"
+			let humidityFormatted = String(format: "%.0f", environment.relativeHumidity.rounded()) + "%"
+			let pressureFormatted = String(format: "%.0f", environment.barometricPressure.rounded()) + "hPa"
+			let windFormatted = String(format: "%.0f", environment.windSpeed.rounded()) + "m/s"
 
 			HStack(alignment: .center, spacing: 8) {
 				if environment.windSpeed != 0 {
@@ -251,29 +251,33 @@ struct NodeDetail: View {
 					.font(detailInfoFont)
 					.foregroundColor(.gray)
 
-				Spacer()
-					.frame(width: 8)
+				if environment.relativeHumidity > 0, environment.relativeHumidity < 100 {
+					Spacer()
+						.frame(width: 8)
 
-				Image(systemName: "humidity")
-					.font(detailInfoFont)
-					.foregroundColor(.gray)
-					.frame(width: detailIconSize)
+					Image(systemName: "humidity")
+						.font(detailInfoFont)
+						.foregroundColor(.gray)
+						.frame(width: detailIconSize)
 
-				Text(humidityFormatted)
-					.font(detailInfoFont)
-					.foregroundColor(.gray)
+					Text(humidityFormatted)
+						.font(detailInfoFont)
+						.foregroundColor(.gray)
+				}
 
-				Spacer()
-					.frame(width: 8)
+				if environment.barometricPressure > 0 {
+					Spacer()
+						.frame(width: 8)
 
-				Image(systemName: "cloud.sun")
-					.font(detailInfoFont)
-					.foregroundColor(.gray)
-					.frame(width: detailIconSize)
+					Image(systemName: "cloud.sun")
+						.font(detailInfoFont)
+						.foregroundColor(.gray)
+						.frame(width: detailIconSize)
 
-				Text(pressureFormatted)
-					.font(detailInfoFont)
-					.foregroundColor(.gray)
+					Text(pressureFormatted)
+						.font(detailInfoFont)
+						.foregroundColor(.gray)
+				}
 			}
 		}
 		else {
