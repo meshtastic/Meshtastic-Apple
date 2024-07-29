@@ -16624,7 +16624,7 @@
     "Reply" : {
 
     },
-    "Request Trace Route" : {
+    "Request new" : {
 
     },
     "Requires that there be an accelerometer on your device." : {
@@ -20143,9 +20143,6 @@
     "This conversation will be deleted." : {
 
     },
-    "This could take a while. The response will appear in the trace route log for the node it was sent to." : {
-
-    },
     "This determines the actual frequency you are transmitting on in the band. If set to 0 this value will be calculated automatically based on the primary channel name." : {
 
     },
@@ -20884,9 +20881,6 @@
 
     },
     "Trace route received directly by %@" : {
-
-    },
-    "Trace Route Sent" : {
 
     },
     "Trace route sent to %@" : {

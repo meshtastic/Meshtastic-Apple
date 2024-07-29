@@ -47,8 +47,23 @@ struct TraceRoute: View {
 		HStack(alignment: .top) {
 			VStack {
 				if let routes {
-					VStack {
-						List(routes, id: \.id) { (route: TraceRouteEntity) in
+					List {
+						Button {
+							_ = bleManager.sendTraceRouteRequest(
+								destNum: node.user?.num ?? 0,
+								wantResponse: true
+							)
+						} label: {
+							Label {
+								Text("Request new")
+							} icon: {
+								Image(systemName: "arrow.clockwise")
+									.symbolRenderingMode(.monochrome)
+									.foregroundColor(.accentColor)
+							}
+						}
+
+						ForEach(routes, id: \.id) { (route: TraceRouteEntity) in
 							ZStack {
 								traceRoute(for: route)
 							}
@@ -56,10 +71,10 @@ struct TraceRoute: View {
 								selectedRoute = route
 							}
 						}
-						.listStyle(.automatic)
-						.onAppear {
-							selectedRoute = routes.first
-						}
+					}
+					.listStyle(.automatic)
+					.onAppear {
+						selectedRoute = routes.first
 					}
 				}
 

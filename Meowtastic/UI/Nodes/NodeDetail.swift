@@ -65,7 +65,7 @@ struct NodeDetail: View {
 						locationInfo
 							.padding(.horizontal, 8)
 					}
-					
+
 					if nodeEnvironment != nil {
 						environmentInfo
 							.padding(.horizontal, 8)
@@ -269,7 +269,7 @@ struct NodeDetail: View {
 					Spacer()
 						.frame(width: 8)
 
-					Image(systemName: "cloud.sun")
+					Image(systemName: "barometer")
 						.font(detailInfoFont)
 						.foregroundColor(.gray)
 						.frame(width: detailIconSize)
@@ -404,29 +404,20 @@ struct NodeDetail: View {
 				let connectedPeripheral = bleManager.connectedPeripheral,
 				node.num != connectedPeripheral.num
 			{
-				if let routes = node.traceRoutes, routes.count > 0 {
-					NavigationLink {
-						TraceRoute(node: node)
-					} label: {
-						Label {
-							Text("Trace Route")
-						} icon: {
+				let routes = node.traceRoutes?.count ?? 0
+
+				NavigationLink {
+					TraceRoute(node: node)
+				} label: {
+					Label {
+						Text("Trace Route")
+					} icon: {
+						if routes > 0 {
 							Image(systemName: "signpost.right.and.left.fill")
 								.symbolRenderingMode(.monochrome)
 								.foregroundColor(.accentColor)
 						}
-					}
-				}
-				else {
-					Button {
-						_ = bleManager.sendTraceRouteRequest(
-							destNum: node.user?.num ?? 0,
-							wantResponse: true
-						)
-					} label: {
-						Label {
-							Text("Request Trace Route")
-						} icon: {
+						else {
 							Image(systemName: "signpost.right.and.left")
 								.symbolRenderingMode(.monochrome)
 								.foregroundColor(.accentColor)

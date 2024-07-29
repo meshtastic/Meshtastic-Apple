@@ -28,7 +28,6 @@
 		B2A5F2FE2C5668FD009457AB /* ExchangePositionsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DC2C5668FD009457AB /* ExchangePositionsButton.swift */; };
 		B2A5F2FF2C5668FD009457AB /* FavoriteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DD2C5668FD009457AB /* FavoriteNodeButton.swift */; };
 		B2A5F3002C5668FD009457AB /* NodeAlertsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DE2C5668FD009457AB /* NodeAlertsButton.swift */; };
-		B2A5F3012C5668FD009457AB /* TraceRouteButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DF2C5668FD009457AB /* TraceRouteButton.swift */; };
 		B2A5F3022C5668FD009457AB /* BLEManager+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2E12C5668FD009457AB /* BLEManager+Extensions.swift */; };
 		B2A5F3032C5668FD009457AB /* NodeDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2E22C5668FD009457AB /* NodeDetail.swift */; };
 		B2A5F3042C5668FD009457AB /* NodeIconListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2E32C5668FD009457AB /* NodeIconListView.swift */; };
@@ -216,7 +215,6 @@
 		B2A5F2DC2C5668FD009457AB /* ExchangePositionsButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExchangePositionsButton.swift; sourceTree = "<group>"; };
 		B2A5F2DD2C5668FD009457AB /* FavoriteNodeButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FavoriteNodeButton.swift; sourceTree = "<group>"; };
 		B2A5F2DE2C5668FD009457AB /* NodeAlertsButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeAlertsButton.swift; sourceTree = "<group>"; };
-		B2A5F2DF2C5668FD009457AB /* TraceRouteButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TraceRouteButton.swift; sourceTree = "<group>"; };
 		B2A5F2E12C5668FD009457AB /* BLEManager+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BLEManager+Extensions.swift"; sourceTree = "<group>"; };
 		B2A5F2E22C5668FD009457AB /* NodeDetail.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeDetail.swift; sourceTree = "<group>"; };
 		B2A5F2E32C5668FD009457AB /* NodeIconListView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeIconListView.swift; sourceTree = "<group>"; };
@@ -391,7 +389,6 @@
 				B2A5F2DC2C5668FD009457AB /* ExchangePositionsButton.swift */,
 				B2A5F2DD2C5668FD009457AB /* FavoriteNodeButton.swift */,
 				B2A5F2DE2C5668FD009457AB /* NodeAlertsButton.swift */,
-				B2A5F2DF2C5668FD009457AB /* TraceRouteButton.swift */,
 			);
 			path = Actions;
 			sourceTree = "<group>";
@@ -949,7 +946,6 @@
 				DD77093F2AA1B146007A8BF0 /* UIColor.swift in Sources */,
 				DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */,
 				08DD7E5D2C42833200548159 /* LoRaSignalStrength.swift in Sources */,
-				B2A5F3012C5668FD009457AB /* TraceRouteButton.swift in Sources */,
 				DD1925B728CDA5A400720036 /* CannedMessagesConfigEnums.swift in Sources */,
 				DDDB444429F8A8DD00EE2349 /* Float.swift in Sources */,
 				DDAB580F2B0DAFBC00147258 /* LocationEntityExtension.swift in Sources */,
