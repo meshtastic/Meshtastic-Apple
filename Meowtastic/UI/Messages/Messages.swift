@@ -368,12 +368,11 @@ struct Messages: View {
 	private func avatar(for user: UserEntity) -> some View {
 		ZStack(alignment: .top) {
 			Avatar(
-				user.shortName,
-				background: getUserColor(for: user),
+				user.userNode,
 				size: 64
 			)
 			.padding([.top, .bottom, .trailing], 12)
-			
+
 			if user.unreadMessages > 0 {
 				HStack(spacing: 0) {
 					Spacer()
@@ -403,7 +402,7 @@ struct Messages: View {
 			else if !(user.userNode?.isOnline ?? false) {
 				HStack(spacing: 0) {
 					Spacer()
-					
+
 					Image(systemName: "network.slash")
 						.font(.system(size: 24))
 						.foregroundColor(colorScheme == .dark ? .white : .gray)
@@ -421,7 +420,7 @@ struct Messages: View {
 	private func avatar(for channel: ChannelEntity) -> some View {
 		ZStack(alignment: .top) {
 			Avatar(
-				String(channel.index),
+				label: String(channel.index),
 				background: .accentColor,
 				size: 64
 			)

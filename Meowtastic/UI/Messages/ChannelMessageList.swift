@@ -140,8 +140,7 @@ struct ChannelMessageList: View {
 			else {
 				VStack(alignment: .center) {
 					Avatar(
-						getSenderName(message: message, short: true),
-						background: getSenderColor(message: message),
+						message.fromUser?.userNode,
 						size: 64,
 						corners: isCurrentUser ? (true, true, false, true) : nil
 					)
@@ -216,8 +215,7 @@ struct ChannelMessageList: View {
 
 			if isCurrentUser {
 				Avatar(
-					getSenderName(message: message, short: true),
-					background: getSenderColor(message: message),
+					message.fromUser?.userNode,
 					size: 64
 				)
 			}
@@ -282,18 +280,5 @@ struct ChannelMessageList: View {
 				return "Unknown Name"
 			}
 		}
-	}
-
-	private func getSenderColor(message: MessageEntity) -> Color {
-		if
-			let num = message.fromUser?.num,
-			message.fromUser?.userNode?.isOnline ?? false
-		{
-			return Color(
-				UIColor(hex: UInt32(num))
-			)
-		}
-
-		return Color.gray.opacity(0.7)
 	}
 }

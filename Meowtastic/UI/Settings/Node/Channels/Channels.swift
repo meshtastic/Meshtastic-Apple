@@ -122,7 +122,7 @@ struct Channels: View {
 							VStack(alignment: .leading) {
 								HStack {
 									Avatar(
-										String(channel.index),
+										label: String(channel.index),
 										background: .accentColor,
 										size: 45
 									)

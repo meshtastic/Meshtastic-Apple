@@ -11,8 +11,7 @@ struct NodeInfoView: View {
 	var body: some View {
 		HStack(alignment: .top, spacing: 16) {
 			Avatar(
-				node.user?.shortName,
-				background: node.color,
+				node,
 				size: 72
 			)
 

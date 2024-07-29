@@ -45,8 +45,7 @@ struct NodeListItem: View {
 	private var avatar: some View {
 		ZStack(alignment: .top) {
 			Avatar(
-				node.user?.shortName ?? "?",
-				background: Color(UIColor(hex: UInt32(node.num))),
+				node,
 				size: 64
 			)
 			.padding([.top, .bottom, .trailing], 10)

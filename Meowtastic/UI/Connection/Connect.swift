@@ -113,8 +113,7 @@ struct Connect: View {
 				HStack(alignment: .top, spacing: 8) {
 					VStack(alignment: .center) {
 						Avatar(
-							node?.user?.shortName ?? "?",
-							background: Color(UIColor(hex: UInt32(node?.num ?? 0))),
+							node,
 							size: 90
 						)
 					}
