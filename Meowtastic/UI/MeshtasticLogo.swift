@@ -6,12 +6,9 @@ struct MeshtasticLogo: View {
 
 	@ViewBuilder
 	var body: some View {
-		VStack {
-			Image(colorScheme == .dark ? "logo-white" : "logo-black")
-				.resizable()
-				// .renderingMode(.template)
-				.scaledToFit()
-				.frame(height: 32)
-		}
+		Image(colorScheme == .dark ? "logo-white" : "logo-black")
+			.resizable()
+			.scaledToFit()
+			.frame(height: 32)
 	}
 }
