@@ -1,7 +1,7 @@
 import Charts
 import SwiftUI
 
-struct BatteryGaugeView: View {
+struct BatteryView: View {
 	@ObservedObject
 	var node: NodeInfoEntity
 

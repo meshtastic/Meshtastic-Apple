@@ -349,7 +349,8 @@ struct Connect: View {
 					) { success, error in
 						if success {
 							Logger.services.info("Notifications are all set!")
-						} else if let error = error {
+						}
+						else if let error = error {
 							Logger.services.error("\(error.localizedDescription)")
 						}
 					}

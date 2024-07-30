@@ -1,6 +1,6 @@
 import Foundation
 
-enum LoRaSignalStrength: Int {
+enum LoraSignal: Int {
 	case none = 0
 	case bad = 1
 	case fair = 2

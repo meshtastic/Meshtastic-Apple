@@ -2,7 +2,7 @@ import Foundation
 import SwiftUI
 
 final class LoRaSignal {
-	static func getStrength(snr: Float, rssi: Int32, preset: ModemPresets) -> LoRaSignalStrength {
+	static func getStrength(snr: Float, rssi: Int32, preset: ModemPresets) -> LoraSignal {
 		if rssi > -115 && snr > preset.snrLimit() {
 			return .good
 		}

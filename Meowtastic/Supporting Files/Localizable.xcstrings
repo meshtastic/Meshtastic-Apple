@@ -17838,9 +17838,6 @@
         }
       }
     },
-    "RSSI %ddB" : {
-
-    },
     "RSSI: %ddBm" : {
 
     },
@@ -18963,13 +18960,7 @@
     "Shut Down Node?" : {
 
     },
-    "Signal %@" : {
-
-    },
     "Smart Position" : {
-
-    },
-    "SNR %@dB" : {
 
     },
     "SNR: %@dB" : {

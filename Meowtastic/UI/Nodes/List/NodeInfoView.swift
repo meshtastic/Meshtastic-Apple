@@ -35,7 +35,7 @@ struct NodeInfoView: View {
 				}
 
 				if node.snr != 0 && !node.viaMqtt {
-					LoRaSignalMeterView(
+					LoraSignalView(
 						snr: node.snr,
 						rssi: node.rssi,
 						preset: modemPreset,
@@ -43,7 +43,7 @@ struct NodeInfoView: View {
 					)
 				}
 
-				BatteryGaugeView(
+				BatteryView(
 					node: node,
 					withLabels: true
 				)

@@ -94,7 +94,7 @@ struct NodeListItem: View {
 			EmptyView()
 		}
 		else {
-			LoRaSignalMeterView(
+			LoraSignalView(
 				snr: node.snr,
 				rssi: node.rssi,
 				preset: modemPreset,
@@ -109,7 +109,7 @@ struct NodeListItem: View {
 			EmptyView()
 		}
 		else {
-			BatteryGaugeView(
+			BatteryView(
 				node: node,
 				withLabels: true
 			)
