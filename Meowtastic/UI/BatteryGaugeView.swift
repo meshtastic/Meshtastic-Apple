@@ -8,7 +8,9 @@ struct BatteryGaugeView: View {
 	private let withLabels: Bool
 	private let minValue = 0.0
 	private let maxValue = 100.00
-	private let gaugeGradient = Gradient(colors: [.red, .orange, .green])
+
+	@Environment(\.colorScheme)
+	private var colorScheme: ColorScheme
 
 	var body: some View {
 		if let telemetries = node.telemetries {
@@ -16,7 +18,6 @@ struct BatteryGaugeView: View {
 				using: NSPredicate(format: "metricsType == 0")
 			)
 			let mostRecent = deviceMetrics.lastObject as? TelemetryEntity
-
 			let batteryLevel = mostRecent?.batteryLevel
 			let voltage = mostRecent?.voltage
 
@@ -55,8 +56,10 @@ struct BatteryGaugeView: View {
 						value: min(Double(batteryLevel), 100),
 						in: minValue...maxValue
 					) { }
-						.gaugeStyle(.accessoryLinear)
-						.tint(gaugeGradient)
+						.gaugeStyle(.accessoryLinearCapacity)
+						.tint(
+							colorScheme == .dark ? .white : .black
+						)
 
 					if withLabels {
 						if let voltage = mostRecent?.voltage, voltage > 0, voltage <= 100 {

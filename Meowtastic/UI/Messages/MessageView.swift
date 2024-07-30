@@ -190,24 +190,10 @@ struct MessageView: View {
 	@ViewBuilder
 	private var messageTime: some View {
 		HStack(spacing: 4) {
-			/* disabled, for some reason it shows full signal for all messages; that can't be true
-			 let loraPreset = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
-			 
-			 LoRaSignalMeterView(
-			 snr: message.snr,
-			 rssi: message.rssi,
-			 preset: loraPreset,
-			 compact: true,
-			 color: statusForegroundColor,
-			 withLabels: false
-			 )
-			 .frame(width: 32)
-			 */
-			
 			Image(systemName: "clock")
 				.font(.system(size: statusFontSize))
 				.foregroundColor(statusForegroundColor)
-			
+
 			Text(dateFormatter.string(from: message.timestamp))
 				.font(.system(size: statusFontSize))
 				.lineLimit(1)
@@ -220,33 +206,35 @@ struct MessageView: View {
 	private var messageStatus: some View {
 		if message.receivedACK {
 			let ackAt = Date(timeIntervalSince1970: TimeInterval(message.ackTimestamp))
-			
+
 			HStack(spacing: 4) {
 				Image(systemName: "checkmark.circle.fill")
 					.font(.system(size: statusFontSize))
 					.foregroundColor(statusForegroundColor)
-				
+
 				Text(dateFormatter.string(from: ackAt))
 					.font(.system(size: statusFontSize))
 					.lineLimit(1)
 					.foregroundColor(statusForegroundColor)
 			}
-		} else if message.ackError == 0 {
+		}
+		else if message.ackError == 0 {
 			HStack(spacing: 4) {
 				Image(systemName: "checkmark.circle.badge.questionmark")
 					.font(.system(size: statusFontSize))
 					.foregroundColor(statusForegroundColor)
-				
+
 				Text(dateFormatter.string(from: message.timestamp))
 					.font(.system(size: statusFontSize))
 					.lineLimit(1)
 					.foregroundColor(statusForegroundColor)
 			}
-		} else if message.ackError > 0 {
+		}
+		else if message.ackError > 0 {
 			Image(systemName: "checkmark.circle.trianglebadge.exclamationmark")
 				.font(.system(size: statusFontSize))
 				.foregroundColor(statusForegroundColor)
-			
+
 			if let ackError = RoutingError(rawValue: Int(message.ackError)) {
 				Text(ackError.display)
 					.font(.system(size: statusFontSize))
@@ -266,8 +254,11 @@ struct MessageView: View {
 private extension MessageDestination {
 	var overlaySensorMessage: Bool {
 		switch self {
-		case .user: return false
-		case .channel: return true
+		case .user:
+			return false
+
+		case .channel:
+			return true
 		}
 	}
 }

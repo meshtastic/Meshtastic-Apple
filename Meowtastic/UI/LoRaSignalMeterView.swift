@@ -6,7 +6,6 @@ struct LoRaSignalMeterView: View {
 	private var rssi: Int32
 	private var preset: ModemPresets
 	private var compact: Bool
-	private var color: Color?
 	private var withLabels: Bool
 
 	@Environment(\.colorScheme)
@@ -23,26 +22,14 @@ struct LoRaSignalMeterView: View {
 							.font(.footnote)
 					}
 
-					if let color {
-						Gauge(
-							value: Double(signalStrength.rawValue),
-							in: 0...3
-						) { }
-							.gaugeStyle(.accessoryLinear)
-							.tint(
-								color
-							)
-					}
-					else {
-						Gauge(
-							value: Double(signalStrength.rawValue),
-							in: 0...3
-						) { }
-							.gaugeStyle(.accessoryLinear)
-							.tint(
-								Gradient(colors: [.clear, .accentColor])
-							)
-					}
+					Gauge(
+						value: Double(signalStrength.rawValue),
+						in: 0...3
+					) { }
+						.gaugeStyle(.accessoryLinearCapacity)
+						.tint(
+							colorScheme == .dark ? .white : .black
+						)
 
 					if withLabels {
 						let snrFormatted = String(format: "%.0f", snr) + "dB"
@@ -84,14 +71,12 @@ struct LoRaSignalMeterView: View {
 		rssi: Int32,
 		preset: ModemPresets,
 		compact: Bool = true,
-		color: Color? = nil,
 		withLabels: Bool = false
 	) {
 		self.snr = snr
 		self.rssi = rssi
 		self.preset = preset
 		self.compact = compact
-		self.color = color
 		self.withLabels = withLabels
 	}
 }
