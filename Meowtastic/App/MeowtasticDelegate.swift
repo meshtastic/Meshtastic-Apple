@@ -14,14 +14,6 @@ final class MeowtasticDelegate: UIResponder, UIApplicationDelegate, UNUserNotifi
 
 		UNUserNotificationCenter.current().delegate = self
 
-		let locationsHandler = LocationsHandler.shared
-		locationsHandler.startLocationUpdates()
-
-		// If a background activity session was previously active, reinstantiate it after the background launch.
-		if locationsHandler.backgroundActivity {
-			locationsHandler.backgroundActivity = true
-		}
-
 		return true
 	}
 

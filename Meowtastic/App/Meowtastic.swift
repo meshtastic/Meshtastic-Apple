@@ -21,6 +21,8 @@ struct Meowtastic: App {
 	private var appState: AppState
 	@ObservedObject
 	private var bleManager: BLEManager
+	@ObservedObject
+	private var locationManager: LocationManager
 
 	@ViewBuilder
 	var body: some Scene {
@@ -28,6 +30,7 @@ struct Meowtastic: App {
 			Content()
 				.environment(\.managedObjectContext, persistence.viewContext)
 				.environmentObject(bleManager)
+				.environmentObject(locationManager)
 				.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
 					Logger.mesh.debug("URL received \(userActivity)")
 
@@ -105,16 +108,15 @@ struct Meowtastic: App {
 	}
 
 	init() {
-		let persistence = Persistence.shared
-		self.persistence = persistence
+		self.persistence = Persistence.shared
+		self.locationManager = LocationManager.shared
 
 		let appState = AppState()
 		self.appState = appState
 
-		let bleManager = BLEManager(
+		self.bleManager = BLEManager(
 			appState: appState,
 			context: persistence.viewContext
 		)
-		self.bleManager = bleManager
 	}
 }

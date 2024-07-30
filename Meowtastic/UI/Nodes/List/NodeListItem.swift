@@ -16,6 +16,8 @@ struct NodeListItem: View {
 
 	@Environment(\.colorScheme)
 	private var colorScheme: ColorScheme
+	@EnvironmentObject
+	private var locationManager: LocationManager
 
 	var body: some View {
 		NavigationLink(value: node) {
@@ -135,37 +137,31 @@ struct NodeListItem: View {
 	@ViewBuilder
 	private var distance: some View {
 		if
-			let lastPostion = node.positions?.lastObject as? PositionEntity,
-			let currentLocation = LocationsHandler.shared.locationsArray.last
+			let currentCoordinate = locationManager.lastKnownLocation?.coordinate,
+			let lastCoordinate = (node.positions?.lastObject as? PositionEntity)?.coordinate
 		{
 			let myLocation = CLLocation(
-				latitude: currentLocation.coordinate.latitude,
-				longitude: currentLocation.coordinate.longitude
+				latitude: currentCoordinate.latitude,
+				longitude: currentCoordinate.longitude
 			)
 
-			if
-				let coordinate = lastPostion.nodeCoordinate,
-				myLocation.coordinate.longitude != LocationHelper.defaultLocation.longitude,
-				myLocation.coordinate.latitude != LocationHelper.defaultLocation.latitude
-			{
-				HStack {
-					let location = CLLocation(
-						latitude: coordinate.latitude,
-						longitude: coordinate.longitude
-					)
-					let distance = location.distance(from: myLocation)
+			HStack {
+				let location = CLLocation(
+					latitude: lastCoordinate.latitude,
+					longitude: lastCoordinate.longitude
+				)
+				let distance = location.distance(from: myLocation)
 
-					Image(systemName: "mappin.and.ellipse.circle.fill")
-						.font(detailInfoFont)
-						.foregroundColor(.gray)
+				Image(systemName: "mappin.and.ellipse.circle.fill")
+					.font(detailInfoFont)
+					.foregroundColor(.gray)
 
-					let formatter = MKDistanceFormatter()
-					let distanceFormatted = formatter.string(fromDistance: Double(distance))
+				let formatter = MKDistanceFormatter()
+				let distanceFormatted = formatter.string(fromDistance: Double(distance))
 
-					Text(distanceFormatted)
-						.font(detailInfoFont)
-						.foregroundColor(.gray)
-				}
+				Text(distanceFormatted)
+					.font(detailInfoFont)
+					.foregroundColor(.gray)
 			}
 		}
 	}

@@ -3,33 +3,30 @@ import Foundation
 import MapKit
 import OSLog
 
-final class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
-	static let shared = LocationHelper()
-	static let defaultLocation = CLLocationCoordinate2D( // Apple Park
+final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+	static let shared = LocationManager()
+	static let defaultLocation = CLLocation( // Apple Park
 		latitude: 37.3346,
 		longitude: -122.0090
 	)
-	static var currentLocation: CLLocationCoordinate2D {
-		guard let location = shared.locationManager.location else {
-			return defaultLocation
-		}
 
-		return location.coordinate
-	}
+	private let locationManager: CLLocationManager
 
-	private var locationManager = CLLocationManager()
+	private(set) var lastKnownLocation: CLLocation?
 
 	@Published
 	private var authorizationStatus: CLAuthorizationStatus?
 
 	override init() {
-		super.init()
-
-		locationManager.delegate = self
+		locationManager = CLLocationManager()
 		locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
 		locationManager.pausesLocationUpdatesAutomatically = true
 		locationManager.allowsBackgroundLocationUpdates = true
 		locationManager.activityType = .other
+
+		super.init()
+
+		locationManager.delegate = self
 	}
 
 	func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
@@ -57,10 +54,22 @@ final class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegat
 	}
 
 	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-		// no-op
+		lastKnownLocation = locations.last
+
+		if let coordinate = lastKnownLocation?.coordinate {
+			MeshLogger.log("📍 We got new location: \(coordinate.latitude), \(coordinate.longitude)")
+		}
 	}
 
 	func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
 		// no-op
+	}
+
+	func getSafeLastKnownLocation() -> CLLocation {
+		if let lastKnownLocation {
+			return lastKnownLocation
+		}
+
+		return Self.defaultLocation
 	}
 }

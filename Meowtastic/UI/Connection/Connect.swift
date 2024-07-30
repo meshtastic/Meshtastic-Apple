@@ -1,9 +1,9 @@
-import SwiftUI
-import MapKit
+import CoreBluetooth
 import CoreData
 import CoreLocation
-import CoreBluetooth
+import MapKit
 import OSLog
+import SwiftUI
 
 struct Connect: View {
 	@Environment(\.managedObjectContext)

@@ -33,15 +33,14 @@ struct SimpleNodeMap: View {
 	var body: some View {
 		if node.hasPositions {
 			map
-		} else {
+		}
+		else {
 			EmptyView()
 		}
 	}
 
 	@ViewBuilder
 	private var map: some View {
-		var mostRecent = node.positions?.lastObject as? PositionEntity
-
 		MapReader { _ in
 			Map(
 				position: $position,
@@ -54,16 +53,17 @@ struct SimpleNodeMap: View {
 			.mapStyle(mapStyle)
 			.onAppear {
 				UIApplication.shared.isIdleTimerDisabled = true
-				mostRecent = node.positions?.lastObject as? PositionEntity
 
-				position = .camera(
-					MapCamera(
-						centerCoordinate: mostRecent!.coordinate,
-						distance: 500,
-						heading: 0,
-						pitch: 80
+				if let lastCoordinate = (node.positions?.lastObject as? PositionEntity)?.coordinate {
+					position = .camera(
+						MapCamera(
+							centerCoordinate: lastCoordinate,
+							distance: 500,
+							heading: 0,
+							pitch: 80
+						)
 					)
-				)
+				}
 			}
 			.onDisappear {
 				UIApplication.shared.isIdleTimerDisabled = false

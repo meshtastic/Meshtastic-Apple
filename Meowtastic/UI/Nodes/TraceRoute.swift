@@ -107,7 +107,7 @@ struct TraceRoute: View {
 								) {
 									Annotation(
 										"You",
-										coordinate: selectedRoute.coordinate ?? LocationHelper.defaultLocation
+										coordinate: selectedRoute.coordinate ?? LocationManager.defaultLocation.coordinate
 									) {
 										ZStack {
 											Circle()
@@ -125,12 +125,12 @@ struct TraceRoute: View {
 											let mostRecent = selectedRoute.node?.positions?.lastObject as? PositionEntity
 										{
 											let traceRouteCoords: [CLLocationCoordinate2D] = [
-												selectedRoute.coordinate ?? LocationHelper.defaultLocation,
+												selectedRoute.coordinate ?? LocationManager.defaultLocation.coordinate,
 												mostRecent.coordinate
 											]
 											Annotation(
 												selectedRoute.node?.user?.shortName ?? "???",
-												coordinate: mostRecent.nodeCoordinate ?? LocationHelper.defaultLocation
+												coordinate: mostRecent.nodeCoordinate ?? LocationManager.defaultLocation.coordinate
 											) {
 												ZStack {
 													Circle()
@@ -160,20 +160,20 @@ struct TraceRoute: View {
 								   let mostRecent = selectedRoute.node?.positions?.lastObject as? PositionEntity {
 
 									let startPoint = CLLocation(
-										latitude: selectedRoute.coordinate?.latitude ?? LocationHelper.defaultLocation.latitude,
-										longitude: selectedRoute.coordinate?.longitude ?? LocationHelper.defaultLocation.longitude
+										latitude: selectedRoute.coordinate?.latitude ?? LocationManager.defaultLocation.coordinate.latitude,
+										longitude: selectedRoute.coordinate?.longitude ?? LocationManager.defaultLocation.coordinate.longitude
 									)
 
 									if startPoint.distance(
 										from: CLLocation(
-											latitude: LocationHelper.defaultLocation.latitude,
-											longitude: LocationHelper.defaultLocation.longitude)
+											latitude: LocationManager.defaultLocation.coordinate.latitude,
+											longitude: LocationManager.defaultLocation.coordinate.longitude)
 									) > 0.0
 									{
 										let metersAway = selectedRoute.coordinate?.distance(
 											from: CLLocationCoordinate2D(
-												latitude: mostRecent.latitude ?? LocationHelper.defaultLocation.latitude,
-												longitude: mostRecent.longitude ?? LocationHelper.defaultLocation.longitude
+												latitude: mostRecent.latitude ?? LocationManager.defaultLocation.coordinate.latitude,
+												longitude: mostRecent.longitude ?? LocationManager.defaultLocation.coordinate.longitude
 											)
 										)
 
