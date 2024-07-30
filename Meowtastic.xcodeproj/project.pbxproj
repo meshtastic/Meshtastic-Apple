@@ -586,19 +586,19 @@
 		DDC2E18726CE24E40042C5E4 /* UI */ = {
 			isa = PBXGroup;
 			children = (
-				DD3CC6BD28E4CD9800FA9159 /* BatteryView.swift */,
-				DD457187293C7E63000C49FB /* SignalStrengthIndicator.swift */,
 				DD47E3D526F17ED900029299 /* Avatar.swift */,
+				DD3CC6BD28E4CD9800FA9159 /* BatteryView.swift */,
 				DDF924C926FBB953009FE055 /* ConnectedDevice.swift */,
+				DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */,
 				DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */,
 				DDC3B273283F411B00AC321C /* LastHeardText.swift */,
 				DDB75A202A12B954006ED576 /* LoraSignalView.swift */,
 				DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */,
-				DDF45C332BC1A48E005ED5F2 /* MQTTChannelIcon.swift */,
 				08DD7E622C42D8B300548159 /* MQTTConnectionIcon.swift */,
+				DDF45C332BC1A48E005ED5F2 /* MQTTChannelIcon.swift */,
+				DD457187293C7E63000C49FB /* SignalStrengthIndicator.swift */,
 				B2A5F2E02C5668FD009457AB /* Actions */,
 				DD47E3D726F2F21A00029299 /* Connection */,
-				DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */,
 				DDC2E18B26CE25A70042C5E4 /* Messages */,
 				B2A5F2FB2C5668FD009457AB /* Nodes */,
 				DD4A911C2708C57100501B7E /* Settings */,
