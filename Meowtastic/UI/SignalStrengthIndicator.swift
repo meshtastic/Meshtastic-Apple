@@ -47,10 +47,13 @@ struct SignalStrengthIndicator: View {
 
 	private func getColor() -> Color {
 		switch signalStrength {
+
 		case .weak:
 			return Color.red
+
 		case .normal:
 			return Color.yellow
+
 		case .strong:
 			return Color.green
 		}
@@ -60,6 +63,7 @@ struct SignalStrengthIndicator: View {
 struct Divided<S: Shape>: Shape {
 	var amount: CGFloat // Should be in range 0...1
 	var shape: S
+
 	func path(in rect: CGRect) -> Path {
 		shape.path(in: rect.divided(atDistance: amount * rect.height, from: .maxYEdge).slice)
 	}
@@ -67,7 +71,7 @@ struct Divided<S: Shape>: Shape {
 
 extension Shape {
 	func divided(amount: CGFloat) -> Divided<Self> {
-		return Divided(amount: amount, shape: self)
+		Divided(amount: amount, shape: self)
 	}
 }
 

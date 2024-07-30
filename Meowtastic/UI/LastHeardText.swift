@@ -7,7 +7,8 @@ struct LastHeardText: View {
 	var body: some View {
 		if let lastHeard, lastHeard.timeIntervalSince1970 > 0 {
 			Text(lastHeard.formatted())
-		} else {
+		}
+		else {
 			Text("N/A")
 		}
 	}

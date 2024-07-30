@@ -28,15 +28,17 @@ struct ConnectedDevice: View {
 
 					deviceIcon("antenna.radiowaves.left.and.right", color: .green)
 				}
-			} else {
+			}
+			else {
 				deviceIcon("antenna.radiowaves.left.and.right.slash", color: .orange)
 			}
-		} else {
+		}
+		else {
 			deviceIcon("exclamationmark.triangle.fill", color: .red)
 		}
 	}
 
-	public init(
+	init(
 		ble: BLEManager
 	) {
 		self.isOn = ble.isSwitchedOn
@@ -47,7 +49,7 @@ struct ConnectedDevice: View {
 		self.mqttChannelInfo = false
 	}
 
-	public init(
+	init(
 		ble: BLEManager,
 		mqttUplinkEnabled: Bool = false,
 		mqttDownlinkEnabled: Bool = false

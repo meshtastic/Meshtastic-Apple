@@ -23,10 +23,13 @@ struct LoRaSignalView: View {
 		switch signalStrength {
 		case .none:
 			return Color.red
+
 		case .bad:
 			return Color.orange
+
 		case .fair:
 			return Color.yellow
+
 		case .good:
 			return Color.green
 		}

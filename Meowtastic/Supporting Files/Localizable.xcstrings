@@ -26,9 +26,6 @@
     "%d hop(s)" : {
 
     },
-    "%d%%" : {
-
-    },
     "%lld" : {
 
     },
@@ -495,9 +492,6 @@
           }
         }
       }
-    },
-    "Alert" : {
-
     },
     "All device and app data will be deleted. You will also need to forget your devices under Settings > Bluetooth." : {
 
@@ -2827,9 +2821,6 @@
       }
     },
     "Channels" : {
-
-    },
-    "CHG" : {
 
     },
     "clear.app.data" : {
@@ -15978,9 +15969,6 @@
 
     },
     "Project Website" : {
-
-    },
-    "PWD" : {
 
     },
     "radio.configuration" : {

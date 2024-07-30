@@ -53,8 +53,6 @@
 		D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */; };
 		D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */; };
 		D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93069072B81DF040066FBC8 /* SaveConfigButton.swift */; };
-		D9C983A02B79D0E800BDBE6A /* AlertButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */; };
-		D9C983A22B79D1A600BDBE6A /* RequestPositionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */; };
 		DD007BAE2AA4E91200F5FA12 /* MyInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */; };
 		DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */; };
 		DD0D3D222A55CEB10066DB71 /* CocoaMQTT in Frameworks */ = {isa = PBXBuildFile; productRef = DD0D3D212A55CEB10066DB71 /* CocoaMQTT */; };
@@ -74,7 +72,7 @@
 		DD3CC6C028E7A60700FA9159 /* MessagingEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */; };
 		DD3CC6C228EB9D4900FA9159 /* UpdateCoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6C128EB9D4900FA9159 /* UpdateCoreData.swift */; };
 		DD41582628582E9B009B0E59 /* DeviceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41582528582E9B009B0E59 /* DeviceConfig.swift */; };
-		DD457188293C7E63000C49FB /* BLESignalStrengthIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */; };
+		DD457188293C7E63000C49FB /* SignalStrengthIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD457187293C7E63000C49FB /* SignalStrengthIndicator.swift */; };
 		DD47E3D626F17ED900029299 /* Avatar.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D526F17ED900029299 /* Avatar.swift */; };
 		DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4A911D2708C65400501B7E /* AppSettings.swift */; };
 		DD5D0A9C2931B9F200F7EA61 /* EthernetModes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5D0A9B2931B9F200F7EA61 /* EthernetModes.swift */; };
@@ -113,7 +111,6 @@
 		DDB75A1A2A05EB67006ED576 /* alpha.png in Resources */ = {isa = PBXBuildFile; fileRef = DDB75A192A05EB67006ED576 /* alpha.png */; };
 		DDB75A1E2A0B0CD0006ED576 /* LoRaSignalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A1D2A0B0CD0006ED576 /* LoRaSignalView.swift */; };
 		DDB75A212A12B954006ED576 /* LoRaSignalMeterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A202A12B954006ED576 /* LoRaSignalMeterView.swift */; };
-		DDB75A232A13CDA9006ED576 /* BatteryLevelCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A222A13CDA9006ED576 /* BatteryLevelCompact.swift */; };
 		DDB8F4102A9EE5B400230ECE /* Messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB8F40F2A9EE5B400230ECE /* Messages.swift */; };
 		DDC2E15826CE248E0042C5E4 /* MeowtasticApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E15726CE248E0042C5E4 /* MeowtasticApp.swift */; };
 		DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */; };
@@ -238,8 +235,6 @@
 		D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerConfig.swift; sourceTree = "<group>"; };
 		D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigHeader.swift; sourceTree = "<group>"; };
 		D93069072B81DF040066FBC8 /* SaveConfigButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveConfigButton.swift; sourceTree = "<group>"; };
-		D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertButton.swift; sourceTree = "<group>"; };
-		D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestPositionButton.swift; sourceTree = "<group>"; };
 		DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntityExtension.swift; sourceTree = "<group>"; };
 		DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntityExtension.swift; sourceTree = "<group>"; };
 		DD0E21002B8A6BC500F2D100 /* DeviceHardware.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = DeviceHardware.json; sourceTree = "<group>"; };
@@ -260,7 +255,7 @@
 		DD41582528582E9B009B0E59 /* DeviceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConfig.swift; sourceTree = "<group>"; };
 		DD41A61C29AE7E8E003C5A37 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		DD41A61E29AE7E8F003C5A37 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
-		DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLESignalStrengthIndicator.swift; sourceTree = "<group>"; };
+		DD457187293C7E63000C49FB /* SignalStrengthIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalStrengthIndicator.swift; sourceTree = "<group>"; };
 		DD47E3D526F17ED900029299 /* Avatar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Avatar.swift; sourceTree = "<group>"; };
 		DD4A911D2708C65400501B7E /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntityExtension.swift; sourceTree = "<group>"; };
@@ -302,7 +297,6 @@
 		DDB75A192A05EB67006ED576 /* alpha.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = alpha.png; sourceTree = "<group>"; };
 		DDB75A1D2A0B0CD0006ED576 /* LoRaSignalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignalView.swift; sourceTree = "<group>"; };
 		DDB75A202A12B954006ED576 /* LoRaSignalMeterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignalMeterView.swift; sourceTree = "<group>"; };
-		DDB75A222A13CDA9006ED576 /* BatteryLevelCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryLevelCompact.swift; sourceTree = "<group>"; };
 		DDB8F40F2A9EE5B400230ECE /* Messages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Messages.swift; sourceTree = "<group>"; };
 		DDC2E15426CE248E0042C5E4 /* Meowtastic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Meowtastic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC2E15726CE248E0042C5E4 /* MeowtasticApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeowtasticApp.swift; sourceTree = "<group>"; };
@@ -455,16 +449,6 @@
 			path = App;
 			sourceTree = "<group>";
 		};
-		D9C9839E2B79D0C600BDBE6A /* TextMessageField */ = {
-			isa = PBXGroup;
-			children = (
-				B3E905B02B71F7F300654D07 /* TextMessageField.swift */,
-				D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */,
-				D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */,
-			);
-			path = TextMessageField;
-			sourceTree = "<group>";
-		};
 		DD007BB12AA59B9A00F5FA12 /* CoreData */ = {
 			isa = PBXGroup;
 			children = (
@@ -604,8 +588,7 @@
 			isa = PBXGroup;
 			children = (
 				DD3CC6BD28E4CD9800FA9159 /* BatteryGaugeView.swift */,
-				DDB75A222A13CDA9006ED576 /* BatteryLevelCompact.swift */,
-				DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */,
+				DD457187293C7E63000C49FB /* SignalStrengthIndicator.swift */,
 				DD47E3D526F17ED900029299 /* Avatar.swift */,
 				DDF924C926FBB953009FE055 /* ConnectedDevice.swift */,
 				DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */,
@@ -617,7 +600,6 @@
 				08DD7E5C2C42833200548159 /* LoRaSignalStrength.swift */,
 				08DD7E5E2C4283A100548159 /* LoRaSignal.swift */,
 				08DD7E622C42D8B300548159 /* MQTTConnectionIcon.swift */,
-				B2A5F2E52C5668FD009457AB /* NodeInfoEntity+Extensions.swift */,
 				B2A5F2E02C5668FD009457AB /* Actions */,
 				DD47E3D726F2F21A00029299 /* Connection */,
 				DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */,
@@ -639,7 +621,7 @@
 		DDC2E18B26CE25A70042C5E4 /* Messages */ = {
 			isa = PBXGroup;
 			children = (
-				D9C9839E2B79D0C600BDBE6A /* TextMessageField */,
+				B3E905B02B71F7F300654D07 /* TextMessageField.swift */,
 				DD798B062915928D005217CD /* MessageList.swift */,
 				DDB8F40F2A9EE5B400230ECE /* Messages.swift */,
 				B399E8A32B6F486400E4488E /* RetryButton.swift */,
@@ -687,6 +669,7 @@
 		DDDB443E29F79A9400EE2349 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				B2A5F2E52C5668FD009457AB /* NodeInfoEntity+Extensions.swift */,
 				B2A5F2E12C5668FD009457AB /* BLEManager+Extensions.swift */,
 				DD007BB12AA59B9A00F5FA12 /* CoreData */,
 				DDFFA7462B3A7F3C004730DB /* Bundle.swift */,
@@ -828,7 +811,7 @@
 				259792272C2F114500AD1659 /* TraceRouteEntityExtension.swift in Sources */,
 				DDDB444829F8A9C900EE2349 /* String.swift in Sources */,
 				DDFFA7472B3A7F3C004730DB /* Bundle.swift in Sources */,
-				DD457188293C7E63000C49FB /* BLESignalStrengthIndicator.swift in Sources */,
+				DD457188293C7E63000C49FB /* SignalStrengthIndicator.swift in Sources */,
 				DDA9515C2BC6631200CEA535 /* TelemetryEnums.swift in Sources */,
 				DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */,
 				D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */,
@@ -866,7 +849,6 @@
 				B2A5F30D2C5668FD009457AB /* MapSettingsForm.swift in Sources */,
 				DDA9515A2BC6624100CEA535 /* TelemetryWeather.swift in Sources */,
 				B2A5F3062C5668FD009457AB /* NodeInfoEntity+Extensions.swift in Sources */,
-				DDB75A232A13CDA9006ED576 /* BatteryLevelCompact.swift in Sources */,
 				B2A5F31C2C566D98009457AB /* TraceRoute.swift in Sources */,
 				B2A5F3042C5668FD009457AB /* NodeIconListView.swift in Sources */,
 				DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */,
@@ -915,7 +897,6 @@
 				DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */,
 				DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */,
 				DD1925B928CDA93900720036 /* SerialConfigEnums.swift in Sources */,
-				D9C983A02B79D0E800BDBE6A /* AlertButton.swift in Sources */,
 				DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */,
 				DDB75A1E2A0B0CD0006ED576 /* LoRaSignalView.swift in Sources */,
 				B2A5F3092C5668FD009457AB /* NodeListItem.swift in Sources */,
@@ -936,7 +917,6 @@
 				D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */,
 				DDDB444E29F8AB0E00EE2349 /* Int.swift in Sources */,
 				B266DA902C53CEFB0067D317 /* Constants.swift in Sources */,
-				D9C983A22B79D1A600BDBE6A /* RequestPositionButton.swift in Sources */,
 				B2A5F30E2C5668FD009457AB /* NodeMap.swift in Sources */,
 				B2A5F30A2C5668FD009457AB /* MeshMapContent.swift in Sources */,
 				DD77093F2AA1B146007A8BF0 /* UIColor.swift in Sources */,

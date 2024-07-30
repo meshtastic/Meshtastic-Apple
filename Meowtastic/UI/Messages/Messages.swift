@@ -126,12 +126,16 @@ struct Messages: View {
 								}
 
 								Button {
+									guard let user = node.user else {
+										return
+									}
+
 									channel.mute.toggle()
 
 									let adminMessageId = bleManager.saveChannel(
 										channel: channel.protoBuf,
-										fromUser: node.user!,
-										toUser: node.user!
+										fromUser: user,
+										toUser: user
 									)
 
 									if adminMessageId > 0 {

@@ -8,7 +8,8 @@ struct ClientHistoryButton: View {
 	@State
 	private var isPresentingAlert = false
 
-    var body: some View {
+	@ViewBuilder
+	var body: some View {
 		Button {
 			isPresentingAlert = bleManager.requestStoreAndForwardClientHistory(
 				fromUser: connectedNode.user!,
@@ -23,9 +24,10 @@ struct ClientHistoryButton: View {
 			"Client History Request Sent",
 			isPresented: $isPresentingAlert
 		) {
-			Button("OK") {  }.keyboardShortcut(.defaultAction)
+			Button("OK") { }
+			.keyboardShortcut(.defaultAction)
 		} message: {
 			Text("Any missed messages will be delivered again.")
 		}
-    }
+	}
 }

@@ -1,31 +1,32 @@
-//
-//  LocationsHandler.swift
-//  Meshtastic
-//
-//  Created by Garth Vander Houwen on 12/4/23.
-//
-
-import SwiftUI
 import CoreLocation
 import OSLog
+import SwiftUI
 
 // Shared state that manages the `CLLocationManager` and `CLBackgroundActivitySession`.
-@available(iOS 17.0, macOS 14.0, *)
-@MainActor class LocationsHandler: ObservableObject {
-
+@MainActor
+class LocationsHandler: ObservableObject {
 	static let shared = LocationsHandler()  // Create a single, shared instance of the object.
+
 	private let manager: CLLocationManager
-	private var background: CLBackgroundActivitySession?
+
 	var enableSmartPosition: Bool = UserDefaults.enableSmartPosition
 
-	@Published var locationsArray: [CLLocation]
-	@Published var isStationary = false
-	@Published var count = 0
-	@Published var isRecording = false
-	@Published var isRecordingPaused = false
-	@Published var recordingStarted: Date?
-	@Published var distanceTraveled = 0.0
-	@Published var elevationGain = 0.0
+	@Published
+	var locationsArray: [CLLocation]
+	@Published
+	var isStationary = false
+	@Published
+	var count = 0
+	@Published
+	var isRecording = false
+	@Published
+	var isRecordingPaused = false
+	@Published
+	var recordingStarted: Date?
+	@Published
+	var distanceTraveled = 0.0
+	@Published
+	var elevationGain = 0.0
 
 	@Published
 	var updatesStarted: Bool = UserDefaults.standard.bool(forKey: "liveUpdatesStarted") {
@@ -40,17 +41,21 @@ import OSLog
 		}
 	}
 
+	private var background: CLBackgroundActivitySession?
+
 	private init() {
 		self.manager = CLLocationManager()  // Creating a location manager instance is safe to call here in `MainActor`.
 		self.manager.allowsBackgroundLocationUpdates = true
-		locationsArray = [CLLocation]()
+		self.locationsArray = [CLLocation]()
 	}
 
 	func startLocationUpdates() {
 		if self.manager.authorizationStatus == .notDetermined {
 			self.manager.requestWhenInUseAuthorization()
 		}
+
 		Logger.services.info("📍 [App] Starting location updates")
+
 		Task {
 			do {
 				self.updatesStarted = true
@@ -64,12 +69,14 @@ import OSLog
 						locationAdded = addLocation(loc, smartPostion: enableSmartPosition)
 						if !isRecording && locationAdded {
 							self.count = 1
-						} else if locationAdded && isRecording {
+						}
+						else if locationAdded && isRecording {
 							self.count += 1
 						}
 					}
 				}
-			} catch {
+			}
+			catch {
 				Logger.services.error("💥 [App] Could not start location updates: \(error.localizedDescription)")
 			}
 			return
@@ -107,7 +114,8 @@ import OSLog
 				}
 			}
 			locationsArray.append(location)
-		} else {
+		}
+		else {
 			locationsArray = [location]
 		}
 		return true

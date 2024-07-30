@@ -9,7 +9,7 @@ struct DistanceText: View {
 	var body: some View {
 		let formatter = MKDistanceFormatter()
 		let distanceFormatted = formatter.string(fromDistance: Double(meters))
-		
+
 		Text(distanceFormatted + " away")
 	}
 }

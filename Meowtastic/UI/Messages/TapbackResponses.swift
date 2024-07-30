@@ -1,23 +1,28 @@
-import SwiftUI
 import OSLog
+import SwiftUI
 
 struct TapbackResponses: View {
-	@Environment(\.managedObjectContext) var context
-
 	let message: MessageEntity
 	let onRead: () -> Void
 
+	@Environment(\.managedObjectContext)
+	private var context
+
 	@ViewBuilder
 	var body: some View {
-		let tapbacks = message.value(forKey: "tapbacks") as? [MessageEntity] ?? []
-		if !tapbacks.isEmpty {
+		let tapbacks = message.value(forKey: "tapbacks") as? [MessageEntity]
+
+		if let tapbacks, !tapbacks.isEmpty {
 			VStack(alignment: .trailing) {
 				HStack {
-					ForEach( tapbacks ) { (tapback: MessageEntity) in
+					ForEach(tapbacks) { tapback in
 						VStack {
-							let image = tapback.messagePayload!.image(fontSize: 20)
-							Image(uiImage: image!).font(.caption)
-							Text("\(tapback.fromUser?.shortName ?? "?")")
+							if let image = tapback.messagePayload?.image(fontSize: 20) {
+								Image(uiImage: image)
+									.font(.caption)
+							}
+
+							Text(tapback.fromUser?.shortName ?? "?")
 								.font(.caption2)
 								.foregroundColor(.gray)
 								.fixedSize()
@@ -29,11 +34,13 @@ struct TapbackResponses: View {
 							}
 
 							tapback.read = true
+
 							do {
 								try context.save()
 								Logger.data.info("📖 Read tapback \(tapback.messageId) ")
 								onRead()
-							} catch {
+							}
+							catch {
 								Logger.data.error("Failed to read tapback \(tapback.messageId): \(error.localizedDescription)")
 							}
 						}

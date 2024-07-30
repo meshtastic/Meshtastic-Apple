@@ -1,14 +1,28 @@
-//
-//  UIColor.swift
-//  Meshtastic
-//
-//  Copyright(c) Garth Vander Houwen 8/31/23.
-//
 import Foundation
 import Swift
 import UIKit
 
 extension UIColor {
+	static var random: UIColor {
+		UIColor(
+			red: .random(in: 0...1),
+			green: .random(in: 0...1),
+			blue: .random(in: 0...1),
+			alpha: 1.0
+		)
+	}
+
+	func lighter(componentDelta: CGFloat = 0.1) -> UIColor {
+		makeColor(componentDelta: componentDelta)
+	}
+
+	func darker(componentDelta: CGFloat = 0.1) -> UIColor {
+		makeColor(componentDelta: -1 * componentDelta)
+	}
+
+	private func add(_ value: CGFloat, toComponent: CGFloat) -> CGFloat {
+		max(0, min(1, toComponent + value))
+	}
 
 	private func makeColor(componentDelta: CGFloat) -> UIColor {
 		var red: CGFloat = 0
@@ -25,25 +39,4 @@ extension UIColor {
 			alpha: alpha
 		)
 	}
-
-	func lighter(componentDelta: CGFloat = 0.1) -> UIColor {
-		return makeColor(componentDelta: componentDelta)
-	}
-
-	func darker(componentDelta: CGFloat = 0.1) -> UIColor {
-		return makeColor(componentDelta: -1*componentDelta)
-	}
-
-	private func add(_ value: CGFloat, toComponent: CGFloat) -> CGFloat {
-		return max(0, min(1, toComponent + value))
-	}
-
-	static var random: UIColor {
-		 return UIColor(
-			 red: .random(in: 0...1),
-			 green: .random(in: 0...1),
-			 blue: .random(in: 0...1),
-			 alpha: 1.0
-		 )
-	 }
 }

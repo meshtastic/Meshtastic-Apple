@@ -1,16 +1,10 @@
-//
-//  InvalidVersion.swift
-//  Meshtastic
-//
-//  Copyright(c) Garth Vander Houwen 7/13/22.
-//
 import SwiftUI
 
 struct InvalidVersion: View {
 	@State
-	var minimumVersion = ""
+	var minimumVersion: String
 	@State
-	var version = ""
+	var version: String
 
 	@Environment(\.dismiss)
 	private var dismiss
@@ -22,24 +16,27 @@ struct InvalidVersion: View {
 				.foregroundColor(.orange)
 
 			Divider()
+
 			VStack {
 				Text("The Meshtastic Apple apps support firmware version \(minimumVersion) and above.")
-					.font(.title2)
+					.font(.body)
 					.padding(.bottom)
 
 				Link(
 					"Firmware update docs",
+					// swiftlint:disable:next force_unwrapping
 					destination: URL(string: "https://meshtastic.org/docs/getting-started/flashing-firmware/")!
 				)
-					.font(.title)
-					.padding()
+				.font(.body)
+				.padding()
 
 				Link(
 					"Additional help",
+					// swiftlint:disable:next force_unwrapping
 					destination: URL(string: "https://meshtastic.org/docs/faq")!
 				)
-					.font(.title)
-					.padding()
+				.font(.body)
+				.padding()
 			}
 			.padding()
 
@@ -60,7 +57,7 @@ struct InvalidVersion: View {
 					"Version 1.2 End of life (EOL) Info",
 					destination: URL(string: "https://meshtastic.org/docs/1.2-End-of-life/")!
 				)
-					.font(.callout)
+				.font(.callout)
 			}.padding()
 		}
 	}

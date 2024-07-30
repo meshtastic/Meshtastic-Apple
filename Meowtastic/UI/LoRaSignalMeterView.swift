@@ -53,7 +53,8 @@ struct LoRaSignalMeterView: View {
 							.frame(width: 40)
 					}
 				}
-			} else {
+			}
+			else {
 				VStack {
 					let preset = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
 					LoRaSignalView(signalStrength: signalStrength)

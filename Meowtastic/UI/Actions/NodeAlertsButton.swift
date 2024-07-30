@@ -7,17 +7,18 @@ struct NodeAlertsButton: View {
 
 	@ObservedObject
 	var node: NodeInfoEntity
-
 	@ObservedObject
 	var user: UserEntity
 
 	var body: some View {
 		Button {
-			user.mute = !user.mute
+			user.mute.toggle()
 			context.refresh(node, mergeChanges: true)
+
 			do {
 				try context.save()
-			} catch {
+			}
+			catch {
 				context.rollback()
 				Logger.data.error("Save User Mute Error")
 			}

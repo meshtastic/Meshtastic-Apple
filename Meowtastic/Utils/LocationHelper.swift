@@ -1,12 +1,11 @@
-import Foundation
 import CoreLocation
+import Foundation
 import MapKit
 import OSLog
 
 class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 	static let shared = LocationHelper()
-	// Apple Park
-	static let defaultLocation = CLLocationCoordinate2D(
+	static let defaultLocation = CLLocationCoordinate2D( // Apple Park
 		latitude: 37.3346,
 		longitude: -122.0090
 	)
@@ -14,6 +13,7 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 		guard let location = shared.locationManager.location else {
 			return defaultLocation
 		}
+
 		return location.coordinate
 	}
 
@@ -22,15 +22,20 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 
 		if shared.locationManager.location?.verticalAccuracy ?? 0 > 0 {
 			sats = 4
+
 			if 0...5 ~= shared.locationManager.location?.horizontalAccuracy ?? 0 {
 				sats = 12
-			} else if 6...15 ~= shared.locationManager.location?.horizontalAccuracy ?? 0 {
+			}
+			else if 6...15 ~= shared.locationManager.location?.horizontalAccuracy ?? 0 {
 				sats = 10
-			} else if 16...30 ~= shared.locationManager.location?.horizontalAccuracy ?? 0 {
+			}
+			else if 16...30 ~= shared.locationManager.location?.horizontalAccuracy ?? 0 {
 				sats = 9
-			} else if 31...45 ~= shared.locationManager.location?.horizontalAccuracy ?? 0 {
+			}
+			else if 31...45 ~= shared.locationManager.location?.horizontalAccuracy ?? 0 {
 				sats = 7
-			} else if 46...60 ~= shared.locationManager.location?.horizontalAccuracy ?? 0 {
+			}
+			else if 46...60 ~= shared.locationManager.location?.horizontalAccuracy ?? 0 {
 				sats = 5
 			}
 		}
@@ -46,7 +51,7 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 		{
 			sats = 2
 		}
-		
+
 		return sats
 	}
 
