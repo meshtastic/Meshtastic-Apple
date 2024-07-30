@@ -71,7 +71,8 @@ struct NodeMap: View {
 				displayMode: .inline
 			)
 			.navigationBarItems(trailing: ConnectedDevice(ble: bleManager))
-		} else {
+		}
+		else {
 			ContentUnavailableView("No Positions", systemImage: "mappin.slash")
 		}
 	}

@@ -44,7 +44,7 @@ struct MessageList: View {
 		else if let user {
 			return user.messageList
 		}
-		
+
 		return nil
 	}
 	private var destination: MessageDestination? {
@@ -57,7 +57,6 @@ struct MessageList: View {
 
 		return nil
 	}
-
 	private var screenTitle: String {
 		if let channel {
 			if let name = channel.name, !name.isEmpty {
@@ -83,7 +82,6 @@ struct MessageList: View {
 
 		return ""
 	}
-
 	private var connectedNode: Int64? {
 		bleManager.connectedPeripheral?.num
 	}
@@ -91,28 +89,30 @@ struct MessageList: View {
 	var body: some View {
 		ZStack(alignment: .bottom) {
 			ScrollViewReader { scrollView in
-				messageList
-					.scrollDismissesKeyboard(.interactively)
-					.scrollIndicators(.hidden)
-					.onAppear {
-						scrollView.scrollTo(textFieldPlaceholderID)
-					}
-					.onChange(of: channel?.allPrivateMessages, initial: true) {
-						if
-							let messages = channel?.allPrivateMessages,
-							!messages.isEmpty
-						{
-							scrollView.scrollTo(messages.last!.messageId)
+				if let messages, !messages.isEmpty {
+					messageList
+						.scrollDismissesKeyboard(.interactively)
+						.scrollIndicators(.hidden)
+						.onAppear {
+							scrollView.scrollTo(textFieldPlaceholderID)
 						}
-					}
-					.onChange(of: user?.messageList, initial: true) {
-						if
-							let messages = user?.messageList,
-							!messages.isEmpty
-						{
-							scrollView.scrollTo(messages.last!.messageId)
+						.onChange(of: channel?.allPrivateMessages) {
+							if let id = channel?.allPrivateMessages?.last?.messageId {
+								scrollView.scrollTo(id)
+							}
 						}
-					}
+						.onChange(of: user?.messageList) {
+							if let id = user?.messageList?.last?.messageId {
+								scrollView.scrollTo(id)
+							}
+						}
+				}
+				else {
+					ContentUnavailableView(
+						"No Messages",
+						systemImage: channel != nil ? "bubble.left.and.bubble.right" : "bubble"
+					)
+				}
 			}
 
 			if let destination {

@@ -54,6 +54,7 @@
 
     },
     "about" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -172,9 +173,6 @@
           }
         }
       }
-    },
-    "Acknowledged by another node" : {
-
     },
     "Actions" : {
 
@@ -696,7 +694,7 @@
         }
       }
     },
-    "An open source, off-grid, decentralized, mesh network that runs on affordable, low-power radios." : {
+    "An open source, off-grid, decentralized, mesh network built to run on affordable, low-power devices" : {
 
     },
     "Any missed messages will be delivered again." : {
@@ -706,9 +704,6 @@
 
     },
     "App Settings" : {
-
-    },
-    "Apple Apps" : {
 
     },
     "Application" : {
@@ -2032,9 +2027,6 @@
 
     },
     "Button GPIO" : {
-
-    },
-    "Buy Complete Radios" : {
 
     },
     "Buzzer GPIO" : {
@@ -6324,12 +6316,6 @@
         }
       }
     },
-    "DM" : {
-
-    },
-    "Documentation" : {
-
-    },
     "Double Tap as Button" : {
 
     },
@@ -7174,9 +7160,6 @@
         }
       }
     },
-    "Get custom waterproof solar and detection sensor router nodes, aluminium desktop nodes and rugged handsets." : {
-
-    },
     "GPIO" : {
 
     },
@@ -7774,9 +7757,6 @@
           }
         }
       }
-    },
-    "Help with App Development" : {
-
     },
     "Hide alerts" : {
 
@@ -13882,7 +13862,10 @@
         }
       }
     },
-    "Meshtastic® Copyright Meshtastic LLC" : {
+    "Meshtastic" : {
+
+    },
+    "Meshtastic® is a registered trademark of Meshtastic LLC" : {
 
     },
     "message" : {
@@ -14725,6 +14708,9 @@
           }
         }
       }
+    },
+    "No Messages" : {
+
     },
     "No Positions" : {
 
@@ -15982,7 +15968,7 @@
     "Primary Channel" : {
 
     },
-    "Project information" : {
+    "Project Website" : {
 
     },
     "PWD" : {
@@ -16223,6 +16209,9 @@
           }
         }
       }
+    },
+    "Rate it" : {
+
     },
     "reboot" : {
       "extractionState" : "stale",
@@ -16694,9 +16683,6 @@
           }
         }
       }
-    },
-    "Review the app" : {
-
     },
     "ringtone" : {
       "extractionState" : "stale",
@@ -18992,6 +18978,9 @@
     "SNR: %@dB" : {
 
     },
+    "Source" : {
+
+    },
     "Spread Factor" : {
 
     },
@@ -20141,6 +20130,9 @@
 
     },
     "There has been no response to a request for device metadata over the admin channel for this node." : {
+
+    },
+    "This Application" : {
 
     },
     "This conversation will be deleted." : {
@@ -21455,12 +21447,12 @@
     "Version 1.2 End of life (EOL) Info" : {
 
     },
-    "Version: %@ (%@) " : {
+    "Version: %@; build %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Version: %1$@ (%2$@) "
+            "value" : "Version: %1$@; build %2$@"
           }
         }
       }
@@ -21586,16 +21578,7 @@
         }
       }
     },
-    "Waiting to be acknowledged. . ." : {
-
-    },
     "Wake Screen on tap or motion" : {
-
-    },
-    "Website" : {
-
-    },
-    "What is Meshtastic?" : {
 
     },
     "What licensed operator mode does:\n* Sets the node name to your call sign \n* Broadcasts node info every 10 minutes \n* Overrides frequency, dutycycle and tx power \n* Disables encryption" : {

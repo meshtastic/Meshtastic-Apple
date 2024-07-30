@@ -3,18 +3,10 @@ import CoreData
 import OSLog
 
 struct Messages: View {
-	var restrictedChannels = ["gpio", "mqtt", "serial"]
-
-	@Environment(\.managedObjectContext)
-	var context
-	@EnvironmentObject
-	var bleManager: BLEManager
-	@StateObject
-	var appState = AppState.shared
-
 	@State
 	var node: NodeInfoEntity?
 
+	private let restrictedChannels = ["gpio", "mqtt", "serial"]
 	private let dateFormatter = {
 		let formatter = DateFormatter()
 		formatter.dateStyle = .none
@@ -23,6 +15,12 @@ struct Messages: View {
 		return formatter
 	}()
 
+	@Environment(\.managedObjectContext)
+	private var context
+	@EnvironmentObject
+	private var bleManager: BLEManager
+	@StateObject
+	private var appState = AppState.shared
 	@Environment(\.colorScheme)
 	private var colorScheme: ColorScheme
 	@State
@@ -50,7 +48,7 @@ struct Messages: View {
 
 	private var badgeBackground: Color {
 		if colorScheme == .dark {
-			Color(red: 28/256, green: 28/256, blue: 30/256)
+			Color(red: 28 / 256, green: 28 / 256, blue: 30 / 256)
 		}
 		else {
 			.white

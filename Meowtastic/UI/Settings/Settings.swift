@@ -226,7 +226,7 @@ struct Settings: View {
 			}
 
 			NavigationLink {
-				AboutMeshtastic()
+				About()
 			} label: {
 				Label {
 					Text("About")
