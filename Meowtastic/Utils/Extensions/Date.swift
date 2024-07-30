@@ -48,15 +48,33 @@ extension Date {
 		}
 		else if secondsAgo < 60 * 60 {
 			let minutes = secondsAgo / 60
-			return "\(minutes) minutes ago"
+
+			if minutes == 1 {
+				return "\(minutes) minute ago"
+			}
+			else {
+				return "\(minutes) minutes ago"
+			}
 		}
 		else if secondsAgo < 24 * 60 * 60 {
 			let hours = secondsAgo / 3600
-			return "\(hours) hours ago"
+
+			if hours == 1 {
+				return "\(hours) hour ago"
+			}
+			else {
+				return "\(hours) hours ago"
+			}
 		}
 		else if secondsAgo < 7 * 24 * 60 * 60 {
 			let days = secondsAgo / 86400
-			return "\(days) days ago"
+
+			if days == 1 {
+				return "\(days) day ago"
+			}
+			else {
+				return "\(days) days ago"
+			}
 		}
 		else {
 			return absoluteFormatter.string(from: self)

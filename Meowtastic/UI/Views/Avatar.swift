@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct Avatar: View {
-	private let node: NodeInfoEntity?
 	private let nameOverride: String?
 	private let backgroundOverride: Color?
 	private let showTemperature: Bool
@@ -9,6 +8,9 @@ struct Avatar: View {
 
 	// swiftlint:disable:next large_tuple
 	private let corners: (Bool, Bool, Bool, Bool)?
+
+	@State
+	private var node: NodeInfoEntity?
 
 	private var name: String? {
 		if let nameOverride {

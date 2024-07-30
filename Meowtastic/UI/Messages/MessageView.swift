@@ -224,7 +224,7 @@ struct MessageView: View {
 					.font(.system(size: statusFontSize))
 					.foregroundColor(statusForegroundColor)
 
-				Text(dateFormatter.string(from: message.timestamp))
+				Text(message.timestamp.relative())
 					.font(.system(size: statusFontSize))
 					.lineLimit(1)
 					.foregroundColor(statusForegroundColor)

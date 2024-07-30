@@ -1,6 +1,6 @@
-import SwiftUI
 import MapKit
 import OSLog
+import SwiftUI
 
 struct NodeDetail: View {
 	var isInSheet = false
@@ -12,12 +12,6 @@ struct NodeDetail: View {
 	private let distanceFormatter = MKDistanceFormatter()
 	private let detailInfoFont = Font.system(size: 12, weight: .regular, design: .rounded)
 	private let detailIconSize: CGFloat = 12
-	private let relativeDateFormatter: RelativeDateTimeFormatter = {
-		let formatter = RelativeDateTimeFormatter()
-		formatter.unitsStyle = .full
-
-		return formatter
-	}()
 
 	@Environment(\.managedObjectContext)
 	private var context
@@ -429,8 +423,7 @@ struct NodeDetail: View {
 
 		if
 			let lastHeard = node.lastHeard,
-			lastHeard.timeIntervalSince1970 > 0,
-			let lastHeardFormatted = relativeDateFormatter.string(for: lastHeard)
+			lastHeard.timeIntervalSince1970 > 0
 		{
 			HStack {
 				Label {
@@ -443,15 +436,14 @@ struct NodeDetail: View {
 
 				Spacer()
 
-				Text(lastHeardFormatted)
+				Text(lastHeard.relative())
 					.textSelection(.enabled)
 			}
 		}
 
 		if
 			let firstHeard = node.firstHeard,
-			firstHeard.timeIntervalSince1970 > 0,
-			let firstHeardFormatted = relativeDateFormatter.string(for: firstHeard)
+			firstHeard.timeIntervalSince1970 > 0
 		{
 			HStack {
 				Label {
@@ -464,7 +456,7 @@ struct NodeDetail: View {
 
 				Spacer()
 
-				Text(firstHeardFormatted)
+				Text(firstHeard.relative())
 					.textSelection(.enabled)
 			}
 		}
