@@ -1,14 +1,7 @@
-//
-//  RoutingError.swift
-//  Meshtastic
-//
-//  Copyright(c) Garth Vander Houwen 8/4/22.
-//
 import Foundation
 import MeshtasticProtobufs
 
 enum RoutingError: Int, CaseIterable, Identifiable {
-
 	case none = 0
 	case noRoute = 1
 	case gotNak = 2
@@ -22,65 +15,87 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 	case badRequest = 32
 	case notAuthorized = 33
 
-	var id: Int { self.rawValue }
+	var id: Int {
+		self.rawValue
+	}
+
 	var display: String {
 		switch self {
-
 		case .none:
-			return "routing.acknowledged".localized
+			return "Acknowledged"
+
 		case .noRoute:
-			return "routing.noroute".localized
+			return "No Route"
+
 		case .gotNak:
-			return "routing.gotnak".localized
+			return "Got NAK"
+
 		case .timeout:
-			return "routing.timeout".localized
+			return "Timeout"
+
 		case .noInterface:
-			return "routing.nointerface".localized
+			return "No Interface"
+
 		case .maxRetransmit:
-			return "routing.maxretransmit".localized
+			return "Max Retransmit"
+
 		case .noChannel:
-			return "routing.nochannel".localized
+			return "No Channel"
+
 		case .tooLarge:
-			return "routing.toolarge".localized
+			return "Too Large"
+
 		case .noResponse:
-			return "routing.noresponse".localized
+			return "No Response"
+
 		case .dutyCycleLimit:
-			return "routing.dutycyclelimit".localized
+			return "Duty Cycle Limit"
+
 		case .badRequest:
-			return "routing.badRequest".localized
+			return "Bad Request"
+
 		case .notAuthorized:
-			return "routing.notauthorized".localized
+			return "Not Authorized"
 		}
 	}
+
 	func protoEnumValue() -> Routing.Error {
-
 		switch self {
-
 		case .none:
 			return Routing.Error.none
+
 		case .noRoute:
 			return Routing.Error.noRoute
+
 		case .gotNak:
 			return Routing.Error.gotNak
+
 		case .timeout:
 			return Routing.Error.timeout
+
 		case .noInterface:
 			return Routing.Error.noInterface
+
 		case .maxRetransmit:
 			return Routing.Error.maxRetransmit
+
 		case .noChannel:
 			return Routing.Error.noChannel
+
 		case .tooLarge:
 			return Routing.Error.tooLarge
+
 		case .noResponse:
 			return Routing.Error.noResponse
+
 		case .dutyCycleLimit:
 			return Routing.Error.dutyCycleLimit
+
 		case .badRequest:
 			return Routing.Error.badRequest
+
 		case .notAuthorized:
 			return Routing.Error.notAuthorized
-
 		}
 	}
 }

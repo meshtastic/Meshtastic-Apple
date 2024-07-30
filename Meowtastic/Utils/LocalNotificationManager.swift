@@ -5,19 +5,6 @@ import SwiftUI
 final class LocalNotificationManager {
 	var notifications = [Notification]()
 
-	// Step 1 Request Permissions for notifications
-	private func requestAuthorization() {
-		UNUserNotificationCenter.current().requestAuthorization(
-			options: [.alert, .badge, .sound]
-		) { granted, error in
-			guard granted, error == nil else {
-				return
-			}
-
-			self.scheduleNotifications()
-		}
-	}
-
 	func schedule() {
 		UNUserNotificationCenter.current().getNotificationSettings { settings in
 			switch settings.authorizationStatus {
@@ -33,7 +20,18 @@ final class LocalNotificationManager {
 		}
 	}
 
-	// This function iterates over the Notification objects in the notifications array and schedules them for delivery in the future
+	private func requestAuthorization() {
+		UNUserNotificationCenter.current().requestAuthorization(
+			options: [.alert, .badge, .sound]
+		) { granted, error in
+			guard granted, error == nil else {
+				return
+			}
+
+			self.scheduleNotifications()
+		}
+	}
+
 	private func scheduleNotifications() {
 		for notification in notifications {
 			let content = UNMutableNotificationContent()
@@ -63,22 +61,4 @@ final class LocalNotificationManager {
 			UNUserNotificationCenter.current().add(request)
 		}
 	}
-
-	// Check and debug what local notifications have been scheduled
-	func listScheduledNotifications() {
-		UNUserNotificationCenter.current().getPendingNotificationRequests { notifications in
-			for notification in notifications {
-				Logger.services.debug("\(notification, privacy: .public)")
-			}
-		}
-	}
-}
-
-struct Notification {
-	var id: String
-	var title: String
-	var subtitle: String
-	var content: String
-	var target: String?
-	var path: String?
 }

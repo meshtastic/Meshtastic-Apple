@@ -1,14 +1,7 @@
-//
-//  MeshtasticAppDelegate.swift
-//  Meshtastic
-//
-//  Created by Ben on 8/20/23.
-//
-
-import SwiftUI
 import OSLog
+import SwiftUI
 
-class MeowtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, ObservableObject {
+final class MeowtasticDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, ObservableObject {
 	func application(
 		_ application: UIApplication,
 		didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
@@ -18,7 +11,6 @@ class MeowtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		// Default User Default Values
 		UserDefaults.standard.register(defaults: ["meshMapRecentering": true])
 		UserDefaults.standard.register(defaults: ["meshMapShowNodeHistory": true])
-		UserDefaults.standard.register(defaults: ["meshMapShowRouteLines": true])
 
 		UNUserNotificationCenter.current().delegate = self
 
@@ -51,11 +43,14 @@ class MeowtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		let deepLink = userInfo["path"] as? String
 
 		AppState.shared.navigationPath = deepLink
+
 		if targetValue == "map" {
 			AppState.shared.tabSelection = Tab.map
-		} else if targetValue == "messages" {
+		}
+		else if targetValue == "messages" {
 			AppState.shared.tabSelection = Tab.messages
-		} else if targetValue == "nodes" {
+		}
+		else if targetValue == "nodes" {
 			AppState.shared.tabSelection = Tab.nodes
 		}
 

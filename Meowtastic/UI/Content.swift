@@ -1,18 +1,10 @@
 import SwiftUI
 
-enum Tab: Hashable {
-	case messages
-	case nodes
-	case map
-	case settings
-}
-
-struct ContentView: View {
-	@StateObject
-	private var appState = AppState.shared
-
+struct Content: View {
 	@EnvironmentObject
 	private var bleManager: BLEManager
+	@StateObject
+	private var appState = AppState.shared
 
 	@FetchRequest(
 		sortDescriptors: [

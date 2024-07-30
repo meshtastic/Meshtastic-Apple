@@ -81,7 +81,7 @@ struct NodeListItem: View {
 
 	@ViewBuilder
 	private var name: some View {
-		Text(node.user?.longName ?? "unknown".localized)
+		Text(node.user?.longName ?? "Unknown")
 			.lineLimit(1)
 			.fontWeight(.medium)
 			.font(.title2)
@@ -106,14 +106,14 @@ struct NodeListItem: View {
 
 	@ViewBuilder
 	private var battery: some View {
-		if !showBattery {
-			EmptyView()
-		}
-		else {
+		if showBattery {
 			BatteryView(
 				node: node,
 				withLabels: true
 			)
+		}
+		else {
+			EmptyView()
 		}
 	}
 
@@ -134,21 +134,21 @@ struct NodeListItem: View {
 
 	@ViewBuilder
 	private var distance: some View {
-		HStack {
-			if
-				let lastPostion = node.positions?.lastObject as? PositionEntity,
-				let currentLocation = LocationsHandler.shared.locationsArray.last
-			{
-				let myLocation = CLLocation(
-					latitude: currentLocation.coordinate.latitude,
-					longitude: currentLocation.coordinate.longitude
-				)
+		if
+			let lastPostion = node.positions?.lastObject as? PositionEntity,
+			let currentLocation = LocationsHandler.shared.locationsArray.last
+		{
+			let myLocation = CLLocation(
+				latitude: currentLocation.coordinate.latitude,
+				longitude: currentLocation.coordinate.longitude
+			)
 
-				if
-					let coordinate = lastPostion.nodeCoordinate,
-					myLocation.coordinate.longitude != LocationsHandler.DefaultLocation.longitude,
-					myLocation.coordinate.latitude != LocationsHandler.DefaultLocation.latitude
-				{
+			if
+				let coordinate = lastPostion.nodeCoordinate,
+				myLocation.coordinate.longitude != LocationsHandler.DefaultLocation.longitude,
+				myLocation.coordinate.latitude != LocationsHandler.DefaultLocation.latitude
+			{
+				HStack {
 					let location = CLLocation(
 						latitude: coordinate.latitude,
 						longitude: coordinate.longitude
@@ -162,7 +162,7 @@ struct NodeListItem: View {
 					let formatter = MKDistanceFormatter()
 					let distanceFormatted = formatter.string(fromDistance: Double(distance))
 
-					Text(distanceFormatted + " away")
+					Text(distanceFormatted)
 						.font(detailInfoFont)
 						.foregroundColor(.gray)
 				}

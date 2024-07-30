@@ -2,7 +2,7 @@ import Foundation
 import SwiftUI
 
 struct MQTTConnectionIcon: View {
-	var connected: Bool = false
+	var connected = false
 
 	private var icon: String {
 		if connected {
@@ -17,6 +17,7 @@ struct MQTTConnectionIcon: View {
 		connected ? .green : .gray
 	}
 
+	@ViewBuilder
 	var body: some View {
 		Image(systemName: icon)
 			.resizable()

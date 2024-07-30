@@ -136,7 +136,7 @@ struct PositionConfig: View {
 	var deviceGPSSection: some View {
 		Section(header: Text("Device GPS")) {
 			Picker("", selection: $gpsMode) {
-				ForEach(GpsMode.allCases, id: \.self) { at in
+				ForEach(GPSMode.allCases, id: \.self) { at in
 					Text(at.description)
 						.tag(at.id)
 
@@ -152,7 +152,7 @@ struct PositionConfig: View {
 					.font(.callout)
 				VStack(alignment: .leading) {
 					Picker("Update Interval", selection: $gpsUpdateInterval) {
-						ForEach(GpsUpdateIntervals.allCases) { ui in
+						ForEach(GPSUpdateIntervals.allCases) { ui in
 							Text(ui.description)
 						}
 					}
@@ -167,8 +167,6 @@ struct PositionConfig: View {
 						Label("Fixed Position", systemImage: "location.square.fill")
 						if !(node?.positionConfig?.fixedPosition ?? false) {
 							Text("Your current location will be set as the fixed position and broadcast over the mesh on the position interval.")
-						} else {
-
 						}
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))

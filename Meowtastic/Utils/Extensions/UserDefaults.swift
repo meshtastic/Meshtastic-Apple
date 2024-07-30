@@ -44,7 +44,6 @@ extension UserDefaults {
 		case enableMapRecentering
 		case enableMapNodeHistoryPins
 		case enableOverlayServer
-		case mapOverlayServer
 		case mapTilesAboveLabels
 		case enableDetectionNotifications
 		case enableSmartPosition
@@ -60,7 +59,9 @@ extension UserDefaults {
 	}
 
 	func reset() {
-		Keys.allCases.forEach { removeObject(forKey: $0.rawValue) }
+		Keys.allCases.forEach { key in
+			removeObject(forKey: key.rawValue)
+		}
 	}
 
 	@UserDefault(.preferredPeripheralId, defaultValue: "")
@@ -86,9 +87,6 @@ extension UserDefaults {
 
 	@UserDefault(.enableMapNodeHistoryPins, defaultValue: false)
 	static var enableMapNodeHistoryPins: Bool
-
-	@UserDefault(.mapOverlayServer, defaultValue: .baseReReflectivityCurrent)
-	static var mapOverlayServer: MapOverlayServer
 
 	@UserDefault(.mapTilesAboveLabels, defaultValue: false)
 	static var mapTilesAboveLabels: Bool

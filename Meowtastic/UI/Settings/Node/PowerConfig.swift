@@ -1,5 +1,5 @@
-import SwiftUI
 import MeshtasticProtobufs
+import SwiftUI
 
 struct PowerConfig: View {
 	@Environment(\.managedObjectContext) private var context
@@ -29,20 +29,26 @@ struct PowerConfig: View {
 			ConfigHeader(title: "config.power.title", config: \.powerConfig, node: node)
 
 			Section {
-				if (currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3) || (currentDevice?.architecture == .nrf52840 && (node?.deviceConfig?.role ?? 0 == 5 || node?.deviceConfig?.role ?? 0 == 6)) {
+				if
+					currentDevice?.architecture == .esp32
+						|| currentDevice?.architecture == .esp32S3
+						|| (currentDevice?.architecture == .nrf52840 && (node?.deviceConfig?.role ?? 0 == 5 || node?.deviceConfig?.role ?? 0 == 6))
+				{
 					Toggle(isOn: $isPowerSaving) {
 						Label("config.power.saving", systemImage: "bolt")
 						Text("config.power.saving.description")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
+
 				Toggle(isOn: $shutdownOnPowerLoss) {
 					Label("config.power.shutdown.on.power.loss", systemImage: "power")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+
 				if shutdownOnPowerLoss {
 					Picker("config.power.shutdown.after.secs", selection: $shutdownAfterSecs) {
-						ForEach(PowerIntervals.allCases) { at in
+						ForEach(UpdateIntervals.allCases) { at in
 							Text(at.description)
 						}
 					}
@@ -51,6 +57,7 @@ struct PowerConfig: View {
 			} header: {
 				Text("config.power.settings")
 			}
+
 			if currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3 {
 				Section {
 					Toggle(isOn: $adcOverride) {
@@ -61,45 +68,26 @@ struct PowerConfig: View {
 					if adcOverride {
 						HStack {
 							Text("config.power.adc.multiplier")
+
 							Spacer()
-							FloatField(title: "config.power.adc.multiplier", number: $adcMultiplier) {
+
+							FloatField(
+								title: "config.power.adc.multiplier",
+								number: $adcMultiplier
+							) {
 								(2.0 ... 6.0).contains($0)
 							}
 							.focused($isFocused)
+
 							Spacer()
 						}
 					}
 				} header: {
 					Text("config.power.section.battery")
 				}
-//				Section {
-//					Picker("config.power.wait.bluetooth.secs", selection: $waitBluetoothSecs) {
-//						ForEach(PowerIntervals.allCases) {
-//							Text($0.description)
-//						}
-//					}
-//					.pickerStyle(DefaultPickerStyle())
-//					
-//					Picker("config.power.ls.secs", selection: $lsSecs) {
-//						ForEach(PowerIntervals.allCases) {
-//							Text($0.description)
-//						}
-//					}
-//					.pickerStyle(DefaultPickerStyle())
-//					
-//					Picker("config.power.min.wake.secs", selection: $minWakeSecs) {
-//						ForEach(PowerIntervals.allCases) {
-//							Text($0.description)
-//						}
-//					}
-//					.pickerStyle(DefaultPickerStyle())
-//					
-//				} header: {
-//					Text("config.power.section.sleep")
-//				}
 			}
 		}
-		.disabled(self.bleManager.connectedPeripheral == nil || node?.powerConfig == nil)
+		.disabled(bleManager.connectedPeripheral == nil || node?.powerConfig == nil)
 		.navigationTitle("config.power.title")
 		.navigationBarItems(
 			trailing: ConnectedDevice(ble: bleManager)
@@ -115,10 +103,10 @@ struct PowerConfig: View {
 		}
 		.onAppear {
 			Api().loadDeviceHardwareData { hw in
-
 				for device in hw {
 					let currentHardware = node?.user?.hwModel ?? "UNSET"
 					let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "")
+
 					if deviceString == currentHardware {
 						currentDevice = device
 					}
@@ -139,7 +127,7 @@ struct PowerConfig: View {
 				hasChanges = $0 != val
 			}
 		}
-		.onChange(of: shutdownOnPowerLoss) { _ in
+		.onChange(of: shutdownOnPowerLoss) {
 			hasChanges = true
 		}
 		.onChange(of: shutdownAfterSecs) {
@@ -147,7 +135,7 @@ struct PowerConfig: View {
 				hasChanges = $0 != val
 			}
 		}
-		.onChange(of: adcOverride) { _ in
+		.onChange(of: adcOverride) {
 			hasChanges = true
 		}
 		.onChange(of: adcMultiplier) {
@@ -172,9 +160,11 @@ struct PowerConfig: View {
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			guard let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context),
-				  let fromUser = connectedNode.user,
-				  let toUser = node?.user else {
+			guard
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context),
+				let fromUser = connectedNode.user,
+				let toUser = node?.user
+			else {
 				return
 			}
 
@@ -219,25 +209,27 @@ struct PowerConfig: View {
 /// Helper view for isolating user float input that can be validated before being applied.
 private struct FloatField: View {
 	let title: String
-	@Binding var number: Float
+
+	@Binding
+	var number: Float
+
 	var isValid: (Float) -> Bool = { _ in true }
 
-	@State private var typingNumber: Float = 0.0
+	@State
+	private var typingNumber: Float = 0.0
 
 	var body: some View {
 		TextField(title.localized, value: $typingNumber, format: .number)
+			.keyboardType(.decimalPad)
 			.foregroundColor(.gray)
 			.multilineTextAlignment(.trailing)
-			.onChange(of: typingNumber, perform: { _ in
+			.onChange(of: typingNumber, initial: true) {
 				if isValid(typingNumber) {
 					number = typingNumber
-				} else {
+				}
+				else {
 					typingNumber = number
 				}
-			})
-			.keyboardType(.decimalPad)
-			.onAppear {
-				typingNumber = number
 			}
 	}
 }

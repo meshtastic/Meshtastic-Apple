@@ -2,9 +2,9 @@ import Foundation
 import SwiftUI
 
 struct MQTTChannelIcon: View {
-	var connected: Bool = false
-	var uplink: Bool = false
-	var downlink: Bool = false
+	var connected = false
+	var uplink = false
+	var downlink = false
 
 	private var icon: String {
 		if uplink && downlink {

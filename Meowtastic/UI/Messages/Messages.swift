@@ -56,7 +56,7 @@ struct Messages: View {
 
 	var body: some View {
 		NavigationStack {
-			List() {
+			List {
 				channelList
 				userList
 			}

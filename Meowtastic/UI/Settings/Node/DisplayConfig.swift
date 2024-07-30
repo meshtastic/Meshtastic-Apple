@@ -65,7 +65,7 @@ struct DisplayConfig: View {
 
 				VStack(alignment: .leading) {
 					Picker("OLED Type", selection: $oledType ) {
-						ForEach(OledTypes.allCases) { ot in
+						ForEach(OLEDTypes.allCases) { ot in
 							Text(ot.description)
 						}
 					}
@@ -104,10 +104,11 @@ struct DisplayConfig: View {
 
 				VStack(alignment: .leading) {
 					Picker("GPS Format", selection: $gpsFormat ) {
-						ForEach(GpsFormats.allCases) { lu in
+						ForEach(GPSFormats.allCases) { lu in
 							Text(lu.description)
 						}
 					}
+
 					Text("The format used to display GPS coordinates on the device screen.")
 						.foregroundColor(.gray)
 						.font(.callout)
@@ -120,6 +121,7 @@ struct DisplayConfig: View {
 							Text(un.description)
 						}
 					}
+
 					Text("Units displayed on the device screen")
 						.foregroundColor(.gray)
 						.font(.callout)
@@ -133,13 +135,13 @@ struct DisplayConfig: View {
 			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 			if connectedNode != nil {
 				var dc = Config.DisplayConfig()
-				dc.gpsFormat = GpsFormats(rawValue: gpsFormat)!.protoEnumValue()
+				dc.gpsFormat = GPSFormats(rawValue: gpsFormat)!.protoEnumValue()
 				dc.screenOnSecs = UInt32(screenOnSeconds)
 				dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
 				dc.compassNorthTop = compassNorthTop
 				dc.wakeOnTapOrMotion = wakeOnTapOrMotion
 				dc.flipScreen = flipScreen
-				dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
+				dc.oled = OLEDTypes(rawValue: oledType)!.protoEnumValue()
 				dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
 				dc.units = Units(rawValue: units)!.protoEnumValue()
 

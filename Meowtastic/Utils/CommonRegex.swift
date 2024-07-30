@@ -1,14 +1,7 @@
-//
-//  CommonRegex.swift
-//  Meshtastic
-//
-//  Created by Ben Meadors on 7/2/24.
-//
-
 import Foundation
 import RegexBuilder
 
-class CommonRegex {
+final class CommonRegex {
 	static let coordinateRegex = Regex {
 		Capture {
 			Regex {
@@ -16,7 +9,11 @@ class CommonRegex {
 				OneOrMore(.digit)
 			}
 		}
-		Capture {" "}
+
+		Capture {
+			" "
+		}
+
 		Capture {
 			Regex {
 				"long="

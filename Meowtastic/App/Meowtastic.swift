@@ -1,12 +1,12 @@
-import SwiftUI
 import CoreData
 import OSLog
+import SwiftUI
 
 @main
-struct MeowtasticApp: App {
+struct Meowtastic: App {
 	private let persistence: NSPersistentContainer
 
-	@UIApplicationDelegateAdaptor(MeowtasticAppDelegate.self)
+	@UIApplicationDelegateAdaptor(MeowtasticDelegate.self)
 	var appDelegate
 	@Environment(\.scenePhase)
 	var scenePhase
@@ -22,9 +22,10 @@ struct MeowtasticApp: App {
 	@ObservedObject
 	private var bleManager: BLEManager
 
+	@ViewBuilder
 	var body: some Scene {
 		WindowGroup {
-			ContentView()
+			Content()
 				.environment(\.managedObjectContext, persistence.viewContext)
 				.environmentObject(bleManager)
 				.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
@@ -37,7 +38,7 @@ struct MeowtasticApp: App {
 							addChannels = Bool(incomingUrl?["add"] ?? "false") ?? false
 
 							if incomingUrl?.absoluteString.lowercased().contains("?") != nil {
-								guard let cs = components.last!.components(separatedBy: "?").first else {
+								guard let cs = components.last?.components(separatedBy: "?").first else {
 									return
 								}
 
@@ -60,11 +61,11 @@ struct MeowtasticApp: App {
 				.onOpenURL { url in
 					Logger.mesh.debug("Some sort of URL was received \(url)")
 
-					self.incomingUrl = url
+					incomingUrl = url
 
 					if url.absoluteString.lowercased().contains("meshtastic.org/e/#") {
-						if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
-							addChannels = Bool(self.incomingUrl?["add"] ?? "false") ?? false
+						if let components = incomingUrl?.absoluteString.components(separatedBy: "#") {
+							addChannels = Bool(incomingUrl?["add"] ?? "false") ?? false
 
 							if incomingUrl?.absoluteString.lowercased().contains("?") != nil {
 								guard let cs = components.last!.components(separatedBy: "?").first else {
@@ -81,13 +82,15 @@ struct MeowtasticApp: App {
 							Logger.services.debug("Add Channel \(addChannels)")
 						}
 						Logger.mesh.debug("User wants to open a Channel Settings URL: \(incomingUrl?.absoluteString ?? "No QR Code Link")")
-					} else if url.absoluteString.lowercased().contains("meshtastic:///") {
+					}
+					else if url.absoluteString.lowercased().contains("meshtastic:///") {
 						appState.navigationPath = url.absoluteString
 
 						let path = appState.navigationPath ?? ""
 						if path.starts(with: "meshtastic:///map") {
 							AppState.shared.tabSelection = Tab.map
-						} else if path.starts(with: "meshtastic:///nodes") {
+						}
+						else if path.starts(with: "meshtastic:///nodes") {
 							AppState.shared.tabSelection = Tab.nodes
 						}
 

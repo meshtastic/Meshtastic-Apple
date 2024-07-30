@@ -1,5 +1,5 @@
-import SwiftUI
 import OSLog
+import SwiftUI
 
 struct Settings: View {
 	@Environment(\.managedObjectContext)
@@ -118,7 +118,7 @@ struct Settings: View {
 					Image(systemName: "wifi.circle")
 				}
 			}
-			
+
 			NavigationLink {
 				Channels(node: nodeSelected)
 			} label: {
@@ -129,7 +129,7 @@ struct Settings: View {
 				}
 			}
 			.disabled(nodeIsConnected)
-			
+
 			NavigationLink {
 				UserConfig(node: nodeSelected)
 			} label: {
@@ -139,7 +139,7 @@ struct Settings: View {
 					Image(systemName: "person.text.rectangle")
 				}
 			}
-			
+
 			NavigationLink {
 				DeviceConfig(node: nodeSelected)
 			} label: {
@@ -149,7 +149,7 @@ struct Settings: View {
 					Image(systemName: "flipphone")
 				}
 			}
-			
+
 			NavigationLink {
 				MQTTConfig(node: nodeSelected)
 			} label: {
@@ -159,7 +159,7 @@ struct Settings: View {
 					Image(systemName: "network")
 				}
 			}
-			
+
 			NavigationLink {
 				BluetoothConfig(node: nodeSelected)
 			} label: {
@@ -169,7 +169,7 @@ struct Settings: View {
 					Image(systemName: "iphone.gen3")
 				}
 			}
-			
+
 			NavigationLink {
 				NetworkConfig(node: nodeSelected)
 			} label: {
@@ -179,7 +179,7 @@ struct Settings: View {
 					Image(systemName: "wifi.router")
 				}
 			}
-			
+
 			NavigationLink {
 				PositionConfig(node: nodeSelected)
 			} label: {
@@ -189,7 +189,7 @@ struct Settings: View {
 					Image(systemName: "mappin.and.ellipse")
 				}
 			}
-			
+
 			NavigationLink {
 				DisplayConfig(node: nodeSelected)
 			} label: {
@@ -199,7 +199,7 @@ struct Settings: View {
 					Image(systemName: "display")
 				}
 			}
-			
+
 			NavigationLink {
 				PowerConfig(node: nodeSelected)
 			} label: {
