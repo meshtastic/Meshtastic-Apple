@@ -125,7 +125,7 @@ struct TraceRoute: View {
 											let mostRecent = selectedRoute.node?.positions?.lastObject as? PositionEntity
 										{
 											let traceRouteCoords: [CLLocationCoordinate2D] = [
-												selectedRoute.coordinate ?? LocationsHandler.DefaultLocation,
+												selectedRoute.coordinate ?? LocationsHandler.defaultLocation,
 												mostRecent.coordinate
 											]
 											Annotation(
@@ -141,7 +141,9 @@ struct TraceRoute: View {
 											}
 											let dashed = StrokeStyle(
 												lineWidth: 2,
-												lineCap: .round, lineJoin: .round, dash: [7, 10]
+												lineCap: .round,
+												lineJoin: .round,
+												dash: [7, 10]
 											)
 											MapPolyline(coordinates: traceRouteCoords)
 												.stroke(.blue, style: dashed)
@@ -158,20 +160,20 @@ struct TraceRoute: View {
 								   let mostRecent = selectedRoute.node?.positions?.lastObject as? PositionEntity {
 
 									let startPoint = CLLocation(
-										latitude: selectedRoute.coordinate?.latitude ?? LocationsHandler.DefaultLocation.latitude,
-										longitude: selectedRoute.coordinate?.longitude ?? LocationsHandler.DefaultLocation.longitude
+										latitude: selectedRoute.coordinate?.latitude ?? LocationsHandler.defaultLocation.latitude,
+										longitude: selectedRoute.coordinate?.longitude ?? LocationsHandler.defaultLocation.longitude
 									)
 
 									if startPoint.distance(
 										from: CLLocation(
-											latitude: LocationsHandler.DefaultLocation.latitude,
-											longitude: LocationsHandler.DefaultLocation.longitude)
+											latitude: LocationsHandler.defaultLocation.latitude,
+											longitude: LocationsHandler.defaultLocation.longitude)
 									) > 0.0
 									{
 										let metersAway = selectedRoute.coordinate?.distance(
 											from: CLLocationCoordinate2D(
-												latitude: mostRecent.latitude ?? LocationsHandler.DefaultLocation.latitude,
-												longitude: mostRecent.longitude ?? LocationsHandler.DefaultLocation.longitude
+												latitude: mostRecent.latitude ?? LocationsHandler.defaultLocation.latitude,
+												longitude: mostRecent.longitude ?? LocationsHandler.defaultLocation.longitude
 											)
 										)
 

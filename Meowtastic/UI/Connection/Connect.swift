@@ -78,10 +78,12 @@ struct Connect: View {
 
 					if let loRaConfig = node?.loRaConfig, loRaConfig.regionCode == RegionCodes.unset.rawValue {
 						isUnsetRegion = true
-					} else {
+					}
+					else {
 						isUnsetRegion = false
 					}
-				} catch {
+				}
+				catch {
 					Logger.data.error("💥 Error fetching node info: \(error.localizedDescription)")
 				}
 			}

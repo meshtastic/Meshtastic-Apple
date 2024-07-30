@@ -6,13 +6,15 @@ import SwiftUI
 @MainActor
 class LocationsHandler: ObservableObject {
 	static let shared = LocationsHandler()  // Create a single, shared instance of the object.
+	static let defaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
 
 	private let manager: CLLocationManager
 
-	var enableSmartPosition: Bool = UserDefaults.enableSmartPosition
+	private var background: CLBackgroundActivitySession?
+	private var enableSmartPosition = UserDefaults.enableSmartPosition
 
 	@Published
-	var locationsArray: [CLLocation]
+	var locationsArray = [CLLocation]()
 	@Published
 	var isStationary = false
 	@Published
@@ -30,23 +32,22 @@ class LocationsHandler: ObservableObject {
 
 	@Published
 	var updatesStarted: Bool = UserDefaults.standard.bool(forKey: "liveUpdatesStarted") {
-		didSet { UserDefaults.standard.set(updatesStarted, forKey: "liveUpdatesStarted") }
+		didSet {
+			UserDefaults.standard.set(updatesStarted, forKey: "liveUpdatesStarted")
+		}
 	}
 
 	@Published
 	var backgroundActivity: Bool = UserDefaults.standard.bool(forKey: "BGActivitySessionStarted") {
 		didSet {
-			backgroundActivity ? self.background = CLBackgroundActivitySession() : self.background?.invalidate()
+			backgroundActivity ? background = CLBackgroundActivitySession() : background?.invalidate()
 			UserDefaults.standard.set(backgroundActivity, forKey: "BGActivitySessionStarted")
 		}
 	}
 
-	private var background: CLBackgroundActivitySession?
-
 	private init() {
-		self.manager = CLLocationManager()  // Creating a location manager instance is safe to call here in `MainActor`.
+		self.manager = CLLocationManager()
 		self.manager.allowsBackgroundLocationUpdates = true
-		self.locationsArray = [CLLocation]()
 	}
 
 	func startLocationUpdates() {
@@ -58,20 +59,26 @@ class LocationsHandler: ObservableObject {
 
 		Task {
 			do {
-				self.updatesStarted = true
-				let updates = CLLocationUpdate.liveUpdates()
+				updatesStarted = true
+
+				let updates = CLLocationUpdate.liveUpdates(.default)
+
 				for try await update in updates {
-					if !self.updatesStarted { break }
+					guard self.updatesStarted else {
+						break
+					}
+
 					if let loc = update.location {
-						self.isStationary = update.isStationary
+						isStationary = update.isStationary
 
 						var locationAdded: Bool
+
 						locationAdded = addLocation(loc, smartPostion: enableSmartPosition)
 						if !isRecording && locationAdded {
-							self.count = 1
+							count = 1
 						}
 						else if locationAdded && isRecording {
-							self.count += 1
+							count += 1
 						}
 					}
 				}
@@ -79,12 +86,14 @@ class LocationsHandler: ObservableObject {
 			catch {
 				Logger.services.error("💥 [App] Could not start location updates: \(error.localizedDescription)")
 			}
+
 			return
 		}
 	}
 
 	func stopLocationUpdates() {
 		Logger.services.info("🛑 [App] Stopping location updates")
+
 		self.updatesStarted = false
 	}
 
@@ -95,20 +104,24 @@ class LocationsHandler: ObservableObject {
 				Logger.services.warning("📍 [App] Bad Location \(self.count, privacy: .public): Too Old \(age, privacy: .public) seconds ago \(location, privacy: .private)")
 				return false
 			}
+
 			if location.horizontalAccuracy < 0 {
 				Logger.services.warning("📍 [App] Bad Location \(self.count, privacy: .public): Horizontal Accuracy: \(location.horizontalAccuracy) \(location, privacy: .private)")
 				return false
 			}
+
 			if location.horizontalAccuracy > 5 {
 				Logger.services.warning("📍 [App] Bad Location \(self.count, privacy: .public): Horizontal Accuracy: \(location.horizontalAccuracy) \(location, privacy: .private)")
 				return false
 			}
 		}
+
 		if isRecording {
 			if let lastLocation = locationsArray.last {
 				let distance = location.distance(from: lastLocation)
 				let gain = location.altitude - lastLocation.altitude
 				distanceTraveled += distance
+
 				if gain > 0 {
 					elevationGain += gain
 				}
@@ -118,34 +131,7 @@ class LocationsHandler: ObservableObject {
 		else {
 			locationsArray = [location]
 		}
+
 		return true
-	}
-
-	static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
-
-	static var satsInView: Int {
-		var sats = 0
-		if let newLocation = shared.locationsArray.last {
-			sats = 1
-			if newLocation.verticalAccuracy > 0 {
-				sats = 4
-				if 0...5 ~= newLocation.horizontalAccuracy {
-					sats = 12
-				} else if 6...15 ~= newLocation.horizontalAccuracy {
-					sats = 10
-				} else if 16...30 ~= newLocation.horizontalAccuracy {
-					sats = 9
-				} else if 31...45 ~= newLocation.horizontalAccuracy {
-					sats = 7
-				} else if 46...60 ~= newLocation.horizontalAccuracy {
-					sats = 5
-				}
-			} else if newLocation.verticalAccuracy < 0 && 60...300 ~= newLocation.horizontalAccuracy {
-				sats = 3
-			} else if newLocation.verticalAccuracy < 0 && newLocation.horizontalAccuracy > 300 {
-				sats = 2
-			}
-		}
-		return sats
 	}
 }

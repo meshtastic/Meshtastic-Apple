@@ -1147,7 +1147,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
 			positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
 			positionPacket.altitude = Int32(lastLocation.altitude)
-			positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
+			positionPacket.satsInView = UInt32(0)
 
 			let currentSpeed = lastLocation.speed
 			if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite) {
@@ -1166,7 +1166,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
 			positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
 			positionPacket.altitude = Int32(LocationHelper.shared.locationManager.location?.altitude ?? 0)
-			positionPacket.satsInView = UInt32(LocationHelper.satsInView)
+			positionPacket.satsInView = UInt32(0)
 			let currentSpeed = LocationHelper.shared.locationManager.location?.speed ?? 0
 			if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite) {
 				positionPacket.groundSpeed = UInt32(currentSpeed)
