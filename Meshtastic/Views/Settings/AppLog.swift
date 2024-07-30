@@ -9,7 +9,7 @@ import SwiftUI
 import OSLog
 
 /// Needed for TableColumnForEach
-@available(iOS 17.4, macOS 14.4, *)
+@available(iOS 17.0, macOS 14.0, *)
 struct AppLog: View {
 
 	@State private var logs: [OSLogEntryLog] = []
@@ -33,60 +33,101 @@ struct AppLog: View {
 		.secondFraction(.fractional(3))
 
 	var body: some View {
-
-		Table(logs, selection: $selection, sortOrder: $sortOrder) {
-			if idiom != .phone {
-				TableColumn("log.time") { value in
-					Text(value.date.formatted(dateFormatStyle))
-				}
-				.width(min: 125, max: 150)
-				TableColumn("log.level") { value in
-					Text(value.level.description)
-						.foregroundStyle(value.level.color)
-				}
-				.width(min: 85, max: 110)
-				TableColumn("log.category", value: \.category)
-					.width(min: 80, max: 130)
-			}
-			TableColumn("log.message", value: \.composedMessage) { value in
-				Text(value.composedMessage)
-					.foregroundStyle(value.level.color)
-					.font(idiom == .phone ? .caption : .body)
-			}
-			.width(ideal: 200, max: .infinity)
-		}
-		.monospaced()
-
-		.safeAreaInset(edge: .bottom, alignment: .trailing) {
-			HStack {
-				Button(action: {
-					withAnimation {
-						isEditingFilters = !isEditingFilters
+		HStack {
+			
+			if idiom == .phone {
+				Table(logs, selection: $selection, sortOrder: $sortOrder) {
+					TableColumn("log.message", value: \.composedMessage) { value in
+						Text(value.composedMessage)
+							.foregroundStyle(value.level.color)
+							.font(idiom == .phone ? .caption : .body)
 					}
-				}) {
-					Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
-						.padding(.vertical, 5)
+					.width(ideal: 200, max: .infinity)
 				}
-				.tint(Color(UIColor.secondarySystemBackground))
-				.foregroundColor(.accentColor)
-				.buttonStyle(.borderedProminent)
-
+				.monospaced()
+				.safeAreaInset(edge: .bottom, alignment: .trailing) {
+					HStack {
+						Button(action: {
+							withAnimation {
+								isEditingFilters = !isEditingFilters
+							}
+						}) {
+							Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+								.padding(.vertical, 5)
+						}
+						.tint(Color(UIColor.secondarySystemBackground))
+						.foregroundColor(.accentColor)
+						.buttonStyle(.borderedProminent)
+						
+					}
+					.controlSize(.regular)
+					.padding(5)
+				}
+				.padding(.bottom, 5)
+				.padding(.trailing, 5)
+				.searchable(text: $searchText, placement: .navigationBarDrawer, prompt: "Search")
+				.disabled(selection != nil)
+				.overlay {
+					if logs.isEmpty {
+						ContentUnavailableView("No Logs Available", systemImage: "scroll")
+					}
+				}
+				.refreshable {
+					await logs = searchAppLogs()
+					logs.sort(using: sortOrder)
+				}
+			} else {
+				Table(logs, selection: $selection, sortOrder: $sortOrder) {
+					TableColumn("log.time") { value in
+						Text(value.date.formatted(dateFormatStyle))
+					}
+					.width(min: 125, max: 150)
+					TableColumn("log.level") { value in
+						Text(value.level.description)
+							.foregroundStyle(value.level.color)
+					}
+					.width(min: 85, max: 110)
+					TableColumn("log.category", value: \.category)
+						.width(min: 80, max: 130)
+					TableColumn("log.message", value: \.composedMessage) { value in
+						Text(value.composedMessage)
+							.foregroundStyle(value.level.color)
+							.font(idiom == .phone ? .caption : .body)
+					}
+					.width(ideal: 200, max: .infinity)
+				}
+				.monospaced()
+				.safeAreaInset(edge: .bottom, alignment: .trailing) {
+					HStack {
+						Button(action: {
+							withAnimation {
+								isEditingFilters = !isEditingFilters
+							}
+						}) {
+							Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+								.padding(.vertical, 5)
+						}
+						.tint(Color(UIColor.secondarySystemBackground))
+						.foregroundColor(.accentColor)
+						.buttonStyle(.borderedProminent)
+					}
+					.controlSize(.regular)
+					.padding(5)
+				}
+				.padding(.bottom, 5)
+				.padding(.trailing, 5)
+				.searchable(text: $searchText, placement: .navigationBarDrawer, prompt: "Search")
+				.disabled(selection != nil)
+				.overlay {
+					if logs.isEmpty {
+						ContentUnavailableView("No Logs Available", systemImage: "scroll")
+					}
+				}
+				.refreshable {
+					await logs = searchAppLogs()
+					logs.sort(using: sortOrder)
+				}
 			}
-			.controlSize(.regular)
-			.padding(5)
-		}
-		.padding(.bottom, 5)
-		.padding(.trailing, 5)
-		.searchable(text: $searchText, placement: .navigationBarDrawer, prompt: "Search")
-			.disabled(selection != nil)
-		.overlay {
-			if logs.isEmpty {
-				ContentUnavailableView("No Logs Available", systemImage: "scroll")
-			}
-		}
-		.refreshable {
-			await logs = searchAppLogs()
-			logs.sort(using: sortOrder)
 		}
 		.onChange(of: sortOrder) { _, sortOrder in
 			withAnimation {
@@ -176,7 +217,7 @@ struct AppLog: View {
 	}
 }
 
-@available(iOS 17.4, macOS 14.4, *)
+@available(iOS 17.0, macOS 14.0, *)
 extension AppLog {
 	@MainActor
 	private func searchAppLogs() async -> [OSLogEntryLog] {
