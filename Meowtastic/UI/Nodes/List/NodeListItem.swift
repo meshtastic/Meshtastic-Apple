@@ -26,11 +26,15 @@ struct NodeListItem: View {
 
 				VStack(alignment: .leading, spacing: 4) {
 					name
-					signalStrength
-					battery
 
-					lastHeard
-						.padding(.top, 8)
+					if node.isOnline {
+						signalStrength
+						battery
+					}
+					else {
+						lastHeard
+							.padding(.top, 8)
+					}
 
 					if node.positions?.count ?? 0 > 0 && connectedNode != node.num {
 						distance
@@ -93,16 +97,16 @@ struct NodeListItem: View {
 
 	@ViewBuilder
 	private var signalStrength: some View {
-		if node.viaMqtt || node.hopsAway > 0 || node.snr == 0 {
-			EmptyView()
-		}
-		else {
+		if node.snr != 0, node.rssi != 0 {
 			LoraSignalView(
 				snr: node.snr,
 				rssi: node.rssi,
 				preset: modemPreset,
 				withLabels: true
 			)
+		}
+		else {
+			EmptyView()
 		}
 	}
 
@@ -123,11 +127,22 @@ struct NodeListItem: View {
 	private var lastHeard: some View {
 		if let lastHeard = node.lastHeard, lastHeard.timeIntervalSince1970 > 0 {
 			HStack {
-				Image(systemName: node.isOnline ? "info.circle.fill" : "moon.circle.fill")
+				Image(systemName: node.isOnline ? "clock.badge.checkmark.fill" : "clock.badge.exclamationmark.fill")
 					.font(detailInfoFont)
 					.foregroundColor(node.isOnline ? .green : .gray)
 
-				Text(lastHeard.formatted())
+				Text(lastHeard.relative())
+					.font(detailInfoFont)
+					.foregroundColor(.gray)
+			}
+		}
+		else {
+			HStack {
+				Image(systemName: "clock.badge.questionmark.fill")
+					.font(detailInfoFont)
+					.foregroundColor(node.isOnline ? .green : .gray)
+
+				Text("No idea")
 					.font(detailInfoFont)
 					.foregroundColor(.gray)
 			}

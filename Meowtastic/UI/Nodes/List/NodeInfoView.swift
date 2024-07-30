@@ -34,7 +34,7 @@ struct NodeInfoView: View {
 					Spacer()
 				}
 
-				if node.snr != 0 && !node.viaMqtt {
+				if node.snr != 0, node.rssi != 0 {
 					LoraSignalView(
 						snr: node.snr,
 						rssi: node.rssi,

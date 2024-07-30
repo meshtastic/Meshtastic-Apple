@@ -1,6 +1,6 @@
 import CoreData
-import SwiftUI
 import OSLog
+import SwiftUI
 
 struct NodeList: View {
 	@SceneStorage("selectedDetailView")
@@ -94,7 +94,8 @@ struct NodeList: View {
 						trailing: ConnectedDevice(ble: bleManager)
 					)
 				}
-			} else {
+			}
+			else {
 				ContentUnavailableView("select.node", systemImage: "flipphone")
 			}
 		} detail: {
@@ -128,7 +129,8 @@ struct NodeList: View {
 
 					if nodeNum == nil {
 						Logger.data.debug("nodeNum not found")
-					} else {
+					}
+					else {
 						selectedNode = nodes.first(where: {
 							$0.num == Int64(nodeNum ?? "-1")
 						})
@@ -267,7 +269,8 @@ struct NodeList: View {
 				NodeListItem(
 					node: node,
 					connected: bleManager.connectedPeripheral?.num ?? -1 == node.num,
-					connectedNode: bleManager.connectedPeripheral?.num ?? -1
+					connectedNode: bleManager.connectedPeripheral?.num ?? -1,
+					showBattery: true
 				)
 				.contextMenu {
 					contextMenuActions(
