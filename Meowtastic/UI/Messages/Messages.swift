@@ -128,7 +128,7 @@ struct Messages: View {
 								Button {
 									channel.mute = !channel.mute
 
-									let adminMessageId =  bleManager.saveChannel(
+									let adminMessageId = bleManager.saveChannel(
 										channel: channel.protoBuf,
 										fromUser: node.user!,
 										toUser: node.user!
@@ -177,51 +177,56 @@ struct Messages: View {
 
 	@ViewBuilder
 	private var userList: some View {
-		let userList = users.filter { user in
-			guard user.userNode != nil else {
-				return false
+		if
+			let node,
+			let myInfo = node.myInfo
+		{
+			let userList = users.filter { user in
+				guard user.userNode != nil else {
+					return false
+				}
+
+				if let num = bleManager.connectedPeripheral?.num, user.num == num {
+					return false
+				}
+
+				return true
 			}
 
-			if let num = bleManager.connectedPeripheral?.num, user.num == num {
-				return false
-			}
+			Section(
+				header: listHeader(
+					title: "Users",
+					nodesCount: userList.count
+				)
+			) {
+				ForEach(userList, id: \.num) { user in
+					let lastMessage = getLastMessage(for: user)
 
-			return true
-		}
-
-		Section(
-			header: listHeader(
-				title: "Users",
-				nodesCount: userList.count
-			)
-		) {
-			ForEach(userList, id: \.num) { user in
-				let lastMessage = getLastMessage(for: user)
-
-				if user.num != bleManager.connectedPeripheral?.num ?? 0 {
-					makeUserLink(for: user, lastMessage: lastMessage)
-						.contextMenu {
-							getContextMenu(for: user, hasMessages: lastMessage != nil)
-						}
-						.confirmationDialog(
-							"This conversation will be deleted.",
-							isPresented: $isPresentingDeleteUserMessagesConfirm,
-							titleVisibility: .visible
-						) {
-							Button(role: .destructive) {
-								deleteUserMessages(user: userSelection!, context: context)
-								context.refresh(node!.user!, mergeChanges: true)
-
-								let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
-								UNUserNotificationCenter.current().setBadgeCount(badge)
-							} label: {
-								Text("delete")
+					if user.num != bleManager.connectedPeripheral?.num ?? 0 {
+						makeUserLink(for: user, myInfo: myInfo, lastMessage: lastMessage)
+							.contextMenu {
+								getContextMenu(for: user, hasMessages: lastMessage != nil)
 							}
-						}
+							.confirmationDialog(
+								"This conversation will be deleted.",
+								isPresented: $isPresentingDeleteUserMessagesConfirm,
+								titleVisibility: .visible
+							) {
+								Button(role: .destructive) {
+									deleteUserMessages(user: userSelection!, context: context)
+									context.refresh(node.user!, mergeChanges: true)
+									
+									let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
+									UNUserNotificationCenter.current().setBadgeCount(badge)
+								} label: {
+									Text("delete")
+								}
+							}
+					}
 				}
 			}
+			.headerProminence(.increased)
 		}
-		.headerProminence(.increased)
 	}
 
 	@ViewBuilder
@@ -243,7 +248,7 @@ struct Messages: View {
 		myInfo: MyInfoEntity
 	) -> some View {
 		NavigationLink {
-			ChannelMessageList(myInfo: myInfo, channel: channel)
+			MessageList(channel: channel, myInfo: myInfo)
 		} label: {
 			let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
 
@@ -282,15 +287,18 @@ struct Messages: View {
 							Text(lastMessageTime, style: .time )
 								.font(.footnote)
 								.foregroundColor(.secondary)
-						} else if  lastMessageDay == (currentDay - 1) {
+						}
+						else if  lastMessageDay == (currentDay - 1) {
 							Text("Yesterday")
 								.font(.footnote)
 								.foregroundColor(.secondary)
-						} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+						}
+						else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
 							Text(dateFormatter.string(from: lastMessageTime))
 								.font(.footnote)
 								.foregroundColor(.secondary)
-						} else if lastMessageDay < (currentDay - 1800) {
+						}
+						else if lastMessageDay < (currentDay - 1800) {
 							Text(dateFormatter.string(from: lastMessageTime))
 								.font(.footnote)
 								.foregroundColor(.secondary)
@@ -309,7 +317,11 @@ struct Messages: View {
 	}
 
 	@ViewBuilder
-	private func makeUserLink(for user: UserEntity, lastMessage: MessageEntity?) -> some View {
+	private func makeUserLink(
+		for user: UserEntity,
+		myInfo: MyInfoEntity,
+		lastMessage: MessageEntity?
+	) -> some View {
 		let lastMessageTime = Date(
 			timeIntervalSince1970: TimeInterval(Int64(lastMessage?.messageTimestamp ?? 0))
 		)
@@ -325,7 +337,7 @@ struct Messages: View {
 		).day ?? 0
 
 		NavigationLink {
-			UserMessageList(user: user)
+			MessageList(user: user, myInfo: myInfo)
 		} label: {
 			HStack(spacing: 8) {
 				avatar(for: user)

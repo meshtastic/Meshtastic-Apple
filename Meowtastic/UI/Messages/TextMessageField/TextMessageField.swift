@@ -1,6 +1,6 @@
 import MeshtasticProtobufs
-import SwiftUI
 import OSLog
+import SwiftUI
 
 struct TextMessageField: View {
 	let destination: MessageDestination
@@ -141,22 +141,21 @@ struct TextMessageField: View {
 private extension MessageDestination {
 	var positionDestNum: Int64 {
 		switch self {
-		case let .user(user): return user.num
-		case .channel: return Int64(Constants.maximumNodeNum)
-		}
-	}
+		case let .user(user):
+			return user.num
 
-	var showAlertButton: Bool {
-		switch self {
-		case .user: return true
-		case .channel: return true
+		case .channel:
+			return Int64(Constants.maximumNodeNum)
 		}
 	}
 
 	var wantPositionResponse: Bool {
 		switch self {
-		case .user: return true
-		case .channel: return false
+		case .user:
+			return true
+
+		case .channel:
+			return false
 		}
 	}
 }

@@ -3,22 +3,23 @@ import MeshtasticProtobufs
 import OSLog
 import SwiftUI
 
-struct ChannelMessageList: View {
-	@StateObject
-	var appState = AppState.shared
-	@Environment(\.managedObjectContext)
-	var context
-	@EnvironmentObject
-	var bleManager: BLEManager
-	@FocusState
-	var messageFieldFocused: Bool
-	@ObservedObject
-	var myInfo: MyInfoEntity
-	@ObservedObject
-	var channel: ChannelEntity
-
+struct MessageList: View {
 	private let textFieldPlaceholderID = "text_field_placeholder"
 
+	@State
+	private var channel: ChannelEntity?
+	@State
+	private var user: UserEntity?
+	@State
+	private var myInfo: MyInfoEntity
+	@StateObject
+	private var appState = AppState.shared
+	@Environment(\.managedObjectContext)
+	private var context
+	@EnvironmentObject
+	private var bleManager: BLEManager
+	@FocusState
+	private var messageFieldFocused: Bool
 	@AppStorage("preferredPeripheralNum")
 	private var preferredPeripheralNum = -1
 	@State
@@ -36,18 +37,51 @@ struct ChannelMessageList: View {
 	)
 	private var nodes: FetchedResults<NodeInfoEntity>
 
-	private var screenTitle: String {
-		if let name = channel.name, !name.isEmpty {
-			name.camelCaseToWords()
+	private var messages: [MessageEntity]? {
+		if let channel {
+			return channel.allPrivateMessages
 		}
-		else {
-			if channel.role == 1 {
-				"Primary Channel"
+		else if let user {
+			return user.messageList
+		}
+		
+		return nil
+	}
+	private var destination: MessageDestination? {
+		if let channel {
+			return .channel(channel)
+		}
+		else if let user {
+			return .user(user)
+		}
+
+		return nil
+	}
+
+	private var screenTitle: String {
+		if let channel {
+			if let name = channel.name, !name.isEmpty {
+				return name.camelCaseToWords()
 			}
 			else {
-				"Channel #\(channel.index)"
+				if channel.role == 1 {
+					return "Primary Channel"
+				}
+				else {
+					return "Channel #\(channel.index)"
+				}
 			}
 		}
+		else if let user {
+			if let name = user.longName {
+				return name
+			}
+			else {
+				return "DM"
+			}
+		}
+
+		return ""
 	}
 
 	private var connectedNode: Int64? {
@@ -63,24 +97,45 @@ struct ChannelMessageList: View {
 					.onAppear {
 						scrollView.scrollTo(textFieldPlaceholderID)
 					}
-					.onChange(of: channel.allPrivateMessages, initial: true) {
-						if let allPrivateMessages = channel.allPrivateMessages, !allPrivateMessages.isEmpty {
-							scrollView.scrollTo(allPrivateMessages.last!.messageId)
+					.onChange(of: channel?.allPrivateMessages, initial: true) {
+						if
+							let messages = channel?.allPrivateMessages,
+							!messages.isEmpty
+						{
+							scrollView.scrollTo(messages.last!.messageId)
+						}
+					}
+					.onChange(of: user?.messageList, initial: true) {
+						if
+							let messages = user?.messageList,
+							!messages.isEmpty
+						{
+							scrollView.scrollTo(messages.last!.messageId)
 						}
 					}
 			}
 
-			TextMessageField(
-				destination: .channel(channel),
-				onSubmit: {
-					context.refresh(channel, mergeChanges: true)
-				},
-				replyMessageId: $replyMessageId,
-				isFocused: $messageFieldFocused
-			)
-			.frame(alignment: .bottom)
-			.padding(.horizontal, 16)
-			.padding(.bottom, 8)
+			if let destination {
+				TextMessageField(
+					destination: destination,
+					onSubmit: {
+						if let channel {
+							context.refresh(channel, mergeChanges: true)
+						}
+						else if let user {
+							context.refresh(user, mergeChanges: true)
+						}
+					},
+					replyMessageId: $replyMessageId,
+					isFocused: $messageFieldFocused
+				)
+				.frame(alignment: .bottom)
+				.padding(.horizontal, 16)
+				.padding(.bottom, 8)
+			}
+			else {
+				EmptyView()
+			}
 		}
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
@@ -90,11 +145,16 @@ struct ChannelMessageList: View {
 			}
 
 			ToolbarItem(placement: .navigationBarTrailing) {
-				ConnectedDevice(
-					ble: bleManager,
-					mqttUplinkEnabled: channel.uplinkEnabled,
-					mqttDownlinkEnabled: channel.downlinkEnabled
-				)
+				if let channel {
+					ConnectedDevice(
+						ble: bleManager,
+						mqttUplinkEnabled: channel.uplinkEnabled,
+						mqttDownlinkEnabled: channel.downlinkEnabled
+					)
+				}
+				else {
+					ConnectedDevice(ble: bleManager)
+				}
 			}
 		}
 		.sheet(item: $nodeDetail) { detail in
@@ -106,8 +166,8 @@ struct ChannelMessageList: View {
 	@ViewBuilder
 	private var messageList: some View {
 		List {
-			if let allPrivateMessages = channel.allPrivateMessages {
-				ForEach(allPrivateMessages, id: \.messageId) { message in
+			if let messages {
+				ForEach(messages, id: \.messageId) { message in
 					messageView(for: message)
 						.id(message.messageId)
 						.frame(width: .infinity)
@@ -126,6 +186,24 @@ struct ChannelMessageList: View {
 				.scrollContentBackground(.hidden)
 		}
 		.listStyle(.plain)
+	}
+
+	init(
+		channel: ChannelEntity,
+		myInfo: MyInfoEntity
+	) {
+		self.channel = channel
+		self.user = nil
+		self.myInfo = myInfo
+	}
+
+	init(
+		user: UserEntity,
+		myInfo: MyInfoEntity
+	) {
+		self.channel = nil
+		self.user = user
+		self.myInfo = myInfo
 	}
 
 	@ViewBuilder
@@ -186,20 +264,22 @@ struct ChannelMessageList: View {
 				}
 
 
-				HStack(spacing: 0) {
-					MessageView(
-						message: message,
-						originalMessage: getOriginalMessage(for: message),
-						tapBackDestination: .channel(channel),
-						isCurrentUser: isCurrentUser
-					) {
-						replyMessageId = message.messageId
-						messageFieldFocused = true
-					}
-					.id(message.messageId)
-
-					if isCurrentUser && message.canRetry {
-						RetryButton(message: message, destination: .channel(channel))
+				if let destination {
+					HStack(spacing: 0) {
+						MessageView(
+							message: message,
+							originalMessage: getOriginalMessage(for: message),
+							tapBackDestination: destination,
+							isCurrentUser: isCurrentUser
+						) {
+							replyMessageId = message.messageId
+							messageFieldFocused = true
+						}
+						.id(message.messageId)
+						
+						if isCurrentUser && message.canRetry {
+							RetryButton(message: message, destination: destination)
+						}
 					}
 				}
 
@@ -244,8 +324,19 @@ struct ChannelMessageList: View {
 	private func getOriginalMessage(for message: MessageEntity) -> String? {
 		if
 			message.replyID > 0,
-			let allPrivateMessages = channel.allPrivateMessages,
-			let messageReply = allPrivateMessages.first(where: { msg in
+			let messages = channel?.allPrivateMessages,
+			let messageReply = messages.first(where: { msg in
+				msg.messageId == message.replyID
+			}),
+			let messagePayload = messageReply.messagePayload
+		{
+			return messagePayload
+		}
+
+		if
+			message.replyID > 0,
+			let messages = user?.messageList,
+			let messageReply = messages.first(where: { msg in
 				msg.messageId == message.replyID
 			}),
 			let messagePayload = messageReply.messagePayload

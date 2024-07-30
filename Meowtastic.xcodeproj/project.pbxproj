@@ -62,7 +62,6 @@
 		DD1925B728CDA5A400720036 /* CannedMessagesConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */; };
 		DD1925B928CDA93900720036 /* SerialConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1925B828CDA93900720036 /* SerialConfigEnums.swift */; };
 		DD1933782B084F4200771CD5 /* Measurement.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1933772B084F4200771CD5 /* Measurement.swift */; };
-		DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */; };
 		DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2160AE28C5552500C17253 /* MQTTConfig.swift */; };
 		DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */; };
 		DD2553572855B02500E55709 /* LoRaConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2553562855B02500E55709 /* LoRaConfig.swift */; };
@@ -80,7 +79,7 @@
 		DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4A911D2708C65400501B7E /* AppSettings.swift */; };
 		DD5D0A9C2931B9F200F7EA61 /* EthernetModes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5D0A9B2931B9F200F7EA61 /* EthernetModes.swift */; };
 		DD77093F2AA1B146007A8BF0 /* UIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD77093E2AA1B146007A8BF0 /* UIColor.swift */; };
-		DD798B072915928D005217CD /* ChannelMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD798B062915928D005217CD /* ChannelMessageList.swift */; };
+		DD798B072915928D005217CD /* MessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD798B062915928D005217CD /* MessageList.swift */; };
 		DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */; };
 		DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AE626F6B38600ABCC23 /* Connect.swift */; };
 		DD86D40A287F04F100BAEB7A /* InvalidVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D409287F04F100BAEB7A /* InvalidVersion.swift */; };
@@ -247,7 +246,6 @@
 		DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannedMessagesConfigEnums.swift; sourceTree = "<group>"; };
 		DD1925B828CDA93900720036 /* SerialConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConfigEnums.swift; sourceTree = "<group>"; };
 		DD1933772B084F4200771CD5 /* Measurement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Measurement.swift; sourceTree = "<group>"; };
-		DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageList.swift; sourceTree = "<group>"; };
 		DD2160AE28C5552500C17253 /* MQTTConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MQTTConfig.swift; sourceTree = "<group>"; };
 		DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralModel.swift; sourceTree = "<group>"; };
 		DD2553562855B02500E55709 /* LoRaConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaConfig.swift; sourceTree = "<group>"; };
@@ -269,7 +267,7 @@
 		DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelEntityExtension.swift; sourceTree = "<group>"; };
 		DD5D0A9B2931B9F200F7EA61 /* EthernetModes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthernetModes.swift; sourceTree = "<group>"; };
 		DD77093E2AA1B146007A8BF0 /* UIColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor.swift; sourceTree = "<group>"; };
-		DD798B062915928D005217CD /* ChannelMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelMessageList.swift; sourceTree = "<group>"; };
+		DD798B062915928D005217CD /* MessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageList.swift; sourceTree = "<group>"; };
 		DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshLogger.swift; sourceTree = "<group>"; };
 		DD836AE626F6B38600ABCC23 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
 		DD86D409287F04F100BAEB7A /* InvalidVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvalidVersion.swift; sourceTree = "<group>"; };
@@ -642,9 +640,8 @@
 			isa = PBXGroup;
 			children = (
 				D9C9839E2B79D0C600BDBE6A /* TextMessageField */,
-				DD798B062915928D005217CD /* ChannelMessageList.swift */,
+				DD798B062915928D005217CD /* MessageList.swift */,
 				DDB8F40F2A9EE5B400230ECE /* Messages.swift */,
-				DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */,
 				B399E8A32B6F486400E4488E /* RetryButton.swift */,
 				D93068D62B8146690066FBC8 /* MessageView.swift */,
 				D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */,
@@ -840,7 +837,7 @@
 				08DD7E5F2C4283A100548159 /* LoRaSignal.swift in Sources */,
 				B266DABC2C53CFD40067D317 /* Meowtastic.xcdatamodeld in Sources */,
 				DD5D0A9C2931B9F200F7EA61 /* EthernetModes.swift in Sources */,
-				DD798B072915928D005217CD /* ChannelMessageList.swift in Sources */,
+				DD798B072915928D005217CD /* MessageList.swift in Sources */,
 				DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */,
 				6D825E622C34786C008DBEE4 /* CommonRegex.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
@@ -883,7 +880,6 @@
 				DD007BAE2AA4E91200F5FA12 /* MyInfoEntityExtension.swift in Sources */,
 				B2A5F3072C5668FD009457AB /* NodeInfoView.swift in Sources */,
 				DD33DB622B3D27C7003E1EA0 /* FirmwareApi.swift in Sources */,
-				DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */,
 				08DD7E512C41B0BA00548159 /* AppState.swift in Sources */,
 				DD3CC6C228EB9D4900FA9159 /* UpdateCoreData.swift in Sources */,
 				DDE0F7C5295F77B700B8AAB3 /* AppSettingsEnums.swift in Sources */,
