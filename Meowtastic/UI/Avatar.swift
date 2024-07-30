@@ -33,6 +33,10 @@ struct Avatar: View {
 		}
 	}
 
+	private var foreground: Color {
+		background.isLight() ? .black : .white
+	}
+
 	private var temperature: Double? {
 		guard let node else {
 			return nil
@@ -78,7 +82,7 @@ struct Avatar: View {
 			if let name = name, !name.isEmpty {
 				Text(name)
 					.font(.system(size: 128, weight: .heavy, design: .rounded))
-					.foregroundColor(background.isLight() ? .black : .white)
+					.foregroundColor(foreground)
 					.lineLimit(1)
 					.minimumScaleFactor(0.01)
 					.padding(.all, size / 8)
@@ -88,32 +92,38 @@ struct Avatar: View {
 				Image(systemName: "questionmark")
 					.resizable()
 					.scaledToFit()
-					.foregroundColor(background.isLight() ? .black : .white)
+					.foregroundColor(foreground)
 					.padding(.all, size / 8)
 					.frame(width: size, height: size)
 			}
 
-			if let temperature {
+			if showTemperature, let temperature {
 				let tempFormatted = String(format: "%.0f", temperature)
 
 				HStack(alignment: .center, spacing: 2) {
 					Text(tempFormatted)
-						.font(.system(size: 10, weight: .semibold, design: .rounded))
+						.font(.system(size: size / 6, weight: .semibold, design: .rounded))
 						.foregroundColor(
-							(background.isLight() ? Color.black : Color.white)
+							background // inverted colors
 								.opacity(0.8)
 						)
 						.lineLimit(1)
 
 					Image(systemName: "thermometer.variable")
-						.font(.system(size: 7, weight: .semibold, design: .rounded))
+						.font(.system(size: size / 8, weight: .semibold, design: .rounded))
 						.foregroundColor(
-							(background.isLight() ? Color.black : Color.white)
+							background // inverted colors
 								.opacity(0.8)
 						)
 				}
-				.padding(.horizontal, 6)
-				.padding(.vertical, 2)
+				.padding(.horizontal, size / 6)
+				.padding(.vertical, size / 32)
+				.background(foreground) // inverted colors
+				.clipShape(
+					UnevenRoundedRectangle(
+						cornerRadii: RectangleCornerRadii(topLeading: 4)
+					)
+				)
 				.frame(width: size, height: size, alignment: .bottomTrailing)
 			}
 		}
