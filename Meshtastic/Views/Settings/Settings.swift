@@ -469,13 +469,17 @@ struct Settings: View {
 				case .telemetry:
 					TelemetryConfig(node: node)
 				case .meshLog:
+#if DEBUG
 					MeshLog()
+#endif
 				case .debugLogs:
 					if #available(iOS 17.4, *) {
 						AppLog()
 					}
 				case .appFiles:
+#if DEBUG
 					AppData()
+#endif
 				case .firmwareUpdates:
 					Firmware(node: node)
 				}
