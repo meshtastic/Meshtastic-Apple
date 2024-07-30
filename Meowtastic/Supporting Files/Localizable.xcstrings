@@ -2946,6 +2946,9 @@
     "Client History Request Sent" : {
 
     },
+    "Client Proxy" : {
+
+    },
     "close" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4342,6 +4345,9 @@
           }
         }
       }
+    },
+    "Connected" : {
+
     },
     "connected.radio" : {
       "extractionState" : "stale",
@@ -6498,6 +6504,9 @@
         }
       }
     },
+    "Enabled" : {
+
+    },
     "Enabling Ethernet will disable the bluetooth connection to the app." : {
 
     },
@@ -7889,9 +7898,6 @@
       }
     },
     "If DOP is set, use HDOP / VDOP values instead of PDOP" : {
-
-    },
-    "If the default region topic is too busy you can choose a more local topic." : {
 
     },
     "Ignore MQTT" : {
@@ -14234,6 +14240,7 @@
 
     },
     "mqtt.clientproxy" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14292,6 +14299,7 @@
       }
     },
     "mqtt.config" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14468,6 +14476,7 @@
       }
     },
     "mqtt.username" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14585,9 +14594,6 @@
           }
         }
       }
-    },
-    "Nearby Topics" : {
-
     },
     "network" : {
       "extractionState" : "stale",
@@ -15415,6 +15421,9 @@
           }
         }
       }
+    },
+    "Password" : {
+
     },
     "pause" : {
       "extractionState" : "stale",
@@ -18691,9 +18700,6 @@
     "Server" : {
 
     },
-    "Server Address" : {
-
-    },
     "Set" : {
 
     },
@@ -21406,6 +21412,9 @@
           }
         }
       }
+    },
+    "Username" : {
+
     },
     "Utilizes the network connection on your phone to connect to MQTT." : {
 

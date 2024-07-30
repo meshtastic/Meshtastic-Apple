@@ -6,7 +6,6 @@ import SwiftUI
 @MainActor
 class LocationsHandler: ObservableObject {
 	static let shared = LocationsHandler()  // Create a single, shared instance of the object.
-	static let defaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
 
 	private let manager: CLLocationManager
 
@@ -16,19 +15,7 @@ class LocationsHandler: ObservableObject {
 	@Published
 	var locationsArray = [CLLocation]()
 	@Published
-	var isStationary = false
-	@Published
 	var count = 0
-	@Published
-	var isRecording = false
-	@Published
-	var isRecordingPaused = false
-	@Published
-	var recordingStarted: Date?
-	@Published
-	var distanceTraveled = 0.0
-	@Published
-	var elevationGain = 0.0
 
 	@Published
 	var updatesStarted: Bool = UserDefaults.standard.bool(forKey: "liveUpdatesStarted") {
@@ -51,8 +38,8 @@ class LocationsHandler: ObservableObject {
 	}
 
 	func startLocationUpdates() {
-		if self.manager.authorizationStatus == .notDetermined {
-			self.manager.requestWhenInUseAuthorization()
+		if manager.authorizationStatus == .notDetermined {
+			manager.requestWhenInUseAuthorization()
 		}
 
 		Logger.services.info("📍 [App] Starting location updates")
@@ -69,16 +56,11 @@ class LocationsHandler: ObservableObject {
 					}
 
 					if let loc = update.location {
-						isStationary = update.isStationary
-
 						var locationAdded: Bool
 
 						locationAdded = addLocation(loc, smartPostion: enableSmartPosition)
-						if !isRecording && locationAdded {
+						if locationAdded {
 							count = 1
-						}
-						else if locationAdded && isRecording {
-							count += 1
 						}
 					}
 				}
@@ -94,43 +76,18 @@ class LocationsHandler: ObservableObject {
 	func stopLocationUpdates() {
 		Logger.services.info("🛑 [App] Stopping location updates")
 
-		self.updatesStarted = false
+		updatesStarted = false
 	}
 
 	func addLocation(_ location: CLLocation, smartPostion: Bool) -> Bool {
 		if smartPostion {
 			let age = -location.timestamp.timeIntervalSinceNow
-			if age > 10 {
-				Logger.services.warning("📍 [App] Bad Location \(self.count, privacy: .public): Too Old \(age, privacy: .public) seconds ago \(location, privacy: .private)")
-				return false
-			}
-
-			if location.horizontalAccuracy < 0 {
-				Logger.services.warning("📍 [App] Bad Location \(self.count, privacy: .public): Horizontal Accuracy: \(location.horizontalAccuracy) \(location, privacy: .private)")
-				return false
-			}
-
-			if location.horizontalAccuracy > 5 {
-				Logger.services.warning("📍 [App] Bad Location \(self.count, privacy: .public): Horizontal Accuracy: \(location.horizontalAccuracy) \(location, privacy: .private)")
+			if age > 10 || location.horizontalAccuracy < 0 || location.horizontalAccuracy > 5 {
 				return false
 			}
 		}
 
-		if isRecording {
-			if let lastLocation = locationsArray.last {
-				let distance = location.distance(from: lastLocation)
-				let gain = location.altitude - lastLocation.altitude
-				distanceTraveled += distance
-
-				if gain > 0 {
-					elevationGain += gain
-				}
-			}
-			locationsArray.append(location)
-		}
-		else {
-			locationsArray = [location]
-		}
+		locationsArray = [location]
 
 		return true
 	}

@@ -145,8 +145,8 @@ struct NodeListItem: View {
 
 			if
 				let coordinate = lastPostion.nodeCoordinate,
-				myLocation.coordinate.longitude != LocationsHandler.defaultLocation.longitude,
-				myLocation.coordinate.latitude != LocationsHandler.defaultLocation.latitude
+				myLocation.coordinate.longitude != LocationHelper.defaultLocation.longitude,
+				myLocation.coordinate.latitude != LocationHelper.defaultLocation.latitude
 			{
 				HStack {
 					let location = CLLocation(

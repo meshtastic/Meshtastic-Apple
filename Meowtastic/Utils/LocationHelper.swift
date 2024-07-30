@@ -17,10 +17,10 @@ final class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegat
 		return location.coordinate
 	}
 
-	var locationManager = CLLocationManager()
+	private var locationManager = CLLocationManager()
 
 	@Published
-	var authorizationStatus: CLAuthorizationStatus?
+	private var authorizationStatus: CLAuthorizationStatus?
 
 	override init() {
 		super.init()

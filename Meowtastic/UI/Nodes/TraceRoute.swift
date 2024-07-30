@@ -125,7 +125,7 @@ struct TraceRoute: View {
 											let mostRecent = selectedRoute.node?.positions?.lastObject as? PositionEntity
 										{
 											let traceRouteCoords: [CLLocationCoordinate2D] = [
-												selectedRoute.coordinate ?? LocationsHandler.defaultLocation,
+												selectedRoute.coordinate ?? LocationHelper.defaultLocation,
 												mostRecent.coordinate
 											]
 											Annotation(
@@ -160,20 +160,20 @@ struct TraceRoute: View {
 								   let mostRecent = selectedRoute.node?.positions?.lastObject as? PositionEntity {
 
 									let startPoint = CLLocation(
-										latitude: selectedRoute.coordinate?.latitude ?? LocationsHandler.defaultLocation.latitude,
-										longitude: selectedRoute.coordinate?.longitude ?? LocationsHandler.defaultLocation.longitude
+										latitude: selectedRoute.coordinate?.latitude ?? LocationHelper.defaultLocation.latitude,
+										longitude: selectedRoute.coordinate?.longitude ?? LocationHelper.defaultLocation.longitude
 									)
 
 									if startPoint.distance(
 										from: CLLocation(
-											latitude: LocationsHandler.defaultLocation.latitude,
-											longitude: LocationsHandler.defaultLocation.longitude)
+											latitude: LocationHelper.defaultLocation.latitude,
+											longitude: LocationHelper.defaultLocation.longitude)
 									) > 0.0
 									{
 										let metersAway = selectedRoute.coordinate?.distance(
 											from: CLLocationCoordinate2D(
-												latitude: mostRecent.latitude ?? LocationsHandler.defaultLocation.latitude,
-												longitude: mostRecent.longitude ?? LocationsHandler.defaultLocation.longitude
+												latitude: mostRecent.latitude ?? LocationHelper.defaultLocation.latitude,
+												longitude: mostRecent.longitude ?? LocationHelper.defaultLocation.longitude
 											)
 										)
 

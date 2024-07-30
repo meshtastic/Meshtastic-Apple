@@ -72,13 +72,6 @@ struct NodeIconListView: View {
 					.frame(width: detailIconSize)
 			}
 
-			if !small, node.hasDeviceMetrics {
-				Image(systemName: "ruler")
-					.font(detailInfoFont)
-					.foregroundColor(.gray)
-					.frame(width: detailIconSize)
-			}
-
 			if !small, node.hasDetectionSensorMetrics {
 				Image(systemName: "sensor")
 					.font(detailInfoFont)
