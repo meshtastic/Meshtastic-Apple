@@ -1,5 +1,6 @@
-import SwiftUI
 import CoreLocation
+import MapKit
+import SwiftUI
 
 struct NodeListItem: View {
 	@ObservedObject
@@ -118,43 +119,50 @@ struct NodeListItem: View {
 
 	@ViewBuilder
 	private var lastHeard: some View {
-		HStack {
-			Image(systemName: node.isOnline ? "info.circle.fill" : "moon.circle.fill")
-				.font(detailInfoFont)
-				.foregroundColor(node.isOnline ? .green : .gray)
+		if let lastHeard = node.lastHeard, lastHeard.timeIntervalSince1970 > 0 {
+			HStack {
+				Image(systemName: node.isOnline ? "info.circle.fill" : "moon.circle.fill")
+					.font(detailInfoFont)
+					.foregroundColor(node.isOnline ? .green : .gray)
 
-			LastHeardText(lastHeard: node.lastHeard)
-				.font(detailInfoFont)
-				.foregroundColor(.gray)
+				Text(lastHeard.formatted())
+					.font(detailInfoFont)
+					.foregroundColor(.gray)
+			}
 		}
 	}
 
 	@ViewBuilder
 	private var distance: some View {
 		HStack {
-			if let lastPostion = node.positions?.lastObject as? PositionEntity,
-			   let currentLocation = LocationsHandler.shared.locationsArray.last
+			if
+				let lastPostion = node.positions?.lastObject as? PositionEntity,
+				let currentLocation = LocationsHandler.shared.locationsArray.last
 			{
-				let myCoord = CLLocation(
+				let myLocation = CLLocation(
 					latitude: currentLocation.coordinate.latitude,
 					longitude: currentLocation.coordinate.longitude
 				)
 
-				if lastPostion.nodeCoordinate != nil
-					&& myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude
-					&& myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude
+				if
+					let coordinate = lastPostion.nodeCoordinate,
+					myLocation.coordinate.longitude != LocationsHandler.DefaultLocation.longitude,
+					myLocation.coordinate.latitude != LocationsHandler.DefaultLocation.latitude
 				{
-					let nodeCoord = CLLocation(
-						latitude: lastPostion.nodeCoordinate!.latitude,
-						longitude: lastPostion.nodeCoordinate!.longitude
+					let location = CLLocation(
+						latitude: coordinate.latitude,
+						longitude: coordinate.longitude
 					)
-					let metersAway = nodeCoord.distance(from: myCoord)
+					let distance = location.distance(from: myLocation)
 
 					Image(systemName: "mappin.and.ellipse.circle.fill")
 						.font(detailInfoFont)
 						.foregroundColor(.gray)
 
-					DistanceText(meters: metersAway)
+					let formatter = MKDistanceFormatter()
+					let distanceFormatted = formatter.string(fromDistance: Double(distance))
+
+					Text(distanceFormatted + " away")
 						.font(detailInfoFont)
 						.foregroundColor(.gray)
 				}

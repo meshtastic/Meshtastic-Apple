@@ -101,7 +101,6 @@
 		DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5226EB1DF10058C060 /* BLEManager.swift */; };
 		DDB6ABD628AE742000384BA1 /* BluetoothConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */; };
 		DDB6ABD928B0A4BA00384BA1 /* BluetoothModes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */; };
-		DDB6ABDB28B0AC6000384BA1 /* DistanceText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */; };
 		DDB6ABE028B13AC700384BA1 /* DeviceEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABDF28B13AC700384BA1 /* DeviceEnums.swift */; };
 		DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */; };
 		DDB6ABE428B13FFF00384BA1 /* DisplayEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */; };
@@ -116,7 +115,6 @@
 		DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15E26CE248F0042C5E4 /* Preview Assets.xcassets */; };
 		DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */; };
 		DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */; };
-		DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC3B273283F411B00AC321C /* LastHeardText.swift */; };
 		DDC4D568275499A500A4208E /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC4D567275499A500A4208E /* Persistence.swift */; };
 		DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */; };
 		DDD43FE32A78C8900083A3E9 /* MqttClientProxyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD43FE22A78C8900083A3E9 /* MqttClientProxyManager.swift */; };
@@ -286,7 +284,6 @@
 		DDAF8C5226EB1DF10058C060 /* BLEManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEManager.swift; sourceTree = "<group>"; };
 		DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothConfig.swift; sourceTree = "<group>"; };
 		DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothModes.swift; sourceTree = "<group>"; };
-		DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistanceText.swift; sourceTree = "<group>"; };
 		DDB6ABDF28B13AC700384BA1 /* DeviceEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceEnums.swift; sourceTree = "<group>"; };
 		DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionConfigEnums.swift; sourceTree = "<group>"; };
 		DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayEnums.swift; sourceTree = "<group>"; };
@@ -303,7 +300,6 @@
 		DDC2E16526CE248F0042C5E4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHelper.swift; sourceTree = "<group>"; };
-		DDC3B273283F411B00AC321C /* LastHeardText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastHeardText.swift; sourceTree = "<group>"; };
 		DDC4D567275499A500A4208E /* Persistence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserConfig.swift; sourceTree = "<group>"; };
 		DDD43FE22A78C8900083A3E9 /* MqttClientProxyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MqttClientProxyManager.swift; sourceTree = "<group>"; };
@@ -590,8 +586,6 @@
 				DD3CC6BD28E4CD9800FA9159 /* BatteryView.swift */,
 				DDF924C926FBB953009FE055 /* ConnectedDevice.swift */,
 				DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */,
-				DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */,
-				DDC3B273283F411B00AC321C /* LastHeardText.swift */,
 				DDB75A202A12B954006ED576 /* LoraSignalView.swift */,
 				DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */,
 				08DD7E622C42D8B300548159 /* MQTTConnectionIcon.swift */,
@@ -867,7 +861,6 @@
 				DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */,
 				DDDB444629F8A96500EE2349 /* Character.swift in Sources */,
 				DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */,
-				DDB6ABDB28B0AC6000384BA1 /* DistanceText.swift in Sources */,
 				DD964FC2297272AE007C176F /* WaypointEntityExtension.swift in Sources */,
 				6DA39D8E2A92DC52007E311C /* MeowtasticAppDelegate.swift in Sources */,
 				D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */,
@@ -892,7 +885,6 @@
 				B2A5F30C2C5668FD009457AB /* AltitudeHistoryView.swift in Sources */,
 				B2A5F2FC2C5668FD009457AB /* ClientHistoryButton.swift in Sources */,
 				DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */,
-				DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */,
 				DD1925B928CDA93900720036 /* SerialConfigEnums.swift in Sources */,
 				DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */,
 				B2A5F3092C5668FD009457AB /* NodeListItem.swift in Sources */,
