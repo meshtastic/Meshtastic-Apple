@@ -97,7 +97,7 @@ struct Avatar: View {
 					.frame(width: size, height: size)
 			}
 
-			if showTemperature, let temperature {
+			if showTemperature, let node, node.isOnline, let temperature {
 				let tempFormatted = String(format: "%.0f", temperature)
 
 				HStack(alignment: .center, spacing: 2) {

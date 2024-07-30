@@ -1,5 +1,5 @@
-import SwiftUI
 import MapKit
+import SwiftUI
 
 struct MeshMapContent: MapContent {
 	var delay: Double = 0
