@@ -4600,6 +4600,9 @@
     "Controls the blinking LED on the device.  For most devices this will control one of the up to 4 LEDS, the charger and GPS LEDs are not controllable." : {
 
     },
+    "Conversation with %@ be deleted" : {
+
+    },
     "copy" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4846,6 +4849,9 @@
           }
         }
       }
+    },
+    "Delete" : {
+
     },
     "Delete Message" : {
 
@@ -14048,6 +14054,9 @@
     "Messages" : {
 
     },
+    "Messages in the channel will be deleted" : {
+
+    },
     "Minimum Distance" : {
 
     },
@@ -20133,9 +20142,6 @@
 
     },
     "This Application" : {
-
-    },
-    "This conversation will be deleted." : {
 
     },
     "This determines the actual frequency you are transmitting on in the band. If set to 0 this value will be calculated automatically based on the primary channel name." : {

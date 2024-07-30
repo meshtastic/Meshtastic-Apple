@@ -6,22 +6,22 @@ import SwiftUI
 struct MessageList: View {
 	private let textFieldPlaceholderID = "text_field_placeholder"
 
+	@Environment(\.managedObjectContext)
+	private var context
+	@EnvironmentObject
+	private var bleManager: BLEManager
+	@AppStorage("preferredPeripheralNum")
+	private var preferredPeripheralNum = -1
+	@StateObject
+	private var appState = AppState.shared
+	@FocusState
+	private var messageFieldFocused: Bool
 	@State
 	private var channel: ChannelEntity?
 	@State
 	private var user: UserEntity?
 	@State
 	private var myInfo: MyInfoEntity
-	@StateObject
-	private var appState = AppState.shared
-	@Environment(\.managedObjectContext)
-	private var context
-	@EnvironmentObject
-	private var bleManager: BLEManager
-	@FocusState
-	private var messageFieldFocused: Bool
-	@AppStorage("preferredPeripheralNum")
-	private var preferredPeripheralNum = -1
 	@State
 	private var replyMessageId: Int64 = 0
 	@State
@@ -263,7 +263,6 @@ struct MessageList: View {
 					EmptyView()
 				}
 
-
 				if let destination {
 					HStack(spacing: 0) {
 						MessageView(
@@ -276,7 +275,7 @@ struct MessageList: View {
 							messageFieldFocused = true
 						}
 						.id(message.messageId)
-						
+
 						if isCurrentUser && message.canRetry {
 							RetryButton(message: message, destination: destination)
 						}
@@ -285,10 +284,6 @@ struct MessageList: View {
 
 				TapbackResponses(message: message) {
 					appState.unreadChannelMessages = myInfo.unreadMessages
-
-					let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
-					UNUserNotificationCenter.current().setBadgeCount(badge)
-
 					context.refresh(myInfo, mergeChanges: true)
 				}
 			}
@@ -313,10 +308,6 @@ struct MessageList: View {
 			try? context.save()
 
 			appState.unreadChannelMessages = myInfo.unreadMessages
-
-			let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
-			UNUserNotificationCenter.current().setBadgeCount(badge)
-
 			context.refresh(myInfo, mergeChanges: true)
 		}
 	}

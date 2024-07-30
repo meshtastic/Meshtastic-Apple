@@ -1,11 +1,8 @@
-import SwiftUI
 import CoreData
 import OSLog
+import SwiftUI
 
 struct Messages: View {
-	@State
-	var node: NodeInfoEntity?
-
 	private let restrictedChannels = ["gpio", "mqtt", "serial"]
 	private let dateFormatter = {
 		let formatter = DateFormatter()
@@ -23,6 +20,8 @@ struct Messages: View {
 	private var appState = AppState.shared
 	@Environment(\.colorScheme)
 	private var colorScheme: ColorScheme
+	@State
+	private var node: NodeInfoEntity?
 	@State
 	private var searchText = ""
 	@State
@@ -57,7 +56,7 @@ struct Messages: View {
 
 	var body: some View {
 		NavigationStack {
-			List(/* selection: $channelSelection */) {
+			List() {
 				channelList
 				userList
 			}
@@ -79,7 +78,7 @@ struct Messages: View {
 
 					let fetchedNode = try? context.fetch(fetchNodeInfoRequest)
 					if let fetchedNode, !fetchedNode.isEmpty {
-						node = fetchedNode[0]
+						node = fetchedNode.first
 					}
 				}
 			}
@@ -114,7 +113,10 @@ struct Messages: View {
 					if !restrictedChannels.contains(channel.name?.lowercased() ?? "") {
 						makeChannelLink(for: channel, myInfo: myInfo)
 							.contextMenu {
-								if let allPrivateMessages = channel.allPrivateMessages, !allPrivateMessages.isEmpty {
+								if
+									let allPrivateMessages = channel.allPrivateMessages,
+									!allPrivateMessages.isEmpty
+								{
 									Button(role: .destructive) {
 										isPresentingDeleteChannelMessagesConfirm = true
 										channelSelection = channel
@@ -124,7 +126,7 @@ struct Messages: View {
 								}
 
 								Button {
-									channel.mute = !channel.mute
+									channel.mute.toggle()
 
 									let adminMessageId = bleManager.saveChannel(
 										channel: channel.protoBuf,
@@ -138,7 +140,8 @@ struct Messages: View {
 
 									do {
 										try context.save()
-									} catch {
+									}
+									catch {
 										context.rollback()
 										Logger.data.error("💥 Save Channel Mute Error")
 									}
@@ -150,20 +153,21 @@ struct Messages: View {
 								}
 							}
 							.confirmationDialog(
-								"This conversation will be deleted.",
+								"Messages in the channel will be deleted",
 								isPresented: $isPresentingDeleteChannelMessagesConfirm,
 								titleVisibility: .visible
 							) {
 								Button(role: .destructive) {
-									deleteChannelMessages(channel: channelSelection!, context: context)
+									guard let channelSelection else {
+										return
+									}
+
+									deleteChannelMessages(channel: channelSelection, context: context)
 									context.refresh(myInfo, mergeChanges: true)
 
-									let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
-									UNUserNotificationCenter.current().setBadgeCount(badge)
-
-									channelSelection = nil
+									self.channelSelection = nil
 								} label: {
-									Text("delete")
+									Text("Delete")
 								}
 							}
 					}
@@ -206,18 +210,21 @@ struct Messages: View {
 								getContextMenu(for: user, hasMessages: lastMessage != nil)
 							}
 							.confirmationDialog(
-								"This conversation will be deleted.",
+								"Conversation with \(user.longName ?? "user") be deleted",
 								isPresented: $isPresentingDeleteUserMessagesConfirm,
 								titleVisibility: .visible
 							) {
 								Button(role: .destructive) {
-									deleteUserMessages(user: userSelection!, context: context)
+									guard let userSelection else {
+										return
+									}
+
+									deleteUserMessages(user: userSelection, context: context)
 									context.refresh(node.user!, mergeChanges: true)
-									
-									let badge = appState.unreadChannelMessages + appState.unreadDirectMessages
-									UNUserNotificationCenter.current().setBadgeCount(badge)
+
+									self.userSelection = nil
 								} label: {
-									Text("delete")
+									Text("Delete")
 								}
 							}
 					}
@@ -349,7 +356,7 @@ struct Messages: View {
 
 						Spacer()
 
-						if let lastMessage {
+						if lastMessage != nil {
 							if lastMessageDay == currentDay {
 								Text(lastMessageTime, style: .time)
 									.font(.footnote)
@@ -373,8 +380,8 @@ struct Messages: View {
 						}
 					}
 
-					if let lastMessage {
-						Text(lastMessage.messagePayload!)
+					if let payload = lastMessage?.messagePayload {
+						Text(payload)
 							.font(.footnote)
 							.foregroundColor(.secondary)
 					}
@@ -472,49 +479,49 @@ struct Messages: View {
 	@ViewBuilder
 	private func getContextMenu(for user: UserEntity, hasMessages: Bool) -> some View {
 		Button {
-			if node != nil && !(user.userNode?.favorite ?? false) {
-				let success = bleManager.setFavoriteNode(
-					node: user.userNode!,
-					connectedNodeNum: Int64(node!.num)
-				)
-				
-				if success {
-					user.userNode?.favorite = !(user.userNode?.favorite ?? true)
-					Logger.data.info("Favorited a node")
+			if let node, let userNode = user.userNode, !userNode.favorite {
+				let success: Bool
+				if userNode.favorite {
+					success = bleManager.removeFavoriteNode(
+						node: userNode,
+						connectedNodeNum: Int64(node.num)
+					)
 				}
-			} else {
-				let success = bleManager.removeFavoriteNode(
-					node: user.userNode!,
-					connectedNodeNum: Int64(node!.num)
-				)
-				
+				else {
+					success = bleManager.setFavoriteNode(
+						node: userNode,
+						connectedNodeNum: Int64(node.num)
+					)
+				}
+
 				if success {
-					user.userNode?.favorite = !(user.userNode?.favorite ?? true)
-					Logger.data.info("Un Favorited a node")
+					userNode.favorite.toggle()
 				}
 			}
-			
+
 			context.refresh(user, mergeChanges: true)
-			
+
 			do {
 				try context.save()
-			} catch {
+			}
+			catch {
 				context.rollback()
 				Logger.data.error("Save Node Favorite Error")
 			}
 		} label: {
 			Label(
-				(user.userNode?.favorite ?? false)  ? "Un-Favorite" : "Favorite",
-				systemImage: (user.userNode?.favorite ?? false) ? "star.slash.fill" : "star.fill"
+				user.userNode?.favorite ?? false ? "Un-Favorite" : "Favorite",
+				systemImage: user.userNode?.favorite ?? false ? "star.slash.fill" : "star.fill"
 			)
 		}
-		
+
 		Button {
-			user.mute = !user.mute
-			
+			user.mute.toggle()
+
 			do {
 				try context.save()
-			} catch {
+			}
+			catch {
 				context.rollback()
 				Logger.data.error("Save User Mute Error")
 			}
@@ -544,10 +551,10 @@ struct Messages: View {
 				UIColor(hex: UInt32(num))
 			)
 		}
-		
+
 		return Color.gray.opacity(0.7)
 	}
-	
+
 	private func updateFilter() async {
 		let searchPredicates = [
 			"userId",
@@ -556,9 +563,9 @@ struct Messages: View {
 			"longName",
 			"shortName"
 		].map { property in
-			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
+			NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
 		}
-		
+
 		if !searchText.isEmpty {
 			users.nsPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
 		}
@@ -566,8 +573,8 @@ struct Messages: View {
 			users.nsPredicate = nil
 		}
 	}
-	
+
 	private func getLastMessage(for user: UserEntity) -> MessageEntity? {
-		return user.messageList?.last
+		user.messageList?.last
 	}
 }

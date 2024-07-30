@@ -46,7 +46,7 @@ struct ContentView: View {
 						Image(systemName: "message")
 					}
 					.tag(Tab.messages)
-					.badge(appState.unreadDirectMessages + appState.unreadChannelMessages)
+					.badge(appState.totalUnreadMessages)
 					.badgeProminence(.standard)
 
 				NodeList()
