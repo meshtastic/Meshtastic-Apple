@@ -5053,9 +5053,6 @@
     "Debug Log" : {
 
     },
-    "Debug Logs" : {
-
-    },
     "Debug Logs%@" : {
 
     },
@@ -10853,6 +10850,9 @@
     "Line Series" : {
 
     },
+    "Loading Logs. . ." : {
+
+    },
     "Location: %@" : {
 
     },
@@ -15303,9 +15303,6 @@
 
     },
     "No Environment Metrics" : {
-
-    },
-    "No Logs Available" : {
 
     },
     "No Positions" : {

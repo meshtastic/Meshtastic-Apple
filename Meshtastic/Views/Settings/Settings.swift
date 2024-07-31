@@ -243,20 +243,12 @@ struct Settings: View {
 
 	var loggingSection: some View {
 		Section(header: Text("logging")) {
-			NavigationLink(value: SettingsNavigationState.meshLog) {
-				Label {
-					Text("mesh.log")
-				} icon: {
-					Image(systemName: "list.bullet.rectangle")
-				}
-			}
-
-			if #available (iOS 17.4, *) {
+			if #available (iOS 17.0, *) {
 				NavigationLink(value: SettingsNavigationState.debugLogs) {
 					Label {
-						Text("Debug Logs")
+						Text("Logs")
 					} icon: {
-						Image(systemName: "stethoscope")
+						Image(systemName: "scroll")
 					}
 				}
 			}
@@ -265,6 +257,13 @@ struct Settings: View {
 
 	var developersSection: some View {
 		Section(header: Text("Developers")) {
+			NavigationLink(value: SettingsNavigationState.meshLog) {
+				Label {
+					Text("mesh.log")
+				} icon: {
+					Image(systemName: "list.bullet.rectangle")
+				}
+			}
 			NavigationLink(value: SettingsNavigationState.appFiles) {
 				Label {
 					Text("App Files")
@@ -445,7 +444,7 @@ struct Settings: View {
 				case .power:
 					PowerConfig(node: node)
 				case .ambientLighting:
-					if #available(iOS 17.0, *) {
+					if #available(iOS 17.0, macOS 14.0, *) {
 						AmbientLightingConfig(node: node)
 					}
 				case .cannedMessages:
@@ -471,7 +470,7 @@ struct Settings: View {
 				case .meshLog:
 					MeshLog()
 				case .debugLogs:
-					if #available(iOS 17.4, *) {
+					if #available(iOS 17.0, macOS 14.0, *) {
 						AppLog()
 					}
 				case .appFiles:
