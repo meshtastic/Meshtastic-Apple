@@ -5053,9 +5053,6 @@
     "Debug Log" : {
 
     },
-    "Debug Logs" : {
-
-    },
     "Debug Logs%@" : {
 
     },
@@ -5195,6 +5192,9 @@
 
     },
     "Delete Node" : {
+
+    },
+    "Delete Node?" : {
 
     },
     "Description" : {
@@ -10853,6 +10853,9 @@
     "Line Series" : {
 
     },
+    "Loading Logs. . ." : {
+
+    },
     "Location: %@" : {
 
     },
@@ -14632,6 +14635,9 @@
     "Mininum time between detection broadcasts. Default is 45 seconds." : {
 
     },
+    "Minute" : {
+
+    },
     "mode" : {
       "localizations" : {
         "de" : {
@@ -15300,9 +15306,6 @@
 
     },
     "No Environment Metrics" : {
-
-    },
-    "No Logs Available" : {
 
     },
     "No Positions" : {

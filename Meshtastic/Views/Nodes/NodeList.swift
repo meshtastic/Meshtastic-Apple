@@ -89,12 +89,12 @@ struct NodeList: View {
 				bleManager: bleManager,
 				node: node
 			)
-			DeleteNodeButton(
-				bleManager: bleManager,
-				context: context,
-				connectedNode: connectedNode,
-				node: node
-			)
+//			DeleteNodeButton(
+//				bleManager: bleManager,
+//				context: context,
+//				connectedNode: connectedNode,
+//				node: node
+//			)
 		}
 	}
 
