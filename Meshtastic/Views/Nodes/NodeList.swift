@@ -80,22 +80,22 @@ struct NodeList: View {
 			)
 		}
 
-//		if let connectedNode {
-//			ExchangePositionsButton(
-//				bleManager: bleManager,
-//				node: node
-//			)
-//			TraceRouteButton(
-//				bleManager: bleManager,
-//				node: node
-//			)
+		if let connectedNode {
+			ExchangePositionsButton(
+				bleManager: bleManager,
+				node: node
+			)
+			TraceRouteButton(
+				bleManager: bleManager,
+				node: node
+			)
 //			DeleteNodeButton(
 //				bleManager: bleManager,
 //				context: context,
 //				connectedNode: connectedNode,
 //				node: node
 //			)
-//		}
+		}
 	}
 
 	var body: some View {
