@@ -34,13 +34,13 @@ struct AppLog: View {
 
 	var body: some View {
 		HStack {
-			
+
 			if idiom == .phone {
 				Table(logs, selection: $selection, sortOrder: $sortOrder) {
 					TableColumn("log.message", value: \.composedMessage) { value in
 						Text(value.composedMessage)
 							.foregroundStyle(value.level.color)
-							.font(idiom == .phone ? .caption : .body)
+							.font(.caption)
 					}
 					.width(ideal: 200, max: .infinity)
 				}
@@ -92,7 +92,7 @@ struct AppLog: View {
 					TableColumn("log.message", value: \.composedMessage) { value in
 						Text(value.composedMessage)
 							.foregroundStyle(value.level.color)
-							.font(idiom == .phone ? .caption : .body)
+							.font(.body)
 					}
 					.width(ideal: 200, max: .infinity)
 				}
