@@ -58,7 +58,6 @@ struct AppLog: View {
 						.tint(Color(UIColor.secondarySystemBackground))
 						.foregroundColor(.accentColor)
 						.buttonStyle(.borderedProminent)
-						
 					}
 					.controlSize(.regular)
 					.padding(5)
@@ -69,7 +68,7 @@ struct AppLog: View {
 				.disabled(selection != nil)
 				.overlay {
 					if logs.isEmpty {
-						ContentUnavailableView("No Logs Available", systemImage: "scroll")
+						ContentUnavailableView("Loading Logs. . .", systemImage: "scroll")
 					}
 				}
 				.refreshable {
@@ -120,7 +119,7 @@ struct AppLog: View {
 				.disabled(selection != nil)
 				.overlay {
 					if logs.isEmpty {
-						ContentUnavailableView("No Logs Available", systemImage: "scroll")
+						ContentUnavailableView("Loading Logs. . .", systemImage: "scroll")
 					}
 				}
 				.refreshable {

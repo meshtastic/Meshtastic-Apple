@@ -10850,6 +10850,9 @@
     "Line Series" : {
 
     },
+    "Loading Logs. . ." : {
+
+    },
     "Location: %@" : {
 
     },
@@ -15300,9 +15303,6 @@
 
     },
     "No Environment Metrics" : {
-
-    },
-    "No Logs Available" : {
 
     },
     "No Positions" : {
