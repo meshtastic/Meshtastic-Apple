@@ -444,7 +444,7 @@ struct Settings: View {
 				case .power:
 					PowerConfig(node: node)
 				case .ambientLighting:
-					if #available(iOS 17.0, *) {
+					if #available(iOS 17.0, macOS 14.0, *) {
 						AmbientLightingConfig(node: node)
 					}
 				case .cannedMessages:
@@ -470,7 +470,7 @@ struct Settings: View {
 				case .meshLog:
 					MeshLog()
 				case .debugLogs:
-					if #available(iOS 17.4, *) {
+					if #available(iOS 17.0, macOS 14.0, *) {
 						AppLog()
 					}
 				case .appFiles:
