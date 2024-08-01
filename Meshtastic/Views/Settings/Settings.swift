@@ -430,43 +430,43 @@ struct Settings: View {
 				case .shareQRCode:
 					ShareChannels(node: node)
 				case .user:
-					UserConfig(node: node)
+					UserConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .bluetooth:
-					BluetoothConfig(node: node)
+					BluetoothConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .device:
-					DeviceConfig(node: node)
+					DeviceConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .display:
-					DisplayConfig(node: node)
+					DisplayConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .network:
-					NetworkConfig(node: node)
+					NetworkConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .position:
-					PositionConfig(node: node)
+					PositionConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .power:
-					PowerConfig(node: node)
+					PowerConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .ambientLighting:
 					if #available(iOS 17.0, macOS 14.0, *) {
 						AmbientLightingConfig(node: node)
 					}
 				case .cannedMessages:
-					CannedMessagesConfig(node: node)
+					CannedMessagesConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .detectionSensor:
-					DetectionSensorConfig(node: node)
+					DetectionSensorConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .externalNotification:
-					ExternalNotificationConfig(node: node)
+					ExternalNotificationConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .mqtt:
-					MQTTConfig(node: node)
+					MQTTConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .rangeTest:
-					RangeTestConfig(node: node)
+					RangeTestConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .paxCounter:
-					PaxCounterConfig(node: node)
+					PaxCounterConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .ringtone:
-					RtttlConfig(node: node)
+					RtttlConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .serial:
-					SerialConfig(node: node)
+					SerialConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .storeAndForward:
-					StoreForwardConfig(node: node)
+					StoreForwardConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .telemetry:
-					TelemetryConfig(node: node)
+					TelemetryConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .meshLog:
 					MeshLog()
 				case .debugLogs:
