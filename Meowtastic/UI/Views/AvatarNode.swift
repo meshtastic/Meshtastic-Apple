@@ -1,31 +1,21 @@
 import SwiftUI
 
-struct Avatar: View {
-	private let nameOverride: String?
-	private let backgroundOverride: Color?
+struct AvatarNode: View {
 	private let showTemperature: Bool
 	private let size: CGFloat
 
 	// swiftlint:disable:next large_tuple
 	private let corners: (Bool, Bool, Bool, Bool)?
 
-	@State
-	private var node: NodeInfoEntity?
+	@ObservedObject
+	private var node: NodeInfoEntity
 
 	private var name: String? {
-		if let nameOverride {
-			return nameOverride
-		}
-
-		return node?.user?.shortName
+		node.user?.shortName
 	}
 
 	private var background: Color {
-		if let backgroundOverride {
-			return backgroundOverride
-		}
-
-		if let node, node.isOnline {
+		if node.isOnline {
 			return Color(
 				UIColor(hex: UInt32(node.num))
 			)
@@ -40,10 +30,6 @@ struct Avatar: View {
 	}
 
 	private var temperature: Double? {
-		guard let node else {
-			return nil
-		}
-
 		let nodeEnvironment = node
 			.telemetries?
 			.filtered(
@@ -99,7 +85,7 @@ struct Avatar: View {
 					.frame(width: size, height: size)
 			}
 
-			if showTemperature, let node, node.isOnline, let temperature {
+			if showTemperature, node.isOnline, let temperature {
 				let tempFormatted = String(format: "%.0f", temperature)
 
 				HStack(alignment: .center, spacing: 2) {
@@ -136,31 +122,14 @@ struct Avatar: View {
 	}
 
 	init(
-		_ node: NodeInfoEntity?,
+		_ node: NodeInfoEntity,
 		showTemperature: Bool = false,
 		size: CGFloat = 45,
 		// swiftlint:disable:next large_tuple
 		corners: (Bool, Bool, Bool, Bool)? = nil
 	) {
 		self.node = node
-		self.nameOverride = nil
-		self.backgroundOverride = nil
 		self.showTemperature = showTemperature
-		self.size = size
-		self.corners = corners
-	}
-
-	init(
-		label: String,
-		background: Color,
-		size: CGFloat = 45,
-		// swiftlint:disable:next large_tuple
-		corners: (Bool, Bool, Bool, Bool)? = nil
-	) {
-		self.node = nil
-		self.nameOverride = label
-		self.backgroundOverride = background
-		self.showTemperature = false
 		self.size = size
 		self.corners = corners
 	}

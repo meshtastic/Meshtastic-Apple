@@ -1,5 +1,5 @@
-import MapKit
 import OSLog
+import MapKit
 import SwiftUI
 
 struct NodeDetail: View {

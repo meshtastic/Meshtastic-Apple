@@ -10,7 +10,7 @@ struct NodeInfoView: View {
 
 	var body: some View {
 		HStack(alignment: .top, spacing: 16) {
-			Avatar(
+			AvatarNode(
 				node,
 				size: 72
 			)

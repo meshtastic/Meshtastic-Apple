@@ -397,11 +397,19 @@ struct Messages: View {
 	@ViewBuilder
 	private func avatar(for user: UserEntity) -> some View {
 		ZStack(alignment: .top) {
-			Avatar(
-				user.userNode,
-				size: 64
-			)
-			.padding([.top, .bottom, .trailing], 12)
+			if let node = user.userNode {
+				AvatarNode(
+					node,
+					size: 64
+				)
+				.padding([.top, .bottom, .trailing], 12)
+			}
+			else {
+				AvatarAbstract(
+					size: 64
+				)
+				.padding([.top, .bottom, .trailing], 12)
+			}
 
 			if user.unreadMessages > 0 {
 				HStack(spacing: 0) {
@@ -460,9 +468,8 @@ struct Messages: View {
 	@ViewBuilder
 	private func avatar(for channel: ChannelEntity) -> some View {
 		ZStack(alignment: .top) {
-			Avatar(
-				label: String(channel.index),
-				background: .accentColor,
+			AvatarAbstract(
+				String(channel.index),
 				size: 64
 			)
 			.padding([.top, .bottom, .trailing], 12)

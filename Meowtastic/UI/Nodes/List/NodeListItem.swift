@@ -51,7 +51,7 @@ struct NodeListItem: View {
 	@ViewBuilder
 	private var avatar: some View {
 		ZStack(alignment: .top) {
-			Avatar(
+			AvatarNode(
 				node,
 				size: 64
 			)

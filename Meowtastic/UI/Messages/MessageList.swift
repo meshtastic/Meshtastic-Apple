@@ -217,11 +217,19 @@ struct MessageList: View {
 			}
 			else {
 				VStack(alignment: .center) {
-					Avatar(
-						message.fromUser?.userNode,
-						size: 64,
-						corners: isCurrentUser ? (true, true, false, true) : nil
-					)
+					if let node = message.fromUser?.userNode {
+						AvatarNode(
+							node,
+							size: 64,
+							corners: isCurrentUser ? (true, true, false, true) : nil
+						)
+					}
+					else {
+						AvatarAbstract(
+							size: 64,
+							corners: isCurrentUser ? (true, true, false, true) : nil
+						)
+					}
 
 					if let connectedNode, let sourceNode {
 						NodeIconListView(
@@ -289,10 +297,17 @@ struct MessageList: View {
 			}
 
 			if isCurrentUser {
-				Avatar(
-					message.fromUser?.userNode,
-					size: 64
-				)
+				if let node = message.fromUser?.userNode {
+					AvatarNode(
+						node,
+						size: 64
+					)
+				}
+				else {
+					AvatarAbstract(
+						size: 64
+					)
+				}
 			}
 			else {
 				Spacer()

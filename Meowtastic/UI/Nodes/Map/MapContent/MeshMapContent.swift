@@ -37,10 +37,12 @@ struct MeshMapContent: MapContent {
 						.onTapGesture {
 							selectedPosition = selectedPosition == position ? nil : position
 						}
-				} label: { }
-					.tag(position.time)
-					.annotationTitles(.automatic)
-					.annotationSubtitles(.automatic)
+				} label: {
+
+				}
+				.tag(position.time)
+				.annotationTitles(.automatic)
+				.annotationSubtitles(.automatic)
 			}
 		}
 	}
@@ -48,7 +50,7 @@ struct MeshMapContent: MapContent {
 	@ViewBuilder
 	private func avatar(for node: NodeInfoEntity, name: String) -> some View {
 		ZStack(alignment: .top) {
-			Avatar(
+			AvatarNode(
 				node,
 				showTemperature: true,
 				size: 48

@@ -114,10 +114,18 @@ struct Connect: View {
 
 				HStack(alignment: .top, spacing: 8) {
 					VStack(alignment: .center) {
-						Avatar(
-							node,
-							size: 90
-						)
+						if let node {
+							AvatarNode(
+								node,
+								size: 90
+							)
+						}
+						else {
+							AvatarAbstract(
+								"?",
+								size: 90
+							)
+						}
 					}
 
 					VStack(alignment: .leading) {
@@ -145,7 +153,8 @@ struct Connect: View {
 							Text("subscribed")
 								.font(.callout)
 								.foregroundColor(.green)
-						} else {
+						}
+						else {
 							HStack {
 								Image(systemName: "square.stack.3d.down.forward")
 									.symbolRenderingMode(.multicolor)

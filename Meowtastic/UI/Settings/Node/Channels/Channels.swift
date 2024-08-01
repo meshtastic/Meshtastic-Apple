@@ -98,21 +98,25 @@ struct Channels: View {
 								positionPrecision = 32
 								preciseLocation = true
 								positionsEnabled = true
-							} else if !supportedVersion && channelRole == 2 {
+							}
+							else if !supportedVersion && channelRole == 2 {
 								positionPrecision = 0
 								preciseLocation = false
 								positionsEnabled = false
-							} else {
+							}
+							else {
 								if positionPrecision == 32 {
 									preciseLocation = true
 									positionsEnabled = true
-								} else {
+								}
+								else {
 									preciseLocation = false
 								}
 
 								if positionPrecision == 0 {
 									positionsEnabled = false
-								} else {
+								}
+								else {
 									positionsEnabled = true
 								}
 							}
@@ -121,9 +125,8 @@ struct Channels: View {
 						}) {
 							VStack(alignment: .leading) {
 								HStack {
-									Avatar(
-										label: String(channel.index),
-										background: .accentColor,
+									AvatarAbstract(
+										String(channel.index),
 										size: 45
 									)
 									.padding(.trailing, 5)
@@ -133,11 +136,13 @@ struct Channels: View {
 											if channel.role == 1 {
 												Text(String("PrimaryChannel").camelCaseToWords())
 													.font(.headline)
-											} else {
+											}
+											else {
 												Text(String("Channel \(channel.index)").camelCaseToWords())
 													.font(.headline)
 											}
-										} else {
+										}
+										else {
 											Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords())
 												.font(.headline)
 										}
@@ -184,13 +189,15 @@ struct Channels: View {
 						channel.settings.downlinkEnabled = downlink
 						channel.settings.moduleSettings.positionPrecision = UInt32(positionPrecision)
 
-						selectedChannel!.role = Int32(channelRole)
-						selectedChannel!.index = channelIndex
-						selectedChannel!.name = channelName
-						selectedChannel!.psk = Data(base64Encoded: channelKey) ?? Data()
-						selectedChannel!.uplinkEnabled = uplink
-						selectedChannel!.downlinkEnabled = downlink
-						selectedChannel!.positionPrecision = Int32(positionPrecision)
+						if let selectedChannel {
+							selectedChannel.role = Int32(channelRole)
+							selectedChannel.index = channelIndex
+							selectedChannel.name = channelName
+							selectedChannel.psk = Data(base64Encoded: channelKey) ?? Data()
+							selectedChannel.uplinkEnabled = uplink
+							selectedChannel.downlinkEnabled = downlink
+							selectedChannel.positionPrecision = Int32(positionPrecision)
+						}
 
 						guard let mutableChannels = node?.myInfo?.channels?.mutableCopy() as? NSMutableOrderedSet else {
 							return
