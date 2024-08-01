@@ -105,13 +105,12 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		switch selectedMapLayer {
 		case .offline:
 			mapView.mapType = .standard
-			if !UserDefaults.enableOfflineMapsMBTiles {
-				let overlay = TileOverlay()
-				overlay.canReplaceMapContent = false
-				overlay.minimumZ = UserDefaults.mapTileServer.zoomRange.startIndex
-				overlay.maximumZ = UserDefaults.mapTileServer.zoomRange.endIndex
-				mapView.addOverlay(overlay, level: UserDefaults.mapTilesAboveLabels ? .aboveLabels : .aboveRoads)
-			}
+			let overlay = TileOverlay()
+			overlay.canReplaceMapContent = false
+			overlay.minimumZ = UserDefaults.mapTileServer.zoomRange.startIndex
+			overlay.maximumZ = UserDefaults.mapTileServer.zoomRange.endIndex
+			mapView.addOverlay(overlay, level: UserDefaults.mapTilesAboveLabels ? .aboveLabels : .aboveRoads)
+			
 		case .satellite:
 			mapView.mapType = .satellite
 		case .hybrid:
@@ -133,32 +132,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			}
 		}
 	}
-	private func setMbtilesOverlay(mapView: MKMapView) {
-		// MBTiles Offline
-		if UserDefaults.enableOfflineMaps && UserDefaults.enableOfflineMapsMBTiles {
-			if self.customMapOverlay != self.presentCustomMapOverlayHash || self.loadedLastUpdatedLocalMapFile != self.lastUpdatedLocalMapFile {
-				mapView.removeOverlays(mapView.overlays)
-				if self.customMapOverlay != nil {
-					let fileManager = FileManager.default
-					let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-					let tilePath = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false).path
-					if fileManager.fileExists(atPath: tilePath) {
-						Logger.services.info("Loading local map file")
-						if let overlay = LocalMBTileOverlay(mbTilePath: tilePath) {
-							overlay.canReplaceMapContent = false// customMapOverlay.canReplaceMapContent
-							mapView.addOverlay(overlay)
-						}
-					} else {
-						Logger.services.info("Couldn't find a local map file to load")
-					}
-				}
-				DispatchQueue.main.async {
-					self.presentCustomMapOverlayHash = self.customMapOverlay
-					self.loadedLastUpdatedLocalMapFile = self.lastUpdatedLocalMapFile
-				}
-			}
-		}
-	}
+
 	func makeUIView(context: Context) -> MKMapView {
 		currentMapLayer = nil
 		mapView.delegate = context.coordinator
@@ -166,8 +140,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		return mapView
 	}
 	func updateUIView(_ mapView: MKMapView, context: Context) {
-		// Set MBTiles overlay layer
-		setMbtilesOverlay(mapView: mapView)
 		// Set selected map base layer
 		setMapBaseLayer(mapView: mapView)
 		// Set map tile server and weather overlay layers

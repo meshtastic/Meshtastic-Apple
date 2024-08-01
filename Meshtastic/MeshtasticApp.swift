@@ -110,48 +110,6 @@ struct MeshtasticAppleApp: App {
 					Logger.mesh.debug("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link")")
 				} else if url.absoluteString.lowercased().contains("meshtastic:///") {
 					appState.router.route(url: url)
-				} else {
-					saveChannels = false
-					Logger.mesh.debug("User wants to import a MBTILES offline map file: \(self.incomingUrl?.absoluteString ?? "No Tiles link")")
-				}
-
-				/// Only do the map tiles stuff if it is enabled
-				if UserDefaults.enableOfflineMapsMBTiles {
-					/// we are expecting a .mbtiles map file that contains raster data
-					/// save it to the documents directory, and name it offline_map.mbtiles
-					let fileManager = FileManager.default
-					let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-					let destination = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false)
-
-					if !self.saveChannels {
-
-						// tell the system we want the file please
-						guard url.startAccessingSecurityScopedResource() else {
-							return
-						}
-
-						// do we need to delete an old one?
-						if fileManager.fileExists(atPath: destination.path) {
-							Logger.mesh.info("Found an old map file.  Deleting it")
-							try? fileManager.removeItem(atPath: destination.path)
-						}
-
-						do {
-							try fileManager.copyItem(at: url, to: destination)
-						} catch {
-							Logger.mesh.error("Copy MB Tile file failed. Error: \(error.localizedDescription)")
-						}
-
-						if fileManager.fileExists(atPath: destination.path) {
-							Logger.mesh.info("Saved the map file")
-
-							// need to tell the map view that it needs to update and try loading the new overlay
-							UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "lastUpdatedLocalMapFile")
-
-						} else {
-							Logger.mesh.error("Didn't save the map file")
-						}
-					}
 				}
 			})
 			.task {
