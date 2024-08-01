@@ -14,7 +14,7 @@ import SwiftUI
 
 extension MessageEntity {
 	var timestamp: Date {
-		let time = messageTimestamp <= 0 ? receivedTimestamp : messageTimestamp
+		let time = messageTimestamp 
 		return Date(timeIntervalSince1970: TimeInterval(time))
 	}
 
