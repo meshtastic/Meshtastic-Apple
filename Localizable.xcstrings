@@ -6815,9 +6815,6 @@
     "Empty" : {
 
     },
-    "Enable MB Tiles" : {
-
-    },
     "Enable Notifications" : {
 
     },
@@ -20900,9 +20897,6 @@
 
     },
     "The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long." : {
-
-    },
-    "The latest MBTiles file shared with meshtastic will be loaded into the map." : {
 
     },
     "The maximum interval that can elapse without a node broadcasting a position" : {
