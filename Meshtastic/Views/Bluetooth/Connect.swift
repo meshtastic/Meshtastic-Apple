@@ -27,6 +27,7 @@ struct Connect: View {
 	@State var invalidFirmwareVersion = false
 	@State var liveActivityStarted = false
 	@State var selectedPeripherialId = ""
+	@State var navigateToMetricsLog = false
 
 	init () {
 		let notificationCenter = UNUserNotificationCenter.current()
@@ -84,10 +85,20 @@ struct Connect: View {
 											}
 										}
 									}
+									if bleManager.isSubscribed {
+										VStack(alignment: .trailing) {
+											Image(systemName: "chevron.right")
+										}
+									}
 								}
 								.font(.caption)
 								.foregroundColor(Color.gray)
 								.padding([.top, .bottom])
+								.onTapGesture {
+									if bleManager.isSubscribed {
+										navigateToMetricsLog = true
+									}
+								}
 								.swipeActions {
 									Button(role: .destructive) {
 										if let connectedPeripheral = bleManager.connectedPeripheral,
@@ -295,6 +306,14 @@ struct Connect: View {
 					)
 				}
 			)
+			.navigationDestination(isPresented: $navigateToMetricsLog) {
+				if let node {
+					DeviceMetricsLog(node: node)
+				}
+			}
+			.onAppear {
+				navigateToMetricsLog = false
+			}
 		}
 		.sheet(isPresented: $invalidFirmwareVersion, onDismiss: didDismissSheet) {
 			InvalidVersion(minimumVersion: self.bleManager.minimumVersion, version: self.bleManager.connectedVersion)
