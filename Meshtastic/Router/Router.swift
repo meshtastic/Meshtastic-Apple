@@ -78,12 +78,15 @@ class Router: ObservableObject {
 		route(to: .messages(state))
 	}
 
-	private func routeNodes(_ components: URLComponents) {
-		let nodeId = components.queryItems?
-			.first(where: { $0.name == "nodenum" })?
-			.value
-			.flatMap(Int64.init)
-		route(to: .nodes(selectedNodeNum: nodeId))
+	func routeNodes(_ components: URLComponents) {
+		   let nodeId = components.queryItems?
+			   .first(where: { $0.name == "nodenum" })?
+			   .value
+			   .flatMap(Int64.init)
+		   let detail = components.queryItems?
+			   .first(where: { $0.name == "detail" })?
+			   .value
+		   route(to: .nodes(NodeListNavigationState(selectedNodeNum: nodeId, details: detail != nil ? NodeDetails(rawValue: detail!) : nil)))
 	}
 
 	private func routeMap(_ components: URLComponents) {

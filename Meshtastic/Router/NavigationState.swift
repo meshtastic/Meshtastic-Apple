@@ -20,6 +20,22 @@ enum MapNavigationState: Hashable {
 	case waypoint(Int64)
 }
 
+// MARK: Node
+
+struct NodeListNavigationState: Hashable {
+	let selectedNodeNum: Int64?
+	let details: NodeDetails?
+}
+
+enum NodeDetails: String {
+	case deviceMetricsLog
+	case nodeMap
+	case positionLog
+	case environmentMetricsLog
+	case traceRouteLog
+	case detectionSensorLog
+}
+
 // MARK: Settings
 
 enum SettingsNavigationState: String {
@@ -57,7 +73,7 @@ enum SettingsNavigationState: String {
 enum NavigationState: Hashable {
 	case messages(MessagesNavigationState? = nil)
 	case bluetooth
-	case nodes(selectedNodeNum: Int64? = nil)
+	case nodes(NodeListNavigationState? = nil)
 	case map(MapNavigationState? = nil)
 	case settings(SettingsNavigationState? = nil)
 }

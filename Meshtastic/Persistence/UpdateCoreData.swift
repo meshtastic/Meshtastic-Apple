@@ -357,6 +357,21 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					do {
 						try context.save()
 						Logger.data.info("💾 [Position] Saved from Position App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
+						// Notification for position exchanges
+						if packet.from != 4294967295 {
+							let manager = LocalNotificationManager()
+							manager.notifications = [
+								Notification(
+									id: (UUID().uuidString),
+									title: "Position Exchange",
+									subtitle: "\(packet.from.toHex()) replied with a position for \(packet.to.toHex())",
+									content: "From User has shared their location with you.",
+									target: "nodes",
+									path: "meshtastic:///nodes?nodenum=\(packet.from)&detail=nodeMap"
+								)
+							]
+							manager.schedule()
+						}
 					} catch {
 						context.rollback()
 						let nsError = error as NSError
@@ -365,7 +380,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				}
 			} else {
 
-				if (try? NodeInfo(serializedData: packet.decoded.payload)) != nil {
+				if (try? NodeInfo(serializedBytes: packet.decoded.payload)) != nil {
 					upsertNodeInfoPacket(packet: packet, context: context)
 				} else {
 					Logger.data.error("💥 Empty POSITION_APP Packet: \((try? packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
