@@ -7,8 +7,6 @@ struct ConnectedDevice: View {
 
 	@EnvironmentObject
 	private var bleManager: BLEManager
-	@State
-	private var rssi: Int?
 
 	@ViewBuilder
 	var body: some View {
