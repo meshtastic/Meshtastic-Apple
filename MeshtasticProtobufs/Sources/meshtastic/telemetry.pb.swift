@@ -22,7 +22,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 
 ///
 /// Supported I2C Sensors for telemetry in Meshtastic
-public enum TelemetrySensorType: SwiftProtobuf.Enum {
+public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -198,11 +198,6 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
     }
   }
 
-}
-
-#if swift(>=4.2)
-
-extension TelemetrySensorType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   public static let allCases: [TelemetrySensorType] = [
     .sensorUnset,
@@ -232,13 +227,12 @@ extension TelemetrySensorType: CaseIterable {
     .dfrobotLark,
     .nau7802,
   ]
-}
 
-#endif  // swift(>=4.2)
+}
 
 ///
 /// Key native device metrics such as battery level
-public struct DeviceMetrics {
+public struct DeviceMetrics: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -270,7 +264,7 @@ public struct DeviceMetrics {
 
 ///
 /// Weather station or other environmental metrics
-public struct EnvironmentMetrics {
+public struct EnvironmentMetrics: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -405,7 +399,7 @@ public struct EnvironmentMetrics {
 
 ///
 /// Power Metrics (voltage / current / etc)
-public struct PowerMetrics {
+public struct PowerMetrics: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -441,7 +435,7 @@ public struct PowerMetrics {
 
 ///
 /// Air quality metrics
-public struct AirQualityMetrics {
+public struct AirQualityMetrics: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -501,7 +495,7 @@ public struct AirQualityMetrics {
 
 ///
 /// Types of Measurements the telemetry module is equipped to handle
-public struct Telemetry {
+public struct Telemetry: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -554,7 +548,7 @@ public struct Telemetry {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_Variant: Equatable {
+  public enum OneOf_Variant: Equatable, Sendable {
     ///
     /// Key native device metrics such as battery level
     case deviceMetrics(DeviceMetrics)
@@ -568,32 +562,6 @@ public struct Telemetry {
     /// Power Metrics
     case powerMetrics(PowerMetrics)
 
-  #if !swift(>=4.1)
-    public static func ==(lhs: Telemetry.OneOf_Variant, rhs: Telemetry.OneOf_Variant) -> Bool {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch (lhs, rhs) {
-      case (.deviceMetrics, .deviceMetrics): return {
-        guard case .deviceMetrics(let l) = lhs, case .deviceMetrics(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.environmentMetrics, .environmentMetrics): return {
-        guard case .environmentMetrics(let l) = lhs, case .environmentMetrics(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.airQualityMetrics, .airQualityMetrics): return {
-        guard case .airQualityMetrics(let l) = lhs, case .airQualityMetrics(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.powerMetrics, .powerMetrics): return {
-        guard case .powerMetrics(let l) = lhs, case .powerMetrics(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      default: return false
-      }
-    }
-  #endif
   }
 
   public init() {}
@@ -601,7 +569,7 @@ public struct Telemetry {
 
 ///
 /// NAU7802 Telemetry configuration, for saving to flash
-public struct Nau7802Config {
+public struct Nau7802Config: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -618,17 +586,6 @@ public struct Nau7802Config {
 
   public init() {}
 }
-
-#if swift(>=5.5) && canImport(_Concurrency)
-extension TelemetrySensorType: @unchecked Sendable {}
-extension DeviceMetrics: @unchecked Sendable {}
-extension EnvironmentMetrics: @unchecked Sendable {}
-extension PowerMetrics: @unchecked Sendable {}
-extension AirQualityMetrics: @unchecked Sendable {}
-extension Telemetry: @unchecked Sendable {}
-extension Telemetry.OneOf_Variant: @unchecked Sendable {}
-extension Nau7802Config: @unchecked Sendable {}
-#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
@@ -695,13 +652,13 @@ extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if self.batteryLevel != 0 {
       try visitor.visitSingularUInt32Field(value: self.batteryLevel, fieldNumber: 1)
     }
-    if self.voltage != 0 {
+    if self.voltage.bitPattern != 0 {
       try visitor.visitSingularFloatField(value: self.voltage, fieldNumber: 2)
     }
-    if self.channelUtilization != 0 {
+    if self.channelUtilization.bitPattern != 0 {
       try visitor.visitSingularFloatField(value: self.channelUtilization, fieldNumber: 3)
     }
-    if self.airUtilTx != 0 {
+    if self.airUtilTx.bitPattern != 0 {
       try visitor.visitSingularFloatField(value: self.airUtilTx, fieldNumber: 4)
     }
     if self.uptimeSeconds != 0 {
@@ -835,55 +792,55 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      if _storage._temperature != 0 {
+      if _storage._temperature.bitPattern != 0 {
         try visitor.visitSingularFloatField(value: _storage._temperature, fieldNumber: 1)
       }
-      if _storage._relativeHumidity != 0 {
+      if _storage._relativeHumidity.bitPattern != 0 {
         try visitor.visitSingularFloatField(value: _storage._relativeHumidity, fieldNumber: 2)
       }
-      if _storage._barometricPressure != 0 {
+      if _storage._barometricPressure.bitPattern != 0 {
         try visitor.visitSingularFloatField(value: _storage._barometricPressure, fieldNumber: 3)
       }
-      if _storage._gasResistance != 0 {
+      if _storage._gasResistance.bitPattern != 0 {
         try visitor.visitSingularFloatField(value: _storage._gasResistance, fieldNumber: 4)
       }
-      if _storage._voltage != 0 {
+      if _storage._voltage.bitPattern != 0 {
         try visitor.visitSingularFloatField(value: _storage._voltage, fieldNumber: 5)
       }
-      if _storage._current != 0 {
+      if _storage._current.bitPattern != 0 {
         try visitor.visitSingularFloatField(value: _storage._current, fieldNumber: 6)
       }
       if _storage._iaq != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._iaq, fieldNumber: 7)
       }
-      if _storage._distance != 0 {
+      if _storage._distance.bitPattern != 0 {
         try visitor.visitSingularFloatField(value: _storage._distance, fieldNumber: 8)
       }
-      if _storage._lux != 0 {
+      if _storage._lux.bitPattern != 0 {
         try visitor.visitSingularFloatField(value: _storage._lux, fieldNumber: 9)
       }
-      if _storage._whiteLux != 0 {
+      if _storage._whiteLux.bitPattern != 0 {
         try visitor.visitSingularFloatField(value: _storage._whiteLux, fieldNumber: 10)
       }
-      if _storage._irLux != 0 {
+      if _storage._irLux.bitPattern != 0 {
         try visitor.visitSingularFloatField(value: _storage._irLux, fieldNumber: 11)
       }
-      if _storage._uvLux != 0 {
+      if _storage._uvLux.bitPattern != 0 {
         try visitor.visitSingularFloatField(value: _storage._uvLux, fieldNumber: 12)
       }
       if _storage._windDirection != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._windDirection, fieldNumber: 13)
       }
-      if _storage._windSpeed != 0 {
+      if _storage._windSpeed.bitPattern != 0 {
         try visitor.visitSingularFloatField(value: _storage._windSpeed, fieldNumber: 14)
       }
-      if _storage._weight != 0 {
+      if _storage._weight.bitPattern != 0 {
         try visitor.visitSingularFloatField(value: _storage._weight, fieldNumber: 15)
       }
-      if _storage._windGust != 0 {
+      if _storage._windGust.bitPattern != 0 {
         try visitor.visitSingularFloatField(value: _storage._windGust, fieldNumber: 16)
       }
-      if _storage._windLull != 0 {
+      if _storage._windLull.bitPattern != 0 {
         try visitor.visitSingularFloatField(value: _storage._windLull, fieldNumber: 17)
       }
     }
@@ -950,22 +907,22 @@ extension PowerMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.ch1Voltage != 0 {
+    if self.ch1Voltage.bitPattern != 0 {
       try visitor.visitSingularFloatField(value: self.ch1Voltage, fieldNumber: 1)
     }
-    if self.ch1Current != 0 {
+    if self.ch1Current.bitPattern != 0 {
       try visitor.visitSingularFloatField(value: self.ch1Current, fieldNumber: 2)
     }
-    if self.ch2Voltage != 0 {
+    if self.ch2Voltage.bitPattern != 0 {
       try visitor.visitSingularFloatField(value: self.ch2Voltage, fieldNumber: 3)
     }
-    if self.ch2Current != 0 {
+    if self.ch2Current.bitPattern != 0 {
       try visitor.visitSingularFloatField(value: self.ch2Current, fieldNumber: 4)
     }
-    if self.ch3Voltage != 0 {
+    if self.ch3Voltage.bitPattern != 0 {
       try visitor.visitSingularFloatField(value: self.ch3Voltage, fieldNumber: 5)
     }
-    if self.ch3Current != 0 {
+    if self.ch3Current.bitPattern != 0 {
       try visitor.visitSingularFloatField(value: self.ch3Current, fieldNumber: 6)
     }
     try unknownFields.traverse(visitor: &visitor)
@@ -1217,7 +1174,7 @@ extension Nau7802Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if self.zeroOffset != 0 {
       try visitor.visitSingularInt32Field(value: self.zeroOffset, fieldNumber: 1)
     }
-    if self.calibrationFactor != 0 {
+    if self.calibrationFactor.bitPattern != 0 {
       try visitor.visitSingularFloatField(value: self.calibrationFactor, fieldNumber: 2)
     }
     try unknownFields.traverse(visitor: &visitor)
