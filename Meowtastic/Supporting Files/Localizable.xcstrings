@@ -50,6 +50,9 @@
     "256 bit" : {
 
     },
+    "Abort" : {
+
+    },
     "about" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4291,6 +4294,9 @@
       }
     },
     "Configuration for: %@" : {
+
+    },
+    "Connect" : {
 
     },
     "connected" : {
@@ -10750,6 +10756,9 @@
     "LoRa Config" : {
 
     },
+    "LoRa region is not set" : {
+
+    },
     "lora.config" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -15925,9 +15934,6 @@
     "Power Config" : {
 
     },
-    "Power Off" : {
-
-    },
     "Precise Location" : {
 
     },
@@ -18722,9 +18728,6 @@
 
     },
     "Set" : {
-
-    },
-    "Set Region" : {
 
     },
     "set.region" : {

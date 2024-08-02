@@ -1,8 +1,9 @@
 import SwiftUI
 
 struct AvatarNode: View {
-	private let showTemperature: Bool
 	private let size: CGFloat
+	private let ignoreOffline: Bool
+	private let showTemperature: Bool
 
 	// swiftlint:disable:next large_tuple
 	private let corners: (Bool, Bool, Bool, Bool)?
@@ -15,7 +16,7 @@ struct AvatarNode: View {
 	}
 
 	private var background: Color {
-		if node.isOnline {
+		if node.isOnline || ignoreOffline {
 			return Color(
 				UIColor(hex: UInt32(node.num))
 			)
@@ -123,12 +124,14 @@ struct AvatarNode: View {
 
 	init(
 		_ node: NodeInfoEntity,
+		ignoreOffline: Bool = false,
 		showTemperature: Bool = false,
 		size: CGFloat = 45,
 		// swiftlint:disable:next large_tuple
 		corners: (Bool, Bool, Bool, Bool)? = nil
 	) {
 		self.node = node
+		self.ignoreOffline = ignoreOffline
 		self.showTemperature = showTemperature
 		self.size = size
 		self.corners = corners

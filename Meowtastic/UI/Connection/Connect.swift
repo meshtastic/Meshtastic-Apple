@@ -10,21 +10,16 @@ struct Connect: View {
 
 	@Environment(\.managedObjectContext)
 	private var context
-	@EnvironmentObject
-	private var bleManager: BLEManager
-
 	@Environment(\.colorScheme)
 	private var colorScheme: ColorScheme
+	@EnvironmentObject
+	private var bleManager: BLEManager
 	@State
 	private var node: NodeInfoEntity?
 	@State
-	private var isUnsetRegion = false
+	private var visibleDevices: [Peripheral]
 	@State
 	private var invalidFirmwareVersion = false
-	@State
-	private var liveActivityStarted = false
-	@State
-	private var selectedPeripherialId = ""
 
 	@FetchRequest(
 		sortDescriptors: [
@@ -34,16 +29,6 @@ struct Connect: View {
 		animation: .default
 	)
 	private var nodes: FetchedResults<NodeInfoEntity>
-
-	private var visibleDevices: [Peripheral] {
-		let devices = bleManager.peripherals.filter { device in
-			device.peripheral.state == CBPeripheralState.disconnected
-		}
-
-		return devices.sorted(by: {
-			$0.name < $1.name
-		})
-	}
 
 	var body: some View {
 		NavigationStack {
@@ -67,8 +52,10 @@ struct Connect: View {
 				trailing: ConnectedDevice()
 			)
 		}
-		.onChange(of: bleManager.invalidVersion) {
-			invalidFirmwareVersion = bleManager.invalidVersion
+		.onChange(of: bleManager.peripherals, initial: true) {
+			Task {
+				await loadPeripherals()
+			}
 		}
 		.onChange(of: bleManager.isConnected, initial: true) {
 			Task {
@@ -79,6 +66,9 @@ struct Connect: View {
 			Task {
 				await fetchNodeInfo()
 			}
+		}
+		.onChange(of: bleManager.invalidVersion) {
+			invalidFirmwareVersion = bleManager.invalidVersion
 		}
 		.sheet(
 			isPresented: $invalidFirmwareVersion,
@@ -107,7 +97,7 @@ struct Connect: View {
 				HStack(alignment: .top, spacing: 8) {
 					avatar()
 
-					VStack(alignment: .leading) {
+					VStack(alignment: .leading, spacing: 8) {
 						if node != nil {
 							Text(connectedPeripheral.longName)
 								.font(.title2)
@@ -131,6 +121,18 @@ struct Connect: View {
 							}
 						}
 
+						if let loRaConfig = node?.loRaConfig, loRaConfig.regionCode == RegionCodes.unset.rawValue {
+							HStack(spacing: 8) {
+								Image(systemName: "gear.badge.xmark")
+									.font(detailInfoFont)
+									.foregroundColor(.gray)
+
+								Text("LoRa region is not set")
+									.font(detailInfoFont)
+									.foregroundColor(.gray)
+							}
+						}
+
 						HStack(spacing: 8) {
 							if let hwModel = node?.user?.hwModel {
 								Text(hwModel)
@@ -146,7 +148,7 @@ struct Connect: View {
 						}
 					}
 				}
-				.swipeActions(edge: .trailing) {
+				.swipeActions(edge: .trailing, allowsFullSwipe: true) {
 					Button(role: .destructive) {
 						if
 							let connectedPeripheral = bleManager.connectedPeripheral,
@@ -159,35 +161,6 @@ struct Connect: View {
 							"Disconnect",
 							systemImage: "antenna.radiowaves.left.and.right.slash"
 						)
-					}
-
-					if let user = node?.user, let myInfo = node?.myInfo {
-						Button(role: .destructive) {
-							if !bleManager.sendShutdown(
-								fromUser: user,
-								toUser: user,
-								adminIndex: myInfo.adminIndex
-							) {
-								Logger.mesh.error("Shutdown Failed")
-							}
-						} label: {
-							Label("Power Off", systemImage: "power")
-						}
-					}
-				}
-
-				if isUnsetRegion {
-					HStack {
-						NavigationLink {
-							LoRaConfig(node: node)
-						} label: {
-							Label(
-								"Set Region",
-								systemImage: "globe.europe.africa.fill"
-							)
-							.font(.title)
-							.foregroundColor(.red)
-						}
 					}
 				}
 			}
@@ -220,17 +193,16 @@ struct Connect: View {
 						}
 					}
 				}
-				.swipeActions(edge: .trailing) {
+				.swipeActions(edge: .trailing, allowsFullSwipe: true) {
 					Button(role: .destructive) {
 						bleManager.cancelPeripheralConnection()
 					} label: {
 						Label(
-							"Disconnect",
+							"Abort",
 							systemImage: "antenna.radiowaves.left.and.right.slash"
 						)
 					}
 				}
-
 			}
 		}
 	}
@@ -256,12 +228,23 @@ struct Connect: View {
 							.foregroundColor(.gray)
 					}
 				}
+				.swipeActions(edge: .leading, allowsFullSwipe: true) {
+					Button {
+						bleManager.connectTo(peripheral: peripheral.peripheral)
+					} label: {
+						Label(
+							"Connect",
+							systemImage: "antenna.radiowaves.left.and.right"
+						)
+					}
+				}
 			}
 		}
 	}
 
 	init (node: NodeInfoEntity? = nil) {
 		self.node = node
+		self.visibleDevices = []
 
 		let notificationCenter = UNUserNotificationCenter.current()
 
@@ -292,6 +275,7 @@ struct Connect: View {
 			if let node {
 				AvatarNode(
 					node,
+					ignoreOffline: true,
 					size: 64
 				)
 				.padding([.top, .bottom, .trailing], 10)
@@ -356,6 +340,16 @@ struct Connect: View {
 		.frame(width: 80, height: 80)
 	}
 
+	private func loadPeripherals() async {
+		let devices = bleManager.peripherals.filter { device in
+			device.peripheral.state == CBPeripheralState.disconnected
+		}
+
+		visibleDevices = devices.sorted(by: {
+			$0.name < $1.name
+		})
+	}
+
 	private func fetchNodeInfo() async {
 		let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 		fetchNodeInfoRequest.predicate = NSPredicate(
@@ -364,15 +358,6 @@ struct Connect: View {
 		)
 
 		node = try? context.fetch(fetchNodeInfoRequest).first
-
-		if bleManager.isSubscribed, UserDefaults.preferredPeripheralId.count > 0 {
-			if let loRaConfig = node?.loRaConfig, loRaConfig.regionCode == RegionCodes.unset.rawValue {
-				isUnsetRegion = true
-			}
-			else {
-				isUnsetRegion = false
-			}
-		}
 	}
 
 	private func didDismissSheet() {
