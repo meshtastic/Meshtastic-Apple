@@ -251,7 +251,7 @@ struct NodeList: View {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: router.navigationState) { _ in
+		.onChange(of: router.navigationState) { state in
 			// Handle deep link routing
 			if case .nodes(let selected) = router.navigationState {
 				self.selectedNode = selected?.selectedNodeNum.flatMap {

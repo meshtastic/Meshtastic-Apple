@@ -188,7 +188,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 								subtitle: "\(newUser.longName ?? "unknown".localized)",
 								content: "New Node has been discovered",
 								target: "nodes",
-								path: "meshtastic:///nodes?nodenum=\(newUser.num)"
+								path: "meshtastic:///nodes?nodenum=\(newUser.num)&detail=nodeMap"
 							)
 						]
 						manager.schedule()
@@ -235,7 +235,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				fetchedNode[0].channel = Int32(packet.channel)
 			}
 
-			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
+			if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
 
 				fetchedNode[0].hopsAway = Int32(nodeInfoMessage.hopsAway)
 				fetchedNode[0].favorite = nodeInfoMessage.isFavorite
