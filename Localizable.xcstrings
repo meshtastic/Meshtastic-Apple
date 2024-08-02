@@ -7183,6 +7183,9 @@
     "Failed to get a valid position to exchange" : {
 
     },
+    "Failed to get a valid position to exchange." : {
+
+    },
     "Favorite" : {
 
     },
@@ -22499,9 +22502,6 @@
 
     },
     "Your MQTT Server must support TLS." : {
-
-    },
-    "Your position has been sent with a request for a response with their position." : {
 
     },
     "Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned." : {

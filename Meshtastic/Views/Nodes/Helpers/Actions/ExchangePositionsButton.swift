@@ -41,7 +41,7 @@ struct ExchangePositionsButton: View {
 		) {
 			Button("OK") {	}.keyboardShortcut(.defaultAction)
 		} message: {
-			Text("Your position has been sent with a request for a response with their position.")
+			Text("Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned.")
 		}.alert(
 			"Position Exchange Failed",
 			isPresented: $isPresentingPositionFailedAlert
