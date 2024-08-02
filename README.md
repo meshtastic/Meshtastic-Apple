@@ -24,8 +24,10 @@ open Meshtastic.xcworkspace
 
 ### Supported Operating Systems
 
-* iOS 16+
-* iPadOS 16+
+The last two supported operating system versions are supported. Currently that is 16 and 17.
+
+* iOS 16.6+
+* iPadOS 16.6+
 * macOS 13+
 
 ### Code Standards
