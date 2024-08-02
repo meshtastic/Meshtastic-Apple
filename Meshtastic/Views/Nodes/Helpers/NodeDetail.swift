@@ -281,12 +281,6 @@ struct NodeDetail: View {
 				}
 
 				Section("Actions") {
-					FavoriteNodeButton(
-						bleManager: bleManager,
-						context: context,
-						node: node
-					)
-
 					if let user = node.user {
 						NodeAlertsButton(
 							context: context,
@@ -295,19 +289,21 @@ struct NodeDetail: View {
 						)
 					}
 
-					if let connectedPeripheral = bleManager.connectedPeripheral,
-					   node.num != connectedPeripheral.num {
-						ExchangePositionsButton(
+					if let connectedNode {
+						FavoriteNodeButton(
 							bleManager: bleManager,
+							context: context,
 							node: node
 						)
-
-						TraceRouteButton(
-							bleManager: bleManager,
-							node: node
-						)
-
-						if let connectedNode {
+						if connectedNode.num != node.num {
+							ExchangePositionsButton(
+								bleManager: bleManager,
+								node: node
+							)
+							TraceRouteButton(
+								bleManager: bleManager,
+								node: node
+							)
 							if node.isStoreForwardRouter {
 								ClientHistoryButton(
 									bleManager: bleManager,
@@ -315,7 +311,6 @@ struct NodeDetail: View {
 									node: node
 								)
 							}
-
 							DeleteNodeButton(
 								bleManager: bleManager,
 								context: context,
