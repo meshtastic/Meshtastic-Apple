@@ -280,7 +280,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 	}
 }
 
-func upsertPositionPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSManagedObjectContext) {
+func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.position.received %@".localized, String(packet.from))
 	MeshLogger.log("📍 \(logString)")
@@ -290,7 +290,7 @@ func upsertPositionPacket (packet: MeshPacket, connectedNodeNum: Int64, context:
 
 	do {
 
-		if let positionMessage = try? Position(serializedData: packet.decoded.payload) {
+		if let positionMessage = try? Position(serializedBytes: packet.decoded.payload) {
 
 			/// Don't save empty position packets from null island or apple park
 			if (positionMessage.longitudeI != 0 && positionMessage.latitudeI != 0) && (positionMessage.latitudeI != 373346000 && positionMessage.longitudeI != -1220090000) {
@@ -358,7 +358,7 @@ func upsertPositionPacket (packet: MeshPacket, connectedNodeNum: Int64, context:
 						try context.save()
 						Logger.data.info("💾 [Position] Saved from Position App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
 						// Notification for position exchanges
-						if packet.from != 4294967295 && packet.to == UInt32(truncatingIfNeeded: connectedNodeNum) {
+						if packet.to != 4294967295 {
 							let manager = LocalNotificationManager()
 							manager.notifications = [
 								Notification(
