@@ -308,7 +308,8 @@ struct Connect: View {
 			)
 			.navigationDestination(isPresented: $navigateToMetricsLog) {
 				if let node {
-					DeviceMetricsLog(node: node)
+					NodeDetail(bleManager: _bleManager, connectedNode: node, node: node)
+						.navigationBarTitleDisplayMode(.inline)
 				}
 			}
 			.onAppear {
