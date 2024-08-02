@@ -156,9 +156,9 @@ struct DisplayConfig: View {
 			}
 		}
 
-		.navigationTitle("display.config")
+		.navigationTitle("Display Config")
 		.navigationBarItems(
-			trailing: ConnectedDevice(ble: bleManager)
+			trailing: ConnectedDevice()
 		)
 		.onAppear {
 			setDisplayValues()

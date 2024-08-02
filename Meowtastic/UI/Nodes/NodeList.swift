@@ -15,8 +15,6 @@ struct NodeList: View {
 	private var appState = AppState.shared
 
 	@State
-	private var columnVisibility = NavigationSplitViewVisibility.all
-	@State
 	private var selectedNode: NodeInfoEntity?
 	@State
 	private var favoriteNodes = 0
@@ -62,7 +60,7 @@ struct NodeList: View {
 	}
 
 	var body: some View {
-		NavigationSplitView(columnVisibility: $columnVisibility) {
+		NavigationStack {
 			List(selection: $selectedNode) {
 				summary
 				suggestedList
@@ -80,31 +78,9 @@ struct NodeList: View {
 			.navigationTitle("Nodes")
 			.navigationBarItems(
 				leading: MeshtasticLogo(),
-				trailing: ConnectedDevice(ble: bleManager)
-			)
-		} content: {
-			if let node = selectedNode {
-				NavigationStack {
-					NodeDetail(
-						columnVisibility: columnVisibility,
-						node: node
-					)
-					.edgesIgnoringSafeArea([.leading, .trailing])
-					.navigationBarItems(
-						trailing: ConnectedDevice(ble: bleManager)
-					)
-				}
-			}
-			else {
-				ContentUnavailableView("select.node", systemImage: "flipphone")
-			}
-		} detail: {
-			ContentUnavailableView(
-				"Can't load node info",
-				systemImage: "slash.circle"
+				trailing: ConnectedDevice()
 			)
 		}
-		.navigationSplitViewStyle(.balanced)
 		.onChange(of: nodes, initial: true) {
 			Task {
 				await countNodes()
@@ -252,7 +228,7 @@ struct NodeList: View {
 	@ViewBuilder
 	private func nodeList(online: Bool = true) -> some View {
 		let nodeList = nodes.filter { node in
-			!suggestedNodes.contains(node) &&  node.isOnline == online
+			!suggestedNodes.contains(node) && node.isOnline == online
 		}
 
 		Section(

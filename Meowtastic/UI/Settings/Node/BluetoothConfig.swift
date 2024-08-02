@@ -96,9 +96,9 @@ struct BluetoothConfig: View {
 			}
 		}
 
-		.navigationTitle("bluetooth.config")
+		.navigationTitle("Bluetooth Config")
 		.navigationBarItems(
-			trailing: ConnectedDevice(ble: bleManager)
+			trailing: ConnectedDevice()
 		)
 		.onAppear {
 			setBluetoothValues()

@@ -13,11 +13,13 @@ struct Peripheral: Identifiable {
 	var peripheral: CBPeripheral
 
 	func getSignalStrength() -> BLESignalStrength {
-		if NSNumber(value: rssi).compare(NSNumber(-65)) == ComparisonResult.orderedDescending {
+		if rssi > -65 {
 			return BLESignalStrength.strong
-		} else if NSNumber(value: rssi).compare(NSNumber(-85)) == ComparisonResult.orderedDescending {
+		}
+		else if rssi > -85 {
 			return BLESignalStrength.normal
-		} else {
+		}
+		else {
 			return BLESignalStrength.weak
 		}
 	}

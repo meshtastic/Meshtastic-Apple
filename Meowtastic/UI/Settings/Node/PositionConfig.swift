@@ -74,9 +74,9 @@ struct PositionConfig: View {
 			}
 			saveButton
 		}
-		.navigationTitle("position.config")
+		.navigationTitle("Position Config")
 		.navigationBarItems(
-			trailing: ConnectedDevice(ble: bleManager)
+			trailing: ConnectedDevice()
 		)
 		.onAppear {
 			setPositionValues()

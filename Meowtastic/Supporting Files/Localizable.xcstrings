@@ -1062,6 +1062,9 @@
         }
       }
     },
+    "Attempt: %lld of 10" : {
+
+    },
     "automatic.detection" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1605,10 +1608,14 @@
     "Bluetooth" : {
 
     },
+    "Bluetooth Config" : {
+
+    },
     "Bluetooth Off" : {
 
     },
     "bluetooth.config" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2089,9 +2096,6 @@
 
     },
     "Call Sign must not be empty" : {
-
-    },
-    "Can't load node info" : {
 
     },
     "cancel" : {
@@ -3012,6 +3016,7 @@
 
     },
     "communicating" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3910,6 +3915,7 @@
       }
     },
     "config.power.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4471,9 +4477,6 @@
 
     },
     "Connection" : {
-
-    },
-    "Connection Attempt %lld of 10" : {
 
     },
     "contacts" : {
@@ -5053,6 +5056,9 @@
     "Device" : {
 
     },
+    "Device Config" : {
+
+    },
     "Device GPS" : {
 
     },
@@ -5066,6 +5072,7 @@
 
     },
     "device.config" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6196,6 +6203,9 @@
     "Display" : {
 
     },
+    "Display Config" : {
+
+    },
     "Display Mode" : {
 
     },
@@ -6203,6 +6213,7 @@
 
     },
     "display.config" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10674,9 +10685,6 @@
     "Long Name" : {
 
     },
-    "Long Name: %@" : {
-
-    },
     "lora" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -14239,6 +14247,9 @@
     "MQTT" : {
 
     },
+    "MQTT Config" : {
+
+    },
     "mqtt.clientproxy" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -14657,7 +14668,11 @@
     "Network" : {
 
     },
+    "Network Config" : {
+
+    },
     "network.config" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -15036,9 +15051,6 @@
           }
         }
       }
-    },
-    "Num: %@" : {
-
     },
     "Number of hops" : {
 
@@ -15807,6 +15819,9 @@
         }
       }
     },
+    "Position Config" : {
+
+    },
     "Position Flags" : {
 
     },
@@ -15817,6 +15832,7 @@
 
     },
     "position.config" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -15904,6 +15920,9 @@
 
     },
     "Power" : {
+
+    },
+    "Power Config" : {
 
     },
     "Power Off" : {
@@ -17853,9 +17872,6 @@
     "RSSI: %ddBm" : {
 
     },
-    "RSSI: %lld" : {
-
-    },
     "RX Boosted Gain" : {
 
     },
@@ -18166,6 +18182,7 @@
       }
     },
     "select.menu.item" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18224,6 +18241,7 @@
       }
     },
     "select.node" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18954,9 +18972,6 @@
     "Short Name" : {
 
     },
-    "Short Name: %@" : {
-
-    },
     "Show alerts" : {
 
     },
@@ -19394,6 +19409,7 @@
       }
     },
     "subscribed" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

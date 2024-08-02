@@ -25,7 +25,7 @@ struct TraceRoute: View {
 	@State
 	private var selectedRoute: TraceRouteEntity?
 	@State
-	private var mapStyle: MapStyle = MapStyle.standard(
+	private var mapStyle = MapStyle.standard(
 		elevation: .realistic,
 		emphasis: MapStyle.StandardEmphasis.muted
 	)
@@ -210,14 +210,14 @@ struct TraceRoute: View {
 		.navigationTitle("Trace Route")
 		.navigationBarItems(
 			leading: MeshtasticLogo(),
-			trailing: ConnectedDevice(ble: bleManager)
+			trailing: ConnectedDevice()
 		)
 	}
 
 	@ViewBuilder
 	private func traceRoute(for route: TraceRouteEntity) -> some View {
 		let hops = route.hops?.array as? [TraceRouteHopEntity]
-		let hopCount = hops?.count ?? nil
+		let hopCount = hops?.count
 
 		Label {
 			VStack(alignment: .leading, spacing: 4) {

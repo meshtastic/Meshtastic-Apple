@@ -7,9 +7,9 @@ struct Settings: View {
 	@EnvironmentObject
 	private var bleManager: BLEManager
 	@State
-	private var selectedNodeNum: Int = 0
-	@State
 	private var connectedNodeNum: Int = 0
+	@State
+	private var preferredNodeNum: Int = 0
 
 	@FetchRequest(
 		sortDescriptors: [
@@ -22,18 +22,18 @@ struct Settings: View {
 
 	private var nodeSelected: NodeInfoEntity? {
 		nodes.first(where: { node in
-			node.num == selectedNodeNum
+			node.num == connectedNodeNum
 		})
 	}
 
 	private var nodeConnected: NodeInfoEntity? {
 		nodes.first(where: { node in
-			node.num == connectedNodeNum
+			node.num == preferredNodeNum
 		})
 	}
 
 	private var nodeIsConnected: Bool {
-		selectedNodeNum > 0 && selectedNodeNum != connectedNodeNum
+		connectedNodeNum > 0 && connectedNodeNum != preferredNodeNum
 	}
 
 	private var nodeHasAdmin: Bool {
@@ -54,7 +54,7 @@ struct Settings: View {
 
 	@ViewBuilder
 	var body: some View {
-		NavigationSplitView {
+		NavigationStack {
 			List {
 				connection
 
@@ -66,25 +66,22 @@ struct Settings: View {
 			}
 			.listStyle(.insetGrouped)
 			.onChange(of: UserDefaults.preferredPeripheralNum, initial: true) {
-				connectedNodeNum = UserDefaults.preferredPeripheralNum
+				preferredNodeNum = UserDefaults.preferredPeripheralNum
 
 				if !nodes.isEmpty {
-					if selectedNodeNum == 0 {
-						selectedNodeNum = Int(bleManager.connectedPeripheral != nil ? connectedNodeNum : 0)
+					if connectedNodeNum == 0 {
+						connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? preferredNodeNum : 0)
 					}
 				}
 				else {
-					selectedNodeNum = Int(bleManager.connectedPeripheral != nil ? connectedNodeNum: 0)
+					connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? preferredNodeNum : 0)
 				}
 			}
 			.navigationTitle("Settings")
 			.navigationBarItems(
 				leading: MeshtasticLogo(),
-				trailing: ConnectedDevice(ble: bleManager)
+				trailing: ConnectedDevice()
 			)
-		}
-		detail: {
-			ContentUnavailableView("select.menu.item", systemImage: "gear")
 		}
 	}
 

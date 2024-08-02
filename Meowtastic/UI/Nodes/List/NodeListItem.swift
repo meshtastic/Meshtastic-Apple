@@ -20,7 +20,9 @@ struct NodeListItem: View {
 	private var locationManager: LocationManager
 
 	var body: some View {
-		NavigationLink(value: node) {
+		NavigationLink {
+			NodeDetail(node: node)
+		} label: {
 			HStack(alignment: .top) {
 				avatar
 

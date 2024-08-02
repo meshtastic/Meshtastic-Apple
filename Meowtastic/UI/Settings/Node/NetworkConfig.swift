@@ -108,9 +108,9 @@ struct NetworkConfig: View {
 				}
 			}
 		}
-		.navigationTitle("network.config")
+		.navigationTitle("Network Config")
 		.navigationBarItems(
-			trailing: ConnectedDevice(ble: bleManager)
+			trailing: ConnectedDevice()
 		)
 		.onAppear {
 			setNetworkValues()

@@ -319,7 +319,7 @@ struct Channels: View {
 		}
 		.navigationTitle("Channels")
 		.navigationBarItems(
-			trailing: ConnectedDevice(ble: bleManager)
+			trailing: ConnectedDevice()
 		)
 	}
 }

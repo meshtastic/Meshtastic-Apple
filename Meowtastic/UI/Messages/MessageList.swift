@@ -147,13 +147,12 @@ struct MessageList: View {
 			ToolbarItem(placement: .navigationBarTrailing) {
 				if let channel {
 					ConnectedDevice(
-						ble: bleManager,
 						mqttUplinkEnabled: channel.uplinkEnabled,
 						mqttDownlinkEnabled: channel.downlinkEnabled
 					)
 				}
 				else {
-					ConnectedDevice(ble: bleManager)
+					ConnectedDevice()
 				}
 			}
 		}

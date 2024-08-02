@@ -74,7 +74,7 @@ struct MeshMap: View {
 			.navigationBarTitleDisplayMode(.large)
 			.navigationBarItems(
 				leading: MeshtasticLogo(),
-				trailing: ConnectedDevice(ble: bleManager)
+				trailing: ConnectedDevice()
 			)
 		}
 		.onAppear {

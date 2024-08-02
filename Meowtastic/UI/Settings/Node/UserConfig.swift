@@ -184,7 +184,7 @@ struct UserConfig: View {
 		}
 		.navigationTitle("User Config")
 		.navigationBarItems(
-			trailing: ConnectedDevice(ble: bleManager)
+			trailing: ConnectedDevice()
 		)
 		.onAppear {
 			self.shortName = node?.user?.shortName ?? ""

@@ -88,9 +88,9 @@ struct PowerConfig: View {
 			}
 		}
 		.disabled(bleManager.connectedPeripheral == nil || node?.powerConfig == nil)
-		.navigationTitle("config.power.title")
+		.navigationTitle("Power Config")
 		.navigationBarItems(
-			trailing: ConnectedDevice(ble: bleManager)
+			trailing: ConnectedDevice()
 		)
 		.toolbar {
 			ToolbarItemGroup(placement: .keyboard) {

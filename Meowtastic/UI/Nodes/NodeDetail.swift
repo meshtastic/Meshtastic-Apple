@@ -1,10 +1,9 @@
-import OSLog
 import MapKit
+import OSLog
 import SwiftUI
 
 struct NodeDetail: View {
 	var isInSheet = false
-	var columnVisibility = NavigationSplitViewVisibility.all
 
 	@ObservedObject
 	var node: NodeInfoEntity

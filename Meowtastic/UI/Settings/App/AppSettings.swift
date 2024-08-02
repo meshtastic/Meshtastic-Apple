@@ -71,7 +71,7 @@ struct AppSettings: View {
 		}
 		.navigationTitle("App Settings")
 		.navigationBarItems(
-			trailing: ConnectedDevice(ble: bleManager)
+			trailing: ConnectedDevice()
 		)
 	}
 }

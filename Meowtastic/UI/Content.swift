@@ -28,7 +28,7 @@ struct Content: View {
 	}
 
 	var body: some View {
-		if !bleManager.isNodeConnected {
+		if !bleManager.isSubscribed {
 			Connect()
 		}
 		else {

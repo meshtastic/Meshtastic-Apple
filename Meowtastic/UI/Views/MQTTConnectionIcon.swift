@@ -6,10 +6,10 @@ struct MQTTConnectionIcon: View {
 
 	private var icon: String {
 		if connected {
-			return "icloud"
+			return "network"
 		}
 		else {
-			return "icloud.slash"
+			return "network.slash"
 		}
 	}
 

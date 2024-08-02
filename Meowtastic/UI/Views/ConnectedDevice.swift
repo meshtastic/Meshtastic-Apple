@@ -1,32 +1,38 @@
 import SwiftUI
 
 struct ConnectedDevice: View {
-	private var isOn: Bool
-	private var connected: Bool
-	private var nodeName: String
 	private var mqttChannelInfo = false
-	private var mqttProxyConnected = false
 	private var mqttUplinkEnabled = false
 	private var mqttDownlinkEnabled = false
 
+	@EnvironmentObject
+	private var bleManager: BLEManager
+
 	var body: some View {
-		if isOn {
-			if connected {
+		if bleManager.isSwitchedOn {
+			if bleManager.isConnected {
 				HStack(spacing: 4) {
 					if mqttChannelInfo {
 						MQTTChannelIcon(
-							connected: mqttProxyConnected,
+							connected: bleManager.mqttProxyConnected,
 							uplink: mqttUplinkEnabled,
 							downlink: mqttDownlinkEnabled
 						)
 					}
 					else {
 						MQTTConnectionIcon(
-							connected: mqttProxyConnected
+							connected: bleManager.mqttProxyConnected
 						)
 					}
 
-					deviceIcon("antenna.radiowaves.left.and.right", color: .green)
+					SignalStrengthIndicator(
+						signalStrength: bleManager.connectedPeripheral.getSignalStrength(),
+						size: 16,
+						color: .green
+					)
+					.padding(8)
+					.background(.green.opacity(0.3))
+					.clipShape(Circle())
 				}
 			}
 			else {
@@ -38,27 +44,14 @@ struct ConnectedDevice: View {
 		}
 	}
 
-	init(
-		ble: BLEManager
-	) {
-		self.isOn = ble.isSwitchedOn
-		self.connected = ble.isNodeConnected
-		self.nodeName = ble.connectedNodeName
-		self.mqttProxyConnected = ble.mqttProxyConnected
-
+	init() {
 		self.mqttChannelInfo = false
 	}
 
 	init(
-		ble: BLEManager,
 		mqttUplinkEnabled: Bool = false,
 		mqttDownlinkEnabled: Bool = false
 	) {
-		self.isOn = ble.isSwitchedOn
-		self.connected = ble.isNodeConnected
-		self.nodeName = ble.connectedNodeName
-		self.mqttProxyConnected = ble.mqttProxyConnected
-
 		self.mqttUplinkEnabled = mqttUplinkEnabled
 		self.mqttDownlinkEnabled = mqttDownlinkEnabled
 

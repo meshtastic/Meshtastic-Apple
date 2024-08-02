@@ -346,9 +346,9 @@ struct MQTTConfig: View {
 				}
 			}
 		}
-		.navigationTitle("MQTT")
+		.navigationTitle("MQTT Config")
 		.navigationBarItems(
-			trailing: ConnectedDevice(ble: bleManager)
+			trailing: ConnectedDevice()
 		)
 		.onAppear {
 			setMqttValues()

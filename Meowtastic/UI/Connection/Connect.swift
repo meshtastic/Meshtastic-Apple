@@ -6,11 +6,15 @@ import OSLog
 import SwiftUI
 
 struct Connect: View {
+	private let detailInfoFont = Font.system(size: 14, weight: .regular, design: .rounded)
+
 	@Environment(\.managedObjectContext)
 	private var context
 	@EnvironmentObject
 	private var bleManager: BLEManager
 
+	@Environment(\.colorScheme)
+	private var colorScheme: ColorScheme
 	@State
 	private var node: NodeInfoEntity?
 	@State
@@ -50,7 +54,8 @@ struct Connect: View {
 					if !visibleNodes.isEmpty {
 						visible
 					}
-				} else {
+				}
+				else {
 					Text("Bluetooth Off")
 						.foregroundColor(.red)
 						.font(.title)
@@ -59,33 +64,20 @@ struct Connect: View {
 			.navigationTitle("Connection")
 			.navigationBarItems(
 				leading: MeshtasticLogo(),
-				trailing: ConnectedDevice(ble: bleManager)
+				trailing: ConnectedDevice()
 			)
 		}
 		.onChange(of: bleManager.invalidVersion) {
-			invalidFirmwareVersion = self.bleManager.invalidVersion
+			invalidFirmwareVersion = bleManager.invalidVersion
+		}
+		.onChange(of: bleManager.isConnected, initial: true) {
+			Task {
+				await fetchNodeInfo()
+			}
 		}
 		.onChange(of: bleManager.isSubscribed) {
-			if UserDefaults.preferredPeripheralId.count > 0 && bleManager.isSubscribed {
-				let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
-				fetchNodeInfoRequest.predicate = NSPredicate(
-					format: "num == %lld",
-					Int64(bleManager.connectedPeripheral?.num ?? -1)
-				)
-
-				do {
-					node = try context.fetch(fetchNodeInfoRequest).first
-
-					if let loRaConfig = node?.loRaConfig, loRaConfig.regionCode == RegionCodes.unset.rawValue {
-						isUnsetRegion = true
-					}
-					else {
-						isUnsetRegion = false
-					}
-				}
-				catch {
-					Logger.data.error("💥 Error fetching node info: \(error.localizedDescription)")
-				}
+			Task {
+				await fetchNodeInfo()
 			}
 		}
 		.sheet(
@@ -113,20 +105,7 @@ struct Connect: View {
 				})
 
 				HStack(alignment: .top, spacing: 8) {
-					VStack(alignment: .center) {
-						if let node {
-							AvatarNode(
-								node,
-								size: 90
-							)
-						}
-						else {
-							AvatarAbstract(
-								"?",
-								size: 90
-							)
-						}
-					}
+					avatar
 
 					VStack(alignment: .leading) {
 						if node != nil {
@@ -135,43 +114,35 @@ struct Connect: View {
 						}
 
 						HStack(spacing: 8) {
+							SignalStrengthIndicator(
+								signalStrength: connectedPeripheral.getSignalStrength(),
+								size: 14,
+								color: .gray
+							)
+
 							if let name = bleManager.connectedPeripheral?.peripheral.name {
 								Text(name)
-									.font(.callout)
-									.foregroundColor(Color.gray)
+									.font(detailInfoFont)
+									.foregroundColor(.gray)
+							}
+						}
+
+						HStack(spacing: 8) {
+							if let hwModel = node?.user?.hwModel {
+								Text(hwModel)
+									.font(detailInfoFont)
+									.foregroundColor(.gray)
 							}
 
 							if let version = node?.metadata?.firmwareVersion {
 								Text("v\(version)")
-									.font(.callout)
-									.foregroundColor(Color.gray)
-							}
-						}
-
-
-						if bleManager.isSubscribed {
-							Text("subscribed")
-								.font(.callout)
-								.foregroundColor(.green)
-						}
-						else {
-							HStack {
-								Image(systemName: "square.stack.3d.down.forward")
-									.symbolRenderingMode(.multicolor)
-									.symbolEffect(
-										.variableColor.reversing.cumulative,
-										options: .repeat(20).speed(3)
-									)
-									.foregroundColor(.orange)
-
-								Text("communicating")
-									.font(.callout)
-									.foregroundColor(.orange)
+									.font(detailInfoFont)
+									.foregroundColor(.gray)
 							}
 						}
 					}
 				}
-				.swipeActions {
+				.swipeActions(edge: .trailing) {
 					Button(role: .destructive) {
 						if
 							let connectedPeripheral = bleManager.connectedPeripheral,
@@ -185,19 +156,13 @@ struct Connect: View {
 							systemImage: "antenna.radiowaves.left.and.right.slash"
 						)
 					}
-				}
-				.contextMenu {
-					if node != nil {
-						Text("Num: \(String(node!.num))")
-						Text("Short Name: \(node?.user?.shortName ?? "N/A")")
-						Text("Long Name: \(node?.user?.longName ?? "N/A")")
-						Text("RSSI: \(connectedPeripheral.rssi)")
 
-						Button {
+					if let user = node?.user, let myInfo = node?.myInfo {
+						Button(role: .destructive) {
 							if !bleManager.sendShutdown(
-								fromUser: node!.user!,
-								toUser: node!.user!,
-								adminIndex: node!.myInfo!.adminIndex
+								fromUser: user,
+								toUser: user,
+								adminIndex: myInfo.adminIndex
 							) {
 								Logger.mesh.error("Shutdown Failed")
 							}
@@ -214,37 +179,31 @@ struct Connect: View {
 						} label: {
 							Label(
 								"Set Region",
-								systemImage: "globe.americas.fill"
+								systemImage: "globe.europe.africa.fill"
 							)
-							.foregroundColor(.red)
 							.font(.title)
+							.foregroundColor(.red)
 						}
 					}
 				}
-			} else {
+			}
+			else {
 				if bleManager.isConnecting {
-					HStack {
-						Image(systemName: "antenna.radiowaves.left.and.right")
-							.resizable()
-							.symbolRenderingMode(.hierarchical)
-							.foregroundColor(.orange)
-							.frame(width: 60, height: 60)
-							.padding(.trailing)
+					HStack(alignment: .top, spacing: 8) {
+						avatar
 
-						if bleManager.timeoutTimerCount == 0 {
+						VStack(alignment: .leading) {
 							Text("Connecting")
 								.font(.title2)
-								.foregroundColor(.orange)
-						} else {
-							VStack {
-								Text("Connection Attempt \(bleManager.timeoutTimerCount) of 10")
-									.font(.callout)
-									.foregroundColor(.orange)
+
+							if bleManager.timeoutTimerCount > 0 {
+								Text("Attempt: \(bleManager.timeoutTimerCount) of 10")
+									.font(detailInfoFont)
+									.foregroundColor(.gray)
 							}
 						}
 					}
-					.padding()
-					.swipeActions {
+					.swipeActions(edge: .trailing) {
 						Button(role: .destructive) {
 							bleManager.cancelPeripheralConnection()
 						} label: {
@@ -254,10 +213,11 @@ struct Connect: View {
 							)
 						}
 					}
-				} else {
+				}
+				else {
 					if bleManager.lastConnectionError.count > 0 {
 						Text(bleManager.lastConnectionError)
-							.font(.callout)
+							.font(detailInfoFont)
 							.foregroundColor(.red)
 					}
 
@@ -269,13 +229,12 @@ struct Connect: View {
 							.frame(width: 60, height: 60)
 							.padding(.trailing)
 
-						Text("Not Connected").font(.title3)
+						Text("Not Connected")
+							.font(.title3)
 					}
-					.padding()
 				}
 			}
 		}
-		.textCase(nil)
 	}
 
 	@ViewBuilder
@@ -288,63 +247,95 @@ struct Connect: View {
 				HStack {
 					if UserDefaults.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
 						Image(systemName: "star.fill")
-							.imageScale(.large).foregroundColor(.yellow)
-							.padding(.trailing)
-					} else {
-						Image(systemName: "circle.fill")
-							.imageScale(.large).foregroundColor(.gray)
+							.imageScale(.large)
+							.foregroundColor(.yellow)
 							.padding(.trailing)
 					}
-
-					Button(action: {
-						if
-							UserDefaults.preferredPeripheralId.count > 0
-								&& peripheral.peripheral.identifier.uuidString != UserDefaults.preferredPeripheralId
-						{
-							if
-								let connectedPeripheral = bleManager.connectedPeripheral,
-								connectedPeripheral.peripheral.state == CBPeripheralState.connected
-							{
-								bleManager.disconnectPeripheral()
-							}
-
-							guard let url = FileManager.default.urls(
-								for: .documentDirectory,
-								in: .userDomainMask
-							).first else {
-								Logger.data.error("nil File path for back")
-								return
-							}
-
-							do {
-								try Persistence.shared.copyPersistentStores(
-									to: url
-										.appendingPathComponent("backup")
-										.appendingPathComponent("\(UserDefaults.preferredPeripheralNum)"),
-									overwriting: true
-								)
-
-								Logger.data.notice("🗂️ Made a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
-							} catch {
-								Logger.data.error("🗂️ Core data backup copy error: \(error, privacy: .public)")
-							}
-							clearCoreDataDatabase(context: context, includeRoutes: false)
-						}
-
-						UserDefaults.preferredPeripheralId = selectedPeripherialId
-						self.bleManager.connectTo(peripheral: peripheral.peripheral)
-					}) {
-						Text(peripheral.name).font(.callout)
+					else {
+						Image(systemName: "circle.fill")
+							.imageScale(.large)
+							.foregroundColor(.gray)
+							.padding(.trailing)
 					}
 
 					Spacer()
 
-					VStack {
-						SignalStrengthIndicator(signalStrength: peripheral.getSignalStrength())
-					}
+					SignalStrengthIndicator(
+						signalStrength: peripheral.getSignalStrength(),
+						size: 64
+					)
 				}
 			}
 		}
+	}
+
+	@ViewBuilder
+	private var avatar: some View {
+		ZStack(alignment: .top) {
+			if let node {
+				AvatarNode(
+					node,
+					size: 64
+				)
+				.padding([.top, .bottom, .trailing], 10)
+			}
+			else {
+				AvatarAbstract(
+					size: 64
+				)
+				.padding([.top, .bottom, .trailing], 10)
+			}
+
+			if bleManager.isConnecting {
+				HStack(spacing: 0) {
+					Spacer()
+					Image(systemName: "magnifyingglass.circle.fill")
+						.font(.system(size: 24))
+						.foregroundColor(colorScheme == .dark ? .white : .gray)
+						.background(
+							Circle()
+								.foregroundColor(colorScheme == .dark ? .black : .white)
+						)
+				}
+			}
+			else if bleManager.isConnected, !bleManager.isSubscribed {
+				HStack(spacing: 0) {
+					Spacer()
+					Image(systemName: "hourglass.circle.fill")
+						.font(.system(size: 24))
+						.foregroundColor(colorScheme == .dark ? .white : .gray)
+						.background(
+							Circle()
+								.foregroundColor(colorScheme == .dark ? .black : .white)
+						)
+				}
+			}
+			else if bleManager.isSubscribed {
+				HStack(spacing: 0) {
+					Spacer()
+					Image(systemName: "checkmark.circle.fill")
+						.font(.system(size: 24))
+						.foregroundColor(colorScheme == .dark ? .white : .gray)
+						.background(
+							Circle()
+								.foregroundColor(colorScheme == .dark ? .black : .white)
+						)
+				}
+			}
+			else {
+				HStack(spacing: 0) {
+					Spacer()
+					Image(systemName: "exclamationmark.circle.fill")
+						.font(.system(size: 24))
+						.foregroundColor(colorScheme == .dark ? .white : .gray)
+						.background(
+							Circle()
+								.foregroundColor(colorScheme == .dark ? .black : .white)
+						)
+				}
+			}
+		}
+		.frame(width: 80, height: 80)
 	}
 
 	init (node: NodeInfoEntity? = nil) {
@@ -368,6 +359,25 @@ struct Connect: View {
 				}
 			}
 		)
+	}
+
+	private func fetchNodeInfo() async {
+		let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
+		fetchNodeInfoRequest.predicate = NSPredicate(
+			format: "num == %lld",
+			Int64(bleManager.connectedPeripheral?.num ?? -1)
+		)
+
+		node = try? context.fetch(fetchNodeInfoRequest).first
+
+		if bleManager.isSubscribed, UserDefaults.preferredPeripheralId.count > 0 {
+			if let loRaConfig = node?.loRaConfig, loRaConfig.regionCode == RegionCodes.unset.rawValue {
+				isUnsetRegion = true
+			}
+			else {
+				isUnsetRegion = false
+			}
+		}
 	}
 
 	private func didDismissSheet() {

@@ -102,7 +102,7 @@ struct LoRaConfig: View {
 		}
 		.navigationTitle("LoRa Config")
 		.navigationBarItems(
-			trailing: ConnectedDevice(ble: bleManager)
+			trailing: ConnectedDevice()
 		)
 		.onAppear {
 			setLoRaValues()

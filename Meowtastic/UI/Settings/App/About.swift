@@ -54,7 +54,7 @@ struct About: View {
 		.navigationTitle("About")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(
-			trailing: ConnectedDevice(ble: bleManager)
+			trailing: ConnectedDevice()
 		)
 	}
 }

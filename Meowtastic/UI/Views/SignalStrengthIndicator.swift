@@ -32,22 +32,16 @@ import Foundation
 import SwiftUI
 
 struct SignalStrengthIndicator: View {
-	let signalStrength: BLESignalStrength
+	private let signalStrength: BLESignalStrength
+	private let size: CGFloat
+	private let colorOverride: Color?
 
-	var body: some View {
-		HStack {
-			ForEach(0..<3) { bar in
-				RoundedRectangle(cornerRadius: 3)
-					.divided(amount: (CGFloat(bar) + 1) / CGFloat(3))
-					.fill(getColor().opacity(bar <= signalStrength.rawValue ? 1 : 0.3))
-					.frame(width: 8, height: 40)
-			}
+	private var color: Color {
+		if let colorOverride {
+			return colorOverride
 		}
-	}
 
-	private func getColor() -> Color {
 		switch signalStrength {
-
 		case .weak:
 			return Color.red
 
@@ -57,6 +51,29 @@ struct SignalStrengthIndicator: View {
 		case .strong:
 			return Color.green
 		}
+	}
+
+	@ViewBuilder
+	var body: some View {
+		HStack(alignment: .bottom, spacing: size / 10) {
+			ForEach(0..<3) { bar in
+				RoundedRectangle(cornerRadius: 3)
+					.divided(amount: (CGFloat(bar) + 1) / CGFloat(3))
+					.fill(color.opacity(bar <= signalStrength.rawValue ? 1 : 0.3))
+					.frame(width: size / 3, height: size)
+			}
+		}
+		.frame(width: size, height: size)
+	}
+
+	init(
+		signalStrength: BLESignalStrength,
+		size: CGFloat,
+		color: Color? = nil
+	) {
+		self.signalStrength = signalStrength
+		self.size = size
+		self.colorOverride = color
 	}
 }
 
@@ -69,14 +86,14 @@ struct Divided<S: Shape>: Shape {
 	}
 }
 
-extension Shape {
-	func divided(amount: CGFloat) -> Divided<Self> {
-		Divided(amount: amount, shape: self)
-	}
-}
-
 enum BLESignalStrength: Int {
 	case weak = 0
 	case normal = 1
 	case strong = 2
+}
+
+extension Shape {
+	func divided(amount: CGFloat) -> Divided<Self> {
+		Divided(amount: amount, shape: self)
+	}
 }
