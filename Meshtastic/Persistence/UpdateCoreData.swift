@@ -280,7 +280,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 	}
 }
 
-func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
+func upsertPositionPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.position.received %@".localized, String(packet.from))
 	MeshLogger.log("📍 \(logString)")
@@ -358,14 +358,14 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 						try context.save()
 						Logger.data.info("💾 [Position] Saved from Position App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
 						// Notification for position exchanges
-						if packet.from != 4294967295 {
+						if packet.from != 4294967295 && packet.to == UInt32(truncatingIfNeeded: connectedNodeNum) {
 							let manager = LocalNotificationManager()
 							manager.notifications = [
 								Notification(
 									id: (UUID().uuidString),
 									title: "Position Exchange",
-									subtitle: "\(packet.from.toHex()) replied with a position for \(packet.to.toHex())",
-									content: "From User has shared their location with you.",
+									subtitle: "\(fetchedNode[0].user?.shortName ?? "unknown".localized)",
+									content: "\(fetchedNode[0].user?.longName ?? "unknown".localized) has shared their location with you.",
 									target: "nodes",
 									path: "meshtastic:///nodes?nodenum=\(packet.from)&detail=nodeMap"
 								)

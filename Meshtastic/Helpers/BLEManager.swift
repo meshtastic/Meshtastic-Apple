@@ -751,7 +751,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .remoteHardwareApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .positionApp:
-				upsertPositionPacket(packet: decodedInfo.packet, context: context)
+				upsertPositionPacket(packet: decodedInfo.packet, connectedNodeNum: self.connectedPeripheral.num, context: context)
 			case .waypointApp:
 				waypointPacket(packet: decodedInfo.packet, context: context)
 			case .nodeinfoApp:
