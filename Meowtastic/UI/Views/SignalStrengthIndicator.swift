@@ -57,7 +57,7 @@ struct SignalStrengthIndicator: View {
 	var body: some View {
 		HStack(alignment: .bottom, spacing: size / 10) {
 			ForEach(0..<3) { bar in
-				RoundedRectangle(cornerRadius: 3)
+				RoundedRectangle(cornerRadius: size / 8)
 					.divided(amount: (CGFloat(bar) + 1) / CGFloat(3))
 					.fill(color.opacity(bar <= signalStrength.rawValue ? 1 : 0.3))
 					.frame(width: size / 3, height: size)

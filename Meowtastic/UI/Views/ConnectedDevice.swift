@@ -7,7 +7,10 @@ struct ConnectedDevice: View {
 
 	@EnvironmentObject
 	private var bleManager: BLEManager
+	@State
+	private var rssi: Int?
 
+	@ViewBuilder
 	var body: some View {
 		if bleManager.isSwitchedOn {
 			if bleManager.isConnected {
@@ -27,12 +30,19 @@ struct ConnectedDevice: View {
 
 					SignalStrengthIndicator(
 						signalStrength: bleManager.connectedPeripheral.getSignalStrength(),
-						size: 16,
+						size: 14,
 						color: .green
 					)
 					.padding(8)
 					.background(.green.opacity(0.3))
 					.clipShape(Circle())
+					.onAppear {
+						Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+							if let peripheral = bleManager.connectedPeripheral {
+								peripheral.peripheral.readRSSI()
+							}
+						}
+					}
 				}
 			}
 			else {
