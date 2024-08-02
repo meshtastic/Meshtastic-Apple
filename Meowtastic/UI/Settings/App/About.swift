@@ -10,27 +10,6 @@ struct About: View {
 	@ViewBuilder
 	var body: some View {
 		List {
-			Section(header: Text("Meshtastic")) {
-				Text(
-	"""
-	An open source, off-grid, decentralized, mesh network built to run on affordable, low-power devices
-	"""
-				)
-				.font(.body)
-
-				Link(
-					"Project Website",
-					// swiftlint:disable:next force_unwrapping
-					destination: URL(string: "https://meshtastic.org")!
-				)
-				.font(.body)
-
-				Text(
-					"Meshtastic® is a registered trademark of Meshtastic LLC"
-				)
-				.font(.footnote)
-			}
-
 			Section(header: Text("This Application")) {
 				Button("Rate it") {
 					if let scene = UIApplication.shared.connectedScenes.first(where: {
@@ -49,6 +28,38 @@ struct About: View {
 				.font(.body)
 
 				Text("Version: \(Bundle.main.appVersionLong); build \(Bundle.main.appBuild)")
+			}
+
+			Section(header: Text("Credits")) {
+				VStack(alignment: .leading, spacing: 8) {
+					Link(
+						"Garth Vander Houwen",
+						// swiftlint:disable:next force_unwrapping
+						destination: URL(string: "https://github.com/meshtastic/Meshtastic-Apple")!
+					)
+					.font(.body)
+
+					Text("This app is based on and still benefits from their work")
+						.font(.body)
+				}
+
+				VStack(alignment: .leading, spacing: 8) {
+					Link(
+						"Meshtastic®",
+						// swiftlint:disable:next force_unwrapping
+						destination: URL(string: "https://meshtastic.org")!
+					)
+					.font(.body)
+
+					Text("An open source, off-grid, decentralized, mesh network built to run on affordable, low-power devices. Obviously, this app would be useless without them")
+						.font(.body)
+
+					Text(
+						"Meshtastic® is a registered trademark of Meshtastic LLC"
+					)
+					.font(.footnote)
+					.foregroundColor(.gray)
+				}
 			}
 		}
 		.navigationTitle("About")

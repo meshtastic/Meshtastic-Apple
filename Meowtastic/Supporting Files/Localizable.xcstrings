@@ -691,7 +691,7 @@
         }
       }
     },
-    "An open source, off-grid, decentralized, mesh network built to run on affordable, low-power devices" : {
+    "An open source, off-grid, decentralized, mesh network built to run on affordable, low-power devices. Obviously, this app would be useless without them" : {
 
     },
     "Any missed messages will be delivered again." : {
@@ -4296,9 +4296,6 @@
     "Configuration for: %@" : {
 
     },
-    "Connect" : {
-
-    },
     "connected" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4669,6 +4666,9 @@
       }
     },
     "Copy message text" : {
+
+    },
+    "Credits" : {
 
     },
     "current" : {
@@ -7004,6 +7004,9 @@
 
     },
     "Frequency Slot" : {
+
+    },
+    "Garth Vander Houwen" : {
 
     },
     "gas" : {
@@ -13879,7 +13882,7 @@
         }
       }
     },
-    "Meshtastic" : {
+    "Meshtastic®" : {
 
     },
     "Meshtastic® is a registered trademark of Meshtastic LLC" : {
@@ -16000,9 +16003,6 @@
 
     },
     "Primary Channel" : {
-
-    },
-    "Project Website" : {
 
     },
     "radio.configuration" : {
@@ -20143,6 +20143,9 @@
 
     },
     "There has been no response to a request for device metadata over the admin channel for this node." : {
+
+    },
+    "This app is based on and still benefits from their work" : {
 
     },
     "This Application" : {

@@ -338,35 +338,29 @@ struct Connect: View {
 	private var visible: some View {
 		Section("Visible Devices") {
 			ForEach(visibleDevices) { peripheral in
-				HStack(alignment: .center, spacing: 16) {
-					HStack(spacing: 16) {
-						SignalStrengthIndicator(
-							signalStrength: peripheral.getSignalStrength(),
-							size: 14,
-							color: .gray
-						)
+				Button {
+					bleManager.connectTo(peripheral: peripheral.peripheral)
+				} label: {
+					HStack(alignment: .center, spacing: 16) {
+						HStack(spacing: 16) {
+							SignalStrengthIndicator(
+								signalStrength: peripheral.getSignalStrength(),
+								size: 14,
+								color: .gray
+							)
 
-						Text(peripheral.longName)
-							.font(deviceFont)
-							.foregroundColor(.gray)
-					}
+							Text(peripheral.longName)
+								.font(deviceFont)
+								.foregroundColor(.gray)
+						}
 
-					if UserDefaults.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
-						Spacer()
+						if UserDefaults.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
+							Spacer()
 
-						Image(systemName: "star.fill")
-							.font(deviceFont)
-							.foregroundColor(.gray)
-					}
-				}
-				.swipeActions(edge: .leading, allowsFullSwipe: true) {
-					Button {
-						bleManager.connectTo(peripheral: peripheral.peripheral)
-					} label: {
-						Label(
-							"Connect",
-							systemImage: "antenna.radiowaves.left.and.right"
-						)
+							Image(systemName: "star.fill")
+								.font(deviceFont)
+								.foregroundColor(.gray)
+						}
 					}
 				}
 			}
