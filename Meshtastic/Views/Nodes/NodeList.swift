@@ -9,8 +9,15 @@ import CoreLocation
 import OSLog
 
 struct NodeList: View {
+	@Environment(\.managedObjectContext)
+	var context
 
-	@StateObject var appState = AppState.shared
+	@EnvironmentObject
+	var bleManager: BLEManager
+
+	@ObservedObject
+	var router: Router
+
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
 	@State private var searchText = ""
@@ -37,18 +44,22 @@ struct NodeList: View {
 
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 
-	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
-
 	@FetchRequest(
 		sortDescriptors: [
 			NSSortDescriptor(key: "favorite", ascending: false),
 			NSSortDescriptor(key: "lastHeard", ascending: false),
-			NSSortDescriptor(key: "user.longName", ascending: true),
+			NSSortDescriptor(key: "user.longName", ascending: true)
 		],
 		animation: .spring
 	)
 	var nodes: FetchedResults<NodeInfoEntity>
+
+	var connectedNode: NodeInfoEntity? {
+		getNodeInfo(
+			id: bleManager.connectedPeripheral?.num ?? 0,
+			context: context
+		)
+	}
 
 	@ViewBuilder
 	func contextMenuActions(
@@ -78,19 +89,17 @@ struct NodeList: View {
 				bleManager: bleManager,
 				node: node
 			)
-			DeleteNodeButton(
-				bleManager: bleManager,
-				context: context,
-				connectedNode: connectedNode,
-				node: node
-			)
+//			DeleteNodeButton(
+//				bleManager: bleManager,
+//				context: context,
+//				connectedNode: connectedNode,
+//				node: node
+//			)
 		}
 	}
 
 	var body: some View {
 		NavigationSplitView(columnVisibility: $columnVisibility) {
-			let connectedNodeNum = Int(bleManager.connectedPeripheral?.num ?? 0)
-			let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
 			List(nodes, id: \.self, selection: $selectedNode) { node in
 				NodeListItem(
 					node: node,
@@ -157,10 +166,7 @@ struct NodeList: View {
 			if let node = selectedNode {
 				NavigationStack {
 					NodeDetail(
-						connectedNode: nodes.first(where: {
-							let connectedNodeNum = Int(bleManager.connectedPeripheral?.num ?? 0)
-							return $0.num == connectedNodeNum
-						}),
+						connectedNode: connectedNode,
 						node: node,
 						columnVisibility: columnVisibility
 					)
@@ -184,7 +190,6 @@ struct NodeList: View {
 						}
 					)
 				}
-
 			 } else {
 				 if #available (iOS 17, *) {
 					 ContentUnavailableView("select.node", systemImage: "flipphone")
@@ -198,7 +203,6 @@ struct NodeList: View {
 			} else {
 				Text("Select something to view")
 			}
-
 		}
 		.navigationSplitViewStyle(.balanced)
 		.onChange(of: searchText) { _ in
@@ -242,29 +246,22 @@ struct NodeList: View {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: (appState.navigationPath)) { newPath in
-
-			guard let deepLink = newPath else {
-				return
+		.onChange(of: distanceFilter) { _ in
+			Task {
+				await searchNodeList()
 			}
-			if deepLink.hasPrefix("meshtastic://nodes") {
-
-				if let urlComponent = URLComponents(string: deepLink) {
-					let queryItems = urlComponent.queryItems
-					let nodeNum = queryItems?.first(where: { $0.name == "nodenum" })?.value
-					if nodeNum == nil {
-						Logger.data.debug("nodeNum not found")
-					} else {
-						selectedNode = nodes.first(where: { $0.num == Int64(nodeNum ?? "-1") })
-						AppState.shared.navigationPath = nil
-					}
+		}
+		.onChange(of: router.navigationState) { _ in
+			// Handle deep link routing
+			if case .nodes(let selected) = router.navigationState {
+				self.selectedNode = selected.flatMap {
+					getNodeInfo(id: $0, context: context)
 				}
+			} else {
+				self.selectedNode = nil
 			}
 		}
 		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
 			Task {
 				await searchNodeList()
 			}

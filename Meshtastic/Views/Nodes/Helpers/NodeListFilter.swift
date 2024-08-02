@@ -159,6 +159,7 @@ struct NodeListFilter: View {
 					}
 				}
 			}
+			.listStyle(.insetGrouped)
 #if targetEnvironment(macCatalyst)
 			Spacer()
 			Button {
@@ -172,7 +173,9 @@ struct NodeListFilter: View {
 			.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.fraction(roleFilter ? 1.0 : 0.65)])
+		.presentationDetents([.medium, .large])
+		.presentationContentInteraction(.scrolls)
 		.presentationDragIndicator(.visible)
+		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 	}
 }

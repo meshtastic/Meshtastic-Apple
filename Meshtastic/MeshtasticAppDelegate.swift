@@ -9,6 +9,9 @@ import SwiftUI
 import OSLog
 
 class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, ObservableObject {
+
+	var router: Router?
+
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
 		Logger.services.info("🚀 [App] Meshtstic Apple App launched!")
 		// Default User Default Values
@@ -28,23 +31,30 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		return true
 	}
 	// Lets us show the notification in the app in the foreground
-	func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+	func userNotificationCenter(
+		_ center: UNUserNotificationCenter,
+		willPresent notification: UNNotification,
+		withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+	) {
 		completionHandler([.list, .banner, .sound])
 	}
-	// This method is called when a user clicks on the notification
-	func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-		let userInfo = response.notification.request.content.userInfo
-		let targetValue = userInfo["target"] as? String
-		let deepLink = userInfo["path"] as? String
 
-		AppState.shared.navigationPath = deepLink
-		if targetValue == "map" {
-			AppState.shared.tabSelection = Tab.map
-		} else if targetValue == "messages" {
-			AppState.shared.tabSelection = Tab.messages
-		} else if targetValue == "nodes" {
-			AppState.shared.tabSelection = Tab.nodes
+	// This method is called when a user clicks on the notification
+	func userNotificationCenter(
+		_ center: UNUserNotificationCenter,
+		didReceive response: UNNotificationResponse,
+		withCompletionHandler completionHandler: @escaping () -> Void
+	) {
+		let userInfo = response.notification.request.content.userInfo
+		if let targetValue = userInfo["target"] as? String,
+		   let deepLink = userInfo["path"] as? String,
+		   let url = URL(string: deepLink) {
+			Logger.services.info("userNotificationCenter didReceiveResponse \(targetValue) \(deepLink)")
+			router?.route(url: url)
+		} else {
+			Logger.services.error("Failed to handle notification response: \(userInfo)")
 		}
+
 		completionHandler()
 	}
 }

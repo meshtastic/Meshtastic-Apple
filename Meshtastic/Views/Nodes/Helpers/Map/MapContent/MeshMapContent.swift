@@ -11,7 +11,6 @@ import MapKit
 @available(iOS 17.0, macOS 14.0, *)
 struct MeshMapContent: MapContent {
 
-	@StateObject var appState = AppState.shared
 	/// Parameters
 	@Binding var showUserLocation: Bool
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
@@ -76,7 +75,7 @@ struct MeshMapContent: MapContent {
 						}
 					}
 				}
-				.onTapGesture { location in
+				.onTapGesture { _ in
 					selectedPosition = (selectedPosition == position ? nil : position)
 				}
 			}

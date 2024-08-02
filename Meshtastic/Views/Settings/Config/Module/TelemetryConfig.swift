@@ -42,7 +42,7 @@ struct TelemetryConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(.hidden)
-					Text("How often device metrics are sent out over the mesh. Default is 15 minutes.")
+					Text("How often device metrics are sent out over the mesh. Default is 30 minutes.")
 						.foregroundColor(.gray)
 						.font(.callout)
 						.listRowSeparator(.visible)
@@ -55,7 +55,7 @@ struct TelemetryConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(.hidden)
-					Text("How often sensor metrics are sent out over the mesh. Default is 15 minutes.")
+					Text("How often sensor metrics are sent out over the mesh. Default is 30 minutes.")
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
@@ -91,7 +91,7 @@ struct TelemetryConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(.hidden)
-					Text("How often power metrics are sent out over the mesh. Default is 15 minutes.")
+					Text("How often power metrics are sent out over the mesh. Default is 30 minutes.")
 						.foregroundColor(.gray)
 						.font(.callout)
 					.listRowSeparator(.visible)
@@ -130,9 +130,6 @@ struct TelemetryConfig: View {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 			})
 			.onAppear {
-				if self.bleManager.context == nil {
-					self.bleManager.context = context
-				}
 				setTelemetryValues()
 				// Need to request a TelemetryModuleConfig from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.telemetryConfig == nil {
@@ -186,13 +183,13 @@ struct TelemetryConfig: View {
 		}
 	}
 	func setTelemetryValues() {
-		self.deviceUpdateInterval = Int(node?.telemetryConfig?.deviceUpdateInterval ?? 900)
-		self.environmentUpdateInterval = Int(node?.telemetryConfig?.environmentUpdateInterval ?? 900)
+		self.deviceUpdateInterval = Int(node?.telemetryConfig?.deviceUpdateInterval ?? 1800)
+		self.environmentUpdateInterval = Int(node?.telemetryConfig?.environmentUpdateInterval ?? 1800)
 		self.environmentMeasurementEnabled = node?.telemetryConfig?.environmentMeasurementEnabled ?? false
 		self.environmentScreenEnabled = node?.telemetryConfig?.environmentScreenEnabled ?? false
 		self.environmentDisplayFahrenheit = node?.telemetryConfig?.environmentDisplayFahrenheit ?? false
 		self.powerMeasurementEnabled = node?.telemetryConfig?.powerMeasurementEnabled ?? false
-		self.powerUpdateInterval = Int(node?.telemetryConfig?.powerUpdateInterval ?? 900)
+		self.powerUpdateInterval = Int(node?.telemetryConfig?.powerUpdateInterval ?? 1800)
 		self.powerScreenEnabled = node?.telemetryConfig?.powerScreenEnabled ?? false
 		self.hasChanges = false
 	}

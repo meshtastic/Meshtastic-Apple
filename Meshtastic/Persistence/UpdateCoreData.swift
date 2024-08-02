@@ -153,7 +153,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			newNode.rssi = packet.rxRssi
 			newNode.viaMqtt = packet.viaMqtt
 
-			if packet.to == 4294967295 || packet.to == UserDefaults.preferredPeripheralNum {
+			if packet.to == Constants.maximumNodeNum || packet.to == UserDefaults.preferredPeripheralNum {
 				newNode.channel = Int32(packet.channel)
 			}
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
@@ -164,7 +164,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			if let newUserMessage = try? User(serializedData: packet.decoded.payload) {
 
 				if newUserMessage.id.isEmpty {
-					if packet.from > Int16.max {
+					if packet.from > Constants.minimumNodeNum {
 						let newUser = createUser(num: Int64(packet.from), context: context)
 						newNode.user = newUser
 					}
@@ -188,20 +188,20 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 								subtitle: "\(newUser.longName ?? "unknown".localized)",
 								content: "New Node has been discovered",
 								target: "nodes",
-								path: "meshtastic://nodes?nodenum=\(newUser.num)"
+								path: "meshtastic:///nodes?nodenum=\(newUser.num)"
 							)
 						]
 						manager.schedule()
 					}
 				}
 			} else {
-				if packet.from > Int16.max {
+				if packet.from > Constants.minimumNodeNum {
 					let newUser = createUser(num: Int64(packet.from), context: context)
 					newNode.user = newUser
 				}
 			}
 
-			if newNode.user == nil && packet.from > Int16.max {
+			if newNode.user == nil && packet.from > Constants.minimumNodeNum {
 				newNode.user = createUser(num: Int64(packet.from), context: context)
 			}
 
@@ -231,7 +231,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			fetchedNode[0].snr = packet.rxSnr
 			fetchedNode[0].rssi = packet.rxRssi
 			fetchedNode[0].viaMqtt = packet.viaMqtt
-			if packet.to == 4294967295 || packet.to == UserDefaults.preferredPeripheralNum {
+			if packet.to == Constants.maximumNodeNum || packet.to == UserDefaults.preferredPeripheralNum {
 				fetchedNode[0].channel = Int32(packet.channel)
 			}
 
@@ -263,8 +263,8 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			}
 			if fetchedNode[0].user == nil {
 				let newUser = createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
-				fetchedNode[0].user! = newUser
-				
+				fetchedNode[0].user? = newUser
+
 			}
 			do {
 				try context.save()

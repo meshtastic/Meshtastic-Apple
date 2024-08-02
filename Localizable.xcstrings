@@ -673,7 +673,10 @@
         }
       }
     },
-    "AirTm" : {
+    "Airtime" : {
+
+    },
+    "Airtime %@%%" : {
 
     },
     "Alert" : {
@@ -1407,6 +1410,9 @@
     "Backup Database" : {
 
     },
+    "Bad" : {
+
+    },
     "Bandwidth" : {
 
     },
@@ -1417,9 +1423,6 @@
 
     },
     "Barometric Pressure" : {
-
-    },
-    "Batt" : {
 
     },
     "Battery Level %" : {
@@ -2783,6 +2786,9 @@
     "Channel Role" : {
 
     },
+    "Channel Utilization %@%% " : {
+
+    },
     "channel.role.disabled" : {
       "extractionState" : "migrated",
       "localizations" : {
@@ -3080,9 +3086,6 @@
 
     },
     "CHG" : {
-
-    },
-    "ChUtil" : {
 
     },
     "Clear" : {
@@ -5050,9 +5053,6 @@
     "Debug Log" : {
 
     },
-    "Debug Logs" : {
-
-    },
     "Debug Logs%@" : {
 
     },
@@ -5192,6 +5192,9 @@
 
     },
     "Delete Node" : {
+
+    },
+    "Delete Node?" : {
 
     },
     "Description" : {
@@ -6812,9 +6815,6 @@
     "Empty" : {
 
     },
-    "Enable MB Tiles" : {
-
-    },
     "Enable Notifications" : {
 
     },
@@ -8264,13 +8264,13 @@
     "How long the screen remains on after the user button is pressed or messages are received." : {
 
     },
-    "How often device metrics are sent out over the mesh. Default is 15 minutes." : {
+    "How often device metrics are sent out over the mesh. Default is 30 minutes." : {
 
     },
-    "How often power metrics are sent out over the mesh. Default is 15 minutes." : {
+    "How often power metrics are sent out over the mesh. Default is 30 minutes." : {
 
     },
-    "How often sensor metrics are sent out over the mesh. Default is 15 minutes." : {
+    "How often sensor metrics are sent out over the mesh. Default is 30 minutes." : {
 
     },
     "How often should we try to get a GPS position." : {
@@ -10844,13 +10844,13 @@
     "Licensed Operator" : {
 
     },
-    "Limit" : {
-
-    },
     "Limit all periodic broadcast intervals especially telemetry and position. If you need to increase hops, do it on nodes at the edges, not the ones in the middle. MQTT is not advised when you are duty cycle restricted because the gateway node is then doing all the work." : {
 
     },
     "Line Series" : {
+
+    },
+    "Loading Logs. . ." : {
 
     },
     "Location: %@" : {
@@ -14632,6 +14632,9 @@
     "Mininum time between detection broadcasts. Default is 45 seconds." : {
 
     },
+    "Minute" : {
+
+    },
     "mode" : {
       "localizations" : {
         "de" : {
@@ -15226,6 +15229,12 @@
         }
       }
     },
+    "Network Status Orange" : {
+
+    },
+    "Network Status Red" : {
+
+    },
     "network.config" : {
       "localizations" : {
         "de" : {
@@ -15294,9 +15303,6 @@
 
     },
     "No Environment Metrics" : {
-
-    },
-    "No Logs Available" : {
 
     },
     "No Positions" : {
@@ -18787,6 +18793,15 @@
     "Secondary" : {
 
     },
+    "Select a channel" : {
+
+    },
+    "Select a conversation" : {
+
+    },
+    "Select a conversation type" : {
+
+    },
     "Select a Trace Route" : {
 
     },
@@ -18853,6 +18868,7 @@
       }
     },
     "select.menu.item" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -20883,9 +20899,6 @@
     "The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long." : {
 
     },
-    "The latest MBTiles file shared with meshtastic will be loaded into the map." : {
-
-    },
     "The maximum interval that can elapse without a node broadcasting a position" : {
 
     },
@@ -22270,9 +22283,6 @@
     "Via Mqtt" : {
 
     },
-    "Volt" : {
-
-    },
     "voltage" : {
       "localizations" : {
         "de" : {
@@ -22330,6 +22340,9 @@
           }
         }
       }
+    },
+    "Volts %@ " : {
+
     },
     "waiting" : {
       "localizations" : {

@@ -1,9 +1,5 @@
 # Meshtastic Apple Clients
 
-<a href="https://apple.co/3Auysep">
-    <img alt="Meshtastic App Store Launch Image" src="meshtastic-1080x1080.png" />
-</a>
-
 ## Overview
 
 SwiftUI client applications for iOS, iPadOS and macOS.
@@ -13,12 +9,14 @@ SwiftUI client applications for iOS, iPadOS and macOS.
 This project is currently using **Xcode 15.4**. 
 
 1. Clone the repo.
+2. Set up git hooks to automatically lint the project when you commit changes.
 2. Open `Meshtastic.xcworkspace`
 2. Build and run the `Meshtastic` target.
 
 ```sh
 git clone git@github.com:meshtastic/Meshtastic-Apple.git
 cd Meshtastic-Apple
+./scripts/setup-hooks.sh
 open Meshtastic.xcworkspace
 ```
 
@@ -26,8 +24,10 @@ open Meshtastic.xcworkspace
 
 ### Supported Operating Systems
 
-* iOS 16+
-* iPadOS 16+
+The last two operating system versions are supported. Currently that is 16 and 17.
+
+* iOS 16.6+
+* iPadOS 16.6+
 * macOS 13+
 
 ### Code Standards
@@ -37,11 +37,16 @@ open Meshtastic.xcworkspace
 - Use Core Data for persistence
 
 ## Updating Protobufs:
-- run:
-  ```bash
-  ./scripts/gen_protos.sh
-  ```
-- build, test, commit changes
+
+1. run
+```bash
+./scripts/gen_protos.sh
+```
+2. Build, test, and commit the changes.
+
+## Release Process
+
+For more information on how a new release of Meshtastic is managed, please refer to [RELEASING.md](./RELEASING.md)
 
 ## License
 

@@ -118,10 +118,6 @@ struct PowerConfig: View {
 			}
 		}
 		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
-
 			Api().loadDeviceHardwareData { (hw) in
 
 				for device in hw {

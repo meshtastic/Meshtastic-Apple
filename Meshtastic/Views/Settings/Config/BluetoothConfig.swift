@@ -107,9 +107,6 @@ struct BluetoothConfig: View {
 			}
 		)
 		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
 			setBluetoothValues()
 			// Need to request a BluetoothConfig from the remote node before allowing changes
 			if let connectedPeripheral = bleManager.connectedPeripheral, let node, node.bluetoothConfig == nil {

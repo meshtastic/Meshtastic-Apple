@@ -14,7 +14,7 @@ struct WidgetsLiveActivity: Widget {
 
         ActivityConfiguration(for: MeshActivityAttributes.self) { context in
 			LiveActivityView(nodeName: context.attributes.name, channelUtilization: context.state.channelUtilization, airtime: context.state.airtime, batteryLevel: context.state.batteryLevel, nodes: 17, nodesOnline: 7, timerRange: context.state.timerRange)
-				.widgetURL(URL(string: "meshtastic://node/\(context.attributes.name)"))
+				.widgetURL(URL(string: "meshtastic:///node/\(context.attributes.name)"))
 
         } dynamicIsland: { context in
             DynamicIsland {
@@ -95,7 +95,7 @@ struct WidgetsLiveActivity: Widget {
 			.contentMargins(.trailing, 32, for: .expanded)
 			.contentMargins([.leading, .top, .bottom], 6, for: .compactLeading)
 			.contentMargins(.all, 6, for: .minimal)
-			.widgetURL(URL(string: "meshtastic://node/\(context.attributes.name)"))
+			.widgetURL(URL(string: "meshtastic:///node/\(context.attributes.name)"))
         }
     }
 }

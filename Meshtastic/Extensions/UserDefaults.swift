@@ -57,7 +57,6 @@ extension UserDefaults {
 		case enableMapTraffic
 		case enableMapPointsOfInterest
 		case enableOfflineMaps
-		case enableOfflineMapsMBTiles
 		case mapTileServer
 		case enableOverlayServer
 		case mapOverlayServer
@@ -120,9 +119,6 @@ extension UserDefaults {
 
 	@UserDefault(.enableOfflineMaps, defaultValue: false)
 	static var enableOfflineMaps: Bool
-
-	@UserDefault(.enableOfflineMapsMBTiles, defaultValue: false)
-	static var enableOfflineMapsMBTiles: Bool
 
 	@UserDefault(.mapTileServer, defaultValue: .openStreetMap)
 	static var mapTileServer: MapTileServer

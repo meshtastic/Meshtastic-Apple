@@ -40,18 +40,19 @@ class LocalNotificationManager {
             content.interruptionLevel = .timeSensitive
 
 			if notification.target != nil {
-				content.userInfo["target"]  = notification.target
+				content.userInfo["target"] = notification.target
 			}
 			if notification.path != nil {
-				content.userInfo["path"]  = notification.path
+				content.userInfo["path"] = notification.path
 			}
 
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
             let request = UNNotificationRequest(identifier: notification.id, content: content, trigger: trigger)
 
             UNUserNotificationCenter.current().add(request) { error in
-
-                guard error == nil else { return }
+				if let error {
+					Logger.services.error("Error Scheduling Notification: \(error.localizedDescription)")
+				}
             }
         }
     }

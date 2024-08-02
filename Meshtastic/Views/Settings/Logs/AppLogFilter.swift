@@ -97,6 +97,7 @@ enum LogLevels: Int, CaseIterable, Identifiable {
 struct AppLogFilter: View {
 
 	@Environment(\.dismiss) private var dismiss
+	@State private var currentDetent = PresentationDetent.medium
 	/// Filters
 	var filterTitle = "App Log Filters"
 	@Binding var categories: Set<Int>
@@ -143,7 +144,9 @@ struct AppLogFilter: View {
 			.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.fraction(1.0)])
+		.presentationDetents([.medium, .large], selection: $currentDetent)
+		.presentationContentInteraction(.scrolls)
 		.presentationDragIndicator(.visible)
+		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 	}
 }

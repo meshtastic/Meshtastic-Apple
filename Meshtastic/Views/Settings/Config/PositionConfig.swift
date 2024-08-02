@@ -377,9 +377,6 @@ struct PositionConfig: View {
 			}
 		)
 		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
 			setPositionValues()
 			supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
 			// Need to request a PositionConfig from the remote node before allowing changes

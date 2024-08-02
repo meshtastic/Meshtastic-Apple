@@ -322,6 +322,14 @@ public enum HardwareModel: SwiftProtobuf.Enum {
   case heltecMeshNodeT114 // = 69
 
   ///
+  /// Sensecap Indicator from Seeed Studio. ESP32-S3 device with TFT and RP2040 coprocessor
+  case sensecapIndicator // = 70
+
+  ///
+  /// Seeed studio T1000-E tracker card. NRF52840 w/ LR1110 radio, GPS, button, buzzer, and sensors.
+  case trackerT1000E // = 71
+
+  ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -403,6 +411,8 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case 67: self = .heltecVisionMasterE213
     case 68: self = .heltecVisionMasterE290
     case 69: self = .heltecMeshNodeT114
+    case 70: self = .sensecapIndicator
+    case 71: self = .trackerT1000E
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -479,6 +489,8 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case .heltecVisionMasterE213: return 67
     case .heltecVisionMasterE290: return 68
     case .heltecMeshNodeT114: return 69
+    case .sensecapIndicator: return 70
+    case .trackerT1000E: return 71
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -560,6 +572,8 @@ extension HardwareModel: CaseIterable {
     .heltecVisionMasterE213,
     .heltecVisionMasterE290,
     .heltecMeshNodeT114,
+    .sensecapIndicator,
+    .trackerT1000E,
     .privateHw,
   ]
 }
@@ -3027,6 +3041,8 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     67: .same(proto: "HELTEC_VISION_MASTER_E213"),
     68: .same(proto: "HELTEC_VISION_MASTER_E290"),
     69: .same(proto: "HELTEC_MESH_NODE_T114"),
+    70: .same(proto: "SENSECAP_INDICATOR"),
+    71: .same(proto: "TRACKER_T1000_E"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }

@@ -13,14 +13,15 @@ import CoreData
 struct NodeMap: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	@StateObject var appState = AppState.shared
+
+	@ObservedObject
+	var router: Router
 	@State var selectedMapLayer: MapLayer = UserDefaults.mapLayer
 	@State var enableMapRecentering: Bool = UserDefaults.enableMapRecentering
 	@State var enableMapRouteLines: Bool = UserDefaults.enableMapRouteLines
 	@State var enableMapNodeHistoryPins: Bool = UserDefaults.enableMapNodeHistoryPins
 	@State var enableOfflineMaps: Bool = UserDefaults.enableOfflineMaps
 	@State var selectedTileServer: MapTileServer = UserDefaults.mapTileServer
-	@State var enableOfflineMapsMBTiles: Bool = UserDefaults.enableOfflineMapsMBTiles
 	@State var enableOverlayServer: Bool = UserDefaults.enableOverlayServer
 	@State var selectedOverlayServer: MapOverlayServer = UserDefaults.mapOverlayServer
 	@State var mapTilesAboveLabels: Bool = UserDefaults.mapTilesAboveLabels
@@ -169,46 +170,32 @@ struct NodeMap: View {
 							}
 							if enableOfflineMaps {
 								VStack(alignment: .leading) {
-									if !enableOfflineMapsMBTiles {
-										Picker(selection: $selectedTileServer,
-											   label: Text("Tile Server")) {
-											ForEach(MapTileServer.allCases, id: \.self) { tsl in
-												Text(tsl.description)
-											}
-										}
-											   .pickerStyle(DefaultPickerStyle())
-											   .onChange(of: (selectedTileServer)) { newSelectedTileServer in
-												   UserDefaults.mapTileServer = newSelectedTileServer
-											   }
-										Text("Attribution:")
-											.fontWeight(.semibold)
-											.font(.footnote)
-										Text(LocalizedStringKey(selectedTileServer.attribution))
-											.font(.footnote)
-											.foregroundColor(.gray)
-											.padding(0)
-										Divider()
-										Toggle(isOn: $mapTilesAboveLabels) {
-											Text("Tiles above Labels")
-										}
-										.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-										.onTapGesture {
-											self.mapTilesAboveLabels.toggle()
-											UserDefaults.mapTilesAboveLabels = self.mapTilesAboveLabels
+									Picker(selection: $selectedTileServer,
+										   label: Text("Tile Server")) {
+										ForEach(MapTileServer.allCases, id: \.self) { tsl in
+											Text(tsl.description)
 										}
 									}
+										   .pickerStyle(DefaultPickerStyle())
+										   .onChange(of: (selectedTileServer)) { newSelectedTileServer in
+											   UserDefaults.mapTileServer = newSelectedTileServer
+										   }
+									Text("Attribution:")
+										.fontWeight(.semibold)
+										.font(.footnote)
+									Text(LocalizedStringKey(selectedTileServer.attribution))
+										.font(.footnote)
+										.foregroundColor(.gray)
+										.padding(0)
 									Divider()
-									Toggle(isOn: $enableOfflineMapsMBTiles) {
-										Text("Enable MB Tiles")
+									Toggle(isOn: $mapTilesAboveLabels) {
+										Text("Tiles above Labels")
 									}
 									.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 									.onTapGesture {
-										self.enableOfflineMapsMBTiles.toggle()
-										UserDefaults.enableOfflineMapsMBTiles = self.enableOfflineMapsMBTiles
+										self.mapTilesAboveLabels.toggle()
+										UserDefaults.mapTilesAboveLabels = self.mapTilesAboveLabels
 									}
-									Text("The latest MBTiles file shared with meshtastic will be loaded into the map.")
-										.font(.footnote)
-										.foregroundColor(.gray)
 								}
 							}
 						}
@@ -240,9 +227,6 @@ struct NodeMap: View {
 		})
 		.onAppear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = true
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
 		})
 		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false
