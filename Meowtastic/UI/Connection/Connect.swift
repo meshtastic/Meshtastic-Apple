@@ -33,17 +33,10 @@ struct Connect: View {
 	var body: some View {
 		NavigationStack {
 			List {
-				if bleManager.isSwitchedOn {
-					known
+				connection
 
-					if !visibleDevices.isEmpty {
-						visible
-					}
-				}
-				else {
-					Text("Bluetooth Off")
-						.foregroundColor(.red)
-						.font(.title)
+				if !visibleDevices.isEmpty {
+					visible
 				}
 			}
 			.navigationTitle("Connection")
@@ -84,101 +77,71 @@ struct Connect: View {
 	}
 
 	@ViewBuilder
-	private var known: some View {
-		Section("Known Devices") {
-			if
-				let connectedPeripheral = bleManager.connectedPeripheral,
-				connectedPeripheral.peripheral.state == .connected
-			{
-				let node = nodes.first(where: { node in
-					node.num == connectedPeripheral.num
-				})
+	private var connection: some View {
+		Section {
+			overallStatus
+			connectedDevice
+		}
+	}
 
-				HStack(alignment: .top, spacing: 8) {
-					avatar()
+	@ViewBuilder
+	private var overallStatus: some View {
+		let on = bleManager.isSwitchedOn
+		let connecting = bleManager.isConnecting
+		let connected = bleManager.isConnected
 
-					VStack(alignment: .leading, spacing: 8) {
-						if node != nil {
-							Text(connectedPeripheral.longName)
-								.font(.title2)
-						}
-						else {
-							Text("N/A")
-								.font(.title2)
-						}
-
-						HStack(spacing: 8) {
-							SignalStrengthIndicator(
-								signalStrength: connectedPeripheral.getSignalStrength(),
-								size: 14,
-								color: .gray
-							)
-
-							if let name = bleManager.connectedPeripheral?.peripheral.name {
-								Text(name)
-									.font(detailInfoFont)
-									.foregroundColor(.gray)
-							}
-						}
-
-						if let loRaConfig = node?.loRaConfig, loRaConfig.regionCode == RegionCodes.unset.rawValue {
-							HStack(spacing: 8) {
-								Image(systemName: "gear.badge.xmark")
-									.font(detailInfoFont)
-									.foregroundColor(.gray)
-
-								Text("LoRa region is not set")
-									.font(detailInfoFont)
-									.foregroundColor(.gray)
-							}
-						}
-
-						HStack(spacing: 8) {
-							if let hwModel = node?.user?.hwModel {
-								Text(hwModel)
-									.font(detailInfoFont)
-									.foregroundColor(.gray)
-							}
-
-							if let version = node?.metadata?.firmwareVersion {
-								Text("v\(version)")
-									.font(detailInfoFont)
-									.foregroundColor(.gray)
-							}
-						}
-					}
+		HStack(alignment: .top, spacing: 8) {
+			if on {
+				if connected {
+					AvatarAbstract(
+						icon: "checkmark.circle",
+						color: .green,
+						size: 64
+					)
+					.padding(.trailing, 10)
 				}
-				.swipeActions(edge: .trailing, allowsFullSwipe: true) {
-					Button(role: .destructive) {
-						if
-							let connectedPeripheral = bleManager.connectedPeripheral,
-							connectedPeripheral.peripheral.state == .connected
-						{
-							bleManager.disconnectPeripheral(reconnect: false)
-						}
-					} label: {
-						Label(
-							"Disconnect",
-							systemImage: "antenna.radiowaves.left.and.right.slash"
-						)
-					}
+				else if connecting {
+					AvatarAbstract(
+						icon: "hourglass.circle",
+						color: .orange,
+						size: 64
+					)
+					.padding(.trailing, 10)
+				}
+				else {
+					AvatarAbstract(
+						icon: "circle.dotted",
+						color: .red,
+						size: 64
+					)
+					.padding(.trailing, 10)
 				}
 			}
 			else {
-				HStack(alignment: .top, spacing: 8) {
-					let connecting = bleManager.isConnecting
+				AvatarAbstract(
+					icon: "nosign",
+					color: .gray,
+					size: 64
+				)
+				.padding(.trailing, 10)
+			}
 
-					avatar(isCommunicating: connecting)
+			VStack(alignment: .leading) {
+				Text("Bluetooth")
+					.font(.title2)
 
-					VStack(alignment: .leading) {
-						if connecting {
-							Text("Connecting")
-								.font(.title2)
-						}
-						else {
-							Text("Not Connected")
-								.font(.title2)
-						}
+				if on {
+					if connected {
+						Text("Connected")
+							.font(detailInfoFont)
+					}
+					else if connecting {
+						Text("Connecting")
+							.font(detailInfoFont)
+					}
+					else {
+						Text("Not Connected")
+							.font(detailInfoFont)
 
 						if bleManager.timeoutTimerCount > 0 {
 							Text("Attempt: \(bleManager.timeoutTimerCount) of 10")
@@ -193,15 +156,101 @@ struct Connect: View {
 						}
 					}
 				}
-				.swipeActions(edge: .trailing, allowsFullSwipe: true) {
-					Button(role: .destructive) {
-						bleManager.cancelPeripheralConnection()
-					} label: {
-						Label(
-							"Abort",
-							systemImage: "antenna.radiowaves.left.and.right.slash"
-						)
+				else {
+					Text("Bluetooth is Disabled")
+						.font(detailInfoFont)
+				}
+			}
+		}
+		.swipeActions(edge: .trailing, allowsFullSwipe: true) {
+			Button(role: .destructive) {
+				bleManager.cancelPeripheralConnection()
+			} label: {
+				Label(
+					"Abort",
+					systemImage: "antenna.radiowaves.left.and.right.slash"
+				)
+			}
+		}
+	}
+	
+	@ViewBuilder
+	private var connectedDevice: some View {
+		if
+			let connectedPeripheral = bleManager.connectedPeripheral,
+			(connectedPeripheral.peripheral.state == .connected || connectedPeripheral.peripheral.state == .connecting)
+		{
+			let node = nodes.first(where: { node in
+				node.num == connectedPeripheral.num
+			})
+
+			HStack(alignment: .top, spacing: 8) {
+				avatar()
+
+				VStack(alignment: .leading, spacing: 8) {
+					if node != nil {
+						Text(connectedPeripheral.longName)
+							.font(.title2)
 					}
+					else {
+						Text("N/A")
+							.font(.title2)
+					}
+
+					HStack(spacing: 8) {
+						SignalStrengthIndicator(
+							signalStrength: connectedPeripheral.getSignalStrength(),
+							size: 14,
+							color: .gray
+						)
+
+						if let name = bleManager.connectedPeripheral?.peripheral.name {
+							Text(name)
+								.font(detailInfoFont)
+								.foregroundColor(.gray)
+						}
+					}
+
+					if let loRaConfig = node?.loRaConfig, loRaConfig.regionCode == RegionCodes.unset.rawValue {
+						HStack(spacing: 8) {
+							Image(systemName: "gear.badge.xmark")
+								.font(detailInfoFont)
+								.foregroundColor(.gray)
+
+							Text("LoRa region is not set")
+								.font(detailInfoFont)
+								.foregroundColor(.gray)
+						}
+					}
+
+					HStack(spacing: 8) {
+						if let hwModel = node?.user?.hwModel {
+							Text(hwModel)
+								.font(detailInfoFont)
+								.foregroundColor(.gray)
+						}
+
+						if let version = node?.metadata?.firmwareVersion {
+							Text("v\(version)")
+								.font(detailInfoFont)
+								.foregroundColor(.gray)
+						}
+					}
+				}
+			}
+			.swipeActions(edge: .trailing, allowsFullSwipe: true) {
+				Button(role: .destructive) {
+					if
+						let connectedPeripheral = bleManager.connectedPeripheral,
+						connectedPeripheral.peripheral.state == .connected
+					{
+						bleManager.disconnectPeripheral(reconnect: false)
+					}
+				} label: {
+					Label(
+						"Disconnect",
+						systemImage: "antenna.radiowaves.left.and.right.slash"
+					)
 				}
 			}
 		}
@@ -268,7 +317,6 @@ struct Connect: View {
 
 	@ViewBuilder
 	private func avatar(
-		isCommunicating: Bool = true,
 		isPreferred: Bool = false
 	) -> some View {
 		ZStack(alignment: .top) {
@@ -282,7 +330,7 @@ struct Connect: View {
 			}
 			else {
 				AvatarAbstract(
-					icon: isCommunicating ? "questionmark" : "antenna.radiowaves.left.and.right.slash",
+					icon: "questionmark",
 					size: 64
 				)
 				.padding([.top, .bottom, .trailing], 10)

@@ -1614,7 +1614,7 @@
     "Bluetooth Config" : {
 
     },
-    "Bluetooth Off" : {
+    "Bluetooth is Disabled" : {
 
     },
     "bluetooth.config" : {
@@ -10298,9 +10298,6 @@
           }
         }
       }
-    },
-    "Known Devices" : {
-
     },
     "Last Heard" : {
 

@@ -3,12 +3,20 @@ import SwiftUI
 struct AvatarAbstract: View {
 	private let name: String?
 	private let icon: String
-	private let background = Color.accentColor
+	private let color: Color?
 	private let size: CGFloat
 
 	// swiftlint:disable:next large_tuple
 	private let corners: (Bool, Bool, Bool, Bool)?
 
+	private var background: Color {
+		if let color {
+			return color
+		}
+		else {
+			return .accentColor
+		}
+	}
 	private var foreground: Color {
 		background.isLight() ? .black : .white
 	}
@@ -63,12 +71,14 @@ struct AvatarAbstract: View {
 	init(
 		_ name: String? = nil,
 		icon: String = "person.fill.turn.down",
+		color: Color? = nil,
 		size: CGFloat = 45,
 		// swiftlint:disable:next large_tuple
 		corners: (Bool, Bool, Bool, Bool)? = nil
 	) {
 		self.name = name
 		self.icon = icon
+		self.color = color
 		self.size = size
 		self.corners = corners
 	}
