@@ -1,9 +1,5 @@
 # Meshtastic Apple Clients
 
-<a href="https://apple.co/3Auysep">
-    <img alt="Meshtastic App Store Launch Image" src="meshtastic-1080x1080.png" />
-</a>
-
 ## Overview
 
 SwiftUI client applications for iOS, iPadOS and macOS.
