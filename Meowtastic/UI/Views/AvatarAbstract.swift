@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AvatarAbstract: View {
 	private let name: String?
+	private let icon: String
 	private let background = Color.accentColor
 	private let size: CGFloat
 
@@ -45,7 +46,7 @@ struct AvatarAbstract: View {
 					.frame(width: size, height: size)
 			}
 			else {
-				Image(systemName: "person.fill.turn.down")
+				Image(systemName: icon)
 					.resizable()
 					.scaledToFit()
 					.foregroundColor(foreground.opacity(0.5))
@@ -61,11 +62,13 @@ struct AvatarAbstract: View {
 
 	init(
 		_ name: String? = nil,
+		icon: String = "person.fill.turn.down",
 		size: CGFloat = 45,
 		// swiftlint:disable:next large_tuple
 		corners: (Bool, Bool, Bool, Bool)? = nil
 	) {
 		self.name = name
+		self.icon = icon
 		self.size = size
 		self.corners = corners
 	}

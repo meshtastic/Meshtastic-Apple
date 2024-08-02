@@ -35,12 +35,12 @@ struct Connect: View {
 	)
 	private var nodes: FetchedResults<NodeInfoEntity>
 
-	private var visibleNodes: [Peripheral] {
-		let peripherals = bleManager.peripherals.filter { device in
+	private var visibleDevices: [Peripheral] {
+		let devices = bleManager.peripherals.filter { device in
 			device.peripheral.state == CBPeripheralState.disconnected
 		}
 
-		return peripherals.sorted(by: {
+		return devices.sorted(by: {
 			$0.name < $1.name
 		})
 	}
@@ -51,7 +51,7 @@ struct Connect: View {
 				if bleManager.isSwitchedOn {
 					known
 
-					if !visibleNodes.isEmpty {
+					if !visibleDevices.isEmpty {
 						visible
 					}
 				}
@@ -105,11 +105,15 @@ struct Connect: View {
 				})
 
 				HStack(alignment: .top, spacing: 8) {
-					avatar
+					avatar()
 
 					VStack(alignment: .leading) {
 						if node != nil {
 							Text(connectedPeripheral.longName)
+								.font(.title2)
+						}
+						else {
+							Text("N/A")
 								.font(.title2)
 						}
 
@@ -188,89 +192,102 @@ struct Connect: View {
 				}
 			}
 			else {
-				if bleManager.isConnecting {
-					HStack(alignment: .top, spacing: 8) {
-						avatar
+				HStack(alignment: .top, spacing: 8) {
+					let connecting = bleManager.isConnecting
 
-						VStack(alignment: .leading) {
+					avatar(isCommunicating: connecting)
+
+					VStack(alignment: .leading) {
+						if connecting {
 							Text("Connecting")
 								.font(.title2)
-
-							if bleManager.timeoutTimerCount > 0 {
-								Text("Attempt: \(bleManager.timeoutTimerCount) of 10")
-									.font(detailInfoFont)
-									.foregroundColor(.gray)
-							}
 						}
-					}
-					.swipeActions(edge: .trailing) {
-						Button(role: .destructive) {
-							bleManager.cancelPeripheralConnection()
-						} label: {
-							Label(
-								"Disconnect",
-								systemImage: "antenna.radiowaves.left.and.right.slash"
-							)
+						else {
+							Text("Not Connected")
+								.font(.title2)
+						}
+
+						if bleManager.timeoutTimerCount > 0 {
+							Text("Attempt: \(bleManager.timeoutTimerCount) of 10")
+								.font(detailInfoFont)
+								.foregroundColor(.gray)
+						}
+
+						if bleManager.lastConnectionError.count > 0 {
+							Text(bleManager.lastConnectionError)
+								.font(detailInfoFont)
+								.foregroundColor(.gray)
 						}
 					}
 				}
-				else {
-					if bleManager.lastConnectionError.count > 0 {
-						Text(bleManager.lastConnectionError)
-							.font(detailInfoFont)
-							.foregroundColor(.red)
-					}
-
-					HStack {
-						Image(systemName: "antenna.radiowaves.left.and.right.slash")
-							.resizable()
-							.symbolRenderingMode(.hierarchical)
-							.foregroundColor(.red)
-							.frame(width: 60, height: 60)
-							.padding(.trailing)
-
-						Text("Not Connected")
-							.font(.title3)
+				.swipeActions(edge: .trailing) {
+					Button(role: .destructive) {
+						bleManager.cancelPeripheralConnection()
+					} label: {
+						Label(
+							"Disconnect",
+							systemImage: "antenna.radiowaves.left.and.right.slash"
+						)
 					}
 				}
+
 			}
 		}
 	}
 
 	@ViewBuilder
 	private var visible: some View {
-		Section(
-			header: Text("Visible Nodes")
-				.font(.title)
-		) {
-			ForEach(visibleNodes) { peripheral in
-				HStack {
-					if UserDefaults.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
-						Image(systemName: "star.fill")
-							.imageScale(.large)
-							.foregroundColor(.yellow)
-							.padding(.trailing)
-					}
-					else {
-						Image(systemName: "circle.fill")
-							.imageScale(.large)
+		Section("Visible Devices") {
+			ForEach(visibleDevices) { peripheral in
+				HStack(alignment: .top, spacing: 8) {
+					let isPreferred = UserDefaults.preferredPeripheralId == peripheral.peripheral.identifier.uuidString
+
+					avatar(isPreferred: isPreferred)
+
+					HStack(spacing: 8) {
+						SignalStrengthIndicator(
+							signalStrength: peripheral.getSignalStrength(),
+							size: 14,
+							color: .gray
+						)
+
+						Text(peripheral.longName)
+							.font(detailInfoFont)
 							.foregroundColor(.gray)
-							.padding(.trailing)
 					}
-
-					Spacer()
-
-					SignalStrengthIndicator(
-						signalStrength: peripheral.getSignalStrength(),
-						size: 64
-					)
 				}
 			}
 		}
 	}
 
+	init (node: NodeInfoEntity? = nil) {
+		self.node = node
+
+		let notificationCenter = UNUserNotificationCenter.current()
+
+		notificationCenter.getNotificationSettings(
+			completionHandler: { settings in
+				if settings.authorizationStatus == .notDetermined {
+					UNUserNotificationCenter.current().requestAuthorization(
+						options: [.alert, .badge, .sound]
+					) { success, error in
+						if success {
+							Logger.services.info("Notifications are all set!")
+						}
+						else if let error = error {
+							Logger.services.error("\(error.localizedDescription)")
+						}
+					}
+				}
+			}
+		)
+	}
+
 	@ViewBuilder
-	private var avatar: some View {
+	private func avatar(
+		isCommunicating: Bool = true,
+		isPreferred: Bool = false
+	) -> some View {
 		ZStack(alignment: .top) {
 			if let node {
 				AvatarNode(
@@ -281,6 +298,7 @@ struct Connect: View {
 			}
 			else {
 				AvatarAbstract(
+					icon: isCommunicating ? "questionmark" : "antenna.radiowaves.left.and.right.slash",
 					size: 64
 				)
 				.padding([.top, .bottom, .trailing], 10)
@@ -322,10 +340,10 @@ struct Connect: View {
 						)
 				}
 			}
-			else {
+			else if isPreferred {
 				HStack(spacing: 0) {
 					Spacer()
-					Image(systemName: "exclamationmark.circle.fill")
+					Image(systemName: "star.circle.fill")
 						.font(.system(size: 24))
 						.foregroundColor(colorScheme == .dark ? .white : .gray)
 						.background(
@@ -336,29 +354,6 @@ struct Connect: View {
 			}
 		}
 		.frame(width: 80, height: 80)
-	}
-
-	init (node: NodeInfoEntity? = nil) {
-		self.node = node
-
-		let notificationCenter = UNUserNotificationCenter.current()
-
-		notificationCenter.getNotificationSettings(
-			completionHandler: { settings in
-				if settings.authorizationStatus == .notDetermined {
-					UNUserNotificationCenter.current().requestAuthorization(
-						options: [.alert, .badge, .sound]
-					) { success, error in
-						if success {
-							Logger.services.info("Notifications are all set!")
-						}
-						else if let error = error {
-							Logger.services.error("\(error.localizedDescription)")
-						}
-					}
-				}
-			}
-		)
 	}
 
 	private func fetchNodeInfo() async {
