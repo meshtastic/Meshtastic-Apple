@@ -31,6 +31,12 @@ struct NodeList: View {
 	@State private var hopsAway: Double = -1.0
 	@State private var roleFilter = false
 	@State private var deviceRoles: Set<Int> = []
+	
+	@State private var isPresentingTraceRouteSentAlert = false
+	@State private var isPresentingPositionSentAlert = false
+	@State private var isPresentingPositionFailedAlert = false
+	@State private var isPresentingDeleteNodeAlert = false
+	@State private var deleteNodeId: Int64 = 0
 
 	var boolFilters: [Bool] {[
 		isOnline,
@@ -66,12 +72,7 @@ struct NodeList: View {
 		node: NodeInfoEntity,
 		connectedNode: NodeInfoEntity?
 	) -> some View {
-		FavoriteNodeButton(
-			bleManager: bleManager,
-			context: context,
-			node: node
-		)
-
+		/// Allow users to mute notifications for a node even if they are not connected
 		if let user = node.user {
 			NodeAlertsButton(
 				context: context,
@@ -79,22 +80,57 @@ struct NodeList: View {
 				user: user
 			)
 		}
-
 		if let connectedNode {
-			ExchangePositionsButton(
+			/// Favoriting a node requires being connected
+			FavoriteNodeButton(
 				bleManager: bleManager,
+				context: context,
 				node: node
 			)
-			TraceRouteButton(
-				bleManager: bleManager,
-				node: node
-			)
-//			DeleteNodeButton(
-//				bleManager: bleManager,
-//				context: context,
-//				connectedNode: connectedNode,
-//				node: node
-//			)
+			/// Don't show trace route, position exchange or delete context menu items for the connected node
+			if connectedNode.num != node.num {
+				Button {
+					let traceRouteSent = bleManager.sendTraceRouteRequest(
+						destNum: node.num,
+						wantResponse: true
+					)
+					if traceRouteSent {
+						isPresentingTraceRouteSentAlert = true
+						DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+							isPresentingTraceRouteSentAlert = false
+						}
+					}
+
+				} label: {
+					Label("Trace Route", systemImage: "signpost.right.and.left")
+				}
+				Button {
+					let positionSent = bleManager.sendPosition(
+						channel: node.channel,
+						destNum: node.num,
+						wantResponse: true
+					)
+					if positionSent {
+						isPresentingPositionSentAlert = true
+						DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+							isPresentingPositionSentAlert = false
+						}
+					} else {
+						isPresentingPositionFailedAlert = true
+						DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+							isPresentingPositionFailedAlert = false
+						}
+					}
+				} label: {
+					Label("Exchange Positions", systemImage: "arrow.triangle.2.circlepath")
+				}
+				Button(role: .destructive) {
+					deleteNodeId = node.num
+					isPresentingDeleteNodeAlert = true
+				} label: {
+					Label("Delete Node", systemImage: "trash")
+				}
+			}
 		}
 	}
 
@@ -150,6 +186,44 @@ struct NodeList: View {
 			.scrollDismissesKeyboard(.immediately)
 			.navigationTitle(String.localizedStringWithFormat("nodes %@".localized, String(nodes.count)))
 			.listStyle(.plain)
+			.alert(
+				"Position Exchange Requested",
+				isPresented: $isPresentingPositionSentAlert) {
+					Button("OK") {	}.keyboardShortcut(.defaultAction)
+				} message: {
+				Text("Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned.")
+			}
+			.alert(
+				"Position Exchange Failed",
+				isPresented: $isPresentingPositionFailedAlert) {
+					Button("OK") {	}.keyboardShortcut(.defaultAction)
+				} message: {
+				Text("Failed to get a valid position to exchange")
+			}
+			.alert(
+				"Trace Route Sent",
+				isPresented: $isPresentingTraceRouteSentAlert) {
+					Button("OK") {	}.keyboardShortcut(.defaultAction)
+				} message: {
+					Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
+			}
+			.confirmationDialog(
+				"are.you.sure",
+				isPresented: $isPresentingDeleteNodeAlert,
+				titleVisibility: .visible
+			) {
+				Button("Delete Node") {
+					let deleteNode = getNodeInfo(id: deleteNodeId, context: context)
+					if connectedNode != nil {
+						if deleteNode != nil {
+							let success = bleManager.removeNode(node: deleteNode!, connectedNodeNum: Int64(bleManager.connectedPeripheral?.num ?? -1))
+							if !success {
+								Logger.data.error("Failed to delete node \(deleteNode?.user?.longName ?? "unknown".localized)")
+							}
+						}
+					}
+				}
+			}
 			.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
 			.navigationBarItems(
 				leading: MeshtasticLogo(),
