@@ -1,11 +1,11 @@
 import CoreBluetooth
 import CoreData
 import CoreLocation
-import MapKit
 import OSLog
 import SwiftUI
 
 struct Connect: View {
+	private let deviceFont = Font.system(size: 18, weight: .regular, design: .rounded)
 	private let detailInfoFont = Font.system(size: 14, weight: .regular, design: .rounded)
 
 	@Environment(\.managedObjectContext)
@@ -44,6 +44,12 @@ struct Connect: View {
 				leading: MeshtasticLogo(),
 				trailing: ConnectedDevice()
 			)
+		}
+		.onAppear {
+			bleManager.startScanning()
+		}
+		.onDisappear {
+			bleManager.stopScanning()
 		}
 		.onChange(of: bleManager.peripherals, initial: true) {
 			Task {
@@ -86,81 +92,9 @@ struct Connect: View {
 
 	@ViewBuilder
 	private var overallStatus: some View {
-		let on = bleManager.isSwitchedOn
-		let connecting = bleManager.isConnecting
-		let connected = bleManager.isConnected
-
 		HStack(alignment: .top, spacing: 8) {
-			if on {
-				if connected {
-					AvatarAbstract(
-						icon: "checkmark.circle",
-						color: .green,
-						size: 64
-					)
-					.padding(.trailing, 10)
-				}
-				else if connecting {
-					AvatarAbstract(
-						icon: "hourglass.circle",
-						color: .orange,
-						size: 64
-					)
-					.padding(.trailing, 10)
-				}
-				else {
-					AvatarAbstract(
-						icon: "circle.dotted",
-						color: .red,
-						size: 64
-					)
-					.padding(.trailing, 10)
-				}
-			}
-			else {
-				AvatarAbstract(
-					icon: "nosign",
-					color: .gray,
-					size: 64
-				)
-				.padding(.trailing, 10)
-			}
-
-			VStack(alignment: .leading) {
-				Text("Bluetooth")
-					.font(.title2)
-
-				if on {
-					if connected {
-						Text("Connected")
-							.font(detailInfoFont)
-					}
-					else if connecting {
-						Text("Connecting")
-							.font(detailInfoFont)
-					}
-					else {
-						Text("Not Connected")
-							.font(detailInfoFont)
-
-						if bleManager.timeoutTimerCount > 0 {
-							Text("Attempt: \(bleManager.timeoutTimerCount) of 10")
-								.font(detailInfoFont)
-								.foregroundColor(.gray)
-						}
-
-						if bleManager.lastConnectionError.count > 0 {
-							Text(bleManager.lastConnectionError)
-								.font(detailInfoFont)
-								.foregroundColor(.gray)
-						}
-					}
-				}
-				else {
-					Text("Bluetooth is Disabled")
-						.font(detailInfoFont)
-				}
-			}
+			bluetoothAvatar
+			bluetoothStatus
 		}
 		.swipeActions(edge: .trailing, allowsFullSwipe: true) {
 			Button(role: .destructive) {
@@ -173,7 +107,7 @@ struct Connect: View {
 			}
 		}
 	}
-	
+
 	@ViewBuilder
 	private var connectedDevice: some View {
 		if
@@ -185,7 +119,7 @@ struct Connect: View {
 			})
 
 			HStack(alignment: .top, spacing: 8) {
-				avatar()
+				connectionAvatar
 
 				VStack(alignment: .leading, spacing: 8) {
 					if node != nil {
@@ -257,68 +191,92 @@ struct Connect: View {
 	}
 
 	@ViewBuilder
-	private var visible: some View {
-		Section("Visible Devices") {
-			ForEach(visibleDevices) { peripheral in
-				HStack(alignment: .top, spacing: 8) {
-					let isPreferred = UserDefaults.preferredPeripheralId == peripheral.peripheral.identifier.uuidString
+	private var bluetoothAvatar: some View {
+		let on = bleManager.isSwitchedOn
+		let connecting = bleManager.isConnecting
+		let connected = bleManager.isConnected
 
-					avatar(isPreferred: isPreferred)
+		if on {
+			if connected {
+				AvatarAbstract(
+					icon: "checkmark.circle",
+					color: .green,
+					size: 64
+				)
+				.padding(.trailing, 10)
+			}
+			else if connecting {
+				AvatarAbstract(
+					icon: "hourglass.circle",
+					color: .orange,
+					size: 64
+				)
+				.padding(.trailing, 10)
+			}
+			else {
+				AvatarAbstract(
+					icon: "circle.dotted",
+					color: .red,
+					size: 64
+				)
+				.padding(.trailing, 10)
+			}
+		}
+		else {
+			AvatarAbstract(
+				icon: "nosign",
+				color: .gray,
+				size: 64
+			)
+			.padding(.trailing, 10)
+		}
+	}
 
-					HStack(spacing: 8) {
-						SignalStrengthIndicator(
-							signalStrength: peripheral.getSignalStrength(),
-							size: 14,
-							color: .gray
-						)
+	@ViewBuilder
+	private var bluetoothStatus: some View {
+		let on = bleManager.isSwitchedOn
+		let connecting = bleManager.isConnecting
+		let connected = bleManager.isConnected
 
-						Text(peripheral.longName)
+		VStack(alignment: .leading) {
+			Text("Bluetooth")
+				.font(.title2)
+
+			if on {
+				if connected {
+					Text("Connected")
+						.font(detailInfoFont)
+				}
+				else if connecting {
+					Text("Connecting")
+						.font(detailInfoFont)
+				}
+				else {
+					Text("Not Connected")
+						.font(detailInfoFont)
+
+					if bleManager.timeoutTimerCount > 0 {
+						Text("Attempt: \(bleManager.timeoutTimerCount) of 10")
+							.font(detailInfoFont)
+							.foregroundColor(.gray)
+					}
+
+					if bleManager.lastConnectionError.count > 0 {
+						Text(bleManager.lastConnectionError)
 							.font(detailInfoFont)
 							.foregroundColor(.gray)
 					}
 				}
-				.swipeActions(edge: .leading, allowsFullSwipe: true) {
-					Button {
-						bleManager.connectTo(peripheral: peripheral.peripheral)
-					} label: {
-						Label(
-							"Connect",
-							systemImage: "antenna.radiowaves.left.and.right"
-						)
-					}
-				}
+			}
+			else {
+				Text("Bluetooth is Disabled")
+					.font(detailInfoFont)
 			}
 		}
 	}
 
-	init (node: NodeInfoEntity? = nil) {
-		self.node = node
-		self.visibleDevices = []
-
-		let notificationCenter = UNUserNotificationCenter.current()
-
-		notificationCenter.getNotificationSettings(
-			completionHandler: { settings in
-				if settings.authorizationStatus == .notDetermined {
-					UNUserNotificationCenter.current().requestAuthorization(
-						options: [.alert, .badge, .sound]
-					) { success, error in
-						if success {
-							Logger.services.info("Notifications are all set!")
-						}
-						else if let error = error {
-							Logger.services.error("\(error.localizedDescription)")
-						}
-					}
-				}
-			}
-		)
-	}
-
 	@ViewBuilder
-	private func avatar(
-		isPreferred: Bool = false
-	) -> some View {
+	private var connectionAvatar: some View {
 		ZStack(alignment: .top) {
 			if let node {
 				AvatarNode(
@@ -372,20 +330,69 @@ struct Connect: View {
 						)
 				}
 			}
-			else if isPreferred {
-				HStack(spacing: 0) {
-					Spacer()
-					Image(systemName: "star.circle.fill")
-						.font(.system(size: 24))
-						.foregroundColor(colorScheme == .dark ? .white : .gray)
-						.background(
-							Circle()
-								.foregroundColor(colorScheme == .dark ? .black : .white)
+		}
+		.frame(width: 80, height: 80)
+	}
+
+	@ViewBuilder
+	private var visible: some View {
+		Section("Visible Devices") {
+			ForEach(visibleDevices) { peripheral in
+				HStack(alignment: .center, spacing: 16) {
+					HStack(spacing: 16) {
+						SignalStrengthIndicator(
+							signalStrength: peripheral.getSignalStrength(),
+							size: 14,
+							color: .gray
 						)
+
+						Text(peripheral.longName)
+							.font(deviceFont)
+							.foregroundColor(.gray)
+					}
+
+					if UserDefaults.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
+						Spacer()
+
+						Image(systemName: "star.fill")
+							.font(deviceFont)
+							.foregroundColor(.gray)
+					}
+				}
+				.swipeActions(edge: .leading, allowsFullSwipe: true) {
+					Button {
+						bleManager.connectTo(peripheral: peripheral.peripheral)
+					} label: {
+						Label(
+							"Connect",
+							systemImage: "antenna.radiowaves.left.and.right"
+						)
+					}
 				}
 			}
 		}
-		.frame(width: 80, height: 80)
+	}
+
+	init (node: NodeInfoEntity? = nil) {
+		self.node = node
+		self.visibleDevices = []
+
+		UNUserNotificationCenter.current().getNotificationSettings(
+			completionHandler: { settings in
+				if settings.authorizationStatus == .notDetermined {
+					UNUserNotificationCenter.current().requestAuthorization(
+						options: [.alert, .badge, .sound]
+					) { success, error in
+						if success {
+							Logger.services.info("Notifications are all set!")
+						}
+						else if let error = error {
+							Logger.services.error("\(error.localizedDescription)")
+						}
+					}
+				}
+			}
+		)
 	}
 
 	private func loadPeripherals() async {

@@ -41,6 +41,7 @@
 		B26C91F22C5970A40029F249 /* LocationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B26C91F12C5970A40029F249 /* LocationHelper.swift */; };
 		B26C91F42C5971880029F249 /* LocationHelperManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B26C91F32C5971880029F249 /* LocationHelperManager.swift */; };
 		B26C91F62C59740F0029F249 /* PositionFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = B26C91F52C59740F0029F249 /* PositionFlags.swift */; };
+		B28CFF7F2C5D029D0012DCB4 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = B28CFF7E2C5D029D0012DCB4 /* README.md */; };
 		B2A5F2FC2C5668FD009457AB /* ClientHistoryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DA2C5668FD009457AB /* ClientHistoryButton.swift */; };
 		B2A5F2FD2C5668FD009457AB /* DeleteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DB2C5668FD009457AB /* DeleteNodeButton.swift */; };
 		B2A5F2FE2C5668FD009457AB /* ExchangePositionsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DC2C5668FD009457AB /* ExchangePositionsButton.swift */; };
@@ -232,6 +233,7 @@
 		B26C91F12C5970A40029F249 /* LocationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHelper.swift; sourceTree = "<group>"; };
 		B26C91F32C5971880029F249 /* LocationHelperManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHelperManager.swift; sourceTree = "<group>"; };
 		B26C91F52C59740F0029F249 /* PositionFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionFlags.swift; sourceTree = "<group>"; };
+		B28CFF7E2C5D029D0012DCB4 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		B2A5F2DA2C5668FD009457AB /* ClientHistoryButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ClientHistoryButton.swift; sourceTree = "<group>"; };
 		B2A5F2DB2C5668FD009457AB /* DeleteNodeButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeleteNodeButton.swift; sourceTree = "<group>"; };
 		B2A5F2DC2C5668FD009457AB /* ExchangePositionsButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExchangePositionsButton.swift; sourceTree = "<group>"; };
@@ -386,6 +388,7 @@
 				DDD43FE12A78C86B0083A3E9 /* MQTT */,
 				DDAF8C5226EB1DF10058C060 /* BLEManager.swift */,
 				DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */,
+				B28CFF7E2C5D029D0012DCB4 /* README.md */,
 			);
 			path = "Circles Of Hell";
 			sourceTree = "<group>";
@@ -839,6 +842,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B28CFF7F2C5D029D0012DCB4 /* README.md in Resources */,
 				DDB75A1A2A05EB67006ED576 /* alpha.png in Resources */,
 				08DD7E532C41CBBD00548159 /* Localizable.xcstrings in Resources */,
 				DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */,

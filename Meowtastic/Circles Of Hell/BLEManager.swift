@@ -121,7 +121,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 	// Connect to a specific peripheral
 	func connectTo(peripheral: CBPeripheral) {
-		stopScanning()
+		// stopScanning()
 		DispatchQueue.main.async {
 			self.isConnecting = true
 			self.lastConnectionError = ""
