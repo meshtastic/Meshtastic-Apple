@@ -712,10 +712,10 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 						Notification(
 							id: ("notification.id.\(UUID().uuidString)"),
 							title: "Critically Low Battery!",
-							subtitle: "AKA \(telemetry.nodeTelemetry?.user?.shortName ?? "UNK")",
+							subtitle: "\(telemetry.nodeTelemetry?.user?.longName ?? "unknown".localized)",
 							content: "Time to charge your radio, there is \(telemetry.batteryLevel)% battery remaining.",
 							target: "nodes",
-							path: "meshtastic:///nodes?nodenum=\(telemetry.nodeTelemetry?.num ?? 0)"
+							path: "meshtastic:///nodes?nodenum=\(telemetry.nodeTelemetry?.num ?? 0)&detail=deviceMetricsLog"
 						)
 					]
 					manager.schedule()
