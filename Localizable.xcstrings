@@ -14632,9 +14632,6 @@
     "Mininum time between detection broadcasts. Default is 45 seconds." : {
 
     },
-    "Minute" : {
-
-    },
     "mode" : {
       "localizations" : {
         "de" : {
@@ -18788,6 +18785,9 @@
 
     },
     "Search" : {
+
+    },
+    "Second" : {
 
     },
     "Secondary" : {

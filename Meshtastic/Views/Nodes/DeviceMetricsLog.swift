@@ -60,7 +60,7 @@ struct DeviceMetricsLog: View {
 									.accessibilityValue("X: \(point.time!), Y: \(point.channelUtilization)")
 									.foregroundStyle(channelUtilizationChartColor)
 									if let chartSelection {
-										RuleMark(x: .value("Minute", chartSelection, unit: .minute))
+										RuleMark(x: .value("Second", chartSelection, unit: .second))
 											.foregroundStyle(.tertiary.opacity(0.5))
 //												.annotation(
 //													position: .automatic,
