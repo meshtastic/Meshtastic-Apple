@@ -20,6 +20,7 @@ struct NodeList: View {
 
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
+	@State private var selectedDetails: NodeDetails?
 	@State private var searchText = ""
 	@State private var viaLora = true
 	@State private var viaMqtt = true
@@ -251,14 +252,16 @@ struct NodeList: View {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: router.navigationState) { state in
+		.onChange(of: router.navigationState) { _ in
 			// Handle deep link routing
 			if case .nodes(let selected) = router.navigationState {
 				self.selectedNode = selected?.selectedNodeNum.flatMap {
 					getNodeInfo(id: $0, context: context)
 				}
+				self.selectedDetails = selected?.details
 			} else {
 				self.selectedNode = nil
+				self.selectedDetails = nil
 			}
 		}
 		.onAppear {
