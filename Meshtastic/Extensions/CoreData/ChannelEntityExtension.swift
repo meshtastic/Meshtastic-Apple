@@ -13,6 +13,7 @@ extension ChannelEntity {
 	var allPrivateMessages: [MessageEntity] {
 		let context = PersistenceController.shared.container.viewContext
 		let fetchRequest = MessageEntity.fetchRequest()
+		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
 		fetchRequest.predicate = NSPredicate(format: "channel == %ld AND  toUser == nil AND isEmoji == false", self.index)
 
 		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
