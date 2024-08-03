@@ -235,7 +235,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				fetchedNode[0].channel = Int32(packet.channel)
 			}
 
-			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
+			if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
 
 				fetchedNode[0].hopsAway = Int32(nodeInfoMessage.hopsAway)
 				fetchedNode[0].favorite = nodeInfoMessage.isFavorite
@@ -290,7 +290,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 
 	do {
 
-		if let positionMessage = try? Position(serializedData: packet.decoded.payload) {
+		if let positionMessage = try? Position(serializedBytes: packet.decoded.payload) {
 
 			/// Don't save empty position packets from null island or apple park
 			if (positionMessage.longitudeI != 0 && positionMessage.latitudeI != 0) && (positionMessage.latitudeI != 373346000 && positionMessage.longitudeI != -1220090000) {
@@ -357,6 +357,21 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					do {
 						try context.save()
 						Logger.data.info("💾 [Position] Saved from Position App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
+						// Notification for position exchanges
+						if packet.to != 4294967295 {
+							let manager = LocalNotificationManager()
+							manager.notifications = [
+								Notification(
+									id: (UUID().uuidString),
+									title: "Position Exchange",
+									subtitle: "\(fetchedNode[0].user?.shortName ?? "unknown".localized)",
+									content: "\(fetchedNode[0].user?.longName ?? "unknown".localized) has shared their location with you.",
+									target: "nodes",
+									path: "meshtastic:///nodes?nodenum=\(packet.from)&detail=nodeMap"
+								)
+							]
+							manager.schedule()
+						}
 					} catch {
 						context.rollback()
 						let nsError = error as NSError
@@ -365,7 +380,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				}
 			} else {
 
-				if (try? NodeInfo(serializedData: packet.decoded.payload)) != nil {
+				if (try? NodeInfo(serializedBytes: packet.decoded.payload)) != nil {
 					upsertNodeInfoPacket(packet: packet, context: context)
 				} else {
 					Logger.data.error("💥 Empty POSITION_APP Packet: \((try? packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
