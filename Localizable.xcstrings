@@ -7180,6 +7180,12 @@
     "Factory reset your device and app? " : {
 
     },
+    "Failed to get a valid position to exchange" : {
+
+    },
+    "Failed to get a valid position to exchange." : {
+
+    },
     "Favorite" : {
 
     },
@@ -16424,6 +16430,12 @@
         }
       }
     },
+    "Position Exchange Failed" : {
+
+    },
+    "Position Exchange Requested" : {
+
+    },
     "Position Flags" : {
 
     },
@@ -20929,6 +20941,9 @@
     "This conversation will be deleted." : {
 
     },
+    "This could take a while, response will appear in the trace route log for the node it was sent to." : {
+
+    },
     "This could take a while. The response will appear in the trace route log for the node it was sent to." : {
 
     },
@@ -22489,7 +22504,7 @@
     "Your MQTT Server must support TLS." : {
 
     },
-    "Your position has been sent with a request for a response with their position." : {
+    "Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned." : {
 
     },
     "Your region has a %lld%% duty cycle. MQTT is not advised when you are duty cycle restricted, the extra traffic will quickly overwhelm your LoRa mesh." : {
