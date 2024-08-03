@@ -118,19 +118,29 @@ struct LogDetail: View {
 							Text("log.message".localized + ":")
 								.font(idiom == .phone ? .caption : .title)
 								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
-							Text(log.composedMessage)
-								.textSelection(.enabled)
-								.font(idiom == .phone ? .body : .title)
-								.foregroundStyle(log.level.color)
-								.padding(.bottom, 5)
+							if log.composedMessage.length < 100 {
+								Text(log.composedMessage)
+									.textSelection(.enabled)
+									.font(idiom == .phone ? .body : .title)
+									.foregroundStyle(log.level.color)
+									.padding(.bottom, 5)
+							}
 						} icon: {
 							Image(systemName: "text.bubble")
 								.symbolRenderingMode(.hierarchical)
 								.font(idiom == .phone ? .callout : .title)
 								.frame(width: 35)
 						}
-						.listRowSeparator(.hidden)
-
+						.listRowSeparator(log.composedMessage.length < 100 ? .hidden : .visible)
+						if log.composedMessage.length >= 100 {
+							HStack {
+								Text(log.composedMessage)
+									.textSelection(.enabled)
+									.font(idiom == .phone ? .body : .title)
+									.foregroundStyle(log.level.color)
+									.padding(.bottom, 5)
+							}
+						}
 					}
 					.listStyle(.plain)
 				}

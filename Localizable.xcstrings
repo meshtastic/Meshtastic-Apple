@@ -109,7 +109,7 @@
     "%@ Channels?" : {
 
     },
-    "%@ config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log." : {
+    "%@ config data was requested over the admin channel but no response has been returned from the remote node." : {
 
     },
     "%@ dB" : {
