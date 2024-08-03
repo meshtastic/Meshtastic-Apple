@@ -14,7 +14,7 @@ import SwiftUI
 
 extension MessageEntity {
 	var timestamp: Date {
-		let time = messageTimestamp 
+		let time = messageTimestamp
 		return Date(timeIntervalSince1970: TimeInterval(time))
 	}
 
@@ -25,6 +25,7 @@ extension MessageEntity {
 	var tapbacks: [MessageEntity] {
 		let context = PersistenceController.shared.container.viewContext
 		let fetchRequest = MessageEntity.fetchRequest()
+		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
 		fetchRequest.predicate = NSPredicate(format: "replyID == %lld AND isEmoji == true", self.messageId)
 
 		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()

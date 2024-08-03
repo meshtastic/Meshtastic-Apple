@@ -12,6 +12,7 @@ extension MyInfoEntity {
 	var messageList: [MessageEntity] {
 		let context = PersistenceController.shared.container.viewContext
 		let fetchRequest = MessageEntity.fetchRequest()
+		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
 		fetchRequest.predicate = NSPredicate(format: "toUser == nil")
 
 		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
