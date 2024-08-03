@@ -189,9 +189,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
 		isConnecting = false
 		isConnected = true
-		if UserDefaults.preferredPeripheralId.count < 1 {
-			UserDefaults.preferredPeripheralId = peripheral.identifier.uuidString
-		}
+
+		UserDefaults.preferredPeripheralId = peripheral.identifier.uuidString
+
 		// Invalidate and reset connection timer count
 		timeoutTimerCount = 0
 		if timeoutTimer != nil {

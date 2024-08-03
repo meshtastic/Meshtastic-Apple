@@ -42,6 +42,10 @@
 		B26C91F42C5971880029F249 /* LocationHelperManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B26C91F32C5971880029F249 /* LocationHelperManager.swift */; };
 		B26C91F62C59740F0029F249 /* PositionFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = B26C91F52C59740F0029F249 /* PositionFlags.swift */; };
 		B28CFF7F2C5D029D0012DCB4 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = B28CFF7E2C5D029D0012DCB4 /* README.md */; };
+		B28CFF812C5E0EBA0012DCB4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B28CFF802C5E0EB90012DCB4 /* GoogleService-Info.plist */; };
+		B28CFF842C5E0F360012DCB4 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = B28CFF832C5E0F360012DCB4 /* FirebaseAnalyticsWithoutAdIdSupport */; };
+		B28CFF862C5E0F360012DCB4 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = B28CFF852C5E0F360012DCB4 /* FirebaseAppCheck */; };
+		B28CFF882C5E0F360012DCB4 /* FirebaseAppDistribution-Beta in Frameworks */ = {isa = PBXBuildFile; productRef = B28CFF872C5E0F360012DCB4 /* FirebaseAppDistribution-Beta */; };
 		B2A5F2FC2C5668FD009457AB /* ClientHistoryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DA2C5668FD009457AB /* ClientHistoryButton.swift */; };
 		B2A5F2FD2C5668FD009457AB /* DeleteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DB2C5668FD009457AB /* DeleteNodeButton.swift */; };
 		B2A5F2FE2C5668FD009457AB /* ExchangePositionsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DC2C5668FD009457AB /* ExchangePositionsButton.swift */; };
@@ -234,6 +238,7 @@
 		B26C91F32C5971880029F249 /* LocationHelperManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHelperManager.swift; sourceTree = "<group>"; };
 		B26C91F52C59740F0029F249 /* PositionFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionFlags.swift; sourceTree = "<group>"; };
 		B28CFF7E2C5D029D0012DCB4 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		B28CFF802C5E0EB90012DCB4 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../../Downloads/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B2A5F2DA2C5668FD009457AB /* ClientHistoryButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ClientHistoryButton.swift; sourceTree = "<group>"; };
 		B2A5F2DB2C5668FD009457AB /* DeleteNodeButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeleteNodeButton.swift; sourceTree = "<group>"; };
 		B2A5F2DC2C5668FD009457AB /* ExchangePositionsButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExchangePositionsButton.swift; sourceTree = "<group>"; };
@@ -358,6 +363,9 @@
 				25A978BA2C13F8ED0003AAE7 /* MeshtasticProtobufs in Frameworks */,
 				C9697FA527933B8C00250207 /* SQLite in Frameworks */,
 				DD0D3D222A55CEB10066DB71 /* CocoaMQTT in Frameworks */,
+				B28CFF862C5E0F360012DCB4 /* FirebaseAppCheck in Frameworks */,
+				B28CFF842C5E0F360012DCB4 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */,
+				B28CFF882C5E0F360012DCB4 /* FirebaseAppDistribution-Beta in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -661,6 +669,7 @@
 		DDC2E15626CE248E0042C5E4 /* Meowtastic */ = {
 			isa = PBXGroup;
 			children = (
+				B28CFF802C5E0EB90012DCB4 /* GoogleService-Info.plist */,
 				B2A5F31D2C567F06009457AB /* App */,
 				B233CA082C5662C200CBD7EF /* Circles Of Hell */,
 				08DD7E4D2C41AC8F00548159 /* Supporting Files */,
@@ -793,6 +802,9 @@
 				C9697FA427933B8C00250207 /* SQLite */,
 				DD0D3D212A55CEB10066DB71 /* CocoaMQTT */,
 				25A978B92C13F8ED0003AAE7 /* MeshtasticProtobufs */,
+				B28CFF832C5E0F360012DCB4 /* FirebaseAnalyticsWithoutAdIdSupport */,
+				B28CFF852C5E0F360012DCB4 /* FirebaseAppCheck */,
+				B28CFF872C5E0F360012DCB4 /* FirebaseAppDistribution-Beta */,
 			);
 			productName = MeshtasticClient;
 			productReference = DDC2E15426CE248E0042C5E4 /* Meowtastic.app */;
@@ -827,6 +839,7 @@
 				DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */,
 				25A978B82C13F8ED0003AAE7 /* XCLocalSwiftPackageReference "MeshtasticProtobufs" */,
 				259792242C2F10B600AD1659 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
+				B28CFF822C5E0F360012DCB4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			productRefGroup = DDC2E15526CE248E0042C5E4 /* Products */;
 			projectDirPath = "";
@@ -848,6 +861,7 @@
 				DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */,
 				DD0E21012B8A6F1300F2D100 /* DeviceHardware.json in Resources */,
 				DDDBC87B2BC62E4E001E8DF7 /* Settings.bundle in Resources */,
+				B28CFF812C5E0EBA0012DCB4 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1251,6 +1265,14 @@
 				minimumVersion = 1.26.0;
 			};
 		};
+		B28CFF822C5E0F360012DCB4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
 		C9697FA327933B8C00250207 /* XCRemoteSwiftPackageReference "SQLite.swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/stephencelis/SQLite.swift.git";
@@ -1273,6 +1295,21 @@
 		25A978B92C13F8ED0003AAE7 /* MeshtasticProtobufs */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MeshtasticProtobufs;
+		};
+		B28CFF832C5E0F360012DCB4 /* FirebaseAnalyticsWithoutAdIdSupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B28CFF822C5E0F360012DCB4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsWithoutAdIdSupport;
+		};
+		B28CFF852C5E0F360012DCB4 /* FirebaseAppCheck */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B28CFF822C5E0F360012DCB4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAppCheck;
+		};
+		B28CFF872C5E0F360012DCB4 /* FirebaseAppDistribution-Beta */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B28CFF822C5E0F360012DCB4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = "FirebaseAppDistribution-Beta";
 		};
 		C9697FA427933B8C00250207 /* SQLite */ = {
 			isa = XCSwiftPackageProductDependency;

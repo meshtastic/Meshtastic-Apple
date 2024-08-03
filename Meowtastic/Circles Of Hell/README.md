@@ -8,4 +8,5 @@ form to allow me to easily pull updates from original repository
 things needed to be done everytime code is pulled from original repository
 
 ## BLEManager
-- `connectTo(peripheral: CBPeripheral)` - do not stop scanning, leave it on Connect screen
+- `connectTo(peripheral)` - do not stop scanning, leave it on Connect screen
+- `centralManager(_, didConnect)` - always save device we connected to as preferred

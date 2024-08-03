@@ -40,8 +40,8 @@ struct Connect: View {
 				}
 			}
 			.navigationTitle("Connection")
+			.navigationBarTitleDisplayMode(.automatic)
 			.navigationBarItems(
-				leading: MeshtasticLogo(),
 				trailing: ConnectedDevice()
 			)
 		}

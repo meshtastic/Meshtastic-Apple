@@ -1,3 +1,4 @@
+import FirebaseCore
 import OSLog
 import SwiftUI
 
@@ -13,6 +14,8 @@ final class MeowtasticDelegate: UIResponder, UIApplicationDelegate, UNUserNotifi
 		UserDefaults.standard.register(defaults: ["meshMapShowNodeHistory": true])
 
 		UNUserNotificationCenter.current().delegate = self
+
+		FirebaseApp.configure()
 
 		return true
 	}
