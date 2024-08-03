@@ -27,8 +27,8 @@ struct NodeDetail: View {
 	var connectedNode: NodeInfoEntity?
 
 	// The node information being displayed on the detail screen
-	@ObservedObject
-	var node: NodeInfoEntity
+	@ObservedObject	var node: NodeInfoEntity
+	@State var selectedDetails: NodeDetails?
 
 	var columnVisibility = NavigationSplitViewVisibility.all
 
@@ -54,7 +54,7 @@ struct NodeDetail: View {
 						}
 						Spacer()
 						Text(String(node.num))
-						.textSelection(.enabled)
+							.textSelection(.enabled)
 					}
 
 					HStack {
@@ -66,7 +66,7 @@ struct NodeDetail: View {
 						}
 						Spacer()
 						Text(node.user?.userId ?? "?")
-						.textSelection(.enabled)
+							.textSelection(.enabled)
 					}
 
 					if let metadata = node.metadata {
@@ -78,7 +78,6 @@ struct NodeDetail: View {
 									.symbolRenderingMode(.multicolor)
 							}
 							Spacer()
-
 							Text(metadata.firmwareVersion ?? "unknown".localized)
 						}
 					}
@@ -186,98 +185,103 @@ struct NodeDetail: View {
 					}
 				}
 				Section("Logs") {
-					// Metrics
-					NavigationLink {
-						DeviceMetricsLog(node: node)
-					} label: {
-						Label {
-							Text("Device Metrics Log")
-						} icon: {
-							Image(systemName: "flipphone")
-								.symbolRenderingMode(.multicolor)
-						}
-					}
-					.disabled(!node.hasDeviceMetrics)
-
-					NavigationLink {
-						if #available (iOS 17, macOS 14, *) {
-							NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
-						} else {
-							NodeMapMapkit(node: node)
-						}
-					} label: {
-						Label {
-							Text("Node Map")
-						} icon: {
-							Image(systemName: "map")
-								.symbolRenderingMode(.multicolor)
-						}
-					}
-					.disabled(!node.hasPositions)
-
-					NavigationLink {
-						PositionLog(node: node)
-					} label: {
-						Label {
-							Text("Position Log")
-						} icon: {
-							Image(systemName: "mappin.and.ellipse")
-								.symbolRenderingMode(.multicolor)
-						}
-					}
-					.disabled(!node.hasPositions)
-
-					NavigationLink {
-						EnvironmentMetricsLog(node: node)
-					} label: {
-						Label {
-							Text("Environment Metrics Log")
-						} icon: {
-							Image(systemName: "cloud.sun.rain")
-								.symbolRenderingMode(.multicolor)
-						}
-					}
-					.disabled(!node.hasEnvironmentMetrics)
-
-					if #available(iOS 17.0, macOS 14.0, *) {
-						NavigationLink {
-							TraceRouteLog(node: node)
-						} label: {
-							Label {
-								Text("Trace Route Log")
-							} icon: {
-								Image(systemName: "signpost.right.and.left")
-									.symbolRenderingMode(.multicolor)
+					ForEach(NodeDetails.allCases) { detail in
+						//	List( selection: $selectedDetails) { detail in
+						switch detail {
+						case .deviceMetricsLog:
+							NavigationLink {
+								DeviceMetricsLog(node: node)
+							} label: {
+								Label {
+									Text("Device Metrics Log")
+								} icon: {
+									Image(systemName: "flipphone")
+										.symbolRenderingMode(.multicolor)
+								}
+							}
+							.disabled(!node.hasDeviceMetrics)
+						case .nodeMap:
+							NavigationLink {
+								if #available (iOS 17, macOS 14, *) {
+									NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
+								} else {
+									NodeMapMapkit(node: node)
+								}
+							} label: {
+								Label {
+									Text("Node Map")
+								} icon: {
+									Image(systemName: "map")
+										.symbolRenderingMode(.multicolor)
+								}
+							}
+							.disabled(!node.hasPositions)
+						case .positionLog:
+							NavigationLink {
+								PositionLog(node: node)
+							} label: {
+								Label {
+									Text("Position Log")
+								} icon: {
+									Image(systemName: "mappin.and.ellipse")
+										.symbolRenderingMode(.multicolor)
+								}
+							}
+							.disabled(!node.hasPositions)
+						case .environmentMetricsLog:
+							NavigationLink {
+								EnvironmentMetricsLog(node: node)
+							} label: {
+								Label {
+									Text("Environment Metrics Log")
+								} icon: {
+									Image(systemName: "cloud.sun.rain")
+										.symbolRenderingMode(.multicolor)
+								}
+							}
+							.disabled(!node.hasEnvironmentMetrics)
+						case .traceRouteLog:
+							if #available(iOS 17.0, macOS 14.0, *) {
+								NavigationLink {
+									TraceRouteLog(node: node)
+								} label: {
+									Label {
+										Text("Trace Route Log")
+									} icon: {
+										Image(systemName: "signpost.right.and.left")
+											.symbolRenderingMode(.multicolor)
+									}
+								}
+								.disabled(node.traceRoutes?.count ?? 0 == 0)
+							}
+						case .detectionSensorLog:
+							NavigationLink {
+								DetectionSensorLog(node: node)
+							} label: {
+								Label {
+									Text("Detection Sensor Log")
+								} icon: {
+									Image(systemName: "sensor")
+										.symbolRenderingMode(.multicolor)
+								}
+							}
+							.disabled(!node.hasDetectionSensorMetrics)
+						case .paxCounterLog:
+							if node.hasPax {
+								NavigationLink {
+									PaxCounterLog(node: node)
+								} label: {
+									Label {
+										Text("paxcounter.log")
+									} icon: {
+										Image(systemName: "figure.walk.motion")
+											.symbolRenderingMode(.multicolor)
+									}
+								}
+								.disabled(!node.hasPax)
 							}
 						}
-						.disabled(node.traceRoutes?.count ?? 0 == 0)
-					}
-
-					NavigationLink {
-						DetectionSensorLog(node: node)
-					} label: {
-						Label {
-							Text("Detection Sensor Log")
-						} icon: {
-							Image(systemName: "sensor")
-								.symbolRenderingMode(.multicolor)
-						}
-					}
-					.disabled(!node.hasDetectionSensorMetrics)
-
-					if node.hasPax {
-						NavigationLink {
-							PaxCounterLog(node: node)
-						} label: {
-							Label {
-								Text("paxcounter.log")
-							} icon: {
-								Image(systemName: "figure.walk.motion")
-									.symbolRenderingMode(.multicolor)
-							}
-						}
-						.disabled(!node.hasPax)
-					}
+				}
 				}
 
 				Section("Actions") {

@@ -27,13 +27,15 @@ struct NodeListNavigationState: Hashable {
 	let details: NodeDetails?
 }
 
-enum NodeDetails: String {
+enum NodeDetails: String, CaseIterable, Identifiable {
+	var id: String { self.rawValue }
 	case deviceMetricsLog
 	case nodeMap
 	case positionLog
 	case environmentMetricsLog
 	case traceRouteLog
 	case detectionSensorLog
+	case paxCounterLog
 }
 
 // MARK: Settings
