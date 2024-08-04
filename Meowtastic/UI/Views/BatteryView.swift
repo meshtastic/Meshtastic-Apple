@@ -23,38 +23,42 @@ struct BatteryView: View {
 
 			if let voltage, let batteryLevel, voltage > 0 || batteryLevel > 0 {
 				HStack {
-					if withLabels {
-						if batteryLevel > 100 {
-							Image(systemName: "powerplug.fill")
-								.font(.footnote)
-								.frame(width: 24)
+					if batteryLevel > 100 {
+						Image(systemName: "powerplug.fill")
+							.font(.system(size: 14, weight: .regular, design: .rounded))
+							.foregroundColor(.gray)
+							.frame(width: 16)
+					}
+					else {
+						if batteryLevel <= 10 {
+							Image(systemName: "battery.0percent")
+								.font(.system(size: 14, weight: .regular, design: .rounded))
+								.foregroundColor(.gray)
+								.frame(width: 16)
+						}
+						else if batteryLevel <= 35 {
+							Image(systemName: "battery.25percent")
+								.font(.system(size: 14, weight: .regular, design: .rounded))
+								.foregroundColor(.gray)
+								.frame(width: 16)
+						}
+						else if batteryLevel <= 60 {
+							Image(systemName: "battery.50percent")
+								.font(.system(size: 14, weight: .regular, design: .rounded))
+								.foregroundColor(.gray)
+								.frame(width: 16)
+						}
+						else if batteryLevel <= 85 {
+							Image(systemName: "battery.75percent")
+								.font(.system(size: 14, weight: .regular, design: .rounded))
+								.foregroundColor(.gray)
+								.frame(width: 16)
 						}
 						else {
-							if batteryLevel <= 10 {
-								Image(systemName: "battery.0percent")
-									.font(.footnote)
-									.frame(width: 24)
-							}
-							else if batteryLevel <= 35 {
-								Image(systemName: "battery.25percent")
-									.font(.footnote)
-									.frame(width: 24)
-							}
-							else if batteryLevel <= 60 {
-								Image(systemName: "battery.50percent")
-									.font(.footnote)
-									.frame(width: 32)
-							}
-							else if batteryLevel <= 85 {
-								Image(systemName: "battery.75percent")
-									.font(.footnote)
-									.frame(width: 24)
-							}
-							else {
-								Image(systemName: "battery.100percent")
-									.font(.footnote)
-									.frame(width: 24)
-							}
+							Image(systemName: "battery.100percent")
+								.font(.system(size: 14, weight: .regular, design: .rounded))
+								.foregroundColor(.gray)
+								.frame(width: 16)
 						}
 					}
 
@@ -63,16 +67,15 @@ struct BatteryView: View {
 						in: minValue...maxValue
 					) { }
 						.gaugeStyle(.accessoryLinearCapacity)
-						.tint(
-							colorScheme == .dark ? .white : .black
-						)
+						.tint(.gray)
 
 					if withLabels {
 						if let voltage = mostRecent?.voltage, voltage > 0, voltage <= 100 {
 							let voltageFormatted = String(format: "%.1f", voltage) + "V"
 
 							Text(voltageFormatted)
-								.font(.footnote)
+								.font(.system(size: 14, weight: .regular, design: .rounded))
+								.foregroundColor(.gray)
 								.lineLimit(1)
 								.fixedSize(horizontal: true, vertical: true)
 						}
@@ -80,7 +83,8 @@ struct BatteryView: View {
 							let socFormatted = String(format: "%.0f", batteryLevel) + "%"
 
 							Text(socFormatted)
-								.font(.footnote)
+								.font(.system(size: 14, weight: .regular, design: .rounded))
+								.foregroundColor(.gray)
 								.fixedSize(horizontal: true, vertical: true)
 								.lineLimit(1)
 						}

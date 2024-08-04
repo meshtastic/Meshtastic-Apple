@@ -1,6 +1,6 @@
-import SwiftUI
-import MapKit
 import CoreData
+import MapKit
+import SwiftUI
 
 struct NodeMapContent: MapContent {
 	@ObservedObject
@@ -10,7 +10,7 @@ struct NodeMapContent: MapContent {
 	@State
 	var showUserLocation: Bool = false
 	@State
-	var mapStyle: MapStyle = MapStyle.standard(elevation: .realistic)
+	var mapStyle = MapStyle.standard(elevation: .realistic)
 	@State
 	var mapCamera = MapCameraPosition.automatic
 	@State

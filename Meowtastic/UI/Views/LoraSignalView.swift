@@ -15,26 +15,24 @@ struct LoraSignalView: View {
 			let signalStrength = LoRaSignal.getStrength(snr: snr, rssi: rssi, preset: preset)
 
 			HStack {
-				if withLabels {
-					Image(systemName: "cellularbars")
-						.font(.footnote)
-						.frame(width: 24)
-				}
+				Image(systemName: "cellularbars")
+					.font(.system(size: 14, weight: .regular, design: .rounded))
+					.foregroundColor(.gray)
+					.frame(width: 16)
 
 				Gauge(
 					value: Double(signalStrength.rawValue),
 					in: 0...3
 				) { }
 					.gaugeStyle(.accessoryLinearCapacity)
-					.tint(
-						colorScheme == .dark ? .white : .black
-					)
+					.tint(.gray)
 
 				if withLabels {
 					let snrFormatted = String(format: "%.0f", snr) + "dB"
 
 					Text(snrFormatted)
-						.font(.footnote)
+						.font(.system(size: 14, weight: .regular, design: .rounded))
+						.foregroundColor(.gray)
 						.lineLimit(1)
 						.fixedSize(horizontal: true, vertical: true)
 				}

@@ -217,8 +217,7 @@ struct NodeList: View {
 				NodeListItem(
 					node: node,
 					connected: connectedNodeNum == node.num,
-					connectedNode: connectedNodeNum,
-					showBattery: true
+					connectedNode: connectedNodeNum
 				)
 				.contextMenu {
 					contextMenuActions(
@@ -277,24 +276,24 @@ struct NodeList: View {
 					size: 64
 				)
 				.padding([.top, .bottom, .trailing], 10)
+
+				HStack(spacing: 0) {
+					Spacer()
+
+					Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
+						.font(.system(size: 24))
+						.foregroundColor(colorScheme == .dark ? .white : .gray)
+						.background(
+							Circle()
+								.foregroundColor(colorScheme == .dark ? .black : .white)
+						)
+				}
 			}
 			else {
 				AvatarAbstract(
 					size: 64
 				)
 				.padding([.top, .bottom, .trailing], 10)
-			}
-
-			HStack(spacing: 0) {
-				Spacer()
-
-				Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
-					.font(.system(size: 24))
-					.foregroundColor(colorScheme == .dark ? .white : .gray)
-					.background(
-						Circle()
-							.foregroundColor(colorScheme == .dark ? .black : .white)
-					)
 			}
 		}
 		.frame(width: 80, height: 80)
@@ -320,8 +319,7 @@ struct NodeList: View {
 				NodeListItem(
 					node: node,
 					connected: bleManager.connectedPeripheral?.num ?? -1 == node.num,
-					connectedNode: bleManager.connectedPeripheral?.num ?? -1,
-					showBattery: true
+					connectedNode: bleManager.connectedPeripheral?.num ?? -1
 				)
 				.contextMenu {
 					contextMenuActions(

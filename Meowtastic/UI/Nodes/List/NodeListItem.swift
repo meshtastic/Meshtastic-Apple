@@ -9,7 +9,6 @@ struct NodeListItem: View {
 	var connected: Bool
 	var connectedNode: Int64
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
-	var showBattery: Bool = false
 
 	private let detailInfoFont = Font.system(size: 14, weight: .regular, design: .rounded)
 	private let detailIconSize: CGFloat = 16
@@ -26,12 +25,14 @@ struct NodeListItem: View {
 			HStack(alignment: .top) {
 				avatar
 
-				VStack(alignment: .leading, spacing: 4) {
+				VStack(alignment: .leading, spacing: 8) {
 					name
 
 					if node.isOnline {
-						signalStrength
-						battery
+						HStack(alignment: .center, spacing: 16) {
+							signalStrength
+							battery
+						}
 					}
 					else {
 						lastHeard
@@ -101,25 +102,30 @@ struct NodeListItem: View {
 			LoraSignalView(
 				snr: node.snr,
 				rssi: node.rssi,
-				preset: modemPreset,
-				withLabels: true
+				preset: modemPreset
 			)
 		}
 		else {
-			EmptyView()
+			Color.clear
 		}
 	}
 
 	@ViewBuilder
 	private var battery: some View {
-		if showBattery {
+		let deviceMetrics = node.telemetries?.filtered(
+			using: NSPredicate(format: "metricsType == 0")
+		)
+		let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
+		let batteryLevel = mostRecent?.batteryLevel
+		let voltage = mostRecent?.voltage
+
+		if let voltage, let batteryLevel, voltage > 0 || batteryLevel > 0 {
 			BatteryView(
-				node: node,
-				withLabels: true
+				node: node
 			)
 		}
 		else {
-			EmptyView()
+			Color.clear
 		}
 	}
 

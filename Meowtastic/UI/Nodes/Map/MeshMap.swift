@@ -1,9 +1,9 @@
-import SwiftUI
 import CoreData
 import CoreLocation
 import Foundation
-import OSLog
 import MapKit
+import OSLog
+import SwiftUI
 
 struct MeshMap: View {
 	@Environment(\.managedObjectContext)
@@ -12,8 +12,8 @@ struct MeshMap: View {
 	var appState = AppState.shared
 	@State
 	var showUserLocation: Bool = true
-
-	@Namespace var mapScope
+	@Namespace
+	var mapScope
 	@State
 	var mapStyle = MapStyle.standard(
 		elevation: .realistic,

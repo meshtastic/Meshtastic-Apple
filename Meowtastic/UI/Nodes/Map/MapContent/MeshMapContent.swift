@@ -2,8 +2,6 @@ import MapKit
 import SwiftUI
 
 struct MeshMapContent: MapContent {
-	var delay: Double = 0
-
 	@StateObject
 	var appState = AppState.shared
 	@Binding
@@ -15,7 +13,7 @@ struct MeshMapContent: MapContent {
 		fetchRequest: PositionEntity.allPositionsFetchRequest(),
 		animation: .easeIn
 	)
-	var positions: FetchedResults<PositionEntity>
+	private var positions: FetchedResults<PositionEntity>
 
 	@Environment(\.colorScheme)
 	private var colorScheme: ColorScheme
