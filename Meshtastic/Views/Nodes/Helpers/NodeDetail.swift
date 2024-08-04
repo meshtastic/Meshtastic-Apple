@@ -65,7 +65,7 @@ struct NodeDetail: View {
 								.symbolRenderingMode(.multicolor)
 						}
 						Spacer()
-						Text(node.user?.userId ?? "?")
+						Text(node.num.toHex())
 						.textSelection(.enabled)
 					}
 

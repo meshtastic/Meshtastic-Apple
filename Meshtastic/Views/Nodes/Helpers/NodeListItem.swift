@@ -186,7 +186,7 @@ struct NodeListItem: View {
 										.frame(width: 30)
 								}
 								if node.hasEnvironmentMetrics {
-									Image(systemName: "cloud.sun.rain.fill")
+									Image(systemName: "cloud.sun.rain")
 										.symbolRenderingMode(.hierarchical)
 										.font(.callout)
 										.frame(width: 30)

@@ -57,6 +57,7 @@
 		DD1933782B084F4200771CD5 /* Measurement.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1933772B084F4200771CD5 /* Measurement.swift */; };
 		DD1B8F402B35E2F10022AABC /* GPSStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1B8F3F2B35E2F10022AABC /* GPSStatus.swift */; };
 		DD1BD0EB2C601795008C0C70 /* CLLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BD0EA2C601795008C0C70 /* CLLocation.swift */; };
+		DD1BD0EE2C603C91008C0C70 /* CustomFormatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BD0ED2C603C91008C0C70 /* CustomFormatters.swift */; };
 		DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */; };
 		DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2160AE28C5552500C17253 /* MQTTConfig.swift */; };
 		DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */; };
@@ -289,6 +290,7 @@
 		DD1933772B084F4200771CD5 /* Measurement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Measurement.swift; sourceTree = "<group>"; };
 		DD1B8F3F2B35E2F10022AABC /* GPSStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPSStatus.swift; sourceTree = "<group>"; };
 		DD1BD0EA2C601795008C0C70 /* CLLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLLocation.swift; sourceTree = "<group>"; };
+		DD1BD0ED2C603C91008C0C70 /* CustomFormatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomFormatters.swift; sourceTree = "<group>"; };
 		DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageList.swift; sourceTree = "<group>"; };
 		DD2160AE28C5552500C17253 /* MQTTConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MQTTConfig.swift; sourceTree = "<group>"; };
 		DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralModel.swift; sourceTree = "<group>"; };
@@ -593,6 +595,14 @@
 			path = CoreData;
 			sourceTree = "<group>";
 		};
+		DD1BD0EC2C603C5B008C0C70 /* Measurement */ = {
+			isa = PBXGroup;
+			children = (
+				DD1BD0ED2C603C91008C0C70 /* CustomFormatters.swift */,
+			);
+			path = Measurement;
+			sourceTree = "<group>";
+		};
 		DD47E3CA26F0E50300029299 /* Nodes */ = {
 			isa = PBXGroup;
 			children = (
@@ -803,6 +813,7 @@
 		DDC2E15626CE248E0042C5E4 /* Meshtastic */ = {
 			isa = PBXGroup;
 			children = (
+				DD1BD0EC2C603C5B008C0C70 /* Measurement */,
 				25F5D5BC2C3F6D7B008036E3 /* Router */,
 				DD7709392AA1ABA1007A8BF0 /* Tips */,
 				DD90860A26F645B700DC5189 /* Meshtastic.entitlements */,
@@ -1308,6 +1319,7 @@
 				DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */,
 				DD2553572855B02500E55709 /* LoRaConfig.swift in Sources */,
 				DDB6ABD928B0A4BA00384BA1 /* BluetoothModes.swift in Sources */,
+				DD1BD0EE2C603C91008C0C70 /* CustomFormatters.swift in Sources */,
 				DDD9E4E4284B208E003777C5 /* UserEntityExtension.swift in Sources */,
 				DD2553592855B52700E55709 /* PositionConfig.swift in Sources */,
 				DD97E96828EFE9A00056DDA4 /* About.swift in Sources */,
