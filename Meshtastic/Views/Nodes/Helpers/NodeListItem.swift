@@ -21,7 +21,6 @@ struct NodeListItem: View {
 			LazyVStack(alignment: .leading) {
 				HStack {
 					VStack(alignment: .leading) {
-
 						CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 70)
 							.padding(.trailing, 5)
 						BatteryLevelCompact(node: node, font: .caption, iconFont: .callout, color: .accentColor)
