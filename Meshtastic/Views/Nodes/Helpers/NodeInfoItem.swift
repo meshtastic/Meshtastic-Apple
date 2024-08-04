@@ -27,7 +27,7 @@ struct NodeInfoItem: View {
 							Image(user.hardwareImage ?? "UNSET")
 								.resizable()
 								.aspectRatio(contentMode: .fit)
-								.frame(width: 75, height: 75)
+								.frame(width: 65, height: 65)
 								.cornerRadius(5)
 							Text(String(node.user!.hwModel ?? "unset".localized))
 								.font(.callout)
@@ -35,14 +35,14 @@ struct NodeInfoItem: View {
 							Image(systemName: "person.crop.circle.badge.questionmark")
 								.resizable()
 								.aspectRatio(contentMode: .fit)
-								.frame(width: 75, height: 75)
+								.frame(width: 65, height: 65)
 								.cornerRadius(5)
 							Text(String("incomplete".localized))
 								.font(.callout)
 						}
 					}
 				}
-				HStack {
+				HStack(alignment: .center) {
 					Spacer()
 					CircleText(
 						text: node.user?.shortName ?? "?",
@@ -50,22 +50,21 @@ struct NodeInfoItem: View {
 						circleSize: 75
 					)
 					if node.snr != 0 && !node.viaMqtt {
-						VStack(alignment: .center) {
+						Spacer()
+						VStack {
 							let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: modemPreset)
 							LoRaSignalStrengthIndicator(signalStrength: signalStrength)
 							Text("Signal \(signalStrength.description)").font(.footnote)
 							Text("SNR \(String(format: "%.2f", node.snr))dB")
 								.foregroundColor(getSnrColor(snr: node.snr, preset: modemPreset))
-								.font(.caption2)
+								.font(.caption)
 							Text("RSSI \(node.rssi)dB")
 								.foregroundColor(getRssiColor(rssi: node.rssi))
 								.font(.caption)
 						}
-						.frame(minWidth: 110, maxWidth: 175)
-					} else {
-						Spacer()
 					}
 					if node.telemetries?.count ?? 0 > 0 {
+						Spacer()
 						BatteryGauge(node: node)
 					}
 					Spacer()
