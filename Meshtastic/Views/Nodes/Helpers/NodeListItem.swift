@@ -99,6 +99,17 @@ struct NodeListItem: View {
 												DistanceText(meters: metersAway)
 													.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 													.foregroundColor(.gray)
+												let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: CLLocation(latitude: lastPostion.coordinate.latitude, longitude: lastPostion.coordinate.longitude))
+												let headingDegrees = Angle.degrees(trueBearing)
+												Image(systemName: "location.north.circle.fill")
+													.font(.caption)
+													.symbolRenderingMode(.multicolor)
+													.clipShape(Circle())
+													.rotationEffect(headingDegrees)
+												let heading = Measurement(value: trueBearing, unit: UnitAngle.degrees)
+												Text("\(heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0)))))")
+													.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+													.foregroundColor(.gray)
 											}
 										}
 									} else {
@@ -114,6 +125,17 @@ struct NodeListItem: View {
 											DistanceText(meters: metersAway)
 												.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 												.foregroundColor(.secondary)
+											let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: CLLocation(latitude: lastPostion.coordinate.latitude, longitude: lastPostion.coordinate.longitude))
+											let headingDegrees = Angle.degrees(trueBearing)
+											Image(systemName: "location.north.circle.fill")
+												.font(.caption)
+												.symbolRenderingMode(.multicolor)
+												.clipShape(Circle())
+												.rotationEffect(headingDegrees)
+											let heading = Measurement(value: trueBearing, unit: UnitAngle.degrees)
+											Text("\(heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0)))))")
+												.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+												.foregroundColor(.gray)
 										}
 									}
 								}
