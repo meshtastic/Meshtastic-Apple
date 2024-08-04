@@ -28,8 +28,9 @@ struct NodeDetail: View {
 
 	// The node information being displayed on the detail screen
 	@ObservedObject	var node: NodeInfoEntity
-	@State var selectedDetails: NodeDetails?
-
+	//private var selectedNodeDetails: Binding<NodeDetails>? = nil
+	
+	@State private var selectedNodeDetails: NodeDetails?
 	var columnVisibility = NavigationSplitViewVisibility.all
 
 	var body: some View {
