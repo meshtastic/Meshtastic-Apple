@@ -121,12 +121,10 @@ struct NodeList: View {
 	@ViewBuilder
 	private var summary: some View {
 		VStack(alignment: .leading, spacing: 4) {
-			if let connectedNode {
-				connectedNodeListItem(for: connectedNode)
+			connectedNodeListItem
 
-				Divider()
-					.foregroundColor(.gray)
-			}
+			Divider()
+				.foregroundColor(.gray)
 
 			Text("Online: \(onlineNodes) nodes")
 				.font(.system(size: 12, weight: .regular))
@@ -234,6 +232,75 @@ struct NodeList: View {
 	}
 
 	@ViewBuilder
+	private var connectedNodeListItem: some View {
+		NavigationLink {
+			if let connectedNode {
+				NodeDetail(node: connectedNode)
+			}
+			else {
+				Connect()
+			}
+		} label: {
+			HStack(alignment: .top) {
+				connectedNodeAvatar
+
+				VStack(alignment: .leading, spacing: 4) {
+					if let connectedNode {
+						Text(connectedNode.user?.longName ?? "Unknown")
+							.lineLimit(2)
+							.fontWeight(.medium)
+							.font(.title2)
+
+						BatteryView(
+							node: connectedNode,
+							withLabels: true
+						)
+					}
+					else {
+						Text("Not connected... yet")
+							.lineLimit(1)
+							.fontWeight(.medium)
+							.font(.title2)
+					}
+				}
+				.frame(alignment: .leading)
+			}
+		}
+	}
+
+	@ViewBuilder
+	private var connectedNodeAvatar: some View {
+		ZStack(alignment: .top) {
+			if let connectedNode {
+				AvatarNode(
+					connectedNode,
+					size: 64
+				)
+				.padding([.top, .bottom, .trailing], 10)
+			}
+			else {
+				AvatarAbstract(
+					size: 64
+				)
+				.padding([.top, .bottom, .trailing], 10)
+			}
+
+			HStack(spacing: 0) {
+				Spacer()
+
+				Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
+					.font(.system(size: 24))
+					.foregroundColor(colorScheme == .dark ? .white : .gray)
+					.background(
+						Circle()
+							.foregroundColor(colorScheme == .dark ? .black : .white)
+					)
+			}
+		}
+		.frame(width: 80, height: 80)
+	}
+
+	@ViewBuilder
 	private func nodeList(online: Bool = true) -> some View {
 		let nodeList = nodes.filter { node in
 			node.num != connectedNodeNum && !suggestedNodes.contains(node) && node.isOnline == online
@@ -306,55 +373,6 @@ struct NodeList: View {
 				node: node
 			)
 		}
-	}
-
-	@ViewBuilder
-	private func connectedNodeListItem(for node: NodeInfoEntity) -> some View {
-		NavigationLink {
-			NodeDetail(node: node)
-		} label: {
-			HStack(alignment: .top) {
-				connectedNodeAvatar(for: node)
-
-				VStack(alignment: .leading, spacing: 4) {
-					Text(node.user?.longName ?? "Unknown")
-						.lineLimit(2)
-						.fontWeight(.medium)
-						.font(.title2)
-						.minimumScaleFactor(0.5)
-						.frame(width: .infinity)
-
-					BatteryView(
-						node: node,
-						withLabels: true
-					)
-				}
-				.frame(maxWidth: .infinity, alignment: .leading)
-			}
-		}
-	}
-
-	@ViewBuilder
-	private func connectedNodeAvatar(for node: NodeInfoEntity) -> some View {
-		ZStack(alignment: .top) {
-			AvatarNode(
-				node,
-				size: 48
-			)
-			.padding([.top, .bottom, .trailing], 6)
-
-			HStack(spacing: 0) {
-				Spacer()
-				Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
-					.font(.system(size: 16))
-					.foregroundColor(colorScheme == .dark ? .white : .gray)
-					.background(
-						Circle()
-							.foregroundColor(colorScheme == .dark ? .black : .white)
-					)
-			}
-		}
-		.frame(width: 60, height: 60)
 	}
 
 	private func countNodes() async {

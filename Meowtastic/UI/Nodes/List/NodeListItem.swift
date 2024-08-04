@@ -45,7 +45,7 @@ struct NodeListItem: View {
 					NodeIconListView(connectedNode: connectedNode, node: node)
 						.padding(.top, 8)
 				}
-				.frame(maxWidth: .infinity, alignment: .leading)
+				.frame(alignment: .leading)
 			}
 		}
 	}
@@ -93,8 +93,6 @@ struct NodeListItem: View {
 			.lineLimit(2)
 			.fontWeight(.medium)
 			.font(.title2)
-			.minimumScaleFactor(0.5)
-			.frame(width: .infinity)
 	}
 
 	@ViewBuilder

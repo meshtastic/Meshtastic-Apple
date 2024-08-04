@@ -27,27 +27,33 @@ struct BatteryView: View {
 						if batteryLevel > 100 {
 							Image(systemName: "powerplug.fill")
 								.font(.footnote)
+								.frame(width: 24)
 						}
 						else {
 							if batteryLevel <= 10 {
 								Image(systemName: "battery.0percent")
 									.font(.footnote)
+									.frame(width: 24)
 							}
 							else if batteryLevel <= 35 {
 								Image(systemName: "battery.25percent")
 									.font(.footnote)
+									.frame(width: 24)
 							}
 							else if batteryLevel <= 60 {
 								Image(systemName: "battery.50percent")
 									.font(.footnote)
+									.frame(width: 32)
 							}
 							else if batteryLevel <= 85 {
 								Image(systemName: "battery.75percent")
 									.font(.footnote)
+									.frame(width: 24)
 							}
 							else {
 								Image(systemName: "battery.100percent")
 									.font(.footnote)
+									.frame(width: 24)
 							}
 						}
 					}
@@ -68,17 +74,15 @@ struct BatteryView: View {
 							Text(voltageFormatted)
 								.font(.footnote)
 								.lineLimit(1)
-								.minimumScaleFactor(0.5)
-								.frame(width: 40)
+								.fixedSize(horizontal: true, vertical: true)
 						}
 						else {
 							let socFormatted = String(format: "%.0f", batteryLevel) + "%"
 
 							Text(socFormatted)
 								.font(.footnote)
+								.fixedSize(horizontal: true, vertical: true)
 								.lineLimit(1)
-								.minimumScaleFactor(0.5)
-								.frame(width: 40)
 						}
 					}
 				}

@@ -15002,6 +15002,9 @@
     "Not Connected" : {
 
     },
+    "Not connected... yet" : {
+
+    },
     "not.connected" : {
       "extractionState" : "stale",
       "localizations" : {

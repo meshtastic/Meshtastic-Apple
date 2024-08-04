@@ -18,6 +18,7 @@ struct LoraSignalView: View {
 				if withLabels {
 					Image(systemName: "cellularbars")
 						.font(.footnote)
+						.frame(width: 24)
 				}
 
 				Gauge(
@@ -31,11 +32,11 @@ struct LoraSignalView: View {
 
 				if withLabels {
 					let snrFormatted = String(format: "%.0f", snr) + "dB"
+
 					Text(snrFormatted)
 						.font(.footnote)
 						.lineLimit(1)
-						.minimumScaleFactor(0.5)
-						.frame(width: 40)
+						.fixedSize(horizontal: true, vertical: true)
 				}
 			}
 		}
