@@ -35,6 +35,7 @@ struct NodeList: View {
 		sortDescriptors: [
 			NSSortDescriptor(key: "favorite", ascending: false),
 			NSSortDescriptor(key: "lastHeard", ascending: false),
+			NSSortDescriptor(key: "hopsAway", ascending: true),
 			NSSortDescriptor(key: "user.longName", ascending: true)
 		],
 		animation: .default
@@ -53,9 +54,9 @@ struct NodeList: View {
 	private var suggestedNodes: [NodeInfoEntity] {
 		let connectedNodeNum = Int(bleManager.connectedPeripheral?.num ?? 0)
 		return nodes.filter { node in
-				node.favorite
-				|| node.num == connectedNodeNum
-				|| (node.isOnline && !node.viaMqtt && node.hopsAway == 0)
+			node.num != connectedNodeNum
+			&& (node.favorite
+				|| (node.isOnline && !node.viaMqtt && node.hopsAway == 0))
 		}
 	}
 
@@ -74,7 +75,7 @@ struct NodeList: View {
 				prompt: "Find a node"
 			)
 			.disableAutocorrection(true)
-			.scrollDismissesKeyboard(.immediately)
+			.scrollDismissesKeyboard(.interactively)
 			.navigationTitle("Nodes")
 			.navigationBarItems(
 				leading: MeshtasticLogo(),
@@ -120,6 +121,13 @@ struct NodeList: View {
 	@ViewBuilder
 	private var summary: some View {
 		VStack(alignment: .leading, spacing: 4) {
+			if let connectedNode {
+				connectedNodeListItem(for: connectedNode)
+
+				Divider()
+					.foregroundColor(.gray)
+			}
+
 			Text("Online: \(onlineNodes) nodes")
 				.font(.system(size: 12, weight: .regular))
 				.foregroundColor(colorScheme == .dark ? .white : .black)
@@ -203,11 +211,11 @@ struct NodeList: View {
 	private var suggestedList: some View {
 		Section(
 			header: listHeader(
-				title: "In Case of Apocalypse",
+				title: "Favorites & Reachable",
 				nodesCount: suggestedNodes.count
 			)
 		) {
-			ForEach(suggestedNodes, id: \.num) { node in
+			ForEach(suggestedNodes, id: \.id) { node in
 				NodeListItem(
 					node: node,
 					connected: connectedNodeNum == node.num,
@@ -228,7 +236,7 @@ struct NodeList: View {
 	@ViewBuilder
 	private func nodeList(online: Bool = true) -> some View {
 		let nodeList = nodes.filter { node in
-			!suggestedNodes.contains(node) && node.isOnline == online
+			node.num != connectedNodeNum && !suggestedNodes.contains(node) && node.isOnline == online
 		}
 
 		Section(
@@ -241,7 +249,7 @@ struct NodeList: View {
 				$0.num == connectedNodeNum
 			})
 
-			ForEach(nodeList, id: \.num) { node in
+			ForEach(nodeList, id: \.id) { node in
 				NodeListItem(
 					node: node,
 					connected: bleManager.connectedPeripheral?.num ?? -1 == node.num,
@@ -298,6 +306,55 @@ struct NodeList: View {
 				node: node
 			)
 		}
+	}
+
+	@ViewBuilder
+	private func connectedNodeListItem(for node: NodeInfoEntity) -> some View {
+		NavigationLink {
+			NodeDetail(node: node)
+		} label: {
+			HStack(alignment: .top) {
+				connectedNodeAvatar(for: node)
+
+				VStack(alignment: .leading, spacing: 4) {
+					Text(node.user?.longName ?? "Unknown")
+						.lineLimit(2)
+						.fontWeight(.medium)
+						.font(.title2)
+						.minimumScaleFactor(0.5)
+						.frame(width: .infinity)
+
+					BatteryView(
+						node: node,
+						withLabels: true
+					)
+				}
+				.frame(maxWidth: .infinity, alignment: .leading)
+			}
+		}
+	}
+
+	@ViewBuilder
+	private func connectedNodeAvatar(for node: NodeInfoEntity) -> some View {
+		ZStack(alignment: .top) {
+			AvatarNode(
+				node,
+				size: 48
+			)
+			.padding([.top, .bottom, .trailing], 6)
+
+			HStack(spacing: 0) {
+				Spacer()
+				Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
+					.font(.system(size: 16))
+					.foregroundColor(colorScheme == .dark ? .white : .gray)
+					.background(
+						Circle()
+							.foregroundColor(colorScheme == .dark ? .black : .white)
+					)
+			}
+		}
+		.frame(width: 60, height: 60)
 	}
 
 	private func countNodes() async {
