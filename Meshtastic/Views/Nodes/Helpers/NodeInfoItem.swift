@@ -32,11 +32,11 @@ struct NodeInfoItem: View {
 						Image(user.hardwareImage ?? "UNSET")
 							.resizable()
 							.aspectRatio(contentMode: .fit)
-							.frame(width: 75, height: 75)
+							.frame(width: 65, height: 65)
 							.cornerRadius(5)
 						Text(String(node.user!.hwModel ?? "unset".localized))
 							.font(.caption2)
-							.frame(maxWidth: 100)
+							.frame(maxWidth: 80)
 					} else {
 						Image(systemName: "person.crop.circle.badge.questionmark")
 							.resizable()
@@ -60,17 +60,15 @@ struct NodeInfoItem: View {
 						.font(.caption2)
 					Text("RSSI \(node.rssi)dB")
 						.foregroundColor(getRssiColor(rssi: node.rssi))
-						.font(.caption2)
+						.font(.caption)
 				}
-				.frame(minWidth: 100, maxWidth: 140)
+				.frame(minWidth: 110, maxWidth: 175)
 			}
 
 			if node.telemetries?.count ?? 0 > 0 {
 				BatteryGauge(node: node)
-					.padding()
 			}
 			Spacer()
 		}
-		.padding(.leading)
 	}
 }
