@@ -5,6 +5,10 @@ struct Content: View {
 	private var bleManager: BLEManager
 	@StateObject
 	private var appState = AppState.shared
+	@State
+	private var connectPresented = false
+	@State
+	private var connectWasDismissed = false
 
 	@FetchRequest(
 		sortDescriptors: [
@@ -28,39 +32,51 @@ struct Content: View {
 	}
 
 	var body: some View {
-		if !bleManager.isSubscribed {
-			Connect()
+		TabView(selection: $appState.tabSelection) {
+			Messages()
+				.tabItem {
+					Image(systemName: "message")
+				}
+				.tag(Tab.messages)
+				.badge(appState.totalUnreadMessages)
+				.badgeProminence(.standard)
+
+			NodeList()
+				.tabItem {
+					Image(systemName: "flipphone")
+				}
+				.tag(Tab.nodes)
+				.badge(nodeOnlineCount)
+				.badgeProminence(.decreased)
+
+			MeshMap()
+				.tabItem {
+					Image(systemName: "map")
+				}
+				.tag(Tab.map)
+
+			Settings()
+				.tabItem {
+					Image(systemName: "gearshape")
+				}
+				.tag(Tab.settings)
 		}
-		else {
-			TabView(selection: $appState.tabSelection) {
-				Messages()
-					.tabItem {
-						Image(systemName: "message")
-					}
-					.tag(Tab.messages)
-					.badge(appState.totalUnreadMessages)
-					.badgeProminence(.standard)
-
-				NodeList()
-					.tabItem {
-						Image(systemName: "flipphone")
-					}
-					.tag(Tab.nodes)
-					.badge(nodeOnlineCount)
-					.badgeProminence(.decreased)
-
-				MeshMap()
-					.tabItem {
-						Image(systemName: "map")
-					}
-					.tag(Tab.map)
-
-				Settings()
-					.tabItem {
-						Image(systemName: "gearshape")
-					}
-					.tag(Tab.settings)
+		.onChange(of: bleManager.isSubscribed, initial: true) {
+			if bleManager.isSubscribed {
+				connectWasDismissed = false
+				connectPresented = false
 			}
+			else if !connectWasDismissed {
+				connectPresented = true
+			}
+		}
+		.sheet(isPresented: $connectPresented) {
+			connectPresented = false
+			connectWasDismissed = true
+		} content: {
+			Connect(isInSheet: true)
+				.presentationDetents([.medium])
+				.presentationDragIndicator(.visible)
 		}
 	}
 }

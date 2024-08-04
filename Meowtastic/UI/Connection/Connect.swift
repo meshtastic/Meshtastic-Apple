@@ -5,6 +5,7 @@ import OSLog
 import SwiftUI
 
 struct Connect: View {
+	private let isInSheet: Bool
 	private let deviceFont = Font.system(size: 18, weight: .regular, design: .rounded)
 	private let detailInfoFont = Font.system(size: 14, weight: .regular, design: .rounded)
 
@@ -32,18 +33,31 @@ struct Connect: View {
 
 	var body: some View {
 		NavigationStack {
-			List {
-				connection
-
-				if !visibleDevices.isEmpty {
-					visible
+			if isInSheet {
+				List {
+					connection
+					
+					if !visibleDevices.isEmpty {
+						visible
+					}
 				}
+				.navigationTitle("Connection")
+				.navigationBarTitleDisplayMode(.inline)
 			}
-			.navigationTitle("Connection")
-			.navigationBarTitleDisplayMode(.automatic)
-			.navigationBarItems(
-				trailing: ConnectedDevice()
-			)
+			else {
+				List {
+					connection
+					
+					if !visibleDevices.isEmpty {
+						visible
+					}
+				}
+				.navigationTitle("Connection")
+				.navigationBarTitleDisplayMode(.automatic)
+				.navigationBarItems(
+					trailing: ConnectedDevice()
+				)
+			}
 		}
 		.onAppear {
 			bleManager.startScanning()
@@ -77,7 +91,7 @@ struct Connect: View {
 				minimumVersion: bleManager.minimumVersion,
 				version: bleManager.connectedVersion
 			)
-			.presentationDetents([.large])
+			.presentationDetents([.medium])
 			.presentationDragIndicator(.automatic)
 		}
 	}
@@ -112,7 +126,7 @@ struct Connect: View {
 	private var connectedDevice: some View {
 		if
 			let connectedPeripheral = bleManager.connectedPeripheral,
-			(connectedPeripheral.peripheral.state == .connected || connectedPeripheral.peripheral.state == .connecting)
+			connectedPeripheral.peripheral.state == .connected || connectedPeripheral.peripheral.state == .connecting
 		{
 			let node = nodes.first(where: { node in
 				node.num == connectedPeripheral.num
@@ -367,8 +381,12 @@ struct Connect: View {
 		}
 	}
 
-	init (node: NodeInfoEntity? = nil) {
+	init(
+		node: NodeInfoEntity? = nil,
+		isInSheet: Bool = false
+	) {
 		self.node = node
+		self.isInSheet = isInSheet
 		self.visibleDevices = []
 
 		UNUserNotificationCenter.current().getNotificationSettings(
