@@ -91,10 +91,10 @@ struct Meowtastic: App {
 
 						let path = appState.navigationPath ?? ""
 						if path.starts(with: "meshtastic:///map") {
-							AppState.shared.tabSelection = Tab.map
+							AppState.shared.tabSelection = TabTag.map
 						}
 						else if path.starts(with: "meshtastic:///nodes") {
-							AppState.shared.tabSelection = Tab.nodes
+							AppState.shared.tabSelection = TabTag.nodes
 						}
 
 					}

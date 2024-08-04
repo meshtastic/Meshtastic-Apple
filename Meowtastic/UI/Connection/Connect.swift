@@ -36,7 +36,7 @@ struct Connect: View {
 			if isInSheet {
 				List {
 					connection
-					
+
 					if !visibleDevices.isEmpty {
 						visible
 					}
@@ -47,7 +47,7 @@ struct Connect: View {
 			else {
 				List {
 					connection
-					
+
 					if !visibleDevices.isEmpty {
 						visible
 					}

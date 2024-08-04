@@ -1,6 +1,6 @@
 import Foundation
 
-enum Tab: Hashable {
+enum TabTag: Hashable {
 	case messages
 	case nodes
 	case map

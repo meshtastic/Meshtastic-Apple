@@ -1,7 +1,7 @@
 import OSLog
 import SwiftUI
 
-struct Settings: View {
+struct Options: View {
 	@Environment(\.managedObjectContext)
 	private var context
 	@EnvironmentObject
@@ -77,7 +77,7 @@ struct Settings: View {
 					connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? preferredNodeNum : 0)
 				}
 			}
-			.navigationTitle("Settings")
+			.navigationTitle("Options")
 			.navigationBarItems(
 				leading: MeshtasticLogo(),
 				trailing: ConnectedDevice()

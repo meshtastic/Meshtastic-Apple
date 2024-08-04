@@ -35,31 +35,31 @@ struct Content: View {
 		TabView(selection: $appState.tabSelection) {
 			Messages()
 				.tabItem {
-					Image(systemName: "message")
+					Label("Messages", systemImage: "message")
 				}
-				.tag(Tab.messages)
+				.tag(TabTag.messages)
 				.badge(appState.totalUnreadMessages)
 				.badgeProminence(.standard)
 
 			NodeList()
 				.tabItem {
-					Image(systemName: "flipphone")
+					Label("Nodes", systemImage: "flipphone")
 				}
-				.tag(Tab.nodes)
+				.tag(TabTag.nodes)
 				.badge(nodeOnlineCount)
 				.badgeProminence(.decreased)
 
 			MeshMap()
 				.tabItem {
-					Image(systemName: "map")
+					Label("Mesh", systemImage: "map")
 				}
-				.tag(Tab.map)
+				.tag(TabTag.map)
 
-			Settings()
+			Options()
 				.tabItem {
-					Image(systemName: "gearshape")
+					Label("Options", systemImage: "gearshape")
 				}
-				.tag(Tab.settings)
+				.tag(TabTag.settings)
 		}
 		.onChange(of: bleManager.isSubscribed, initial: true) {
 			if bleManager.isSubscribed {
@@ -75,7 +75,7 @@ struct Content: View {
 			connectWasDismissed = true
 		} content: {
 			Connect(isInSheet: true)
-				.presentationDetents([.medium])
+				.presentationDetents([.large])
 				.presentationDragIndicator(.visible)
 		}
 	}

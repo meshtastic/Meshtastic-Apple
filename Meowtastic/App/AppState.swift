@@ -5,7 +5,7 @@ class AppState: ObservableObject {
 	static let shared = AppState()
 
 	@Published
-	var tabSelection: Tab = .nodes
+	var tabSelection: TabTag = .nodes
 	@Published
 	var unreadDirectMessages = 0
 	@Published

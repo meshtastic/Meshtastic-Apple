@@ -40,13 +40,13 @@ final class MeowtasticDelegate: UIResponder, UIApplicationDelegate, UNUserNotifi
 		AppState.shared.navigationPath = deepLink
 
 		if targetValue == "map" {
-			AppState.shared.tabSelection = Tab.map
+			AppState.shared.tabSelection = TabTag.map
 		}
 		else if targetValue == "messages" {
-			AppState.shared.tabSelection = Tab.messages
+			AppState.shared.tabSelection = TabTag.messages
 		}
 		else if targetValue == "nodes" {
-			AppState.shared.tabSelection = Tab.nodes
+			AppState.shared.tabSelection = TabTag.nodes
 		}
 
 		completionHandler()

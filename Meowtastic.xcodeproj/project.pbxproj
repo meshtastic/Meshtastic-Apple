@@ -22,7 +22,7 @@
 		6DA39D8E2A92DC52007E311C /* MeowtasticDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DA39D8D2A92DC52007E311C /* MeowtasticDelegate.swift */; };
 		6DEDA55C2A9592F900321D2E /* MessageEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */; };
 		B25D5CB42C5BC3840007F90F /* AvatarAbstract.swift in Sources */ = {isa = PBXBuildFile; fileRef = B25D5CB32C5BC3840007F90F /* AvatarAbstract.swift */; };
-		B266A74E2C591F5E00DFC723 /* Tab.swift in Sources */ = {isa = PBXBuildFile; fileRef = B266A74D2C591F5E00DFC723 /* Tab.swift */; };
+		B266A74E2C591F5E00DFC723 /* TabTag.swift in Sources */ = {isa = PBXBuildFile; fileRef = B266A74D2C591F5E00DFC723 /* TabTag.swift */; };
 		B266A7512C59218D00DFC723 /* DeviceHardware.swift in Sources */ = {isa = PBXBuildFile; fileRef = B266A7502C59218D00DFC723 /* DeviceHardware.swift */; };
 		B266A7532C59219E00DFC723 /* Architecture.swift in Sources */ = {isa = PBXBuildFile; fileRef = B266A7522C59219E00DFC723 /* Architecture.swift */; };
 		B266A7552C5921BB00DFC723 /* Releases.swift in Sources */ = {isa = PBXBuildFile; fileRef = B266A7542C5921BB00DFC723 /* Releases.swift */; };
@@ -86,7 +86,7 @@
 		DD2553572855B02500E55709 /* LoRaConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2553562855B02500E55709 /* LoRaConfig.swift */; };
 		DD2553592855B52700E55709 /* PositionConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2553582855B52700E55709 /* PositionConfig.swift */; };
 		DD33DB622B3D27C7003E1EA0 /* Api.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD33DB612B3D27C7003E1EA0 /* Api.swift */; };
-		DD3501892852FC3B000FC853 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3501882852FC3B000FC853 /* Settings.swift */; };
+		DD3501892852FC3B000FC853 /* Options.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3501882852FC3B000FC853 /* Options.swift */; };
 		DD3619152B1EF9F900C41C8C /* LocationsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */; };
 		DD3CC6BE28E4CD9800FA9159 /* BatteryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BD28E4CD9800FA9159 /* BatteryView.swift */; };
 		DD3CC6C028E7A60700FA9159 /* Tapbacks.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BF28E7A60700FA9159 /* Tapbacks.swift */; };
@@ -179,7 +179,7 @@
 		6DA39D8D2A92DC52007E311C /* MeowtasticDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeowtasticDelegate.swift; sourceTree = "<group>"; };
 		6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntityExtension.swift; sourceTree = "<group>"; };
 		B25D5CB32C5BC3840007F90F /* AvatarAbstract.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarAbstract.swift; sourceTree = "<group>"; };
-		B266A74D2C591F5E00DFC723 /* Tab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tab.swift; sourceTree = "<group>"; };
+		B266A74D2C591F5E00DFC723 /* TabTag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabTag.swift; sourceTree = "<group>"; };
 		B266A7502C59218D00DFC723 /* DeviceHardware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceHardware.swift; sourceTree = "<group>"; };
 		B266A7522C59219E00DFC723 /* Architecture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Architecture.swift; sourceTree = "<group>"; };
 		B266A7542C5921BB00DFC723 /* Releases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Releases.swift; sourceTree = "<group>"; };
@@ -277,7 +277,7 @@
 		DD2553562855B02500E55709 /* LoRaConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaConfig.swift; sourceTree = "<group>"; };
 		DD2553582855B52700E55709 /* PositionConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionConfig.swift; sourceTree = "<group>"; };
 		DD33DB612B3D27C7003E1EA0 /* Api.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Api.swift; sourceTree = "<group>"; };
-		DD3501882852FC3B000FC853 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		DD3501882852FC3B000FC853 /* Options.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Options.swift; sourceTree = "<group>"; };
 		DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationsHandler.swift; sourceTree = "<group>"; };
 		DD3CC6BD28E4CD9800FA9159 /* BatteryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryView.swift; sourceTree = "<group>"; };
 		DD3CC6BF28E7A60700FA9159 /* Tapbacks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tapbacks.swift; sourceTree = "<group>"; };
@@ -582,14 +582,14 @@
 			path = Connection;
 			sourceTree = "<group>";
 		};
-		DD4A911C2708C57100501B7E /* Settings */ = {
+		DD4A911C2708C57100501B7E /* Options */ = {
 			isa = PBXGroup;
 			children = (
 				B2A5F3192C566B25009457AB /* App */,
-				DD3501882852FC3B000FC853 /* Settings.swift */,
+				DD3501882852FC3B000FC853 /* Options.swift */,
 				DD61937A2863876A00E59241 /* Node */,
 			);
-			path = Settings;
+			path = Options;
 			sourceTree = "<group>";
 		};
 		DD61937A2863876A00E59241 /* Node */ = {
@@ -683,11 +683,11 @@
 			isa = PBXGroup;
 			children = (
 				DDC2E18E26CE25FE0042C5E4 /* Content.swift */,
-				B266A74D2C591F5E00DFC723 /* Tab.swift */,
+				B266A74D2C591F5E00DFC723 /* TabTag.swift */,
 				DD47E3D726F2F21A00029299 /* Connection */,
 				DDC2E18B26CE25A70042C5E4 /* Messages */,
 				B2A5F2FB2C5668FD009457AB /* Nodes */,
-				DD4A911C2708C57100501B7E /* Settings */,
+				DD4A911C2708C57100501B7E /* Options */,
 				B266A74C2C591E9500DFC723 /* Views */,
 			);
 			path = UI;
@@ -900,7 +900,7 @@
 				259792262C2F114500AD1659 /* PositionEntityExtension.swift in Sources */,
 				B2A5F2FE2C5668FD009457AB /* ExchangePositionsButton.swift in Sources */,
 				259792272C2F114500AD1659 /* TraceRouteEntityExtension.swift in Sources */,
-				B266A74E2C591F5E00DFC723 /* Tab.swift in Sources */,
+				B266A74E2C591F5E00DFC723 /* TabTag.swift in Sources */,
 				DDDB444829F8A9C900EE2349 /* String.swift in Sources */,
 				DDFFA7472B3A7F3C004730DB /* Bundle.swift in Sources */,
 				DD457188293C7E63000C49FB /* SignalStrengthIndicator.swift in Sources */,
@@ -909,7 +909,7 @@
 				B266A7652C5927D100DFC723 /* Bandwidths.swift in Sources */,
 				D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */,
 				DDD5BB182C2F9C36007E03CA /* OSLogEntryLog.swift in Sources */,
-				DD3501892852FC3B000FC853 /* Settings.swift in Sources */,
+				DD3501892852FC3B000FC853 /* Options.swift in Sources */,
 				08DD7E5F2C4283A100548159 /* LoRaSignal.swift in Sources */,
 				B266DABC2C53CFD40067D317 /* Meowtastic.xcdatamodeld in Sources */,
 				DD5D0A9C2931B9F200F7EA61 /* EthernetModes.swift in Sources */,
