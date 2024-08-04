@@ -57,7 +57,7 @@ struct NodeInfoItem: View {
 					Text("Signal \(signalStrength.description)").font(.footnote)
 					Text("SNR \(String(format: "%.2f", node.snr))dB")
 						.foregroundColor(getSnrColor(snr: node.snr, preset: modemPreset))
-						.font(.caption)
+						.font(.caption2)
 					Text("RSSI \(node.rssi)dB")
 						.foregroundColor(getRssiColor(rssi: node.rssi))
 						.font(.caption)
