@@ -28,16 +28,12 @@ struct NodeListItem: View {
 				VStack(alignment: .leading, spacing: 8) {
 					name
 
-					if node.isOnline {
-						HStack(alignment: .center, spacing: 16) {
-							signalStrength
-							battery
-						}
+					HStack(alignment: .center, spacing: 16) {
+						signalStrength
+						battery
 					}
-					else {
-						lastHeard
-							.padding(.top, 8)
-					}
+
+					lastHeard
 
 					if node.positions?.count ?? 0 > 0 && connectedNode != node.num {
 						distance
@@ -46,7 +42,7 @@ struct NodeListItem: View {
 					NodeIconListView(connectedNode: connectedNode, node: node)
 						.padding(.top, 8)
 				}
-				.frame(alignment: .leading)
+				.frame(maxWidth: .infinity, alignment: .leading)
 			}
 		}
 	}

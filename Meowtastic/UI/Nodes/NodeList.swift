@@ -42,14 +42,14 @@ struct NodeList: View {
 	)
 	private var nodes: FetchedResults<NodeInfoEntity>
 
+	private var connectedNodeNum: Int64 {
+		Int64(bleManager.connectedPeripheral?.num ?? 0)
+	}
 	private var connectedNode: NodeInfoEntity? {
 		getNodeInfo(
 			id: connectedNodeNum,
 			context: context
 		)
-	}
-	private var connectedNodeNum: Int64 {
-		Int64(bleManager.connectedPeripheral?.num ?? 0)
 	}
 	private var suggestedNodes: [NodeInfoEntity] {
 		let connectedNodeNum = Int(bleManager.connectedPeripheral?.num ?? 0)
@@ -83,6 +83,11 @@ struct NodeList: View {
 			)
 		}
 		.onChange(of: nodes, initial: true) {
+			Task {
+				await countNodes()
+			}
+		}
+		.onChange(of: bleManager.connectedPeripheral, initial: true) {
 			Task {
 				await countNodes()
 			}
@@ -305,31 +310,36 @@ struct NodeList: View {
 			node.num != connectedNodeNum && !suggestedNodes.contains(node) && node.isOnline == online
 		}
 
-		Section(
-			header: listHeader(
-				title: online ? "Online" : "Offline",
-				nodesCount: nodeList.count
-			)
-		) {
-			let connectedNode = nodes.first(where: {
-				$0.num == connectedNodeNum
-			})
-
-			ForEach(nodeList, id: \.id) { node in
-				NodeListItem(
-					node: node,
-					connected: bleManager.connectedPeripheral?.num ?? -1 == node.num,
-					connectedNode: bleManager.connectedPeripheral?.num ?? -1
+		if !nodeList.isEmpty {
+			Section(
+				header: listHeader(
+					title: online ? "Online" : "Offline",
+					nodesCount: nodeList.count
 				)
-				.contextMenu {
-					contextMenuActions(
+			) {
+				let connectedNode = nodes.first(where: {
+					$0.num == connectedNodeNum
+				})
+
+				ForEach(nodeList, id: \.id) { node in
+					NodeListItem(
 						node: node,
-						connectedNode: connectedNode
+						connected: bleManager.connectedPeripheral?.num ?? -1 == node.num,
+						connectedNode: bleManager.connectedPeripheral?.num ?? -1
 					)
+					.contextMenu {
+						contextMenuActions(
+							node: node,
+							connectedNode: connectedNode
+						)
+					}
 				}
 			}
+			.headerProminence(.increased)
 		}
-		.headerProminence(.increased)
+		else {
+			EmptyView()
+		}
 	}
 
 	@ViewBuilder
@@ -421,7 +431,7 @@ struct NodeList: View {
 			"user.longName",
 			"user.shortName"
 		].map { property in
-			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
+			NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
 		}
 
 		if !searchText.isEmpty {
