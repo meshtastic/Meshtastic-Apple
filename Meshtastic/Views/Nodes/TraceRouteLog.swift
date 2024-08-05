@@ -63,7 +63,6 @@ struct TraceRouteLog: View {
 							}
 							.font(.title2)
 						}
-
 						if selectedRoute?.response ?? false {
 							if selectedRoute?.hasPositions ?? false {
 								Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
