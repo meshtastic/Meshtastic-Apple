@@ -526,6 +526,7 @@ func adminResponseAck (packet: MeshPacket, context: NSManagedObjectContext) {
 			}
 			do {
 				try context.save()
+				Logger.data.info("💾 Saved admin ACK")
 			} catch {
 				Logger.data.error("Failed to save admin message response as an ack: \(error.localizedDescription)")
 			}

@@ -45,6 +45,47 @@ struct Messages: View {
 	)
 	private var users: FetchedResults<UserEntity>
 
+	@FetchRequest(
+		sortDescriptors: [
+			NSSortDescriptor(key: "messageTimestamp", ascending: true)
+		]
+	)
+	private var messages: FetchedResults<MessageEntity>
+
+	private var myInfo: MyInfoEntity? {
+		node?.myInfo
+	}
+	private var channels: [ChannelEntity] {
+		if let channels = node?.myInfo?.channels?.array as? [ChannelEntity] {
+			return channels.filter { channel in
+				if let name = channel.name {
+					return !restrictedChannels.contains(name.lowercased())
+				}
+
+				return true
+			}
+		}
+
+		return [ChannelEntity]()
+	}
+	private var usersFiltered: [UserEntity] {
+		if let node {
+			return users.filter { user in
+				guard user.userNode != nil else {
+					return false
+				}
+
+				if let num = bleManager.connectedPeripheral?.num, user.num == num {
+					return false
+				}
+
+				return true
+			}
+		}
+
+		return [UserEntity]()
+	}
+
 	private var badgeBackground: Color {
 		if colorScheme == .dark {
 			Color(red: 28 / 256, green: 28 / 256, blue: 30 / 256)
@@ -98,83 +139,67 @@ struct Messages: View {
 
 	@ViewBuilder
 	private var channelList: some View {
-		if
-			let node,
-			let myInfo = node.myInfo,
-			let channels = myInfo.channels?.array as? [ChannelEntity]
-		{
+		if !channels.isEmpty {
 			Section(
 				header: listHeader(
 					title: "Channels",
 					nodesCount: channels.count
 				)
 			) {
-				ForEach(channels, id: \.index) { channel in
-					if !restrictedChannels.contains(channel.name?.lowercased() ?? "") {
-						makeChannelLink(for: channel, myInfo: myInfo)
-							.contextMenu {
-								if
-									let allPrivateMessages = channel.allPrivateMessages,
-									!allPrivateMessages.isEmpty
-								{
-									Button(role: .destructive) {
-										isPresentingDeleteChannelMessagesConfirm = true
-										channelSelection = channel
-									} label: {
-										Label("Delete Messages", systemImage: "trash")
-									}
+				ForEach(channels, id: \.id) { channel in
+					makeChannelLink(for: channel)
+						.contextMenu {
+							Button {
+								guard let user = node?.user else {
+									return
 								}
 
-								Button {
-									guard let user = node.user else {
-										return
-									}
+								channel.mute.toggle()
 
-									channel.mute.toggle()
+								let adminMessageId = bleManager.saveChannel(
+									channel: channel.protoBuf,
+									fromUser: user,
+									toUser: user
+								)
 
-									let adminMessageId = bleManager.saveChannel(
-										channel: channel.protoBuf,
-										fromUser: user,
-										toUser: user
-									)
-
-									if adminMessageId > 0 {
-										context.refresh(channel, mergeChanges: true)
-									}
-
-									do {
-										try context.save()
-									}
-									catch {
-										context.rollback()
-										Logger.data.error("💥 Save Channel Mute Error")
-									}
-								} label: {
-									Label(
-										channel.mute ? "Show Alerts" : "Hide Alerts",
-										systemImage: channel.mute ? "bell" : "bell.slash"
-									)
+								if adminMessageId > 0 {
+									context.refresh(channel, mergeChanges: true)
 								}
+
+								do {
+									try context.save()
+								}
+								catch {
+									context.rollback()
+									Logger.data.error("💥 Save Channel Mute Error")
+								}
+							} label: {
+								Label(
+									channel.mute ? "Show Alerts" : "Hide Alerts",
+									systemImage: channel.mute ? "bell" : "bell.slash"
+								)
 							}
-							.confirmationDialog(
-								"Messages in the channel will be deleted",
-								isPresented: $isPresentingDeleteChannelMessagesConfirm,
-								titleVisibility: .visible
-							) {
-								Button(role: .destructive) {
-									guard let channelSelection else {
-										return
-									}
+						}
+						.confirmationDialog(
+							"Messages in the channel will be deleted",
+							isPresented: $isPresentingDeleteChannelMessagesConfirm,
+							titleVisibility: .visible
+						) {
+							Button(role: .destructive) {
+								guard let channelSelection else {
+									return
+								}
 
-									deleteChannelMessages(channel: channelSelection, context: context)
+								deleteChannelMessages(channel: channelSelection, context: context)
+								if let myInfo = node?.myInfo {
 									context.refresh(myInfo, mergeChanges: true)
-
-									self.channelSelection = nil
-								} label: {
-									Text("Delete")
 								}
+
+								self.channelSelection = nil
+							} label: {
+								Text("Delete")
 							}
-					}
+						}
 				}
 			}
 			.headerProminence(.increased)
@@ -183,59 +208,19 @@ struct Messages: View {
 
 	@ViewBuilder
 	private var userList: some View {
-		if
-			let node,
-			let myInfo = node.myInfo
-		{
-			let userList = users.filter { user in
-				guard user.userNode != nil else {
-					return false
-				}
-
-				if let num = bleManager.connectedPeripheral?.num, user.num == num {
-					return false
-				}
-
-				return true
-			}
-
-			Section(
-				header: listHeader(
-					title: "Users",
-					nodesCount: userList.count
-				)
-			) {
-				ForEach(userList, id: \.num) { user in
-					let lastMessage = getLastMessage(for: user)
-
-					if user.num != bleManager.connectedPeripheral?.num ?? 0 {
-						makeUserLink(for: user, myInfo: myInfo, lastMessage: lastMessage)
-							.contextMenu {
-								getContextMenu(for: user, hasMessages: lastMessage != nil)
-							}
-							.confirmationDialog(
-								"Conversation with \(user.longName ?? "user") be deleted",
-								isPresented: $isPresentingDeleteUserMessagesConfirm,
-								titleVisibility: .visible
-							) {
-								Button(role: .destructive) {
-									guard let userSelection else {
-										return
-									}
-
-									deleteUserMessages(user: userSelection, context: context)
-									context.refresh(node.user!, mergeChanges: true)
-
-									self.userSelection = nil
-								} label: {
-									Text("Delete")
-								}
-							}
-					}
+		Section(
+			header: listHeader(
+				title: "Users",
+				nodesCount: usersFiltered.count
+			)
+		) {
+			ForEach(usersFiltered, id: \.id) { user in
+				if user.num != bleManager.connectedPeripheral?.num ?? 0 {
+					makeUserLink(for: user)
 				}
 			}
-			.headerProminence(.increased)
 		}
+		.headerProminence(.increased)
 	}
 
 	@ViewBuilder
@@ -252,94 +237,105 @@ struct Messages: View {
 	}
 
 	@ViewBuilder
-	private func makeChannelLink(
-		for channel: ChannelEntity,
-		myInfo: MyInfoEntity
-	) -> some View {
+	private func makeChannelLink(for channel: ChannelEntity) -> some View {
+		let lastMessage = messages.last(where: { message in
+			message.channel == channel.index && message.toUser == nil
+		})
+		let lastMessageTime = Date(
+			timeIntervalSince1970: TimeInterval(Int64(lastMessage?.messageTimestamp ?? 0))
+		)
+		let lastMessageDay = Calendar.current.dateComponents(
+			[.day],
+			from: lastMessageTime
+		).day ?? 0
+		let currentDay = Calendar.current.dateComponents(
+			[.day],
+			from: Date()
+		).day ?? 0
+
 		NavigationLink {
 			MessageList(channel: channel, myInfo: myInfo)
 		} label: {
-			let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
+			HStack(spacing: 8) {
+				avatar(for: channel)
 
-			let hasMessages = channel.allPrivateMessages?.isEmpty ?? false
-			let lastMessage = channel.allPrivateMessages?.last(where: { message in
-				message.channel == channel.index
-			})
-			let lastMessageTime = Date(
-				timeIntervalSince1970: TimeInterval(Int64(lastMessage?.messageTimestamp ?? 0))
-			)
-			let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
-
-			avatar(for: channel)
-
-			VStack(alignment: .leading) {
-				HStack(alignment: .top, spacing: 8) {
-					if let name = channel.name, !name.isEmpty {
-						Text(String(name).camelCaseToWords())
-							.font(.headline)
-					}
-					else {
-						if channel.role == 1 {
-							Text("Primary Channel")
+				VStack(alignment: .leading) {
+					HStack(alignment: .top) {
+						if let name = channel.name, !name.isEmpty {
+							Text(name.camelCaseToWords())
+								.lineLimit(1)
 								.font(.headline)
+								.minimumScaleFactor(0.5)
 						}
 						else {
-							Text("Channel #\(channel.index)")
-								.font(.headline)
+							if channel.role == 1 {
+								Text("Primary Channel")
+									.font(.headline)
+									.lineLimit(1)
+									.font(.headline)
+									.minimumScaleFactor(0.5)
+							}
+							else {
+								Text("Channel #\(channel.index)")
+									.font(.headline)
+									.lineLimit(1)
+									.font(.headline)
+									.minimumScaleFactor(0.5)
+							}
+						}
+
+						Spacer()
+
+						if lastMessage != nil {
+							if lastMessageDay == currentDay {
+								Text(lastMessageTime, style: .time)
+									.font(.footnote)
+									.foregroundColor(.secondary)
+							}
+							else if lastMessageDay == (currentDay - 1) {
+								Text("Yesterday")
+									.font(.footnote)
+									.foregroundColor(.secondary)
+							}
+							else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+								Text(dateFormatter.string(from: lastMessageTime))
+									.font(.footnote)
+									.foregroundColor(.secondary)
+							}
+							else if lastMessageDay < (currentDay - 1800) {
+								Text(dateFormatter.string(from: lastMessageTime))
+									.font(.footnote)
+									.foregroundColor(.secondary)
+							}
 						}
 					}
 
-					Spacer()
-
-					if hasMessages {
-						if lastMessageDay == currentDay {
-							Text(lastMessageTime, style: .time )
-								.font(.footnote)
-								.foregroundColor(.secondary)
-						}
-						else if  lastMessageDay == (currentDay - 1) {
-							Text("Yesterday")
-								.font(.footnote)
-								.foregroundColor(.secondary)
-						}
-						else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-							Text(dateFormatter.string(from: lastMessageTime))
-								.font(.footnote)
-								.foregroundColor(.secondary)
-						}
-						else if lastMessageDay < (currentDay - 1800) {
-							Text(dateFormatter.string(from: lastMessageTime))
-								.font(.footnote)
-								.foregroundColor(.secondary)
-						}
+					if let payload = lastMessage?.messagePayload {
+						Text(payload)
+							.font(.footnote)
+							.foregroundColor(.secondary)
+							.lineLimit(2)
 					}
-				}
-
-				if hasMessages, let lastMessagePayload = lastMessage?.messagePayload {
-					Text(lastMessagePayload)
-						.lineLimit(3)
-						.font(.footnote)
-						.foregroundColor(.secondary)
 				}
 			}
 		}
 	}
 
 	@ViewBuilder
-	private func makeUserLink(
-		for user: UserEntity,
-		myInfo: MyInfoEntity,
-		lastMessage: MessageEntity?
-	) -> some View {
+	private func makeUserLink(for user: UserEntity) -> some View {
+		let lastMessage = messages.last(where: { message in
+			message.toUser != nil && message.fromUser != nil
+			&& (message.toUser?.num == user.num || message.fromUser?.num == user.num)
+			&& !message.admin
+			&& message.portNum != 10
+		})
 		let lastMessageTime = Date(
 			timeIntervalSince1970: TimeInterval(Int64(lastMessage?.messageTimestamp ?? 0))
 		)
-
 		let lastMessageDay = Calendar.current.dateComponents(
 			[.day],
 			from: lastMessageTime
 		).day ?? 0
-
 		let currentDay = Calendar.current.dateComponents(
 			[.day],
 			from: Date()
@@ -353,7 +349,7 @@ struct Messages: View {
 
 				VStack(alignment: .leading) {
 					HStack(alignment: .top) {
-						Text(user.longName ?? "Unknown user".localized)
+						Text(user.longName ?? "Unknown user")
 							.lineLimit(1)
 							.font(.headline)
 							.minimumScaleFactor(0.5)
@@ -388,6 +384,7 @@ struct Messages: View {
 						Text(payload)
 							.font(.footnote)
 							.foregroundColor(.secondary)
+							.lineLimit(2)
 					}
 				}
 			}

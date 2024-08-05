@@ -19,7 +19,7 @@ extension MyInfoEntity {
 		guard let channels else {
 			return false
 		}
-		
+
 		return channels.filter { channel in
 			(channel as AnyObject).name?.lowercased() == "admin"
 		}.count > 0

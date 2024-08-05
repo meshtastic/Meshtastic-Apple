@@ -212,7 +212,7 @@ struct MessageView: View {
 					.font(.system(size: statusFontSize))
 					.foregroundColor(statusForegroundColor)
 
-				Text(dateFormatter.string(from: ackAt))
+				Text(ackAt.relative())
 					.font(.system(size: statusFontSize))
 					.lineLimit(1)
 					.foregroundColor(statusForegroundColor)

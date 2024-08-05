@@ -4603,9 +4603,6 @@
     "Controls the blinking LED on the device.  For most devices this will control one of the up to 4 LEDS, the charger and GPS LEDs are not controllable." : {
 
     },
-    "Conversation with %@ be deleted" : {
-
-    },
     "copy" : {
       "extractionState" : "stale",
       "localizations" : {

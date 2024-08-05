@@ -43,12 +43,15 @@ struct ConnectedDevice: View {
 					}
 				}
 			}
+			else if bleManager.lastConnectionError.count > 0 {
+				deviceIcon("exclamationmark.triangle.fill", color: .red)
+			}
 			else {
 				deviceIcon("antenna.radiowaves.left.and.right.slash", color: .orange)
 			}
 		}
 		else {
-			deviceIcon("exclamationmark.triangle.fill", color: .red)
+			deviceIcon("power", color: .red)
 		}
 	}
 

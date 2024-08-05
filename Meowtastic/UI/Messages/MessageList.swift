@@ -4,6 +4,9 @@ import OSLog
 import SwiftUI
 
 struct MessageList: View {
+	private let channel: ChannelEntity?
+	private let user: UserEntity?
+	private let myInfo: MyInfoEntity?
 	private let textFieldPlaceholderID = "text_field_placeholder"
 
 	@Environment(\.managedObjectContext)
@@ -19,19 +22,9 @@ struct MessageList: View {
 	@State
 	private var nodeDetail: NodeInfoEntity?
 	@State
-	private var channel: ChannelEntity?
-	@State
-	private var user: UserEntity?
-	@State
-	private var myInfo: MyInfoEntity
-	@State
 	private var replyMessageId: Int64 = 0
 	@State
 	private var scrolledToId: Int64?
-	@State
-	private var filteredMessages = [MessageEntity]()
-	@State
-	private var filteredMessagesTimestamp = Double.nan
 
 	@FetchRequest(
 		sortDescriptors: [
@@ -49,6 +42,23 @@ struct MessageList: View {
 	)
 	private var messages: FetchedResults<MessageEntity>
 
+	private var filteredMessages: [MessageEntity] {
+		if let channel {
+			return messages.filter { message in
+				message.channel == channel.index && message.toUser == nil
+			} as [MessageEntity]
+		}
+		else if let user {
+			return messages.filter { message in
+				message.toUser != nil && message.fromUser != nil
+				&& (message.toUser?.num == user.num || message.fromUser?.num == user.num)
+				&& !message.admin
+				&& message.portNum != 10
+			} as [MessageEntity]
+		}
+
+		return [MessageEntity]()
+	}
 	private var firstUnreadMessage: MessageEntity? {
 		filteredMessages.first(where: { message in
 			!message.read
@@ -169,16 +179,6 @@ struct MessageList: View {
 				.presentationDragIndicator(.visible)
 				.presentationDetents([.medium])
 		}
-		.onAppear {
-			Task {
-				await filterMessages()
-			}
-		}
-		.onReceive(messages.publisher.count(), perform: { _ in
-			Task {
-				await filterMessages()
-			}
-		})
 	}
 
 	@ViewBuilder
@@ -206,7 +206,7 @@ struct MessageList: View {
 
 	init(
 		channel: ChannelEntity,
-		myInfo: MyInfoEntity
+		myInfo: MyInfoEntity?
 	) {
 		self.channel = channel
 		self.user = nil
@@ -215,7 +215,7 @@ struct MessageList: View {
 
 	init(
 		user: UserEntity,
-		myInfo: MyInfoEntity
+		myInfo: MyInfoEntity?
 	) {
 		self.channel = nil
 		self.user = user
@@ -307,8 +307,10 @@ struct MessageList: View {
 				}
 
 				TapbackResponses(message: message) {
-					appState.unreadChannelMessages = myInfo.unreadMessages
-					context.refresh(myInfo, mergeChanges: true)
+					if let myInfo {
+						appState.unreadChannelMessages = myInfo.unreadMessages
+						context.refresh(myInfo, mergeChanges: true)
+					}
 				}
 			}
 
@@ -338,45 +340,10 @@ struct MessageList: View {
 			message.read = true
 			try? context.save()
 
-			appState.unreadChannelMessages = myInfo.unreadMessages
-			context.refresh(myInfo, mergeChanges: true)
-		}
-	}
-
-	private func filterMessages() async {
-		let threshold = Date.now.timeIntervalSince1970 - 1
-		guard filteredMessagesTimestamp.isNaN || filteredMessagesTimestamp < threshold else {
-			// workaround for endless changing of message data
-			// when fixed, it may be possible to use original solution
-			return
-		}
-
-		if let channel {
-			let filtered = messages.filter { message in
-				message.channel == channel.index && message.toUser == nil
-			} as [MessageEntity]
-
-			if filtered.count != filteredMessages.count {
-				filteredMessages = filtered
-				filteredMessagesTimestamp = Date.now.timeIntervalSince1970
+			if let myInfo {
+				appState.unreadChannelMessages = myInfo.unreadMessages
+				context.refresh(myInfo, mergeChanges: true)
 			}
-		}
-		else if let user {
-			let filtered = messages.filter { message in
-				message.toUser != nil && message.fromUser != nil
-				&& (message.toUser?.num == user.num || message.fromUser?.num == user.num)
-				&& !message.admin
-				&& message.portNum != 10
-			} as [MessageEntity]
-
-			if filtered.count != filteredMessages.count {
-				filteredMessages = filtered
-				filteredMessagesTimestamp = Date.now.timeIntervalSince1970
-			}
-		}
-		else {
-			filteredMessages.removeAll()
-			filteredMessagesTimestamp = Date.now.timeIntervalSince1970
 		}
 	}
 
