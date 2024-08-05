@@ -1,5 +1,5 @@
-import Foundation
 import CoreData
+import Foundation
 import MeshtasticProtobufs
 
 extension UserEntity {
@@ -15,7 +15,7 @@ extension UserEntity {
 		guard let messageList else {
 			return 0
 		}
-		
+
 		return messageList.filter { message in
 			message.read == false
 		}.count

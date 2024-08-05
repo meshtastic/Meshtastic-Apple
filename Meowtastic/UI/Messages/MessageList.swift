@@ -17,6 +17,8 @@ struct MessageList: View {
 	@FocusState
 	private var messageFieldFocused: Bool
 	@State
+	private var nodeDetail: NodeInfoEntity?
+	@State
 	private var channel: ChannelEntity?
 	@State
 	private var user: UserEntity?
@@ -25,27 +27,32 @@ struct MessageList: View {
 	@State
 	private var replyMessageId: Int64 = 0
 	@State
-	private var nodeDetail: NodeInfoEntity?
+	private var scrolledToId: Int64?
+	@State
+	private var filteredMessages = [MessageEntity]()
+	@State
+	private var filteredMessagesTimestamp = Double.nan
 
 	@FetchRequest(
 		sortDescriptors: [
 			NSSortDescriptor(key: "favorite", ascending: false),
 			NSSortDescriptor(key: "lastHeard", ascending: false),
 			NSSortDescriptor(key: "user.longName", ascending: true)
-		],
-		animation: .default
+		]
 	)
 	private var nodes: FetchedResults<NodeInfoEntity>
 
-	private var messages: [MessageEntity]? {
-		if let channel {
-			return channel.allPrivateMessages
-		}
-		else if let user {
-			return user.messageList
-		}
+	@FetchRequest(
+		sortDescriptors: [
+			NSSortDescriptor(key: "messageTimestamp", ascending: true)
+		]
+	)
+	private var messages: FetchedResults<MessageEntity>
 
-		return nil
+	private var firstUnreadMessage: MessageEntity? {
+		filteredMessages.first(where: { message in
+			!message.read
+		})
 	}
 	private var destination: MessageDestination? {
 		if let channel {
@@ -82,28 +89,29 @@ struct MessageList: View {
 
 		return ""
 	}
-	private var connectedNode: Int64? {
+	private var connectedNodeNum: Int64? {
 		bleManager.connectedPeripheral?.num
 	}
 
 	var body: some View {
 		ZStack(alignment: .bottom) {
 			ScrollViewReader { scrollView in
-				if let messages, !messages.isEmpty {
+				if !filteredMessages.isEmpty {
 					messageList
 						.scrollDismissesKeyboard(.interactively)
 						.scrollIndicators(.hidden)
 						.onAppear {
-							scrollView.scrollTo(textFieldPlaceholderID)
-						}
-						.onChange(of: channel?.allPrivateMessages) {
-							if let id = channel?.allPrivateMessages?.last?.messageId {
-								scrollView.scrollTo(id)
+							if let firstUnreadMessage {
+								scrollView.scrollTo(firstUnreadMessage)
+							}
+							else {
+								scrollView.scrollTo(textFieldPlaceholderID)
 							}
 						}
-						.onChange(of: user?.messageList) {
-							if let id = user?.messageList?.last?.messageId {
+						.onChange(of: filteredMessages) {
+							if let id = filteredMessages.last?.messageId, id != scrolledToId {
 								scrollView.scrollTo(id)
+								scrolledToId = id
 							}
 						}
 				}
@@ -158,22 +166,31 @@ struct MessageList: View {
 		}
 		.sheet(item: $nodeDetail) { detail in
 			NodeDetail(isInSheet: true, node: detail)
+				.presentationDragIndicator(.visible)
 				.presentationDetents([.medium])
 		}
+		.onAppear {
+			Task {
+				await filterMessages()
+			}
+		}
+		.onReceive(messages.publisher.count(), perform: { _ in
+			Task {
+				await filterMessages()
+			}
+		})
 	}
 
 	@ViewBuilder
 	private var messageList: some View {
 		List {
-			if let messages {
-				ForEach(messages, id: \.messageId) { message in
-					messageView(for: message)
-						.id(message.messageId)
-						.frame(width: .infinity)
-						.listRowSeparator(.hidden)
-						.listRowBackground(Color.clear)
-						.scrollContentBackground(.hidden)
-				}
+			ForEach(filteredMessages, id: \.messageId) { message in
+				messageView(for: message)
+					.id(message.messageId)
+					.frame(maxWidth: .infinity)
+					.listRowSeparator(.hidden)
+					.listRowBackground(Color.clear)
+					.scrollContentBackground(.hidden)
 			}
 
 			Rectangle()
@@ -230,9 +247,9 @@ struct MessageList: View {
 						)
 					}
 
-					if let connectedNode, let sourceNode {
+					if let connectedNodeNum, let sourceNode {
 						NodeIconListView(
-							connectedNode: connectedNode,
+							connectedNode: connectedNodeNum,
 							small: true,
 							node: sourceNode
 						)
@@ -326,22 +343,47 @@ struct MessageList: View {
 		}
 	}
 
+	private func filterMessages() async {
+		let threshold = Date.now.timeIntervalSince1970 - 1
+		guard filteredMessagesTimestamp.isNaN || filteredMessagesTimestamp < threshold else {
+			// workaround for endless changing of message data
+			// when fixed, it may be possible to use original solution
+			return
+		}
+
+		if let channel {
+			let filtered = messages.filter { message in
+				message.channel == channel.index && message.toUser == nil
+			} as [MessageEntity]
+
+			if filtered.count != filteredMessages.count {
+				filteredMessages = filtered
+				filteredMessagesTimestamp = Date.now.timeIntervalSince1970
+			}
+		}
+		else if let user {
+			let filtered = messages.filter { message in
+				message.toUser != nil && message.fromUser != nil
+				&& (message.toUser?.num == user.num || message.fromUser?.num == user.num)
+				&& !message.admin
+				&& message.portNum != 10
+			} as [MessageEntity]
+
+			if filtered.count != filteredMessages.count {
+				filteredMessages = filtered
+				filteredMessagesTimestamp = Date.now.timeIntervalSince1970
+			}
+		}
+		else {
+			filteredMessages.removeAll()
+			filteredMessagesTimestamp = Date.now.timeIntervalSince1970
+		}
+	}
+
 	private func getOriginalMessage(for message: MessageEntity) -> String? {
 		if
 			message.replyID > 0,
-			let messages = channel?.allPrivateMessages,
-			let messageReply = messages.first(where: { msg in
-				msg.messageId == message.replyID
-			}),
-			let messagePayload = messageReply.messagePayload
-		{
-			return messagePayload
-		}
-
-		if
-			message.replyID > 0,
-			let messages = user?.messageList,
-			let messageReply = messages.first(where: { msg in
+			let messageReply = filteredMessages.first(where: { msg in
 				msg.messageId == message.replyID
 			}),
 			let messagePayload = messageReply.messagePayload

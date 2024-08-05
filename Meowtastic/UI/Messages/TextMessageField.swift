@@ -48,9 +48,9 @@ struct TextMessageField: View {
 				.multilineTextAlignment(.leading)
 				.keyboardType(.default)
 				.keyboardShortcut(.defaultAction)
-				.focused($isFocused, equals: true)
 				.padding(.leading, 8)
 				.padding(.vertical, 4)
+				.focused($isFocused, equals: true)
 				.onSubmit {
 					if typingMessage.isEmpty || totalBytes > maxBytes {
 						return

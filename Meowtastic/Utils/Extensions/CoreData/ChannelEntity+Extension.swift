@@ -11,7 +11,7 @@ extension ChannelEntity {
 		guard let allPrivateMessages else {
 			return 0
 		}
-		
+
 		return allPrivateMessages.filter { message in
 			message.read == false
 		}.count
