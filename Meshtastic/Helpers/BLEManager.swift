@@ -590,7 +590,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				return
 			}
 			do {
-				let logRecord = try LogRecord(serializedData: characteristic.value!)
+				let logRecord = try LogRecord(serializedBytes: characteristic.value!)
 				var message = logRecord.source.isEmpty ? logRecord.message : "[\(logRecord.source)] \(logRecord.message)"
 				switch logRecord.level {
 				case .debug:
@@ -627,7 +627,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			var decodedInfo = FromRadio()
 
 			do {
-				decodedInfo = try FromRadio(serializedData: characteristic.value!)
+				decodedInfo = try FromRadio(serializedBytes: characteristic.value!)
 
 			} catch {
 				Logger.services.error("💥 \(error.localizedDescription, privacy: .public) \(characteristic.value!, privacy: .public)")
@@ -870,7 +870,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 				}
 			case .neighborinfoApp:
-				if let neighborInfo = try? NeighborInfo(serializedData: decodedInfo.packet.decoded.payload) {
+				if let neighborInfo = try? NeighborInfo(serializedBytes: decodedInfo.packet.decoded.payload) {
 					// MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED")
 					MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \(neighborInfo)")
 				}
@@ -902,7 +902,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(connectedPeripheral.num))
 					do {
-						let fetchedNodeInfo = try context.fetch(fetchNodeInfoRequest) ?? []
+						let fetchedNodeInfo = try context.fetch(fetchNodeInfoRequest)
 						if fetchedNodeInfo.count == 1 {
 							// Subscribe to Mqtt Client Proxy if enabled
 							if fetchedNodeInfo[0].mqttConfig != nil && fetchedNodeInfo[0].mqttConfig?.enabled ?? false && fetchedNodeInfo[0].mqttConfig?.proxyToClientEnabled ?? false {
@@ -1132,7 +1132,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return success
 	}
 
-	@MainActor 
+	@MainActor
 	public func getPositionFromPhoneGPS(destNum: Int64) -> Position? {
 		var positionPacket = Position()
 		if #available(iOS 17.0, macOS 14.0, *) {
@@ -1265,7 +1265,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			
 			let logString = String.localizedStringWithFormat("mesh.log.sharelocation %@".localized, String(fromNodeNum))
 			Logger.services.debug("📍 \(logString)")
 			return true
@@ -1516,14 +1515,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			let decodedString = base64UrlString.base64urlToBase64()
 			if let decodedData = Data(base64Encoded: decodedString) {
 				do {
-					let channelSet: ChannelSet = try ChannelSet(serializedData: decodedData)
+					let channelSet: ChannelSet = try ChannelSet(serializedBytes: decodedData)
 					for cs in channelSet.settings {
 						if addChannels {
 							// We are trying to add a channel so lets get the last index
 							let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
 							fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
 							do {
-								let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) ?? []
+								let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
 								if fetchedMyInfo.count == 1 {
 									i = Int32(fetchedMyInfo[0].channels?.count ?? -1)
 									myInfo = fetchedMyInfo[0]
@@ -3001,7 +3000,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	}
 
 	func storeAndForwardPacket(packet: MeshPacket, connectedNodeNum: Int64, context: NSManagedObjectContext) {
-		if let storeAndForwardMessage = try? StoreAndForward(serializedData: packet.decoded.payload) {
+		if let storeAndForwardMessage = try? StoreAndForward(serializedBytes: packet.decoded.payload) {
 			// Handle each of the store and forward request / response messages
 			switch storeAndForwardMessage.rr {
 			case .unset:

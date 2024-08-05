@@ -3,16 +3,12 @@ import OSLog
 import SwiftUI
 
 struct DeleteNodeButton: View {
+
 	var bleManager: BLEManager
-
 	var context: NSManagedObjectContext
-
 	var connectedNode: NodeInfoEntity
-
 	var node: NodeInfoEntity
-	
 	@Environment(\.dismiss) private var dismiss
-
 	@State private var isPresentingAlert = false
 
 	var body: some View {

@@ -14,7 +14,7 @@ struct UserMessageList: View {
 	@EnvironmentObject var appState: AppState
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.managedObjectContext) var context
-	
+
 	// Keyboard State
 	@FocusState var messageFieldFocused: Bool
 	// View State Items
