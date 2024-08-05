@@ -31,7 +31,6 @@ struct NodeList: View {
 	@State private var hopsAway: Double = -1.0
 	@State private var roleFilter = false
 	@State private var deviceRoles: Set<Int> = []
-	
 	@State private var isPresentingTraceRouteSentAlert = false
 	@State private var isPresentingPositionSentAlert = false
 	@State private var isPresentingPositionFailedAlert = false

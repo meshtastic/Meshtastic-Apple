@@ -814,7 +814,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 				MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED UNHANDLED")
 			case .tracerouteApp:
-				if let routingMessage = try? RouteDiscovery(serializedData: decodedInfo.packet.decoded.payload) {
+				if let routingMessage = try? RouteDiscovery(serializedBytes: decodedInfo.packet.decoded.payload) {
 					let traceRoute = getTraceRoute(id: Int64(decodedInfo.packet.decoded.requestID), context: context)
 					traceRoute?.response = true
 					traceRoute?.route = routingMessage.route

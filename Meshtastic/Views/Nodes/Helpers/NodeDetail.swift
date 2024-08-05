@@ -43,7 +43,6 @@ struct NodeDetail: View {
 				Section("Hardware") {
 					NodeInfoItem(node: node)
 				}
-
 				Section("Node") {
 					HStack {
 						Label {
