@@ -23,8 +23,6 @@ struct MessageList: View {
 	private var nodeDetail: NodeInfoEntity?
 	@State
 	private var replyMessageId: Int64 = 0
-	@State
-	private var scrolledToId: Int64?
 
 	@FetchRequest(
 		sortDescriptors: [
@@ -111,17 +109,13 @@ struct MessageList: View {
 						.scrollDismissesKeyboard(.interactively)
 						.scrollIndicators(.hidden)
 						.onAppear {
+						}
+						.onChange(of: filteredMessages, initial: true) {
 							if let firstUnreadMessage {
 								scrollView.scrollTo(firstUnreadMessage)
 							}
 							else {
 								scrollView.scrollTo(textFieldPlaceholderID)
-							}
-						}
-						.onChange(of: filteredMessages) {
-							if let id = filteredMessages.last?.messageId, id != scrolledToId {
-								scrollView.scrollTo(id)
-								scrolledToId = id
 							}
 						}
 				}
@@ -186,8 +180,6 @@ struct MessageList: View {
 		List {
 			ForEach(filteredMessages, id: \.messageId) { message in
 				messageView(for: message)
-					.id(message.messageId)
-					.frame(maxWidth: .infinity)
 					.listRowSeparator(.hidden)
 					.listRowBackground(Color.clear)
 					.scrollContentBackground(.hidden)
@@ -298,18 +290,10 @@ struct MessageList: View {
 							replyMessageId = message.messageId
 							messageFieldFocused = true
 						}
-						.id(message.messageId)
 
 						if isCurrentUser && message.canRetry {
 							RetryButton(message: message, destination: destination)
 						}
-					}
-				}
-
-				TapbackResponses(message: message) {
-					if let myInfo {
-						appState.unreadChannelMessages = myInfo.unreadMessages
-						context.refresh(myInfo, mergeChanges: true)
 					}
 				}
 			}

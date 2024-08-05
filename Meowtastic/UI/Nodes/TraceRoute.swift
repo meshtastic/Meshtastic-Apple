@@ -63,7 +63,7 @@ struct TraceRoute: View {
 							}
 						}
 
-						ForEach(routes, id: \.id) { (route: TraceRouteEntity) in
+						ForEach(routes, id: \.num) { (route: TraceRouteEntity) in
 							ZStack {
 								traceRoute(for: route)
 							}
@@ -88,7 +88,8 @@ struct TraceRoute: View {
 									.symbolRenderingMode(.hierarchical)
 							}
 							.font(.title2)
-						} else if selectedRoute.response {
+						}
+						else if selectedRoute.response {
 							Label {
 								Text("Trace route received directly by \(selectedRoute.node?.user?.longName ?? "unknown".localized)")
 							} icon: {
@@ -235,7 +236,7 @@ struct TraceRoute: View {
 								Spacer()
 									.frame(height: 4)
 
-								ForEach(hops, id: \.id) { hop in
+								ForEach(hops, id: \.num) { hop in
 									HStack(alignment: .center, spacing: 4) {
 										Image(systemName: "hare")
 											.font(.system(size: 10))

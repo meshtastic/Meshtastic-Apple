@@ -1,15 +1,7 @@
-//
-//  String.swift
-//  Meshtastic
-//
-//  Copyright(c) Garth Vander Houwen 4/25/23.
-//
-
 import Foundation
 import UIKit
 
 extension String {
-
 	func base64urlToBase64() -> String {
 		var base64 = self
 			.replacingOccurrences(of: "-", with: "+")

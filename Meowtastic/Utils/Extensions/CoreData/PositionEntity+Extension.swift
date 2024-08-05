@@ -58,21 +58,20 @@ extension PositionEntity {
 		let positionPredicate = NSPredicate(
 			format: "nodePosition != nil && (nodePosition.user.shortName != nil || nodePosition.user.shortName != '') && latest == true"
 		)
-
+		
 		if let lastKnownLocation = LocationManager.shared.lastKnownLocation {
 			let d: Double = UserDefaults.meshMapDistance * 1.1
 			let r: Double = 6371009
-
-
+			
 			let meanLatitidue = lastKnownLocation.coordinate.latitude * .pi / 180
 			let deltaLatitude = d / r * 180 / .pi
 			let deltaLongitude = d / (r * cos(meanLatitidue)) * 180 / .pi
-
+			
 			let minLatitude: Double = lastKnownLocation.coordinate.latitude - deltaLatitude
 			let maxLatitude: Double = lastKnownLocation.coordinate.latitude + deltaLatitude
 			let minLongitude: Double = lastKnownLocation.coordinate.longitude - deltaLongitude
 			let maxLongitude: Double = lastKnownLocation.coordinate.longitude + deltaLongitude
-
+			
 			let distancePredicate = NSPredicate(
 				format: "(%lf <= (longitudeI / 1e7)) AND ((longitudeI / 1e7) <= %lf) AND (%lf <= (latitudeI / 1e7)) AND ((latitudeI / 1e7) <= %lf)",
 				minLongitude,
@@ -80,7 +79,7 @@ extension PositionEntity {
 				minLatitude,
 				maxLatitude
 			)
-
+			
 			request.predicate = NSCompoundPredicate(
 				type: .and,
 				subpredicates: [positionPredicate, distancePredicate]
@@ -91,7 +90,8 @@ extension PositionEntity {
 		}
 
 		return request
-	}}
+	}
+}
 
 extension PositionEntity: MKAnnotation {
 	public var coordinate: CLLocationCoordinate2D {

@@ -218,7 +218,7 @@ struct NodeList: View {
 				nodesCount: suggestedNodes.count
 			)
 		) {
-			ForEach(suggestedNodes, id: \.id) { node in
+			ForEach(suggestedNodes, id: \.num) { node in
 				NodeListItem(
 					node: node,
 					connected: connectedNodeNum == node.num,
@@ -321,7 +321,7 @@ struct NodeList: View {
 					$0.num == connectedNodeNum
 				})
 
-				ForEach(nodeList, id: \.id) { node in
+				ForEach(nodeList, id: \.num) { node in
 					NodeListItem(
 						node: node,
 						connected: bleManager.connectedPeripheral?.num ?? -1 == node.num,

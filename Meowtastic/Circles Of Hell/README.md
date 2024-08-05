@@ -10,3 +10,6 @@ things needed to be done everytime code is pulled from original repository
 ## BLEManager
 - `connectTo(peripheral)` - do not stop scanning, leave it on Connect screen
 - `centralManager(_, didConnect)` - always save device we connected to as preferred
+
+##
+- core data models - do not ignore emoji-only messages

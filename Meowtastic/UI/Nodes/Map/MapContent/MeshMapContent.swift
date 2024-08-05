@@ -22,7 +22,7 @@ struct MeshMapContent: MapContent {
 
 	@MapContentBuilder
 	var body: some MapContent {
-		ForEach(positions, id: \.id) { position in
+		ForEach(positions, id: \.nodePosition?.num) { position in
 			if
 				let node = position.nodePosition,
 				let nodeName = node.user?.shortName

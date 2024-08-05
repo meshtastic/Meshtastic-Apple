@@ -75,25 +75,25 @@ struct MessageView: View {
 			)
 		}
 	}
-	
+
 	var body: some View {
 		ZStack(alignment: .topLeading) {
 			let markdownText = LocalizedStringKey(
 				message.messagePayloadMarkdown ?? (message.messagePayload ?? "EMPTY MESSAGE")
 			)
-			
+
 			VStack(alignment: isCurrentUser ? .trailing : .leading) {
 				if let originalMessage {
 					HStack(spacing: 0) {
 						Spacer()
 							.frame(width: 12)
-						
+
 						HStack() {
 							Image(systemName: "arrowshape.turn.up.left")
 								.font(.system(size: 14))
 								.symbolRenderingMode(.monochrome)
 								.foregroundColor(foregroundColor.opacity(0.8))
-							
+
 							Text(originalMessage)
 								.font(.system(size: 14))
 								.foregroundColor(foregroundColor).opacity(0.8)
@@ -117,17 +117,17 @@ struct MessageView: View {
 					}
 					.zIndex(1)
 				}
-				
+
 				VStack(alignment: .leading, spacing: 8) {
 					Text(markdownText)
 						.font(.body)
 						.foregroundColor(foregroundColor)
 						.tint(linkColor)
 						.padding([.leading, .trailing, .top], 16)
-					
+
 					HStack {
 						Spacer()
-						
+
 						if isCurrentUser {
 							messageStatus
 								.padding([.leading, .trailing], 8)
@@ -146,7 +146,7 @@ struct MessageView: View {
 				)
 				.overlay {
 					let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
-					
+
 					if tapBackDestination.overlaySensorMessage, isDetectionSensorMessage {
 						Image(systemName: "sensor.fill")
 							.padding()
@@ -184,7 +184,7 @@ struct MessageView: View {
 				}
 			}
 		}
-		.frame(width: .infinity)
+		.id(message.messageId)
 	}
 
 	@ViewBuilder

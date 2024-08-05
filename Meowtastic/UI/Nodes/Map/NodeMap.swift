@@ -47,13 +47,8 @@ struct NodeMap: View {
 	private var mapStyle: MapStyle {
 		getMapStyle(for: selectedMapLayer)
 	}
-	private var hasPositions: Bool {
-		if let positions = node.positions, positions.count > 1 {
-			return true
-		}
-		else {
-			return false
-		}
+	private var positionCount: Int {
+		node.positions?.count ?? 0
 	}
 
 	var body: some View {
@@ -61,7 +56,7 @@ struct NodeMap: View {
 			VStack(spacing: 0) {
 				map
 
-				if hasPositions {
+				if positionCount > 1 {
 					AltitudeHistoryView(node: node)
 						.frame(height: 200)
 				}
@@ -115,24 +110,25 @@ struct NodeMap: View {
 
 				mostRecent = node.positions?.lastObject as? PositionEntity
 
-				if hasPositions {
-					position = .automatic
-				} else {
+				if let mostRecent, mostRecent.coordinate.isValid {
 					position = .camera(
 						MapCamera(
-							centerCoordinate: mostRecent!.coordinate,
+							centerCoordinate: mostRecent.coordinate,
 							distance: 8000,
 							heading: 0,
 							pitch: 40
 						)
 					)
 				}
+				else {
+					position = .automatic
+				}
 			}
 			.safeAreaInset(edge: .bottom, alignment: .trailing) {
 				HStack {
 					Button(action: {
 						withAnimation {
-							isEditingSettings = !isEditingSettings
+							isEditingSettings.toggle()
 						}
 					}) {
 						Image(systemName: isEditingSettings ? "info.circle.fill" : "info.circle")
@@ -164,10 +160,12 @@ struct NodeMap: View {
 			return MapStyle.standard(
 				elevation: .flat
 			)
+
 		case .hybrid, .offline:
 			return MapStyle.hybrid(
 				elevation: .flat
 			)
+
 		case .satellite:
 			return MapStyle.imagery(
 				elevation: .flat

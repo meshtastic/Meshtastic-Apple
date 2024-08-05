@@ -1,12 +1,5 @@
-//
-//  NodeInfoEntityExtension.swift
-//  Meshtastic
-//
-//  Copyright(c) Garth Vander Houwen 9/3/23.
-//
-
-import Foundation
 import CoreData
+import Foundation
 
 extension NodeInfoEntity {
 	var latestEnvironmentMetrics: TelemetryEntity? {
@@ -34,19 +27,19 @@ extension NodeInfoEntity {
 	}
 
 	var hasDetectionSensorMetrics: Bool {
-		return user?.sensorMessageList?.count ?? 0 > 0
+		user?.sensorMessageList?.count ?? 0 > 0
 	}
 
 	var hasTraceRoutes: Bool {
-		return traceRoutes?.count ?? 0 > 0
+		traceRoutes?.count ?? 0 > 0
 	}
 
 	var hasPax: Bool {
-		return pax?.count ?? 0 > 0
+		pax?.count ?? 0 > 0
 	}
 
 	var isStoreForwardRouter: Bool {
-		return storeForwardConfig?.isRouter ?? false
+		storeForwardConfig?.isRouter ?? false
 	}
 
 	var isOnline: Bool {
@@ -54,12 +47,12 @@ extension NodeInfoEntity {
 		if lastHeard?.compare(fifteenMinutesAgo!) == .orderedDescending {
 			 return true
 		}
+
 		return false
 	}
 }
 
 public func createNodeInfo(num: Int64, context: NSManagedObjectContext) -> NodeInfoEntity {
-
 	let newNode = NodeInfoEntity(context: context)
 	newNode.id = Int64(num)
 	newNode.num = Int64(num)

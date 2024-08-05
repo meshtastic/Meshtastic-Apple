@@ -54,7 +54,10 @@ struct SimpleNodeMap: View {
 			.onAppear {
 				UIApplication.shared.isIdleTimerDisabled = true
 
-				if let lastCoordinate = (node.positions?.lastObject as? PositionEntity)?.coordinate {
+				if
+					let lastCoordinate = (node.positions?.lastObject as? PositionEntity)?.coordinate,
+					lastCoordinate.isValid
+				{
 					position = .camera(
 						MapCamera(
 							centerCoordinate: lastCoordinate,
@@ -63,6 +66,9 @@ struct SimpleNodeMap: View {
 							pitch: 80
 						)
 					)
+				}
+				else {
+					position = .automatic
 				}
 			}
 			.onDisappear {

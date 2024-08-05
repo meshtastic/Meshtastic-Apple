@@ -16,8 +16,6 @@ struct Messages: View {
 	private var context
 	@EnvironmentObject
 	private var bleManager: BLEManager
-	@StateObject
-	private var appState = AppState.shared
 	@Environment(\.colorScheme)
 	private var colorScheme: ColorScheme
 	@State
@@ -29,9 +27,9 @@ struct Messages: View {
 	@State
 	private var userSelection: UserEntity? // Nothing selected by default.
 	@State
-	private var isPresentingDeleteChannelMessagesConfirm: Bool = false
-	@State
 	private var isPresentingTraceRouteSentAlert = false
+	@State
+	private var isPresentingDeleteChannelMessagesConfirm: Bool = false
 	@State
 	private var isPresentingDeleteUserMessagesConfirm = false
 
@@ -45,16 +43,6 @@ struct Messages: View {
 	)
 	private var users: FetchedResults<UserEntity>
 
-	@FetchRequest(
-		sortDescriptors: [
-			NSSortDescriptor(key: "messageTimestamp", ascending: true)
-		]
-	)
-	private var messages: FetchedResults<MessageEntity>
-
-	private var myInfo: MyInfoEntity? {
-		node?.myInfo
-	}
 	private var channels: [ChannelEntity] {
 		if let channels = node?.myInfo?.channels?.array as? [ChannelEntity] {
 			return channels.filter { channel in
@@ -69,21 +57,17 @@ struct Messages: View {
 		return [ChannelEntity]()
 	}
 	private var usersFiltered: [UserEntity] {
-		if let node {
-			return users.filter { user in
-				guard user.userNode != nil else {
-					return false
-				}
-
-				if let num = bleManager.connectedPeripheral?.num, user.num == num {
-					return false
-				}
-
-				return true
+		users.filter { user in
+			guard user.userNode != nil else {
+				return false
 			}
-		}
 
-		return [UserEntity]()
+			if let num = bleManager.connectedPeripheral?.num, user.num == num {
+				return false
+			}
+
+			return true
+		}
 	}
 
 	private var badgeBackground: Color {
@@ -146,7 +130,7 @@ struct Messages: View {
 					nodesCount: channels.count
 				)
 			) {
-				ForEach(channels, id: \.id) { channel in
+				ForEach(channels, id: \.index) { channel in
 					makeChannelLink(for: channel)
 						.contextMenu {
 							Button {
@@ -214,7 +198,7 @@ struct Messages: View {
 				nodesCount: usersFiltered.count
 			)
 		) {
-			ForEach(usersFiltered, id: \.id) { user in
+			ForEach(usersFiltered, id: \.num) { user in
 				if user.num != bleManager.connectedPeripheral?.num ?? 0 {
 					makeUserLink(for: user)
 				}
@@ -238,84 +222,37 @@ struct Messages: View {
 
 	@ViewBuilder
 	private func makeChannelLink(for channel: ChannelEntity) -> some View {
-		let lastMessage = messages.last(where: { message in
-			message.channel == channel.index && message.toUser == nil
-		})
-		let lastMessageTime = Date(
-			timeIntervalSince1970: TimeInterval(Int64(lastMessage?.messageTimestamp ?? 0))
-		)
-		let lastMessageDay = Calendar.current.dateComponents(
-			[.day],
-			from: lastMessageTime
-		).day ?? 0
-		let currentDay = Calendar.current.dateComponents(
-			[.day],
-			from: Date()
-		).day ?? 0
-
 		NavigationLink {
-			MessageList(channel: channel, myInfo: myInfo)
+			MessageList(channel: channel, myInfo: node?.myInfo)
 		} label: {
 			HStack(spacing: 8) {
 				avatar(for: channel)
 
-				VStack(alignment: .leading) {
-					HStack(alignment: .top) {
-						if let name = channel.name, !name.isEmpty {
-							Text(name.camelCaseToWords())
+				HStack(alignment: .top) {
+					if let name = channel.name, !name.isEmpty {
+						Text(name.camelCaseToWords())
+							.lineLimit(1)
+							.font(.headline)
+							.minimumScaleFactor(0.5)
+					}
+					else {
+						if channel.role == 1 {
+							Text("Primary Channel")
+								.font(.headline)
 								.lineLimit(1)
 								.font(.headline)
 								.minimumScaleFactor(0.5)
 						}
 						else {
-							if channel.role == 1 {
-								Text("Primary Channel")
-									.font(.headline)
-									.lineLimit(1)
-									.font(.headline)
-									.minimumScaleFactor(0.5)
-							}
-							else {
-								Text("Channel #\(channel.index)")
-									.font(.headline)
-									.lineLimit(1)
-									.font(.headline)
-									.minimumScaleFactor(0.5)
-							}
-						}
-
-						Spacer()
-
-						if lastMessage != nil {
-							if lastMessageDay == currentDay {
-								Text(lastMessageTime, style: .time)
-									.font(.footnote)
-									.foregroundColor(.secondary)
-							}
-							else if lastMessageDay == (currentDay - 1) {
-								Text("Yesterday")
-									.font(.footnote)
-									.foregroundColor(.secondary)
-							}
-							else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-								Text(dateFormatter.string(from: lastMessageTime))
-									.font(.footnote)
-									.foregroundColor(.secondary)
-							}
-							else if lastMessageDay < (currentDay - 1800) {
-								Text(dateFormatter.string(from: lastMessageTime))
-									.font(.footnote)
-									.foregroundColor(.secondary)
-							}
+							Text("Channel #\(channel.index)")
+								.font(.headline)
+								.lineLimit(1)
+								.font(.headline)
+								.minimumScaleFactor(0.5)
 						}
 					}
 
-					if let payload = lastMessage?.messagePayload {
-						Text(payload)
-							.font(.footnote)
-							.foregroundColor(.secondary)
-							.lineLimit(2)
-					}
+					Spacer()
 				}
 			}
 		}
@@ -323,69 +260,19 @@ struct Messages: View {
 
 	@ViewBuilder
 	private func makeUserLink(for user: UserEntity) -> some View {
-		let lastMessage = messages.last(where: { message in
-			message.toUser != nil && message.fromUser != nil
-			&& (message.toUser?.num == user.num || message.fromUser?.num == user.num)
-			&& !message.admin
-			&& message.portNum != 10
-		})
-		let lastMessageTime = Date(
-			timeIntervalSince1970: TimeInterval(Int64(lastMessage?.messageTimestamp ?? 0))
-		)
-		let lastMessageDay = Calendar.current.dateComponents(
-			[.day],
-			from: lastMessageTime
-		).day ?? 0
-		let currentDay = Calendar.current.dateComponents(
-			[.day],
-			from: Date()
-		).day ?? 0
-
 		NavigationLink {
-			MessageList(user: user, myInfo: myInfo)
+			MessageList(user: user, myInfo: node?.myInfo)
 		} label: {
 			HStack(spacing: 8) {
 				avatar(for: user)
 
-				VStack(alignment: .leading) {
-					HStack(alignment: .top) {
-						Text(user.longName ?? "Unknown user")
-							.lineLimit(1)
-							.font(.headline)
-							.minimumScaleFactor(0.5)
+				HStack(alignment: .top) {
+					Text(user.longName ?? "Unknown user")
+						.lineLimit(1)
+						.font(.headline)
+						.minimumScaleFactor(0.5)
 
-						Spacer()
-
-						if lastMessage != nil {
-							if lastMessageDay == currentDay {
-								Text(lastMessageTime, style: .time)
-									.font(.footnote)
-									.foregroundColor(.secondary)
-							}
-							else if lastMessageDay == (currentDay - 1) {
-								Text("Yesterday")
-									.font(.footnote)
-									.foregroundColor(.secondary)
-							}
-							else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-								Text(dateFormatter.string(from: lastMessageTime))
-									.font(.footnote)
-									.foregroundColor(.secondary)
-							}
-							else if lastMessageDay < (currentDay - 1800) {
-								Text(dateFormatter.string(from: lastMessageTime))
-									.font(.footnote)
-									.foregroundColor(.secondary)
-							}
-						}
-					}
-
-					if let payload = lastMessage?.messagePayload {
-						Text(payload)
-							.font(.footnote)
-							.foregroundColor(.secondary)
-							.lineLimit(2)
-					}
+					Spacer()
 				}
 			}
 		}
