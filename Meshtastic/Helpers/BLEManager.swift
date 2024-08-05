@@ -590,7 +590,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				return
 			}
 			do {
-				let logRecord = try LogRecord(serializedBytes: characteristic.value!)
+				let logRecord = try LogRecord(serializedData: characteristic.value!)
 				var message = logRecord.source.isEmpty ? logRecord.message : "[\(logRecord.source)] \(logRecord.message)"
 				switch logRecord.level {
 				case .debug:
@@ -627,7 +627,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			var decodedInfo = FromRadio()
 
 			do {
-				decodedInfo = try FromRadio(serializedBytes: characteristic.value!)
+				decodedInfo = try FromRadio(serializedData: characteristic.value!)
 
 			} catch {
 				Logger.services.error("💥 \(error.localizedDescription, privacy: .public) \(characteristic.value!, privacy: .public)")
