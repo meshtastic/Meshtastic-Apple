@@ -243,13 +243,11 @@ struct Settings: View {
 
 	var loggingSection: some View {
 		Section(header: Text("logging")) {
-			if #available (iOS 17.0, *) {
-				NavigationLink(value: SettingsNavigationState.debugLogs) {
-					Label {
-						Text("Logs")
-					} icon: {
-						Image(systemName: "scroll")
-					}
+			NavigationLink(value: SettingsNavigationState.debugLogs) {
+				Label {
+					Text("Logs")
+				} icon: {
+					Image(systemName: "scroll")
 				}
 			}
 		}
@@ -401,7 +399,9 @@ struct Settings: View {
 					radioConfigurationSection
 					deviceConfigurationSection
 					moduleConfigurationSection
-					loggingSection
+					if #available (iOS 17.0, *) {
+						loggingSection
+					}
 #if DEBUG
 					developersSection
 #endif
