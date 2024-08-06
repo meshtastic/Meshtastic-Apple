@@ -63,7 +63,13 @@ struct Connect: View {
 										}
 										Text("ble.name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name ?? "unknown".localized)")
 											.font(.callout).foregroundColor(Color.gray)
+
 										if node != nil {
+											if let batteryLevel = BatteryHelper.getBatteryFromTelemetries(node?.telemetries) {
+												Text("battery.level".localized).font(.callout)+Text(": \(Int(batteryLevel))%")
+													.font(.callout).foregroundColor(Color.gray)
+											}
+
 											Text("firmware.version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "unknown".localized)")
 												.font(.callout).foregroundColor(Color.gray)
 										}
