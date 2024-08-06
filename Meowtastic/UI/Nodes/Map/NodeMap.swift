@@ -102,12 +102,7 @@ struct NodeMap: View {
 					.mapControlVisibility(.visible)
 			}
 			.controlSize(.regular)
-			.onDisappear {
-				UIApplication.shared.isIdleTimerDisabled = false
-			}
 			.onChange(of: node, initial: true) {
-				UIApplication.shared.isIdleTimerDisabled = true
-
 				mostRecent = node.positions?.lastObject as? PositionEntity
 
 				if let mostRecent, mostRecent.coordinate.isValid {

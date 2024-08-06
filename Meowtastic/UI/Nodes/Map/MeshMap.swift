@@ -77,11 +77,5 @@ struct MeshMap: View {
 				trailing: ConnectedDevice()
 			)
 		}
-		.onAppear {
-			UIApplication.shared.isIdleTimerDisabled = true
-		}
-		.onDisappear {
-			UIApplication.shared.isIdleTimerDisabled = false
-		}
 	}
 }

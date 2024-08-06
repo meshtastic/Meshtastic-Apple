@@ -1,5 +1,5 @@
-import SwiftUI
 import CoreLocation
+import SwiftUI
 import MapKit
 
 struct SimpleNodeMap: View {
@@ -52,8 +52,6 @@ struct SimpleNodeMap: View {
 			.mapScope(mapScope)
 			.mapStyle(mapStyle)
 			.onAppear {
-				UIApplication.shared.isIdleTimerDisabled = true
-
 				if
 					let lastCoordinate = (node.positions?.lastObject as? PositionEntity)?.coordinate,
 					lastCoordinate.isValid
@@ -67,12 +65,6 @@ struct SimpleNodeMap: View {
 						)
 					)
 				}
-				else {
-					position = .automatic
-				}
-			}
-			.onDisappear {
-				UIApplication.shared.isIdleTimerDisabled = false
 			}
 		}
 	}
