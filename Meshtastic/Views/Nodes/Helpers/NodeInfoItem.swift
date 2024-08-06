@@ -11,8 +11,9 @@ import MapKit
 
 struct NodeInfoItem: View {
 
-	@ObservedObject
-	var node: NodeInfoEntity
+	@ObservedObject var node: NodeInfoEntity
+	@State private var currentDevice: DeviceHardware?
+	@State private var deviceHardware: [DeviceHardware] = []
 
 	var modemPreset: ModemPresets = ModemPresets(
 		rawValue: UserDefaults.modemPreset
@@ -29,7 +30,7 @@ struct NodeInfoItem: View {
 								.aspectRatio(contentMode: .fit)
 								.frame(width: 65, height: 65)
 								.cornerRadius(5)
-							Text(String(node.user!.hwModel ?? "unset".localized))
+							Text(String(currentDevice?.displayName ?? (node.user?.hwModel ?? "unset".localized)))
 								.font(.callout)
 						} else {
 							Image(systemName: "person.crop.circle.badge.questionmark")
@@ -39,6 +40,30 @@ struct NodeInfoItem: View {
 								.cornerRadius(5)
 							Text(String("incomplete".localized))
 								.font(.callout)
+						}
+					}
+					.onAppear(perform: {
+						if currentDevice == nil {
+							Api().loadDeviceHardwareData { (hw) in
+								for device in hw {
+									let currentHardware = node.user?.hwModel ?? "UNSET"
+									let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "")
+									if deviceString == currentHardware {
+										currentDevice = device
+									}
+								}
+							}
+						}
+					})
+					.onChange(of: node) { newNode in
+						Api().loadDeviceHardwareData { (hw) in
+							for device in hw {
+								let currentHardware = newNode.user?.hwModel ?? "UNSET"
+								let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "")
+								if deviceString == currentHardware {
+									currentDevice = device
+								}
+							}
 						}
 					}
 				}
