@@ -361,6 +361,13 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				fetchedNode[0].user!.isLicensed = nodeInfo.user.isLicensed
 				fetchedNode[0].user!.role = Int32(nodeInfo.user.role.rawValue)
 				fetchedNode[0].user!.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
+				fetchedNode[0].user!.hwModelId = Int32(nodeInfo.user.hwModel.rawValue)
+				Task {
+					Api().loadDeviceHardwareData { (hw) in
+						let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user!.hwModelId })
+						fetchedNode[0].user!.hwDisplayName = dh?.displayName
+					}
+				}
 			} else {
 				if fetchedNode[0].user == nil && nodeInfo.num > Constants.minimumNodeNum {
 
