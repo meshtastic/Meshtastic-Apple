@@ -288,6 +288,12 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				newUser.shortName = nodeInfo.user.shortName
 				newUser.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
 				newUser.hwModelId = Int32(nodeInfo.user.hwModel.rawValue)
+				Task {
+					Api().loadDeviceHardwareData { (hw) in
+						let dh = hw.first(where: { $0.hwModel == newUser.hwModelId })
+						newUser.hwDisplayName = dh?.displayName
+					}
+				}
 				newUser.isLicensed = nodeInfo.user.isLicensed
 				newUser.role = Int32(nodeInfo.user.role.rawValue)
 				newNode.user = newUser
