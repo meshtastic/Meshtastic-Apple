@@ -267,7 +267,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].user!.hwModelId = Int32(nodeInfoMessage.user.hwModel.rawValue)
 					Task {
 						Api().loadDeviceHardwareData { (hw) in
-							let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user!.hwModelId })
+							let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user?.hwModelId ?? 0 })
 							fetchedNode[0].user!.hwDisplayName = dh?.displayName
 						}
 					}
