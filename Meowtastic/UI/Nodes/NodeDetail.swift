@@ -139,7 +139,7 @@ struct NodeDetail: View {
 					let distance = location.distance(from: myLocation)
 					let distanceFormatted = distanceFormatter.string(fromDistance: Double(distance))
 
-					Image(systemName: "arrow.left.and.right")
+					Image(systemName: "mappin.and.ellipse")
 						.font(detailInfoFont)
 						.foregroundColor(.gray)
 						.frame(width: detailIconSize)
@@ -244,7 +244,8 @@ struct NodeDetail: View {
 	@ViewBuilder
 	private var environmentInfo: some View {
 		if let nodeEnvironment {
-			let tempFormatted = String(format: "%.1f", nodeEnvironment.temperature) + "°C"
+			let temp = nodeEnvironment.temperature
+			let tempFormatted = String(format: "%.1f", temp) + "°C"
 			let humidityFormatted = String(format: "%.0f", nodeEnvironment.relativeHumidity.rounded()) + "%"
 			let pressureFormatted = String(format: "%.0f", nodeEnvironment.barometricPressure.rounded()) + "hPa"
 			let windFormatted = String(format: "%.0f", nodeEnvironment.windSpeed.rounded()) + "m/s"
@@ -265,10 +266,24 @@ struct NodeDetail: View {
 						.frame(width: 8)
 				}
 
-				Image(systemName: "thermometer.variable")
-					.font(detailInfoFont)
-					.foregroundColor(.gray)
-					.frame(width: detailIconSize)
+				if temp < 10 {
+					Image(systemName: "thermometer.low")
+						.font(detailInfoFont)
+						.foregroundColor(.gray)
+						.frame(width: detailIconSize)
+				}
+				else if temp < 25 {
+					Image(systemName: "thermometer.medium")
+						.font(detailInfoFont)
+						.foregroundColor(.gray)
+						.frame(width: detailIconSize)
+				}
+				else {
+					Image(systemName: "thermometer.high")
+						.font(detailInfoFont)
+						.foregroundColor(.gray)
+						.frame(width: detailIconSize)
+				}
 
 				Text(tempFormatted)
 					.font(detailInfoFont)

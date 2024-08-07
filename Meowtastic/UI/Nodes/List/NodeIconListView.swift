@@ -111,11 +111,6 @@ struct NodeIconListView: View {
 			if node.hasPositions {
 				divider
 
-				Image(systemName: "mappin.and.ellipse")
-					.font(detailInfoIconFont)
-					.foregroundColor(.gray)
-					.frame(width: detailIconSize)
-
 				if
 					!small,
 					let currentCoordinate = locationManager.lastKnownLocation?.coordinate,
@@ -132,11 +127,21 @@ struct NodeIconListView: View {
 					let distance = location.distance(from: myLocation) / 1000 // km
 					let distanceFormatted = String(format: "%.0f", distance) + "km"
 
+					Image(systemName: "mappin.and.ellipse")
+						.font(detailInfoIconFont)
+						.foregroundColor(.gray)
+
 					Text(distanceFormatted)
 						.font(detailInfoTextFont)
 						.lineLimit(1)
 						.minimumScaleFactor(0.7)
 						.foregroundColor(.gray)
+				}
+				else {
+					Image(systemName: "mappin.and.ellipse")
+						.font(detailInfoIconFont)
+						.foregroundColor(.gray)
+						.frame(width: detailIconSize)
 				}
 			}
 
@@ -161,19 +166,36 @@ struct NodeIconListView: View {
 			if !small, node.hasEnvironmentMetrics {
 				divider
 
-				Image(systemName: "cloud.sun.rain")
-					.font(detailInfoIconFont)
-					.foregroundColor(.gray)
-					.frame(width: detailIconSize)
-
 				if !small, let nodeEnvironment {
-					let tempFormatted = String(format: "%.0f", nodeEnvironment.temperature) + "°C"
+					let temp = nodeEnvironment.temperature
+					let tempFormatted = String(format: "%.0f", temp) + "°C"
+					if temp < 10 {
+						Image(systemName: "thermometer.low")
+							.font(detailInfoIconFont)
+							.foregroundColor(.gray)
+					}
+					else if temp < 25 {
+						Image(systemName: "thermometer.medium")
+							.font(detailInfoIconFont)
+							.foregroundColor(.gray)
+					}
+					else {
+						Image(systemName: "thermometer.high")
+							.font(detailInfoIconFont)
+							.foregroundColor(.gray)
+					}
 
 					Text(tempFormatted)
 						.font(detailInfoTextFont)
 						.lineLimit(1)
 						.minimumScaleFactor(0.7)
 						.foregroundColor(.gray)
+				}
+				else {
+					Image(systemName: "thermometer.variable")
+						.font(detailInfoIconFont)
+						.foregroundColor(.gray)
+						.frame(width: detailIconSize)
 				}
 			}
 		}
