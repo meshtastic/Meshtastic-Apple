@@ -368,6 +368,14 @@
 	"displayName": "RadioMaster 900 Bandit Nano"
   },
   {
+	"hwModel": 66,
+	"hwModelSlug": "HELTEC_VISION_MASTER_T190",
+	"platformioTarget": "heltec-vision-master-T190",
+	"architecture": "esp32-s3",
+	"activelySupported": true,
+	"displayName": "Heltec Vision Master T190"
+  },
+  {
 	"hwModel": 67,
 	"hwModelSlug": "HELTEC_VISION_MASTER_E213",
 	"platformioTarget": "heltec-vision-master-e213",

@@ -237,7 +237,7 @@ struct UserList: View {
 	private func searchUserList() {
 
 		/// Case Insensitive Search Text Predicates
-		let searchPredicates = ["userId", "numString", "hwModel", "longName", "shortName"].map { property in
+		let searchPredicates = ["userId", "numString", "hwModel", "hwDisplayName", "longName", "shortName"].map { property in
 			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
 		}
 		/// Create a compound predicate using each text search preicate as an OR
