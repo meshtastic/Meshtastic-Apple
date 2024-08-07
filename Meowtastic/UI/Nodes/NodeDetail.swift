@@ -213,16 +213,16 @@ struct NodeDetail: View {
 
 	@ViewBuilder
 	private var environmentInfo: some View {
-		if let environment = nodeEnvironment {
-			let tempFormatted = String(format: "%.1f", environment.temperature) + "°C"
-			let humidityFormatted = String(format: "%.0f", environment.relativeHumidity.rounded()) + "%"
-			let pressureFormatted = String(format: "%.0f", environment.barometricPressure.rounded()) + "hPa"
-			let windFormatted = String(format: "%.0f", environment.windSpeed.rounded()) + "m/s"
+		if let nodeEnvironment {
+			let tempFormatted = String(format: "%.1f", nodeEnvironment.temperature) + "°C"
+			let humidityFormatted = String(format: "%.0f", nodeEnvironment.relativeHumidity.rounded()) + "%"
+			let pressureFormatted = String(format: "%.0f", nodeEnvironment.barometricPressure.rounded()) + "hPa"
+			let windFormatted = String(format: "%.0f", nodeEnvironment.windSpeed.rounded()) + "m/s"
 
 			HStack(alignment: .center, spacing: 8) {
-				if environment.windSpeed != 0 {
+				if nodeEnvironment.windSpeed != 0 {
 					Image(systemName: "arrow.up.circle")
-						.rotationEffect(.degrees(Double(environment.windDirection)))
+						.rotationEffect(.degrees(Double(nodeEnvironment.windDirection)))
 						.font(detailInfoFont)
 						.foregroundColor(.gray)
 						.frame(width: detailIconSize)
@@ -244,7 +244,7 @@ struct NodeDetail: View {
 					.font(detailInfoFont)
 					.foregroundColor(.gray)
 
-				if environment.relativeHumidity > 0, environment.relativeHumidity < 100 {
+				if nodeEnvironment.relativeHumidity > 0, nodeEnvironment.relativeHumidity < 100 {
 					Spacer()
 						.frame(width: 8)
 
@@ -258,7 +258,7 @@ struct NodeDetail: View {
 						.foregroundColor(.gray)
 				}
 
-				if environment.barometricPressure > 0 {
+				if nodeEnvironment.barometricPressure > 0 {
 					Spacer()
 						.frame(width: 8)
 

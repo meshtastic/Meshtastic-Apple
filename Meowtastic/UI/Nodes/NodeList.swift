@@ -3,6 +3,9 @@ import OSLog
 import SwiftUI
 
 struct NodeList: View {
+	private let detailInfoFont = Font.system(size: 14, weight: .regular, design: .rounded)
+	private let detailIconSize: CGFloat = 16
+
 	@SceneStorage("selectedDetailView")
 	private var selectedDetailView: String?
 	@Environment(\.managedObjectContext)
@@ -258,9 +261,42 @@ struct NodeList: View {
 							node: connectedNode,
 							withLabels: true
 						)
+
+						let deviceMetrics = connectedNode.telemetries?.filtered(
+							using: NSPredicate(format: "metricsType == 0")
+						)
+						let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
+
+						if let channelUtil = mostRecent?.channelUtilization {
+							let chUtilFormatted = String(format: "%.2f", channelUtil * 100) + "%"
+
+							HStack {
+								Image(systemName: "arrow.left.arrow.right.circle.fill")
+									.font(detailInfoFont)
+									.foregroundColor(.gray)
+
+								Text("Channel: " + chUtilFormatted)
+									.font(detailInfoFont)
+									.foregroundColor(.gray)
+							}
+						}
+
+						if let airUtilTx = mostRecent?.airUtilTx {
+							let airUtilFormatted = String(format: "%.2f", airUtilTx * 100) + "%"
+
+							HStack {
+								Image(systemName: "wave.3.right.circle.fill")
+									.font(detailInfoFont)
+									.foregroundColor(.gray)
+
+								Text("Air Time: " + airUtilFormatted)
+									.font(detailInfoFont)
+									.foregroundColor(.gray)
+							}
+						}
 					}
 					else {
-						Text("Not connected... yet")
+						Text("Not connected")
 							.lineLimit(1)
 							.fontWeight(.medium)
 							.font(.title2)

@@ -46,7 +46,7 @@ struct NodeListItem: View {
 				VStack(alignment: .leading, spacing: 8) {
 					name
 
-					if isSignal || isBattery {
+					if node.isOnline, isSignal || isBattery {
 						HStack(alignment: .center, spacing: 16) {
 							signalStrength
 							battery
@@ -60,7 +60,15 @@ struct NodeListItem: View {
 					}
 
 					NodeIconListView(connectedNode: connectedNode, node: node)
-						.padding(.top, 8)
+						.padding(.vertical, 4)
+						.padding(.horizontal, 12)
+						.overlay(
+							RoundedRectangle(cornerRadius: 16)
+								.stroke(.gray, lineWidth: 1)
+						)
+						.clipShape(
+							RoundedRectangle(cornerRadius: 16)
+						)
 				}
 				.frame(maxWidth: .infinity, alignment: .leading)
 			}

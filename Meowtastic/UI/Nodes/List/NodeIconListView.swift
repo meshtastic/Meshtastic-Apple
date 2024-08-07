@@ -8,12 +8,24 @@ struct NodeIconListView: View {
 	@ObservedObject
 	var node: NodeInfoEntity
 
-	private let detailInfoFont = Font.system(size: 14, weight: .regular, design: .rounded)
+	private var nodePosition: PositionEntity? {
+		node.positions?.lastObject as? PositionEntity
+	}
+	private var nodeEnvironment: TelemetryEntity? {
+		node
+			.telemetries?
+			.filtered(
+				using: NSPredicate(format: "metricsType == 1")
+			)
+			.lastObject as? TelemetryEntity
+	}
+	private let detailInfoIconFont = Font.system(size: 14, weight: .regular, design: .rounded)
+	private let detailInfoTextFont = Font.system(size: 12, weight: .light, design: .rounded)
 	private var detailIconSize: CGFloat {
 		small ? 12 : 16
 	}
 	private var detailIconSpacing: CGFloat {
-		small ? 6 : 12
+		small ? 6 : 8
 	}
 
 	@Environment(\.colorScheme)
@@ -24,67 +36,100 @@ struct NodeIconListView: View {
 		HStack(alignment: .center, spacing: detailIconSpacing) {
 			if !small, let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))?.systemName {
 				Image(systemName: role)
-					.font(detailInfoFont)
+					.font(detailInfoIconFont)
 					.foregroundColor(.gray)
 					.frame(width: detailIconSize)
 			}
 
 			if connectedNode != node.num {
 				if node.viaMqtt {
+					divider
+
 					Image(systemName: "network")
-						.font(detailInfoFont)
+						.font(detailInfoIconFont)
 						.foregroundColor(.gray)
 						.frame(width: detailIconSize)
 				}
 
 				if node.hopsAway == 0 {
+					divider
+
 					Image(systemName: "wifi.circle")
-						.font(detailInfoFont)
+						.font(detailInfoIconFont)
 						.foregroundColor(.gray)
 						.frame(width: detailIconSize)
 				}
 				else {
+					divider
+
 					Image(systemName: "\(node.hopsAway).circle")
-						.font(detailInfoFont)
+						.font(detailInfoIconFont)
 						.foregroundColor(.gray)
 						.frame(width: detailIconSize)
 				}
 			}
 
 			if !small, node.hasTraceRoutes {
+				divider
+
 				Image(systemName: "signpost.right.and.left")
-					.font(detailInfoFont)
+					.font(detailInfoIconFont)
 					.foregroundColor(.gray)
 					.frame(width: detailIconSize)
 			}
 
 			if node.hasPositions {
+				divider
+
 				Image(systemName: "mappin.and.ellipse")
-					.font(detailInfoFont)
+					.font(detailInfoIconFont)
 					.foregroundColor(.gray)
 					.frame(width: detailIconSize)
 			}
 
 			if !small, node.isStoreForwardRouter {
+				divider
+
 				Image(systemName: "envelope.arrow.triangle.branch")
-					.font(detailInfoFont)
+					.font(detailInfoIconFont)
 					.foregroundColor(.gray)
 					.frame(width: detailIconSize)
 			}
 
 			if !small, node.hasDetectionSensorMetrics {
+				divider
+
 				Image(systemName: "sensor")
-					.font(detailInfoFont)
+					.font(detailInfoIconFont)
 					.foregroundColor(.gray)
 					.frame(width: detailIconSize)
 			}
 
 			if !small, node.hasEnvironmentMetrics {
+				divider
+
 				Image(systemName: "cloud.sun.rain")
-					.font(detailInfoFont)
+					.font(detailInfoIconFont)
 					.foregroundColor(.gray)
 					.frame(width: detailIconSize)
+
+				if !small, let nodeEnvironment {
+					let tempFormatted = String(format: "%.0f", nodeEnvironment.temperature) + "°C"
+
+					Text(tempFormatted)
+						.font(detailInfoTextFont)
+						.foregroundColor(.gray)
+				}
 			}
+		}
+	}
+
+	@ViewBuilder
+	private var divider: some View {
+		if !small {
+			Divider()
+				.frame(height: 16)
+				.foregroundColor(.gray)
 		}
 	}
 }
