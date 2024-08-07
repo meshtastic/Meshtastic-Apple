@@ -346,53 +346,87 @@ struct NodeDetail: View {
 							.foregroundColor(.accentColor)
 					}
 				}
-
+				
 				Spacer()
-
+				
 				if node.viaMqtt {
 					Text("MQTT")
 				}
 				else {
 					VStack(alignment: .trailing, spacing: 4) {
 						Text("LoRa")
-
+						
 						if node.rssi != 0 || node.snr != 0 {
-								HStack(spacing: 8) {
-									if node.rssi != 0 {
-										Text("RSSI: \(node.rssi)dBm")
-											.font(.system(size: 10, weight: .light))
-											.foregroundColor(.gray)
-									}
-									if node.snr != 0 {
-										Text("SNR: \(String(format: "%.1f", node.snr))dB")
-											.font(.system(size: 10, weight: .light))
-											.foregroundColor(.gray)
-									}
+							HStack(spacing: 8) {
+								if node.rssi != 0 {
+									Text("RSSI: \(node.rssi)dBm")
+										.font(.system(size: 10, weight: .light))
+										.foregroundColor(.gray)
+								}
+								if node.snr != 0 {
+									Text("SNR: \(String(format: "%.1f", node.snr))dB")
+										.font(.system(size: 10, weight: .light))
+										.foregroundColor(.gray)
+								}
 							}
 						}
 					}
 				}
 			}
+		}
 
+		if let channelUtil = nodeTelemetry?.channelUtilization {
 			HStack {
 				Label {
-					Text("Hops")
+					Text("Channel")
 				} icon: {
-					Image(systemName: "hare")
+					Image(systemName: "arrow.left.arrow.right.circle")
 						.symbolRenderingMode(.monochrome)
 						.foregroundColor(.accentColor)
 				}
 
 				Spacer()
 
-				if node.hopsAway == 0 {
-					Text("Direct visibility")
+				Text(String(format: "%.2f", channelUtil) + "%")
+			}
+		}
+
+		if let airUtil = nodeTelemetry?.airUtilTx {
+			HStack {
+				Label {
+					Text("Air Time")
+				} icon: {
+					Image(systemName: "wave.3.right.circle")
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
 				}
-				else {
-					Text("\(node.hopsAway) hop(s)")
-				}
+
+				Spacer()
+
+				Text(String(format: "%.2f", airUtil) + "%")
+			}
+		}
+
+		HStack {
+			Label {
+				Text("Hops")
+			} icon: {
+				Image(systemName: "arrowshape.bounce.forward")
+					.symbolRenderingMode(.monochrome)
+					.foregroundColor(.accentColor)
 			}
 
+			Spacer()
+
+			if node.hopsAway == 0 {
+				Text("Direct visibility")
+			}
+			else {
+				Text("\(node.hopsAway) hop(s)")
+			}
+		}
+
+		if let num = connectedNode?.num, num != node.num {
 			if
 				let connectedPeripheral = bleManager.connectedPeripheral,
 				node.num != connectedPeripheral.num

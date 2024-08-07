@@ -268,7 +268,7 @@ struct NodeList: View {
 						let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
 
 						if let channelUtil = mostRecent?.channelUtilization {
-							let chUtilFormatted = String(format: "%.2f", channelUtil * 100) + "%"
+							let chUtilFormatted = String(format: "%.2f", channelUtil) + "%"
 
 							HStack {
 								Image(systemName: "arrow.left.arrow.right.circle.fill")
@@ -282,7 +282,7 @@ struct NodeList: View {
 						}
 
 						if let airUtilTx = mostRecent?.airUtilTx {
-							let airUtilFormatted = String(format: "%.2f", airUtilTx * 100) + "%"
+							let airUtilFormatted = String(format: "%.2f", airUtilTx) + "%"
 
 							HStack {
 								Image(systemName: "wave.3.right.circle.fill")

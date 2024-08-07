@@ -437,6 +437,9 @@
         }
       }
     },
+    "Air Time" : {
+
+    },
     "airtime" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2519,6 +2522,9 @@
           }
         }
       }
+    },
+    "Channel" : {
+
     },
     "Channel #%d" : {
 

@@ -19,14 +19,15 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
 
 	override init() {
 		locationManager = CLLocationManager()
-		locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
-		locationManager.pausesLocationUpdatesAutomatically = true
+		locationManager.desiredAccuracy = kCLLocationAccuracyBest
+		locationManager.pausesLocationUpdatesAutomatically = false
 		locationManager.allowsBackgroundLocationUpdates = true
 		locationManager.activityType = .other
 
 		super.init()
 
 		locationManager.delegate = self
+		locationManager.requestLocation()
 	}
 
 	func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
