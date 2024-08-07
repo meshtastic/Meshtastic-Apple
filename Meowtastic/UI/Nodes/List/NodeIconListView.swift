@@ -1,3 +1,4 @@
+import CoreLocation
 import Foundation
 import SwiftUI
 
@@ -7,6 +8,9 @@ struct NodeIconListView: View {
 
 	@ObservedObject
 	var node: NodeInfoEntity
+
+	@EnvironmentObject
+	private var locationManager: LocationManager
 
 	private var nodePosition: PositionEntity? {
 		node.positions?.lastObject as? PositionEntity
@@ -20,12 +24,12 @@ struct NodeIconListView: View {
 			.lastObject as? TelemetryEntity
 	}
 	private let detailInfoIconFont = Font.system(size: 14, weight: .regular, design: .rounded)
-	private let detailInfoTextFont = Font.system(size: 12, weight: .light, design: .rounded)
+	private let detailInfoTextFont = Font.system(size: 12, weight: .semibold, design: .rounded)
 	private var detailIconSize: CGFloat {
 		small ? 12 : 16
 	}
 	private var detailIconSpacing: CGFloat {
-		small ? 6 : 8
+		small ? 6 : 6
 	}
 
 	@Environment(\.colorScheme)
@@ -85,6 +89,29 @@ struct NodeIconListView: View {
 					.font(detailInfoIconFont)
 					.foregroundColor(.gray)
 					.frame(width: detailIconSize)
+
+				if
+					!small,
+					let currentCoordinate = locationManager.lastKnownLocation?.coordinate,
+					let lastCoordinate = (node.positions?.lastObject as? PositionEntity)?.coordinate
+				{
+					let myLocation = CLLocation(
+						latitude: currentCoordinate.latitude,
+						longitude: currentCoordinate.longitude
+					)
+					let location = CLLocation(
+						latitude: lastCoordinate.latitude,
+						longitude: lastCoordinate.longitude
+					)
+					let distance = location.distance(from: myLocation) / 1000 // km
+					let distanceFormatted = String(format: "%.0f", distance) + "km"
+
+					Text(distanceFormatted)
+						.font(detailInfoTextFont)
+						.lineLimit(1)
+						.minimumScaleFactor(0.7)
+						.foregroundColor(.gray)
+				}
 			}
 
 			if !small, node.isStoreForwardRouter {
@@ -118,6 +145,8 @@ struct NodeIconListView: View {
 
 					Text(tempFormatted)
 						.font(detailInfoTextFont)
+						.lineLimit(1)
+						.minimumScaleFactor(0.7)
 						.foregroundColor(.gray)
 				}
 			}

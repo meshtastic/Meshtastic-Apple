@@ -55,10 +55,6 @@ struct NodeListItem: View {
 
 					lastHeard
 
-					if node.positions?.count ?? 0 > 0 && connectedNode != node.num {
-						distance
-					}
-
 					NodeIconListView(connectedNode: connectedNode, node: node)
 						.padding(.vertical, 4)
 						.padding(.horizontal, 12)
@@ -168,38 +164,6 @@ struct NodeListItem: View {
 					.foregroundColor(node.isOnline ? .green : .gray)
 
 				Text("No idea")
-					.font(detailInfoFont)
-					.foregroundColor(.gray)
-			}
-		}
-	}
-
-	@ViewBuilder
-	private var distance: some View {
-		if
-			let currentCoordinate = locationManager.lastKnownLocation?.coordinate,
-			let lastCoordinate = (node.positions?.lastObject as? PositionEntity)?.coordinate
-		{
-			let myLocation = CLLocation(
-				latitude: currentCoordinate.latitude,
-				longitude: currentCoordinate.longitude
-			)
-
-			HStack {
-				let location = CLLocation(
-					latitude: lastCoordinate.latitude,
-					longitude: lastCoordinate.longitude
-				)
-				let distance = location.distance(from: myLocation)
-
-				Image(systemName: "mappin.and.ellipse.circle.fill")
-					.font(detailInfoFont)
-					.foregroundColor(.gray)
-
-				let formatter = MKDistanceFormatter()
-				let distanceFormatted = formatter.string(fromDistance: Double(distance))
-
-				Text(distanceFormatted)
 					.font(detailInfoFont)
 					.foregroundColor(.gray)
 			}

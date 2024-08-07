@@ -16,6 +16,8 @@ struct NodeDetail: View {
 	private var context
 	@EnvironmentObject
 	private var bleManager: BLEManager
+	@EnvironmentObject
+	private var locationManager: LocationManager
 
 	@State
 	private var showingShutdownConfirm = false
@@ -122,6 +124,34 @@ struct NodeDetail: View {
 	private var locationInfo: some View {
 		if let position = nodePosition {
 			HStack(alignment: .center, spacing: 8) {
+				if
+					let currentCoordinate = locationManager.lastKnownLocation?.coordinate,
+					let lastCoordinate = (node.positions?.lastObject as? PositionEntity)?.coordinate
+				{
+					let myLocation = CLLocation(
+						latitude: currentCoordinate.latitude,
+						longitude: currentCoordinate.longitude
+					)
+					let location = CLLocation(
+						latitude: lastCoordinate.latitude,
+						longitude: lastCoordinate.longitude
+					)
+					let distance = location.distance(from: myLocation)
+					let distanceFormatted = distanceFormatter.string(fromDistance: Double(distance))
+
+					Image(systemName: "arrow.left.and.right")
+						.font(detailInfoFont)
+						.foregroundColor(.gray)
+						.frame(width: detailIconSize)
+
+					Text(distanceFormatted)
+						.font(detailInfoFont)
+						.foregroundColor(.gray)
+
+					Spacer()
+						.frame(width: 8)
+				}
+
 				if position.speed > 0 {
 					let speed = Measurement(
 						value: Double(position.speed),
@@ -346,16 +376,16 @@ struct NodeDetail: View {
 							.foregroundColor(.accentColor)
 					}
 				}
-				
+
 				Spacer()
-				
+
 				if node.viaMqtt {
 					Text("MQTT")
 				}
 				else {
 					VStack(alignment: .trailing, spacing: 4) {
 						Text("LoRa")
-						
+
 						if node.rssi != 0 || node.snr != 0 {
 							HStack(spacing: 8) {
 								if node.rssi != 0 {
@@ -380,7 +410,7 @@ struct NodeDetail: View {
 				Label {
 					Text("Channel")
 				} icon: {
-					Image(systemName: "arrow.left.arrow.right.circle")
+					Image(systemName: "arrow.left.arrow.right")
 						.symbolRenderingMode(.monochrome)
 						.foregroundColor(.accentColor)
 				}
@@ -396,7 +426,7 @@ struct NodeDetail: View {
 				Label {
 					Text("Air Time")
 				} icon: {
-					Image(systemName: "wave.3.right.circle")
+					Image(systemName: "wave.3.right")
 						.symbolRenderingMode(.monochrome)
 						.foregroundColor(.accentColor)
 				}
