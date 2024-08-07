@@ -18,6 +18,24 @@ struct NodeListItem: View {
 	@EnvironmentObject
 	private var locationManager: LocationManager
 
+	private var isSignal: Bool {
+		node.snr != 0 && node.rssi != 0
+	}
+	private var isBattery: Bool {
+		let deviceMetrics = node.telemetries?.filtered(
+			using: NSPredicate(format: "metricsType == 0")
+		)
+		let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
+		let batteryLevel = mostRecent?.batteryLevel
+		let voltage = mostRecent?.voltage
+
+		if let voltage, let batteryLevel, voltage > 0 || batteryLevel > 0 {
+			return true
+		}
+
+		return false
+	}
+
 	var body: some View {
 		NavigationLink {
 			NodeDetail(node: node)
@@ -28,9 +46,11 @@ struct NodeListItem: View {
 				VStack(alignment: .leading, spacing: 8) {
 					name
 
-					HStack(alignment: .center, spacing: 16) {
-						signalStrength
-						battery
+					if isSignal || isBattery {
+						HStack(alignment: .center, spacing: 16) {
+							signalStrength
+							battery
+						}
 					}
 
 					lastHeard
@@ -44,6 +64,7 @@ struct NodeListItem: View {
 				}
 				.frame(maxWidth: .infinity, alignment: .leading)
 			}
+			.padding(.vertical, 8)
 		}
 	}
 
@@ -87,14 +108,15 @@ struct NodeListItem: View {
 	@ViewBuilder
 	private var name: some View {
 		Text(node.user?.longName ?? "Unknown")
-			.lineLimit(2)
 			.fontWeight(.medium)
 			.font(.title2)
+			.lineLimit(1)
+			.minimumScaleFactor(0.5)
 	}
 
 	@ViewBuilder
 	private var signalStrength: some View {
-		if node.snr != 0, node.rssi != 0 {
+		if isSignal {
 			LoraSignalView(
 				snr: node.snr,
 				rssi: node.rssi,
@@ -108,14 +130,7 @@ struct NodeListItem: View {
 
 	@ViewBuilder
 	private var battery: some View {
-		let deviceMetrics = node.telemetries?.filtered(
-			using: NSPredicate(format: "metricsType == 0")
-		)
-		let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
-		let batteryLevel = mostRecent?.batteryLevel
-		let voltage = mostRecent?.voltage
-
-		if let voltage, let batteryLevel, voltage > 0 || batteryLevel > 0 {
+		if isBattery {
 			BatteryView(
 				node: node
 			)
