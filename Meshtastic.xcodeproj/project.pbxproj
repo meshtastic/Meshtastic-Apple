@@ -58,6 +58,7 @@
 		DD1B8F402B35E2F10022AABC /* GPSStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1B8F3F2B35E2F10022AABC /* GPSStatus.swift */; };
 		DD1BD0EB2C601795008C0C70 /* CLLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BD0EA2C601795008C0C70 /* CLLocation.swift */; };
 		DD1BD0EE2C603C91008C0C70 /* CustomFormatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BD0ED2C603C91008C0C70 /* CustomFormatters.swift */; };
+		DD1BD0F32C63C65E008C0C70 /* SecurityConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BD0F22C63C65E008C0C70 /* SecurityConfig.swift */; };
 		DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */; };
 		DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2160AE28C5552500C17253 /* MQTTConfig.swift */; };
 		DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */; };
@@ -292,6 +293,7 @@
 		DD1BD0EA2C601795008C0C70 /* CLLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLLocation.swift; sourceTree = "<group>"; };
 		DD1BD0ED2C603C91008C0C70 /* CustomFormatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomFormatters.swift; sourceTree = "<group>"; };
 		DD1BD0F12C61D3AD008C0C70 /* MeshtasticDataModelV 42.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 42.xcdatamodel"; sourceTree = "<group>"; };
+		DD1BD0F22C63C65E008C0C70 /* SecurityConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityConfig.swift; sourceTree = "<group>"; };
 		DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageList.swift; sourceTree = "<group>"; };
 		DD2160AE28C5552500C17253 /* MQTTConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MQTTConfig.swift; sourceTree = "<group>"; };
 		DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralModel.swift; sourceTree = "<group>"; };
@@ -680,6 +682,7 @@
 				DD2553582855B52700E55709 /* PositionConfig.swift */,
 				DD8ED9C42898D51F00B3B0AB /* NetworkConfig.swift */,
 				D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */,
+				DD1BD0F22C63C65E008C0C70 /* SecurityConfig.swift */,
 				DD61937B2863877A00E59241 /* Module */,
 			);
 			path = Config;
@@ -1276,6 +1279,7 @@
 				DDB8F4102A9EE5B400230ECE /* Messages.swift in Sources */,
 				DDDB26482AACD6D1003AFCB7 /* NodeMapMapkit.swift in Sources */,
 				DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */,
+				DD1BD0F32C63C65E008C0C70 /* SecurityConfig.swift in Sources */,
 				DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */,
 				DD13AA492AB73BF400BA0C98 /* PositionPopover.swift in Sources */,
 				6DEDA55C2A9592F900321D2E /* MessageEntityExtension.swift in Sources */,

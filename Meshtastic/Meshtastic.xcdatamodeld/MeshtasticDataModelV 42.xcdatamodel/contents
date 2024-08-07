@@ -245,6 +245,7 @@
         <relationship name="powerConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PowerConfigEntity" inverseName="powerConfigNode" inverseEntity="PowerConfigEntity"/>
         <relationship name="rangeTestConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RangeTestConfigEntity" inverseName="rangeTestConfigNode" inverseEntity="RangeTestConfigEntity"/>
         <relationship name="rtttlConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RTTTLConfigEntity" inverseName="rtttlConfigNode" inverseEntity="RTTTLConfigEntity"/>
+        <relationship name="securityConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="SecurityConfigEntity" inverseName="securityConfigNode" inverseEntity="SecurityConfigEntity"/>
         <relationship name="serialConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="SerialConfigEntity" inverseName="serialConfigNode" inverseEntity="SerialConfigEntity"/>
         <relationship name="storeForwardConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="StoreForwardConfigEntity" inverseName="storeForwardConfigNode" inverseEntity="StoreForwardConfigEntity"/>
         <relationship name="telemetries" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="TelemetryEntity" inverseName="nodeTelemetry" inverseEntity="TelemetryEntity"/>
@@ -333,6 +334,17 @@
     <entity name="RTTTLConfigEntity" representedClassName="RTTTLConfigEntity" syncable="YES" codeGenerationType="class">
         <attribute name="ringtone" optional="YES" attributeType="String" maxValueString="228" defaultValueString=""/>
         <relationship name="rtttlConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="rtttlConfig" inverseEntity="NodeInfoEntity"/>
+    </entity>
+    <entity name="SecurityConfigEntity" representedClassName="SecurityConfigEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="adminChannelEnabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="adminKey" optional="YES" attributeType="Binary"/>
+        <attribute name="bluetoothLoggingEabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="debugLogEnabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="isManaged" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="privateKey" optional="YES" attributeType="Binary"/>
+        <attribute name="publicKey" optional="YES" attributeType="Binary"/>
+        <attribute name="serialEnabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <relationship name="securityConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="securityConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
     <entity name="SerialConfigEntity" representedClassName="SerialConfigEntity" syncable="YES" codeGenerationType="class">
         <attribute name="baudRate" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
