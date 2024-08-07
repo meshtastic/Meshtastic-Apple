@@ -22,7 +22,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 
 ///
 /// Font sizes for the device screen
-public enum ScreenFonts: SwiftProtobuf.Enum, Swift.CaseIterable {
+public enum ScreenFonts: SwiftProtobuf.Enum {
   public typealias RawValue = Int
 
   ///
@@ -60,18 +60,24 @@ public enum ScreenFonts: SwiftProtobuf.Enum, Swift.CaseIterable {
     }
   }
 
+}
+
+#if swift(>=4.2)
+
+extension ScreenFonts: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   public static let allCases: [ScreenFonts] = [
     .fontSmall,
     .fontMedium,
     .fontLarge,
   ]
-
 }
+
+#endif  // swift(>=4.2)
 
 ///
 /// Position with static location information only for NodeDBLite
-public struct PositionLite: Sendable {
+public struct PositionLite {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -106,7 +112,7 @@ public struct PositionLite: Sendable {
   public init() {}
 }
 
-public struct NodeInfoLite: @unchecked Sendable {
+public struct NodeInfoLite {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -209,7 +215,7 @@ public struct NodeInfoLite: @unchecked Sendable {
 /// FIXME, since we write this each time we enter deep sleep (and have infinite
 /// flash) it would be better to use some sort of append only data structure for
 /// the receive queue and use the preferences store for the other stuff
-public struct DeviceState: @unchecked Sendable {
+public struct DeviceState {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -269,8 +275,6 @@ public struct DeviceState: @unchecked Sendable {
   /// Used only during development.
   /// Indicates developer is testing and changes should never be saved to flash.
   /// Deprecated in 2.3.1
-  ///
-  /// NOTE: This field was marked as deprecated in the .proto file.
   public var noSave: Bool {
     get {return _storage._noSave}
     set {_uniqueStorage()._noSave = newValue}
@@ -319,7 +323,7 @@ public struct DeviceState: @unchecked Sendable {
 
 ///
 /// The on-disk saved channels
-public struct ChannelFile: Sendable {
+public struct ChannelFile {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -342,7 +346,7 @@ public struct ChannelFile: Sendable {
 ///
 /// This can be used for customizing the firmware distribution. If populated,
 /// show a secondary bootup screen with custom logo and text for 2.5 seconds.
-public struct OEMStore: @unchecked Sendable {
+public struct OEMStore {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -400,6 +404,15 @@ public struct OEMStore: @unchecked Sendable {
   fileprivate var _oemLocalConfig: LocalConfig? = nil
   fileprivate var _oemLocalModuleConfig: LocalModuleConfig? = nil
 }
+
+#if swift(>=5.5) && canImport(_Concurrency)
+extension ScreenFonts: @unchecked Sendable {}
+extension PositionLite: @unchecked Sendable {}
+extension NodeInfoLite: @unchecked Sendable {}
+extension DeviceState: @unchecked Sendable {}
+extension ChannelFile: @unchecked Sendable {}
+extension OEMStore: @unchecked Sendable {}
+#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
@@ -568,7 +581,7 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       try { if let v = _storage._position {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
       } }()
-      if _storage._snr.bitPattern != 0 {
+      if _storage._snr != 0 {
         try visitor.visitSingularFloatField(value: _storage._snr, fieldNumber: 4)
       }
       if _storage._lastHeard != 0 {

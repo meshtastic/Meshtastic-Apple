@@ -20,7 +20,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
-public enum Team: SwiftProtobuf.Enum, Swift.CaseIterable {
+public enum Team: SwiftProtobuf.Enum {
   public typealias RawValue = Int
 
   ///
@@ -130,6 +130,11 @@ public enum Team: SwiftProtobuf.Enum, Swift.CaseIterable {
     }
   }
 
+}
+
+#if swift(>=4.2)
+
+extension Team: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   public static let allCases: [Team] = [
     .unspecifedColor,
@@ -148,12 +153,13 @@ public enum Team: SwiftProtobuf.Enum, Swift.CaseIterable {
     .darkGreen,
     .brown,
   ]
-
 }
+
+#endif  // swift(>=4.2)
 
 ///
 /// Role of the group member
-public enum MemberRole: SwiftProtobuf.Enum, Swift.CaseIterable {
+public enum MemberRole: SwiftProtobuf.Enum {
   public typealias RawValue = Int
 
   ///
@@ -227,6 +233,11 @@ public enum MemberRole: SwiftProtobuf.Enum, Swift.CaseIterable {
     }
   }
 
+}
+
+#if swift(>=4.2)
+
+extension MemberRole: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   public static let allCases: [MemberRole] = [
     .unspecifed,
@@ -239,12 +250,13 @@ public enum MemberRole: SwiftProtobuf.Enum, Swift.CaseIterable {
     .rto,
     .k9,
   ]
-
 }
+
+#endif  // swift(>=4.2)
 
 ///
 /// Packets for the official ATAK Plugin
-public struct TAKPacket: Sendable {
+public struct TAKPacket {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -314,7 +326,7 @@ public struct TAKPacket: Sendable {
 
   ///
   /// The payload of the packet
-  public enum OneOf_PayloadVariant: Equatable, Sendable {
+  public enum OneOf_PayloadVariant: Equatable {
     ///
     /// TAK position report
     case pli(PLI)
@@ -322,6 +334,24 @@ public struct TAKPacket: Sendable {
     /// ATAK GeoChat message
     case chat(GeoChat)
 
+  #if !swift(>=4.1)
+    public static func ==(lhs: TAKPacket.OneOf_PayloadVariant, rhs: TAKPacket.OneOf_PayloadVariant) -> Bool {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch (lhs, rhs) {
+      case (.pli, .pli): return {
+        guard case .pli(let l) = lhs, case .pli(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.chat, .chat): return {
+        guard case .chat(let l) = lhs, case .chat(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      default: return false
+      }
+    }
+  #endif
   }
 
   public init() {}
@@ -333,7 +363,7 @@ public struct TAKPacket: Sendable {
 
 ///
 /// ATAK GeoChat message
-public struct GeoChat: Sendable {
+public struct GeoChat {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -375,7 +405,7 @@ public struct GeoChat: Sendable {
 ///
 /// ATAK Group
 /// <__group role='Team Member' name='Cyan'/>
-public struct Group: Sendable {
+public struct Group {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -397,7 +427,7 @@ public struct Group: Sendable {
 ///
 /// ATAK EUD Status
 /// <status battery='100' />
-public struct Status: Sendable {
+public struct Status {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -414,7 +444,7 @@ public struct Status: Sendable {
 ///
 /// ATAK Contact
 /// <contact endpoint='0.0.0.0:4242:tcp' phone='+12345678' callsign='FALKE'/>
-public struct Contact: Sendable {
+public struct Contact {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -434,7 +464,7 @@ public struct Contact: Sendable {
 
 ///
 /// Position Location Information from ATAK
-public struct PLI: Sendable {
+public struct PLI {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -465,6 +495,18 @@ public struct PLI: Sendable {
 
   public init() {}
 }
+
+#if swift(>=5.5) && canImport(_Concurrency)
+extension Team: @unchecked Sendable {}
+extension MemberRole: @unchecked Sendable {}
+extension TAKPacket: @unchecked Sendable {}
+extension TAKPacket.OneOf_PayloadVariant: @unchecked Sendable {}
+extension GeoChat: @unchecked Sendable {}
+extension Group: @unchecked Sendable {}
+extension Status: @unchecked Sendable {}
+extension Contact: @unchecked Sendable {}
+extension PLI: @unchecked Sendable {}
+#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
