@@ -73,7 +73,6 @@ struct MeshMap: View {
 			.navigationTitle("Mesh")
 			.navigationBarTitleDisplayMode(.large)
 			.navigationBarItems(
-				leading: MeshtasticLogo(),
 				trailing: ConnectedDevice()
 			)
 		}

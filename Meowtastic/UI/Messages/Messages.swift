@@ -113,9 +113,7 @@ struct Messages: View {
 				}
 			}
 			.navigationTitle("Messages")
-			.navigationBarTitleDisplayMode(.large)
 			.navigationBarItems(
-				leading: MeshtasticLogo(),
 				trailing: ConnectedDevice()
 			)
 		}

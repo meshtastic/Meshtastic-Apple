@@ -79,7 +79,6 @@ struct Options: View {
 			}
 			.navigationTitle("Options")
 			.navigationBarItems(
-				leading: MeshtasticLogo(),
 				trailing: ConnectedDevice()
 			)
 		}

@@ -210,7 +210,6 @@ struct TraceRoute: View {
 		}
 		.navigationTitle("Trace Route")
 		.navigationBarItems(
-			leading: MeshtasticLogo(),
 			trailing: ConnectedDevice()
 		)
 	}

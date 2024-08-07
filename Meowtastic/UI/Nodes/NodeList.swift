@@ -78,7 +78,6 @@ struct NodeList: View {
 			.scrollDismissesKeyboard(.interactively)
 			.navigationTitle("Nodes")
 			.navigationBarItems(
-				leading: MeshtasticLogo(),
 				trailing: ConnectedDevice()
 			)
 		}

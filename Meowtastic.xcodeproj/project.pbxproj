@@ -107,7 +107,6 @@
 		DD93800E2BA74D0C008BEC06 /* ChannelForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD93800D2BA74D0C008BEC06 /* ChannelForm.swift */; };
 		DD964FC2297272AE007C176F /* WaypointEntity+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC1297272AE007C176F /* WaypointEntity+Extension.swift */; };
 		DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC52975DBFD007C176F /* QueryCoreData.swift */; };
-		DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */; };
 		DD97E96828EFE9A00056DDA4 /* About.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96728EFE9A00056DDA4 /* About.swift */; };
 		DD994B69295F88B60013760A /* UpdateIntervals.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD994B68295F88B60013760A /* UpdateIntervals.swift */; };
 		DDA0B6B2294CDC55001356EC /* Channels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA0B6B1294CDC55001356EC /* Channels.swift */; };
@@ -302,7 +301,6 @@
 		DD93800D2BA74D0C008BEC06 /* ChannelForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelForm.swift; sourceTree = "<group>"; };
 		DD964FC1297272AE007C176F /* WaypointEntity+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WaypointEntity+Extension.swift"; sourceTree = "<group>"; };
 		DD964FC52975DBFD007C176F /* QueryCoreData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueryCoreData.swift; sourceTree = "<group>"; };
-		DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticLogo.swift; sourceTree = "<group>"; };
 		DD97E96728EFE9A00056DDA4 /* About.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = About.swift; sourceTree = "<group>"; };
 		DD994B68295F88B60013760A /* UpdateIntervals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateIntervals.swift; sourceTree = "<group>"; };
 		DDA0B6B1294CDC55001356EC /* Channels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channels.swift; sourceTree = "<group>"; };
@@ -407,7 +405,6 @@
 				DD3CC6BD28E4CD9800FA9159 /* BatteryView.swift */,
 				DDF924C926FBB953009FE055 /* ConnectedDevice.swift */,
 				DDB75A202A12B954006ED576 /* LoraSignalView.swift */,
-				DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */,
 				08DD7E622C42D8B300548159 /* MQTTConnectionIcon.swift */,
 				DDF45C332BC1A48E005ED5F2 /* MQTTChannelIcon.swift */,
 				DD457187293C7E63000C49FB /* SignalStrengthIndicator.swift */,
@@ -1004,7 +1001,6 @@
 				B2A5F30F2C5668FD009457AB /* SimpleNodeMap.swift in Sources */,
 				B266A76C2C59298900DFC723 /* GPSUpdateIntervals.swift in Sources */,
 				DD3CC6C028E7A60700FA9159 /* Tapbacks.swift in Sources */,
-				DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */,
 				B2A5F30B2C5668FD009457AB /* NodeMapContent.swift in Sources */,
 				D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */,
 				B266A7532C59219E00DFC723 /* Architecture.swift in Sources */,
