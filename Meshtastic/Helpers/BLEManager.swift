@@ -902,7 +902,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(connectedPeripheral.num))
 					do {
-						let fetchedNodeInfo = try context.fetch(fetchNodeInfoRequest) ?? []
+						let fetchedNodeInfo = try context.fetch(fetchNodeInfoRequest)
 						if fetchedNodeInfo.count == 1 {
 							// Subscribe to Mqtt Client Proxy if enabled
 							if fetchedNodeInfo[0].mqttConfig != nil && fetchedNodeInfo[0].mqttConfig?.enabled ?? false && fetchedNodeInfo[0].mqttConfig?.proxyToClientEnabled ?? false {
@@ -1132,7 +1132,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return success
 	}
 
-	@MainActor 
+	@MainActor
 	public func getPositionFromPhoneGPS(destNum: Int64) -> Position? {
 		var positionPacket = Position()
 		if #available(iOS 17.0, macOS 14.0, *) {
@@ -1265,7 +1265,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			
 			let logString = String.localizedStringWithFormat("mesh.log.sharelocation %@".localized, String(fromNodeNum))
 			Logger.services.debug("📍 \(logString)")
 			return true
@@ -1523,7 +1522,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
 							fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
 							do {
-								let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) ?? []
+								let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
 								if fetchedMyInfo.count == 1 {
 									i = Int32(fetchedMyInfo[0].channels?.count ?? -1)
 									myInfo = fetchedMyInfo[0]

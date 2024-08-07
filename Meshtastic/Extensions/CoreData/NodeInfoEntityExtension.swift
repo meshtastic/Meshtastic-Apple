@@ -63,7 +63,7 @@ public func createNodeInfo(num: Int64, context: NSManagedObjectContext) -> NodeI
 	newNode.num = Int64(num)
 	let newUser = UserEntity(context: context)
 	newUser.num = Int64(num)
-	let userId = String(format: "%2X", num)
+	let userId = num.toHex()
 	newUser.userId = "!\(userId)"
 	let last4 = String(userId.suffix(4))
 	newUser.longName = "Meshtastic \(last4)"

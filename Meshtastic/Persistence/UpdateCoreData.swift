@@ -177,6 +177,13 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					newUser.shortName = newUserMessage.shortName
 					newUser.role = Int32(newUserMessage.role.rawValue)
 					newUser.hwModel = String(describing: newUserMessage.hwModel).uppercased()
+					newUser.hwModelId = Int32(newUserMessage.hwModel.rawValue)
+					Task {
+						Api().loadDeviceHardwareData { (hw) in
+							let dh = hw.first(where: { $0.hwModel == newUser.hwModelId })
+							newUser.hwDisplayName = dh?.displayName
+						}
+					}
 					newNode.user = newUser
 
 					if UserDefaults.newNodeNotifications {
@@ -257,6 +264,13 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].user!.shortName = nodeInfoMessage.user.shortName
 					fetchedNode[0].user!.role = Int32(nodeInfoMessage.user.role.rawValue)
 					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
+					fetchedNode[0].user!.hwModelId = Int32(nodeInfoMessage.user.hwModel.rawValue)
+					Task {
+						Api().loadDeviceHardwareData { (hw) in
+							let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user?.hwModelId ?? 0 })
+							fetchedNode[0].user!.hwDisplayName = dh?.displayName
+						}
+					}
 				}
 			} else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 				fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)

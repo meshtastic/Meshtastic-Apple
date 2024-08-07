@@ -56,6 +56,8 @@
 		DD1933762B0835D500771CD5 /* PositionAltitudeChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1933752B0835D500771CD5 /* PositionAltitudeChart.swift */; };
 		DD1933782B084F4200771CD5 /* Measurement.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1933772B084F4200771CD5 /* Measurement.swift */; };
 		DD1B8F402B35E2F10022AABC /* GPSStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1B8F3F2B35E2F10022AABC /* GPSStatus.swift */; };
+		DD1BD0EB2C601795008C0C70 /* CLLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BD0EA2C601795008C0C70 /* CLLocation.swift */; };
+		DD1BD0EE2C603C91008C0C70 /* CustomFormatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BD0ED2C603C91008C0C70 /* CustomFormatters.swift */; };
 		DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */; };
 		DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2160AE28C5552500C17253 /* MQTTConfig.swift */; };
 		DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */; };
@@ -287,6 +289,9 @@
 		DD1933752B0835D500771CD5 /* PositionAltitudeChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionAltitudeChart.swift; sourceTree = "<group>"; };
 		DD1933772B084F4200771CD5 /* Measurement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Measurement.swift; sourceTree = "<group>"; };
 		DD1B8F3F2B35E2F10022AABC /* GPSStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPSStatus.swift; sourceTree = "<group>"; };
+		DD1BD0EA2C601795008C0C70 /* CLLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLLocation.swift; sourceTree = "<group>"; };
+		DD1BD0ED2C603C91008C0C70 /* CustomFormatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomFormatters.swift; sourceTree = "<group>"; };
+		DD1BD0F12C61D3AD008C0C70 /* MeshtasticDataModelV 42.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 42.xcdatamodel"; sourceTree = "<group>"; };
 		DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageList.swift; sourceTree = "<group>"; };
 		DD2160AE28C5552500C17253 /* MQTTConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MQTTConfig.swift; sourceTree = "<group>"; };
 		DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralModel.swift; sourceTree = "<group>"; };
@@ -591,6 +596,14 @@
 			path = CoreData;
 			sourceTree = "<group>";
 		};
+		DD1BD0EC2C603C5B008C0C70 /* Measurement */ = {
+			isa = PBXGroup;
+			children = (
+				DD1BD0ED2C603C91008C0C70 /* CustomFormatters.swift */,
+			);
+			path = Measurement;
+			sourceTree = "<group>";
+		};
 		DD47E3CA26F0E50300029299 /* Nodes */ = {
 			isa = PBXGroup;
 			children = (
@@ -801,6 +814,7 @@
 		DDC2E15626CE248E0042C5E4 /* Meshtastic */ = {
 			isa = PBXGroup;
 			children = (
+				DD1BD0EC2C603C5B008C0C70 /* Measurement */,
 				25F5D5BC2C3F6D7B008036E3 /* Router */,
 				DD7709392AA1ABA1007A8BF0 /* Tips */,
 				DD90860A26F645B700DC5189 /* Meshtastic.entitlements */,
@@ -962,6 +976,7 @@
 				DD007BB12AA59B9A00F5FA12 /* CoreData */,
 				DDFFA7462B3A7F3C004730DB /* Bundle.swift */,
 				DDDB444529F8A96500EE2349 /* Character.swift */,
+				DD1BD0EA2C601795008C0C70 /* CLLocation.swift */,
 				DDDB444929F8AA3A00EE2349 /* CLLocationCoordinate2D.swift */,
 				DDDB444B29F8AAA600EE2349 /* Color.swift */,
 				25C49D8F2C471AEA0024FBD1 /* Constants.swift */,
@@ -1269,6 +1284,7 @@
 				DDA9515A2BC6624100CEA535 /* TelemetryWeather.swift in Sources */,
 				DDB75A232A13CDA9006ED576 /* BatteryLevelCompact.swift in Sources */,
 				DDB75A162A0594AD006ED576 /* TileOverlay.swift in Sources */,
+				DD1BD0EB2C601795008C0C70 /* CLLocation.swift in Sources */,
 				DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */,
 				DD3CC6BE28E4CD9800FA9159 /* BatteryGauge.swift in Sources */,
 				DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */,
@@ -1304,6 +1320,7 @@
 				DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */,
 				DD2553572855B02500E55709 /* LoRaConfig.swift in Sources */,
 				DDB6ABD928B0A4BA00384BA1 /* BluetoothModes.swift in Sources */,
+				DD1BD0EE2C603C91008C0C70 /* CustomFormatters.swift in Sources */,
 				DDD9E4E4284B208E003777C5 /* UserEntityExtension.swift in Sources */,
 				DD2553592855B52700E55709 /* PositionConfig.swift in Sources */,
 				DD97E96828EFE9A00056DDA4 /* About.swift in Sources */,
@@ -1812,6 +1829,7 @@
 		DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DD1BD0F12C61D3AD008C0C70 /* MeshtasticDataModelV 42.xcdatamodel */,
 				DD2984A82C5AEF7500B1268D /* MeshtasticDataModelV 41.xcdatamodel */,
 				DD68BAE72C417A74004C01A0 /* MeshtasticDataModelV 40.xcdatamodel */,
 				DD3D17DC2C3D7B1400561584 /* MeshtasticDataModelV 39.xcdatamodel */,
@@ -1854,7 +1872,7 @@
 				DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
 				DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
 			);
-			currentVersion = DD2984A82C5AEF7500B1268D /* MeshtasticDataModelV 41.xcdatamodel */;
+			currentVersion = DD1BD0F12C61D3AD008C0C70 /* MeshtasticDataModelV 42.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";

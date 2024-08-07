@@ -93,7 +93,7 @@ struct MeshtasticAppleApp: App {
 				if url.absoluteString.lowercased().contains("meshtastic.org/e/#") {
 					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
 						self.addChannels = Bool(self.incomingUrl?["add"] ?? "false") ?? false
-						if ((self.incomingUrl?.absoluteString.lowercased().contains("?")) != nil) {
+						if self.incomingUrl?.absoluteString.lowercased().contains("?") != nil {
 							guard let cs = components.last!.components(separatedBy: "?").first else {
 								return
 							}

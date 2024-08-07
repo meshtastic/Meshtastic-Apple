@@ -43,7 +43,6 @@ struct NodeDetail: View {
 				Section("Hardware") {
 					NodeInfoItem(node: node)
 				}
-
 				Section("Node") {
 					HStack {
 						Label {
@@ -65,7 +64,7 @@ struct NodeDetail: View {
 								.symbolRenderingMode(.multicolor)
 						}
 						Spacer()
-						Text(node.user?.userId ?? "?")
+						Text(node.num.toHex())
 						.textSelection(.enabled)
 					}
 

@@ -10,6 +10,7 @@ import MapKit
 
 @available(iOS 17.0, macOS 14.0, *)
 struct PositionPopover: View {
+
 	@ObservedObject var locationsHandler = LocationsHandler.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -74,8 +75,17 @@ struct PositionPopover: View {
 					.padding(.bottom, 5)
 					/// Altitude
 					Label {
-						Text("Altitude: \(distanceFormatter.string(fromDistance: Double(position.altitude)))")
-							.foregroundColor(.primary)
+						let formatter = MeasurementFormatter()
+						let distanceInMeters = Measurement(value: Double(position.altitude), unit: UnitLength.meters)
+						let distanceInFeet = distanceInMeters.converted(to: UnitLength.feet)
+						if Locale.current.measurementSystem == .metric {
+							Text(altitudeFormatter.string(from: distanceInMeters))
+								.foregroundColor(.primary)
+						} else {
+							Text(altitudeFormatter.string(from: distanceInFeet))
+								.foregroundColor(.primary)
+						}
+
 					} icon: {
 						Image(systemName: "mountain.2.fill")
 							.symbolRenderingMode(.hierarchical)

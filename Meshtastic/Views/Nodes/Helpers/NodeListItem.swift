@@ -21,7 +21,6 @@ struct NodeListItem: View {
 			LazyVStack(alignment: .leading) {
 				HStack {
 					VStack(alignment: .leading) {
-
 						CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 70)
 							.padding(.trailing, 5)
 						BatteryLevelCompact(node: node, font: .caption, iconFont: .callout, color: .accentColor)
@@ -99,6 +98,17 @@ struct NodeListItem: View {
 												DistanceText(meters: metersAway)
 													.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 													.foregroundColor(.gray)
+												let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: CLLocation(latitude: lastPostion.coordinate.latitude, longitude: lastPostion.coordinate.longitude))
+												let headingDegrees = Angle.degrees(trueBearing)
+												Image(systemName: "location.north")
+													.font(.callout)
+													.symbolRenderingMode(.multicolor)
+													.clipShape(Circle())
+													.rotationEffect(headingDegrees)
+												let heading = Measurement(value: trueBearing, unit: UnitAngle.degrees)
+												Text("\(heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0)))))")
+													.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+													.foregroundColor(.gray)
 											}
 										}
 									} else {
@@ -114,6 +124,17 @@ struct NodeListItem: View {
 											DistanceText(meters: metersAway)
 												.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 												.foregroundColor(.secondary)
+											let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: CLLocation(latitude: lastPostion.coordinate.latitude, longitude: lastPostion.coordinate.longitude))
+											let headingDegrees = Angle.degrees(trueBearing)
+											Image(systemName: "location.north")
+												.font(.callout)
+												.symbolRenderingMode(.multicolor)
+												.clipShape(Circle())
+												.rotationEffect(headingDegrees)
+											let heading = Measurement(value: trueBearing, unit: UnitAngle.degrees)
+											Text("\(heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0)))))")
+												.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+												.foregroundColor(.gray)
 										}
 									}
 								}
@@ -164,7 +185,7 @@ struct NodeListItem: View {
 										.frame(width: 30)
 								}
 								if node.hasEnvironmentMetrics {
-									Image(systemName: "cloud.sun.rain.fill")
+									Image(systemName: "cloud.sun.rain")
 										.symbolRenderingMode(.hierarchical)
 										.font(.callout)
 										.frame(width: 30)

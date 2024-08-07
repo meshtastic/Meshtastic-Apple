@@ -110,7 +110,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			overlay.minimumZ = UserDefaults.mapTileServer.zoomRange.startIndex
 			overlay.maximumZ = UserDefaults.mapTileServer.zoomRange.endIndex
 			mapView.addOverlay(overlay, level: UserDefaults.mapTilesAboveLabels ? .aboveLabels : .aboveRoads)
-			
 		case .satellite:
 			mapView.mapType = .satellite
 		case .hybrid:

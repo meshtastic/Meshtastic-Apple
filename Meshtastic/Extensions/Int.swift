@@ -18,12 +18,12 @@ extension Int {
 
 extension UInt32 {
 	func toHex() -> String {
-		return String(format: "!%2X", self)
+		return String(format: "!%2X", self).lowercased()
 	}
 }
 
 extension Int64 {
 	func toHex() -> String {
-		return String(format: "!%2X", self)
+		return String(format: "!%2X", self).lowercased()
 	}
 }
