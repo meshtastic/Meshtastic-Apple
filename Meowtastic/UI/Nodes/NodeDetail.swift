@@ -441,7 +441,7 @@ struct NodeDetail: View {
 			Label {
 				Text("Hops")
 			} icon: {
-				Image(systemName: "arrowshape.bounce.forward")
+				Image(systemName: node.hopsAway == 0 ? "eye" : "arrowshape.bounce.forward")
 					.symbolRenderingMode(.monochrome)
 					.foregroundColor(.accentColor)
 			}
@@ -451,8 +451,11 @@ struct NodeDetail: View {
 			if node.hopsAway == 0 {
 				Text("Direct visibility")
 			}
+			else if node.hopsAway == 1 {
+				Text("\(node.hopsAway) hop")
+			}
 			else {
-				Text("\(node.hopsAway) hop(s)")
+				Text("\(node.hopsAway) hops")
 			}
 		}
 

@@ -31,6 +31,14 @@ struct NodeIconListView: View {
 	private var detailIconSpacing: CGFloat {
 		small ? 6 : 6
 	}
+	private var badgeBackground: Color {
+		if colorScheme == .dark {
+			Color(red: 28 / 256, green: 28 / 256, blue: 30 / 256)
+		}
+		else {
+			.white
+		}
+	}
 
 	@Environment(\.colorScheme)
 	private var colorScheme: ColorScheme
@@ -58,7 +66,7 @@ struct NodeIconListView: View {
 				if node.hopsAway == 0 {
 					divider
 
-					Image(systemName: "wifi.circle")
+					Image(systemName: "eye")
 						.font(detailInfoIconFont)
 						.foregroundColor(.gray)
 						.frame(width: detailIconSize)
@@ -66,10 +74,28 @@ struct NodeIconListView: View {
 				else {
 					divider
 
-					Image(systemName: "\(node.hopsAway).circle")
-						.font(detailInfoIconFont)
-						.foregroundColor(.gray)
-						.frame(width: detailIconSize)
+					ZStack(alignment: .top) {
+						let badgeOffset: CGFloat = 7
+
+						Image(systemName: "arrowshape.bounce.forward")
+							.font(detailInfoIconFont)
+							.foregroundColor(.gray)
+							.frame(width: detailIconSize)
+							.padding(.leading, badgeOffset)
+
+						HStack(spacing: 0) {
+							Image(systemName: "\(node.hopsAway).circle")
+								.font(.system(size: 10, weight: .semibold, design: .rounded))
+								.foregroundColor(.gray)
+								.background(badgeBackground)
+								.clipShape(
+									Circle()
+								)
+
+							Spacer()
+						}
+						.frame(width: detailIconSize + badgeOffset)
+					}
 				}
 			}
 
