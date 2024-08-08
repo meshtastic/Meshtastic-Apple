@@ -242,7 +242,7 @@ struct MessageList: View {
 			}
 		}
 	}
-	
+
 	@ViewBuilder
 	private func leadingAvatar(for message: MessageEntity) -> some View {
 		let isCurrentUser = isCurrentUser(message: message, preferredNum: preferredPeripheralNum)

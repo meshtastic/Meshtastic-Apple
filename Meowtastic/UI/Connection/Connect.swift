@@ -74,11 +74,13 @@ struct Connect: View {
 		}
 		.onChange(of: bleManager.isConnected, initial: true) {
 			Task {
+				await loadPeripherals()
 				await fetchNodeInfo()
 			}
 		}
 		.onChange(of: bleManager.isSubscribed) {
 			Task {
+				await loadPeripherals()
 				await fetchNodeInfo()
 			}
 		}
@@ -375,7 +377,7 @@ struct Connect: View {
 								color: .gray
 							)
 
-							Text(peripheral.longName)
+							Text(peripheral.name)
 								.font(deviceFont)
 								.foregroundColor(.gray)
 						}
@@ -421,7 +423,8 @@ struct Connect: View {
 
 	private func loadPeripherals() async {
 		let devices = bleManager.peripherals.filter { device in
-			device.peripheral.state == CBPeripheralState.disconnected
+			device.peripheral.state != CBPeripheralState.connected
+			&& device.peripheral.state != CBPeripheralState.connecting
 		}
 
 		visibleDevices = devices.sorted(by: {

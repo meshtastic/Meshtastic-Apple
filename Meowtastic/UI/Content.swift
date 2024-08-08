@@ -70,6 +70,11 @@ struct Content: View {
 				connectPresented = true
 			}
 		}
+		.onChange(of: bleManager.lastConnectionError, initial: true) {
+			if !bleManager.lastConnectionError.isEmpty, !connectWasDismissed {
+				connectPresented = true
+			}
+		}
 		.sheet(isPresented: $connectPresented) {
 			connectPresented = false
 			connectWasDismissed = true
