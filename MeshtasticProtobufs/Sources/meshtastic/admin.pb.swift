@@ -391,6 +391,16 @@ public struct AdminMessage {
   }
 
   ///
+  /// Tell the node to factory reset config everything; all device state and configuration will be returned to factory defaults and BLE bonds will be cleared.
+  public var factoryResetDevice: Int32 {
+    get {
+      if case .factoryResetDevice(let v)? = payloadVariant {return v}
+      return 0
+    }
+    set {payloadVariant = .factoryResetDevice(newValue)}
+  }
+
+  ///
   /// Tell the node to reboot into the OTA Firmware in this many seconds (or <0 to cancel reboot)
   /// Only Implemented for ESP32 Devices. This needs to be issued to send a new main firmware via bluetooth.
   public var rebootOtaSeconds: Int32 {
@@ -433,13 +443,13 @@ public struct AdminMessage {
   }
 
   ///
-  /// Tell the node to factory reset, all device settings will be returned to factory defaults.
-  public var factoryReset: Int32 {
+  /// Tell the node to factory reset config; all device state and configuration will be returned to factory defaults; BLE bonds will be preserved.
+  public var factoryResetConfig: Int32 {
     get {
-      if case .factoryReset(let v)? = payloadVariant {return v}
+      if case .factoryResetConfig(let v)? = payloadVariant {return v}
       return 0
     }
-    set {payloadVariant = .factoryReset(newValue)}
+    set {payloadVariant = .factoryResetConfig(newValue)}
   }
 
   ///
@@ -570,6 +580,9 @@ public struct AdminMessage {
     /// Commits an open transaction for any edits made to config, module config, owner, and channel settings
     case commitEditSettings(Bool)
     ///
+    /// Tell the node to factory reset config everything; all device state and configuration will be returned to factory defaults and BLE bonds will be cleared.
+    case factoryResetDevice(Int32)
+    ///
     /// Tell the node to reboot into the OTA Firmware in this many seconds (or <0 to cancel reboot)
     /// Only Implemented for ESP32 Devices. This needs to be issued to send a new main firmware via bluetooth.
     case rebootOtaSeconds(Int32)
@@ -584,8 +597,8 @@ public struct AdminMessage {
     /// Tell the node to shutdown in this many seconds (or <0 to cancel shutdown)
     case shutdownSeconds(Int32)
     ///
-    /// Tell the node to factory reset, all device settings will be returned to factory defaults.
-    case factoryReset(Int32)
+    /// Tell the node to factory reset config; all device state and configuration will be returned to factory defaults; BLE bonds will be preserved.
+    case factoryResetConfig(Int32)
     ///
     /// Tell the node to reset the nodedb.
     case nodedbReset(Int32)
@@ -736,6 +749,10 @@ public struct AdminMessage {
         guard case .commitEditSettings(let l) = lhs, case .commitEditSettings(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
+      case (.factoryResetDevice, .factoryResetDevice): return {
+        guard case .factoryResetDevice(let l) = lhs, case .factoryResetDevice(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
       case (.rebootOtaSeconds, .rebootOtaSeconds): return {
         guard case .rebootOtaSeconds(let l) = lhs, case .rebootOtaSeconds(let r) = rhs else { preconditionFailure() }
         return l == r
@@ -752,8 +769,8 @@ public struct AdminMessage {
         guard case .shutdownSeconds(let l) = lhs, case .shutdownSeconds(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.factoryReset, .factoryReset): return {
-        guard case .factoryReset(let l) = lhs, case .factoryReset(let r) = rhs else { preconditionFailure() }
+      case (.factoryResetConfig, .factoryResetConfig): return {
+        guard case .factoryResetConfig(let l) = lhs, case .factoryResetConfig(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       case (.nodedbReset, .nodedbReset): return {
@@ -1070,11 +1087,12 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     42: .standard(proto: "remove_fixed_position"),
     64: .standard(proto: "begin_edit_settings"),
     65: .standard(proto: "commit_edit_settings"),
+    94: .standard(proto: "factory_reset_device"),
     95: .standard(proto: "reboot_ota_seconds"),
     96: .standard(proto: "exit_simulator"),
     97: .standard(proto: "reboot_seconds"),
     98: .standard(proto: "shutdown_seconds"),
-    99: .standard(proto: "factory_reset"),
+    99: .standard(proto: "factory_reset_config"),
     100: .standard(proto: "nodedb_reset"),
   ]
 
@@ -1429,6 +1447,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .commitEditSettings(v)
         }
       }()
+      case 94: try {
+        var v: Int32?
+        try decoder.decodeSingularInt32Field(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .factoryResetDevice(v)
+        }
+      }()
       case 95: try {
         var v: Int32?
         try decoder.decodeSingularInt32Field(value: &v)
@@ -1466,7 +1492,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         try decoder.decodeSingularInt32Field(value: &v)
         if let v = v {
           if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .factoryReset(v)
+          self.payloadVariant = .factoryResetConfig(v)
         }
       }()
       case 100: try {
@@ -1628,6 +1654,10 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       guard case .commitEditSettings(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 65)
     }()
+    case .factoryResetDevice?: try {
+      guard case .factoryResetDevice(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 94)
+    }()
     case .rebootOtaSeconds?: try {
       guard case .rebootOtaSeconds(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularInt32Field(value: v, fieldNumber: 95)
@@ -1644,8 +1674,8 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       guard case .shutdownSeconds(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularInt32Field(value: v, fieldNumber: 98)
     }()
-    case .factoryReset?: try {
-      guard case .factoryReset(let v)? = self.payloadVariant else { preconditionFailure() }
+    case .factoryResetConfig?: try {
+      guard case .factoryResetConfig(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularInt32Field(value: v, fieldNumber: 99)
     }()
     case .nodedbReset?: try {

@@ -245,27 +245,68 @@ public struct DeviceMetrics {
 
   ///
   /// 0-100 (>100 means powered)
-  public var batteryLevel: UInt32 = 0
+  public var batteryLevel: UInt32 {
+    get {return _batteryLevel ?? 0}
+    set {_batteryLevel = newValue}
+  }
+  /// Returns true if `batteryLevel` has been explicitly set.
+  public var hasBatteryLevel: Bool {return self._batteryLevel != nil}
+  /// Clears the value of `batteryLevel`. Subsequent reads from it will return its default value.
+  public mutating func clearBatteryLevel() {self._batteryLevel = nil}
 
   ///
   /// Voltage measured
-  public var voltage: Float = 0
+  public var voltage: Float {
+    get {return _voltage ?? 0}
+    set {_voltage = newValue}
+  }
+  /// Returns true if `voltage` has been explicitly set.
+  public var hasVoltage: Bool {return self._voltage != nil}
+  /// Clears the value of `voltage`. Subsequent reads from it will return its default value.
+  public mutating func clearVoltage() {self._voltage = nil}
 
   ///
   /// Utilization for the current channel, including well formed TX, RX and malformed RX (aka noise).
-  public var channelUtilization: Float = 0
+  public var channelUtilization: Float {
+    get {return _channelUtilization ?? 0}
+    set {_channelUtilization = newValue}
+  }
+  /// Returns true if `channelUtilization` has been explicitly set.
+  public var hasChannelUtilization: Bool {return self._channelUtilization != nil}
+  /// Clears the value of `channelUtilization`. Subsequent reads from it will return its default value.
+  public mutating func clearChannelUtilization() {self._channelUtilization = nil}
 
   ///
   /// Percent of airtime for transmission used within the last hour.
-  public var airUtilTx: Float = 0
+  public var airUtilTx: Float {
+    get {return _airUtilTx ?? 0}
+    set {_airUtilTx = newValue}
+  }
+  /// Returns true if `airUtilTx` has been explicitly set.
+  public var hasAirUtilTx: Bool {return self._airUtilTx != nil}
+  /// Clears the value of `airUtilTx`. Subsequent reads from it will return its default value.
+  public mutating func clearAirUtilTx() {self._airUtilTx = nil}
 
   ///
   /// How long the device has been running since the last reboot (in seconds)
-  public var uptimeSeconds: UInt32 = 0
+  public var uptimeSeconds: UInt32 {
+    get {return _uptimeSeconds ?? 0}
+    set {_uptimeSeconds = newValue}
+  }
+  /// Returns true if `uptimeSeconds` has been explicitly set.
+  public var hasUptimeSeconds: Bool {return self._uptimeSeconds != nil}
+  /// Clears the value of `uptimeSeconds`. Subsequent reads from it will return its default value.
+  public mutating func clearUptimeSeconds() {self._uptimeSeconds = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+
+  fileprivate var _batteryLevel: UInt32? = nil
+  fileprivate var _voltage: Float? = nil
+  fileprivate var _channelUtilization: Float? = nil
+  fileprivate var _airUtilTx: Float? = nil
+  fileprivate var _uptimeSeconds: UInt32? = nil
 }
 
 ///
@@ -278,123 +319,191 @@ public struct EnvironmentMetrics {
   ///
   /// Temperature measured
   public var temperature: Float {
-    get {return _storage._temperature}
+    get {return _storage._temperature ?? 0}
     set {_uniqueStorage()._temperature = newValue}
   }
+  /// Returns true if `temperature` has been explicitly set.
+  public var hasTemperature: Bool {return _storage._temperature != nil}
+  /// Clears the value of `temperature`. Subsequent reads from it will return its default value.
+  public mutating func clearTemperature() {_uniqueStorage()._temperature = nil}
 
   ///
   /// Relative humidity percent measured
   public var relativeHumidity: Float {
-    get {return _storage._relativeHumidity}
+    get {return _storage._relativeHumidity ?? 0}
     set {_uniqueStorage()._relativeHumidity = newValue}
   }
+  /// Returns true if `relativeHumidity` has been explicitly set.
+  public var hasRelativeHumidity: Bool {return _storage._relativeHumidity != nil}
+  /// Clears the value of `relativeHumidity`. Subsequent reads from it will return its default value.
+  public mutating func clearRelativeHumidity() {_uniqueStorage()._relativeHumidity = nil}
 
   ///
   /// Barometric pressure in hPA measured
   public var barometricPressure: Float {
-    get {return _storage._barometricPressure}
+    get {return _storage._barometricPressure ?? 0}
     set {_uniqueStorage()._barometricPressure = newValue}
   }
+  /// Returns true if `barometricPressure` has been explicitly set.
+  public var hasBarometricPressure: Bool {return _storage._barometricPressure != nil}
+  /// Clears the value of `barometricPressure`. Subsequent reads from it will return its default value.
+  public mutating func clearBarometricPressure() {_uniqueStorage()._barometricPressure = nil}
 
   ///
   /// Gas resistance in MOhm measured
   public var gasResistance: Float {
-    get {return _storage._gasResistance}
+    get {return _storage._gasResistance ?? 0}
     set {_uniqueStorage()._gasResistance = newValue}
   }
+  /// Returns true if `gasResistance` has been explicitly set.
+  public var hasGasResistance: Bool {return _storage._gasResistance != nil}
+  /// Clears the value of `gasResistance`. Subsequent reads from it will return its default value.
+  public mutating func clearGasResistance() {_uniqueStorage()._gasResistance = nil}
 
   ///
   /// Voltage measured (To be depreciated in favor of PowerMetrics in Meshtastic 3.x)
   public var voltage: Float {
-    get {return _storage._voltage}
+    get {return _storage._voltage ?? 0}
     set {_uniqueStorage()._voltage = newValue}
   }
+  /// Returns true if `voltage` has been explicitly set.
+  public var hasVoltage: Bool {return _storage._voltage != nil}
+  /// Clears the value of `voltage`. Subsequent reads from it will return its default value.
+  public mutating func clearVoltage() {_uniqueStorage()._voltage = nil}
 
   ///
   /// Current measured (To be depreciated in favor of PowerMetrics in Meshtastic 3.x)
   public var current: Float {
-    get {return _storage._current}
+    get {return _storage._current ?? 0}
     set {_uniqueStorage()._current = newValue}
   }
+  /// Returns true if `current` has been explicitly set.
+  public var hasCurrent: Bool {return _storage._current != nil}
+  /// Clears the value of `current`. Subsequent reads from it will return its default value.
+  public mutating func clearCurrent() {_uniqueStorage()._current = nil}
 
   /// 
   /// relative scale IAQ value as measured by Bosch BME680 . value 0-500.
   /// Belongs to Air Quality but is not particle but VOC measurement. Other VOC values can also be put in here.
   public var iaq: UInt32 {
-    get {return _storage._iaq}
+    get {return _storage._iaq ?? 0}
     set {_uniqueStorage()._iaq = newValue}
   }
+  /// Returns true if `iaq` has been explicitly set.
+  public var hasIaq: Bool {return _storage._iaq != nil}
+  /// Clears the value of `iaq`. Subsequent reads from it will return its default value.
+  public mutating func clearIaq() {_uniqueStorage()._iaq = nil}
 
   ///
   /// RCWL9620 Doppler Radar Distance Sensor, used for water level detection. Float value in mm.
   public var distance: Float {
-    get {return _storage._distance}
+    get {return _storage._distance ?? 0}
     set {_uniqueStorage()._distance = newValue}
   }
+  /// Returns true if `distance` has been explicitly set.
+  public var hasDistance: Bool {return _storage._distance != nil}
+  /// Clears the value of `distance`. Subsequent reads from it will return its default value.
+  public mutating func clearDistance() {_uniqueStorage()._distance = nil}
 
   ///
   /// VEML7700 high accuracy ambient light(Lux) digital 16-bit resolution sensor.
   public var lux: Float {
-    get {return _storage._lux}
+    get {return _storage._lux ?? 0}
     set {_uniqueStorage()._lux = newValue}
   }
+  /// Returns true if `lux` has been explicitly set.
+  public var hasLux: Bool {return _storage._lux != nil}
+  /// Clears the value of `lux`. Subsequent reads from it will return its default value.
+  public mutating func clearLux() {_uniqueStorage()._lux = nil}
 
   ///
   /// VEML7700 high accuracy white light(irradiance) not calibrated digital 16-bit resolution sensor.
   public var whiteLux: Float {
-    get {return _storage._whiteLux}
+    get {return _storage._whiteLux ?? 0}
     set {_uniqueStorage()._whiteLux = newValue}
   }
+  /// Returns true if `whiteLux` has been explicitly set.
+  public var hasWhiteLux: Bool {return _storage._whiteLux != nil}
+  /// Clears the value of `whiteLux`. Subsequent reads from it will return its default value.
+  public mutating func clearWhiteLux() {_uniqueStorage()._whiteLux = nil}
 
   ///
   /// Infrared lux
   public var irLux: Float {
-    get {return _storage._irLux}
+    get {return _storage._irLux ?? 0}
     set {_uniqueStorage()._irLux = newValue}
   }
+  /// Returns true if `irLux` has been explicitly set.
+  public var hasIrLux: Bool {return _storage._irLux != nil}
+  /// Clears the value of `irLux`. Subsequent reads from it will return its default value.
+  public mutating func clearIrLux() {_uniqueStorage()._irLux = nil}
 
   ///
   /// Ultraviolet lux
   public var uvLux: Float {
-    get {return _storage._uvLux}
+    get {return _storage._uvLux ?? 0}
     set {_uniqueStorage()._uvLux = newValue}
   }
+  /// Returns true if `uvLux` has been explicitly set.
+  public var hasUvLux: Bool {return _storage._uvLux != nil}
+  /// Clears the value of `uvLux`. Subsequent reads from it will return its default value.
+  public mutating func clearUvLux() {_uniqueStorage()._uvLux = nil}
 
   ///
   /// Wind direction in degrees
   /// 0 degrees = North, 90 = East, etc...
   public var windDirection: UInt32 {
-    get {return _storage._windDirection}
+    get {return _storage._windDirection ?? 0}
     set {_uniqueStorage()._windDirection = newValue}
   }
+  /// Returns true if `windDirection` has been explicitly set.
+  public var hasWindDirection: Bool {return _storage._windDirection != nil}
+  /// Clears the value of `windDirection`. Subsequent reads from it will return its default value.
+  public mutating func clearWindDirection() {_uniqueStorage()._windDirection = nil}
 
   ///
   /// Wind speed in m/s
   public var windSpeed: Float {
-    get {return _storage._windSpeed}
+    get {return _storage._windSpeed ?? 0}
     set {_uniqueStorage()._windSpeed = newValue}
   }
+  /// Returns true if `windSpeed` has been explicitly set.
+  public var hasWindSpeed: Bool {return _storage._windSpeed != nil}
+  /// Clears the value of `windSpeed`. Subsequent reads from it will return its default value.
+  public mutating func clearWindSpeed() {_uniqueStorage()._windSpeed = nil}
 
   ///
   /// Weight in KG
   public var weight: Float {
-    get {return _storage._weight}
+    get {return _storage._weight ?? 0}
     set {_uniqueStorage()._weight = newValue}
   }
+  /// Returns true if `weight` has been explicitly set.
+  public var hasWeight: Bool {return _storage._weight != nil}
+  /// Clears the value of `weight`. Subsequent reads from it will return its default value.
+  public mutating func clearWeight() {_uniqueStorage()._weight = nil}
 
   ///
   /// Wind gust in m/s
   public var windGust: Float {
-    get {return _storage._windGust}
+    get {return _storage._windGust ?? 0}
     set {_uniqueStorage()._windGust = newValue}
   }
+  /// Returns true if `windGust` has been explicitly set.
+  public var hasWindGust: Bool {return _storage._windGust != nil}
+  /// Clears the value of `windGust`. Subsequent reads from it will return its default value.
+  public mutating func clearWindGust() {_uniqueStorage()._windGust = nil}
 
   ///
   /// Wind lull in m/s
   public var windLull: Float {
-    get {return _storage._windLull}
+    get {return _storage._windLull ?? 0}
     set {_uniqueStorage()._windLull = newValue}
   }
+  /// Returns true if `windLull` has been explicitly set.
+  public var hasWindLull: Bool {return _storage._windLull != nil}
+  /// Clears the value of `windLull`. Subsequent reads from it will return its default value.
+  public mutating func clearWindLull() {_uniqueStorage()._windLull = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -412,31 +521,80 @@ public struct PowerMetrics {
 
   ///
   /// Voltage (Ch1)
-  public var ch1Voltage: Float = 0
+  public var ch1Voltage: Float {
+    get {return _ch1Voltage ?? 0}
+    set {_ch1Voltage = newValue}
+  }
+  /// Returns true if `ch1Voltage` has been explicitly set.
+  public var hasCh1Voltage: Bool {return self._ch1Voltage != nil}
+  /// Clears the value of `ch1Voltage`. Subsequent reads from it will return its default value.
+  public mutating func clearCh1Voltage() {self._ch1Voltage = nil}
 
   ///
   /// Current (Ch1)
-  public var ch1Current: Float = 0
+  public var ch1Current: Float {
+    get {return _ch1Current ?? 0}
+    set {_ch1Current = newValue}
+  }
+  /// Returns true if `ch1Current` has been explicitly set.
+  public var hasCh1Current: Bool {return self._ch1Current != nil}
+  /// Clears the value of `ch1Current`. Subsequent reads from it will return its default value.
+  public mutating func clearCh1Current() {self._ch1Current = nil}
 
   ///
   /// Voltage (Ch2)
-  public var ch2Voltage: Float = 0
+  public var ch2Voltage: Float {
+    get {return _ch2Voltage ?? 0}
+    set {_ch2Voltage = newValue}
+  }
+  /// Returns true if `ch2Voltage` has been explicitly set.
+  public var hasCh2Voltage: Bool {return self._ch2Voltage != nil}
+  /// Clears the value of `ch2Voltage`. Subsequent reads from it will return its default value.
+  public mutating func clearCh2Voltage() {self._ch2Voltage = nil}
 
   ///
   /// Current (Ch2)
-  public var ch2Current: Float = 0
+  public var ch2Current: Float {
+    get {return _ch2Current ?? 0}
+    set {_ch2Current = newValue}
+  }
+  /// Returns true if `ch2Current` has been explicitly set.
+  public var hasCh2Current: Bool {return self._ch2Current != nil}
+  /// Clears the value of `ch2Current`. Subsequent reads from it will return its default value.
+  public mutating func clearCh2Current() {self._ch2Current = nil}
 
   ///
   /// Voltage (Ch3)
-  public var ch3Voltage: Float = 0
+  public var ch3Voltage: Float {
+    get {return _ch3Voltage ?? 0}
+    set {_ch3Voltage = newValue}
+  }
+  /// Returns true if `ch3Voltage` has been explicitly set.
+  public var hasCh3Voltage: Bool {return self._ch3Voltage != nil}
+  /// Clears the value of `ch3Voltage`. Subsequent reads from it will return its default value.
+  public mutating func clearCh3Voltage() {self._ch3Voltage = nil}
 
   ///
   /// Current (Ch3)
-  public var ch3Current: Float = 0
+  public var ch3Current: Float {
+    get {return _ch3Current ?? 0}
+    set {_ch3Current = newValue}
+  }
+  /// Returns true if `ch3Current` has been explicitly set.
+  public var hasCh3Current: Bool {return self._ch3Current != nil}
+  /// Clears the value of `ch3Current`. Subsequent reads from it will return its default value.
+  public mutating func clearCh3Current() {self._ch3Current = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+
+  fileprivate var _ch1Voltage: Float? = nil
+  fileprivate var _ch1Current: Float? = nil
+  fileprivate var _ch2Voltage: Float? = nil
+  fileprivate var _ch2Current: Float? = nil
+  fileprivate var _ch3Voltage: Float? = nil
+  fileprivate var _ch3Current: Float? = nil
 }
 
 ///
@@ -448,55 +606,152 @@ public struct AirQualityMetrics {
 
   ///
   /// Concentration Units Standard PM1.0
-  public var pm10Standard: UInt32 = 0
+  public var pm10Standard: UInt32 {
+    get {return _pm10Standard ?? 0}
+    set {_pm10Standard = newValue}
+  }
+  /// Returns true if `pm10Standard` has been explicitly set.
+  public var hasPm10Standard: Bool {return self._pm10Standard != nil}
+  /// Clears the value of `pm10Standard`. Subsequent reads from it will return its default value.
+  public mutating func clearPm10Standard() {self._pm10Standard = nil}
 
   ///
   /// Concentration Units Standard PM2.5
-  public var pm25Standard: UInt32 = 0
+  public var pm25Standard: UInt32 {
+    get {return _pm25Standard ?? 0}
+    set {_pm25Standard = newValue}
+  }
+  /// Returns true if `pm25Standard` has been explicitly set.
+  public var hasPm25Standard: Bool {return self._pm25Standard != nil}
+  /// Clears the value of `pm25Standard`. Subsequent reads from it will return its default value.
+  public mutating func clearPm25Standard() {self._pm25Standard = nil}
 
   ///
   /// Concentration Units Standard PM10.0
-  public var pm100Standard: UInt32 = 0
+  public var pm100Standard: UInt32 {
+    get {return _pm100Standard ?? 0}
+    set {_pm100Standard = newValue}
+  }
+  /// Returns true if `pm100Standard` has been explicitly set.
+  public var hasPm100Standard: Bool {return self._pm100Standard != nil}
+  /// Clears the value of `pm100Standard`. Subsequent reads from it will return its default value.
+  public mutating func clearPm100Standard() {self._pm100Standard = nil}
 
   ///
   /// Concentration Units Environmental PM1.0
-  public var pm10Environmental: UInt32 = 0
+  public var pm10Environmental: UInt32 {
+    get {return _pm10Environmental ?? 0}
+    set {_pm10Environmental = newValue}
+  }
+  /// Returns true if `pm10Environmental` has been explicitly set.
+  public var hasPm10Environmental: Bool {return self._pm10Environmental != nil}
+  /// Clears the value of `pm10Environmental`. Subsequent reads from it will return its default value.
+  public mutating func clearPm10Environmental() {self._pm10Environmental = nil}
 
   ///
   /// Concentration Units Environmental PM2.5
-  public var pm25Environmental: UInt32 = 0
+  public var pm25Environmental: UInt32 {
+    get {return _pm25Environmental ?? 0}
+    set {_pm25Environmental = newValue}
+  }
+  /// Returns true if `pm25Environmental` has been explicitly set.
+  public var hasPm25Environmental: Bool {return self._pm25Environmental != nil}
+  /// Clears the value of `pm25Environmental`. Subsequent reads from it will return its default value.
+  public mutating func clearPm25Environmental() {self._pm25Environmental = nil}
 
   ///
   /// Concentration Units Environmental PM10.0
-  public var pm100Environmental: UInt32 = 0
+  public var pm100Environmental: UInt32 {
+    get {return _pm100Environmental ?? 0}
+    set {_pm100Environmental = newValue}
+  }
+  /// Returns true if `pm100Environmental` has been explicitly set.
+  public var hasPm100Environmental: Bool {return self._pm100Environmental != nil}
+  /// Clears the value of `pm100Environmental`. Subsequent reads from it will return its default value.
+  public mutating func clearPm100Environmental() {self._pm100Environmental = nil}
 
   ///
   /// 0.3um Particle Count
-  public var particles03Um: UInt32 = 0
+  public var particles03Um: UInt32 {
+    get {return _particles03Um ?? 0}
+    set {_particles03Um = newValue}
+  }
+  /// Returns true if `particles03Um` has been explicitly set.
+  public var hasParticles03Um: Bool {return self._particles03Um != nil}
+  /// Clears the value of `particles03Um`. Subsequent reads from it will return its default value.
+  public mutating func clearParticles03Um() {self._particles03Um = nil}
 
   ///
   /// 0.5um Particle Count
-  public var particles05Um: UInt32 = 0
+  public var particles05Um: UInt32 {
+    get {return _particles05Um ?? 0}
+    set {_particles05Um = newValue}
+  }
+  /// Returns true if `particles05Um` has been explicitly set.
+  public var hasParticles05Um: Bool {return self._particles05Um != nil}
+  /// Clears the value of `particles05Um`. Subsequent reads from it will return its default value.
+  public mutating func clearParticles05Um() {self._particles05Um = nil}
 
   ///
   /// 1.0um Particle Count
-  public var particles10Um: UInt32 = 0
+  public var particles10Um: UInt32 {
+    get {return _particles10Um ?? 0}
+    set {_particles10Um = newValue}
+  }
+  /// Returns true if `particles10Um` has been explicitly set.
+  public var hasParticles10Um: Bool {return self._particles10Um != nil}
+  /// Clears the value of `particles10Um`. Subsequent reads from it will return its default value.
+  public mutating func clearParticles10Um() {self._particles10Um = nil}
 
   ///
   /// 2.5um Particle Count
-  public var particles25Um: UInt32 = 0
+  public var particles25Um: UInt32 {
+    get {return _particles25Um ?? 0}
+    set {_particles25Um = newValue}
+  }
+  /// Returns true if `particles25Um` has been explicitly set.
+  public var hasParticles25Um: Bool {return self._particles25Um != nil}
+  /// Clears the value of `particles25Um`. Subsequent reads from it will return its default value.
+  public mutating func clearParticles25Um() {self._particles25Um = nil}
 
   ///
   /// 5.0um Particle Count
-  public var particles50Um: UInt32 = 0
+  public var particles50Um: UInt32 {
+    get {return _particles50Um ?? 0}
+    set {_particles50Um = newValue}
+  }
+  /// Returns true if `particles50Um` has been explicitly set.
+  public var hasParticles50Um: Bool {return self._particles50Um != nil}
+  /// Clears the value of `particles50Um`. Subsequent reads from it will return its default value.
+  public mutating func clearParticles50Um() {self._particles50Um = nil}
 
   ///
   /// 10.0um Particle Count
-  public var particles100Um: UInt32 = 0
+  public var particles100Um: UInt32 {
+    get {return _particles100Um ?? 0}
+    set {_particles100Um = newValue}
+  }
+  /// Returns true if `particles100Um` has been explicitly set.
+  public var hasParticles100Um: Bool {return self._particles100Um != nil}
+  /// Clears the value of `particles100Um`. Subsequent reads from it will return its default value.
+  public mutating func clearParticles100Um() {self._particles100Um = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+
+  fileprivate var _pm10Standard: UInt32? = nil
+  fileprivate var _pm25Standard: UInt32? = nil
+  fileprivate var _pm100Standard: UInt32? = nil
+  fileprivate var _pm10Environmental: UInt32? = nil
+  fileprivate var _pm25Environmental: UInt32? = nil
+  fileprivate var _pm100Environmental: UInt32? = nil
+  fileprivate var _particles03Um: UInt32? = nil
+  fileprivate var _particles05Um: UInt32? = nil
+  fileprivate var _particles10Um: UInt32? = nil
+  fileprivate var _particles25Um: UInt32? = nil
+  fileprivate var _particles50Um: UInt32? = nil
+  fileprivate var _particles100Um: UInt32? = nil
 }
 
 ///
@@ -681,41 +936,45 @@ extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.batteryLevel) }()
-      case 2: try { try decoder.decodeSingularFloatField(value: &self.voltage) }()
-      case 3: try { try decoder.decodeSingularFloatField(value: &self.channelUtilization) }()
-      case 4: try { try decoder.decodeSingularFloatField(value: &self.airUtilTx) }()
-      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.uptimeSeconds) }()
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self._batteryLevel) }()
+      case 2: try { try decoder.decodeSingularFloatField(value: &self._voltage) }()
+      case 3: try { try decoder.decodeSingularFloatField(value: &self._channelUtilization) }()
+      case 4: try { try decoder.decodeSingularFloatField(value: &self._airUtilTx) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self._uptimeSeconds) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.batteryLevel != 0 {
-      try visitor.visitSingularUInt32Field(value: self.batteryLevel, fieldNumber: 1)
-    }
-    if self.voltage != 0 {
-      try visitor.visitSingularFloatField(value: self.voltage, fieldNumber: 2)
-    }
-    if self.channelUtilization != 0 {
-      try visitor.visitSingularFloatField(value: self.channelUtilization, fieldNumber: 3)
-    }
-    if self.airUtilTx != 0 {
-      try visitor.visitSingularFloatField(value: self.airUtilTx, fieldNumber: 4)
-    }
-    if self.uptimeSeconds != 0 {
-      try visitor.visitSingularUInt32Field(value: self.uptimeSeconds, fieldNumber: 5)
-    }
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._batteryLevel {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._voltage {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._channelUtilization {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._airUtilTx {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._uptimeSeconds {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 5)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: DeviceMetrics, rhs: DeviceMetrics) -> Bool {
-    if lhs.batteryLevel != rhs.batteryLevel {return false}
-    if lhs.voltage != rhs.voltage {return false}
-    if lhs.channelUtilization != rhs.channelUtilization {return false}
-    if lhs.airUtilTx != rhs.airUtilTx {return false}
-    if lhs.uptimeSeconds != rhs.uptimeSeconds {return false}
+    if lhs._batteryLevel != rhs._batteryLevel {return false}
+    if lhs._voltage != rhs._voltage {return false}
+    if lhs._channelUtilization != rhs._channelUtilization {return false}
+    if lhs._airUtilTx != rhs._airUtilTx {return false}
+    if lhs._uptimeSeconds != rhs._uptimeSeconds {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -744,23 +1003,23 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
   ]
 
   fileprivate class _StorageClass {
-    var _temperature: Float = 0
-    var _relativeHumidity: Float = 0
-    var _barometricPressure: Float = 0
-    var _gasResistance: Float = 0
-    var _voltage: Float = 0
-    var _current: Float = 0
-    var _iaq: UInt32 = 0
-    var _distance: Float = 0
-    var _lux: Float = 0
-    var _whiteLux: Float = 0
-    var _irLux: Float = 0
-    var _uvLux: Float = 0
-    var _windDirection: UInt32 = 0
-    var _windSpeed: Float = 0
-    var _weight: Float = 0
-    var _windGust: Float = 0
-    var _windLull: Float = 0
+    var _temperature: Float? = nil
+    var _relativeHumidity: Float? = nil
+    var _barometricPressure: Float? = nil
+    var _gasResistance: Float? = nil
+    var _voltage: Float? = nil
+    var _current: Float? = nil
+    var _iaq: UInt32? = nil
+    var _distance: Float? = nil
+    var _lux: Float? = nil
+    var _whiteLux: Float? = nil
+    var _irLux: Float? = nil
+    var _uvLux: Float? = nil
+    var _windDirection: UInt32? = nil
+    var _windSpeed: Float? = nil
+    var _weight: Float? = nil
+    var _windGust: Float? = nil
+    var _windLull: Float? = nil
 
     #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
@@ -835,57 +1094,61 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      if _storage._temperature != 0 {
-        try visitor.visitSingularFloatField(value: _storage._temperature, fieldNumber: 1)
-      }
-      if _storage._relativeHumidity != 0 {
-        try visitor.visitSingularFloatField(value: _storage._relativeHumidity, fieldNumber: 2)
-      }
-      if _storage._barometricPressure != 0 {
-        try visitor.visitSingularFloatField(value: _storage._barometricPressure, fieldNumber: 3)
-      }
-      if _storage._gasResistance != 0 {
-        try visitor.visitSingularFloatField(value: _storage._gasResistance, fieldNumber: 4)
-      }
-      if _storage._voltage != 0 {
-        try visitor.visitSingularFloatField(value: _storage._voltage, fieldNumber: 5)
-      }
-      if _storage._current != 0 {
-        try visitor.visitSingularFloatField(value: _storage._current, fieldNumber: 6)
-      }
-      if _storage._iaq != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._iaq, fieldNumber: 7)
-      }
-      if _storage._distance != 0 {
-        try visitor.visitSingularFloatField(value: _storage._distance, fieldNumber: 8)
-      }
-      if _storage._lux != 0 {
-        try visitor.visitSingularFloatField(value: _storage._lux, fieldNumber: 9)
-      }
-      if _storage._whiteLux != 0 {
-        try visitor.visitSingularFloatField(value: _storage._whiteLux, fieldNumber: 10)
-      }
-      if _storage._irLux != 0 {
-        try visitor.visitSingularFloatField(value: _storage._irLux, fieldNumber: 11)
-      }
-      if _storage._uvLux != 0 {
-        try visitor.visitSingularFloatField(value: _storage._uvLux, fieldNumber: 12)
-      }
-      if _storage._windDirection != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._windDirection, fieldNumber: 13)
-      }
-      if _storage._windSpeed != 0 {
-        try visitor.visitSingularFloatField(value: _storage._windSpeed, fieldNumber: 14)
-      }
-      if _storage._weight != 0 {
-        try visitor.visitSingularFloatField(value: _storage._weight, fieldNumber: 15)
-      }
-      if _storage._windGust != 0 {
-        try visitor.visitSingularFloatField(value: _storage._windGust, fieldNumber: 16)
-      }
-      if _storage._windLull != 0 {
-        try visitor.visitSingularFloatField(value: _storage._windLull, fieldNumber: 17)
-      }
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._temperature {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 1)
+      } }()
+      try { if let v = _storage._relativeHumidity {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 2)
+      } }()
+      try { if let v = _storage._barometricPressure {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 3)
+      } }()
+      try { if let v = _storage._gasResistance {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 4)
+      } }()
+      try { if let v = _storage._voltage {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 5)
+      } }()
+      try { if let v = _storage._current {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 6)
+      } }()
+      try { if let v = _storage._iaq {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 7)
+      } }()
+      try { if let v = _storage._distance {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 8)
+      } }()
+      try { if let v = _storage._lux {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 9)
+      } }()
+      try { if let v = _storage._whiteLux {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 10)
+      } }()
+      try { if let v = _storage._irLux {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 11)
+      } }()
+      try { if let v = _storage._uvLux {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 12)
+      } }()
+      try { if let v = _storage._windDirection {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 13)
+      } }()
+      try { if let v = _storage._windSpeed {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 14)
+      } }()
+      try { if let v = _storage._weight {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 15)
+      } }()
+      try { if let v = _storage._windGust {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 16)
+      } }()
+      try { if let v = _storage._windLull {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 17)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -938,46 +1201,50 @@ extension PowerMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularFloatField(value: &self.ch1Voltage) }()
-      case 2: try { try decoder.decodeSingularFloatField(value: &self.ch1Current) }()
-      case 3: try { try decoder.decodeSingularFloatField(value: &self.ch2Voltage) }()
-      case 4: try { try decoder.decodeSingularFloatField(value: &self.ch2Current) }()
-      case 5: try { try decoder.decodeSingularFloatField(value: &self.ch3Voltage) }()
-      case 6: try { try decoder.decodeSingularFloatField(value: &self.ch3Current) }()
+      case 1: try { try decoder.decodeSingularFloatField(value: &self._ch1Voltage) }()
+      case 2: try { try decoder.decodeSingularFloatField(value: &self._ch1Current) }()
+      case 3: try { try decoder.decodeSingularFloatField(value: &self._ch2Voltage) }()
+      case 4: try { try decoder.decodeSingularFloatField(value: &self._ch2Current) }()
+      case 5: try { try decoder.decodeSingularFloatField(value: &self._ch3Voltage) }()
+      case 6: try { try decoder.decodeSingularFloatField(value: &self._ch3Current) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.ch1Voltage != 0 {
-      try visitor.visitSingularFloatField(value: self.ch1Voltage, fieldNumber: 1)
-    }
-    if self.ch1Current != 0 {
-      try visitor.visitSingularFloatField(value: self.ch1Current, fieldNumber: 2)
-    }
-    if self.ch2Voltage != 0 {
-      try visitor.visitSingularFloatField(value: self.ch2Voltage, fieldNumber: 3)
-    }
-    if self.ch2Current != 0 {
-      try visitor.visitSingularFloatField(value: self.ch2Current, fieldNumber: 4)
-    }
-    if self.ch3Voltage != 0 {
-      try visitor.visitSingularFloatField(value: self.ch3Voltage, fieldNumber: 5)
-    }
-    if self.ch3Current != 0 {
-      try visitor.visitSingularFloatField(value: self.ch3Current, fieldNumber: 6)
-    }
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._ch1Voltage {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._ch1Current {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._ch2Voltage {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._ch2Current {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._ch3Voltage {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 5)
+    } }()
+    try { if let v = self._ch3Current {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 6)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: PowerMetrics, rhs: PowerMetrics) -> Bool {
-    if lhs.ch1Voltage != rhs.ch1Voltage {return false}
-    if lhs.ch1Current != rhs.ch1Current {return false}
-    if lhs.ch2Voltage != rhs.ch2Voltage {return false}
-    if lhs.ch2Current != rhs.ch2Current {return false}
-    if lhs.ch3Voltage != rhs.ch3Voltage {return false}
-    if lhs.ch3Current != rhs.ch3Current {return false}
+    if lhs._ch1Voltage != rhs._ch1Voltage {return false}
+    if lhs._ch1Current != rhs._ch1Current {return false}
+    if lhs._ch2Voltage != rhs._ch2Voltage {return false}
+    if lhs._ch2Current != rhs._ch2Current {return false}
+    if lhs._ch3Voltage != rhs._ch3Voltage {return false}
+    if lhs._ch3Current != rhs._ch3Current {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1006,76 +1273,80 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.pm10Standard) }()
-      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.pm25Standard) }()
-      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.pm100Standard) }()
-      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.pm10Environmental) }()
-      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.pm25Environmental) }()
-      case 6: try { try decoder.decodeSingularUInt32Field(value: &self.pm100Environmental) }()
-      case 7: try { try decoder.decodeSingularUInt32Field(value: &self.particles03Um) }()
-      case 8: try { try decoder.decodeSingularUInt32Field(value: &self.particles05Um) }()
-      case 9: try { try decoder.decodeSingularUInt32Field(value: &self.particles10Um) }()
-      case 10: try { try decoder.decodeSingularUInt32Field(value: &self.particles25Um) }()
-      case 11: try { try decoder.decodeSingularUInt32Field(value: &self.particles50Um) }()
-      case 12: try { try decoder.decodeSingularUInt32Field(value: &self.particles100Um) }()
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self._pm10Standard) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self._pm25Standard) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self._pm100Standard) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self._pm10Environmental) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self._pm25Environmental) }()
+      case 6: try { try decoder.decodeSingularUInt32Field(value: &self._pm100Environmental) }()
+      case 7: try { try decoder.decodeSingularUInt32Field(value: &self._particles03Um) }()
+      case 8: try { try decoder.decodeSingularUInt32Field(value: &self._particles05Um) }()
+      case 9: try { try decoder.decodeSingularUInt32Field(value: &self._particles10Um) }()
+      case 10: try { try decoder.decodeSingularUInt32Field(value: &self._particles25Um) }()
+      case 11: try { try decoder.decodeSingularUInt32Field(value: &self._particles50Um) }()
+      case 12: try { try decoder.decodeSingularUInt32Field(value: &self._particles100Um) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.pm10Standard != 0 {
-      try visitor.visitSingularUInt32Field(value: self.pm10Standard, fieldNumber: 1)
-    }
-    if self.pm25Standard != 0 {
-      try visitor.visitSingularUInt32Field(value: self.pm25Standard, fieldNumber: 2)
-    }
-    if self.pm100Standard != 0 {
-      try visitor.visitSingularUInt32Field(value: self.pm100Standard, fieldNumber: 3)
-    }
-    if self.pm10Environmental != 0 {
-      try visitor.visitSingularUInt32Field(value: self.pm10Environmental, fieldNumber: 4)
-    }
-    if self.pm25Environmental != 0 {
-      try visitor.visitSingularUInt32Field(value: self.pm25Environmental, fieldNumber: 5)
-    }
-    if self.pm100Environmental != 0 {
-      try visitor.visitSingularUInt32Field(value: self.pm100Environmental, fieldNumber: 6)
-    }
-    if self.particles03Um != 0 {
-      try visitor.visitSingularUInt32Field(value: self.particles03Um, fieldNumber: 7)
-    }
-    if self.particles05Um != 0 {
-      try visitor.visitSingularUInt32Field(value: self.particles05Um, fieldNumber: 8)
-    }
-    if self.particles10Um != 0 {
-      try visitor.visitSingularUInt32Field(value: self.particles10Um, fieldNumber: 9)
-    }
-    if self.particles25Um != 0 {
-      try visitor.visitSingularUInt32Field(value: self.particles25Um, fieldNumber: 10)
-    }
-    if self.particles50Um != 0 {
-      try visitor.visitSingularUInt32Field(value: self.particles50Um, fieldNumber: 11)
-    }
-    if self.particles100Um != 0 {
-      try visitor.visitSingularUInt32Field(value: self.particles100Um, fieldNumber: 12)
-    }
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._pm10Standard {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._pm25Standard {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._pm100Standard {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._pm10Environmental {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._pm25Environmental {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 5)
+    } }()
+    try { if let v = self._pm100Environmental {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 6)
+    } }()
+    try { if let v = self._particles03Um {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 7)
+    } }()
+    try { if let v = self._particles05Um {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 8)
+    } }()
+    try { if let v = self._particles10Um {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 9)
+    } }()
+    try { if let v = self._particles25Um {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 10)
+    } }()
+    try { if let v = self._particles50Um {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 11)
+    } }()
+    try { if let v = self._particles100Um {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 12)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: AirQualityMetrics, rhs: AirQualityMetrics) -> Bool {
-    if lhs.pm10Standard != rhs.pm10Standard {return false}
-    if lhs.pm25Standard != rhs.pm25Standard {return false}
-    if lhs.pm100Standard != rhs.pm100Standard {return false}
-    if lhs.pm10Environmental != rhs.pm10Environmental {return false}
-    if lhs.pm25Environmental != rhs.pm25Environmental {return false}
-    if lhs.pm100Environmental != rhs.pm100Environmental {return false}
-    if lhs.particles03Um != rhs.particles03Um {return false}
-    if lhs.particles05Um != rhs.particles05Um {return false}
-    if lhs.particles10Um != rhs.particles10Um {return false}
-    if lhs.particles25Um != rhs.particles25Um {return false}
-    if lhs.particles50Um != rhs.particles50Um {return false}
-    if lhs.particles100Um != rhs.particles100Um {return false}
+    if lhs._pm10Standard != rhs._pm10Standard {return false}
+    if lhs._pm25Standard != rhs._pm25Standard {return false}
+    if lhs._pm100Standard != rhs._pm100Standard {return false}
+    if lhs._pm10Environmental != rhs._pm10Environmental {return false}
+    if lhs._pm25Environmental != rhs._pm25Environmental {return false}
+    if lhs._pm100Environmental != rhs._pm100Environmental {return false}
+    if lhs._particles03Um != rhs._particles03Um {return false}
+    if lhs._particles05Um != rhs._particles05Um {return false}
+    if lhs._particles10Um != rhs._particles10Um {return false}
+    if lhs._particles25Um != rhs._particles25Um {return false}
+    if lhs._particles50Um != rhs._particles50Um {return false}
+    if lhs._particles100Um != rhs._particles100Um {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

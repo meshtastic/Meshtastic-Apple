@@ -1404,6 +1404,7 @@ public struct Config {
 
       ///
       /// Very Long Range - Slow
+      /// Deprecated in 2.5: Works only with txco and is unusably slow
       case veryLongSlow // = 2
 
       ///
@@ -1425,6 +1426,12 @@ public struct Config {
       ///
       /// Long Range - Moderately Fast
       case longModerate // = 7
+
+      ///
+      /// Short Range - Turbo
+      /// This is the fastest preset and the only one with 500kHz bandwidth.
+      /// It is not legal to use in all regions due to this wider bandwidth.
+      case shortTurbo // = 8
       case UNRECOGNIZED(Int)
 
       public init() {
@@ -1441,6 +1448,7 @@ public struct Config {
         case 5: self = .shortSlow
         case 6: self = .shortFast
         case 7: self = .longModerate
+        case 8: self = .shortTurbo
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -1455,6 +1463,7 @@ public struct Config {
         case .shortSlow: return 5
         case .shortFast: return 6
         case .longModerate: return 7
+        case .shortTurbo: return 8
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1540,39 +1549,38 @@ public struct Config {
 
     ///
     /// The public key of the user's device.
-    /// This is sent out to other nodes on the mesh to allow them to compute a shared secret key.
+    /// Sent out to other nodes on the mesh to allow them to compute a shared secret key.
     public var publicKey: Data = Data()
 
     ///
     /// The private key of the device.
-    /// This is used to create a shared key with a remote device.
+    /// Used to create a shared key with a remote device.
     public var privateKey: Data = Data()
 
     ///
-    /// This is the public key authorized to send admin messages to this node
+    /// The public key authorized to send admin messages to this node.
     public var adminKey: Data = Data()
 
     ///
-    /// If true, device is considered to be "managed" by a mesh administrator
-    /// Clients should then limit available configuration and administrative options inside the user interface
+    /// If true, device is considered to be "managed" by a mesh administrator via admin messages
+    /// Device is managed by a mesh administrator.
     public var isManaged: Bool = false
 
     ///
-    /// Disabling this will disable the SerialConsole by not initilizing the StreamAPI
+    /// Serial Console over the Stream API."
     public var serialEnabled: Bool = false
 
     ///
     /// By default we turn off logging as soon as an API client connects (to keep shared serial link quiet).
-    /// Set this to true to leave the debug log outputting even when API is active.
-    public var debugLogEnabled: Bool = false
+    /// Output live debug logging over serial.
+    public var debugLogApiEnabled: Bool = false
 
     ///
     /// Enables device (serial style logs) over Bluetooth
-    /// Moved to SecurityConfig
     public var bluetoothLoggingEnabled: Bool = false
 
     ///
-    /// Enables incoming admin control over the "admin" channel
+    /// Allow incoming device control over the insecure legacy admin channel.
     public var adminChannelEnabled: Bool = false
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -1736,6 +1744,7 @@ extension Config.LoRaConfig.ModemPreset: CaseIterable {
     .shortSlow,
     .shortFast,
     .longModerate,
+    .shortTurbo,
   ]
 }
 
@@ -2800,6 +2809,7 @@ extension Config.LoRaConfig.ModemPreset: SwiftProtobuf._ProtoNameProviding {
     5: .same(proto: "SHORT_SLOW"),
     6: .same(proto: "SHORT_FAST"),
     7: .same(proto: "LONG_MODERATE"),
+    8: .same(proto: "SHORT_TURBO"),
   ]
 }
 
@@ -2869,7 +2879,7 @@ extension Config.SecurityConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     3: .standard(proto: "admin_key"),
     4: .standard(proto: "is_managed"),
     5: .standard(proto: "serial_enabled"),
-    6: .standard(proto: "debug_log_enabled"),
+    6: .standard(proto: "debug_log_api_enabled"),
     7: .standard(proto: "bluetooth_logging_enabled"),
     8: .standard(proto: "admin_channel_enabled"),
   ]
@@ -2885,7 +2895,7 @@ extension Config.SecurityConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
       case 3: try { try decoder.decodeSingularBytesField(value: &self.adminKey) }()
       case 4: try { try decoder.decodeSingularBoolField(value: &self.isManaged) }()
       case 5: try { try decoder.decodeSingularBoolField(value: &self.serialEnabled) }()
-      case 6: try { try decoder.decodeSingularBoolField(value: &self.debugLogEnabled) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.debugLogApiEnabled) }()
       case 7: try { try decoder.decodeSingularBoolField(value: &self.bluetoothLoggingEnabled) }()
       case 8: try { try decoder.decodeSingularBoolField(value: &self.adminChannelEnabled) }()
       default: break
@@ -2909,8 +2919,8 @@ extension Config.SecurityConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if self.serialEnabled != false {
       try visitor.visitSingularBoolField(value: self.serialEnabled, fieldNumber: 5)
     }
-    if self.debugLogEnabled != false {
-      try visitor.visitSingularBoolField(value: self.debugLogEnabled, fieldNumber: 6)
+    if self.debugLogApiEnabled != false {
+      try visitor.visitSingularBoolField(value: self.debugLogApiEnabled, fieldNumber: 6)
     }
     if self.bluetoothLoggingEnabled != false {
       try visitor.visitSingularBoolField(value: self.bluetoothLoggingEnabled, fieldNumber: 7)
@@ -2927,7 +2937,7 @@ extension Config.SecurityConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if lhs.adminKey != rhs.adminKey {return false}
     if lhs.isManaged != rhs.isManaged {return false}
     if lhs.serialEnabled != rhs.serialEnabled {return false}
-    if lhs.debugLogEnabled != rhs.debugLogEnabled {return false}
+    if lhs.debugLogApiEnabled != rhs.debugLogApiEnabled {return false}
     if lhs.bluetoothLoggingEnabled != rhs.bluetoothLoggingEnabled {return false}
     if lhs.adminChannelEnabled != rhs.adminChannelEnabled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}

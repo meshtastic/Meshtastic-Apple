@@ -782,23 +782,35 @@ public struct Position {
   /// The new preferred location encoding, multiply by 1e-7 to get degrees
   /// in floating point
   public var latitudeI: Int32 {
-    get {return _storage._latitudeI}
+    get {return _storage._latitudeI ?? 0}
     set {_uniqueStorage()._latitudeI = newValue}
   }
+  /// Returns true if `latitudeI` has been explicitly set.
+  public var hasLatitudeI: Bool {return _storage._latitudeI != nil}
+  /// Clears the value of `latitudeI`. Subsequent reads from it will return its default value.
+  public mutating func clearLatitudeI() {_uniqueStorage()._latitudeI = nil}
 
   ///
   /// TODO: REPLACE
   public var longitudeI: Int32 {
-    get {return _storage._longitudeI}
+    get {return _storage._longitudeI ?? 0}
     set {_uniqueStorage()._longitudeI = newValue}
   }
+  /// Returns true if `longitudeI` has been explicitly set.
+  public var hasLongitudeI: Bool {return _storage._longitudeI != nil}
+  /// Clears the value of `longitudeI`. Subsequent reads from it will return its default value.
+  public mutating func clearLongitudeI() {_uniqueStorage()._longitudeI = nil}
 
   ///
   /// In meters above MSL (but see issue #359)
   public var altitude: Int32 {
-    get {return _storage._altitude}
+    get {return _storage._altitude ?? 0}
     set {_uniqueStorage()._altitude = newValue}
   }
+  /// Returns true if `altitude` has been explicitly set.
+  public var hasAltitude: Bool {return _storage._altitude != nil}
+  /// Clears the value of `altitude`. Subsequent reads from it will return its default value.
+  public mutating func clearAltitude() {_uniqueStorage()._altitude = nil}
 
   ///
   /// This is usually not sent over the mesh (to save space), but it is sent
@@ -841,16 +853,24 @@ public struct Position {
   ///
   /// HAE altitude in meters - can be used instead of MSL altitude
   public var altitudeHae: Int32 {
-    get {return _storage._altitudeHae}
+    get {return _storage._altitudeHae ?? 0}
     set {_uniqueStorage()._altitudeHae = newValue}
   }
+  /// Returns true if `altitudeHae` has been explicitly set.
+  public var hasAltitudeHae: Bool {return _storage._altitudeHae != nil}
+  /// Clears the value of `altitudeHae`. Subsequent reads from it will return its default value.
+  public mutating func clearAltitudeHae() {_uniqueStorage()._altitudeHae = nil}
 
   ///
   /// Geoidal separation in meters
   public var altitudeGeoidalSeparation: Int32 {
-    get {return _storage._altitudeGeoidalSeparation}
+    get {return _storage._altitudeGeoidalSeparation ?? 0}
     set {_uniqueStorage()._altitudeGeoidalSeparation = newValue}
   }
+  /// Returns true if `altitudeGeoidalSeparation` has been explicitly set.
+  public var hasAltitudeGeoidalSeparation: Bool {return _storage._altitudeGeoidalSeparation != nil}
+  /// Clears the value of `altitudeGeoidalSeparation`. Subsequent reads from it will return its default value.
+  public mutating func clearAltitudeGeoidalSeparation() {_uniqueStorage()._altitudeGeoidalSeparation = nil}
 
   ///
   /// Horizontal, Vertical and Position Dilution of Precision, in 1/100 units
@@ -894,16 +914,24 @@ public struct Position {
   /// - "yaw" indicates a relative rotation about the vertical axis
   /// TODO: REMOVE/INTEGRATE
   public var groundSpeed: UInt32 {
-    get {return _storage._groundSpeed}
+    get {return _storage._groundSpeed ?? 0}
     set {_uniqueStorage()._groundSpeed = newValue}
   }
+  /// Returns true if `groundSpeed` has been explicitly set.
+  public var hasGroundSpeed: Bool {return _storage._groundSpeed != nil}
+  /// Clears the value of `groundSpeed`. Subsequent reads from it will return its default value.
+  public mutating func clearGroundSpeed() {_uniqueStorage()._groundSpeed = nil}
 
   ///
   /// TODO: REPLACE
   public var groundTrack: UInt32 {
-    get {return _storage._groundTrack}
+    get {return _storage._groundTrack ?? 0}
     set {_uniqueStorage()._groundTrack = newValue}
   }
+  /// Returns true if `groundTrack` has been explicitly set.
+  public var hasGroundTrack: Bool {return _storage._groundTrack != nil}
+  /// Clears the value of `groundTrack`. Subsequent reads from it will return its default value.
+  public mutating func clearGroundTrack() {_uniqueStorage()._groundTrack = nil}
 
   ///
   /// GPS fix quality (from NMEA GxGGA statement or similar)
@@ -1455,11 +1483,25 @@ public struct Waypoint {
 
   ///
   /// latitude_i
-  public var latitudeI: Int32 = 0
+  public var latitudeI: Int32 {
+    get {return _latitudeI ?? 0}
+    set {_latitudeI = newValue}
+  }
+  /// Returns true if `latitudeI` has been explicitly set.
+  public var hasLatitudeI: Bool {return self._latitudeI != nil}
+  /// Clears the value of `latitudeI`. Subsequent reads from it will return its default value.
+  public mutating func clearLatitudeI() {self._latitudeI = nil}
 
   ///
   /// longitude_i
-  public var longitudeI: Int32 = 0
+  public var longitudeI: Int32 {
+    get {return _longitudeI ?? 0}
+    set {_longitudeI = newValue}
+  }
+  /// Returns true if `longitudeI` has been explicitly set.
+  public var hasLongitudeI: Bool {return self._longitudeI != nil}
+  /// Clears the value of `longitudeI`. Subsequent reads from it will return its default value.
+  public mutating func clearLongitudeI() {self._longitudeI = nil}
 
   ///
   /// Time the waypoint is to expire (epoch)
@@ -1485,6 +1527,9 @@ public struct Waypoint {
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+
+  fileprivate var _latitudeI: Int32? = nil
+  fileprivate var _longitudeI: Int32? = nil
 }
 
 ///
@@ -2369,6 +2414,16 @@ public struct FromRadio {
     set {payloadVariant = .fileInfo(newValue)}
   }
 
+  ///
+  /// Notification message to the client
+  public var clientNotification: ClientNotification {
+    get {
+      if case .clientNotification(let v)? = payloadVariant {return v}
+      return ClientNotification()
+    }
+    set {payloadVariant = .clientNotification(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -2424,6 +2479,9 @@ public struct FromRadio {
     ///
     /// File system manifest messages
     case fileInfo(FileInfo)
+    ///
+    /// Notification message to the client
+    case clientNotification(ClientNotification)
 
   #if !swift(>=4.1)
     public static func ==(lhs: FromRadio.OneOf_PayloadVariant, rhs: FromRadio.OneOf_PayloadVariant) -> Bool {
@@ -2487,6 +2545,10 @@ public struct FromRadio {
         guard case .fileInfo(let l) = lhs, case .fileInfo(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
+      case (.clientNotification, .clientNotification): return {
+        guard case .clientNotification(let l) = lhs, case .clientNotification(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
       default: return false
       }
     }
@@ -2494,6 +2556,46 @@ public struct FromRadio {
   }
 
   public init() {}
+}
+
+///
+/// A notification message from the device to the client
+/// To be used for important messages that should to be displayed to the user
+/// in the form of push notifications or validation messages when saving
+/// invalid configuration.
+public struct ClientNotification {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// The id of the packet we're notifying in response to
+  public var replyID: UInt32 {
+    get {return _replyID ?? 0}
+    set {_replyID = newValue}
+  }
+  /// Returns true if `replyID` has been explicitly set.
+  public var hasReplyID: Bool {return self._replyID != nil}
+  /// Clears the value of `replyID`. Subsequent reads from it will return its default value.
+  public mutating func clearReplyID() {self._replyID = nil}
+
+  ///
+  /// Seconds since 1970 - or 0 for unknown/unset
+  public var time: UInt32 = 0
+
+  ///
+  /// The level type of notification
+  public var level: LogRecord.Level = .unset
+
+  ///
+  /// The message body of the notification
+  public var message: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _replyID: UInt32? = nil
 }
 
 ///
@@ -2987,6 +3089,7 @@ extension LogRecord.Level: @unchecked Sendable {}
 extension QueueStatus: @unchecked Sendable {}
 extension FromRadio: @unchecked Sendable {}
 extension FromRadio.OneOf_PayloadVariant: @unchecked Sendable {}
+extension ClientNotification: @unchecked Sendable {}
 extension FileInfo: @unchecked Sendable {}
 extension ToRadio: @unchecked Sendable {}
 extension ToRadio.OneOf_PayloadVariant: @unchecked Sendable {}
@@ -3138,22 +3241,22 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
   ]
 
   fileprivate class _StorageClass {
-    var _latitudeI: Int32 = 0
-    var _longitudeI: Int32 = 0
-    var _altitude: Int32 = 0
+    var _latitudeI: Int32? = nil
+    var _longitudeI: Int32? = nil
+    var _altitude: Int32? = nil
     var _time: UInt32 = 0
     var _locationSource: Position.LocSource = .locUnset
     var _altitudeSource: Position.AltSource = .altUnset
     var _timestamp: UInt32 = 0
     var _timestampMillisAdjust: Int32 = 0
-    var _altitudeHae: Int32 = 0
-    var _altitudeGeoidalSeparation: Int32 = 0
+    var _altitudeHae: Int32? = nil
+    var _altitudeGeoidalSeparation: Int32? = nil
     var _pdop: UInt32 = 0
     var _hdop: UInt32 = 0
     var _vdop: UInt32 = 0
     var _gpsAccuracy: UInt32 = 0
-    var _groundSpeed: UInt32 = 0
-    var _groundTrack: UInt32 = 0
+    var _groundSpeed: UInt32? = nil
+    var _groundTrack: UInt32? = nil
     var _fixQuality: UInt32 = 0
     var _fixType: UInt32 = 0
     var _satsInView: UInt32 = 0
@@ -3247,15 +3350,19 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      if _storage._latitudeI != 0 {
-        try visitor.visitSingularSFixed32Field(value: _storage._latitudeI, fieldNumber: 1)
-      }
-      if _storage._longitudeI != 0 {
-        try visitor.visitSingularSFixed32Field(value: _storage._longitudeI, fieldNumber: 2)
-      }
-      if _storage._altitude != 0 {
-        try visitor.visitSingularInt32Field(value: _storage._altitude, fieldNumber: 3)
-      }
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._latitudeI {
+        try visitor.visitSingularSFixed32Field(value: v, fieldNumber: 1)
+      } }()
+      try { if let v = _storage._longitudeI {
+        try visitor.visitSingularSFixed32Field(value: v, fieldNumber: 2)
+      } }()
+      try { if let v = _storage._altitude {
+        try visitor.visitSingularInt32Field(value: v, fieldNumber: 3)
+      } }()
       if _storage._time != 0 {
         try visitor.visitSingularFixed32Field(value: _storage._time, fieldNumber: 4)
       }
@@ -3271,12 +3378,12 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       if _storage._timestampMillisAdjust != 0 {
         try visitor.visitSingularInt32Field(value: _storage._timestampMillisAdjust, fieldNumber: 8)
       }
-      if _storage._altitudeHae != 0 {
-        try visitor.visitSingularSInt32Field(value: _storage._altitudeHae, fieldNumber: 9)
-      }
-      if _storage._altitudeGeoidalSeparation != 0 {
-        try visitor.visitSingularSInt32Field(value: _storage._altitudeGeoidalSeparation, fieldNumber: 10)
-      }
+      try { if let v = _storage._altitudeHae {
+        try visitor.visitSingularSInt32Field(value: v, fieldNumber: 9)
+      } }()
+      try { if let v = _storage._altitudeGeoidalSeparation {
+        try visitor.visitSingularSInt32Field(value: v, fieldNumber: 10)
+      } }()
       if _storage._pdop != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._pdop, fieldNumber: 11)
       }
@@ -3289,12 +3396,12 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       if _storage._gpsAccuracy != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._gpsAccuracy, fieldNumber: 14)
       }
-      if _storage._groundSpeed != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._groundSpeed, fieldNumber: 15)
-      }
-      if _storage._groundTrack != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._groundTrack, fieldNumber: 16)
-      }
+      try { if let v = _storage._groundSpeed {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 15)
+      } }()
+      try { if let v = _storage._groundTrack {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 16)
+      } }()
       if _storage._fixQuality != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._fixQuality, fieldNumber: 17)
       }
@@ -3676,8 +3783,8 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularUInt32Field(value: &self.id) }()
-      case 2: try { try decoder.decodeSingularSFixed32Field(value: &self.latitudeI) }()
-      case 3: try { try decoder.decodeSingularSFixed32Field(value: &self.longitudeI) }()
+      case 2: try { try decoder.decodeSingularSFixed32Field(value: &self._latitudeI) }()
+      case 3: try { try decoder.decodeSingularSFixed32Field(value: &self._longitudeI) }()
       case 4: try { try decoder.decodeSingularUInt32Field(value: &self.expire) }()
       case 5: try { try decoder.decodeSingularUInt32Field(value: &self.lockedTo) }()
       case 6: try { try decoder.decodeSingularStringField(value: &self.name) }()
@@ -3689,15 +3796,19 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.id != 0 {
       try visitor.visitSingularUInt32Field(value: self.id, fieldNumber: 1)
     }
-    if self.latitudeI != 0 {
-      try visitor.visitSingularSFixed32Field(value: self.latitudeI, fieldNumber: 2)
-    }
-    if self.longitudeI != 0 {
-      try visitor.visitSingularSFixed32Field(value: self.longitudeI, fieldNumber: 3)
-    }
+    try { if let v = self._latitudeI {
+      try visitor.visitSingularSFixed32Field(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._longitudeI {
+      try visitor.visitSingularSFixed32Field(value: v, fieldNumber: 3)
+    } }()
     if self.expire != 0 {
       try visitor.visitSingularUInt32Field(value: self.expire, fieldNumber: 4)
     }
@@ -3718,8 +3829,8 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
 
   public static func ==(lhs: Waypoint, rhs: Waypoint) -> Bool {
     if lhs.id != rhs.id {return false}
-    if lhs.latitudeI != rhs.latitudeI {return false}
-    if lhs.longitudeI != rhs.longitudeI {return false}
+    if lhs._latitudeI != rhs._latitudeI {return false}
+    if lhs._longitudeI != rhs._longitudeI {return false}
     if lhs.expire != rhs.expire {return false}
     if lhs.lockedTo != rhs.lockedTo {return false}
     if lhs.name != rhs.name {return false}
@@ -4369,6 +4480,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     13: .same(proto: "metadata"),
     14: .same(proto: "mqttClientProxyMessage"),
     15: .same(proto: "fileInfo"),
+    16: .same(proto: "clientNotification"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -4550,6 +4662,19 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
           self.payloadVariant = .fileInfo(v)
         }
       }()
+      case 16: try {
+        var v: ClientNotification?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .clientNotification(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .clientNotification(v)
+        }
+      }()
       default: break
       }
     }
@@ -4620,6 +4745,10 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       guard case .fileInfo(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 15)
     }()
+    case .clientNotification?: try {
+      guard case .clientNotification(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 16)
+    }()
     case nil: break
     }
     try unknownFields.traverse(visitor: &visitor)
@@ -4628,6 +4757,60 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
   public static func ==(lhs: FromRadio, rhs: FromRadio) -> Bool {
     if lhs.id != rhs.id {return false}
     if lhs.payloadVariant != rhs.payloadVariant {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension ClientNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".ClientNotification"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "reply_id"),
+    2: .same(proto: "time"),
+    3: .same(proto: "level"),
+    4: .same(proto: "message"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self._replyID) }()
+      case 2: try { try decoder.decodeSingularFixed32Field(value: &self.time) }()
+      case 3: try { try decoder.decodeSingularEnumField(value: &self.level) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.message) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._replyID {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 1)
+    } }()
+    if self.time != 0 {
+      try visitor.visitSingularFixed32Field(value: self.time, fieldNumber: 2)
+    }
+    if self.level != .unset {
+      try visitor.visitSingularEnumField(value: self.level, fieldNumber: 3)
+    }
+    if !self.message.isEmpty {
+      try visitor.visitSingularStringField(value: self.message, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ClientNotification, rhs: ClientNotification) -> Bool {
+    if lhs._replyID != rhs._replyID {return false}
+    if lhs.time != rhs.time {return false}
+    if lhs.level != rhs.level {return false}
+    if lhs.message != rhs.message {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

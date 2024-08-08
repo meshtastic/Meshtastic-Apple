@@ -25,7 +25,7 @@ struct SecurityConfig: View {
 	@State var adminKey = ""
 	@State var isManaged = false
 	@State var serialEnabled = false
-	@State var debugLogEnabled = false
+	@State var debugLogApiEnabled = false
 	@State var bluetoothLoggingEnabled = false
 	@State var adminChannelEnabled = false
 
@@ -132,7 +132,7 @@ struct SecurityConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					if serialEnabled {
-						Toggle(isOn: $debugLogEnabled) {
+						Toggle(isOn: $debugLogApiEnabled) {
 							Label("Serial Debug Logs", systemImage: "ant.fill")
 							Text("Output live debug logging over serial.")
 						}
@@ -153,7 +153,7 @@ struct SecurityConfig: View {
 		self.adminKey = node?.securityConfig?.adminKey?.base64EncodedString() ?? ""
 		self.isManaged = node?.securityConfig?.isManaged ?? false
 		self.serialEnabled = node?.securityConfig?.serialEnabled ?? false
-		self.debugLogEnabled = node?.securityConfig?.debugLogEnabled ?? false
+		self.debugLogApiEnabled = node?.securityConfig?.debugLogApiEnabled ?? false
 		self.bluetoothLoggingEnabled = node?.securityConfig?.bluetoothLoggingEnabled ?? false
 		self.adminChannelEnabled = node?.securityConfig?.adminChannelEnabled ?? false
 		self.hasChanges = false

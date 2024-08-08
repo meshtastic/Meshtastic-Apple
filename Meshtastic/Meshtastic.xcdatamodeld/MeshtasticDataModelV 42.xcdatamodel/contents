@@ -341,7 +341,7 @@
         <attribute name="adminChannelEnabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="adminKey" optional="YES" attributeType="Binary"/>
         <attribute name="bluetoothLoggingEnabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
-        <attribute name="debugLogEnabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="debugLogApiEnabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="isManaged" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="privateKey" optional="YES" attributeType="Binary"/>
         <attribute name="publicKey" optional="YES" attributeType="Binary"/>
