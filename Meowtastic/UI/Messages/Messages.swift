@@ -221,7 +221,9 @@ struct Messages: View {
 	@ViewBuilder
 	private func makeChannelLink(for channel: ChannelEntity) -> some View {
 		NavigationLink {
-			MessageList(channel: channel, myInfo: node?.myInfo)
+			NavigationLazyView(
+				MessageList(channel: channel, myInfo: node?.myInfo)
+			)
 		} label: {
 			HStack(spacing: 8) {
 				avatar(for: channel)
@@ -259,7 +261,9 @@ struct Messages: View {
 	@ViewBuilder
 	private func makeUserLink(for user: UserEntity) -> some View {
 		NavigationLink {
-			MessageList(user: user, myInfo: node?.myInfo)
+			NavigationLazyView(
+				MessageList(user: user, myInfo: node?.myInfo)
+			)
 		} label: {
 			HStack(spacing: 8) {
 				avatar(for: user)

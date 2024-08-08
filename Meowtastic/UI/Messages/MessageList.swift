@@ -203,6 +203,8 @@ struct MessageList: View {
 		self.channel = channel
 		self.user = nil
 		self.myInfo = myInfo
+
+		Logger.app.warning("message list init'd")
 	}
 
 	init(
@@ -212,6 +214,8 @@ struct MessageList: View {
 		self.channel = nil
 		self.user = user
 		self.myInfo = myInfo
+
+		Logger.app.warning("message list init'd")
 	}
 
 	@ViewBuilder

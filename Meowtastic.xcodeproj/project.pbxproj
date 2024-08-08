@@ -46,6 +46,7 @@
 		B28CFF842C5E0F360012DCB4 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = B28CFF832C5E0F360012DCB4 /* FirebaseAnalyticsWithoutAdIdSupport */; };
 		B28CFF862C5E0F360012DCB4 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = B28CFF852C5E0F360012DCB4 /* FirebaseAppCheck */; };
 		B28CFF882C5E0F360012DCB4 /* FirebaseAppDistribution-Beta in Frameworks */ = {isa = PBXBuildFile; productRef = B28CFF872C5E0F360012DCB4 /* FirebaseAppDistribution-Beta */; };
+		B2A064CE2C64D16E00B7E9F2 /* NavigationLazyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A064CD2C64D16E00B7E9F2 /* NavigationLazyView.swift */; };
 		B2A5F2FC2C5668FD009457AB /* ClientHistoryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DA2C5668FD009457AB /* ClientHistoryButton.swift */; };
 		B2A5F2FD2C5668FD009457AB /* DeleteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DB2C5668FD009457AB /* DeleteNodeButton.swift */; };
 		B2A5F2FE2C5668FD009457AB /* ExchangePositionsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DC2C5668FD009457AB /* ExchangePositionsButton.swift */; };
@@ -237,6 +238,7 @@
 		B26C91F32C5971880029F249 /* LocationHelperManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHelperManager.swift; sourceTree = "<group>"; };
 		B26C91F52C59740F0029F249 /* PositionFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionFlags.swift; sourceTree = "<group>"; };
 		B28CFF7E2C5D029D0012DCB4 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		B2A064CD2C64D16E00B7E9F2 /* NavigationLazyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationLazyView.swift; sourceTree = "<group>"; };
 		B2A5F2DA2C5668FD009457AB /* ClientHistoryButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ClientHistoryButton.swift; sourceTree = "<group>"; };
 		B2A5F2DB2C5668FD009457AB /* DeleteNodeButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeleteNodeButton.swift; sourceTree = "<group>"; };
 		B2A5F2DC2C5668FD009457AB /* ExchangePositionsButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExchangePositionsButton.swift; sourceTree = "<group>"; };
@@ -409,6 +411,7 @@
 				DDF45C332BC1A48E005ED5F2 /* MQTTChannelIcon.swift */,
 				DD457187293C7E63000C49FB /* SignalStrengthIndicator.swift */,
 				B25D5CB32C5BC3840007F90F /* AvatarAbstract.swift */,
+				B2A064CD2C64D16E00B7E9F2 /* NavigationLazyView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -925,6 +928,7 @@
 				DDDB445429F8AD1600EE2349 /* Data.swift in Sources */,
 				08DD7E552C41D63800548159 /* AppConstants.swift in Sources */,
 				B2A5F3002C5668FD009457AB /* NodeAlertsButton.swift in Sources */,
+				B2A064CE2C64D16E00B7E9F2 /* NavigationLazyView.swift in Sources */,
 				DDA0B6B2294CDC55001356EC /* Channels.swift in Sources */,
 				B399E8A42B6F486400E4488E /* RetryButton.swift in Sources */,
 				DDB8F4102A9EE5B400230ECE /* Messages.swift in Sources */,
@@ -1157,7 +1161,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = 4W495F46Z6;
 				ENABLE_PREVIEWS = YES;
@@ -1169,7 +1173,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = c4t.dr34m.mobi.meowtastic;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1193,7 +1197,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = 4W495F46Z6;
 				ENABLE_PREVIEWS = YES;
@@ -1205,7 +1209,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = c4t.dr34m.mobi.meowtastic;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
