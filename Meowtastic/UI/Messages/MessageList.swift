@@ -238,14 +238,6 @@ struct MessageList: View {
 							corners: isCurrentUser ? (true, true, false, true) : nil
 						)
 					}
-
-					if let connectedNodeNum, let sourceNode {
-						NodeIconListView(
-							connectedNode: connectedNodeNum,
-							small: true,
-							node: sourceNode
-						)
-					}
 				}
 				.frame(width: 64)
 				.onTapGesture {
@@ -267,6 +259,14 @@ struct MessageList: View {
 								.font(.caption)
 								.lineLimit(1)
 								.foregroundColor(.gray)
+
+							if let node = message.fromUser?.userNode, let connectedNodeNum {
+								NodeIconListView(
+									connectedNode: connectedNodeNum,
+									small: true,
+									node: node
+								)
+							}
 						}
 						else {
 							Image(systemName: "person.fill.questionmark")
@@ -347,6 +347,17 @@ struct MessageList: View {
 
 	private func isCurrentUser(message: MessageEntity, preferredNum: Int) -> Bool {
 		Int64(preferredNum) == message.fromUser?.num
+	}
+
+	private func getUserColor(for node: NodeInfoEntity?) -> Color {
+		if let node, node.isOnline {
+			return Color(
+				UIColor(hex: UInt32(node.num))
+			)
+		}
+		else {
+			return Color.gray.opacity(0.7)
+		}
 	}
 
 	private func getSenderName(message: MessageEntity, short: Bool = false) -> String {

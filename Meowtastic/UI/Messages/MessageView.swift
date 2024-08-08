@@ -88,7 +88,7 @@ struct MessageView: View {
 						Spacer()
 							.frame(width: 12)
 
-						HStack() {
+						HStack {
 							Image(systemName: "arrowshape.turn.up.left")
 								.font(.system(size: 14))
 								.symbolRenderingMode(.monochrome)
@@ -96,7 +96,8 @@ struct MessageView: View {
 
 							Text(originalMessage)
 								.font(.system(size: 14))
-								.foregroundColor(foregroundColor).opacity(0.8)
+								.foregroundColor(foregroundColor)
+								.opacity(0.8)
 						}
 						.padding(.vertical, 4)
 						.padding(.horizontal, 8)

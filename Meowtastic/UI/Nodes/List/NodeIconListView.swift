@@ -23,13 +23,11 @@ struct NodeIconListView: View {
 			)
 			.lastObject as? TelemetryEntity
 	}
-	private let detailInfoIconFont = Font.system(size: 14, weight: .regular, design: .rounded)
-	private let detailInfoTextFont = Font.system(size: 12, weight: .semibold, design: .rounded)
 	private var detailIconSize: CGFloat {
-		small ? 12 : 16
+		small ? 10 : 16
 	}
 	private var detailIconSpacing: CGFloat {
-		small ? 6 : 6
+		small ? 4 : 6
 	}
 	private var badgeBackground: Color {
 		if colorScheme == .dark {
@@ -45,6 +43,10 @@ struct NodeIconListView: View {
 
 	@ViewBuilder
 	var body: some View {
+		let detailInfoIconFont = Font.system(size: small ? 10 : 14, weight: .regular, design: .rounded)
+		let detailInfoTextFont = Font.system(size: small ? 10 : 12, weight: .semibold, design: .rounded)
+		let detailHopsIconFont = Font.system(size: small ? 8 : 10, weight: .semibold, design: .rounded)
+
 		HStack(alignment: .center, spacing: detailIconSpacing) {
 			if !small, let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))?.systemName {
 				Image(systemName: role)
@@ -85,7 +87,7 @@ struct NodeIconListView: View {
 
 						HStack(spacing: 0) {
 							Image(systemName: "\(node.hopsAway).circle")
-								.font(.system(size: 10, weight: .semibold, design: .rounded))
+								.font(detailHopsIconFont)
 								.foregroundColor(.gray)
 								.background(badgeBackground)
 								.clipShape(
