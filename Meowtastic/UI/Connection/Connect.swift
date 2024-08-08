@@ -21,6 +21,8 @@ struct Connect: View {
 	private var visibleDevices: [Peripheral]
 	@State
 	private var invalidFirmwareVersion = false
+	@State
+	private var degreesRotating = 0.0
 
 	@FetchRequest(
 		sortDescriptors: [
@@ -323,13 +325,23 @@ struct Connect: View {
 			else if bleManager.isConnected, !bleManager.isSubscribed {
 				HStack(spacing: 0) {
 					Spacer()
-					Image(systemName: "hourglass.circle.fill")
+					Image(systemName: "arrow.trianglehead.2.clockwise.rotate.90.circle.fill")
 						.font(.system(size: 24))
 						.foregroundColor(colorScheme == .dark ? .white : .gray)
+						.rotationEffect(.degrees(degreesRotating))
 						.background(
 							Circle()
 								.foregroundColor(colorScheme == .dark ? .black : .white)
 						)
+						.onAppear {
+							withAnimation(
+								.linear(duration: 1)
+								.speed(0.3)
+								.repeatForever(autoreverses: false)
+							) {
+								degreesRotating = 360.0
+							}
+						}
 				}
 			}
 			else if bleManager.isSubscribed {
