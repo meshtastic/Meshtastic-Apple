@@ -1158,6 +1158,11 @@ public struct User {
   /// Indicates that the user's role in the mesh
   public var role: Config.DeviceConfig.Role = .client
 
+  ///
+  /// The public key of the user's device.
+  /// This is sent out to other nodes on the mesh to allow them to compute a shared secret key.
+  public var publicKey: Data = Data()
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -1712,6 +1717,20 @@ public struct MeshPacket {
   public var hopStart: UInt32 {
     get {return _storage._hopStart}
     set {_uniqueStorage()._hopStart = newValue}
+  }
+
+  ///
+  /// Records the public key the packet was encrypted with, if applicable.
+  public var publicKey: Data {
+    get {return _storage._publicKey}
+    set {_uniqueStorage()._publicKey = newValue}
+  }
+
+  ///
+  /// Indicates whether the packet was en/decrypted using PKI
+  public var pkiEncrypted: Bool {
+    get {return _storage._pkiEncrypted}
+    set {_uniqueStorage()._pkiEncrypted = newValue}
   }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -3367,6 +3386,7 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     5: .standard(proto: "hw_model"),
     6: .standard(proto: "is_licensed"),
     7: .same(proto: "role"),
+    8: .standard(proto: "public_key"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -3382,6 +3402,7 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
       case 5: try { try decoder.decodeSingularEnumField(value: &self.hwModel) }()
       case 6: try { try decoder.decodeSingularBoolField(value: &self.isLicensed) }()
       case 7: try { try decoder.decodeSingularEnumField(value: &self.role) }()
+      case 8: try { try decoder.decodeSingularBytesField(value: &self.publicKey) }()
       default: break
       }
     }
@@ -3409,6 +3430,9 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     if self.role != .client {
       try visitor.visitSingularEnumField(value: self.role, fieldNumber: 7)
     }
+    if !self.publicKey.isEmpty {
+      try visitor.visitSingularBytesField(value: self.publicKey, fieldNumber: 8)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -3420,6 +3444,7 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     if lhs.hwModel != rhs.hwModel {return false}
     if lhs.isLicensed != rhs.isLicensed {return false}
     if lhs.role != rhs.role {return false}
+    if lhs.publicKey != rhs.publicKey {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -3795,6 +3820,8 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     13: .same(proto: "delayed"),
     14: .standard(proto: "via_mqtt"),
     15: .standard(proto: "hop_start"),
+    16: .standard(proto: "public_key"),
+    17: .standard(proto: "pki_encrypted"),
   ]
 
   fileprivate class _StorageClass {
@@ -3812,6 +3839,8 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     var _delayed: MeshPacket.Delayed = .noDelay
     var _viaMqtt: Bool = false
     var _hopStart: UInt32 = 0
+    var _publicKey: Data = Data()
+    var _pkiEncrypted: Bool = false
 
     #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
@@ -3840,6 +3869,8 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       _delayed = source._delayed
       _viaMqtt = source._viaMqtt
       _hopStart = source._hopStart
+      _publicKey = source._publicKey
+      _pkiEncrypted = source._pkiEncrypted
     }
   }
 
@@ -3892,6 +3923,8 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         case 13: try { try decoder.decodeSingularEnumField(value: &_storage._delayed) }()
         case 14: try { try decoder.decodeSingularBoolField(value: &_storage._viaMqtt) }()
         case 15: try { try decoder.decodeSingularUInt32Field(value: &_storage._hopStart) }()
+        case 16: try { try decoder.decodeSingularBytesField(value: &_storage._publicKey) }()
+        case 17: try { try decoder.decodeSingularBoolField(value: &_storage._pkiEncrypted) }()
         default: break
         }
       }
@@ -3954,6 +3987,12 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       if _storage._hopStart != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._hopStart, fieldNumber: 15)
       }
+      if !_storage._publicKey.isEmpty {
+        try visitor.visitSingularBytesField(value: _storage._publicKey, fieldNumber: 16)
+      }
+      if _storage._pkiEncrypted != false {
+        try visitor.visitSingularBoolField(value: _storage._pkiEncrypted, fieldNumber: 17)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -3977,6 +4016,8 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         if _storage._delayed != rhs_storage._delayed {return false}
         if _storage._viaMqtt != rhs_storage._viaMqtt {return false}
         if _storage._hopStart != rhs_storage._hopStart {return false}
+        if _storage._publicKey != rhs_storage._publicKey {return false}
+        if _storage._pkiEncrypted != rhs_storage._pkiEncrypted {return false}
         return true
       }
       if !storagesAreEqual {return false}

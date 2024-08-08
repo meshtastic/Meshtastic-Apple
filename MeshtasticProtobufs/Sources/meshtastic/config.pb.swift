@@ -85,6 +85,14 @@ public struct Config {
     set {payloadVariant = .bluetooth(newValue)}
   }
 
+  public var security: Config.SecurityConfig {
+    get {
+      if case .security(let v)? = payloadVariant {return v}
+      return Config.SecurityConfig()
+    }
+    set {payloadVariant = .security(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -97,6 +105,7 @@ public struct Config {
     case display(Config.DisplayConfig)
     case lora(Config.LoRaConfig)
     case bluetooth(Config.BluetoothConfig)
+    case security(Config.SecurityConfig)
 
   #if !swift(>=4.1)
     public static func ==(lhs: Config.OneOf_PayloadVariant, rhs: Config.OneOf_PayloadVariant) -> Bool {
@@ -132,6 +141,10 @@ public struct Config {
         guard case .bluetooth(let l) = lhs, case .bluetooth(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
+      case (.security, .security): return {
+        guard case .security(let l) = lhs, case .security(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
       default: return false
       }
     }
@@ -151,11 +164,13 @@ public struct Config {
 
     ///
     /// Disabling this will disable the SerialConsole by not initilizing the StreamAPI
+    /// Moved to SecurityConfig
     public var serialEnabled: Bool = false
 
     ///
     /// By default we turn off logging as soon as an API client connects (to keep shared serial link quiet).
     /// Set this to true to leave the debug log outputting even when API is active.
+    /// Moved to SecurityConfig
     public var debugLogEnabled: Bool = false
 
     ///
@@ -184,6 +199,7 @@ public struct Config {
     ///
     /// If true, device is considered to be "managed" by a mesh administrator
     /// Clients should then limit available configuration and administrative options inside the user interface
+    /// Moved to SecurityConfig
     public var isManaged: Bool = false
 
     ///
@@ -1469,6 +1485,7 @@ public struct Config {
 
     ///
     /// Enables device (serial style logs) over Bluetooth
+    /// Moved to SecurityConfig
     public var deviceLoggingEnabled: Bool = false
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -1512,6 +1529,53 @@ public struct Config {
       }
 
     }
+
+    public init() {}
+  }
+
+  public struct SecurityConfig {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///
+    /// The public key of the user's device.
+    /// This is sent out to other nodes on the mesh to allow them to compute a shared secret key.
+    public var publicKey: Data = Data()
+
+    ///
+    /// The private key of the device.
+    /// This is used to create a shared key with a remote device.
+    public var privateKey: Data = Data()
+
+    ///
+    /// This is the public key authorized to send admin messages to this node
+    public var adminKey: Data = Data()
+
+    ///
+    /// If true, device is considered to be "managed" by a mesh administrator
+    /// Clients should then limit available configuration and administrative options inside the user interface
+    public var isManaged: Bool = false
+
+    ///
+    /// Disabling this will disable the SerialConsole by not initilizing the StreamAPI
+    public var serialEnabled: Bool = false
+
+    ///
+    /// By default we turn off logging as soon as an API client connects (to keep shared serial link quiet).
+    /// Set this to true to leave the debug log outputting even when API is active.
+    public var debugLogEnabled: Bool = false
+
+    ///
+    /// Enables device (serial style logs) over Bluetooth
+    /// Moved to SecurityConfig
+    public var bluetoothLoggingEnabled: Bool = false
+
+    ///
+    /// Enables incoming admin control over the "admin" channel
+    public var adminChannelEnabled: Bool = false
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public init() {}
   }
@@ -1710,6 +1774,7 @@ extension Config.LoRaConfig.RegionCode: @unchecked Sendable {}
 extension Config.LoRaConfig.ModemPreset: @unchecked Sendable {}
 extension Config.BluetoothConfig: @unchecked Sendable {}
 extension Config.BluetoothConfig.PairingMode: @unchecked Sendable {}
+extension Config.SecurityConfig: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -1726,6 +1791,7 @@ extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
     5: .same(proto: "display"),
     6: .same(proto: "lora"),
     7: .same(proto: "bluetooth"),
+    8: .same(proto: "security"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1825,6 +1891,19 @@ extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
           self.payloadVariant = .bluetooth(v)
         }
       }()
+      case 8: try {
+        var v: Config.SecurityConfig?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .security(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .security(v)
+        }
+      }()
       default: break
       }
     }
@@ -1863,6 +1942,10 @@ extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
     case .bluetooth?: try {
       guard case .bluetooth(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+    }()
+    case .security?: try {
+      guard case .security(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
     }()
     case nil: break
     }
@@ -2776,4 +2859,78 @@ extension Config.BluetoothConfig.PairingMode: SwiftProtobuf._ProtoNameProviding 
     1: .same(proto: "FIXED_PIN"),
     2: .same(proto: "NO_PIN"),
   ]
+}
+
+extension Config.SecurityConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Config.protoMessageName + ".SecurityConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "public_key"),
+    2: .standard(proto: "private_key"),
+    3: .standard(proto: "admin_key"),
+    4: .standard(proto: "is_managed"),
+    5: .standard(proto: "serial_enabled"),
+    6: .standard(proto: "debug_log_enabled"),
+    7: .standard(proto: "bluetooth_logging_enabled"),
+    8: .standard(proto: "admin_channel_enabled"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBytesField(value: &self.publicKey) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.privateKey) }()
+      case 3: try { try decoder.decodeSingularBytesField(value: &self.adminKey) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self.isManaged) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self.serialEnabled) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.debugLogEnabled) }()
+      case 7: try { try decoder.decodeSingularBoolField(value: &self.bluetoothLoggingEnabled) }()
+      case 8: try { try decoder.decodeSingularBoolField(value: &self.adminChannelEnabled) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.publicKey.isEmpty {
+      try visitor.visitSingularBytesField(value: self.publicKey, fieldNumber: 1)
+    }
+    if !self.privateKey.isEmpty {
+      try visitor.visitSingularBytesField(value: self.privateKey, fieldNumber: 2)
+    }
+    if !self.adminKey.isEmpty {
+      try visitor.visitSingularBytesField(value: self.adminKey, fieldNumber: 3)
+    }
+    if self.isManaged != false {
+      try visitor.visitSingularBoolField(value: self.isManaged, fieldNumber: 4)
+    }
+    if self.serialEnabled != false {
+      try visitor.visitSingularBoolField(value: self.serialEnabled, fieldNumber: 5)
+    }
+    if self.debugLogEnabled != false {
+      try visitor.visitSingularBoolField(value: self.debugLogEnabled, fieldNumber: 6)
+    }
+    if self.bluetoothLoggingEnabled != false {
+      try visitor.visitSingularBoolField(value: self.bluetoothLoggingEnabled, fieldNumber: 7)
+    }
+    if self.adminChannelEnabled != false {
+      try visitor.visitSingularBoolField(value: self.adminChannelEnabled, fieldNumber: 8)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Config.SecurityConfig, rhs: Config.SecurityConfig) -> Bool {
+    if lhs.publicKey != rhs.publicKey {return false}
+    if lhs.privateKey != rhs.privateKey {return false}
+    if lhs.adminKey != rhs.adminKey {return false}
+    if lhs.isManaged != rhs.isManaged {return false}
+    if lhs.serialEnabled != rhs.serialEnabled {return false}
+    if lhs.debugLogEnabled != rhs.debugLogEnabled {return false}
+    if lhs.bluetoothLoggingEnabled != rhs.bluetoothLoggingEnabled {return false}
+    if lhs.adminChannelEnabled != rhs.adminChannelEnabled {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
 }

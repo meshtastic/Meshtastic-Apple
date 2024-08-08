@@ -32,6 +32,7 @@ struct UserList: View {
 	@FetchRequest(
 		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false),
 						  NSSortDescriptor(key: "userNode.favorite", ascending: false),
+						  NSSortDescriptor(key: "pkiEncrypted", ascending: false),
 						  NSSortDescriptor(key: "longName", ascending: true)],
 		animation: .default
 	)
@@ -69,6 +70,10 @@ struct UserList: View {
 
 							VStack(alignment: .leading) {
 								HStack {
+									if user.pkiEncrypted {
+										Image(systemName: "lock.fill")
+											.foregroundColor(.green)
+									}
 									Text(user.longName ?? "unknown".localized)
 										.font(.headline)
 									Spacer()
@@ -240,6 +245,7 @@ struct UserList: View {
 		let searchPredicates = ["userId", "numString", "hwModel", "hwDisplayName", "longName", "shortName"].map { property in
 			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
 		}
+		
 		/// Create a compound predicate using each text search preicate as an OR
 		let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
 		/// Create an array of predicates to hold our AND predicates

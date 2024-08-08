@@ -111,6 +111,17 @@ public struct LocalConfig {
     set {_uniqueStorage()._version = newValue}
   }
 
+  ///
+  /// The part of the config that is specific to Security settings
+  public var security: Config.SecurityConfig {
+    get {return _storage._security ?? Config.SecurityConfig()}
+    set {_uniqueStorage()._security = newValue}
+  }
+  /// Returns true if `security` has been explicitly set.
+  public var hasSecurity: Bool {return _storage._security != nil}
+  /// Clears the value of `security`. Subsequent reads from it will return its default value.
+  public mutating func clearSecurity() {_uniqueStorage()._security = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -302,6 +313,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     6: .same(proto: "lora"),
     7: .same(proto: "bluetooth"),
     8: .same(proto: "version"),
+    9: .same(proto: "security"),
   ]
 
   fileprivate class _StorageClass {
@@ -313,6 +325,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     var _lora: Config.LoRaConfig? = nil
     var _bluetooth: Config.BluetoothConfig? = nil
     var _version: UInt32 = 0
+    var _security: Config.SecurityConfig? = nil
 
     #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
@@ -335,6 +348,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       _lora = source._lora
       _bluetooth = source._bluetooth
       _version = source._version
+      _security = source._security
     }
   }
 
@@ -361,6 +375,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         case 6: try { try decoder.decodeSingularMessageField(value: &_storage._lora) }()
         case 7: try { try decoder.decodeSingularMessageField(value: &_storage._bluetooth) }()
         case 8: try { try decoder.decodeSingularUInt32Field(value: &_storage._version) }()
+        case 9: try { try decoder.decodeSingularMessageField(value: &_storage._security) }()
         default: break
         }
       }
@@ -397,6 +412,9 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       if _storage._version != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._version, fieldNumber: 8)
       }
+      try { if let v = _storage._security {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -414,6 +432,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         if _storage._lora != rhs_storage._lora {return false}
         if _storage._bluetooth != rhs_storage._bluetooth {return false}
         if _storage._version != rhs_storage._version {return false}
+        if _storage._security != rhs_storage._security {return false}
         return true
       }
       if !storagesAreEqual {return false}

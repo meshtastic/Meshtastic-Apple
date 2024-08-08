@@ -73,6 +73,14 @@ struct Settings: View {
 			}
 			.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
 
+			NavigationLink(value: SettingsNavigationState.security) {
+				Label {
+					Text("Security")
+				} icon: {
+					Image(systemName: "lock.shield")
+				}
+			}
+
 			NavigationLink(value: SettingsNavigationState.shareQRCode) {
 				Label {
 					Text("share.channels")
@@ -461,6 +469,8 @@ struct Settings: View {
 					PaxCounterConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .ringtone:
 					RtttlConfig(node: nodes.first(where: { $0.num == selectedNode }))
+				case .security:
+					SecurityConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .serial:
 					SerialConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .storeAndForward:

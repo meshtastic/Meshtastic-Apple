@@ -482,6 +482,12 @@
         }
       }
     },
+    "Admin & Direct Message Keys" : {
+
+    },
+    "Admin Key" : {
+
+    },
     "admin.log" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -704,6 +710,9 @@
 
     },
     "All device and app data will be deleted. You will also need to forget your devices under Settings > Bluetooth." : {
+
+    },
+    "Allow incoming device control over the insecure legacy admin channel." : {
 
     },
     "Allow Position Requests" : {
@@ -1843,6 +1852,9 @@
           }
         }
       }
+    },
+    "Bluetooth Logs" : {
+
     },
     "bluetooth.config" : {
       "localizations" : {
@@ -5338,6 +5350,9 @@
         }
       }
     },
+    "Developer" : {
+
+    },
     "Developers" : {
 
     },
@@ -5400,6 +5415,9 @@
       }
     },
     "Device GPS" : {
+
+    },
+    "Device is managed by a mesh administrator." : {
 
     },
     "Device Logging Enabled" : {
@@ -6955,6 +6973,9 @@
         }
       }
     },
+    "Encrypted" : {
+
+    },
     "Encryption Enabled" : {
 
     },
@@ -8252,7 +8273,7 @@
     "Hops Away" : {
 
     },
-    "Hops Away %d) dB" : {
+    "Hops Away %d" : {
 
     },
     "Hops Away:" : {
@@ -10842,6 +10863,9 @@
 
     },
     "LED State" : {
+
+    },
+    "Legacy Administration" : {
 
     },
     "Licensed Operator" : {
@@ -15977,6 +16001,9 @@
     "Other data sources" : {
 
     },
+    "Output live debug logging over serial." : {
+
+    },
     "Output pin buzzer GPIO " : {
 
     },
@@ -16627,7 +16654,13 @@
     "Primary GPIO" : {
 
     },
+    "Private Key" : {
+
+    },
     "Project information" : {
+
+    },
+    "Public Key" : {
 
     },
     "PWD" : {
@@ -18802,6 +18835,12 @@
     "Secondary" : {
 
     },
+    "Security" : {
+
+    },
+    "Security Config" : {
+
+    },
     "Select a channel" : {
 
     },
@@ -19017,6 +19056,9 @@
     "Sensor Options" : {
 
     },
+    "Sent out to other nodes on the mesh to allow them to compute a shared secret key." : {
+
+    },
     "Sequence number" : {
 
     },
@@ -19082,6 +19124,12 @@
       }
     },
     "Serial Console" : {
+
+    },
+    "Serial Console over the Stream API." : {
+
+    },
+    "Serial Debug Logs" : {
 
     },
     "serial.config" : {
@@ -20917,6 +20965,9 @@
     "The minimum distance change in meters to be considered for a smart position broadcast." : {
 
     },
+    "The public key authorized to send admin messages to this node." : {
+
+    },
     "The region where you will be using your radios." : {
 
     },
@@ -22128,6 +22179,9 @@
     "Use PWM Buzzer" : {
 
     },
+    "Used to create a shared key with a remote device." : {
+
+    },
     "user" : {
       "localizations" : {
         "de" : {
@@ -22293,6 +22347,12 @@
 
     },
     "Via Mqtt" : {
+
+    },
+    "View and export position-redacted device logs over Bluetooth" : {
+
+    },
+    "View Logs" : {
 
     },
     "voltage" : {

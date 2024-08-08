@@ -766,6 +766,55 @@ func upsertPowerConfigPacket(config: Config.PowerConfig, nodeNum: Int64, context
 	}
 }
 
+func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+
+	let logString = String.localizedStringWithFormat("mesh.log.security.config %@".localized, String(nodeNum))
+	MeshLogger.log("🌐 \(logString)")
+
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+
+	do {
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
+		// Found a node, save Security Config
+		if !fetchedNode.isEmpty {
+			if fetchedNode[0].securityConfig == nil {
+				let newSecurityConfig = SecurityConfigEntity(context: context)
+				newSecurityConfig.publicKey = config.publicKey
+				newSecurityConfig.privateKey = config.privateKey
+				newSecurityConfig.adminKey = config.adminKey
+				newSecurityConfig.isManaged = config.isManaged
+				newSecurityConfig.serialEnabled = config.serialEnabled
+				newSecurityConfig.debugLogEnabled = config.debugLogEnabled
+				newSecurityConfig.bluetoothLoggingEnabled = config.bluetoothLoggingEnabled
+			} else {
+				fetchedNode[0].securityConfig?.publicKey = config.publicKey
+				fetchedNode[0].securityConfig?.privateKey = config.privateKey
+				fetchedNode[0].securityConfig?.adminKey = config.adminKey
+				fetchedNode[0].securityConfig?.isManaged = config.isManaged
+				fetchedNode[0].securityConfig?.serialEnabled = config.serialEnabled
+				fetchedNode[0].securityConfig?.debugLogEnabled = config.debugLogEnabled
+				fetchedNode[0].securityConfig?.bluetoothLoggingEnabled = config.bluetoothLoggingEnabled
+			}
+
+			do {
+				try context.save()
+				Logger.data.info("💾 [NetworkConfigEntity] Updated Network Config for node: \(nodeNum.toHex(), privacy: .public)")
+
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				Logger.data.error("💥 [NetworkConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
+			}
+		} else {
+			Logger.data.error("💥 [NetworkConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Network Config")
+		}
+	} catch {
+		let nsError = error as NSError
+		Logger.data.error("💥 [NetworkConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
+	}
+}
+
 func upsertAmbientLightingModuleConfigPacket(config: ModuleConfig.AmbientLightingConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.ambientlighting.config %@".localized, String(nodeNum))
