@@ -298,6 +298,11 @@ struct DeviceConfig: View {
 				if newTzdef != node!.deviceConfig!.tzdef { hasChanges = true }
 			}
 		}
+		.onChange(of: ledHeartbeatEnabled) { newLedHeartbeatEnabled in
+			if node != nil && node?.deviceConfig != nil {
+				if newLedHeartbeatEnabled != node!.deviceConfig!.ledHeartbeatEnabled { hasChanges = true }
+			}
+		}
 	}
 	func setDeviceValues() {
 		self.deviceRole = Int(node?.deviceConfig?.role ?? 0)
