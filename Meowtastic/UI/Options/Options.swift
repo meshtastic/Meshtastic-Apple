@@ -87,7 +87,9 @@ struct Options: View {
 	@ViewBuilder
 	private var connection: some View {
 		NavigationLink {
-			Connect(node: nodeSelected)
+			NavigationLazyView(
+				Connect(node: nodeSelected)
+			)
 		} label: {
 			Label {
 				Text("Connection")
@@ -106,7 +108,9 @@ struct Options: View {
 	private var nodeConfig: some View {
 		Section("Node") {
 			NavigationLink {
-				LoRaConfig(node: nodeSelected)
+				NavigationLazyView(
+					LoRaConfig(node: nodeSelected)
+				)
 			} label: {
 				Label {
 					Text("LoRa")
@@ -116,7 +120,9 @@ struct Options: View {
 			}
 
 			NavigationLink {
-				Channels(node: nodeSelected)
+				NavigationLazyView(
+					Channels(node: nodeSelected)
+				)
 			} label: {
 				Label {
 					Text("Channels")
@@ -127,7 +133,9 @@ struct Options: View {
 			.disabled(nodeIsConnected)
 
 			NavigationLink {
-				UserConfig(node: nodeSelected)
+				NavigationLazyView(
+					UserConfig(node: nodeSelected)
+				)
 			} label: {
 				Label {
 					Text("User")
@@ -137,7 +145,9 @@ struct Options: View {
 			}
 
 			NavigationLink {
-				DeviceConfig(node: nodeSelected)
+				NavigationLazyView(
+					DeviceConfig(node: nodeSelected)
+				)
 			} label: {
 				Label {
 					Text("Device")
@@ -147,7 +157,9 @@ struct Options: View {
 			}
 
 			NavigationLink {
-				MQTTConfig(node: nodeSelected)
+				NavigationLazyView(
+					MQTTConfig(node: nodeSelected)
+				)
 			} label: {
 				Label {
 					Text("MQTT")
@@ -157,7 +169,9 @@ struct Options: View {
 			}
 
 			NavigationLink {
-				BluetoothConfig(node: nodeSelected)
+				NavigationLazyView(
+					BluetoothConfig(node: nodeSelected)
+				)
 			} label: {
 				Label {
 					Text("Bluetooth")
@@ -167,7 +181,9 @@ struct Options: View {
 			}
 
 			NavigationLink {
-				NetworkConfig(node: nodeSelected)
+				NavigationLazyView(
+					NetworkConfig(node: nodeSelected)
+				)
 			} label: {
 				Label {
 					Text("WiFi")
@@ -177,7 +193,9 @@ struct Options: View {
 			}
 
 			NavigationLink {
-				PositionConfig(node: nodeSelected)
+				NavigationLazyView(
+					PositionConfig(node: nodeSelected)
+				)
 			} label: {
 				Label {
 					Text("GPS")
@@ -187,7 +205,9 @@ struct Options: View {
 			}
 
 			NavigationLink {
-				DisplayConfig(node: nodeSelected)
+				NavigationLazyView(
+					DisplayConfig(node: nodeSelected)
+				)
 			} label: {
 				Label {
 					Text("Display")
@@ -197,7 +217,9 @@ struct Options: View {
 			}
 
 			NavigationLink {
-				PowerConfig(node: nodeSelected)
+				NavigationLazyView(
+					PowerConfig(node: nodeSelected)
+				)
 			} label: {
 				Label {
 					Text("Power")
@@ -212,7 +234,9 @@ struct Options: View {
 	private var appConfig: some View {
 		Section("Application") {
 			NavigationLink {
-				AppSettings()
+				NavigationLazyView(
+					AppSettings()
+				)
 			} label: {
 				Label {
 					Text("Settings")
@@ -222,7 +246,9 @@ struct Options: View {
 			}
 
 			NavigationLink {
-				About()
+				NavigationLazyView(
+					About()
+				)
 			} label: {
 				Label {
 					Text("About")

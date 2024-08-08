@@ -20,7 +20,7 @@ struct TextMessageField: View {
 	@State
 	private var typingMessage = ""
 	@State
-	private var sendPositionWithMessage = false
+	private var sendPositionWithMessage = false // TODO: actually use this
 	@State
 	private var totalBytes = 0
 
@@ -112,7 +112,7 @@ struct TextMessageField: View {
 			message: typingMessage,
 			toUserNum: destination.userNum,
 			channel: destination.channelNum,
-			isEmoji: false,
+			isEmoji: typingMessage.isEmoji(),
 			replyID: replyMessageId
 		)
 
@@ -129,10 +129,6 @@ struct TextMessageField: View {
 					destNum: destination.positionDestNum,
 					wantResponse: destination.wantPositionResponse
 				)
-
-				if positionSent {
-					Logger.mesh.info("Location Sent")
-				}
 			}
 		}
 	}

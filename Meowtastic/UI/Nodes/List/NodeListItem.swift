@@ -38,7 +38,9 @@ struct NodeListItem: View {
 
 	var body: some View {
 		NavigationLink {
-			NodeDetail(node: node)
+			NavigationLazyView(
+				NodeDetail(node: node)
+			)
 		} label: {
 			HStack(alignment: .top) {
 				avatar

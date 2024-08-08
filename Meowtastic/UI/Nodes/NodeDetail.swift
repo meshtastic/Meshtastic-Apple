@@ -107,7 +107,9 @@ struct NodeDetail: View {
 				}
 				else {
 					NavigationLink {
-						NodeMap(node: node)
+						NavigationLazyView(
+							NodeMap(node: node)
+						)
 					} label: {
 						SimpleNodeMap(node: node)
 							.frame(width: .infinity, height: 200)
@@ -482,7 +484,9 @@ struct NodeDetail: View {
 				let routes = node.traceRoutes?.count ?? 0
 
 				NavigationLink {
-					TraceRoute(node: node)
+					NavigationLazyView(
+						TraceRoute(node: node)
+					)
 				} label: {
 					Label {
 						Text("Trace Route")
