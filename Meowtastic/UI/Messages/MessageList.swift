@@ -221,103 +221,11 @@ struct MessageList: View {
 	@ViewBuilder
 	private func messageView(for message: MessageEntity) -> some View {
 		let isCurrentUser = isCurrentUser(message: message, preferredNum: preferredPeripheralNum)
-		let sourceNode = message.fromUser?.userNode
 
 		HStack(alignment: isCurrentUser ? .bottom : .top, spacing: 8) {
-			if isCurrentUser {
-				Spacer()
-			}
-			else {
-				VStack(alignment: .center) {
-					if let node = message.fromUser?.userNode {
-						AvatarNode(
-							node,
-							size: 64,
-							corners: isCurrentUser ? (true, true, false, true) : nil
-						)
-					}
-					else {
-						AvatarAbstract(
-							size: 64,
-							corners: isCurrentUser ? (true, true, false, true) : nil
-						)
-					}
-				}
-				.frame(width: 64)
-				.onTapGesture {
-					if sourceNode != nil {
-						nodeDetail = sourceNode
-					}
-				}
-			}
-
-			VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 2) {
-				if !isCurrentUser {
-					HStack(spacing: 4) {
-						if message.fromUser != nil {
-							Image(systemName: "person")
-								.font(.caption)
-								.foregroundColor(.gray)
-
-							Text(getSenderName(message: message))
-								.font(.caption)
-								.lineLimit(1)
-								.foregroundColor(.gray)
-
-							if let node = message.fromUser?.userNode, let connectedNodeNum {
-								NodeIconListView(
-									connectedNode: connectedNodeNum,
-									small: true,
-									node: node
-								)
-							}
-						}
-						else {
-							Image(systemName: "person.fill.questionmark")
-								.font(.caption)
-								.foregroundColor(.gray)
-						}
-					}
-				}
-				else {
-					EmptyView()
-				}
-
-				if let destination {
-					HStack(spacing: 0) {
-						MessageView(
-							message: message,
-							originalMessage: getOriginalMessage(for: message),
-							tapBackDestination: destination,
-							isCurrentUser: isCurrentUser
-						) {
-							replyMessageId = message.messageId
-							messageFieldFocused = true
-						}
-
-						if isCurrentUser && message.canRetry {
-							RetryButton(message: message, destination: destination)
-						}
-					}
-				}
-			}
-
-			if isCurrentUser {
-				if let node = message.fromUser?.userNode {
-					AvatarNode(
-						node,
-						size: 64
-					)
-				}
-				else {
-					AvatarAbstract(
-						size: 64
-					)
-				}
-			}
-			else {
-				Spacer()
-			}
+			leadingAvatar(for: message)
+			content(for: message)
+			trailingAvatar(for: message)
 		}
 		.frame(maxWidth: .infinity)
 		.onAppear {
@@ -331,6 +239,116 @@ struct MessageList: View {
 			if let myInfo {
 				appState.unreadChannelMessages = myInfo.unreadMessages
 				context.refresh(myInfo, mergeChanges: true)
+			}
+		}
+	}
+	
+	@ViewBuilder
+	private func leadingAvatar(for message: MessageEntity) -> some View {
+		let isCurrentUser = isCurrentUser(message: message, preferredNum: preferredPeripheralNum)
+
+		if isCurrentUser {
+			Spacer()
+		}
+		else {
+			VStack(alignment: .center) {
+				if let node = message.fromUser?.userNode {
+					AvatarNode(
+						node,
+						size: 64,
+						corners: isCurrentUser ? (true, true, false, true) : nil
+					)
+				}
+				else {
+					AvatarAbstract(
+						size: 64,
+						corners: isCurrentUser ? (true, true, false, true) : nil
+					)
+				}
+			}
+			.frame(width: 64)
+			.onTapGesture {
+				if let sourceNode = message.fromUser?.userNode {
+					nodeDetail = sourceNode
+				}
+			}
+		}
+	}
+
+	@ViewBuilder
+	private func trailingAvatar(for message: MessageEntity) -> some View {
+		let isCurrentUser = isCurrentUser(message: message, preferredNum: preferredPeripheralNum)
+
+		if isCurrentUser {
+			if let node = message.fromUser?.userNode {
+				AvatarNode(
+					node,
+					size: 64
+				)
+			}
+			else {
+				AvatarAbstract(
+					size: 64
+				)
+			}
+		}
+		else {
+			Spacer()
+		}
+	}
+
+	@ViewBuilder
+	private func content(for message: MessageEntity) -> some View {
+		let isCurrentUser = isCurrentUser(message: message, preferredNum: preferredPeripheralNum)
+
+		VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 2) {
+			if !isCurrentUser {
+				HStack(spacing: 4) {
+					if message.fromUser != nil {
+						Image(systemName: "person")
+							.font(.caption)
+							.foregroundColor(.gray)
+
+						Text(getSenderName(message: message))
+							.font(.caption)
+							.lineLimit(1)
+							.foregroundColor(.gray)
+
+						if let node = message.fromUser?.userNode, let connectedNodeNum {
+							NodeIconListView(
+								connectedNode: connectedNodeNum,
+								small: true,
+								node: node
+							)
+						}
+					}
+					else {
+						Image(systemName: "person.fill.questionmark")
+							.font(.caption)
+							.foregroundColor(.gray)
+					}
+				}
+			}
+			else {
+				EmptyView()
+			}
+
+			if let destination {
+				HStack(spacing: 0) {
+					MessageView(
+						message: message,
+						originalMessage: getOriginalMessage(for: message),
+						tapBackDestination: destination,
+						isCurrentUser: isCurrentUser
+					) {
+						replyMessageId = message.messageId
+						messageFieldFocused = true
+					}
+
+					if isCurrentUser && message.canRetry {
+						RetryButton(message: message, destination: destination)
+					}
+				}
 			}
 		}
 	}
