@@ -22,7 +22,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 
 ///
 /// Canned message module configuration.
-public struct RTTTLConfig: Sendable {
+public struct RTTTLConfig {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -35,6 +35,10 @@ public struct RTTTLConfig: Sendable {
 
   public init() {}
 }
+
+#if swift(>=5.5) && canImport(_Concurrency)
+extension RTTTLConfig: @unchecked Sendable {}
+#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 

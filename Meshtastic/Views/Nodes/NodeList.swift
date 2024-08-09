@@ -37,7 +37,6 @@ struct NodeList: View {
 	@State private var isPresentingDeleteNodeAlert = false
 	@State private var deleteNodeId: Int64 = 0
 
-
 	var boolFilters: [Bool] {[
 		isOnline,
 		isFavorite,

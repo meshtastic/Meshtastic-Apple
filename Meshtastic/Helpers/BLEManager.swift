@@ -1388,7 +1388,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 	public func sendFactoryReset(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 		var adminPacket = AdminMessage()
-		adminPacket.factoryReset = 5
+		adminPacket.factoryResetConfig = 5
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	=  UInt32(fromUser.num)
@@ -1964,6 +1964,37 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			upsertNetworkConfigPacket(config: config, nodeNum: toUser.num, context: context)
+			return Int64(meshPacket.id)
+		}
+
+		return 0
+	}
+
+	public func saveSecurityConfig(config: Config.SecurityConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+
+		var adminPacket = AdminMessage()
+		adminPacket.setConfig.security = config
+
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		var dataMessage = DataMessage()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
+		dataMessage.portnum = PortNum.adminApp
+
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "🛟 Saved Security Config for \(toUser.longName ?? "unknown".localized)"
+
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
+			upsertSecurityConfigPacket(config: config, nodeNum: toUser.num, context: context)
 			return Int64(meshPacket.id)
 		}
 
