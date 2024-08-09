@@ -320,7 +320,7 @@ struct Connect: View {
 						.foregroundColor(colorScheme == .dark ? .white : .gray)
 						.background(
 							Circle()
-								.foregroundColor(colorScheme == .dark ? .black : .white)
+								.foregroundColor(.listBackground(for: colorScheme))
 						)
 				}
 			}
@@ -333,7 +333,7 @@ struct Connect: View {
 						.rotationEffect(.degrees(degreesRotating))
 						.background(
 							Circle()
-								.foregroundColor(colorScheme == .dark ? .black : .white)
+								.foregroundColor(.listBackground(for: colorScheme))
 						)
 						.onAppear {
 							withAnimation(
@@ -354,7 +354,7 @@ struct Connect: View {
 						.foregroundColor(colorScheme == .dark ? .white : .gray)
 						.background(
 							Circle()
-								.foregroundColor(colorScheme == .dark ? .black : .white)
+								.foregroundColor(.listBackground(for: colorScheme))
 						)
 				}
 			}

@@ -1,9 +1,7 @@
-import SwiftUI
 import MapKit
+import SwiftUI
 
 struct TraceRoute: View {
-	@ObservedObject
-	var locationsHandler = LocationsHandler.shared
 	@ObservedObject
 	var node: NodeInfoEntity
 
@@ -82,7 +80,7 @@ struct TraceRoute: View {
 					VStack {
 						if selectedRoute.response && selectedRoute.hops?.count ?? 0 > 0 {
 							Label {
-								Text("Route: \(selectedRoute.routeText ?? "unknown".localized)")
+								Text("Route: \(selectedRoute.routeText ?? "N/A")")
 							} icon: {
 								Image(systemName: "signpost.right.and.left")
 									.symbolRenderingMode(.hierarchical)
@@ -91,7 +89,7 @@ struct TraceRoute: View {
 						}
 						else if selectedRoute.response {
 							Label {
-								Text("Trace route received directly by \(selectedRoute.node?.user?.longName ?? "unknown".localized)")
+								Text("Trace route received directly by \(selectedRoute.node?.user?.longName ?? "N/A")")
 							} icon: {
 								Image(systemName: "signpost.right.and.left")
 									.symbolRenderingMode(.hierarchical)
@@ -140,6 +138,7 @@ struct TraceRoute: View {
 														.frame(width: 15, height: 15)
 												}
 											}
+
 											let dashed = StrokeStyle(
 												lineWidth: 2,
 												lineCap: .round,
@@ -169,8 +168,8 @@ struct TraceRoute: View {
 										from: CLLocation(
 											latitude: LocationManager.defaultLocation.coordinate.latitude,
 											longitude: LocationManager.defaultLocation.coordinate.longitude)
-									) > 0.0
-									{
+									)
+										> 0.0 {
 										let metersAway = selectedRoute.coordinate?.distance(
 											from: CLLocationCoordinate2D(
 												latitude: mostRecent.latitude ?? LocationManager.defaultLocation.coordinate.latitude,
@@ -188,7 +187,8 @@ struct TraceRoute: View {
 									}
 								}
 							}
-						} else {
+						}
+						else {
 							VStack {
 								Label {
 									Text("Trace route sent to \(selectedRoute.node?.user?.longName ?? "unknown".localized)")
@@ -204,7 +204,7 @@ struct TraceRoute: View {
 					}
 				}
 				else {
-					ContentUnavailableView("Select a Trace Route", systemImage: "signpost.right.and.left")
+					ContentUnavailableView("No Trace Route Selected", systemImage: "signpost.right.and.left")
 				}
 			}
 		}
@@ -254,7 +254,7 @@ struct TraceRoute: View {
 											.font(.system(size: 10))
 											.foregroundColor(.gray)
 											.frame(width: 24)
-										
+
 										Text(destination)
 											.font(.system(size: 10))
 											.foregroundColor(.gray)
@@ -272,11 +272,11 @@ struct TraceRoute: View {
 					Text("No Response")
 						.font(.body)
 				}
-				
+
 				if let time = route.time {
 					HStack(spacing: 4) {
 						Spacer()
-						
+
 						Text(dateFormatter.string(from: time))
 							.font(.system(size: 10))
 							.foregroundColor(.gray)

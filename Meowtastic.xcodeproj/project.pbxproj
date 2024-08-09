@@ -67,6 +67,7 @@
 		B2A5F3132C5668FD009457AB /* MeshMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2F52C5668FD009457AB /* MeshMap.swift */; };
 		B2A5F3142C5668FD009457AB /* NodeList.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2F62C5668FD009457AB /* NodeList.swift */; };
 		B2A5F31C2C566D98009457AB /* TraceRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F31B2C566D98009457AB /* TraceRoute.swift */; };
+		B2CC14B22C66280000588C16 /* UIColor+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2CC14B12C66280000588C16 /* UIColor+Extension.swift */; };
 		B399E8A42B6F486400E4488E /* RetryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B399E8A32B6F486400E4488E /* RetryButton.swift */; };
 		B3E905B12B71F7F300654D07 /* TextMessageField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E905B02B71F7F300654D07 /* TextMessageField.swift */; };
 		C9697FA527933B8C00250207 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = C9697FA427933B8C00250207 /* SQLite */; };
@@ -141,7 +142,7 @@
 		DDDB444629F8A96500EE2349 /* Character.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB444529F8A96500EE2349 /* Character.swift */; };
 		DDDB444829F8A9C900EE2349 /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB444729F8A9C900EE2349 /* String.swift */; };
 		DDDB444A29F8AA3A00EE2349 /* CLLocationCoordinate2D.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB444929F8AA3A00EE2349 /* CLLocationCoordinate2D.swift */; };
-		DDDB444C29F8AAA600EE2349 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB444B29F8AAA600EE2349 /* Color.swift */; };
+		DDDB444C29F8AAA600EE2349 /* Color+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB444B29F8AAA600EE2349 /* Color+Extension.swift */; };
 		DDDB444E29F8AB0E00EE2349 /* Int.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB444D29F8AB0E00EE2349 /* Int.swift */; };
 		DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB444F29F8AC9C00EE2349 /* UIImage.swift */; };
 		DDDB445229F8ACF900EE2349 /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB445129F8ACF900EE2349 /* Date.swift */; };
@@ -259,6 +260,7 @@
 		B2A5F2F52C5668FD009457AB /* MeshMap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MeshMap.swift; sourceTree = "<group>"; };
 		B2A5F2F62C5668FD009457AB /* NodeList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeList.swift; sourceTree = "<group>"; };
 		B2A5F31B2C566D98009457AB /* TraceRoute.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TraceRoute.swift; sourceTree = "<group>"; };
+		B2CC14B12C66280000588C16 /* UIColor+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Extension.swift"; sourceTree = "<group>"; };
 		B399E8A32B6F486400E4488E /* RetryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryButton.swift; sourceTree = "<group>"; };
 		B3E905B02B71F7F300654D07 /* TextMessageField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageField.swift; sourceTree = "<group>"; };
 		D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageContextMenuItems.swift; sourceTree = "<group>"; };
@@ -339,7 +341,7 @@
 		DDDB444529F8A96500EE2349 /* Character.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Character.swift; sourceTree = "<group>"; };
 		DDDB444729F8A9C900EE2349 /* String.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = String.swift; sourceTree = "<group>"; };
 		DDDB444929F8AA3A00EE2349 /* CLLocationCoordinate2D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLLocationCoordinate2D.swift; sourceTree = "<group>"; };
-		DDDB444B29F8AAA600EE2349 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
+		DDDB444B29F8AAA600EE2349 /* Color+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Extension.swift"; sourceTree = "<group>"; };
 		DDDB444D29F8AB0E00EE2349 /* Int.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Int.swift; sourceTree = "<group>"; };
 		DDDB444F29F8AC9C00EE2349 /* UIImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImage.swift; sourceTree = "<group>"; };
 		DDDB445129F8ACF900EE2349 /* Date.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Date.swift; sourceTree = "<group>"; };
@@ -756,7 +758,7 @@
 				DDFFA7462B3A7F3C004730DB /* Bundle.swift */,
 				DDDB444529F8A96500EE2349 /* Character.swift */,
 				DDDB444929F8AA3A00EE2349 /* CLLocationCoordinate2D.swift */,
-				DDDB444B29F8AAA600EE2349 /* Color.swift */,
+				DDDB444B29F8AAA600EE2349 /* Color+Extension.swift */,
 				DDDB445329F8AD1600EE2349 /* Data.swift */,
 				DDDB445129F8ACF900EE2349 /* Date.swift */,
 				DDDB444129F8A88700EE2349 /* Double.swift */,
@@ -773,6 +775,7 @@
 				DDF45C362BC46A5A005ED5F2 /* TimeZone.swift */,
 				DDD5BB0C2C285F00007E03CA /* Logger.swift */,
 				B266DA8F2C53CEFB0067D317 /* Constants.swift */,
+				B2CC14B12C66280000588C16 /* UIColor+Extension.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -914,7 +917,7 @@
 				DDC2E1A726CEB3400042C5E4 /* LocationManager.swift in Sources */,
 				6D825E622C34786C008DBEE4 /* CommonRegex.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
-				DDDB444C29F8AAA600EE2349 /* Color.swift in Sources */,
+				DDDB444C29F8AAA600EE2349 /* Color+Extension.swift in Sources */,
 				B2A5F3142C5668FD009457AB /* NodeList.swift in Sources */,
 				DDB75A0F2A05920E006ED576 /* FileManager.swift in Sources */,
 				DD1933782B084F4200771CD5 /* Measurement.swift in Sources */,
@@ -967,6 +970,7 @@
 				DDDB444629F8A96500EE2349 /* Character.swift in Sources */,
 				DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */,
 				B266A76A2C59293B00DFC723 /* GPSMode.swift in Sources */,
+				B2CC14B22C66280000588C16 /* UIColor+Extension.swift in Sources */,
 				DD964FC2297272AE007C176F /* WaypointEntity+Extension.swift in Sources */,
 				6DA39D8E2A92DC52007E311C /* MeowtasticDelegate.swift in Sources */,
 				D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */,

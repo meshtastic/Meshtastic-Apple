@@ -70,15 +70,6 @@ struct Messages: View {
 		}
 	}
 
-	private var badgeBackground: Color {
-		if colorScheme == .dark {
-			Color(red: 28 / 256, green: 28 / 256, blue: 30 / 256)
-		}
-		else {
-			.white
-		}
-	}
-
 	var body: some View {
 		NavigationStack {
 			List {
@@ -307,7 +298,7 @@ struct Messages: View {
 							.foregroundColor(.red)
 							.background(
 								Circle()
-									.foregroundColor(badgeBackground)
+									.foregroundColor(.listBackground(for: colorScheme))
 							)
 					}
 					else {
@@ -316,7 +307,7 @@ struct Messages: View {
 							.foregroundColor(.red)
 							.background(
 								Circle()
-									.foregroundColor(badgeBackground)
+									.foregroundColor(.listBackground(for: colorScheme))
 							)
 					}
 				}
@@ -330,7 +321,7 @@ struct Messages: View {
 						.foregroundColor(colorScheme == .dark ? .white : .gray)
 						.background(
 							Circle()
-								.foregroundColor(badgeBackground)
+								.foregroundColor(.listBackground(for: colorScheme))
 						)
 				}
 			}
@@ -343,7 +334,7 @@ struct Messages: View {
 						.foregroundColor(colorScheme == .dark ? .white : .gray)
 						.background(
 							Circle()
-								.foregroundColor(badgeBackground)
+								.foregroundColor(.listBackground(for: colorScheme))
 						)
 				}
 			}

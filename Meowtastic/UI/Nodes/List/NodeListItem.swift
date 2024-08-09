@@ -91,7 +91,7 @@ struct NodeListItem: View {
 						.foregroundColor(colorScheme == .dark ? .white : .gray)
 						.background(
 							Circle()
-								.foregroundColor(colorScheme == .dark ? .black : .white)
+								.foregroundColor(.listBackground(for: colorScheme))
 						)
 				}
 			}
@@ -103,7 +103,7 @@ struct NodeListItem: View {
 						.foregroundColor(colorScheme == .dark ? .white : .gray)
 						.background(
 							Circle()
-								.foregroundColor(colorScheme == .dark ? .black : .white)
+								.foregroundColor(.listBackground(for: colorScheme))
 						)
 				}
 			}

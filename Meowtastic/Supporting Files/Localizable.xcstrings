@@ -14757,6 +14757,9 @@
     "No Response" : {
 
     },
+    "No Trace Route Selected" : {
+
+    },
     "no.nodes" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -18129,9 +18132,6 @@
 
     },
     "Secondary" : {
-
-    },
-    "Select a Trace Route" : {
 
     },
     "select.contact" : {

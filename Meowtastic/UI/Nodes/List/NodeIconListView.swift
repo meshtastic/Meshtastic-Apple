@@ -29,14 +29,6 @@ struct NodeIconListView: View {
 	private var detailIconSpacing: CGFloat {
 		small ? 4 : 6
 	}
-	private var badgeBackground: Color {
-		if colorScheme == .dark {
-			Color(red: 28 / 256, green: 28 / 256, blue: 30 / 256)
-		}
-		else {
-			.white
-		}
-	}
 
 	@Environment(\.colorScheme)
 	private var colorScheme: ColorScheme
@@ -89,7 +81,7 @@ struct NodeIconListView: View {
 							Image(systemName: "\(node.hopsAway).circle")
 								.font(detailHopsIconFont)
 								.foregroundColor(.gray)
-								.background(badgeBackground)
+								.background(Color.listBackground(for: colorScheme))
 								.clipShape(
 									Circle()
 								)
