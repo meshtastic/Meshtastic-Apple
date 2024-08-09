@@ -57,6 +57,12 @@ struct UserMessageList: View {
 												self.replyMessageId = message.messageId
 												self.messageFieldFocused = true
 											}
+											if message.pkiEncrypted {
+												Image(systemName: "lock.circle.fill")
+													.foregroundStyle(.green)
+													.frame(height: 25)
+													.padding(.top, 5)
+											}
 
 											if currentUser && message.canRetry || (message.receivedACK && !message.realACK) {
 												RetryButton(message: message, destination: .user(user))

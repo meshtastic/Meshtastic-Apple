@@ -56,7 +56,7 @@ struct MessageContextMenuItems: View {
 				let messageDate = Date(timeIntervalSince1970: TimeInterval(message.messageTimestamp))
 				Text("\(messageDate.formattedDate(format: MessageText.dateFormatString))").foregroundColor(.gray)
 			}
-			
+
 			if !isCurrentUser && !(message.fromUser?.userNode?.viaMqtt ?? false) &&  message.fromUser?.userNode?.hopsAway ?? -1 == 0 {
 				VStack {
 					Text("SNR \(String(format: "%.2f", message.snr)) dB")
