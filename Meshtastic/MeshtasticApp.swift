@@ -17,8 +17,8 @@ struct MeshtasticAppleApp: App {
 	@ObservedObject
 	var appState: AppState
 
-	@ObservedObject
-	private var bleManager: BLEManager
+//	@ObservedObject
+//	private var bleManager: BLEManager
 
 	private let persistenceController: PersistenceController
 
@@ -35,10 +35,13 @@ struct MeshtasticAppleApp: App {
 		)
 		self._appState = ObservedObject(wrappedValue: appState)
 
-		self.bleManager = BLEManager(
-			appState: appState,
-			context: persistenceController.container.viewContext
-		)
+//		self.bleManager = BLEManager(
+//			appState: appState,
+//			context: persistenceController.container.viewContext
+//		)
+		
+		// Initialize the BLEManager singleton with the necessary dependencies
+		BLEManager.setup(appState: appState, context: persistenceController.container.viewContext)
 		self.persistenceController = persistenceController
 
 		// Wire up router
@@ -53,9 +56,9 @@ struct MeshtasticAppleApp: App {
 			)
 			.environment(\.managedObjectContext, persistenceController.container.viewContext)
 			.environmentObject(appState)
-			.environmentObject(bleManager)
+			.environmentObject(BLEManager.shared)
 			.sheet(isPresented: $saveChannels) {
-				SaveChannelQRCode(channelSetLink: channelSettings ?? "Empty Channel URL", addChannels: addChannels, bleManager: bleManager)
+				SaveChannelQRCode(channelSetLink: channelSettings ?? "Empty Channel URL", addChannels: addChannels, bleManager: BLEManager.shared)
 					.presentationDetents([.large])
 					.presentationDragIndicator(.visible)
 			}
