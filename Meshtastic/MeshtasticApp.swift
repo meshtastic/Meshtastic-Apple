@@ -35,11 +35,6 @@ struct MeshtasticAppleApp: App {
 		)
 		self._appState = ObservedObject(wrappedValue: appState)
 
-//		self.bleManager = BLEManager(
-//			appState: appState,
-//			context: persistenceController.container.viewContext
-//		)
-		
 		// Initialize the BLEManager singleton with the necessary dependencies
 		BLEManager.setup(appState: appState, context: persistenceController.container.viewContext)
 		self.persistenceController = persistenceController
