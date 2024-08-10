@@ -812,7 +812,7 @@ func textMessageAppPacket(
 			if Date().timeIntervalSince1970 < Double(packet.rxTime - 10000) || Date().timeIntervalSince1970 > Double(packet.rxTime + 10000) {
 				newMessage.messageTimestamp = Int32(Date().timeIntervalSince1970)
 			} else {
-				newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
+				newMessage.messageTimestamp = Int32(packet.rxTime)
 			}
 			newMessage.receivedACK = false
 			newMessage.snr = packet.rxSnr
