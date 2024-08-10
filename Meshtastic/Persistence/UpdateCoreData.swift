@@ -769,7 +769,7 @@ func upsertPowerConfigPacket(config: Config.PowerConfig, nodeNum: Int64, context
 func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.security.config %@".localized, String(nodeNum))
-	MeshLogger.log("🌐 \(logString)")
+	MeshLogger.log("🛡️ \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -799,19 +799,19 @@ func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, c
 
 			do {
 				try context.save()
-				Logger.data.info("💾 [NetworkConfigEntity] Updated Network Config for node: \(nodeNum.toHex(), privacy: .public)")
+				Logger.data.info("💾 [SecurityConfigEntity] Updated Security Config for node: \(nodeNum.toHex(), privacy: .public)")
 
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("💥 [NetworkConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
+				Logger.data.error("💥 [SecurityConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 			}
 		} else {
-			Logger.data.error("💥 [NetworkConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Network Config")
+			Logger.data.error("💥 [SecurityConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Security Config")
 		}
 	} catch {
 		let nsError = error as NSError
-		Logger.data.error("💥 [NetworkConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
+		Logger.data.error("💥 [SecurityConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 	}
 }
 

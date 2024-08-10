@@ -49,7 +49,7 @@ func generateMessageMarkdown (message: String) -> String {
 }
 
 func localConfig (config: Config, context: NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
-	// We don't care about any of the Power settings, config is available for everything else
+
 	if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
 		upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
@@ -64,6 +64,8 @@ func localConfig (config: Config, context: NSManagedObjectContext, nodeNum: Int6
 		upsertPositionConfigPacket(config: config.position, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.power(config.power) {
 		upsertPowerConfigPacket(config: config.power, nodeNum: nodeNum, context: context)
+	} else if config.payloadVariant == Config.OneOf_PayloadVariant.security(config.security) {
+		upsertSecurityConfigPacket(config: config.security, nodeNum: nodeNum, context: context)
 	}
 }
 
@@ -276,6 +278,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				newTelemetries.append(telemetry)
 				newNode.telemetries? = NSOrderedSet(array: newTelemetries)
 			}
+
 			newNode.firstHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
 			newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
 			newNode.snr = nodeInfo.snr
@@ -493,6 +496,8 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				upsertPositionConfigPacket(config: config.position, nodeNum: Int64(packet.from), context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.power(config.power) {
 				upsertPowerConfigPacket(config: config.power, nodeNum: Int64(packet.from), context: context)
+			} else if config.payloadVariant == Config.OneOf_PayloadVariant.security(config.security) {
+				upsertSecurityConfigPacket(config: config.security, nodeNum: Int64(packet.from), context: context)
 			}
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getModuleConfigResponse(adminMessage.getModuleConfigResponse) {
 			let moduleConfig = adminMessage.getModuleConfigResponse
