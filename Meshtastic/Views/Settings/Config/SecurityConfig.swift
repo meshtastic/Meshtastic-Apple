@@ -29,6 +29,14 @@ struct SecurityConfig: View {
 	@State var bluetoothLoggingEnabled = false
 	@State var adminChannelEnabled = false
 
+	var boolValues: [Bool] {[
+		isManaged,
+		serialEnabled,
+		debugLogApiEnabled,
+		bluetoothLoggingEnabled,
+		adminChannelEnabled
+	]}
+
 	var body: some View {
 		VStack {
 			Form {
@@ -146,7 +154,41 @@ struct SecurityConfig: View {
 								ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
+		.onChange(of: boolValues) { _ in
+			hasChanges = true
+		}
+		SaveConfigButton(node: node, hasChanges: $hasChanges) {
+			guard let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context),
+				  let fromUser = connectedNode.user,
+				  let toUser = node?.user else {
+				return
+			}
+
+			var config = Config.SecurityConfig()
+			//config.publicKey = publicKey
+			//config.privateKey = privateKey
+			//config.adminKey = adminKey
+			config.isManaged = isManaged
+			config.serialEnabled = serialEnabled
+			config.debugLogApiEnabled = debugLogApiEnabled
+			config.bluetoothLoggingEnabled = bluetoothLoggingEnabled
+			config.adminChannelEnabled = adminChannelEnabled
+
+			let adminMessageId = bleManager.saveSecurityConfig(
+				config: config,
+				fromUser: fromUser,
+				toUser: toUser,
+				adminIndex: connectedNode.myInfo?.adminIndex ?? 0
+			)
+			if adminMessageId > 0 {
+				// Should show a saved successfully alert once I know that to be true
+				// for now just disable the button after a successful save
+				hasChanges = false
+				goBack()
+			}
+		}
 	}
+
 	func setSecurityValues() {
 		self.publicKey = node?.securityConfig?.publicKey?.base64EncodedString() ?? ""
 		self.privateKey = node?.securityConfig?.privateKey?.base64EncodedString() ?? ""
