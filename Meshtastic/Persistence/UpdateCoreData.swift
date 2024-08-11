@@ -787,6 +787,7 @@ func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, c
 				newSecurityConfig.serialEnabled = config.serialEnabled
 				newSecurityConfig.debugLogApiEnabled = config.debugLogApiEnabled
 				newSecurityConfig.bluetoothLoggingEnabled = config.bluetoothLoggingEnabled
+				fetchedNode[0].securityConfig = newSecurityConfig
 			} else {
 				fetchedNode[0].securityConfig?.publicKey = config.publicKey
 				fetchedNode[0].securityConfig?.privateKey = config.privateKey
