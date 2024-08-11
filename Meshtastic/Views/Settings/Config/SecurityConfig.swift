@@ -154,6 +154,18 @@ struct SecurityConfig: View {
 								ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
+		.onAppear {
+			setSecurityValues()
+
+			// Need to request a LoRaConfig from the remote node before allowing changes
+//			if bleManager.connectedPeripheral != nil && node?.securityConfig == nil {
+//				Logger.mesh.info("empty security config")
+//				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
+//				if node != nil && connectedNode != nil {
+//					_ = bleManager.requestSecurityyConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+//				}
+//			}
+		}
 		.onChange(of: boolValues) { _ in
 			hasChanges = true
 		}
