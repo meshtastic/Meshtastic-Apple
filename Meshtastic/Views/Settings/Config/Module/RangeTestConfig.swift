@@ -72,12 +72,16 @@ struct RangeTestConfig: View {
 				}
 			}
 			.navigationTitle("range.test.config")
-			.navigationBarItems(trailing:
-				ZStack {
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-			})
+			.navigationBarItems(
+				trailing: ZStack {
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: bleManager.connectedPeripheral?.shortName ?? "?"
+					)
+				}
+			)
 			.onAppear {
-				setRangeTestValues()
 				// Need to request a RangeTestModule Config from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.rangeTestConfig == nil {
 					Logger.mesh.debug("empty range test module config")

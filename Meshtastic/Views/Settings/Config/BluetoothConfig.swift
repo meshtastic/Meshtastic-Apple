@@ -107,7 +107,6 @@ struct BluetoothConfig: View {
 			}
 		)
 		.onAppear {
-			setBluetoothValues()
 			// Need to request a BluetoothConfig from the remote node before allowing changes
 			if let connectedPeripheral = bleManager.connectedPeripheral, let node, node.bluetoothConfig == nil {
 				Logger.mesh.info("empty bluetooth config")

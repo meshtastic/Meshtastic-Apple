@@ -190,12 +190,16 @@ struct ExternalNotificationConfig: View {
 			}
 		}
 		.navigationTitle("external.notification.config")
-		.navigationBarItems(trailing:
-								ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
 		.onAppear {
-			setExternalNotificationValues()
 			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.externalNotificationConfig == nil {
 				Logger.mesh.info("empty external notification module config")

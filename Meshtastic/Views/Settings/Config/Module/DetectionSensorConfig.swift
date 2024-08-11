@@ -180,12 +180,16 @@ struct DetectionSensorConfig: View {
 			}
 		}
 		.navigationTitle("detection.sensor.config")
-		.navigationBarItems(trailing:
-			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
 		.onAppear {
-			setDetectionSensorValues()
 			// Need to request a Detection Sensor Module Config from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.detectionSensorConfig == nil {
 				Logger.mesh.info("empty detection sensor module config")

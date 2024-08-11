@@ -271,10 +271,15 @@ struct MQTTConfig: View {
 			}
 		}
 		.navigationTitle("mqtt.config")
-		.navigationBarItems(trailing:
-			ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", mqttProxyConnected: bleManager.mqttProxyConnected)
-		})
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
 		.onChange(of: address) { newAddress in
 			if node != nil && node?.mqttConfig != nil {
 				if newAddress != node!.mqttConfig!.address { hasChanges = true }
@@ -357,7 +362,6 @@ struct MQTTConfig: View {
 			}
 		}
 		.onAppear {
-			setMqttValues()
 			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.mqttConfig == nil {
 				Logger.mesh.info("empty mqtt module config")

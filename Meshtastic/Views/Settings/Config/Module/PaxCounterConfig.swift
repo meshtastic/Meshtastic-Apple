@@ -58,7 +58,6 @@ struct PaxCounterConfig: View {
 			)
 		})
 		.onAppear {
-			setPaxValues()
 			// Need to request a PAX Counter module config from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.paxCounterConfig == nil {
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)

@@ -127,13 +127,16 @@ struct SerialConfig: View {
 				}
 			}
 			.navigationTitle("serial.config")
-			.navigationBarItems(trailing:
-
-				ZStack {
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-			})
+			.navigationBarItems(
+				trailing: ZStack {
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: bleManager.connectedPeripheral?.shortName ?? "?"
+					)
+				}
+			)
 			.onAppear {
-				setSerialValues()
 				// Need to request a SerialModuleConfig from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.serialConfig == nil {
 					Logger.mesh.debug("empty serial module config")

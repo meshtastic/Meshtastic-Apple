@@ -119,7 +119,6 @@ struct PowerConfig: View {
 		}
 		.onAppear {
 			Api().loadDeviceHardwareData { (hw) in
-
 				for device in hw {
 					let currentHardware = node?.user?.hwModel ?? "UNSET"
 					let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "")
@@ -128,8 +127,6 @@ struct PowerConfig: View {
 					}
 				}
 			}
-			setPowerValues()
-
 			// Need to request a Power config from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.powerConfig == nil {
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)

@@ -109,12 +109,16 @@ struct NetworkConfig: View {
 			}
 		}
 		.navigationTitle("network.config")
-		.navigationBarItems(trailing:
-			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
 		.onAppear {
-			setNetworkValues()
 			// Need to request a NetworkConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.networkConfig == nil {
 				Logger.mesh.info("empty network config")

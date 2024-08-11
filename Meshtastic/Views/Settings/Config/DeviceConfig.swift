@@ -233,13 +233,17 @@ struct DeviceConfig: View {
 			Spacer()
 		}
 		.navigationTitle("device.config")
-		.navigationBarItems(trailing:
-								ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
 		.onAppear {
-			setDeviceValues()
-			// Need to request a LoRaConfig from the remote node before allowing changes
+			// Need to request a DeviceConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.deviceConfig == nil {
 				Logger.mesh.info("empty device config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)

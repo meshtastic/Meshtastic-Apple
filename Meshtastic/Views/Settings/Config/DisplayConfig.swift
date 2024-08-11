@@ -154,13 +154,16 @@ struct DisplayConfig: View {
 		}
 
 		.navigationTitle("display.config")
-		.navigationBarItems(trailing:
-			ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
 		.onAppear {
-			setDisplayValues()
-
 			// Need to request a LoRaConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.displayConfig == nil {
 				Logger.mesh.info("empty display config")

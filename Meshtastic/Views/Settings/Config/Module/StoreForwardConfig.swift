@@ -137,10 +137,15 @@ struct StoreForwardConfig: View {
 			}
 		}
 		.navigationTitle("storeforward.config")
-		.navigationBarItems(trailing:
-			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
 		.onAppear {
 			// Need to request a Detection Sensor Module Config from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.storeForwardConfig == nil {
@@ -150,7 +155,6 @@ struct StoreForwardConfig: View {
 					_ = bleManager.requestStoreAndForwardModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
-			setStoreAndForwardValues()
 		}
 		.onChange(of: enabled) { newEnabled in
 			if node != nil && node?.storeForwardConfig != nil {

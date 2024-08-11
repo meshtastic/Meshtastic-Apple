@@ -80,12 +80,16 @@ struct AmbientLightingConfig: View {
 				}
 			}
 			.navigationTitle("ambient.lighting.config")
-			.navigationBarItems(trailing:
-				ZStack {
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-			})
+			.navigationBarItems(
+				trailing: ZStack {
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: bleManager.connectedPeripheral?.shortName ?? "?"
+					)
+				}
+			)
 			.onAppear {
-				setAmbientLightingConfigValue()
 				// Need to request a Ambient Lighting Config from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.ambientLightingConfig == nil {
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
