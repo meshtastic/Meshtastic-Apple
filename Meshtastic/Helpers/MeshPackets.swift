@@ -808,7 +808,11 @@ func textMessageAppPacket(
 			let fetchedUsers = try context.fetch(messageUsers)
 			let newMessage = MessageEntity(context: context)
 			newMessage.messageId = Int64(packet.id)
-			newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
+			if packet.rxTime == 0 {
+				newMessage.messageTimestamp = Int32(Date().timeIntervalSince1970)
+			} else {
+				newMessage.messageTimestamp = Int32(packet.rxTime)
+			}
 			newMessage.receivedACK = false
 			newMessage.snr = packet.rxSnr
 			newMessage.rssi = packet.rxRssi

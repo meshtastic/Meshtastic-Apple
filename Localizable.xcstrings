@@ -5,37 +5,114 @@
 
     },
     "\t%@" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\t%@"
+          }
+        }
+      }
     },
     "  %@" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "  %@"
+          }
+        }
+      }
     },
     " %@" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : " %@"
+          }
+        }
+      }
     },
     " Whether or not use INPUT_PULLUP mode for GPIO pin. Only applicable if the board uses pull-up resistors on the pin" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Huruvida INPUT_PULLUP-läge ska användas för GPIO-pinnen. Endast tillämpligt om kortet använder pull-up-motstånd på pinnen."
+          }
+        }
+      }
     },
     ": %@" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ": %@"
+          }
+        }
+      }
     },
     ": %d" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ": %d"
+          }
+        }
+      }
     },
     ".dot" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ".dot"
+          }
+        }
+      }
     },
     ".gauge" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ".guage"
+          }
+        }
+      }
     },
     ".gradient" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ".gradient"
+          }
+        }
+      }
     },
     ".pill" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ".pill"
+          }
+        }
+      }
     },
     ".text" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ".text"
+          }
+        }
+      }
     },
     "(Re)define PIN_GPS_EN for your board." : {
 
@@ -722,7 +799,14 @@
 
     },
     "Altitude is Mean Sea Level" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Höjd är medelhavsnivå"
+          }
+        }
+      }
     },
     "Always point north" : {
 
@@ -3127,6 +3211,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rensa appdata"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rensa appdata"
@@ -5691,6 +5781,12 @@
             "value" : "Appansluten eller fristående meddelandeenhet."
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App ansluten eller fristående meddelandeenhet."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6968,7 +7064,14 @@
 
     },
     "Environment Metrics Log" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miljödata logg"
+          }
+        }
+      }
     },
     "Erase all app data?" : {
 
@@ -7413,7 +7516,14 @@
 
     },
     "Frequency Override" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frekvensöverskrivning"
+          }
+        }
+      }
     },
     "Frequency Slot" : {
 
@@ -7422,7 +7532,14 @@
 
     },
     "Friendly name used to format message sent to mesh. Example: A name \"Motion\" would result in a message \"Motion detected\"" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vänligt namn som används för att formatera meddelanden som skickas till mesh-nätverket. Exempel: Ett namn som \"Rörelse\" skulle resultera i ett meddelande som \"Rörelse upptäckt\"."
+          }
+        }
+      }
     },
     "gas" : {
       "extractionState" : "manual",
@@ -8413,7 +8530,14 @@
       }
     },
     "IAQ" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IAQ (Inomhusluftkvalitet)"
+          }
+        }
+      }
     },
     "IAQ " : {
 
@@ -12141,6 +12265,12 @@
             "value" : "Konfiguration för omgivningsbelysningsmodulen mottagen: %@"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguration för omgivande belysningsmodul mottagen: %@"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12316,6 +12446,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Begärda meddelanden för modulen med fördefinierade meddelanden för nod: %@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Begärda fördefinierade meddelanden för nod: %@"
           }
         },
         "zh-Hans" : {
@@ -13833,6 +13969,12 @@
             "value" : "Telemetrimodulkonfiguration mottagen: %@"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Telemetrimodulkonfiguration mottagen: %@\n```​⬤"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15303,7 +15445,14 @@
 
     },
     "No Environment Metrics" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inga miljödata"
+          }
+        }
+      }
     },
     "No Positions" : {
 
@@ -15563,7 +15712,14 @@
       }
     },
     "Not a valid route file" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inte en giltig ruttfil"
+          }
+        }
+      }
     },
     "not.connected" : {
       "localizations" : {
@@ -16631,7 +16787,14 @@
 
     },
     "PWD" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PWD (Lösenord)"
+          }
+        }
+      }
     },
     "Radar" : {
 
@@ -16733,6 +16896,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Räckviddstest"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Räckviddstest"
@@ -20912,7 +21081,14 @@
 
     },
     "The Meshtastic Apple apps support firmware version %@ and above." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meshtastic Apple-apparna stöder firmwareversion %@ och senare."
+          }
+        }
+      }
     },
     "The minimum distance change in meters to be considered for a smart position broadcast." : {
 
@@ -22277,7 +22453,14 @@
       }
     },
     "Version 1.2 End of life (EOL) Info" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version 1.2 Information om livscykelns slut (EOL)"
+          }
+        }
+      }
     },
     "Version: %@ (%@) " : {
       "localizations" : {

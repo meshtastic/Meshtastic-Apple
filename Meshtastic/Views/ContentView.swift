@@ -8,7 +8,7 @@ import SwiftUI
 struct ContentView: View {
 	@ObservedObject
 	var appState: AppState
-	
+
 	@ObservedObject
 	var router: Router
 
