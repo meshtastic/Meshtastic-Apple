@@ -2780,6 +2780,9 @@
     "Channel Name" : {
 
     },
+    "Channel number must be between 0 and 7." : {
+
+    },
     "Channel Role" : {
 
     },
@@ -5197,6 +5200,9 @@
     "Description" : {
 
     },
+    "Description must be less than 100 bytes" : {
+
+    },
     "Detection" : {
 
     },
@@ -6809,6 +6815,9 @@
         }
       }
     },
+    "Emoji" : {
+
+    },
     "Empty" : {
 
     },
@@ -7175,6 +7184,9 @@
 
     },
     "Factory reset your device and app? " : {
+
+    },
+    "Failed to encode message content." : {
 
     },
     "Failed to get a valid position to exchange" : {
@@ -10856,6 +10868,9 @@
     "Loading Logs. . ." : {
 
     },
+    "Location" : {
+
+    },
     "Location: %@" : {
 
     },
@@ -14501,6 +14516,12 @@
         }
       }
     },
+    "Message" : {
+
+    },
+    "Message content exceeds 228 bytes." : {
+
+    },
     "message.details" : {
       "localizations" : {
         "de" : {
@@ -15104,6 +15125,9 @@
         }
       }
     },
+    "Must be a single emoji" : {
+
+    },
     "Nag timeout" : {
 
     },
@@ -15166,6 +15190,9 @@
       }
     },
     "Name" : {
+
+    },
+    "Name must be less than 30 bytes" : {
 
     },
     "Nearby Topics" : {
@@ -18994,6 +19021,12 @@
       }
     },
     "Send" : {
+
+    },
+    "Send a channel message" : {
+
+    },
+    "Send a waypoint" : {
 
     },
     "Send ASCII bell with alert message. Useful for triggering external notification on bell." : {

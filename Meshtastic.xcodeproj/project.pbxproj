@@ -32,6 +32,8 @@
 		6DEDA55C2A9592F900321D2E /* MessageEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */; };
 		B399E8A42B6F486400E4488E /* RetryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B399E8A32B6F486400E4488E /* RetryButton.swift */; };
 		B3E905B12B71F7F300654D07 /* TextMessageField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E905B02B71F7F300654D07 /* TextMessageField.swift */; };
+		BCB613812C67290800485544 /* SendWaypointIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613802C67290800485544 /* SendWaypointIntent.swift */; };
+		BCB613832C672A2600485544 /* MessageChannelIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613822C672A2600485544 /* MessageChannelIntent.swift */; };
 		C9697FA527933B8C00250207 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = C9697FA427933B8C00250207 /* SQLite */; };
 		D93068D32B8129510066FBC8 /* MessageContextMenuItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */; };
 		D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D42B812B700066FBC8 /* MessageDestination.swift */; };
@@ -262,6 +264,8 @@
 		6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntityExtension.swift; sourceTree = "<group>"; };
 		B399E8A32B6F486400E4488E /* RetryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryButton.swift; sourceTree = "<group>"; };
 		B3E905B02B71F7F300654D07 /* TextMessageField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageField.swift; sourceTree = "<group>"; };
+		BCB613802C67290800485544 /* SendWaypointIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendWaypointIntent.swift; sourceTree = "<group>"; };
+		BCB613822C672A2600485544 /* MessageChannelIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageChannelIntent.swift; sourceTree = "<group>"; };
 		D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageContextMenuItems.swift; sourceTree = "<group>"; };
 		D93068D42B812B700066FBC8 /* MessageDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDestination.swift; sourceTree = "<group>"; };
 		D93068D62B8146690066FBC8 /* MessageText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageText.swift; sourceTree = "<group>"; };
@@ -548,6 +552,15 @@
 			path = MeshtasticTests;
 			sourceTree = "<group>";
 		};
+		BCB6137F2C6728E700485544 /* AppIntents */ = {
+			isa = PBXGroup;
+			children = (
+				BCB613802C67290800485544 /* SendWaypointIntent.swift */,
+				BCB613822C672A2600485544 /* MessageChannelIntent.swift */,
+			);
+			path = AppIntents;
+			sourceTree = "<group>";
+		};
 		C9483F6B2773016700998F6B /* MapKitMap */ = {
 			isa = PBXGroup;
 			children = (
@@ -814,6 +827,7 @@
 		DDC2E15626CE248E0042C5E4 /* Meshtastic */ = {
 			isa = PBXGroup;
 			children = (
+				BCB6137F2C6728E700485544 /* AppIntents */,
 				DD1BD0EC2C603C5B008C0C70 /* Measurement */,
 				25F5D5BC2C3F6D7B008036E3 /* Router */,
 				DD7709392AA1ABA1007A8BF0 /* Tips */,
@@ -1339,6 +1353,7 @@
 				DDAD49ED2AFB39DC00B4425D /* MeshMap.swift in Sources */,
 				DD8169FB271F1F3A00F4AB02 /* MeshLog.swift in Sources */,
 				DD3CC24C2C498D6C001BD3A2 /* BatteryCompact.swift in Sources */,
+				BCB613812C67290800485544 /* SendWaypointIntent.swift in Sources */,
 				DD1B8F402B35E2F10022AABC /* GPSStatus.swift in Sources */,
 				DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */,
 				DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */,
@@ -1375,6 +1390,7 @@
 				DD3CC6C028E7A60700FA9159 /* MessagingEnums.swift in Sources */,
 				DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */,
 				DDAB580D2B0DAA9E00147258 /* Routes.swift in Sources */,
+				BCB613832C672A2600485544 /* MessageChannelIntent.swift in Sources */,
 				D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */,
 				DDA9515E2BC6F56F00CEA535 /* IndoorAirQuality.swift in Sources */,
 				DDDB444E29F8AB0E00EE2349 /* Int.swift in Sources */,

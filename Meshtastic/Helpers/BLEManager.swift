@@ -11,6 +11,7 @@ import OSLog
 // Meshtastic BLE Device Manager
 // ---------------------------------------------------------------------------------------
 class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate, ObservableObject {
+	static var shared: BLEManager! // Singleton instance
 
 	let appState: AppState
 
@@ -54,20 +55,30 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 	// MARK: init
 
-	init(
-		appState: AppState,
-		context: NSManagedObjectContext
-	) {
-		self.appState = appState
-		self.context = context
+	private override init() {
+		   // Default initialization should not be used
+		   fatalError("Use setup(appState:context:) to initialize the singleton")
+	   }
 
-		self.lastConnectionError = ""
-		self.connectedVersion = "0.0.0"
-		super.init()
-		centralManager = CBCentralManager(delegate: self, queue: nil)
-		mqttManager.delegate = self
-		// centralManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionRestoreIdentifierKey: restoreKey])
-	}
+	   static func setup(appState: AppState, context: NSManagedObjectContext) {
+		   guard shared == nil else {
+			   print("BLEManager already initialized")
+			   return
+		   }
+		   shared = BLEManager(appState: appState, context: context)
+	   }
+
+	   private init(appState: AppState, context: NSManagedObjectContext) {
+		   self.appState = appState
+		   self.context = context
+		   self.lastConnectionError = ""
+		   self.connectedVersion = "0.0.0"
+		   super.init()
+		   centralManager = CBCentralManager(delegate: self, queue: nil)
+		   mqttManager.delegate = self
+	   }
+   
+
 
 	// MARK: Scanning for BLE Devices
 	// Scan for nearby BLE devices using the Meshtastic BLE service ID
