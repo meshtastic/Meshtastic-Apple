@@ -149,30 +149,30 @@ struct SecurityConfig: View {
 				name: "\(bleManager.connectedPeripheral?.shortName ?? "?")"
 			)
 		})
-		.onChange(of: isManaged) { newIsManaged in
-			if node != nil && node!.securityConfig != nil {
-				if newIsManaged != node!.securityConfig!.isManaged { hasChanges = true }
+		.onChange(of: isManaged) {
+			if let val = node?.securityConfig?.isManaged {
+				hasChanges = $0 != val
 			}
 		}
-		.onChange(of: serialEnabled) { newSerialEnabled in
-			if node != nil && node!.securityConfig != nil {
-				if newSerialEnabled != node!.securityConfig!.serialEnabled { hasChanges = true }
+		.onChange(of: serialEnabled) {
+			if let val = node?.securityConfig?.serialEnabled {
+				hasChanges = $0 != val
+		   }
+		}
+		.onChange(of: debugLogApiEnabled) {
+			if let val = node?.securityConfig?.debugLogApiEnabled {
+				hasChanges = $0 != val
 			}
 		}
-		.onChange(of: debugLogApiEnabled) { newDebugLogApiEnabled in
-			if node != nil && node!.securityConfig != nil {
-				if newDebugLogApiEnabled != node!.securityConfig!.debugLogApiEnabled { hasChanges = true }
+		.onChange(of: bluetoothLoggingEnabled) {
+			if let val = node?.securityConfig?.bluetoothLoggingEnabled {
+				hasChanges = $0 != val
 			}
 		}
-		.onChange(of: bluetoothLoggingEnabled) { newBluetoothLoggingEnabled in
-			if node != nil && node!.securityConfig != nil {
-				if newBluetoothLoggingEnabled != node!.securityConfig!.bluetoothLoggingEnabled { hasChanges = true }
-			}
-		}
-		.onChange(of: adminChannelEnabled) { newAdminChannelEnabled in
-			if node != nil && node!.securityConfig != nil {
-				if newAdminChannelEnabled != node!.securityConfig!.adminChannelEnabled { hasChanges = true }
-			}
+		.onChange(of: adminChannelEnabled) {
+			if let val = node?.securityConfig?.adminChannelEnabled {
+			hasChanges = $0 != val
+		   }
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
