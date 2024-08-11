@@ -29,14 +29,6 @@ struct SecurityConfig: View {
 	@State var bluetoothLoggingEnabled = false
 	@State var adminChannelEnabled = false
 
-	var boolValues: [Bool] {[
-		isManaged,
-		serialEnabled,
-		debugLogApiEnabled,
-		bluetoothLoggingEnabled,
-		adminChannelEnabled
-	]}
-
 	var body: some View {
 		VStack {
 			Form {
@@ -150,13 +142,39 @@ struct SecurityConfig: View {
 			}
 		}
 		.navigationTitle("Security Config")
-		.navigationBarItems(trailing:
-								ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
+		.navigationBarItems(trailing: ZStack {
+			ConnectedDevice(
+				bluetoothOn: bleManager.isSwitchedOn,
+				deviceConnected: bleManager.connectedPeripheral != nil,
+				name: "\(bleManager.connectedPeripheral?.shortName ?? "?")"
+			)
 		})
-		.onChange(of: boolValues) { _ in
-			hasChanges = true
+		.onChange(of: isManaged) { newIsManaged in
+			if node != nil && node!.securityConfig != nil {
+				if newIsManaged != node!.securityConfig!.isManaged { hasChanges = true }
+			}
 		}
+		.onChange(of: serialEnabled) { newSerialEnabled in
+			if node != nil && node!.securityConfig != nil {
+				if newSerialEnabled != node!.securityConfig!.serialEnabled { hasChanges = true }
+			}
+		}
+		.onChange(of: debugLogApiEnabled) { newDebugLogApiEnabled in
+			if node != nil && node!.securityConfig != nil {
+				if newDebugLogApiEnabled != node!.securityConfig!.debugLogApiEnabled { hasChanges = true }
+			}
+		}
+		.onChange(of: bluetoothLoggingEnabled) { newBluetoothLoggingEnabled in
+			if node != nil && node!.securityConfig != nil {
+				if newBluetoothLoggingEnabled != node!.securityConfig!.bluetoothLoggingEnabled { hasChanges = true }
+			}
+		}
+		.onChange(of: adminChannelEnabled) { newAdminChannelEnabled in
+			if node != nil && node!.securityConfig != nil {
+				if newAdminChannelEnabled != node!.securityConfig!.adminChannelEnabled { hasChanges = true }
+			}
+		}
+
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			guard let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context),
 				  let fromUser = connectedNode.user,
