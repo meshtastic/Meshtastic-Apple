@@ -808,8 +808,7 @@ func textMessageAppPacket(
 			let fetchedUsers = try context.fetch(messageUsers)
 			let newMessage = MessageEntity(context: context)
 			newMessage.messageId = Int64(packet.id)
-			/// For message display if the rx time is off by more than 20 seconds set the timestamp to now to assist sorting
-			if Date().timeIntervalSince1970 < Double(packet.rxTime - 10000) || Date().timeIntervalSince1970 > Double(packet.rxTime + 10000) {
+			if packet.rxTime == 0 {
 				newMessage.messageTimestamp = Int32(Date().timeIntervalSince1970)
 			} else {
 				newMessage.messageTimestamp = Int32(packet.rxTime)
