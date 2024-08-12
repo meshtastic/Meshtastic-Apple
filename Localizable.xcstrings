@@ -4957,6 +4957,9 @@
         }
       }
     },
+    "Could not find node" : {
+
+    },
     "Counter Clockwise Rotary Event" : {
 
     },
@@ -6985,6 +6988,9 @@
     "Erase all device and app data?" : {
 
     },
+    "Error: %@" : {
+
+    },
     "ESP 32 OTA update is a work in progress, click the button below to send your device a reboot into ota admin message." : {
 
     },
@@ -7186,7 +7192,7 @@
     "Factory reset your device and app? " : {
 
     },
-    "Failed to encode message content." : {
+    "Failed to encode message content" : {
 
     },
     "Failed to get a valid position to exchange" : {
@@ -7199,6 +7205,9 @@
 
     },
     "Favorites" : {
+
+    },
+    "Fetch the latest position of a cetain node" : {
 
     },
     "Fifteen Minutes" : {
@@ -7613,6 +7622,9 @@
       }
     },
     "Get custom waterproof solar and detection sensor router nodes, aluminium desktop nodes and rugged handsets." : {
+
+    },
+    "Get Node Position" : {
 
     },
     "Get NRF DFU from the App Store" : {
@@ -15326,6 +15338,9 @@
     "Newer firmware is available" : {
 
     },
+    "No Connected Node" : {
+
+    },
     "No Device Metrics" : {
 
     },
@@ -15406,6 +15421,9 @@
           }
         }
       }
+    },
+    "Node does not have positions" : {
+
     },
     "Node History" : {
 
@@ -19024,6 +19042,9 @@
 
     },
     "Send a channel message" : {
+
+    },
+    "Send a message to a certain meshtastic channel" : {
 
     },
     "Send a waypoint" : {
