@@ -820,6 +820,8 @@ func textMessageAppPacket(
 			newMessage.isEmoji = packet.decoded.emoji == 1
 			newMessage.channel = Int32(packet.channel)
 			newMessage.portNum = Int32(packet.decoded.portnum.rawValue)
+			newMessage.publicKey = packet.publicKey
+			newMessage.pkiEncrypted = packet.pkiEncrypted
 			if packet.decoded.portnum == PortNum.detectionSensorApp {
 				if !UserDefaults.enableDetectionNotifications {
 					newMessage.read = true
