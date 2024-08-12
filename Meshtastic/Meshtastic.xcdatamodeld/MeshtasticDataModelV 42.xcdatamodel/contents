@@ -432,6 +432,7 @@
         <attribute name="hwModel" attributeType="String"/>
         <attribute name="hwModelId" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="isLicensed" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="keyMatch" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="lastMessage" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="longName" attributeType="String"/>
         <attribute name="mute" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>

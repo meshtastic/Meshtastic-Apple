@@ -847,8 +847,16 @@ func textMessageAppPacket(
 			}
 			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
 				newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
-				newMessage.fromUser?.publicKey = packet.publicKey
-				newMessage.fromUser?.pkiEncrypted = packet.pkiEncrypted
+				if !(newMessage.fromUser?.publicKey?.isEmpty ?? true) {
+					/// We have a key, check if it matches
+					if newMessage.fromUser?.publicKey != newMessage.publicKey {
+						newMessage.fromUser?.keyMatch = false
+					}
+				} else {
+					/// We have no key, set it
+					newMessage.fromUser?.publicKey = packet.publicKey
+					newMessage.fromUser?.pkiEncrypted = packet.pkiEncrypted
+				}
 				if packet.rxTime > 0 {
 					newMessage.fromUser?.userNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 				}
