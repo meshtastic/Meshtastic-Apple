@@ -13,6 +13,7 @@ import OSLog
 
 struct SecurityConfig: View {
 
+	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var goBack
@@ -38,18 +39,16 @@ struct SecurityConfig: View {
 					VStack(alignment: .leading) {
 						Label("Public Key", systemImage: "key")
 
-						Text("Sent out to other nodes on the mesh to allow them to compute a shared secret key.")
-							.foregroundStyle(.secondary)
-							.font(.caption)
-
 						TextField(
 							"Public Key",
 							text: $publicKey,
 							axis: .vertical
 						)
-						.padding(5)
+						.font(idiom == .phone ? .caption : .callout)
+						.allowsTightening(true)
+						.monospaced()
 						.keyboardType(.alphabet)
-						.foregroundColor(.secondary)
+						.foregroundStyle(.tertiary)
 						.disableAutocorrection(true)
 						.textSelection(.enabled)
 						.background(
@@ -57,50 +56,55 @@ struct SecurityConfig: View {
 								.stroke(true ? Color.clear : Color.red, lineWidth: 2.0)
 						)
 
+						Text("Sent out to other nodes on the mesh to allow them to compute a shared secret key.")
+							.foregroundStyle(.secondary)
+							.font(idiom == .phone ? .caption : .callout)
 					}
 					VStack(alignment: .leading) {
 						Label("Private Key", systemImage: "key.fill")
-
-						Text("Used to create a shared key with a remote device.")
-							.foregroundStyle(.secondary)
-							.font(.caption)
 
 						TextField(
 							"Private Key",
 							text: $privateKey,
 							axis: .vertical
 						)
-						.padding(5)
+						.font(idiom == .phone ? .caption : .callout)
+						.allowsTightening(true)
+						.monospaced()
 						.disableAutocorrection(true)
 						.keyboardType(.alphabet)
-						.foregroundColor(.secondary)
+						.foregroundStyle(.tertiary)
 						.textSelection(.enabled)
 						.background(
 							RoundedRectangle(cornerRadius: 10.0)
 								.stroke(true ? Color.clear : Color.red, lineWidth: 2.0)
 						)
+						Text("Used to create a shared key with a remote device.")
+							.foregroundStyle(.secondary)
+							.font(idiom == .phone ? .caption : .callout)
 					}
 					VStack(alignment: .leading) {
 						Label("Admin Key", systemImage: "key.viewfinder")
-
-						Text("The public key authorized to send admin messages to this node.")
-							.foregroundStyle(.secondary)
-							.font(.caption)
 
 						TextField(
 							"Admin Key",
 							text: $adminKey,
 							axis: .vertical
 						)
-						.padding(5)
+						.font(idiom == .phone ? .caption : .callout)
+						.allowsTightening(true)
+						.monospaced()
 						.disableAutocorrection(true)
 						.keyboardType(.alphabet)
-						.foregroundColor(.secondary)
+						.foregroundStyle(.tertiary)
 						.textSelection(.enabled)
 						.background(
 							RoundedRectangle(cornerRadius: 10.0)
 								.stroke(true ? Color.clear : Color.red, lineWidth: 2.0)
 						)
+						Text("The public key authorized to send admin messages to this node.")
+							.foregroundStyle(.secondary)
+							.font(idiom == .phone ? .caption : .callout)
 					}
 				}
 				Section(header: Text("Logs")) {
@@ -141,6 +145,7 @@ struct SecurityConfig: View {
 				}
 			}
 		}
+		.scrollDismissesKeyboard(.immediately)
 		.navigationTitle("Security Config")
 		.navigationBarItems(trailing: ZStack {
 			ConnectedDevice(
