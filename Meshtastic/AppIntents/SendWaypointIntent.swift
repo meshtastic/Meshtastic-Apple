@@ -27,7 +27,9 @@ struct SendWaypointIntent: AppIntent {
 	var locationParameter: CLPlacemark
 
 	func perform() async throws -> some IntentResult {
-		
+		if (!BLEManager.shared.isConnected){
+			throw AppIntentErrors.AppIntentError.notConnected
+		}
 		// Provide default values if parameters are nil
 		let name = nameParameter ?? "Dropped Pin"
 		let description = descriptionParameter ?? ""
@@ -67,9 +69,11 @@ struct SendWaypointIntent: AppIntent {
 		newWaypoint.icon = unicode
 		newWaypoint.name = name
 		newWaypoint.description_p = description
-		if (BLEManager.shared.isConnected){
-			BLEManager.shared.sendWaypoint(waypoint: newWaypoint)
+		if(!BLEManager.shared.sendWaypoint(waypoint: newWaypoint)){
+			throw AppIntentErrors.AppIntentError.message("Failed to Send Waypoint")
 		}
+		
+		
 		
 		return .result()
 	}
