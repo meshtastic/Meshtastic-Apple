@@ -299,6 +299,10 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				}
 				newUser.isLicensed = nodeInfo.user.isLicensed
 				newUser.role = Int32(nodeInfo.user.role.rawValue)
+				if !nodeInfo.user.publicKey.isEmpty {
+					newUser.pkiEncrypted = true
+					newUser.publicKey = nodeInfo.user.publicKey
+				}
 				newNode.user = newUser
 			} else if nodeInfo.num > Constants.minimumNodeNum {
 				let newUser = createUser(num: Int64(nodeInfo.num), context: context)
