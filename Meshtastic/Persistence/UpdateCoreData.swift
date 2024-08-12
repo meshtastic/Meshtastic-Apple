@@ -178,6 +178,8 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					newUser.role = Int32(newUserMessage.role.rawValue)
 					newUser.hwModel = String(describing: newUserMessage.hwModel).uppercased()
 					newUser.hwModelId = Int32(newUserMessage.hwModel.rawValue)
+					newUser.pkiEncrypted = packet.pkiEncrypted
+					newUser.publicKey = packet.publicKey
 					Task {
 						Api().loadDeviceHardwareData { (hw) in
 							let dh = hw.first(where: { $0.hwModel == newUser.hwModelId })
