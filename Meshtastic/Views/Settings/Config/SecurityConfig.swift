@@ -38,70 +38,21 @@ struct SecurityConfig: View {
 				Section(header: Text("Admin & Direct Message Keys")) {
 					VStack(alignment: .leading) {
 						Label("Public Key", systemImage: "key")
-
-						TextField(
-							"Public Key",
-							text: $publicKey,
-							axis: .vertical
-						)
-						.font(idiom == .phone ? .caption : .callout)
-						.allowsTightening(true)
-						.monospaced()
-						.keyboardType(.alphabet)
-						.foregroundStyle(.tertiary)
-						.disableAutocorrection(true)
-						.textSelection(.enabled)
-						.background(
-							RoundedRectangle(cornerRadius: 10.0)
-								.stroke(true ? Color.clear : Color.red, lineWidth: 2.0)
-						)
-
+						SecureInput("Public Key", text: $publicKey)
 						Text("Sent out to other nodes on the mesh to allow them to compute a shared secret key.")
 							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
 					}
 					VStack(alignment: .leading) {
 						Label("Private Key", systemImage: "key.fill")
-
-						TextField(
-							"Private Key",
-							text: $privateKey,
-							axis: .vertical
-						)
-						.font(idiom == .phone ? .caption : .callout)
-						.allowsTightening(true)
-						.monospaced()
-						.disableAutocorrection(true)
-						.keyboardType(.alphabet)
-						.foregroundStyle(.tertiary)
-						.textSelection(.enabled)
-						.background(
-							RoundedRectangle(cornerRadius: 10.0)
-								.stroke(true ? Color.clear : Color.red, lineWidth: 2.0)
-						)
+						SecureInput("Private Key", text: $privateKey)
 						Text("Used to create a shared key with a remote device.")
 							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
 					}
 					VStack(alignment: .leading) {
 						Label("Admin Key", systemImage: "key.viewfinder")
-
-						TextField(
-							"Admin Key",
-							text: $adminKey,
-							axis: .vertical
-						)
-						.font(idiom == .phone ? .caption : .callout)
-						.allowsTightening(true)
-						.monospaced()
-						.disableAutocorrection(true)
-						.keyboardType(.alphabet)
-						.foregroundStyle(.tertiary)
-						.textSelection(.enabled)
-						.background(
-							RoundedRectangle(cornerRadius: 10.0)
-								.stroke(true ? Color.clear : Color.red, lineWidth: 2.0)
-						)
+						SecureInput("Private Key", text: $adminKey)
 						Text("The public key authorized to send admin messages to this node.")
 							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
