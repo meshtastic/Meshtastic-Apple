@@ -241,42 +241,28 @@ struct LoRaConfig: View {
 			}
 		}
 		.onChange(of: region) { newRegion in
-			if node != nil && node!.loRaConfig != nil {
-				if newRegion != node!.loRaConfig!.regionCode { hasChanges = true }
-			}
+			if newRegion != node?.loRaConfig?.regionCode ?? -1 { hasChanges = true }
 		}
 		.onChange(of: usePreset) {
 			if $0 != node?.loRaConfig?.usePreset { hasChanges = true }
 		}
 		.onChange(of: modemPreset) { newModemPreset in
-			if node != nil && node!.loRaConfig != nil {
-				if newModemPreset != node!.loRaConfig!.modemPreset { hasChanges = true }
-			}
+			if newModemPreset != node?.loRaConfig?.modemPreset ?? -1 { hasChanges = true }
 		}
 		.onChange(of: hopLimit) { newHopLimit in
-			if node != nil && node!.loRaConfig != nil {
-				if newHopLimit != node!.loRaConfig!.hopLimit { hasChanges = true }
-			}
+			if newHopLimit != node?.loRaConfig?.hopLimit ?? -1 { hasChanges = true }
 		}
 		.onChange(of: channelNum) { newChannelNum in
-			if node != nil && node!.loRaConfig != nil {
-				if newChannelNum != node!.loRaConfig!.channelNum { hasChanges = true }
-			}
+			if newChannelNum != node?.loRaConfig?.channelNum ?? -1 { hasChanges = true }
 		}
 		.onChange(of: bandwidth) { newBandwidth in
-			if node != nil && node!.loRaConfig != nil {
-				if newBandwidth != node!.loRaConfig!.bandwidth { hasChanges = true }
-			}
+			if newBandwidth != node?.loRaConfig?.bandwidth ?? -1 { hasChanges = true }
 		}
 		.onChange(of: codingRate) { newCodingRate in
-			if node != nil && node!.loRaConfig != nil {
-				if newCodingRate != node!.loRaConfig!.codingRate { hasChanges = true }
-			}
+			if newCodingRate != node?.loRaConfig?.codingRate ?? -1 { hasChanges = true }
 		}
 		.onChange(of: spreadFactor) { newSpreadFactor in
-			if node != nil && node!.loRaConfig != nil {
-				if newSpreadFactor != node!.loRaConfig!.spreadFactor { hasChanges = true }
-			}
+			if newSpreadFactor != node?.loRaConfig?.spreadFactor ?? -1 { hasChanges = true }
 		}
 		.onChange(of: rxBoostedGain) {
 			if $0 != node?.loRaConfig?.sx126xRxBoostedGain { hasChanges = true }
@@ -285,9 +271,7 @@ struct LoRaConfig: View {
 			if newOverrideFrequency != node?.loRaConfig?.overrideFrequency { hasChanges = true }
 		}
 		.onChange(of: txPower) { newTxPower in
-			if node != nil && node!.loRaConfig != nil {
-				if newTxPower != node!.loRaConfig!.txPower { hasChanges = true }
-			}
+			if newTxPower != node?.loRaConfig?.txPower ?? -1 { hasChanges = true }
 		}
 		.onChange(of: txEnabled) {
 			if $0 != node?.loRaConfig?.txEnabled { hasChanges = true }

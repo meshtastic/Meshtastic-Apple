@@ -262,24 +262,16 @@ struct DeviceConfig: View {
 			if $0 != node?.deviceConfig?.debugLogEnabled { hasChanges = true }
 		}
 		.onChange(of: buttonGPIO) { newButtonGPIO in
-			if node != nil && node?.deviceConfig != nil {
-				if newButtonGPIO != node!.deviceConfig!.buttonGpio { hasChanges = true }
-			}
+			if newButtonGPIO != node?.deviceConfig?.buttonGpio ?? -1 { hasChanges = true }
 		}
 		.onChange(of: buzzerGPIO) { newBuzzerGPIO in
-			if node != nil && node?.deviceConfig != nil {
-				if newBuzzerGPIO != node!.deviceConfig!.buttonGpio { hasChanges = true }
-			}
+			if newBuzzerGPIO != node?.deviceConfig?.buttonGpio ?? -1 { hasChanges = true }
 		}
 		.onChange(of: rebroadcastMode) { newRebroadcastMode in
-			if node != nil && node?.deviceConfig != nil {
-				if newRebroadcastMode != node!.deviceConfig!.rebroadcastMode { hasChanges = true }
-			}
+			if newRebroadcastMode != node?.deviceConfig?.rebroadcastMode ?? -1 { hasChanges = true }
 		}
 		.onChange(of: nodeInfoBroadcastSecs) { newNodeInfoBroadcastSecs in
-			if node != nil && node?.deviceConfig != nil {
-				if newNodeInfoBroadcastSecs != node!.deviceConfig!.nodeInfoBroadcastSecs { hasChanges = true }
-			}
+			if newNodeInfoBroadcastSecs != node?.deviceConfig?.nodeInfoBroadcastSecs ?? -1 { hasChanges = true }
 		}
 		.onChange(of: doubleTapAsButtonPress) {
 			if $0 != node?.deviceConfig?.doubleTapAsButtonPress { hasChanges = true }
@@ -288,9 +280,7 @@ struct DeviceConfig: View {
 			if $0 != node?.deviceConfig?.isManaged { hasChanges = true }
 		}
 		.onChange(of: tzdef) { newTzdef in
-			if node != nil && node?.deviceConfig != nil {
-				if newTzdef != node!.deviceConfig!.tzdef { hasChanges = true }
-			}
+			if newTzdef != node?.deviceConfig?.tzdef { hasChanges = true }
 		}
 	}
 	func setDeviceValues() {

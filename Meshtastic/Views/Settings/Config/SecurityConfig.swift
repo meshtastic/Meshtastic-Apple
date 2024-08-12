@@ -155,29 +155,19 @@ struct SecurityConfig: View {
 			)
 		})
 		.onChange(of: isManaged) {
-			if let val = node?.securityConfig?.isManaged {
-				hasChanges = $0 != val
-			}
+			if $0 != node?.securityConfig?.isManaged { hasChanges = true }
 		}
 		.onChange(of: serialEnabled) {
-			if let val = node?.securityConfig?.serialEnabled {
-				hasChanges = $0 != val
-		   }
+			if $0 != node?.securityConfig?.serialEnabled { hasChanges = true }
 		}
 		.onChange(of: debugLogApiEnabled) {
-			if let val = node?.securityConfig?.debugLogApiEnabled {
-				hasChanges = $0 != val
-			}
+			if $0 != node?.securityConfig?.debugLogApiEnabled { hasChanges = true }
 		}
 		.onChange(of: bluetoothLoggingEnabled) {
-			if let val = node?.securityConfig?.bluetoothLoggingEnabled {
-				hasChanges = $0 != val
-			}
+			if $0 != node?.securityConfig?.bluetoothLoggingEnabled { hasChanges = true }
 		}
 		.onChange(of: adminChannelEnabled) {
-			if let val = node?.securityConfig?.adminChannelEnabled {
-			hasChanges = $0 != val
-		   }
+			if $0 != node?.securityConfig?.adminChannelEnabled { hasChanges = true }
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {

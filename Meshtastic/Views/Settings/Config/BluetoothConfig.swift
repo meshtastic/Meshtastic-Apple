@@ -123,9 +123,7 @@ struct BluetoothConfig: View {
 			if $0 != node?.bluetoothConfig?.mode ?? -1 { hasChanges = true }
 		}
 		.onChange(of: fixedPin) { newFixedPin in
-			if node != nil && node?.bluetoothConfig != nil {
-				if newFixedPin != String(node!.bluetoothConfig!.fixedPin) { hasChanges = true }
-			}
+			if newFixedPin != String(node?.bluetoothConfig?.fixedPin ?? -1) { hasChanges = true }
 		}
 		.onChange(of: deviceLoggingEnabled) {
 			if $0 != node?.bluetoothConfig?.deviceLoggingEnabled { hasChanges = true }

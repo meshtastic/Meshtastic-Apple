@@ -144,30 +144,22 @@ struct PowerConfig: View {
 			}
 		}
 		.onChange(of: shutdownAfterSecs) {
-			if let val = node?.powerConfig?.onBatteryShutdownAfterSecs {
-				hasChanges = $0 != val
-			}
+			if $0 != node?.powerConfig?.minWakeSecs ?? -1 { hasChanges = true }
 		}
 		.onChange(of: adcOverride) { _ in
 			hasChanges = true
 		}
 		.onChange(of: adcMultiplier) { newAdcMultiplier in
-			if newAdcMultiplier != node?.powerConfig?.adcMultiplierOverride ?? 0 { hasChanges = true }
+			if newAdcMultiplier != node?.powerConfig?.adcMultiplierOverride ?? -1 { hasChanges = true }
 		}
 		.onChange(of: waitBluetoothSecs) {
-			if let val = node?.powerConfig?.waitBluetoothSecs {
-				hasChanges = $0 != val
-			}
+			if $0 != node?.powerConfig?.waitBluetoothSecs ?? -1 { hasChanges = true }
 		}
 		.onChange(of: lsSecs) {
-			if let val = node?.powerConfig?.lsSecs {
-				hasChanges = $0 != val
-			}
+			if $0 != node?.powerConfig?.lsSecs ?? -1 { hasChanges = true }
 		}
 		.onChange(of: minWakeSecs) {
-			if let val = node?.powerConfig?.minWakeSecs {
-				hasChanges = $0 != val
-			}
+			if $0 != node?.powerConfig?.minWakeSecs ?? -1 { hasChanges = true }
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
