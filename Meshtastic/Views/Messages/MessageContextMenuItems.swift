@@ -15,6 +15,10 @@ struct MessageContextMenuItems: View {
 		VStack {
 			if message.pkiEncrypted {
 				Label("Encrypted", systemImage: "lock")
+				Text("Public Key")
+				Text(message.publicKey?.base64EncodedString() ?? "No Key")
+					.allowsTightening(true)
+					.monospaced()
 			}
 			Text("channel") + Text(": \(message.channel)")
 		}
