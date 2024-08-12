@@ -245,10 +245,8 @@ struct LoRaConfig: View {
 				if newRegion != node!.loRaConfig!.regionCode { hasChanges = true }
 			}
 		}
-		.onChange(of: usePreset) { newUsePreset in
-			if node != nil && node!.loRaConfig != nil {
-				if newUsePreset != node!.loRaConfig!.usePreset { hasChanges = true }
-			}
+		.onChange(of: usePreset) {
+			if $0 != node?.loRaConfig?.usePreset { hasChanges = true }
 		}
 		.onChange(of: modemPreset) { newModemPreset in
 			if node != nil && node!.loRaConfig != nil {
@@ -280,30 +278,22 @@ struct LoRaConfig: View {
 				if newSpreadFactor != node!.loRaConfig!.spreadFactor { hasChanges = true }
 			}
 		}
-		.onChange(of: rxBoostedGain) { newRxBoostedGain in
-			if node != nil && node!.loRaConfig != nil {
-				if newRxBoostedGain != node!.loRaConfig!.sx126xRxBoostedGain { hasChanges = true }
-			}
+		.onChange(of: rxBoostedGain) {
+			if $0 != node?.loRaConfig?.sx126xRxBoostedGain { hasChanges = true }
 		}
 		.onChange(of: overrideFrequency) { newOverrideFrequency in
-			if node != nil && node!.loRaConfig != nil {
-				if newOverrideFrequency != node!.loRaConfig!.overrideFrequency { hasChanges = true }
-			}
+			if newOverrideFrequency != node?.loRaConfig?.overrideFrequency { hasChanges = true }
 		}
 		.onChange(of: txPower) { newTxPower in
 			if node != nil && node!.loRaConfig != nil {
 				if newTxPower != node!.loRaConfig!.txPower { hasChanges = true }
 			}
 		}
-		.onChange(of: txEnabled) { newTxEnabled in
-			if node != nil && node!.loRaConfig != nil {
-				if newTxEnabled != node!.loRaConfig!.txEnabled { hasChanges = true }
-			}
+		.onChange(of: txEnabled) {
+			if $0 != node?.loRaConfig?.txEnabled { hasChanges = true }
 		}
-		.onChange(of: ignoreMqtt) { newIgnoreMqtt in
-			if node != nil && node!.loRaConfig != nil {
-				if newIgnoreMqtt != node!.loRaConfig!.ignoreMqtt { hasChanges = true }
-			}
+		.onChange(of: ignoreMqtt) {
+			if $0 != node?.loRaConfig?.ignoreMqtt { hasChanges = true }
 		}
 	}
 	func setLoRaValues() {

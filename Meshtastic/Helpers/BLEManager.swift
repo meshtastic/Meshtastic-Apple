@@ -1140,6 +1140,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			guard let lastLocation = LocationsHandler.shared.locationsArray.last else {
 				return nil
 			}
+		
+			if lastLocation == CLLocation(latitude: 0, longitude: 0) {
+				return nil
+			}
+			
 			positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
 			positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
 			let timestamp = lastLocation.timestamp

@@ -272,24 +272,24 @@ struct CannedMessagesConfig: View {
 
 				hasChanges = true
 			}
-			.onChange(of: enabled) { newEnabled in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newEnabled != node!.cannedMessageConfig!.enabled { hasChanges = true }
+			.onChange(of: enabled) {
+				if let val = node?.cannedMessageConfig?.enabled {
+					hasChanges = $0 != val
 				}
 			}
-			.onChange(of: sendBell) { newBell in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newBell != node!.cannedMessageConfig!.sendBell { hasChanges = true }
+			.onChange(of: sendBell) {
+				if let val = node?.cannedMessageConfig?.sendBell {
+					hasChanges = $0 != val
 				}
 			}
-			.onChange(of: rotary1Enabled) { newRot1 in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newRot1 != node!.cannedMessageConfig!.rotary1Enabled { hasChanges = true	}
+			.onChange(of: rotary1Enabled) {
+				if let val = node?.cannedMessageConfig?.rotary1Enabled {
+					hasChanges = $0 != val
 				}
 			}
-			.onChange(of: updown1Enabled) { newUpDown in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newUpDown != node!.cannedMessageConfig!.updown1Enabled { hasChanges = true }
+			.onChange(of: updown1Enabled) {
+				if let val = node?.cannedMessageConfig?.updown1Enabled {
+					hasChanges = $0 != val
 				}
 			}
 			.onChange(of: inputbrokerPinA) { newPinA in

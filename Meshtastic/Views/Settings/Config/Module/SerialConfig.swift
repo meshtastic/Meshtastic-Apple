@@ -145,61 +145,40 @@ struct SerialConfig: View {
 						_ = bleManager.requestSerialModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					}
 				}
-
 			}
-			.onChange(of: enabled) { newEnabled in
-
-				if node != nil && node!.serialConfig != nil {
-
-					if newEnabled != node!.serialConfig!.enabled { hasChanges = true	}
-				}
+			.onChange(of: enabled) {
+				if $0 != node?.serialConfig?.enabled { hasChanges = true }
 			}
-			.onChange(of: echo) { newEcho in
-
-				if node != nil && node!.serialConfig != nil {
-
-					if newEcho != node!.serialConfig!.echo { hasChanges = true	}
-				}
+			.onChange(of: echo) { 
+				if $0 != node?.serialConfig?.echo { hasChanges = true }
 			}
 			.onChange(of: rxd) { newRxd in
-
 				if node != nil && node!.serialConfig != nil {
-
 					if newRxd != node!.serialConfig!.rxd { hasChanges = true	}
 				}
 			}
 			.onChange(of: txd) { newTxd in
-
 				if node != nil && node!.serialConfig != nil {
-
 					if newTxd != node!.serialConfig!.txd { hasChanges = true	}
 				}
 			}
 			.onChange(of: baudRate) { newBaud in
-
 				if node != nil && node!.serialConfig != nil {
-
 					if newBaud != node!.serialConfig!.baudRate { hasChanges = true	}
 				}
 			}
 			.onChange(of: timeout) { newTimeout in
-
 				if node != nil && node!.serialConfig != nil {
-
 					if newTimeout != node!.serialConfig!.timeout { hasChanges = true	}
 				}
 			}
 			.onChange(of: overrideConsoleSerialPort) { newOverrideConsoleSerialPort in
-
 				if node != nil && node!.serialConfig != nil {
-
 					if newOverrideConsoleSerialPort != node!.serialConfig!.overrideConsoleSerialPort { hasChanges = true	}
 				}
 			}
 			.onChange(of: mode) { newMode in
-
 				if node != nil && node!.serialConfig != nil {
-
 					if newMode != node!.serialConfig!.mode { hasChanges = true	}
 				}
 			}

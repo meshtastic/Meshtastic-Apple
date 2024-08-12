@@ -183,25 +183,19 @@ struct DisplayConfig: View {
 				if newCarouselSecs != node!.displayConfig!.screenCarouselInterval { hasChanges = true }
 			}
 		}
-		.onChange(of: compassNorthTop) { newCompassNorthTop in
-			if node != nil && node!.displayConfig != nil {
-				if newCompassNorthTop != node!.displayConfig!.compassNorthTop { hasChanges = true }
-			}
+		.onChange(of: compassNorthTop) {
+			if $0 != node?.displayConfig?.compassNorthTop { hasChanges = true }
 		}
-		.onChange(of: wakeOnTapOrMotion) { newWakeOnTapOrMotion in
-			if node != nil && node!.displayConfig != nil {
-				if newWakeOnTapOrMotion != node!.displayConfig!.wakeOnTapOrMotion { hasChanges = true }
-			}
+		.onChange(of: wakeOnTapOrMotion) {
+			if $0 != node?.displayConfig?.wakeOnTapOrMotion { hasChanges = true }
 		}
 		.onChange(of: gpsFormat) { newGpsFormat in
 			if node != nil && node!.displayConfig != nil {
 				if newGpsFormat != node!.displayConfig!.gpsFormat { hasChanges = true }
 			}
 		}
-		.onChange(of: flipScreen) { newFlipScreen in
-			if node != nil && node!.displayConfig != nil {
-				if newFlipScreen != node!.displayConfig!.flipScreen { hasChanges = true }
-			}
+		.onChange(of: flipScreen) {
+			if $0 != node?.displayConfig?.flipScreen { hasChanges = true }
 		}
 		.onChange(of: oledType) { newOledType in
 			if node != nil && node!.displayConfig != nil {

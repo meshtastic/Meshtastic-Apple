@@ -67,14 +67,10 @@ struct PaxCounterConfig: View {
 			}
 		}
 		.onChange(of: enabled) {
-			if let val = node?.paxCounterConfig?.enabled {
-				hasChanges = $0 != val
-			}
+			if $0 != node?.paxCounterConfig?.enabled { hasChanges = true }
 		}
 		.onChange(of: paxcounterUpdateInterval) {
-			if let val = node?.paxCounterConfig?.updateInterval {
-				hasChanges = $0 != val
-			}
+			if $0 != node?.paxCounterConfig?.updateInterval ?? -1 { hasChanges = true }
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {

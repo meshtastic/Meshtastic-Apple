@@ -116,25 +116,19 @@ struct BluetoothConfig: View {
 				}
 			}
 		}
-		.onChange(of: enabled) { newEnabled in
-			if node != nil && node!.bluetoothConfig != nil {
-				if newEnabled != node!.bluetoothConfig!.enabled { hasChanges = true }
-			}
+		.onChange(of: enabled) {
+			if $0 != node?.bluetoothConfig?.enabled { hasChanges = true }
 		}
-		.onChange(of: mode) { newMode in
-			if node != nil && node!.bluetoothConfig != nil {
-				if newMode != node!.bluetoothConfig!.mode { hasChanges = true }
-			}
+		.onChange(of: mode) {
+			if $0 != node?.bluetoothConfig?.mode ?? -1 { hasChanges = true }
 		}
 		.onChange(of: fixedPin) { newFixedPin in
-			if node != nil && node!.bluetoothConfig != nil {
+			if node != nil && node?.bluetoothConfig != nil {
 				if newFixedPin != String(node!.bluetoothConfig!.fixedPin) { hasChanges = true }
 			}
 		}
-		.onChange(of: deviceLoggingEnabled) { newDeviceLogging in
-			if node != nil && node!.bluetoothConfig != nil {
-				if newDeviceLogging != node!.bluetoothConfig!.deviceLoggingEnabled { hasChanges = true }
-			}
+		.onChange(of: deviceLoggingEnabled) {
+			if $0 != node?.bluetoothConfig?.deviceLoggingEnabled { hasChanges = true }
 		}
 	}
 	func setBluetoothValues() {

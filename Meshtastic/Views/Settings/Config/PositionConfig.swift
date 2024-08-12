@@ -404,51 +404,39 @@ struct PositionConfig: View {
 				}
 			}
 		}
-		.onChange(of: gpsMode) { _ in
-			handleChanges()
+		.onChange(of: gpsMode) { newGpsMode in
+			if newGpsMode != node?.positionConfig?.gpsMode ?? 0 { hasChanges = true }
 		}
-		.onChange(of: rxGpio) { _ in
-			handleChanges()
+		.onChange(of: rxGpio) { newRxGpio in
+			if newRxGpio != node?.positionConfig?.rxGpio ?? 0 { hasChanges = true }
 		}
-		.onChange(of: txGpio) { _ in
-			handleChanges()
+		.onChange(of: txGpio) { newTxGpio in
+			if newTxGpio != node?.positionConfig?.txGpio ?? 0 { hasChanges = true }
 		}
-		.onChange(of: gpsEnGpio) { _ in
-			handleChanges()
+		.onChange(of: gpsEnGpio) { newGpsEnGpio in
+			if newGpsEnGpio != node?.positionConfig?.gpsEnGpio ?? 0 { hasChanges = true }
 		}
-		.onChange(of: smartPositionEnabled) { _ in
-			handleChanges()
+		.onChange(of: smartPositionEnabled) { newSmartPositionEnabled in
+			if newSmartPositionEnabled != node?.positionConfig?.smartPositionEnabled { hasChanges = true }
 		}
-		.onChange(of: positionBroadcastSeconds) { _ in
-			handleChanges()
+		.onChange(of: positionBroadcastSeconds) { newPositionBroadcastSeconds in
+			if newPositionBroadcastSeconds != node?.positionConfig?.positionBroadcastSeconds ?? 0 { hasChanges = true }
 		}
-		.onChange(of: broadcastSmartMinimumIntervalSecs) { _ in
-			handleChanges()
+		.onChange(of: broadcastSmartMinimumIntervalSecs) { newBroadcastSmartMinimumIntervalSecs in
+			if newBroadcastSmartMinimumIntervalSecs != node?.positionConfig?.broadcastSmartMinimumIntervalSecs ?? 0 { hasChanges = true }
 		}
-		.onChange(of: broadcastSmartMinimumDistance) { _ in
-			handleChanges()
+		.onChange(of: broadcastSmartMinimumDistance) { newBroadcastSmartMinimumDistance in
+			if newBroadcastSmartMinimumDistance != node?.positionConfig?.broadcastSmartMinimumDistance ?? 0 { hasChanges = true }
 		}
-		.onChange(of: gpsUpdateInterval) { _ in
-			handleChanges()
-		}
-		.onChange(of: positionFlags) { _ in
-			handleChanges()
+		.onChange(of: gpsUpdateInterval) { newGpsUpdateInterval in
+			if newGpsUpdateInterval != node?.positionConfig?.gpsUpdateInterval ?? 0 { hasChanges = true }
 		}
 	}
 
-	func handleChanges() {
+	func handlePositionFlagtChanges() {
 		guard let positionConfig = node?.positionConfig else { return }
 		let pf = PositionFlags(rawValue: self.positionFlags)
-		hasChanges = positionConfig.deviceGpsEnabled != deviceGpsEnabled ||
-		positionConfig.gpsMode != gpsMode ||
-		positionConfig.rxGpio != rxGpio ||
-		positionConfig.txGpio != txGpio ||
-		positionConfig.gpsEnGpio != gpsEnGpio ||
-		positionConfig.smartPositionEnabled != smartPositionEnabled ||
-		positionConfig.positionBroadcastSeconds != positionBroadcastSeconds ||
-		positionConfig.broadcastSmartMinimumIntervalSecs != broadcastSmartMinimumIntervalSecs ||
-		positionConfig.broadcastSmartMinimumDistance != broadcastSmartMinimumDistance ||
-		positionConfig.gpsUpdateInterval != gpsUpdateInterval ||
+		hasChanges =
 		pf.contains(.Altitude) ||
 		pf.contains(.AltitudeMsl) ||
 		pf.contains(.Satsinview) ||

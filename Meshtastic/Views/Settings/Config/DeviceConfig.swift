@@ -155,7 +155,7 @@ struct DeviceConfig: View {
 					.disabled(node?.user == nil)
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
-					.controlSize(.large)
+					.controlSize(.regular)
 					.padding(.leading)
 					.confirmationDialog(
 						"are.you.sure",
@@ -180,7 +180,7 @@ struct DeviceConfig: View {
 					.disabled(node?.user == nil)
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
-					.controlSize(.large)
+					.controlSize(.regular)
 					.padding(.trailing)
 					.confirmationDialog(
 						"All device and app data will be deleted. You will also need to forget your devices under Settings > Bluetooth.",
@@ -252,20 +252,14 @@ struct DeviceConfig: View {
 				}
 			}
 		}
-		.onChange(of: deviceRole) { newRole in
-			if node != nil && node?.deviceConfig != nil {
-				if newRole != node!.deviceConfig!.role { hasChanges = true }
-			}
+		.onChange(of: deviceRole) {
+			if $0 != node?.deviceConfig?.role ?? -1 { hasChanges = true }
 		}
-		.onChange(of: serialEnabled) { newSerial in
-			if node != nil && node?.deviceConfig != nil {
-				if newSerial != node!.deviceConfig!.serialEnabled { hasChanges = true }
-			}
+		.onChange(of: serialEnabled) {
+			if $0 != node?.deviceConfig?.serialEnabled { hasChanges = true }
 		}
-		.onChange(of: debugLogEnabled) { newDebugLog in
-			if node != nil && node?.deviceConfig != nil {
-				if newDebugLog != node!.deviceConfig!.debugLogEnabled {	hasChanges = true }
-			}
+		.onChange(of: debugLogEnabled) {
+			if $0 != node?.deviceConfig?.debugLogEnabled { hasChanges = true }
 		}
 		.onChange(of: buttonGPIO) { newButtonGPIO in
 			if node != nil && node?.deviceConfig != nil {
@@ -287,15 +281,11 @@ struct DeviceConfig: View {
 				if newNodeInfoBroadcastSecs != node!.deviceConfig!.nodeInfoBroadcastSecs { hasChanges = true }
 			}
 		}
-		.onChange(of: doubleTapAsButtonPress) { newDoubleTapAsButtonPress in
-			if node != nil && node?.deviceConfig != nil {
-				if newDoubleTapAsButtonPress != node!.deviceConfig!.doubleTapAsButtonPress { hasChanges = true }
-			}
+		.onChange(of: doubleTapAsButtonPress) {
+			if $0 != node?.deviceConfig?.doubleTapAsButtonPress { hasChanges = true }
 		}
-		.onChange(of: isManaged) { newIsManaged in
-			if node != nil && node?.deviceConfig != nil {
-				if newIsManaged != node!.deviceConfig!.isManaged { hasChanges = true }
-			}
+		.onChange(of: isManaged) {
+			if $0 != node?.deviceConfig?.isManaged { hasChanges = true }
 		}
 		.onChange(of: tzdef) { newTzdef in
 			if node != nil && node?.deviceConfig != nil {

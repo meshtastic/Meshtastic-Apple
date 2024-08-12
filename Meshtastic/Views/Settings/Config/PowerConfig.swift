@@ -136,12 +136,12 @@ struct PowerConfig: View {
 			}
 		}
 		.onChange(of: isPowerSaving) {
-			if let val = node?.powerConfig?.isPowerSaving {
-				hasChanges = $0 != val
-			}
+			if $0 != node?.powerConfig?.isPowerSaving { hasChanges = true }
 		}
-		.onChange(of: shutdownOnPowerLoss) { _ in
-			hasChanges = true
+		.onChange(of: shutdownOnPowerLoss) { newShutdownOnPowerLoss in
+			if newShutdownOnPowerLoss {
+				hasChanges = true
+			}
 		}
 		.onChange(of: shutdownAfterSecs) {
 			if let val = node?.powerConfig?.onBatteryShutdownAfterSecs {
@@ -151,10 +151,8 @@ struct PowerConfig: View {
 		.onChange(of: adcOverride) { _ in
 			hasChanges = true
 		}
-		.onChange(of: adcMultiplier) {
-			if let val = node?.powerConfig?.adcMultiplierOverride {
-				hasChanges = $0 != val
-			}
+		.onChange(of: adcMultiplier) { newAdcMultiplier in
+			if newAdcMultiplier != node?.powerConfig?.adcMultiplierOverride ?? 0 { hasChanges = true }
 		}
 		.onChange(of: waitBluetoothSecs) {
 			if let val = node?.powerConfig?.waitBluetoothSecs {

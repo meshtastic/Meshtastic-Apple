@@ -199,14 +199,14 @@ struct DetectionSensorConfig: View {
 				}
 			}
 		}
-		.onChange(of: enabled) { newEnabled in
-			if node != nil && node?.detectionSensorConfig != nil {
-				if newEnabled != node!.detectionSensorConfig!.enabled { hasChanges = true }
+		.onChange(of: enabled) {
+			if let val = node?.detectionSensorConfig?.enabled {
+				hasChanges = $0 != val
 			}
 		}
-		.onChange(of: sendBell) { newSendBell in
-			if node != nil && node?.detectionSensorConfig != nil {
-				if newSendBell != node!.detectionSensorConfig!.sendBell { hasChanges = true }
+		.onChange(of: sendBell) {
+			if let val = node?.detectionSensorConfig?.sendBell {
+				hasChanges = $0 != val
 			}
 		}
 		.onChange(of: detectionTriggeredHigh) { newDetectionTriggeredHigh in
@@ -214,9 +214,9 @@ struct DetectionSensorConfig: View {
 				if newDetectionTriggeredHigh != node!.detectionSensorConfig!.detectionTriggeredHigh { hasChanges = true }
 			}
 		}
-		.onChange(of: usePullup) { newUsePullup in
-			if node != nil && node?.detectionSensorConfig != nil {
-				if newUsePullup != node!.detectionSensorConfig!.usePullup { hasChanges = true }
+		.onChange(of: usePullup) {
+			if let val = node?.detectionSensorConfig?.usePullup {
+				hasChanges = $0 != val
 			}
 		}
 		.onChange(of: name) { newName in
