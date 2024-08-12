@@ -6,8 +6,11 @@ import SwiftUI
 
 @available(iOS 17.0, *)
 struct ContentView: View {
-	@ObservedObject	var appState: AppState
-	@ObservedObject	var router: Router
+	@ObservedObject
+	var appState: AppState
+
+	@ObservedObject
+	var router: Router
 
 	var body: some View {
 		TabView(selection: Binding(
