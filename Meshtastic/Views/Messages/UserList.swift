@@ -28,6 +28,7 @@ struct UserList: View {
 	@State private var roleFilter = false
 	@State private var deviceRoles: Set<Int> = []
 	@State var isEditingFilters = false
+	@State private var showingTrustConfirm: Bool = false
 
 	@FetchRequest(
 		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false),
@@ -71,8 +72,17 @@ struct UserList: View {
 							VStack(alignment: .leading) {
 								HStack {
 									if user.pkiEncrypted {
-										Image(systemName: "lock.fill")
-											.foregroundColor(.green)
+										if mostRecent == nil || user.publicKey == mostRecent?.publicKey {
+											Image(systemName: "lock.fill")
+												.foregroundColor(.green)
+										} else {
+											/// Public Key on the User and the Public Key on the Last Message don't match
+											Image(systemName: "lock.slash.fill")
+												.foregroundColor(.red)
+										}
+									} else {
+										Image(systemName: "lock.open.fill")
+											.foregroundColor(.yellow)
 									}
 									Text(user.longName ?? "unknown".localized)
 										.font(.headline)
@@ -245,7 +255,6 @@ struct UserList: View {
 		let searchPredicates = ["userId", "numString", "hwModel", "hwDisplayName", "longName", "shortName"].map { property in
 			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
 		}
-		
 		/// Create a compound predicate using each text search preicate as an OR
 		let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
 		/// Create an array of predicates to hold our AND predicates
