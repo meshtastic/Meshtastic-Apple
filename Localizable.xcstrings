@@ -703,7 +703,7 @@
     "All" : {
 
     },
-    "All device and app data will be deleted. You will also need to forget your devices under Settings > Bluetooth." : {
+    "All device data will be deleted. You will also need to forget your devices under Settings > Bluetooth. Does not clear app data." : {
 
     },
     "Allow Position Requests" : {
@@ -7174,7 +7174,7 @@
     "Factory Reset" : {
 
     },
-    "Factory reset your device and app? " : {
+    "Factory reset your device? " : {
 
     },
     "Failed to get a valid position to exchange" : {
