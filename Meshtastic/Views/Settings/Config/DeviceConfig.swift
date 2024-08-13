@@ -183,7 +183,7 @@ struct DeviceConfig: View {
 					.controlSize(.regular)
 					.padding(.trailing)
 					.confirmationDialog(
-						"All device and app data will be deleted. You will also need to forget your devices under Settings > Bluetooth.",
+						"All device and app data will be deleted.",
 						isPresented: $isPresentingFactoryResetConfirm,
 						titleVisibility: .visible
 					) {
