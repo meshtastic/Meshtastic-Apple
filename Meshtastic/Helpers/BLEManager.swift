@@ -1026,6 +1026,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					dataMessage.portnum = dataType
 
 					var meshPacket = MeshPacket()
+					if newMessage.toUser?.pkiEncrypted ?? false {
+						meshPacket.pkiEncrypted = true
+						meshPacket.publicKey = newMessage.toUser?.publicKey ?? Data()
+					}
 					meshPacket.id = UInt32(newMessage.messageId)
 					if toUserNum > 0 {
 						meshPacket.to = UInt32(toUserNum)
