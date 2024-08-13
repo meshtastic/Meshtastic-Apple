@@ -72,13 +72,13 @@ struct UserList: View {
 							VStack(alignment: .leading) {
 								HStack {
 									if user.pkiEncrypted {
-										if mostRecent == nil || user.publicKey == mostRecent?.publicKey {
-											Image(systemName: "lock.fill")
-												.foregroundColor(.green)
-										} else {
+										if !user.keyMatch {
 											/// Public Key on the User and the Public Key on the Last Message don't match
 											Image(systemName: "lock.slash.fill")
 												.foregroundColor(.red)
+										} else {
+											Image(systemName: "lock.fill")
+												.foregroundColor(.green)
 										}
 									} else {
 										Image(systemName: "lock.open.fill")
