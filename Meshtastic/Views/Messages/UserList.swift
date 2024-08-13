@@ -20,6 +20,7 @@ struct UserList: View {
 	@State private var viaLora = true
 	@State private var viaMqtt = true
 	@State private var isOnline = false
+	@State private var isPkiEncrypted = false
 	@State private var isFavorite = false
 	@State private var isEnvironment = false
 	@State private var distanceFilter = false
@@ -186,7 +187,7 @@ struct UserList: View {
 			.listStyle(.plain)
 			.navigationTitle(String.localizedStringWithFormat("contacts %@".localized, String(users.count == 0 ? 0 : users.count - 1)))
 			.sheet(isPresented: $isEditingFilters) {
-				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isFavorite: $isFavorite, isEnvironment: $isEnvironment, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
+				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isPkiEncrypted: $isPkiEncrypted, isFavorite: $isFavorite, isEnvironment: $isEnvironment, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
 			}
 			.onChange(of: searchText) { _ in
 				searchUserList()
@@ -210,6 +211,9 @@ struct UserList: View {
 				searchUserList()
 			}
 			.onChange(of: isOnline) { _ in
+				searchUserList()
+			}
+			.onChange(of: isPkiEncrypted) { _ in
 				searchUserList()
 			}
 			.onChange(of: isFavorite) { _ in
@@ -291,6 +295,11 @@ struct UserList: View {
 		if isOnline {
 			let isOnlinePredicate = NSPredicate(format: "userNode.lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -15, to: Date())! as NSDate)
 			predicates.append(isOnlinePredicate)
+		}
+		/// Encrypted
+		if isPkiEncrypted {
+			let isPkiEncryptedPredicate = NSPredicate(format: "pkiEncrypted == YES")
+			predicates.append(isPkiEncryptedPredicate)
 		}
 		/// Favorites
 		if isFavorite {

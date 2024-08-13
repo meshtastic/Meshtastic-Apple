@@ -24,6 +24,7 @@ struct NodeList: View {
 	@State private var viaLora = true
 	@State private var viaMqtt = true
 	@State private var isOnline = false
+	@State private var isPkiEncrypted = false
 	@State private var isFavorite = false
 	@State private var isEnvironment = false
 	@State private var distanceFilter = false
@@ -38,8 +39,9 @@ struct NodeList: View {
 	@State private var deleteNodeId: Int64 = 0
 
 	var boolFilters: [Bool] {[
-		isOnline,
 		isFavorite,
+		isOnline,
+		isPkiEncrypted,
 		isEnvironment,
 		distanceFilter,
 		roleFilter
@@ -153,6 +155,7 @@ struct NodeList: View {
 					viaLora: $viaLora,
 					viaMqtt: $viaMqtt,
 					isOnline: $isOnline,
+					isPkiEncrypted: $isPkiEncrypted,
 					isFavorite: $isFavorite,
 					isEnvironment: $isEnvironment,
 					distanceFilter: $distanceFilter,
@@ -382,6 +385,11 @@ struct NodeList: View {
 		if isOnline {
 			let isOnlinePredicate = NSPredicate(format: "lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -15, to: Date())! as NSDate)
 			predicates.append(isOnlinePredicate)
+		}
+		/// Encrypted
+		if isPkiEncrypted {
+			let isPkiEncryptedPredicate = NSPredicate(format: "user.pkiEncrypted == YES")
+			predicates.append(isPkiEncryptedPredicate)
 		}
 		/// Favorites
 		if isFavorite {

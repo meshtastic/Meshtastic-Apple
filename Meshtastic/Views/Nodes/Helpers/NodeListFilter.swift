@@ -15,6 +15,7 @@ struct NodeListFilter: View {
 	@Binding var viaLora: Bool
 	@Binding var viaMqtt: Bool
 	@Binding var isOnline: Bool
+	@Binding var isPkiEncrypted: Bool
 	@Binding var isFavorite: Bool
 	@Binding var isEnvironment: Bool
 	@Binding var distanceFilter: Bool
@@ -57,6 +58,19 @@ struct NodeListFilter: View {
 							Text("Online")
 						} icon: {
 							Image(systemName: "checkmark.circle.fill")
+								.foregroundColor(.green)
+								.symbolRenderingMode(.hierarchical)
+						}
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.listRowSeparator(.visible)
+
+					Toggle(isOn: $isPkiEncrypted) {
+
+						Label {
+							Text("Encrypted")
+						} icon: {
+							Image(systemName: "lock.fill")
 								.foregroundColor(.green)
 								.symbolRenderingMode(.hierarchical)
 						}
@@ -173,7 +187,7 @@ struct NodeListFilter: View {
 			.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.medium, .large])
+		.presentationDetents([.fraction(0.7), .large])
 		.presentationContentInteraction(.scrolls)
 		.presentationDragIndicator(.visible)
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
