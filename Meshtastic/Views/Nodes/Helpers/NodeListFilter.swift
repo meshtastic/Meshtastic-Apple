@@ -187,9 +187,9 @@ struct NodeListFilter: View {
 			.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.fraction(0.7), .large])
+		.presentationDetents([.fraction(0.65), .large])
 		.presentationContentInteraction(.scrolls)
 		.presentationDragIndicator(.visible)
-		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
+		.presentationBackgroundInteraction(.enabled(upThrough: .large))
 	}
 }
