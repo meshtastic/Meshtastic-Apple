@@ -1000,6 +1000,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					if toUserNum > 0 {
 						newMessage.toUser = fetchedUsers.first(where: { $0.num == toUserNum })
 						newMessage.toUser?.lastMessage = Date()
+						if newMessage.toUser?.pkiEncrypted ?? false {
+							newMessage.publicKey = newMessage.toUser?.publicKey
+							newMessage.pkiEncrypted = true
+						}
 					}
 					newMessage.fromUser = fetchedUsers.first(where: { $0.num == fromUserNum })
 					newMessage.isEmoji = isEmoji
