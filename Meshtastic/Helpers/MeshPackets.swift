@@ -628,6 +628,9 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 					}
 				}
 				fetchedMessage[0].ackError = Int32(routingMessage.errorReason.rawValue)
+				if routingError == RoutingError.pkiFailed {
+					fetchedMessage[0].toUser?.keyMatch = false
+				}
 
 				if routingMessage.errorReason == Routing.Error.none {
 
