@@ -1325,6 +1325,10 @@ public struct Routing: Sendable {
     ///
     /// The client specified a PKI transport, but the node was unable to send the packet using PKI (and did not send the message at all)
     case pkiFailed // = 34
+
+    ///
+    /// The receiving node does not have a Public Key to decode with
+    case pkiUnknownPubkey // = 35
     case UNRECOGNIZED(Int)
 
     public init() {
@@ -1346,6 +1350,7 @@ public struct Routing: Sendable {
       case 32: self = .badRequest
       case 33: self = .notAuthorized
       case 34: self = .pkiFailed
+      case 35: self = .pkiUnknownPubkey
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -1365,6 +1370,7 @@ public struct Routing: Sendable {
       case .badRequest: return 32
       case .notAuthorized: return 33
       case .pkiFailed: return 34
+      case .pkiUnknownPubkey: return 35
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -1384,6 +1390,7 @@ public struct Routing: Sendable {
       .badRequest,
       .notAuthorized,
       .pkiFailed,
+      .pkiUnknownPubkey,
     ]
 
   }
@@ -3450,6 +3457,7 @@ extension Routing.Error: SwiftProtobuf._ProtoNameProviding {
     32: .same(proto: "BAD_REQUEST"),
     33: .same(proto: "NOT_AUTHORIZED"),
     34: .same(proto: "PKI_FAILED"),
+    35: .same(proto: "PKI_UNKNOWN_PUBKEY"),
   ]
 }
 
