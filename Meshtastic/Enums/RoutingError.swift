@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 8/4/22.
 //
 import Foundation
+import SwiftUI
 import MeshtasticProtobufs
 
 enum RoutingError: Int, CaseIterable, Identifiable {
@@ -22,6 +23,7 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 	case badRequest = 32
 	case notAuthorized = 33
 	case pkiFailed = 34
+	case pkiUnknownPubkey = 35
 
 	var id: Int { self.rawValue }
 	var display: String {
@@ -53,6 +55,41 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 			return "routing.notauthorized".localized
 		case .pkiFailed:
 			return "routing.pkiFailed".localized
+		case .pkiUnknownPubkey:
+			return "routing.pkiunknownpubkey".localized
+		}
+	}
+	var color: Color {
+		switch self {
+
+		case .none:
+			return Color.secondary
+		case .noRoute:
+			return Color.red
+		case .gotNak:
+			return Color.red
+		case .timeout:
+			return Color.orange
+		case .noInterface:
+			return Color.red
+		case .maxRetransmit:
+			return Color.red
+		case .noChannel:
+			return Color.orange
+		case .tooLarge:
+			return Color.red
+		case .noResponse:
+			return Color.orange
+		case .dutyCycleLimit:
+			return Color.orange
+		case .badRequest:
+			return Color.red
+		case .notAuthorized:
+			return Color.red
+		case .pkiFailed:
+			return Color.red
+		case .pkiUnknownPubkey:
+			return Color.red
 		}
 	}
 	func protoEnumValue() -> Routing.Error {
@@ -84,6 +121,8 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .notAuthorized:
 			return Routing.Error.notAuthorized
 		case .pkiFailed:
+			return Routing.Error.pkiFailed
+		case .pkiUnknownPubkey:
 			return Routing.Error.pkiFailed
 		}
 	}

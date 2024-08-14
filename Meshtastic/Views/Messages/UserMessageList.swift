@@ -78,7 +78,9 @@ struct UserMessageList: View {
 											if currentUser && message.receivedACK {
 												// Ack Received
 												if message.realACK {
-													Text("\(ackErrorVal?.display ?? "Empty Ack Error")").font(.caption2).foregroundColor(.gray)
+													Text("\(ackErrorVal?.display ?? "Empty Ack Error")")
+														.font(.caption2)
+														.foregroundStyle(ackErrorVal?.color ?? Color.secondary)
 												} else {
 													Text("Acknowledged by another node").font(.caption2).foregroundColor(.orange)
 												}
@@ -87,7 +89,7 @@ struct UserMessageList: View {
 												Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.yellow)
 											} else if currentUser && message.ackError > 0 {
 												Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
-													.font(.caption2).foregroundColor(.red)
+													.foregroundStyle(ackErrorVal?.color ?? Color.red)
 											}
 										}
 									}

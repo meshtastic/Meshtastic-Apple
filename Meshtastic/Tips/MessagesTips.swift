@@ -38,7 +38,7 @@ struct ContactsTip: Tip {
    }
    var message: Text? {
 	   // Text("tip.messages.contacts.message")
-	   Text("Each node is an available contact. Contacts with recent messages or marked as favorites show up at the top of the list. Select a contact to send or view messages. Long press to favorite or mute the contact or delete the conversation.")
+	   Text("Favorites and nodes with recent messages show up at the top of the list. Contacts using the shared key display an open lock, nodes with a private key show a green lock and a red key with a slash will show up if a key has changed for a contact. Long press to favorite or mute the contact or delete a conversation.")
    }
    var image: Image? {
 	   Image(systemName: "person.circle")

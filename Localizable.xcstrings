@@ -335,9 +335,6 @@
     "Ack Time: %@" : {
 
     },
-    "Acknowledged" : {
-
-    },
     "Acknowledged by another node" : {
 
     },
@@ -6701,9 +6698,6 @@
     "Drag & Drop is the recommended way to update firmware for NRF devices. If your iPhone or iPad is USB-C it will work with your regular USB-C charging cable, for lightning devices you need the Apple Lightning to USB camera adaptor." : {
 
     },
-    "Each node is an available contact. Contacts with recent messages or marked as favorites show up at the top of the list. Select a contact to send or view messages. Long press to favorite or mute the contact or delete the conversation." : {
-
-    },
     "echo" : {
       "localizations" : {
         "de" : {
@@ -7208,6 +7202,9 @@
 
     },
     "Favorites" : {
+
+    },
+    "Favorites and nodes with recent messages show up at the top of the list. Contacts using the shared key display an open lock, nodes with a private key show a green lock and a red key with a slash will show up if a key has changed for a contact. Long press to favorite or mute the contact or delete a conversation." : {
 
     },
     "Fifteen Minutes" : {
@@ -18446,7 +18443,18 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PKI Failed"
+            "value" : "Encrypted Send Failed"
+          }
+        }
+      }
+    },
+    "routing.pkiunknownpubkey" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unknown Public Key"
           }
         }
       }
