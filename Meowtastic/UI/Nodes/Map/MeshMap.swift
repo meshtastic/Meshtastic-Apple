@@ -1,6 +1,6 @@
 import CoreData
 import CoreLocation
-import Foundation
+import FirebaseAnalytics
 import MapKit
 import OSLog
 import SwiftUI
@@ -75,6 +75,9 @@ struct MeshMap: View {
 			.navigationBarItems(
 				trailing: ConnectedDevice()
 			)
+		}
+		.onAppear {
+			Analytics.logEvent(AnalyticEvents.meshMap.id, parameters: [:])
 		}
 	}
 }

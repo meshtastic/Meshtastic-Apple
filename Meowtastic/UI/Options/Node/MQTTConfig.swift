@@ -1,5 +1,5 @@
-//
 import CoreLocation
+import FirebaseAnalytics
 import MeshtasticProtobufs
 import OSLog
 import SwiftUI
@@ -312,6 +312,9 @@ struct MQTTConfig: View {
 		}
 		.scrollDismissesKeyboard(.interactively)
 		.disabled(bleManager.connectedPeripheral == nil || node?.mqttConfig == nil)
+		.onAppear {
+			Analytics.logEvent(AnalyticEvents.optionsMQTT.id, parameters: [:])
+		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)

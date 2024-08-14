@@ -1,3 +1,4 @@
+import FirebaseAnalytics
 import FirebaseCore
 import OSLog
 import SwiftUI
@@ -7,7 +8,9 @@ final class MeowtasticDelegate: UIResponder, UIApplicationDelegate, UNUserNotifi
 		_ application: UIApplication,
 		didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
 	) -> Bool {
-		Logger.services.info("🚀 [App] Meshtstic Apple App launched!")
+		FirebaseApp.configure()
+		Analytics.setAnalyticsCollectionEnabled(true)
+		Analytics.logEvent(AnalyticEvents.appLaunch.id, parameters: [:])
 
 		// Default User Default Values
 		UserDefaults.standard.register(defaults: ["meshMapRecentering": true])
@@ -15,7 +18,7 @@ final class MeowtasticDelegate: UIResponder, UIApplicationDelegate, UNUserNotifi
 
 		UNUserNotificationCenter.current().delegate = self
 
-		FirebaseApp.configure()
+		Logger.services.info("🚀 [App] Meshtstic Apple App launched!")
 
 		return true
 	}

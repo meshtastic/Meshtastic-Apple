@@ -1,3 +1,4 @@
+import FirebaseAnalytics
 import MeshtasticProtobufs
 import SwiftUI
 
@@ -102,6 +103,8 @@ struct PowerConfig: View {
 			}
 		}
 		.onAppear {
+			Analytics.logEvent(AnalyticEvents.optionsPower.id, parameters: [:])
+
 			Api().loadDeviceHardwareData { hw in
 				for device in hw {
 					let currentHardware = node?.user?.hwModel ?? "UNSET"

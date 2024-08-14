@@ -4,7 +4,7 @@
 //
 //  Copyright (c) Garth Vander Houwen 6/13/22.
 //
-
+import FirebaseAnalytics
 import MeshtasticProtobufs
 import OSLog
 import SwiftUI
@@ -237,7 +237,10 @@ struct DeviceConfig: View {
 			trailing: ConnectedDevice()
 		)
 		.onAppear {
+			Analytics.logEvent(AnalyticEvents.optionsDevice.id, parameters: [:])
+
 			setDeviceValues()
+
 			// Need to request a LoRaConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.deviceConfig == nil {
 				Logger.mesh.info("empty device config")

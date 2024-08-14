@@ -1,7 +1,8 @@
-import SwiftUI
 import CoreData
+import FirebaseAnalytics
 import MeshtasticProtobufs
 import OSLog
+import SwiftUI
 
 struct LoRaConfig: View {
 	enum Field: Hashable {
@@ -105,6 +106,8 @@ struct LoRaConfig: View {
 			trailing: ConnectedDevice()
 		)
 		.onAppear {
+			Analytics.logEvent(AnalyticEvents.optionsLoRa.id, parameters: [:])
+
 			setLoRaValues()
 
 			// Need to request a LoRaConfig from the remote node before allowing changes

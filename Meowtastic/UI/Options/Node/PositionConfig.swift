@@ -1,3 +1,4 @@
+import FirebaseAnalytics
 import MeshtasticProtobufs
 import OSLog
 import SwiftUI
@@ -79,7 +80,10 @@ struct PositionConfig: View {
 			trailing: ConnectedDevice()
 		)
 		.onAppear {
+			Analytics.logEvent(AnalyticEvents.optionsPosition.id, parameters: [:])
+
 			setPositionValues()
+
 			supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
 			// Need to request a PositionConfig from the remote node before allowing changes
 			if let connectedPeripheral = bleManager.connectedPeripheral, node?.positionConfig == nil {

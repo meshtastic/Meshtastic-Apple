@@ -1,4 +1,5 @@
 import CoreData
+import FirebaseAnalytics
 import OSLog
 import SwiftUI
 
@@ -83,6 +84,9 @@ struct NodeList: View {
 			.navigationBarItems(
 				trailing: ConnectedDevice()
 			)
+		}
+		.onAppear {
+			Analytics.logEvent(AnalyticEvents.nodeList.id, parameters: [:])
 		}
 		.onChange(of: nodes, initial: true) {
 			Task {

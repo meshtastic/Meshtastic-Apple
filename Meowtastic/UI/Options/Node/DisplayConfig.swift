@@ -4,7 +4,7 @@
 //
 //  Copyright (c) Garth Vander Houwen 6/7/22.
 //
-
+import FirebaseAnalytics
 import MeshtasticProtobufs
 import OSLog
 import SwiftUI
@@ -130,6 +130,9 @@ struct DisplayConfig: View {
 			}
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.displayConfig == nil)
+		.onAppear {
+			Analytics.logEvent(AnalyticEvents.optionsDisplay.id, parameters: [:])
+		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)

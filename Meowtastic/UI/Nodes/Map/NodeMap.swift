@@ -1,5 +1,6 @@
-import SwiftUI
 import CoreLocation
+import FirebaseAnalytics
+import SwiftUI
 import MapKit
 
 struct NodeMap: View {
@@ -23,7 +24,7 @@ struct NodeMap: View {
 	@State
 	private var isMeshMap = false
 	@State
-	private var mapRegion = MKCoordinateRegion.init()
+	private var mapRegion = MKCoordinateRegion()
 
 	@FetchRequest(
 		sortDescriptors: [
@@ -68,6 +69,12 @@ struct NodeMap: View {
 			.navigationBarItems(
 				trailing: ConnectedDevice()
 			)
+			.onAppear {
+				Analytics.logEvent(
+					AnalyticEvents.nodeMap.id,
+					parameters: AnalyticEvents.getAnalParams(for: node)
+				)
+			}
 		}
 		else {
 			ContentUnavailableView("No Positions", systemImage: "mappin.slash")

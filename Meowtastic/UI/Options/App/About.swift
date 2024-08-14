@@ -1,3 +1,4 @@
+import FirebaseAnalytics
 import StoreKit
 import SwiftUI
 
@@ -67,5 +68,8 @@ struct About: View {
 		.navigationBarItems(
 			trailing: ConnectedDevice()
 		)
+		.onAppear {
+			Analytics.logEvent(AnalyticEvents.optionsAbout.id, parameters: [:])
+		}
 	}
 }

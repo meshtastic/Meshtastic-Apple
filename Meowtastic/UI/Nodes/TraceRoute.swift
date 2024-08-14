@@ -1,3 +1,4 @@
+import FirebaseAnalytics
 import MapKit
 import SwiftUI
 
@@ -212,6 +213,9 @@ struct TraceRoute: View {
 		.navigationBarItems(
 			trailing: ConnectedDevice()
 		)
+		.onAppear {
+			Analytics.logEvent(AnalyticEvents.traceRoute.id, parameters: [:])
+		}
 	}
 
 	@ViewBuilder

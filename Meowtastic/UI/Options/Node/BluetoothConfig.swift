@@ -5,6 +5,7 @@
 //  Copyright (c) Garth Vander Houwen 8/18/22.
 //
 
+import FirebaseAnalytics
 import MeshtasticProtobufs
 import OSLog
 import SwiftUI
@@ -77,6 +78,9 @@ struct BluetoothConfig: View {
 			}
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.bluetoothConfig == nil)
+		.onAppear {
+			Analytics.logEvent(AnalyticEvents.optionsBluetooth.id, parameters: [:])
+		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			if let myNodeNum = bleManager.connectedPeripheral?.num,

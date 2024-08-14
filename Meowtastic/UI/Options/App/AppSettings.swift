@@ -1,9 +1,10 @@
-import Foundation
 import Combine
-import SwiftUI
-import SwiftProtobuf
+import FirebaseAnalytics
+import Foundation
 import MapKit
 import OSLog
+import SwiftProtobuf
+import SwiftUI
 
 struct AppSettings: View {
 	@Environment(\.managedObjectContext)
@@ -73,5 +74,8 @@ struct AppSettings: View {
 		.navigationBarItems(
 			trailing: ConnectedDevice()
 		)
+		.onAppear {
+			Analytics.logEvent(AnalyticEvents.optionsAppSettings.id, parameters: [:])
+		}
 	}
 }

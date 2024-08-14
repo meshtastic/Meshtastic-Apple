@@ -1,11 +1,5 @@
-//
-//  Channels.swift
-//  Meshtastic Apple
-//
-//  Copyright(c) Garth Vander Houwen 4/8/22.
-//
-
 import CoreData
+import FirebaseAnalytics
 import MapKit
 import MeshtasticProtobufs
 import OSLog
@@ -77,15 +71,20 @@ struct Channels: View {
 
 							if channelKey.count == 0 {
 								channelKeySize = 0
-							} else if channelKey == "AQ==" {
+							}
+							else if channelKey == "AQ==" {
 								channelKeySize = -1
-							} else if channelKey.count == 4 {
+							}
+							else if channelKey.count == 4 {
 								channelKeySize = 1
-							} else if channelKey.count == 24 {
+							}
+							else if channelKey.count == 24 {
 								channelKeySize = 16
-							} else if channelKey.count == 32 {
+							}
+							else if channelKey.count == 32 {
 								channelKeySize = 24
-							} else if channelKey.count == 44 {
+							}
+							else if channelKey.count == 44 {
 								channelKeySize = 32
 							}
 
@@ -321,6 +320,9 @@ struct Channels: View {
 		.navigationBarItems(
 			trailing: ConnectedDevice()
 		)
+		.onAppear {
+			Analytics.logEvent(AnalyticEvents.optionsChannels.id, parameters: [:])
+		}
 	}
 }
 

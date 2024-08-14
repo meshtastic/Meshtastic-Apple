@@ -1,5 +1,5 @@
-import SwiftUI
 import CoreData
+import SwiftUI
 
 struct ConfigHeader<T>: View {
 	@EnvironmentObject

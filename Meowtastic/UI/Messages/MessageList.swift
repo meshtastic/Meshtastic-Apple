@@ -1,4 +1,5 @@
 import CoreData
+import FirebaseAnalytics
 import MeshtasticProtobufs
 import OSLog
 import SwiftUI
@@ -172,6 +173,9 @@ struct MessageList: View {
 			NodeDetail(isInSheet: true, node: detail)
 				.presentationDragIndicator(.visible)
 				.presentationDetents([.medium])
+		}
+		.onAppear {
+			Analytics.logEvent(AnalyticEvents.messageList.id, parameters: [:])
 		}
 	}
 

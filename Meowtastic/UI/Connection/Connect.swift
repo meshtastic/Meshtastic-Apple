@@ -1,6 +1,7 @@
 import CoreBluetooth
 import CoreData
 import CoreLocation
+import FirebaseAnalytics
 import OSLog
 import SwiftUI
 
@@ -63,6 +64,7 @@ struct Connect: View {
 		}
 		.onAppear {
 			bleManager.startScanning()
+			Analytics.logEvent(AnalyticEvents.connect.id, parameters: [:])
 		}
 		.onDisappear {
 			bleManager.stopScanning()

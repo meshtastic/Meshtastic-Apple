@@ -1,3 +1,4 @@
+import FirebaseAnalytics
 import MapKit
 import OSLog
 import SwiftUI
@@ -88,6 +89,12 @@ struct NodeDetail: View {
 				}
 			}
 			.listStyle(.insetGrouped)
+		}
+		.onAppear {
+			Analytics.logEvent(
+				AnalyticEvents.nodeDetail.id,
+				parameters: AnalyticEvents.getAnalParams(for: node, [ "sheet": isInSheet ])
+			)
 		}
 	}
 

@@ -5,6 +5,7 @@
 //  Copyright (c) Garth Vander Houwen 6/27/22.
 //
 import CoreData
+import FirebaseAnalytics
 import MeshtasticProtobufs
 import SwiftUI
 
@@ -187,6 +188,8 @@ struct UserConfig: View {
 			trailing: ConnectedDevice()
 		)
 		.onAppear {
+			Analytics.logEvent(AnalyticEvents.optionsUser.id, parameters: [:])
+
 			self.shortName = node?.user?.shortName ?? ""
 			self.longName = node?.user?.longName ?? ""
 			self.isLicensed = node?.user?.isLicensed ?? false

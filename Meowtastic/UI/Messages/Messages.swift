@@ -1,4 +1,5 @@
 import CoreData
+import FirebaseAnalytics
 import OSLog
 import SwiftUI
 
@@ -107,6 +108,9 @@ struct Messages: View {
 			.navigationBarItems(
 				trailing: ConnectedDevice()
 			)
+		}
+		.onAppear {
+			Analytics.logEvent(AnalyticEvents.messages.id, parameters: [:])
 		}
 	}
 

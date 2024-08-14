@@ -4,6 +4,7 @@
 //
 //  Copyright (c) Garth Vander Houwen 8/1/2022
 //
+import FirebaseAnalytics
 import MeshtasticProtobufs
 import OSLog
 import SwiftUI
@@ -113,7 +114,10 @@ struct NetworkConfig: View {
 			trailing: ConnectedDevice()
 		)
 		.onAppear {
+			Analytics.logEvent(AnalyticEvents.optionsNetwork.id, parameters: [:])
+
 			setNetworkValues()
+
 			// Need to request a NetworkConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.networkConfig == nil {
 				Logger.mesh.info("empty network config")
