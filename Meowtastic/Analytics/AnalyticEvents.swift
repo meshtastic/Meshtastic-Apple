@@ -27,7 +27,7 @@ enum AnalyticEvents: String {
 	case optionsPower
 	case traceRoute
 
-	//  MARK: - Supporting Stuff
+	// MARK: - Supporting Stuff
 	var id: String {
 		self.rawValue
 	}
