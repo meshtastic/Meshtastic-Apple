@@ -1,6 +1,58 @@
+//
+//  UpdateCoreData.swift
+//  Meshtastic
+//
+//  Copyright(c) Garth Vander Houwen 10/3/22.
+
 import CoreData
 import MeshtasticProtobufs
 import OSLog
+
+public func clearPositions(destNum: Int64, context: NSManagedObjectContext) -> Bool {
+
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(destNum))
+
+	do {
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
+		let newPostions = [PositionEntity]()
+		fetchedNode[0].positions? = NSOrderedSet(array: newPostions)
+		do {
+			try context.save()
+			return true
+
+		} catch {
+			context.rollback()
+			return false
+		}
+	} catch {
+		Logger.data.error("💥 [NodeInfoEntity] fetch data error")
+		return false
+	}
+}
+
+public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManagedObjectContext) -> Bool {
+
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(destNum))
+
+	do {
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
+		let emptyTelemetry = [TelemetryEntity]()
+		fetchedNode[0].telemetries? = NSOrderedSet(array: emptyTelemetry)
+		do {
+			try context.save()
+			return true
+
+		} catch {
+			context.rollback()
+			return false
+		}
+	} catch {
+		Logger.data.error("💥 [NodeInfoEntity] fetch data error")
+		return false
+	}
+}
 
 public func deleteChannelMessages(channel: ChannelEntity, context: NSManagedObjectContext) {
 	guard let messages = channel.allPrivateMessages else {
@@ -15,11 +67,11 @@ public func deleteChannelMessages(channel: ChannelEntity, context: NSManagedObje
 }
 
 public func deleteUserMessages(user: UserEntity, context: NSManagedObjectContext) {
-	guard let messageList = user.messageList else {
+	guard let messages = user.messageList else {
 		return
 	}
-		
-	for message in messageList {
+
+	for message in messages {
 		context.delete(message)
 	}
 
@@ -27,11 +79,12 @@ public func deleteUserMessages(user: UserEntity, context: NSManagedObjectContext
 }
 
 public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes: Bool) {
-	for i in 0...Persistence.shared.managedObjectModel.entities.count-1 {
-		let entity = Persistence.shared.managedObjectModel.entities[i]
+	let persistenceController = Persistence.shared.container
+	for i in 0...persistenceController.managedObjectModel.entities.count-1 {
+		let entity = persistenceController.managedObjectModel.entities[i]
 		let query = NSFetchRequest<NSFetchRequestResult>(entityName: entity.name!)
-		let entityName = entity.name ?? "UNK"
 		var deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
+		let entityName = entity.name ?? "UNK"
 
 		if includeRoutes {
 			deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
@@ -40,7 +93,6 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes
 				deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
 			}
 		}
-
 		do {
 			try context.executeAndMergeChanges(using: deleteRequest)
 		} catch {
@@ -50,6 +102,7 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes
 }
 
 func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) {
+
 	let logString = String.localizedStringWithFormat("mesh.log.nodeinfo.received %@".localized, packet.from.toHex())
 	MeshLogger.log("📟 \(logString)")
 
@@ -59,6 +112,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 	fetchNodeInfoAppRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
 
 	do {
+
 		let fetchedNode = try context.fetch(fetchNodeInfoAppRequest)
 		if fetchedNode.count == 0 {
 			// Not Found Insert
@@ -73,7 +127,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			newNode.rssi = packet.rxRssi
 			newNode.viaMqtt = packet.viaMqtt
 
-			if packet.to == 4294967295 || packet.to == UserDefaults.preferredPeripheralNum {
+			if packet.to == Constants.maximumNodeNum || packet.to == UserDefaults.preferredPeripheralNum {
 				newNode.channel = Int32(packet.channel)
 			}
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
@@ -84,7 +138,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			if let newUserMessage = try? User(serializedData: packet.decoded.payload) {
 
 				if newUserMessage.id.isEmpty {
-					if packet.from > Int16.max {
+					if packet.from > Constants.minimumNodeNum {
 						let newUser = createUser(num: Int64(packet.from), context: context)
 						newNode.user = newUser
 					}
@@ -97,6 +151,13 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					newUser.shortName = newUserMessage.shortName
 					newUser.role = Int32(newUserMessage.role.rawValue)
 					newUser.hwModel = String(describing: newUserMessage.hwModel).uppercased()
+					newUser.hwModelId = Int32(newUserMessage.hwModel.rawValue)
+					Task {
+						Api().loadDeviceHardwareData { (hw) in
+							let dh = hw.first(where: { $0.hwModel == newUser.hwModelId })
+							newUser.hwDisplayName = dh?.displayName
+						}
+					}
 					newNode.user = newUser
 
 					if UserDefaults.newNodeNotifications {
@@ -115,13 +176,13 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					}
 				}
 			} else {
-				if packet.from > Int16.max {
+				if packet.from > Constants.minimumNodeNum {
 					let newUser = createUser(num: Int64(packet.from), context: context)
 					newNode.user = newUser
 				}
 			}
 
-			if newNode.user == nil && packet.from > Int16.max {
+			if newNode.user == nil && packet.from > Constants.minimumNodeNum {
 				newNode.user = createUser(num: Int64(packet.from), context: context)
 			}
 
@@ -151,7 +212,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			fetchedNode[0].snr = packet.rxSnr
 			fetchedNode[0].rssi = packet.rxRssi
 			fetchedNode[0].viaMqtt = packet.viaMqtt
-			if packet.to == 4294967295 || packet.to == UserDefaults.preferredPeripheralNum {
+			if packet.to == Constants.maximumNodeNum || packet.to == UserDefaults.preferredPeripheralNum {
 				fetchedNode[0].channel = Int32(packet.channel)
 			}
 
@@ -177,14 +238,21 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].user!.shortName = nodeInfoMessage.user.shortName
 					fetchedNode[0].user!.role = Int32(nodeInfoMessage.user.role.rawValue)
 					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
+					fetchedNode[0].user!.hwModelId = Int32(nodeInfoMessage.user.hwModel.rawValue)
+					Task {
+						Api().loadDeviceHardwareData { (hw) in
+							let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user?.hwModelId ?? 0 })
+							fetchedNode[0].user!.hwDisplayName = dh?.displayName
+						}
+					}
 				}
 			} else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 				fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
 			}
 			if fetchedNode[0].user == nil {
 				let newUser = createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
-				fetchedNode[0].user! = newUser
-				
+				fetchedNode[0].user? = newUser
+
 			}
 			do {
 				try context.save()

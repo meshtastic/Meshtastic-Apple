@@ -128,6 +128,18 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
   ///
   /// NAU7802 Scale Chip or compatible
   case nau7802 // = 25
+
+  ///
+  /// BMP3XX High accuracy temperature and pressure
+  case bmp3Xx // = 26
+
+  ///
+  /// ICM-20948 9-Axis digital motion processor
+  case icm20948 // = 27
+
+  ///
+  /// MAX17048 1S lipo battery sensor (voltage, state of charge, time to go)
+  case max17048 // = 28
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -162,6 +174,9 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 23: self = .aht10
     case 24: self = .dfrobotLark
     case 25: self = .nau7802
+    case 26: self = .bmp3Xx
+    case 27: self = .icm20948
+    case 28: self = .max17048
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -194,6 +209,9 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .aht10: return 23
     case .dfrobotLark: return 24
     case .nau7802: return 25
+    case .bmp3Xx: return 26
+    case .icm20948: return 27
+    case .max17048: return 28
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -226,6 +244,9 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     .aht10,
     .dfrobotLark,
     .nau7802,
+    .bmp3Xx,
+    .icm20948,
+    .max17048,
   ]
 
 }
@@ -619,6 +640,9 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     23: .same(proto: "AHT10"),
     24: .same(proto: "DFROBOT_LARK"),
     25: .same(proto: "NAU7802"),
+    26: .same(proto: "BMP3XX"),
+    27: .same(proto: "ICM20948"),
+    28: .same(proto: "MAX17048"),
   ]
 }
 

@@ -330,6 +330,19 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
   case trackerT1000E // = 71
 
   ///
+  /// RAK3172 STM32WLE5 Module (https://store.rakwireless.com/products/wisduo-lpwan-module-rak3172)
+  case rak3172 // = 72
+
+  ///
+  /// Seeed Studio Wio-E5 (either mini or Dev kit) using STM32WL chip.
+  case wioE5 // = 73
+
+  ///
+  /// RadioMaster 900 Bandit, https://www.radiomasterrc.com/products/bandit-expresslrs-rf-module
+  /// SSD1306 OLED and No GPS
+  case radiomaster900Bandit // = 74
+
+  ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -413,6 +426,9 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 69: self = .heltecMeshNodeT114
     case 70: self = .sensecapIndicator
     case 71: self = .trackerT1000E
+    case 72: self = .rak3172
+    case 73: self = .wioE5
+    case 74: self = .radiomaster900Bandit
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -491,6 +507,9 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .heltecMeshNodeT114: return 69
     case .sensecapIndicator: return 70
     case .trackerT1000E: return 71
+    case .rak3172: return 72
+    case .wioE5: return 73
+    case .radiomaster900Bandit: return 74
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -569,6 +588,9 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     .heltecMeshNodeT114,
     .sensecapIndicator,
     .trackerT1000E,
+    .rak3172,
+    .wioE5,
+    .radiomaster900Bandit,
     .privateHw,
   ]
 
@@ -676,6 +698,17 @@ public enum CriticalErrorCode: SwiftProtobuf.Enum, Swift.CaseIterable {
   /// A (likely software but possibly hardware) failure was detected while trying to send packets.
   /// If this occurs on your board, please post in the forum so that we can ask you to collect some information to allow fixing this bug
   case radioSpiBug // = 11
+
+  ///
+  /// Corruption was detected on the flash filesystem but we were able to repair things.
+  /// If you see this failure in the field please post in the forum because we are interested in seeing if this is occurring in the field.
+  case flashCorruptionRecoverable // = 12
+
+  ///
+  /// Corruption was detected on the flash filesystem but we were unable to repair things.
+  /// NOTE: Your node will probably need to be reconfigured the next time it reboots (it will lose the region code etc...)
+  /// If you see this failure in the field please post in the forum because we are interested in seeing if this is occurring in the field.
+  case flashCorruptionUnrecoverable // = 13
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -696,6 +729,8 @@ public enum CriticalErrorCode: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 9: self = .brownout
     case 10: self = .sx1262Failure
     case 11: self = .radioSpiBug
+    case 12: self = .flashCorruptionRecoverable
+    case 13: self = .flashCorruptionUnrecoverable
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -714,6 +749,8 @@ public enum CriticalErrorCode: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .brownout: return 9
     case .sx1262Failure: return 10
     case .radioSpiBug: return 11
+    case .flashCorruptionRecoverable: return 12
+    case .flashCorruptionUnrecoverable: return 13
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -732,6 +769,8 @@ public enum CriticalErrorCode: SwiftProtobuf.Enum, Swift.CaseIterable {
     .brownout,
     .sx1262Failure,
     .radioSpiBug,
+    .flashCorruptionRecoverable,
+    .flashCorruptionUnrecoverable,
   ]
 
 }
@@ -2779,6 +2818,9 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     69: .same(proto: "HELTEC_MESH_NODE_T114"),
     70: .same(proto: "SENSECAP_INDICATOR"),
     71: .same(proto: "TRACKER_T1000_E"),
+    72: .same(proto: "RAK3172"),
+    73: .same(proto: "WIO_E5"),
+    74: .same(proto: "RADIOMASTER_900_BANDIT"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
@@ -2804,6 +2846,8 @@ extension CriticalErrorCode: SwiftProtobuf._ProtoNameProviding {
     9: .same(proto: "BROWNOUT"),
     10: .same(proto: "SX1262_FAILURE"),
     11: .same(proto: "RADIO_SPI_BUG"),
+    12: .same(proto: "FLASH_CORRUPTION_RECOVERABLE"),
+    13: .same(proto: "FLASH_CORRUPTION_UNRECOVERABLE"),
   ]
 }
 

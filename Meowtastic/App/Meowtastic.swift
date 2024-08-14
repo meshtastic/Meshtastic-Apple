@@ -102,13 +102,13 @@ struct Meowtastic: App {
 		}
 		.onChange(of: scenePhase, initial: false) {
 			if scenePhase == .background {
-				try? Persistence.shared.viewContext.save()
+				try? Persistence.shared.container.viewContext.save()
 			}
 		}
 	}
 
 	init() {
-		self.persistence = Persistence.shared
+		self.persistence = Persistence.shared.container
 		self.locationManager = LocationManager.shared
 
 		let appState = AppState()

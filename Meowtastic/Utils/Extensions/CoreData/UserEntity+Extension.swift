@@ -4,11 +4,28 @@ import MeshtasticProtobufs
 
 extension UserEntity {
 	var messageList: [MessageEntity]? {
-		value(forKey: "allMessages") as? [MessageEntity]
+		let context = Persistence.shared.container.viewContext
+		let fetchRequest = MessageEntity.fetchRequest()
+		fetchRequest.sortDescriptors = [
+			NSSortDescriptor(
+				key: "messageTimestamp",
+				ascending: true
+			)
+		]
+		fetchRequest.predicate = NSPredicate(
+			format: "(toUser == %@ OR fromUser == %@) AND toUser != nil AND fromUser != nil AND admin = false AND portNum != 10", self, self
+		)
+
+		return try? context.fetch(fetchRequest)
 	}
 
 	var sensorMessageList: [MessageEntity]? {
-		value(forKey: "detectionSensorMessages") as? [MessageEntity]
+		let context = Persistence.shared.container.viewContext
+		let fetchRequest = MessageEntity.fetchRequest()
+		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
+		fetchRequest.predicate = NSPredicate(format: "(fromUser == %@) AND portNum = 10", self)
+
+		return try? context.fetch(fetchRequest)
 	}
 
 	var unreadMessages: Int {

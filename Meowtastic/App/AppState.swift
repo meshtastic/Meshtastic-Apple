@@ -22,8 +22,8 @@ class AppState: ObservableObject {
 	private var cancellables: Set<AnyCancellable> = []
 
 	init() {
-		self.unreadChannelMessages = 0
-		self.unreadDirectMessages = 0
+		unreadChannelMessages = 0
+		unreadDirectMessages = 0
 
 		// Keep app icon badge count in sync with messages read status
 		$unreadChannelMessages.combineLatest($unreadDirectMessages)

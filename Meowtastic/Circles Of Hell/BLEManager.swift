@@ -121,7 +121,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 	// Connect to a specific peripheral
 	func connectTo(peripheral: CBPeripheral) {
-		// stopScanning()
 		DispatchQueue.main.async {
 			self.isConnecting = true
 			self.lastConnectionError = ""
@@ -832,14 +831,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							}
 							let traceRouteHop = TraceRouteHopEntity(context: context)
 							traceRouteHop.time = Date()
-							traceRouteHop.name = hopNode?.user?.longName ?? "unknown".localized
-
 							if hopNode?.hasPositions ?? false {
 								traceRoute?.hasPositions = true
 								if let mostRecent = hopNode?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
 									traceRouteHop.altitude = mostRecent.altitude
 									traceRouteHop.latitudeI = mostRecent.latitudeI
 									traceRouteHop.longitudeI = mostRecent.longitudeI
+									traceRouteHop.name = hopNode?.user?.longName ?? "unknown".localized
 								} else {
 									traceRoute?.hasPositions = false
 								}
@@ -903,7 +901,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(connectedPeripheral.num))
 					do {
-						let fetchedNodeInfo = try context.fetch(fetchNodeInfoRequest) ?? []
+						let fetchedNodeInfo = try context.fetch(fetchNodeInfoRequest)
 						if fetchedNodeInfo.count == 1 {
 							// Subscribe to Mqtt Client Proxy if enabled
 							if fetchedNodeInfo[0].mqttConfig != nil && fetchedNodeInfo[0].mqttConfig?.enabled ?? false && fetchedNodeInfo[0].mqttConfig?.proxyToClientEnabled ?? false {
@@ -1266,7 +1264,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			
 			let logString = String.localizedStringWithFormat("mesh.log.sharelocation %@".localized, String(fromNodeNum))
 			Logger.services.debug("📍 \(logString)")
 			return true
@@ -1390,7 +1387,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 	public func sendFactoryReset(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 		var adminPacket = AdminMessage()
-		adminPacket.factoryReset = 5
+		adminPacket.factoryResetDevice = 5
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	=  UInt32(fromUser.num)
@@ -1524,7 +1521,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
 							fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
 							do {
-								let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) ?? []
+								let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
 								if fetchedMyInfo.count == 1 {
 									i = Int32(fetchedMyInfo[0].channels?.count ?? -1)
 									myInfo = fetchedMyInfo[0]

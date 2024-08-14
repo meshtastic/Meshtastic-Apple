@@ -21,6 +21,7 @@
 		6D825E622C34786C008DBEE4 /* CommonRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D825E612C34786C008DBEE4 /* CommonRegex.swift */; };
 		6DA39D8E2A92DC52007E311C /* MeowtasticDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DA39D8D2A92DC52007E311C /* MeowtasticDelegate.swift */; };
 		6DEDA55C2A9592F900321D2E /* MessageEntity+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA55B2A9592F900321D2E /* MessageEntity+Extension.swift */; };
+		B21715982C6D154B00118E90 /* Meowtastic.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B217156D2C6D154B00118E90 /* Meowtastic.xcdatamodeld */; };
 		B25A0B532C5F9A16004288DC /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B25A0B522C5F9A16004288DC /* GoogleService-Info.plist */; };
 		B25D5CB42C5BC3840007F90F /* AvatarAbstract.swift in Sources */ = {isa = PBXBuildFile; fileRef = B25D5CB32C5BC3840007F90F /* AvatarAbstract.swift */; };
 		B266A74E2C591F5E00DFC723 /* TabTag.swift in Sources */ = {isa = PBXBuildFile; fileRef = B266A74D2C591F5E00DFC723 /* TabTag.swift */; };
@@ -38,7 +39,6 @@
 		B266A76A2C59293B00DFC723 /* GPSMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B266A7692C59293B00DFC723 /* GPSMode.swift */; };
 		B266A76C2C59298900DFC723 /* GPSUpdateIntervals.swift in Sources */ = {isa = PBXBuildFile; fileRef = B266A76B2C59298900DFC723 /* GPSUpdateIntervals.swift */; };
 		B266DA902C53CEFB0067D317 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B266DA8F2C53CEFB0067D317 /* Constants.swift */; };
-		B266DABC2C53CFD40067D317 /* Meowtastic.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B266DA932C53CFD30067D317 /* Meowtastic.xcdatamodeld */; };
 		B26C91F22C5970A40029F249 /* LocationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B26C91F12C5970A40029F249 /* LocationHelper.swift */; };
 		B26C91F42C5971880029F249 /* LocationHelperManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B26C91F32C5971880029F249 /* LocationHelperManager.swift */; };
 		B26C91F62C59740F0029F249 /* PositionFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = B26C91F52C59740F0029F249 /* PositionFlags.swift */; };
@@ -179,6 +179,48 @@
 		6D825E612C34786C008DBEE4 /* CommonRegex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonRegex.swift; sourceTree = "<group>"; };
 		6DA39D8D2A92DC52007E311C /* MeowtasticDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeowtasticDelegate.swift; sourceTree = "<group>"; };
 		6DEDA55B2A9592F900321D2E /* MessageEntity+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MessageEntity+Extension.swift"; sourceTree = "<group>"; };
+		B217156E2C6D154B00118E90 /* MeshtasticDataModelV13.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV13.xcdatamodel; sourceTree = "<group>"; };
+		B217156F2C6D154B00118E90 /* MeshtasticDataModelV 24.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 24.xcdatamodel"; sourceTree = "<group>"; };
+		B21715702C6D154B00118E90 /* MeshtasticDataModelV 38.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 38.xcdatamodel"; sourceTree = "<group>"; };
+		B21715712C6D154B00118E90 /* MeshtasticDataModelV21.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV21.xcdatamodel; sourceTree = "<group>"; };
+		B21715722C6D154B00118E90 /* MeshtasticDataModelV2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV2.xcdatamodel; sourceTree = "<group>"; };
+		B21715732C6D154B00118E90 /* MeshtasticDataModelV 41.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 41.xcdatamodel"; sourceTree = "<group>"; };
+		B21715742C6D154B00118E90 /* MeshtasticDataModelV 31.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 31.xcdatamodel"; sourceTree = "<group>"; };
+		B21715752C6D154B00118E90 /* MeshtasticDataModelV 28.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 28.xcdatamodel"; sourceTree = "<group>"; };
+		B21715762C6D154B00118E90 /* MeshtasticDataModelV7.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV7.xcdatamodel; sourceTree = "<group>"; };
+		B21715772C6D154B00118E90 /* MeshtasticDataModelV 34.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 34.xcdatamodel"; sourceTree = "<group>"; };
+		B21715782C6D154B00118E90 /* MeshtasticDataModelV16.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV16.xcdatamodel; sourceTree = "<group>"; };
+		B21715792C6D154B00118E90 /* MeshtasticDataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModel.xcdatamodel; sourceTree = "<group>"; };
+		B217157A2C6D154B00118E90 /* MeshtasticDataModelV15.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV15.xcdatamodel; sourceTree = "<group>"; };
+		B217157B2C6D154B00118E90 /* MeshtasticDataModelV 37.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 37.xcdatamodel"; sourceTree = "<group>"; };
+		B217157C2C6D154B00118E90 /* MeshtasticDataModelV32.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV32.xcdatamodel; sourceTree = "<group>"; };
+		B217157D2C6D154B00118E90 /* MeshtasticDataModelV4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV4.xcdatamodel; sourceTree = "<group>"; };
+		B217157E2C6D154B00118E90 /* MeshtasticDataModelV 42.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 42.xcdatamodel"; sourceTree = "<group>"; };
+		B217157F2C6D154B00118E90 /* MeshtasticDataModelV19.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV19.xcdatamodel; sourceTree = "<group>"; };
+		B21715802C6D154B00118E90 /* MeshtasticDataModelV22.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV22.xcdatamodel; sourceTree = "<group>"; };
+		B21715812C6D154B00118E90 /* MeshtasticDataModelV10.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV10.xcdatamodel; sourceTree = "<group>"; };
+		B21715822C6D154B00118E90 /* MeshtasticDataModelV 27.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 27.xcdatamodel"; sourceTree = "<group>"; };
+		B21715832C6D154B00118E90 /* MeshtasticDataModelV8.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV8.xcdatamodel; sourceTree = "<group>"; };
+		B21715842C6D154B00118E90 /* MeshtasticDataModelV17.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV17.xcdatamodel; sourceTree = "<group>"; };
+		B21715852C6D154B00118E90 /* MeshtasticDataModelV 35.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 35.xcdatamodel"; sourceTree = "<group>"; };
+		B21715862C6D154B00118E90 /* MeshtasticDataModelV 29.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 29.xcdatamodel"; sourceTree = "<group>"; };
+		B21715872C6D154B00118E90 /* MeshtasticDataModelV6.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV6.xcdatamodel; sourceTree = "<group>"; };
+		B21715882C6D154B00118E90 /* MeshtasticDataModelV 30.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 30.xcdatamodel"; sourceTree = "<group>"; };
+		B21715892C6D154B00118E90 /* MeshtasticDataModelV 40.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 40.xcdatamodel"; sourceTree = "<group>"; };
+		B217158A2C6D154B00118E90 /* MeshtasticDataModelV3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV3.xcdatamodel; sourceTree = "<group>"; };
+		B217158B2C6D154B00118E90 /* MeshtasticDataModelV 39.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 39.xcdatamodel"; sourceTree = "<group>"; };
+		B217158C2C6D154B00118E90 /* MeshtasticDataModelV20.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV20.xcdatamodel; sourceTree = "<group>"; };
+		B217158D2C6D154B00118E90 /* MeshtasticDataModelV 25.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 25.xcdatamodel"; sourceTree = "<group>"; };
+		B217158E2C6D154B00118E90 /* MeshtasticDataModelV12.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV12.xcdatamodel; sourceTree = "<group>"; };
+		B217158F2C6D154B00118E90 /* MeshtasticDataModelV 26.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 26.xcdatamodel"; sourceTree = "<group>"; };
+		B21715902C6D154B00118E90 /* MeshtasticDataModelV11.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV11.xcdatamodel; sourceTree = "<group>"; };
+		B21715912C6D154B00118E90 /* MeshtasticDataModelV9.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV9.xcdatamodel; sourceTree = "<group>"; };
+		B21715922C6D154B00118E90 /* MeshtasticDataModelV18.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV18.xcdatamodel; sourceTree = "<group>"; };
+		B21715932C6D154B00118E90 /* MeshtasticDataModelV5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV5.xcdatamodel; sourceTree = "<group>"; };
+		B21715942C6D154B00118E90 /* MeshtasticDataModelV33.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV33.xcdatamodel; sourceTree = "<group>"; };
+		B21715952C6D154B00118E90 /* MeshtasticDataModelV 36.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 36.xcdatamodel"; sourceTree = "<group>"; };
+		B21715962C6D154B00118E90 /* MeshtasticDataModelV14.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV14.xcdatamodel; sourceTree = "<group>"; };
+		B21715972C6D154B00118E90 /* MeshtasticDataModelV 23.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 23.xcdatamodel"; sourceTree = "<group>"; };
 		B25A0B522C5F9A16004288DC /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B25D5CB32C5BC3840007F90F /* AvatarAbstract.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarAbstract.swift; sourceTree = "<group>"; };
 		B266A74D2C591F5E00DFC723 /* TabTag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabTag.swift; sourceTree = "<group>"; };
@@ -196,46 +238,6 @@
 		B266A7692C59293B00DFC723 /* GPSMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPSMode.swift; sourceTree = "<group>"; };
 		B266A76B2C59298900DFC723 /* GPSUpdateIntervals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPSUpdateIntervals.swift; sourceTree = "<group>"; };
 		B266DA8F2C53CEFB0067D317 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
-		B266DA942C53CFD30067D317 /* MeshtasticDataModelV13.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV13.xcdatamodel; sourceTree = "<group>"; };
-		B266DA952C53CFD30067D317 /* MeshtasticDataModelV 24.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 24.xcdatamodel"; sourceTree = "<group>"; };
-		B266DA962C53CFD30067D317 /* MeshtasticDataModelV 38.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 38.xcdatamodel"; sourceTree = "<group>"; };
-		B266DA972C53CFD30067D317 /* MeshtasticDataModelV21.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV21.xcdatamodel; sourceTree = "<group>"; };
-		B266DA982C53CFD30067D317 /* MeshtasticDataModelV2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV2.xcdatamodel; sourceTree = "<group>"; };
-		B266DA992C53CFD30067D317 /* MeshtasticDataModelV 31.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 31.xcdatamodel"; sourceTree = "<group>"; };
-		B266DA9A2C53CFD30067D317 /* MeshtasticDataModelV 28.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 28.xcdatamodel"; sourceTree = "<group>"; };
-		B266DA9B2C53CFD30067D317 /* MeshtasticDataModelV7.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV7.xcdatamodel; sourceTree = "<group>"; };
-		B266DA9C2C53CFD30067D317 /* MeshtasticDataModelV 34.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 34.xcdatamodel"; sourceTree = "<group>"; };
-		B266DA9D2C53CFD30067D317 /* MeshtasticDataModelV16.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV16.xcdatamodel; sourceTree = "<group>"; };
-		B266DA9E2C53CFD30067D317 /* MeshtasticDataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModel.xcdatamodel; sourceTree = "<group>"; };
-		B266DA9F2C53CFD30067D317 /* MeshtasticDataModelV15.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV15.xcdatamodel; sourceTree = "<group>"; };
-		B266DAA02C53CFD30067D317 /* MeshtasticDataModelV 37.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 37.xcdatamodel"; sourceTree = "<group>"; };
-		B266DAA12C53CFD30067D317 /* MeshtasticDataModelV32.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV32.xcdatamodel; sourceTree = "<group>"; };
-		B266DAA22C53CFD30067D317 /* MeshtasticDataModelV4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV4.xcdatamodel; sourceTree = "<group>"; };
-		B266DAA32C53CFD30067D317 /* MeshtasticDataModelV19.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV19.xcdatamodel; sourceTree = "<group>"; };
-		B266DAA42C53CFD30067D317 /* MeshtasticDataModelV22.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV22.xcdatamodel; sourceTree = "<group>"; };
-		B266DAA52C53CFD30067D317 /* MeshtasticDataModelV10.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV10.xcdatamodel; sourceTree = "<group>"; };
-		B266DAA62C53CFD30067D317 /* MeshtasticDataModelV 27.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 27.xcdatamodel"; sourceTree = "<group>"; };
-		B266DAA72C53CFD30067D317 /* MeshtasticDataModelV8.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV8.xcdatamodel; sourceTree = "<group>"; };
-		B266DAA82C53CFD30067D317 /* MeshtasticDataModelV17.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV17.xcdatamodel; sourceTree = "<group>"; };
-		B266DAA92C53CFD30067D317 /* MeshtasticDataModelV 35.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 35.xcdatamodel"; sourceTree = "<group>"; };
-		B266DAAA2C53CFD30067D317 /* MeshtasticDataModelV 29.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 29.xcdatamodel"; sourceTree = "<group>"; };
-		B266DAAB2C53CFD30067D317 /* MeshtasticDataModelV6.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV6.xcdatamodel; sourceTree = "<group>"; };
-		B266DAAC2C53CFD30067D317 /* MeshtasticDataModelV 30.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 30.xcdatamodel"; sourceTree = "<group>"; };
-		B266DAAD2C53CFD30067D317 /* MeshtasticDataModelV 40.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 40.xcdatamodel"; sourceTree = "<group>"; };
-		B266DAAE2C53CFD30067D317 /* MeshtasticDataModelV3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV3.xcdatamodel; sourceTree = "<group>"; };
-		B266DAAF2C53CFD30067D317 /* MeshtasticDataModelV 39.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 39.xcdatamodel"; sourceTree = "<group>"; };
-		B266DAB02C53CFD30067D317 /* MeshtasticDataModelV20.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV20.xcdatamodel; sourceTree = "<group>"; };
-		B266DAB12C53CFD30067D317 /* MeshtasticDataModelV 25.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 25.xcdatamodel"; sourceTree = "<group>"; };
-		B266DAB22C53CFD30067D317 /* MeshtasticDataModelV12.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV12.xcdatamodel; sourceTree = "<group>"; };
-		B266DAB32C53CFD30067D317 /* MeshtasticDataModelV 26.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 26.xcdatamodel"; sourceTree = "<group>"; };
-		B266DAB42C53CFD30067D317 /* MeshtasticDataModelV11.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV11.xcdatamodel; sourceTree = "<group>"; };
-		B266DAB52C53CFD30067D317 /* MeshtasticDataModelV9.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV9.xcdatamodel; sourceTree = "<group>"; };
-		B266DAB62C53CFD30067D317 /* MeshtasticDataModelV18.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV18.xcdatamodel; sourceTree = "<group>"; };
-		B266DAB72C53CFD30067D317 /* MeshtasticDataModelV5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV5.xcdatamodel; sourceTree = "<group>"; };
-		B266DAB82C53CFD30067D317 /* MeshtasticDataModelV33.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV33.xcdatamodel; sourceTree = "<group>"; };
-		B266DAB92C53CFD30067D317 /* MeshtasticDataModelV 36.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 36.xcdatamodel"; sourceTree = "<group>"; };
-		B266DABA2C53CFD30067D317 /* MeshtasticDataModelV14.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV14.xcdatamodel; sourceTree = "<group>"; };
-		B266DABB2C53CFD30067D317 /* MeshtasticDataModelV 23.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 23.xcdatamodel"; sourceTree = "<group>"; };
 		B26C91F12C5970A40029F249 /* LocationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHelper.swift; sourceTree = "<group>"; };
 		B26C91F32C5971880029F249 /* LocationHelperManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHelperManager.swift; sourceTree = "<group>"; };
 		B26C91F52C59740F0029F249 /* PositionFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionFlags.swift; sourceTree = "<group>"; };
@@ -377,13 +379,13 @@
 		08DD7E4D2C41AC8F00548159 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				08DD7E522C41CBBD00548159 /* Localizable.xcstrings */,
 				DDB75A192A05EB67006ED576 /* alpha.png */,
 				DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */,
 				DD0E21002B8A6BC500F2D100 /* DeviceHardware.json */,
 				DDC2E16526CE248F0042C5E4 /* Info.plist */,
+				08DD7E522C41CBBD00548159 /* Localizable.xcstrings */,
 				DD90860A26F645B700DC5189 /* Meowtastic.entitlements */,
-				B266DA932C53CFD30067D317 /* Meowtastic.xcdatamodeld */,
+				B217156D2C6D154B00118E90 /* Meowtastic.xcdatamodeld */,
 				DDDBC87A2BC62E4E001E8DF7 /* Settings.bundle */,
 			);
 			path = "Supporting Files";
@@ -923,7 +925,6 @@
 				DDD5BB182C2F9C36007E03CA /* OSLogEntryLog.swift in Sources */,
 				DD3501892852FC3B000FC853 /* Options.swift in Sources */,
 				08DD7E5F2C4283A100548159 /* LoRaSignal.swift in Sources */,
-				B266DABC2C53CFD40067D317 /* Meowtastic.xcdatamodeld in Sources */,
 				DD5D0A9C2931B9F200F7EA61 /* EthernetModes.swift in Sources */,
 				DD798B072915928D005217CD /* MessageList.swift in Sources */,
 				DDC2E1A726CEB3400042C5E4 /* LocationManager.swift in Sources */,
@@ -1004,6 +1005,7 @@
 				DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */,
 				DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */,
 				DDB75A112A059258006ED576 /* Url.swift in Sources */,
+				B21715982C6D154B00118E90 /* Meowtastic.xcdatamodeld in Sources */,
 				B2A5F30C2C5668FD009457AB /* AltitudeHistoryView.swift in Sources */,
 				B2A5F2FC2C5668FD009457AB /* ClientHistoryButton.swift in Sources */,
 				DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */,
@@ -1336,52 +1338,55 @@
 /* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
-		B266DA932C53CFD30067D317 /* Meowtastic.xcdatamodeld */ = {
+		B217156D2C6D154B00118E90 /* Meowtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
-				B266DA942C53CFD30067D317 /* MeshtasticDataModelV13.xcdatamodel */,
-				B266DA952C53CFD30067D317 /* MeshtasticDataModelV 24.xcdatamodel */,
-				B266DA962C53CFD30067D317 /* MeshtasticDataModelV 38.xcdatamodel */,
-				B266DA972C53CFD30067D317 /* MeshtasticDataModelV21.xcdatamodel */,
-				B266DA982C53CFD30067D317 /* MeshtasticDataModelV2.xcdatamodel */,
-				B266DA992C53CFD30067D317 /* MeshtasticDataModelV 31.xcdatamodel */,
-				B266DA9A2C53CFD30067D317 /* MeshtasticDataModelV 28.xcdatamodel */,
-				B266DA9B2C53CFD30067D317 /* MeshtasticDataModelV7.xcdatamodel */,
-				B266DA9C2C53CFD30067D317 /* MeshtasticDataModelV 34.xcdatamodel */,
-				B266DA9D2C53CFD30067D317 /* MeshtasticDataModelV16.xcdatamodel */,
-				B266DA9E2C53CFD30067D317 /* MeshtasticDataModel.xcdatamodel */,
-				B266DA9F2C53CFD30067D317 /* MeshtasticDataModelV15.xcdatamodel */,
-				B266DAA02C53CFD30067D317 /* MeshtasticDataModelV 37.xcdatamodel */,
-				B266DAA12C53CFD30067D317 /* MeshtasticDataModelV32.xcdatamodel */,
-				B266DAA22C53CFD30067D317 /* MeshtasticDataModelV4.xcdatamodel */,
-				B266DAA32C53CFD30067D317 /* MeshtasticDataModelV19.xcdatamodel */,
-				B266DAA42C53CFD30067D317 /* MeshtasticDataModelV22.xcdatamodel */,
-				B266DAA52C53CFD30067D317 /* MeshtasticDataModelV10.xcdatamodel */,
-				B266DAA62C53CFD30067D317 /* MeshtasticDataModelV 27.xcdatamodel */,
-				B266DAA72C53CFD30067D317 /* MeshtasticDataModelV8.xcdatamodel */,
-				B266DAA82C53CFD30067D317 /* MeshtasticDataModelV17.xcdatamodel */,
-				B266DAA92C53CFD30067D317 /* MeshtasticDataModelV 35.xcdatamodel */,
-				B266DAAA2C53CFD30067D317 /* MeshtasticDataModelV 29.xcdatamodel */,
-				B266DAAB2C53CFD30067D317 /* MeshtasticDataModelV6.xcdatamodel */,
-				B266DAAC2C53CFD30067D317 /* MeshtasticDataModelV 30.xcdatamodel */,
-				B266DAAD2C53CFD30067D317 /* MeshtasticDataModelV 40.xcdatamodel */,
-				B266DAAE2C53CFD30067D317 /* MeshtasticDataModelV3.xcdatamodel */,
-				B266DAAF2C53CFD30067D317 /* MeshtasticDataModelV 39.xcdatamodel */,
-				B266DAB02C53CFD30067D317 /* MeshtasticDataModelV20.xcdatamodel */,
-				B266DAB12C53CFD30067D317 /* MeshtasticDataModelV 25.xcdatamodel */,
-				B266DAB22C53CFD30067D317 /* MeshtasticDataModelV12.xcdatamodel */,
-				B266DAB32C53CFD30067D317 /* MeshtasticDataModelV 26.xcdatamodel */,
-				B266DAB42C53CFD30067D317 /* MeshtasticDataModelV11.xcdatamodel */,
-				B266DAB52C53CFD30067D317 /* MeshtasticDataModelV9.xcdatamodel */,
-				B266DAB62C53CFD30067D317 /* MeshtasticDataModelV18.xcdatamodel */,
-				B266DAB72C53CFD30067D317 /* MeshtasticDataModelV5.xcdatamodel */,
-				B266DAB82C53CFD30067D317 /* MeshtasticDataModelV33.xcdatamodel */,
-				B266DAB92C53CFD30067D317 /* MeshtasticDataModelV 36.xcdatamodel */,
-				B266DABA2C53CFD30067D317 /* MeshtasticDataModelV14.xcdatamodel */,
-				B266DABB2C53CFD30067D317 /* MeshtasticDataModelV 23.xcdatamodel */,
+				B217156E2C6D154B00118E90 /* MeshtasticDataModelV13.xcdatamodel */,
+				B217156F2C6D154B00118E90 /* MeshtasticDataModelV 24.xcdatamodel */,
+				B21715702C6D154B00118E90 /* MeshtasticDataModelV 38.xcdatamodel */,
+				B21715712C6D154B00118E90 /* MeshtasticDataModelV21.xcdatamodel */,
+				B21715722C6D154B00118E90 /* MeshtasticDataModelV2.xcdatamodel */,
+				B21715732C6D154B00118E90 /* MeshtasticDataModelV 41.xcdatamodel */,
+				B21715742C6D154B00118E90 /* MeshtasticDataModelV 31.xcdatamodel */,
+				B21715752C6D154B00118E90 /* MeshtasticDataModelV 28.xcdatamodel */,
+				B21715762C6D154B00118E90 /* MeshtasticDataModelV7.xcdatamodel */,
+				B21715772C6D154B00118E90 /* MeshtasticDataModelV 34.xcdatamodel */,
+				B21715782C6D154B00118E90 /* MeshtasticDataModelV16.xcdatamodel */,
+				B21715792C6D154B00118E90 /* MeshtasticDataModel.xcdatamodel */,
+				B217157A2C6D154B00118E90 /* MeshtasticDataModelV15.xcdatamodel */,
+				B217157B2C6D154B00118E90 /* MeshtasticDataModelV 37.xcdatamodel */,
+				B217157C2C6D154B00118E90 /* MeshtasticDataModelV32.xcdatamodel */,
+				B217157D2C6D154B00118E90 /* MeshtasticDataModelV4.xcdatamodel */,
+				B217157E2C6D154B00118E90 /* MeshtasticDataModelV 42.xcdatamodel */,
+				B217157F2C6D154B00118E90 /* MeshtasticDataModelV19.xcdatamodel */,
+				B21715802C6D154B00118E90 /* MeshtasticDataModelV22.xcdatamodel */,
+				B21715812C6D154B00118E90 /* MeshtasticDataModelV10.xcdatamodel */,
+				B21715822C6D154B00118E90 /* MeshtasticDataModelV 27.xcdatamodel */,
+				B21715832C6D154B00118E90 /* MeshtasticDataModelV8.xcdatamodel */,
+				B21715842C6D154B00118E90 /* MeshtasticDataModelV17.xcdatamodel */,
+				B21715852C6D154B00118E90 /* MeshtasticDataModelV 35.xcdatamodel */,
+				B21715862C6D154B00118E90 /* MeshtasticDataModelV 29.xcdatamodel */,
+				B21715872C6D154B00118E90 /* MeshtasticDataModelV6.xcdatamodel */,
+				B21715882C6D154B00118E90 /* MeshtasticDataModelV 30.xcdatamodel */,
+				B21715892C6D154B00118E90 /* MeshtasticDataModelV 40.xcdatamodel */,
+				B217158A2C6D154B00118E90 /* MeshtasticDataModelV3.xcdatamodel */,
+				B217158B2C6D154B00118E90 /* MeshtasticDataModelV 39.xcdatamodel */,
+				B217158C2C6D154B00118E90 /* MeshtasticDataModelV20.xcdatamodel */,
+				B217158D2C6D154B00118E90 /* MeshtasticDataModelV 25.xcdatamodel */,
+				B217158E2C6D154B00118E90 /* MeshtasticDataModelV12.xcdatamodel */,
+				B217158F2C6D154B00118E90 /* MeshtasticDataModelV 26.xcdatamodel */,
+				B21715902C6D154B00118E90 /* MeshtasticDataModelV11.xcdatamodel */,
+				B21715912C6D154B00118E90 /* MeshtasticDataModelV9.xcdatamodel */,
+				B21715922C6D154B00118E90 /* MeshtasticDataModelV18.xcdatamodel */,
+				B21715932C6D154B00118E90 /* MeshtasticDataModelV5.xcdatamodel */,
+				B21715942C6D154B00118E90 /* MeshtasticDataModelV33.xcdatamodel */,
+				B21715952C6D154B00118E90 /* MeshtasticDataModelV 36.xcdatamodel */,
+				B21715962C6D154B00118E90 /* MeshtasticDataModelV14.xcdatamodel */,
+				B21715972C6D154B00118E90 /* MeshtasticDataModelV 23.xcdatamodel */,
 			);
-			currentVersion = B266DAAD2C53CFD30067D317 /* MeshtasticDataModelV 40.xcdatamodel */;
-			path = Meowtastic.xcdatamodeld;
+			currentVersion = B217157E2C6D154B00118E90 /* MeshtasticDataModelV 42.xcdatamodel */;
+			name = Meowtastic.xcdatamodeld;
+			path = "/Users/radovan.paska/Projects/Personal/meowtastic_ios/Meowtastic/Supporting Files/Meowtastic.xcdatamodeld";
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};

@@ -284,6 +284,13 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				newUser.longName = nodeInfo.user.longName
 				newUser.shortName = nodeInfo.user.shortName
 				newUser.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
+				newUser.hwModelId = Int32(nodeInfo.user.hwModel.rawValue)
+				Task {
+					Api().loadDeviceHardwareData { (hw) in
+						let dh = hw.first(where: { $0.hwModel == newUser.hwModelId })
+						newUser.hwDisplayName = dh?.displayName
+					}
+				}
 				newUser.isLicensed = nodeInfo.user.isLicensed
 				newUser.role = Int32(nodeInfo.user.role.rawValue)
 				newNode.user = newUser
@@ -351,6 +358,13 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				fetchedNode[0].user!.isLicensed = nodeInfo.user.isLicensed
 				fetchedNode[0].user!.role = Int32(nodeInfo.user.role.rawValue)
 				fetchedNode[0].user!.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
+				fetchedNode[0].user!.hwModelId = Int32(nodeInfo.user.hwModel.rawValue)
+				Task {
+					Api().loadDeviceHardwareData { (hw) in
+						let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user!.hwModelId })
+						fetchedNode[0].user!.hwDisplayName = dh?.displayName
+					}
+				}
 			} else {
 				if fetchedNode[0].user == nil && nodeInfo.num > Constants.minimumNodeNum {
 
@@ -526,7 +540,6 @@ func adminResponseAck (packet: MeshPacket, context: NSManagedObjectContext) {
 			}
 			do {
 				try context.save()
-				Logger.data.info("💾 Saved admin ACK")
 			} catch {
 				Logger.data.error("Failed to save admin message response as an ack: \(error.localizedDescription)")
 			}
@@ -668,7 +681,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.voltage = telemetryMessage.deviceMetrics.voltage
 					telemetry.uptimeSeconds = Int32(telemetryMessage.deviceMetrics.uptimeSeconds)
 					telemetry.metricsType = 0
-					Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.deviceMetrics.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.deviceMetrics.airUtilTx, privacy: .public) for Node: \(packet.from.toHex(), privacy: .public))")
+					Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.deviceMetrics.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.deviceMetrics.airUtilTx, privacy: .public) for Node: \(packet.from.toHex(), privacy: .public)")
 				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) {
 					// Environment Metrics
 					telemetry.barometricPressure = telemetryMessage.environmentMetrics.barometricPressure
@@ -774,8 +787,11 @@ func textMessageAppPacket(
 			let fetchedUsers = try context.fetch(messageUsers)
 			let newMessage = MessageEntity(context: context)
 			newMessage.messageId = Int64(packet.id)
-			newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
-			newMessage.receivedTimestamp = Int32(Date().timeIntervalSince1970)
+			if packet.rxTime == 0 {
+				newMessage.messageTimestamp = Int32(Date().timeIntervalSince1970)
+			} else {
+				newMessage.messageTimestamp = Int32(packet.rxTime)
+			}
 			newMessage.receivedACK = false
 			newMessage.snr = packet.rxSnr
 			newMessage.rssi = packet.rxRssi

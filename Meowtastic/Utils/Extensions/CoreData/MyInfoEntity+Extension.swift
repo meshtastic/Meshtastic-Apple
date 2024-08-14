@@ -2,7 +2,19 @@ import Foundation
 
 extension MyInfoEntity {
 	var messageList: [MessageEntity]? {
-		self.value(forKey: "allMessages") as? [MessageEntity]
+		let context = Persistence.shared.container.viewContext
+		let fetchRequest = MessageEntity.fetchRequest()
+		fetchRequest.sortDescriptors = [
+			NSSortDescriptor(
+				key: "messageTimestamp",
+				ascending: true
+			)
+		]
+		fetchRequest.predicate = NSPredicate(
+			format: "toUser == nil"
+		)
+
+		return try? context.fetch(fetchRequest)
 	}
 
 	var unreadMessages: Int {

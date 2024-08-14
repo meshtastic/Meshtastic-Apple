@@ -2,8 +2,7 @@ import Foundation
 
 extension MessageEntity {
 	var timestamp: Date {
-		let time = messageTimestamp <= 0 ? receivedTimestamp : messageTimestamp
-		return Date(timeIntervalSince1970: TimeInterval(time))
+		Date(timeIntervalSince1970: TimeInterval(messageTimestamp))
 	}
 
 	var canRetry: Bool {

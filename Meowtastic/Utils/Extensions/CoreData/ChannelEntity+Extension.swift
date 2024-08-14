@@ -4,7 +4,20 @@ import MeshtasticProtobufs
 
 extension ChannelEntity {
 	var allPrivateMessages: [MessageEntity]? {
-		self.value(forKey: "allPrivateMessages") as? [MessageEntity]
+		let context = Persistence.shared.container.viewContext
+		let fetchRequest = MessageEntity.fetchRequest()
+		fetchRequest.sortDescriptors = [
+			NSSortDescriptor(
+				key: "messageTimestamp",
+				ascending: true
+			)
+		]
+		fetchRequest.predicate = NSPredicate(
+			format: "channel == %ld AND toUser == nil",
+			index
+		)
+
+		return try? context.fetch(fetchRequest)
 	}
 
 	var unreadMessages: Int {
@@ -19,11 +32,11 @@ extension ChannelEntity {
 
 	var protoBuf: Channel {
 		var channel = Channel()
-		channel.index = self.index
-		channel.settings.name = self.name ?? ""
-		channel.settings.psk = self.psk ?? Data()
-		channel.role = Channel.Role(rawValue: Int(self.role)) ?? Channel.Role.secondary
-		channel.settings.moduleSettings.positionPrecision = UInt32(self.positionPrecision)
+		channel.index = index
+		channel.settings.name = name ?? ""
+		channel.settings.psk = psk ?? Data()
+		channel.role = Channel.Role(rawValue: Int(role)) ?? Channel.Role.secondary
+		channel.settings.moduleSettings.positionPrecision = UInt32(positionPrecision)
 
 		return channel
 	}
