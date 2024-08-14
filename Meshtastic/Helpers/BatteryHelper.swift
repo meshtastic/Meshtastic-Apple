@@ -8,7 +8,7 @@
 import Foundation
 import MeshtasticProtobufs
 
-class BatteryHelper {
+enum BatteryHelper {
 	static func getBatteryFromTelemetries(_ telemetries: NSOrderedSet?) -> Double? {
 		let deviceMetrics = telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
 		guard let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity else {
