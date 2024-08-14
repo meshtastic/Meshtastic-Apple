@@ -93,6 +93,7 @@
 		DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */; };
 		DD6193792863875F00E59241 /* SerialConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193782863875F00E59241 /* SerialConfig.swift */; };
 		DD6F65722C6AB8EC0053C113 /* SecureInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6F65712C6AB8EC0053C113 /* SecureInput.swift */; };
+		DD6F65742C6CB80A0053C113 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6F65732C6CB80A0053C113 /* View.swift */; };
 		DD73FD1128750779000852D6 /* PositionLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD73FD1028750779000852D6 /* PositionLog.swift */; };
 		DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */; };
 		DD77093B2AA1ABB8007A8BF0 /* BluetoothTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD77093A2AA1ABB8007A8BF0 /* BluetoothTips.swift */; };
@@ -347,6 +348,7 @@
 		DD6193782863875F00E59241 /* SerialConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConfig.swift; sourceTree = "<group>"; };
 		DD68BAE72C417A74004C01A0 /* MeshtasticDataModelV 40.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 40.xcdatamodel"; sourceTree = "<group>"; };
 		DD6F65712C6AB8EC0053C113 /* SecureInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureInput.swift; sourceTree = "<group>"; };
+		DD6F65732C6CB80A0053C113 /* View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
 		DD73FD1028750779000852D6 /* PositionLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionLog.swift; sourceTree = "<group>"; };
 		DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMetricsLog.swift; sourceTree = "<group>"; };
 		DD77093A2AA1ABB8007A8BF0 /* BluetoothTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothTips.swift; sourceTree = "<group>"; };
@@ -1001,6 +1003,7 @@
 				DDD5BB172C2F9C36007E03CA /* OSLogEntryLog.swift */,
 				DDF45C362BC46A5A005ED5F2 /* TimeZone.swift */,
 				DDD5BB0C2C285F00007E03CA /* Logger.swift */,
+				DD6F65732C6CB80A0053C113 /* View.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -1374,6 +1377,7 @@
 				DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */,
 				DD994B69295F88B60013760A /* IntervalEnums.swift in Sources */,
 				DDDCD5702BB26F5C00BE6B60 /* NodeListFilter.swift in Sources */,
+				DD6F65742C6CB80A0053C113 /* View.swift in Sources */,
 				DD1933762B0835D500771CD5 /* PositionAltitudeChart.swift in Sources */,
 				DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */,
 				DDB6CCFB2AAF805100945AF6 /* NodeMapSwiftUI.swift in Sources */,
