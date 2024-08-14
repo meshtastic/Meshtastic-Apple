@@ -679,8 +679,8 @@
 		DDC2E15626CE248E0042C5E4 /* Meowtastic */ = {
 			isa = PBXGroup;
 			children = (
-				B2BDCD782C6CB6360040D7ED /* Analytics */,
 				B25A0B522C5F9A16004288DC /* GoogleService-Info.plist */,
+				B2BDCD782C6CB6360040D7ED /* Analytics */,
 				B2A5F31D2C567F06009457AB /* App */,
 				B233CA082C5662C200CBD7EF /* Circles Of Hell */,
 				08DD7E4D2C41AC8F00548159 /* Supporting Files */,

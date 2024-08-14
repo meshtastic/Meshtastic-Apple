@@ -63,8 +63,9 @@ struct Connect: View {
 			}
 		}
 		.onAppear {
-			bleManager.startScanning()
 			Analytics.logEvent(AnalyticEvents.connect.id, parameters: [:])
+
+			bleManager.startScanning()
 		}
 		.onDisappear {
 			bleManager.stopScanning()

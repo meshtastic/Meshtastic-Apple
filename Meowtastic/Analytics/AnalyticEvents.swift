@@ -1,10 +1,10 @@
 import Foundation
 
 enum AnalyticEvents: String {
-	// App
+	// MARK: - App
 	case appLaunch
 
-	// Screen
+	// MARK: - Screen
 	case connect
 	case meshMap
 	case messages
@@ -27,6 +27,7 @@ enum AnalyticEvents: String {
 	case optionsPower
 	case traceRoute
 
+	//  MARK: - Supporting Stuff
 	var id: String {
 		self.rawValue
 	}
@@ -37,13 +38,21 @@ enum AnalyticEvents: String {
 	) -> [String: Any] {
 		var params = [String: Any]()
 
-		if let name = node.user?.longName {
-			params["name"] = name
+		params["id"] = node.num
+
+		if let shortName = node.user?.shortName {
+			params["shortName"] = shortName
 		}
 		else {
-			params["name"] = "N/A"
+			params["shortName"] = "N/A"
 		}
-		params["id"] = node.num
+
+		if let longName = node.user?.longName {
+			params["longName"] = longName
+		}
+		else {
+			params["longName"] = "N/A"
+		}
 
 		if let additionalParams {
 			for (key, value) in additionalParams {

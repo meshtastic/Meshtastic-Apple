@@ -54,7 +54,7 @@ struct MQTTConfig: View {
 	var body: some View {
 		Form {
 			if let loraConfig = node?.loRaConfig {
-				let rc = RegionCodes(rawValue: Int(loraConfig.regionCode ?? 0))
+				let rc = RegionCodes(rawValue: Int(loraConfig.regionCode))
 
 				if rc?.dutyCycle ?? 0 > 0 && rc?.dutyCycle ?? 0 < 100 {
 					Text("Your region has a \(rc?.dutyCycle ?? 0)% duty cycle. MQTT is not advised when you are duty cycle restricted, the extra traffic will quickly overwhelm your LoRa mesh.")
@@ -110,28 +110,25 @@ struct MQTTConfig: View {
 								.fixedSize(horizontal: false, vertical: true)
 								.foregroundColor(.red)
 						}
-						
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.onChange(of: mqttConnected) {
 						if mqttConnected, !bleManager.mqttProxyConnected, let node {
 							bleManager.mqttManager.connectFromConfigSettings(node: node)
-							
 						}
 						else if !mqttConnected, bleManager.mqttProxyConnected {
 							bleManager.mqttManager.disconnect()
 						}
 					}
 				}
-				
+
 				Toggle(isOn: $encryptionEnabled) {
 					Label("Encryption Enabled", systemImage: "lock.icloud")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				
+
 				Toggle(isOn: $jsonEnabled) {
 					Label("JSON Enabled", systemImage: "ellipsis.curlybraces")
-
 					Text("JSON mode is a limited, unencrypted MQTT output for locally integrating with home assistant")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
