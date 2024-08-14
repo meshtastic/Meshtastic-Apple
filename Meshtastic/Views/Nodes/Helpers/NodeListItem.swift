@@ -145,7 +145,6 @@ struct NodeListItem: View {
 								HStack {
 									Image(systemName: "\(node.channel).circle.fill")
 										.font(.title2)
-										.symbolRenderingMode(.multicolor)
 										.frame(width: 30)
 									Text("Channel")
 										.foregroundColor(.secondary)
@@ -216,7 +215,6 @@ struct NodeListItem: View {
 									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 								Image(systemName: "\(node.hopsAway).square")
 									.font(.title2)
-									.symbolRenderingMode(.multicolor)
 							}
 						} else {
 							if node.snr != 0 && !node.viaMqtt {

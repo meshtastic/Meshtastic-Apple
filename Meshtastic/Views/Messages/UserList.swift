@@ -75,7 +75,7 @@ struct UserList: View {
 									if user.pkiEncrypted {
 										if !user.keyMatch {
 											/// Public Key on the User and the Public Key on the Last Message don't match
-											Image(systemName: "lock.slash.fill")
+											Image(systemName: "key.slash")
 												.foregroundColor(.red)
 										} else {
 											Image(systemName: "lock.fill")
