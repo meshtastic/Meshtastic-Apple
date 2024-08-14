@@ -21,6 +21,7 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 	case dutyCycleLimit = 9
 	case badRequest = 32
 	case notAuthorized = 33
+	case pkiFailed = 34
 
 	var id: Int { self.rawValue }
 	var display: String {
@@ -50,6 +51,8 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 			return "routing.badRequest".localized
 		case .notAuthorized:
 			return "routing.notauthorized".localized
+		case .pkiFailed:
+			return "routing.pkiFailed".localized
 		}
 	}
 	func protoEnumValue() -> Routing.Error {
@@ -80,7 +83,8 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 			return Routing.Error.badRequest
 		case .notAuthorized:
 			return Routing.Error.notAuthorized
-
+		case .pkiFailed:
+			return Routing.Error.pkiFailed
 		}
 	}
 }
