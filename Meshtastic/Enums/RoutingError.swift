@@ -123,7 +123,7 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .pkiFailed:
 			return Routing.Error.pkiFailed
 		case .pkiUnknownPubkey:
-			return Routing.Error.pkiFailed
+			return Routing.Error.pkiUnknownPubkey
 		}
 	}
 }
