@@ -1,6 +1,10 @@
 import Foundation
 
 extension Date {
+	func isStale(threshold: Double) -> Bool {
+		timeIntervalSinceNow < -threshold
+	}
+
 	func formattedDate(format: String) -> String {
 		let dateformat = DateFormatter()
 		dateformat.dateFormat = format

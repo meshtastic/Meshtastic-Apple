@@ -36,7 +36,7 @@ struct MeshMap: View {
 					Map(
 						position: $position,
 						bounds: MapCameraBounds(
-							minimumDistance: 1,
+							minimumDistance: 250,
 							maximumDistance: .infinity
 						),
 						scope: mapScope

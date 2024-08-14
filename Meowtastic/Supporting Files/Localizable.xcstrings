@@ -6601,6 +6601,9 @@
     "Encryption Enabled" : {
 
     },
+    "Environment data are stale" : {
+
+    },
     "Erase all app data?" : {
 
     },
@@ -15840,7 +15843,13 @@
         }
       }
     },
+    "Position & environment data are stale" : {
+
+    },
     "Position Config" : {
+
+    },
+    "Position data are stale" : {
 
     },
     "Position Flags" : {

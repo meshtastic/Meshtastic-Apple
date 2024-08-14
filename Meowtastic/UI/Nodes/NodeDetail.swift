@@ -34,6 +34,11 @@ struct NodeDetail: View {
 	private var nodePosition: PositionEntity? {
 		node.positions?.lastObject as? PositionEntity
 	}
+	private var nodePositionStale: Bool {
+		nodePosition != nil
+		&& nodePosition?.time?.isStale(threshold: AppConstants.nodeTelemetryThreshold) ?? true
+		&& nodePosition?.speed ?? 0 > 0
+	}
 	private var nodeTelemetry: TelemetryEntity? {
 		node
 			.telemetries?
@@ -50,6 +55,10 @@ struct NodeDetail: View {
 			)
 			.lastObject as? TelemetryEntity
 	}
+	private var nodeEnvironmentStale: Bool {
+		nodeEnvironment != nil
+		&& nodeEnvironment?.time?.isStale(threshold: AppConstants.nodeTelemetryThreshold) ?? true
+	}
 
 	var body: some View {
 		NavigationStack {
@@ -59,12 +68,38 @@ struct NodeDetail: View {
 
 					if nodePosition != nil {
 						locationInfo
-							.padding(.horizontal, 8)
+							.padding(.horizontal, 4)
 					}
 
 					if nodeEnvironment != nil {
 						environmentInfo
-							.padding(.horizontal, 8)
+							.padding(.horizontal, 4)
+					}
+
+					if nodePositionStale || nodeEnvironmentStale {
+						HStack(alignment: .center, spacing: 8) {
+							Image(systemName: "exclamationmark.triangle.fill")
+								.font(detailInfoFont)
+								.foregroundColor(.orange)
+								.frame(width: detailIconSize)
+
+							if nodePositionStale, nodeEnvironmentStale {
+								Text("Position & environment data are stale")
+									.font(detailInfoFont)
+									.foregroundColor(.gray)
+							}
+							else if nodePositionStale {
+								Text("Position data are stale")
+									.font(detailInfoFont)
+									.foregroundColor(.gray)
+							}
+							else if nodeEnvironmentStale {
+								Text("Environment data are stale")
+									.font(detailInfoFont)
+									.foregroundColor(.gray)
+							}
+						}
+						.padding(.horizontal, 4)
 					}
 				}
 
@@ -158,7 +193,7 @@ struct NodeDetail: View {
 						.foregroundColor(.gray)
 
 					Spacer()
-						.frame(width: 8)
+						.frame(width: 4)
 				}
 
 				if position.speed > 0 {
@@ -196,7 +231,7 @@ struct NodeDetail: View {
 						.foregroundColor(.gray)
 
 					Spacer()
-						.frame(width: 8)
+						.frame(width: 4)
 
 					Image(systemName: "safari")
 						.font(detailInfoFont)
@@ -208,7 +243,7 @@ struct NodeDetail: View {
 						.foregroundColor(.gray)
 
 					Spacer()
-						.frame(width: 8)
+						.frame(width: 4)
 				}
 
 				let altitudeFormatted = distanceFormatter.string(
@@ -231,7 +266,7 @@ struct NodeDetail: View {
 					)
 
 					Spacer()
-						.frame(width: 8)
+						.frame(width: 4)
 
 					Image(systemName: "scope")
 						.font(detailInfoFont)
@@ -272,7 +307,7 @@ struct NodeDetail: View {
 						.foregroundColor(.gray)
 
 					Spacer()
-						.frame(width: 8)
+						.frame(width: 4)
 				}
 
 				if temp < 10 {
@@ -300,7 +335,7 @@ struct NodeDetail: View {
 
 				if nodeEnvironment.relativeHumidity > 0, nodeEnvironment.relativeHumidity < 100 {
 					Spacer()
-						.frame(width: 8)
+						.frame(width: 4)
 
 					Image(systemName: "humidity")
 						.font(detailInfoFont)
@@ -314,7 +349,7 @@ struct NodeDetail: View {
 
 				if nodeEnvironment.barometricPressure > 0 {
 					Spacer()
-						.frame(width: 8)
+						.frame(width: 4)
 
 					Image(systemName: "barometer")
 						.font(detailInfoFont)
