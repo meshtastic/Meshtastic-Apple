@@ -22,7 +22,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 
 ///
 /// Supported I2C Sensors for telemetry in Meshtastic
-public enum TelemetrySensorType: SwiftProtobuf.Enum {
+public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -128,6 +128,18 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
   ///
   /// NAU7802 Scale Chip or compatible
   case nau7802 // = 25
+
+  ///
+  /// BMP3XX High accuracy temperature and pressure
+  case bmp3Xx // = 26
+
+  ///
+  /// ICM-20948 9-Axis digital motion processor
+  case icm20948 // = 27
+
+  ///
+  /// MAX17048 1S lipo battery sensor (voltage, state of charge, time to go)
+  case max17048 // = 28
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -162,6 +174,9 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
     case 23: self = .aht10
     case 24: self = .dfrobotLark
     case 25: self = .nau7802
+    case 26: self = .bmp3Xx
+    case 27: self = .icm20948
+    case 28: self = .max17048
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -194,15 +209,13 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
     case .aht10: return 23
     case .dfrobotLark: return 24
     case .nau7802: return 25
+    case .bmp3Xx: return 26
+    case .icm20948: return 27
+    case .max17048: return 28
     case .UNRECOGNIZED(let i): return i
     }
   }
 
-}
-
-#if swift(>=4.2)
-
-extension TelemetrySensorType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   public static let allCases: [TelemetrySensorType] = [
     .sensorUnset,
@@ -231,14 +244,16 @@ extension TelemetrySensorType: CaseIterable {
     .aht10,
     .dfrobotLark,
     .nau7802,
+    .bmp3Xx,
+    .icm20948,
+    .max17048,
   ]
-}
 
-#endif  // swift(>=4.2)
+}
 
 ///
 /// Key native device metrics such as battery level
-public struct DeviceMetrics {
+public struct DeviceMetrics: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -311,7 +326,7 @@ public struct DeviceMetrics {
 
 ///
 /// Weather station or other environmental metrics
-public struct EnvironmentMetrics {
+public struct EnvironmentMetrics: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -514,7 +529,7 @@ public struct EnvironmentMetrics {
 
 ///
 /// Power Metrics (voltage / current / etc)
-public struct PowerMetrics {
+public struct PowerMetrics: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -599,7 +614,7 @@ public struct PowerMetrics {
 
 ///
 /// Air quality metrics
-public struct AirQualityMetrics {
+public struct AirQualityMetrics: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -756,7 +771,7 @@ public struct AirQualityMetrics {
 
 ///
 /// Types of Measurements the telemetry module is equipped to handle
-public struct Telemetry {
+public struct Telemetry: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -809,7 +824,7 @@ public struct Telemetry {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_Variant: Equatable {
+  public enum OneOf_Variant: Equatable, Sendable {
     ///
     /// Key native device metrics such as battery level
     case deviceMetrics(DeviceMetrics)
@@ -823,32 +838,6 @@ public struct Telemetry {
     /// Power Metrics
     case powerMetrics(PowerMetrics)
 
-  #if !swift(>=4.1)
-    public static func ==(lhs: Telemetry.OneOf_Variant, rhs: Telemetry.OneOf_Variant) -> Bool {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch (lhs, rhs) {
-      case (.deviceMetrics, .deviceMetrics): return {
-        guard case .deviceMetrics(let l) = lhs, case .deviceMetrics(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.environmentMetrics, .environmentMetrics): return {
-        guard case .environmentMetrics(let l) = lhs, case .environmentMetrics(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.airQualityMetrics, .airQualityMetrics): return {
-        guard case .airQualityMetrics(let l) = lhs, case .airQualityMetrics(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.powerMetrics, .powerMetrics): return {
-        guard case .powerMetrics(let l) = lhs, case .powerMetrics(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      default: return false
-      }
-    }
-  #endif
   }
 
   public init() {}
@@ -856,7 +845,7 @@ public struct Telemetry {
 
 ///
 /// NAU7802 Telemetry configuration, for saving to flash
-public struct Nau7802Config {
+public struct Nau7802Config: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -873,17 +862,6 @@ public struct Nau7802Config {
 
   public init() {}
 }
-
-#if swift(>=5.5) && canImport(_Concurrency)
-extension TelemetrySensorType: @unchecked Sendable {}
-extension DeviceMetrics: @unchecked Sendable {}
-extension EnvironmentMetrics: @unchecked Sendable {}
-extension PowerMetrics: @unchecked Sendable {}
-extension AirQualityMetrics: @unchecked Sendable {}
-extension Telemetry: @unchecked Sendable {}
-extension Telemetry.OneOf_Variant: @unchecked Sendable {}
-extension Nau7802Config: @unchecked Sendable {}
-#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
@@ -917,6 +895,9 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     23: .same(proto: "AHT10"),
     24: .same(proto: "DFROBOT_LARK"),
     25: .same(proto: "NAU7802"),
+    26: .same(proto: "BMP3XX"),
+    27: .same(proto: "ICM20948"),
+    28: .same(proto: "MAX17048"),
   ]
 }
 
@@ -1488,7 +1469,7 @@ extension Nau7802Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if self.zeroOffset != 0 {
       try visitor.visitSingularInt32Field(value: self.zeroOffset, fieldNumber: 1)
     }
-    if self.calibrationFactor != 0 {
+    if self.calibrationFactor.bitPattern != 0 {
       try visitor.visitSingularFloatField(value: self.calibrationFactor, fieldNumber: 2)
     }
     try unknownFields.traverse(visitor: &visitor)

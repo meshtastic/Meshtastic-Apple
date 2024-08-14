@@ -30,7 +30,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// because no security yet (beyond the channel mechanism).
 /// It should be off by default and then protected based on some TBD mechanism
 /// (a special channel once multichannel support is included?)
-public struct HardwareMessage {
+public struct HardwareMessage: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -52,7 +52,7 @@ public struct HardwareMessage {
 
   ///
   /// TODO: REPLACE
-  public enum TypeEnum: SwiftProtobuf.Enum {
+  public enum TypeEnum: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -110,31 +110,20 @@ public struct HardwareMessage {
       }
     }
 
+    // The compiler won't synthesize support with the UNRECOGNIZED case.
+    public static let allCases: [HardwareMessage.TypeEnum] = [
+      .unset,
+      .writeGpios,
+      .watchGpios,
+      .gpiosChanged,
+      .readGpios,
+      .readGpiosReply,
+    ]
+
   }
 
   public init() {}
 }
-
-#if swift(>=4.2)
-
-extension HardwareMessage.TypeEnum: CaseIterable {
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [HardwareMessage.TypeEnum] = [
-    .unset,
-    .writeGpios,
-    .watchGpios,
-    .gpiosChanged,
-    .readGpios,
-    .readGpiosReply,
-  ]
-}
-
-#endif  // swift(>=4.2)
-
-#if swift(>=5.5) && canImport(_Concurrency)
-extension HardwareMessage: @unchecked Sendable {}
-extension HardwareMessage.TypeEnum: @unchecked Sendable {}
-#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 

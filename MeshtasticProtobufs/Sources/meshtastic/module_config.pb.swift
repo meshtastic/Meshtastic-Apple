@@ -20,7 +20,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
-public enum RemoteHardwarePinType: SwiftProtobuf.Enum {
+public enum RemoteHardwarePinType: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -58,24 +58,18 @@ public enum RemoteHardwarePinType: SwiftProtobuf.Enum {
     }
   }
 
-}
-
-#if swift(>=4.2)
-
-extension RemoteHardwarePinType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   public static let allCases: [RemoteHardwarePinType] = [
     .unknown,
     .digitalRead,
     .digitalWrite,
   ]
-}
 
-#endif  // swift(>=4.2)
+}
 
 ///
 /// Module Config
-public struct ModuleConfig {
+public struct ModuleConfig: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -218,7 +212,7 @@ public struct ModuleConfig {
 
   ///
   /// TODO: REPLACE
-  public enum OneOf_PayloadVariant: Equatable {
+  public enum OneOf_PayloadVariant: Equatable, Sendable {
     ///
     /// TODO: REPLACE
     case mqtt(ModuleConfig.MQTTConfig)
@@ -259,73 +253,11 @@ public struct ModuleConfig {
     /// TODO: REPLACE
     case paxcounter(ModuleConfig.PaxcounterConfig)
 
-  #if !swift(>=4.1)
-    public static func ==(lhs: ModuleConfig.OneOf_PayloadVariant, rhs: ModuleConfig.OneOf_PayloadVariant) -> Bool {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch (lhs, rhs) {
-      case (.mqtt, .mqtt): return {
-        guard case .mqtt(let l) = lhs, case .mqtt(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.serial, .serial): return {
-        guard case .serial(let l) = lhs, case .serial(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.externalNotification, .externalNotification): return {
-        guard case .externalNotification(let l) = lhs, case .externalNotification(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.storeForward, .storeForward): return {
-        guard case .storeForward(let l) = lhs, case .storeForward(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.rangeTest, .rangeTest): return {
-        guard case .rangeTest(let l) = lhs, case .rangeTest(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.telemetry, .telemetry): return {
-        guard case .telemetry(let l) = lhs, case .telemetry(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.cannedMessage, .cannedMessage): return {
-        guard case .cannedMessage(let l) = lhs, case .cannedMessage(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.audio, .audio): return {
-        guard case .audio(let l) = lhs, case .audio(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.remoteHardware, .remoteHardware): return {
-        guard case .remoteHardware(let l) = lhs, case .remoteHardware(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.neighborInfo, .neighborInfo): return {
-        guard case .neighborInfo(let l) = lhs, case .neighborInfo(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.ambientLighting, .ambientLighting): return {
-        guard case .ambientLighting(let l) = lhs, case .ambientLighting(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.detectionSensor, .detectionSensor): return {
-        guard case .detectionSensor(let l) = lhs, case .detectionSensor(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.paxcounter, .paxcounter): return {
-        guard case .paxcounter(let l) = lhs, case .paxcounter(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      default: return false
-      }
-    }
-  #endif
   }
 
   ///
   /// MQTT Client Config
-  public struct MQTTConfig {
+  public struct MQTTConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -400,7 +332,7 @@ public struct ModuleConfig {
 
   ///
   /// Settings for reporting unencrypted information about our node to a map via MQTT
-  public struct MapReportSettings {
+  public struct MapReportSettings: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -420,7 +352,7 @@ public struct ModuleConfig {
 
   ///
   /// RemoteHardwareModule Config
-  public struct RemoteHardwareConfig {
+  public struct RemoteHardwareConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -444,7 +376,7 @@ public struct ModuleConfig {
 
   ///
   /// NeighborInfoModule Config
-  public struct NeighborInfoConfig {
+  public struct NeighborInfoConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -465,7 +397,7 @@ public struct ModuleConfig {
 
   ///
   /// Detection Sensor Module Config
-  public struct DetectionSensorConfig {
+  public struct DetectionSensorConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -516,7 +448,7 @@ public struct ModuleConfig {
 
   ///
   /// Audio Config for codec2 voice
-  public struct AudioConfig {
+  public struct AudioConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -553,7 +485,7 @@ public struct ModuleConfig {
 
     ///
     /// Baudrate for codec2 voice
-    public enum Audio_Baud: SwiftProtobuf.Enum {
+    public enum Audio_Baud: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
       case codec2Default // = 0
       case codec23200 // = 1
@@ -600,6 +532,19 @@ public struct ModuleConfig {
         }
       }
 
+      // The compiler won't synthesize support with the UNRECOGNIZED case.
+      public static let allCases: [ModuleConfig.AudioConfig.Audio_Baud] = [
+        .codec2Default,
+        .codec23200,
+        .codec22400,
+        .codec21600,
+        .codec21400,
+        .codec21300,
+        .codec21200,
+        .codec2700,
+        .codec2700B,
+      ]
+
     }
 
     public init() {}
@@ -607,7 +552,7 @@ public struct ModuleConfig {
 
   ///
   /// Config for the Paxcounter Module
-  public struct PaxcounterConfig {
+  public struct PaxcounterConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -633,7 +578,7 @@ public struct ModuleConfig {
 
   ///
   /// Serial Config
-  public struct SerialConfig {
+  public struct SerialConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -676,7 +621,7 @@ public struct ModuleConfig {
 
     ///
     /// TODO: REPLACE
-    public enum Serial_Baud: SwiftProtobuf.Enum {
+    public enum Serial_Baud: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
       case baudDefault // = 0
       case baud110 // = 1
@@ -744,11 +689,31 @@ public struct ModuleConfig {
         }
       }
 
+      // The compiler won't synthesize support with the UNRECOGNIZED case.
+      public static let allCases: [ModuleConfig.SerialConfig.Serial_Baud] = [
+        .baudDefault,
+        .baud110,
+        .baud300,
+        .baud600,
+        .baud1200,
+        .baud2400,
+        .baud4800,
+        .baud9600,
+        .baud19200,
+        .baud38400,
+        .baud57600,
+        .baud115200,
+        .baud230400,
+        .baud460800,
+        .baud576000,
+        .baud921600,
+      ]
+
     }
 
     ///
     /// TODO: REPLACE
-    public enum Serial_Mode: SwiftProtobuf.Enum {
+    public enum Serial_Mode: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
       case `default` // = 0
       case simple // = 1
@@ -793,6 +758,17 @@ public struct ModuleConfig {
         }
       }
 
+      // The compiler won't synthesize support with the UNRECOGNIZED case.
+      public static let allCases: [ModuleConfig.SerialConfig.Serial_Mode] = [
+        .default,
+        .simple,
+        .proto,
+        .textmsg,
+        .nmea,
+        .caltopo,
+        .ws85,
+      ]
+
     }
 
     public init() {}
@@ -800,7 +776,7 @@ public struct ModuleConfig {
 
   ///
   /// External Notifications Config
-  public struct ExternalNotificationConfig {
+  public struct ExternalNotificationConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -883,7 +859,7 @@ public struct ModuleConfig {
 
   ///
   /// Store and Forward Module Config
-  public struct StoreForwardConfig {
+  public struct StoreForwardConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -919,7 +895,7 @@ public struct ModuleConfig {
 
   ///
   /// Preferences for the RangeTestModule
-  public struct RangeTestConfig {
+  public struct RangeTestConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -944,7 +920,7 @@ public struct ModuleConfig {
 
   ///
   /// Configuration for both device and environment metrics
-  public struct TelemetryConfig {
+  public struct TelemetryConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1001,7 +977,7 @@ public struct ModuleConfig {
 
   ///
   /// TODO: REPLACE
-  public struct CannedMessageConfig {
+  public struct CannedMessageConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1056,7 +1032,7 @@ public struct ModuleConfig {
 
     ///
     /// TODO: REPLACE
-    public enum InputEventChar: SwiftProtobuf.Enum {
+    public enum InputEventChar: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
 
       ///
@@ -1124,6 +1100,18 @@ public struct ModuleConfig {
         }
       }
 
+      // The compiler won't synthesize support with the UNRECOGNIZED case.
+      public static let allCases: [ModuleConfig.CannedMessageConfig.InputEventChar] = [
+        .none,
+        .up,
+        .down,
+        .left,
+        .right,
+        .select,
+        .back,
+        .cancel,
+      ]
+
     }
 
     public init() {}
@@ -1132,7 +1120,7 @@ public struct ModuleConfig {
   ///
   ///Ambient Lighting Module - Settings for control of onboard LEDs to allow users to adjust the brightness levels and respective color levels.
   ///Initially created for the RAK14001 RGB LED module.
-  public struct AmbientLightingConfig {
+  public struct AmbientLightingConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1165,77 +1153,9 @@ public struct ModuleConfig {
   public init() {}
 }
 
-#if swift(>=4.2)
-
-extension ModuleConfig.AudioConfig.Audio_Baud: CaseIterable {
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [ModuleConfig.AudioConfig.Audio_Baud] = [
-    .codec2Default,
-    .codec23200,
-    .codec22400,
-    .codec21600,
-    .codec21400,
-    .codec21300,
-    .codec21200,
-    .codec2700,
-    .codec2700B,
-  ]
-}
-
-extension ModuleConfig.SerialConfig.Serial_Baud: CaseIterable {
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [ModuleConfig.SerialConfig.Serial_Baud] = [
-    .baudDefault,
-    .baud110,
-    .baud300,
-    .baud600,
-    .baud1200,
-    .baud2400,
-    .baud4800,
-    .baud9600,
-    .baud19200,
-    .baud38400,
-    .baud57600,
-    .baud115200,
-    .baud230400,
-    .baud460800,
-    .baud576000,
-    .baud921600,
-  ]
-}
-
-extension ModuleConfig.SerialConfig.Serial_Mode: CaseIterable {
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [ModuleConfig.SerialConfig.Serial_Mode] = [
-    .default,
-    .simple,
-    .proto,
-    .textmsg,
-    .nmea,
-    .caltopo,
-    .ws85,
-  ]
-}
-
-extension ModuleConfig.CannedMessageConfig.InputEventChar: CaseIterable {
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [ModuleConfig.CannedMessageConfig.InputEventChar] = [
-    .none,
-    .up,
-    .down,
-    .left,
-    .right,
-    .select,
-    .back,
-    .cancel,
-  ]
-}
-
-#endif  // swift(>=4.2)
-
 ///
 /// A GPIO pin definition for remote hardware module
-public struct RemoteHardwarePin {
+public struct RemoteHardwarePin: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1256,31 +1176,6 @@ public struct RemoteHardwarePin {
 
   public init() {}
 }
-
-#if swift(>=5.5) && canImport(_Concurrency)
-extension RemoteHardwarePinType: @unchecked Sendable {}
-extension ModuleConfig: @unchecked Sendable {}
-extension ModuleConfig.OneOf_PayloadVariant: @unchecked Sendable {}
-extension ModuleConfig.MQTTConfig: @unchecked Sendable {}
-extension ModuleConfig.MapReportSettings: @unchecked Sendable {}
-extension ModuleConfig.RemoteHardwareConfig: @unchecked Sendable {}
-extension ModuleConfig.NeighborInfoConfig: @unchecked Sendable {}
-extension ModuleConfig.DetectionSensorConfig: @unchecked Sendable {}
-extension ModuleConfig.AudioConfig: @unchecked Sendable {}
-extension ModuleConfig.AudioConfig.Audio_Baud: @unchecked Sendable {}
-extension ModuleConfig.PaxcounterConfig: @unchecked Sendable {}
-extension ModuleConfig.SerialConfig: @unchecked Sendable {}
-extension ModuleConfig.SerialConfig.Serial_Baud: @unchecked Sendable {}
-extension ModuleConfig.SerialConfig.Serial_Mode: @unchecked Sendable {}
-extension ModuleConfig.ExternalNotificationConfig: @unchecked Sendable {}
-extension ModuleConfig.StoreForwardConfig: @unchecked Sendable {}
-extension ModuleConfig.RangeTestConfig: @unchecked Sendable {}
-extension ModuleConfig.TelemetryConfig: @unchecked Sendable {}
-extension ModuleConfig.CannedMessageConfig: @unchecked Sendable {}
-extension ModuleConfig.CannedMessageConfig.InputEventChar: @unchecked Sendable {}
-extension ModuleConfig.AmbientLightingConfig: @unchecked Sendable {}
-extension RemoteHardwarePin: @unchecked Sendable {}
-#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
