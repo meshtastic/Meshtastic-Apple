@@ -70,7 +70,7 @@ struct AvatarAbstract: View {
 
 	init(
 		_ name: String? = nil,
-		icon: String = "person.fill.turn.down",
+		icon: String = "person.fill.questionmark",
 		color: Color? = nil,
 		size: CGFloat = 45,
 		// swiftlint:disable:next large_tuple

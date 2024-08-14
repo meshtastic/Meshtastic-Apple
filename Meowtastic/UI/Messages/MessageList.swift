@@ -265,6 +265,7 @@ struct MessageList: View {
 				}
 				else {
 					AvatarAbstract(
+						color: .gray,
 						size: 64,
 						corners: isCurrentUser ? (true, true, false, true) : nil
 					)

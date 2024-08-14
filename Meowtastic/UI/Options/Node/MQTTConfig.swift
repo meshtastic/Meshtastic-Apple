@@ -98,7 +98,7 @@ struct MQTTConfig: View {
 					}
 				}
 
-				if enabled, proxyToClientEnabled, node!.mqttConfig!.proxyToClientEnabled == true {
+				if enabled, proxyToClientEnabled, node?.mqttConfig?.proxyToClientEnabled ?? false == true {
 					Toggle(isOn: $mqttConnected) {
 						Label(
 							mqttConnected ? "Connected" : "Not Connected",
@@ -119,6 +119,9 @@ struct MQTTConfig: View {
 						else if !mqttConnected, bleManager.mqttProxyConnected {
 							bleManager.mqttManager.disconnect()
 						}
+					}
+					.onChange(of: bleManager.mqttProxyConnected, initial: true) {
+						mqttConnected = bleManager.mqttProxyConnected
 					}
 				}
 
