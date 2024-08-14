@@ -18440,6 +18440,17 @@
         }
       }
     },
+    "routing.pkifailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PKI Failed"
+          }
+        }
+      }
+    },
     "routing.timeout" : {
       "extractionState" : "migrated",
       "localizations" : {
