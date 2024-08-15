@@ -94,6 +94,9 @@
 		DD6193792863875F00E59241 /* SerialConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193782863875F00E59241 /* SerialConfig.swift */; };
 		DD6F65722C6AB8EC0053C113 /* SecureInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6F65712C6AB8EC0053C113 /* SecureInput.swift */; };
 		DD6F65742C6CB80A0053C113 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6F65732C6CB80A0053C113 /* View.swift */; };
+		DD6F65762C6EA5490053C113 /* AckErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6F65752C6EA5490053C113 /* AckErrors.swift */; };
+		DD6F65792C6EADE60053C113 /* DirectMessagesHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6F65782C6EADE60053C113 /* DirectMessagesHelp.swift */; };
+		DD6F657B2C6EC2900053C113 /* LockLegend.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6F657A2C6EC2900053C113 /* LockLegend.swift */; };
 		DD73FD1128750779000852D6 /* PositionLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD73FD1028750779000852D6 /* PositionLog.swift */; };
 		DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */; };
 		DD77093B2AA1ABB8007A8BF0 /* BluetoothTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD77093A2AA1ABB8007A8BF0 /* BluetoothTips.swift */; };
@@ -349,6 +352,9 @@
 		DD68BAE72C417A74004C01A0 /* MeshtasticDataModelV 40.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 40.xcdatamodel"; sourceTree = "<group>"; };
 		DD6F65712C6AB8EC0053C113 /* SecureInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureInput.swift; sourceTree = "<group>"; };
 		DD6F65732C6CB80A0053C113 /* View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
+		DD6F65752C6EA5490053C113 /* AckErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AckErrors.swift; sourceTree = "<group>"; };
+		DD6F65782C6EADE60053C113 /* DirectMessagesHelp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectMessagesHelp.swift; sourceTree = "<group>"; };
+		DD6F657A2C6EC2900053C113 /* LockLegend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockLegend.swift; sourceTree = "<group>"; };
 		DD73FD1028750779000852D6 /* PositionLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionLog.swift; sourceTree = "<group>"; };
 		DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMetricsLog.swift; sourceTree = "<group>"; };
 		DD77093A2AA1ABB8007A8BF0 /* BluetoothTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothTips.swift; sourceTree = "<group>"; };
@@ -710,6 +716,16 @@
 			path = Module;
 			sourceTree = "<group>";
 		};
+		DD6F65772C6EAB860053C113 /* Help */ = {
+			isa = PBXGroup;
+			children = (
+				DD6F65752C6EA5490053C113 /* AckErrors.swift */,
+				DD6F65782C6EADE60053C113 /* DirectMessagesHelp.swift */,
+				DD6F657A2C6EC2900053C113 /* LockLegend.swift */,
+			);
+			path = Help;
+			sourceTree = "<group>";
+		};
 		DD7709392AA1ABA1007A8BF0 /* Tips */ = {
 			isa = PBXGroup;
 			children = (
@@ -902,6 +918,7 @@
 		DDC2E18D26CE25CB0042C5E4 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				DD6F65772C6EAB860053C113 /* Help */,
 				DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */,
 				DD3CC24B2C498D6C001BD3A2 /* BatteryCompact.swift */,
 				DDB75A222A13CDA9006ED576 /* BatteryLevelCompact.swift */,
@@ -1300,6 +1317,7 @@
 				DD3CC6BE28E4CD9800FA9159 /* BatteryGauge.swift in Sources */,
 				DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */,
 				DD3619152B1EF9F900C41C8C /* LocationsHandler.swift in Sources */,
+				DD6F65792C6EADE60053C113 /* DirectMessagesHelp.swift in Sources */,
 				25F5D5C02C3F6DA6008036E3 /* Router.swift in Sources */,
 				DDDB444A29F8AA3A00EE2349 /* CLLocationCoordinate2D.swift in Sources */,
 				25C49D902C471AEA0024FBD1 /* Constants.swift in Sources */,
@@ -1358,6 +1376,7 @@
 				251926852C3BA97800249DF5 /* FavoriteNodeButton.swift in Sources */,
 				D9C983A02B79D0E800BDBE6A /* AlertButton.swift in Sources */,
 				DD86D4112881D16900BAEB7A /* WriteCsvFile.swift in Sources */,
+				DD6F65762C6EA5490053C113 /* AckErrors.swift in Sources */,
 				DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */,
 				DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */,
 				DDB75A142A0593E2006ED576 /* OfflineTileManager.swift in Sources */,
@@ -1385,6 +1404,7 @@
 				DD15E4F52B8BFC8E00654F61 /* PaxCounterLog.swift in Sources */,
 				25F5D5C22C3F6E4B008036E3 /* AppState.swift in Sources */,
 				DD3CC6C028E7A60700FA9159 /* MessagingEnums.swift in Sources */,
+				DD6F657B2C6EC2900053C113 /* LockLegend.swift in Sources */,
 				DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */,
 				DDAB580D2B0DAA9E00147258 /* Routes.swift in Sources */,
 				D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */,

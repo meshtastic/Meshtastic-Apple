@@ -4811,9 +4811,6 @@
         }
       }
     },
-    "Contacts" : {
-
-    },
     "contacts %@" : {
       "extractionState" : "migrated",
       "localizations" : {
@@ -6316,6 +6313,15 @@
     "Direct" : {
 
     },
+    "Direct Message Help" : {
+
+    },
+    "Direct messages are using the new public key infrastructure to encrypt the message." : {
+
+    },
+    "Direct messages are using the shared key for the channel when communicating with this node." : {
+
+    },
     "direct.messages" : {
       "localizations" : {
         "de" : {
@@ -7204,7 +7210,7 @@
     "Favorites" : {
 
     },
-    "Favorites and nodes with recent messages show up at the top of the list. Contacts using the shared key display an open lock, nodes with a private key show a green lock and a red key with a slash will show up if a key has changed for a contact. Long press to favorite or mute the contact or delete a conversation." : {
+    "Favorites and nodes with recent messages show up at the top of the contact list." : {
 
     },
     "Fifteen Minutes" : {
@@ -11273,6 +11279,9 @@
     "Long Name: %@" : {
 
     },
+    "Long press to favorite or mute the contact or delete a conversation." : {
+
+    },
     "Longitude" : {
 
     },
@@ -14528,6 +14537,9 @@
     "Message" : {
 
     },
+    "Message Status Options" : {
+
+    },
     "message.details" : {
       "localizations" : {
         "de" : {
@@ -15406,6 +15418,9 @@
           }
         }
       }
+    },
+    "Node Encryption Status" : {
+
     },
     "Node History" : {
 
@@ -16664,6 +16679,9 @@
 
     },
     "Public Key" : {
+
+    },
+    "Public Key Encryption" : {
 
     },
     "Public Key Mismatch" : {
@@ -19764,6 +19782,9 @@
         }
       }
     },
+    "Shared Key" : {
+
+    },
     "Short Name" : {
 
     },
@@ -20994,6 +21015,9 @@
 
     },
     "The public key authorized to send admin messages to this node." : {
+
+    },
+    "The public key does not match the key that was used previously, delete the node and let it negotatiate keys again. Usually the other user did a factory reset, but it could indicate a security issue." : {
 
     },
     "The region where you will be using your radios." : {
@@ -22518,6 +22542,9 @@
 
     },
     "Website" : {
+
+    },
+    "What does the lock mean?" : {
 
     },
     "What is Meshtastic?" : {

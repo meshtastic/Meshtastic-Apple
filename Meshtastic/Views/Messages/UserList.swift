@@ -28,9 +28,10 @@ struct UserList: View {
 	@State private var hopsAway: Double = -1.0
 	@State private var roleFilter = false
 	@State private var deviceRoles: Set<Int> = []
-	@State var isEditingFilters = false
+	@State private var editingFilters = false
+	@State private var showingHelp = false
 	@State private var showingTrustConfirm: Bool = false
-	
+
 	var boolFilters: [Bool] {[
 		isFavorite,
 		isOnline,
@@ -59,9 +60,6 @@ struct UserList: View {
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 		VStack {
 			List(selection: $userSelection) {
-				if #available(iOS 17.0, macOS 14.0, *) {
-					TipView(ContactsTip(), arrowEdge: .bottom)
-				}
 				ForEach(users) { (user: UserEntity) in
 					let mostRecent = user.messageList.last
 					let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
@@ -196,8 +194,11 @@ struct UserList: View {
 			}
 			.listStyle(.plain)
 			.navigationTitle(String.localizedStringWithFormat("contacts %@".localized, String(users.count == 0 ? 0 : users.count)))
-			.sheet(isPresented: $isEditingFilters) {
+			.sheet(isPresented: $editingFilters) {
 				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isPkiEncrypted: $isPkiEncrypted, isFavorite: $isFavorite, isEnvironment: $isEnvironment, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
+			}
+			.sheet(isPresented: $showingHelp) {
+				DirectMessagesHelp()
 			}
 			.onChange(of: searchText) { _ in
 				searchUserList()
@@ -229,24 +230,38 @@ struct UserList: View {
 			.onFirstAppear {
 				searchUserList()
 			}
-			.safeAreaInset(edge: .bottom, alignment: .trailing) {
+			.safeAreaInset(edge: .bottom, alignment: .leading) {
 				HStack {
 					Button(action: {
 						withAnimation {
-							isEditingFilters = !isEditingFilters
+							showingHelp = !showingHelp
 						}
 					}) {
-						Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+						Image(systemName: !editingFilters ? "questionmark.circle" : "questionmark.circle.fill")
 							.padding(.vertical, 5)
 					}
 					.tint(Color(UIColor.secondarySystemBackground))
 					.foregroundColor(.accentColor)
 					.buttonStyle(.borderedProminent)
-
+				
+					Spacer()
+				
+					Button(action: {
+						withAnimation {
+							editingFilters = !editingFilters
+						}
+					}) {
+						Image(systemName: !editingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+							.padding(.vertical, 5)
+					}
+					.tint(Color(UIColor.secondarySystemBackground))
+					.foregroundColor(.accentColor)
+					.buttonStyle(.borderedProminent)
 				}
 				.controlSize(.regular)
 				.padding(5)
 			}
+			.padding(.bottom, 5)
 			.padding(.bottom, 5)
 			.searchable(text: $searchText, placement: users.count > 10 ? .navigationBarDrawer(displayMode: .always) : .automatic, prompt: "Find a contact")
 				.disableAutocorrection(true)

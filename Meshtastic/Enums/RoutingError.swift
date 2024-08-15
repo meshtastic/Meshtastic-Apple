@@ -54,7 +54,7 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .notAuthorized:
 			return "routing.notauthorized".localized
 		case .pkiFailed:
-			return "routing.pkiFailed".localized
+			return "routing.pkifailed".localized
 		case .pkiUnknownPubkey:
 			return "routing.pkiunknownpubkey".localized
 		}
@@ -77,7 +77,7 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .noChannel:
 			return Color.orange
 		case .tooLarge:
-			return Color.red
+			return Color.orange
 		case .noResponse:
 			return Color.orange
 		case .dutyCycleLimit:
