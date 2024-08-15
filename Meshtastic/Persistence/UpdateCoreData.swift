@@ -148,6 +148,9 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			if packet.rxTime > 0 {
 				newNode.firstHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 				newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+			} else {
+				newNode.firstHeard = Date()
+				newNode.lastHeard = Date()
 			}
 			newNode.snr = packet.rxSnr
 			newNode.rssi = packet.rxRssi
@@ -233,9 +236,8 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			fetchedNode[0].num = Int64(packet.from)
 			if packet.rxTime > 0 {
 				fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
-				if fetchedNode[0].firstHeard == nil {
-					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
-				}
+			} else {
+				fetchedNode[0].lastHeard = Date()
 			}
 			fetchedNode[0].snr = packet.rxSnr
 			fetchedNode[0].rssi = packet.rxRssi
@@ -363,6 +365,8 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 						fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
 					} else if packet.rxTime > 0 {
 						fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+					} else {
+						fetchedNode[0].lastHeard = Date()
 					}
 					fetchedNode[0].snr = packet.rxSnr
 					fetchedNode[0].rssi = packet.rxRssi

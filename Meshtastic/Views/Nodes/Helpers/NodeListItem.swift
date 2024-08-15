@@ -29,8 +29,8 @@ struct NodeListItem: View {
 					VStack(alignment: .leading) {
 						HStack {
 							Text(node.user?.longName ?? "unknown".localized)
-								.fontWeight(.medium)
 								.font(.headline)
+								.allowsTightening(true)
 							if node.favorite {
 								Spacer()
 								Image(systemName: "star.fill")

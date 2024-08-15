@@ -638,7 +638,12 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 					fetchedMessage[0].receivedACK = true
 				}
 				fetchedMessage[0].ackSNR = packet.rxSnr
-				fetchedMessage[0].ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
+		
+				if packet.rxTime == 0 {
+					fetchedMessage[0].ackTimestamp = Int32(Date().timeIntervalSince1970)
+				} else {
+					fetchedMessage[0].ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
+				}
 
 				if fetchedMessage[0].toUser != nil {
 					fetchedMessage[0].toUser!.objectWillChange.send()
@@ -727,7 +732,12 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					return
 				}
 				mutableTelemetries.add(telemetry)
-				fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(truncatingIfNeeded: packet.rxTime)))
+				if packet.rxTime == 0 {
+					fetchedNode[0].lastHeard = Date()
+				} else {
+					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(packet.rxTime))
+				}
+			
 				fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
 			}
 			try context.save()
@@ -866,7 +876,9 @@ func textMessageAppPacket(
 					newMessage.fromUser?.publicKey = packet.publicKey
 					newMessage.fromUser?.pkiEncrypted = packet.pkiEncrypted
 				}
-				if packet.rxTime > 0 {
+				if packet.rxTime == 0 {
+					newMessage.fromUser?.userNode?.lastHeard = Date()
+				} else {
 					newMessage.fromUser?.userNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 				}
 			}
