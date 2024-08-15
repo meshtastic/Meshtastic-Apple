@@ -24,11 +24,25 @@ struct MessageText: View {
 		let markdownText = LocalizedStringKey(message.messagePayloadMarkdown ?? (message.messagePayload ?? "EMPTY MESSAGE"))
 		return Text(markdownText)
 			.tint(Self.linkBlue)
-			.padding(10)
+			.padding(.vertical, 10)
+			.padding(.horizontal, 8)
 			.foregroundColor(.white)
 			.background(isCurrentUser ? .accentColor : Color(.gray))
 			.cornerRadius(15)
 			.overlay {
+				if message.pkiEncrypted {
+					VStack (alignment: .trailing) {
+						Spacer()
+						HStack {
+							Spacer()
+							Image(systemName: "lock.circle.fill")
+								.symbolRenderingMode(.palette)
+								.foregroundStyle(.white, .green)
+								.font(.system(size: 20))
+								.offset(x: 8, y: 8)
+						}
+					}
+				}
 				let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
 				if tapBackDestination.overlaySensorMessage {
 					VStack {
