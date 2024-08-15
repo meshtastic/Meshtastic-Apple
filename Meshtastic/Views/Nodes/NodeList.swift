@@ -88,8 +88,15 @@ struct NodeList: View {
 				context: context,
 				node: node
 			)
-			/// Don't show trace route, position exchange or delete context menu items for the connected node
+			/// Don't show message, trace route, position exchange or delete context menu items for the connected node
 			if connectedNode.num != node.num {
+				Button(action: {
+					if let url = URL(string: "meshtastic:///messages?userNum=\(node.num)") {
+					   UIApplication.shared.open(url)
+					}
+				}) {
+					Label("Message", systemImage: "message")
+				}
 				Button {
 					let traceRouteSent = bleManager.sendTraceRouteRequest(
 						destNum: node.num,
