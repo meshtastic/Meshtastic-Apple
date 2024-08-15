@@ -31,7 +31,7 @@ struct MessageText: View {
 			.cornerRadius(15)
 			.overlay {
 				if message.pkiEncrypted {
-					VStack (alignment: .trailing) {
+					VStack(alignment: .trailing) {
 						Spacer()
 						HStack {
 							Spacer()
