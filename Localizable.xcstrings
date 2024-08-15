@@ -10785,6 +10785,9 @@
     "Key" : {
 
     },
+    "Key does not match the public key that was used previously, delete the node and let it negotatiate keys again." : {
+
+    },
     "Key Mapping" : {
 
     },
@@ -16658,6 +16661,9 @@
 
     },
     "Public Key" : {
+
+    },
+    "Public Key Mismatch" : {
 
     },
     "PWD" : {

@@ -630,6 +630,7 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 				fetchedMessage[0].ackError = Int32(routingMessage.errorReason.rawValue)
 				if routingError == RoutingError.pkiFailed {
 					fetchedMessage[0].toUser?.keyMatch = false
+					fetchedMessage[0].toUser?.newPublicKey = fetchedMessage[0].publicKey
 				}
 
 				if routingMessage.errorReason == Routing.Error.none {
@@ -854,6 +855,7 @@ func textMessageAppPacket(
 					/// We have a key, check if it matches
 					if newMessage.fromUser?.publicKey != newMessage.publicKey {
 						newMessage.fromUser?.keyMatch = false
+						newMessage.fromUser?.newPublicKey = newMessage.publicKey
 					}
 				} else {
 					/// We have no key, set it

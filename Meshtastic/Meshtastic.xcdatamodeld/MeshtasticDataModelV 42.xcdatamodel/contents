@@ -436,6 +436,7 @@
         <attribute name="lastMessage" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="longName" attributeType="String"/>
         <attribute name="mute" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="newPublicKey" optional="YES" attributeType="Binary"/>
         <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="numString" optional="YES" attributeType="String"/>
         <attribute name="pkiEncrypted" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
