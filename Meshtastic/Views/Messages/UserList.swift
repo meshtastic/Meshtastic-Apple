@@ -225,7 +225,7 @@ struct UserList: View {
 			.onChange(of: maxDistance) { _ in
 				searchUserList()
 			}
-			.onAppear {
+			.onFirstAppear {
 				searchUserList()
 			}
 			.safeAreaInset(edge: .bottom, alignment: .trailing) {

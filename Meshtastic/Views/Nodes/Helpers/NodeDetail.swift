@@ -45,7 +45,7 @@ struct NodeDetail: View {
 				}
 				Section("Node") {
 					if let user = node.user {
-						if user.keyMatch {
+						if !user.keyMatch {
 							Label {
 								VStack(alignment: .leading) {
 									Text("Public Key Mismatch")
