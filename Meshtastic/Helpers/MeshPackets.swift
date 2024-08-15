@@ -638,11 +638,10 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 					fetchedMessage[0].receivedACK = true
 				}
 				fetchedMessage[0].ackSNR = packet.rxSnr
-		
-				if packet.rxTime == 0 {
-					fetchedMessage[0].ackTimestamp = Int32(Date().timeIntervalSince1970)
-				} else {
+				if packet.rxTime > 0 {
 					fetchedMessage[0].ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
+				} else {
+					fetchedMessage[0].ackTimestamp = Int32(Date().timeIntervalSince1970)
 				}
 
 				if fetchedMessage[0].toUser != nil {
@@ -732,12 +731,11 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					return
 				}
 				mutableTelemetries.add(telemetry)
-				if packet.rxTime == 0 {
-					fetchedNode[0].lastHeard = Date()
-				} else {
+				if packet.rxTime > 0 {
 					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(packet.rxTime))
+				} else {
+					fetchedNode[0].lastHeard = Date()
 				}
-			
 				fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
 			}
 			try context.save()
@@ -836,10 +834,10 @@ func textMessageAppPacket(
 			let fetchedUsers = try context.fetch(messageUsers)
 			let newMessage = MessageEntity(context: context)
 			newMessage.messageId = Int64(packet.id)
-			if packet.rxTime == 0 {
-				newMessage.messageTimestamp = Int32(Date().timeIntervalSince1970)
-			} else {
+			if packet.rxTime > 0 {
 				newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
+			} else {
+				newMessage.messageTimestamp = Int32(Date().timeIntervalSince1970)
 			}
 			newMessage.receivedACK = false
 			newMessage.snr = packet.rxSnr
@@ -876,10 +874,10 @@ func textMessageAppPacket(
 					newMessage.fromUser?.publicKey = packet.publicKey
 					newMessage.fromUser?.pkiEncrypted = packet.pkiEncrypted
 				}
-				if packet.rxTime == 0 {
-					newMessage.fromUser?.userNode?.lastHeard = Date()
-				} else {
+				if packet.rxTime > 0 {
 					newMessage.fromUser?.userNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+				} else {
+					newMessage.fromUser?.userNode?.lastHeard = Date()
 				}
 			}
 			newMessage.messagePayload = messageText
