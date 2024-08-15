@@ -30,6 +30,15 @@ struct UserList: View {
 	@State private var deviceRoles: Set<Int> = []
 	@State var isEditingFilters = false
 	@State private var showingTrustConfirm: Bool = false
+	
+	var boolFilters: [Bool] {[
+		isFavorite,
+		isOnline,
+		isPkiEncrypted,
+		isEnvironment,
+		distanceFilter,
+		roleFilter
+	]}
 
 	@FetchRequest(
 		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false),
@@ -210,19 +219,10 @@ struct UserList: View {
 			.onChange(of: hopsAway) { _ in
 				searchUserList()
 			}
-			.onChange(of: isOnline) { _ in
-				searchUserList()
-			}
-			.onChange(of: isPkiEncrypted) { _ in
-				searchUserList()
-			}
-			.onChange(of: isFavorite) { _ in
+			.onChange(of: [boolFilters]) { _ in
 				searchUserList()
 			}
 			.onChange(of: maxDistance) { _ in
-				searchUserList()
-			}
-			.onChange(of: distanceFilter) { _ in
 				searchUserList()
 			}
 			.onAppear {

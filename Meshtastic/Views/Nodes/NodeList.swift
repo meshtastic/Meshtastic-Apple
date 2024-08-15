@@ -302,7 +302,7 @@ struct NodeList: View {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: boolFilters) { _ in
+		.onChange(of: [boolFilters]) { _ in
 			Task {
 				await searchNodeList()
 			}
