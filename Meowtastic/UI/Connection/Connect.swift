@@ -63,9 +63,15 @@ struct Connect: View {
 			}
 		}
 		.onAppear {
-			Analytics.logEvent(AnalyticEvents.connect.id, parameters: [:])
-
 			bleManager.startScanning()
+
+			Analytics.logEvent(
+				AnalyticEvents.connect.id,
+				parameters: [
+					"sheet": isInSheet,
+					"visible_devices": visibleDevices.count
+				]
+			)
 		}
 		.onDisappear {
 			bleManager.stopScanning()

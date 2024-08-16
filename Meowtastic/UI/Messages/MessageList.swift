@@ -125,6 +125,15 @@ struct MessageList: View {
 					)
 				}
 			}
+			.onAppear {
+				Analytics.logEvent(
+					AnalyticEvents.messageList.id,
+					parameters: [
+						"kind": channel != nil ? "channel" : "user",
+						"messages_in_list": filteredMessages.count
+					]
+				)
+			}
 
 			if let destination {
 				TextMessageField(
@@ -171,9 +180,6 @@ struct MessageList: View {
 			NodeDetail(isInSheet: true, node: detail)
 				.presentationDragIndicator(.visible)
 				.presentationDetents([.medium])
-		}
-		.onAppear {
-			Analytics.logEvent(AnalyticEvents.messageList.id, parameters: [:])
 		}
 	}
 

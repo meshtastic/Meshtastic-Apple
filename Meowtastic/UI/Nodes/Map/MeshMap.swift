@@ -26,6 +26,11 @@ struct MeshMap: View {
 	@State
 	var isMeshMap = true
 
+	@FetchRequest(
+		fetchRequest: PositionEntity.allPositionsFetchRequest()
+	)
+	private var positions: FetchedResults<PositionEntity>
+
 	@EnvironmentObject
 	private var bleManager: BLEManager
 
@@ -77,7 +82,12 @@ struct MeshMap: View {
 			)
 		}
 		.onAppear {
-			Analytics.logEvent(AnalyticEvents.meshMap.id, parameters: [:])
+			Analytics.logEvent(
+				AnalyticEvents.meshMap.id,
+				parameters: [
+					"nodes_count": positions
+				]
+			)
 		}
 	}
 }

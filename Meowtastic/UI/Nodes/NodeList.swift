@@ -86,7 +86,12 @@ struct NodeList: View {
 			)
 		}
 		.onAppear {
-			Analytics.logEvent(AnalyticEvents.nodeList.id, parameters: [:])
+			Analytics.logEvent(
+				AnalyticEvents.nodeList.id,
+				parameters: [
+					"nodes_in_list": nodes.count
+				]
+			)
 		}
 		.onChange(of: nodes, initial: true) {
 			Task {
@@ -460,6 +465,18 @@ struct NodeList: View {
 		self.loraNodes = loraNodes
 		self.loraSingleHopNodes = loraSingleHopNodes
 		self.mqttNodes = mqttNodes
+
+		Analytics.logEvent(
+			AnalyticEvents.nodeListCount.id,
+			parameters: [
+				"nodes_online": onlineNodes,
+				"nodes_offline": offlineNodes,
+				"nodes_favorite": favoriteNodes,
+				"nodes_lora": loraNodes,
+				"nodes_lora_single_hop": loraSingleHopNodes,
+				"nodes_mqtt": mqttNodes
+			]
+		)
 	}
 
 	private func updateFilter() async {
