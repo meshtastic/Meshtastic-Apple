@@ -398,11 +398,18 @@
 				DDC2E18826CE24EE0042C5E4 /* Model */,
 				DDC4D5662754996200A4208E /* Persistence */,
 				DDD43FE12A78C86B0083A3E9 /* MQTT */,
-				DDAF8C5226EB1DF10058C060 /* BLEManager.swift */,
 				DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */,
 				B28CFF7E2C5D029D0012DCB4 /* README.md */,
 			);
 			path = "Circles Of Hell";
+			sourceTree = "<group>";
+		};
+		B25AF8A42C6F6B3200A2BA85 /* BluetoothLE */ = {
+			isa = PBXGroup;
+			children = (
+				DDAF8C5226EB1DF10058C060 /* BLEManager.swift */,
+			);
+			path = BluetoothLE;
 			sourceTree = "<group>";
 		};
 		B266A74C2C591E9500DFC723 /* Views */ = {
@@ -684,6 +691,7 @@
 				B25A0B522C5F9A16004288DC /* GoogleService-Info.plist */,
 				B2BDCD782C6CB6360040D7ED /* Analytics */,
 				B2A5F31D2C567F06009457AB /* App */,
+				B25AF8A42C6F6B3200A2BA85 /* BluetoothLE */,
 				B233CA082C5662C200CBD7EF /* Circles Of Hell */,
 				08DD7E4D2C41AC8F00548159 /* Supporting Files */,
 				DDC2E18726CE24E40042C5E4 /* UI */,
