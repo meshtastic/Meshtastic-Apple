@@ -6316,7 +6316,7 @@
     "Direct Message Help" : {
 
     },
-    "Direct messages are using the new public key infrastructure to encrypt the message." : {
+    "Direct messages are using the new public key infrastructure for encryption." : {
 
     },
     "Direct messages are using the shared key for the channel." : {
@@ -10789,9 +10789,6 @@
 
     },
     "Key" : {
-
-    },
-    "Key does not match the public key that was used previously, delete the node and let it negotatiate keys again." : {
 
     },
     "Key Mapping" : {

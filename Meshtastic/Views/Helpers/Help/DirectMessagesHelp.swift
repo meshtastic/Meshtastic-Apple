@@ -13,7 +13,7 @@ struct DirectMessagesHelp: View {
 
 	var body: some View {
 		ScrollView {
-			Text("Direct Message Help")
+			Label("Direct Message Help", systemImage: "questionmark.circle")
 				.font(.title)
 				.padding(.vertical)
 			VStack(alignment: .leading) {

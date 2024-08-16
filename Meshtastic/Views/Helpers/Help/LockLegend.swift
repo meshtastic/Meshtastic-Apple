@@ -34,7 +34,7 @@ struct LockLegend: View {
 					Text("Public Key Encryption")
 						.fontWeight(.semibold)
 				}
-				Text("Direct messages are using the new public key infrastructure to encrypt the message.")
+				Text("Direct messages are using the new public key infrastructure for encryption.")
 					.allowsTightening(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
 					.font(.callout)
 					.fixedSize(horizontal: false, vertical: true)

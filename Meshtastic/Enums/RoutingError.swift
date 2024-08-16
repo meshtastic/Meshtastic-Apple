@@ -73,11 +73,11 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .noInterface:
 			return Color.red
 		case .maxRetransmit:
-			return Color.red
+			return Color.orange
 		case .noChannel:
 			return Color.orange
 		case .tooLarge:
-			return Color.orange
+			return Color.red
 		case .noResponse:
 			return Color.orange
 		case .dutyCycleLimit:
@@ -90,6 +90,39 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 			return Color.red
 		case .pkiUnknownPubkey:
 			return Color.red
+		}
+	}
+	var canRetry: Bool {
+		switch self {
+
+		case .none:
+			return false
+		case .noRoute:
+			return false
+		case .gotNak:
+			return false
+		case .timeout:
+			return true
+		case .noInterface:
+			return false
+		case .maxRetransmit:
+			return true
+		case .noChannel:
+			return true
+		case .tooLarge:
+			return false
+		case .noResponse:
+			return true
+		case .dutyCycleLimit:
+			return true
+		case .badRequest:
+			return false
+		case .notAuthorized:
+			return false
+		case .pkiFailed:
+			return false
+		case .pkiUnknownPubkey:
+			return false
 		}
 	}
 	func protoEnumValue() -> Routing.Error {
