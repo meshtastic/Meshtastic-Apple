@@ -60,55 +60,30 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		}
 	}
 	var color: Color {
-		switch self {
-
-		case .none:
+		if self == .none {
 			return Color.secondary
-		case .noRoute:
-			return Color.red
-		case .gotNak:
-			return Color.red
-		case .timeout:
+		} else if self.canRetry {
 			return Color.orange
-		case .noInterface:
-			return Color.red
-		case .maxRetransmit:
-			return Color.orange
-		case .noChannel:
-			return Color.orange
-		case .tooLarge:
-			return Color.red
-		case .noResponse:
-			return Color.orange
-		case .dutyCycleLimit:
-			return Color.orange
-		case .badRequest:
-			return Color.red
-		case .notAuthorized:
-			return Color.red
-		case .pkiFailed:
-			return Color.red
-		case .pkiUnknownPubkey:
+		} else {
 			return Color.red
 		}
 	}
 	var canRetry: Bool {
 		switch self {
-
 		case .none:
 			return false
 		case .noRoute:
-			return false
+			return true
 		case .gotNak:
-			return false
+			return true
 		case .timeout:
 			return true
 		case .noInterface:
-			return false
+			return true
 		case .maxRetransmit:
-			return true
+			return false
 		case .noChannel:
-			return true
+			return false
 		case .tooLarge:
 			return false
 		case .noResponse:
@@ -116,9 +91,9 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .dutyCycleLimit:
 			return true
 		case .badRequest:
-			return false
+			return true
 		case .notAuthorized:
-			return false
+			return true
 		case .pkiFailed:
 			return false
 		case .pkiUnknownPubkey:

@@ -243,9 +243,7 @@ struct UserList: View {
 					.tint(Color(UIColor.secondarySystemBackground))
 					.foregroundColor(.accentColor)
 					.buttonStyle(.borderedProminent)
-				
 					Spacer()
-				
 					Button(action: {
 						withAnimation {
 							editingFilters = !editingFilters
