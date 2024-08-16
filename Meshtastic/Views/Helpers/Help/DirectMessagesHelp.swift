@@ -42,6 +42,7 @@ struct DirectMessagesHelp: View {
 				HStack(alignment: .top) {
 					LockLegend()
 					AckErrors()
+						.padding(.trailing)
 				}
 			}
 #if targetEnvironment(macCatalyst)

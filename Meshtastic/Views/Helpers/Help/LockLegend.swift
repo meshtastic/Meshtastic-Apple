@@ -11,10 +11,9 @@ struct LockLegend: View {
 
 	var body: some View {
 		VStack(alignment: .leading) {
-			Text("Node Encryption Status")
-				.font(.title2)
 			Text("What does the lock mean?")
-				.padding(.bottom)
+				.font(.title2)
+				.padding(.bottom, 5)
 			VStack(alignment: .leading) {
 				HStack {
 					Image(systemName: "lock.open.fill")
@@ -22,7 +21,9 @@ struct LockLegend: View {
 					Text("Shared Key")
 						.fontWeight(.semibold)
 				}
-				Text("Direct messages are using the shared key for the channel when communicating with this node.")
+				Text("Direct messages are using the shared key for the channel.")
+					.allowsTightening(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
+					.font(.callout)
 					.fixedSize(horizontal: false, vertical: true)
 			}
 			.padding(.bottom)
@@ -34,6 +35,8 @@ struct LockLegend: View {
 						.fontWeight(.semibold)
 				}
 				Text("Direct messages are using the new public key infrastructure to encrypt the message.")
+					.allowsTightening(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
+					.font(.callout)
 					.fixedSize(horizontal: false, vertical: true)
 			}
 			.padding(.bottom)
@@ -44,7 +47,9 @@ struct LockLegend: View {
 					Text("Public Key Mismatch")
 						.fontWeight(.semibold)
 				}
-				Text("The public key does not match the key that was used previously, delete the node and let it negotatiate keys again. Usually the other user did a factory reset, but it could indicate a security issue.")
+				Text("The public key does not match the recorded key. You may delete the node and let it exchange keys again, but this may indicate a more serious security problem. Contact the user through another trusted channel, to determine if the key change was due to a factory reset or other intentional action.")
+					.allowsTightening(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
+					.font(.callout)
 					.fixedSize(horizontal: false, vertical: true)
 			}
 			.padding(.bottom)

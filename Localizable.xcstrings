@@ -6319,7 +6319,7 @@
     "Direct messages are using the new public key infrastructure to encrypt the message." : {
 
     },
-    "Direct messages are using the shared key for the channel when communicating with this node." : {
+    "Direct messages are using the shared key for the channel." : {
 
     },
     "direct.messages" : {
@@ -15419,9 +15419,6 @@
         }
       }
     },
-    "Node Encryption Status" : {
-
-    },
     "Node History" : {
 
     },
@@ -21017,7 +21014,7 @@
     "The public key authorized to send admin messages to this node." : {
 
     },
-    "The public key does not match the key that was used previously, delete the node and let it negotatiate keys again. Usually the other user did a factory reset, but it could indicate a security issue." : {
+    "The public key does not match the recorded key. You may delete the node and let it exchange keys again, but this may indicate a more serious security problem. Contact the user through another trusted channel, to determine if the key change was due to a factory reset or other intentional action." : {
 
     },
     "The region where you will be using your radios." : {
