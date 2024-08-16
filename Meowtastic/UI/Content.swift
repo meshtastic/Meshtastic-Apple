@@ -6,7 +6,7 @@ struct Content: View {
 	@StateObject
 	private var appState = AppState.shared
 	@State
-	private var connectPresented = false
+	private var connectPresented = true
 	@State
 	private var connectWasDismissed = false
 
@@ -80,7 +80,7 @@ struct Content: View {
 			connectWasDismissed = true
 		} content: {
 			Connect(isInSheet: true)
-				.presentationDetents([.large])
+				.presentationDetents([.medium])
 				.presentationDragIndicator(.visible)
 		}
 	}

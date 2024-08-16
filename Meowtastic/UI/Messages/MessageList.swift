@@ -109,8 +109,6 @@ struct MessageList: View {
 					messageList
 						.scrollDismissesKeyboard(.interactively)
 						.scrollIndicators(.hidden)
-						.onAppear {
-						}
 						.onChange(of: filteredMessages, initial: true) {
 							if let firstUnreadMessage {
 								scrollView.scrollTo(firstUnreadMessage)
@@ -207,8 +205,6 @@ struct MessageList: View {
 		self.channel = channel
 		self.user = nil
 		self.myInfo = myInfo
-
-		Logger.app.warning("message list init'd")
 	}
 
 	init(
@@ -218,8 +214,6 @@ struct MessageList: View {
 		self.channel = nil
 		self.user = user
 		self.myInfo = myInfo
-
-		Logger.app.warning("message list init'd")
 	}
 
 	@ViewBuilder
@@ -233,11 +227,21 @@ struct MessageList: View {
 		}
 		.frame(maxWidth: .infinity)
 		.onAppear {
-			guard !message.read else {
+			var didRead = 0
+			for displayedMessage in filteredMessages.filter({ msg in
+				msg.messageTimestamp <= message.messageTimestamp
+			}) {
+				if !displayedMessage.read {
+					displayedMessage.read.toggle()
+					didRead += 1
+				}
+			}
+
+			guard didRead > 0 else {
 				return
 			}
 
-			message.read = true
+			Logger.app.info("Marking \(didRead) message(s) as read")
 			try? context.save()
 
 			if let myInfo {
