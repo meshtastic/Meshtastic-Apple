@@ -10,8 +10,6 @@ struct MeshMap: View {
 	var context
 	@StateObject
 	var appState = AppState.shared
-	@State
-	var showUserLocation: Bool = true
 	@Namespace
 	var mapScope
 	@State
@@ -23,8 +21,6 @@ struct MeshMap: View {
 	var position = MapCameraPosition.automatic
 	@State
 	var selectedPosition: PositionEntity?
-	@State
-	var isMeshMap = true
 
 	@FetchRequest(
 		fetchRequest: PositionEntity.allPositionsFetchRequest()
@@ -46,8 +42,8 @@ struct MeshMap: View {
 						),
 						scope: mapScope
 					) {
+						UserAnnotation()
 						MeshMapContent(
-							showUserLocation: $showUserLocation,
 							selectedPosition: $selectedPosition
 						)
 					}
@@ -55,7 +51,7 @@ struct MeshMap: View {
 					.mapStyle(mapStyle)
 					.mapControls {
 						MapScaleView(scope: mapScope)
-							.mapControlVisibility(.automatic)
+							.mapControlVisibility(.visible)
 
 						MapUserLocationButton(scope: mapScope)
 							.mapControlVisibility(.visible)

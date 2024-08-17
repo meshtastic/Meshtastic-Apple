@@ -15,10 +15,6 @@ class AppState: ObservableObject {
 	@Published
 	var navigationPath: String?
 
-	var totalUnreadMessages: Int {
-		unreadChannelMessages + unreadDirectMessages
-	}
-
 	private var cancellables: Set<AnyCancellable> = []
 
 	init() {

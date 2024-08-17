@@ -8,8 +8,6 @@ struct NodeMapContent: MapContent {
 	@Namespace
 	var mapScope
 	@State
-	var showUserLocation: Bool = false
-	@State
 	var mapStyle = MapStyle.standard(elevation: .realistic)
 	@State
 	var mapCamera = MapCameraPosition.automatic
