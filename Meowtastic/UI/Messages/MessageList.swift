@@ -111,7 +111,7 @@ struct MessageList: View {
 						.scrollIndicators(.hidden)
 						.onChange(of: filteredMessages, initial: true) {
 							if let firstUnreadMessage {
-								scrollView.scrollTo(firstUnreadMessage)
+								scrollView.scrollTo(firstUnreadMessage.messageId)
 							}
 							else {
 								scrollView.scrollTo(textFieldPlaceholderID)
