@@ -22,7 +22,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 
 ///
 /// Supported I2C Sensors for telemetry in Meshtastic
-public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
+public enum TelemetrySensorType: SwiftProtobuf.Enum {
   public typealias RawValue = Int
 
   ///
@@ -216,6 +216,11 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     }
   }
 
+}
+
+#if swift(>=4.2)
+
+extension TelemetrySensorType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   public static let allCases: [TelemetrySensorType] = [
     .sensorUnset,
@@ -248,12 +253,13 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     .icm20948,
     .max17048,
   ]
-
 }
+
+#endif  // swift(>=4.2)
 
 ///
 /// Key native device metrics such as battery level
-public struct DeviceMetrics: Sendable {
+public struct DeviceMetrics {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -326,7 +332,7 @@ public struct DeviceMetrics: Sendable {
 
 ///
 /// Weather station or other environmental metrics
-public struct EnvironmentMetrics: @unchecked Sendable {
+public struct EnvironmentMetrics {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -529,7 +535,7 @@ public struct EnvironmentMetrics: @unchecked Sendable {
 
 ///
 /// Power Metrics (voltage / current / etc)
-public struct PowerMetrics: Sendable {
+public struct PowerMetrics {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -614,7 +620,7 @@ public struct PowerMetrics: Sendable {
 
 ///
 /// Air quality metrics
-public struct AirQualityMetrics: Sendable {
+public struct AirQualityMetrics {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -770,8 +776,52 @@ public struct AirQualityMetrics: Sendable {
 }
 
 ///
+/// Local device mesh statistics
+public struct LocalStats {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// How long the device has been running since the last reboot (in seconds)
+  public var uptimeSeconds: UInt32 = 0
+
+  ///
+  /// Utilization for the current channel, including well formed TX, RX and malformed RX (aka noise).
+  public var channelUtilization: Float = 0
+
+  ///
+  /// Percent of airtime for transmission used within the last hour.
+  public var airUtilTx: Float = 0
+
+  ///
+  /// Number of packets sent
+  public var numPacketsTx: UInt32 = 0
+
+  ///
+  /// Number of packets received good
+  public var numPacketsRx: UInt32 = 0
+
+  ///
+  /// Number of packets received that are malformed or violate the protocol
+  public var numPacketsRxBad: UInt32 = 0
+
+  ///
+  /// Number of nodes online (in the past 2 hours)
+  public var numOnlineNodes: UInt32 = 0
+
+  ///
+  /// Number of nodes total
+  public var numTotalNodes: UInt32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+///
 /// Types of Measurements the telemetry module is equipped to handle
-public struct Telemetry: Sendable {
+public struct Telemetry {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -822,9 +872,19 @@ public struct Telemetry: Sendable {
     set {variant = .powerMetrics(newValue)}
   }
 
+  ///
+  /// Local device mesh statistics
+  public var localStats: LocalStats {
+    get {
+      if case .localStats(let v)? = variant {return v}
+      return LocalStats()
+    }
+    set {variant = .localStats(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_Variant: Equatable, Sendable {
+  public enum OneOf_Variant: Equatable {
     ///
     /// Key native device metrics such as battery level
     case deviceMetrics(DeviceMetrics)
@@ -837,7 +897,40 @@ public struct Telemetry: Sendable {
     ///
     /// Power Metrics
     case powerMetrics(PowerMetrics)
+    ///
+    /// Local device mesh statistics
+    case localStats(LocalStats)
 
+  #if !swift(>=4.1)
+    public static func ==(lhs: Telemetry.OneOf_Variant, rhs: Telemetry.OneOf_Variant) -> Bool {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch (lhs, rhs) {
+      case (.deviceMetrics, .deviceMetrics): return {
+        guard case .deviceMetrics(let l) = lhs, case .deviceMetrics(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.environmentMetrics, .environmentMetrics): return {
+        guard case .environmentMetrics(let l) = lhs, case .environmentMetrics(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.airQualityMetrics, .airQualityMetrics): return {
+        guard case .airQualityMetrics(let l) = lhs, case .airQualityMetrics(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.powerMetrics, .powerMetrics): return {
+        guard case .powerMetrics(let l) = lhs, case .powerMetrics(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.localStats, .localStats): return {
+        guard case .localStats(let l) = lhs, case .localStats(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      default: return false
+      }
+    }
+  #endif
   }
 
   public init() {}
@@ -845,7 +938,7 @@ public struct Telemetry: Sendable {
 
 ///
 /// NAU7802 Telemetry configuration, for saving to flash
-public struct Nau7802Config: Sendable {
+public struct Nau7802Config {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -862,6 +955,18 @@ public struct Nau7802Config: Sendable {
 
   public init() {}
 }
+
+#if swift(>=5.5) && canImport(_Concurrency)
+extension TelemetrySensorType: @unchecked Sendable {}
+extension DeviceMetrics: @unchecked Sendable {}
+extension EnvironmentMetrics: @unchecked Sendable {}
+extension PowerMetrics: @unchecked Sendable {}
+extension AirQualityMetrics: @unchecked Sendable {}
+extension LocalStats: @unchecked Sendable {}
+extension Telemetry: @unchecked Sendable {}
+extension Telemetry.OneOf_Variant: @unchecked Sendable {}
+extension Nau7802Config: @unchecked Sendable {}
+#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
@@ -1333,6 +1438,80 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
   }
 }
 
+extension LocalStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".LocalStats"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "uptime_seconds"),
+    2: .standard(proto: "channel_utilization"),
+    3: .standard(proto: "air_util_tx"),
+    4: .standard(proto: "num_packets_tx"),
+    5: .standard(proto: "num_packets_rx"),
+    6: .standard(proto: "num_packets_rx_bad"),
+    7: .standard(proto: "num_online_nodes"),
+    8: .standard(proto: "num_total_nodes"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.uptimeSeconds) }()
+      case 2: try { try decoder.decodeSingularFloatField(value: &self.channelUtilization) }()
+      case 3: try { try decoder.decodeSingularFloatField(value: &self.airUtilTx) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.numPacketsTx) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.numPacketsRx) }()
+      case 6: try { try decoder.decodeSingularUInt32Field(value: &self.numPacketsRxBad) }()
+      case 7: try { try decoder.decodeSingularUInt32Field(value: &self.numOnlineNodes) }()
+      case 8: try { try decoder.decodeSingularUInt32Field(value: &self.numTotalNodes) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.uptimeSeconds != 0 {
+      try visitor.visitSingularUInt32Field(value: self.uptimeSeconds, fieldNumber: 1)
+    }
+    if self.channelUtilization != 0 {
+      try visitor.visitSingularFloatField(value: self.channelUtilization, fieldNumber: 2)
+    }
+    if self.airUtilTx != 0 {
+      try visitor.visitSingularFloatField(value: self.airUtilTx, fieldNumber: 3)
+    }
+    if self.numPacketsTx != 0 {
+      try visitor.visitSingularUInt32Field(value: self.numPacketsTx, fieldNumber: 4)
+    }
+    if self.numPacketsRx != 0 {
+      try visitor.visitSingularUInt32Field(value: self.numPacketsRx, fieldNumber: 5)
+    }
+    if self.numPacketsRxBad != 0 {
+      try visitor.visitSingularUInt32Field(value: self.numPacketsRxBad, fieldNumber: 6)
+    }
+    if self.numOnlineNodes != 0 {
+      try visitor.visitSingularUInt32Field(value: self.numOnlineNodes, fieldNumber: 7)
+    }
+    if self.numTotalNodes != 0 {
+      try visitor.visitSingularUInt32Field(value: self.numTotalNodes, fieldNumber: 8)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: LocalStats, rhs: LocalStats) -> Bool {
+    if lhs.uptimeSeconds != rhs.uptimeSeconds {return false}
+    if lhs.channelUtilization != rhs.channelUtilization {return false}
+    if lhs.airUtilTx != rhs.airUtilTx {return false}
+    if lhs.numPacketsTx != rhs.numPacketsTx {return false}
+    if lhs.numPacketsRx != rhs.numPacketsRx {return false}
+    if lhs.numPacketsRxBad != rhs.numPacketsRxBad {return false}
+    if lhs.numOnlineNodes != rhs.numOnlineNodes {return false}
+    if lhs.numTotalNodes != rhs.numTotalNodes {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Telemetry"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -1341,6 +1520,7 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     3: .standard(proto: "environment_metrics"),
     4: .standard(proto: "air_quality_metrics"),
     5: .standard(proto: "power_metrics"),
+    6: .standard(proto: "local_stats"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1402,6 +1582,19 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
           self.variant = .powerMetrics(v)
         }
       }()
+      case 6: try {
+        var v: LocalStats?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .localStats(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .localStats(v)
+        }
+      }()
       default: break
       }
     }
@@ -1431,6 +1624,10 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     case .powerMetrics?: try {
       guard case .powerMetrics(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+    }()
+    case .localStats?: try {
+      guard case .localStats(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
     }()
     case nil: break
     }
@@ -1469,7 +1666,7 @@ extension Nau7802Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if self.zeroOffset != 0 {
       try visitor.visitSingularInt32Field(value: self.zeroOffset, fieldNumber: 1)
     }
-    if self.calibrationFactor.bitPattern != 0 {
+    if self.calibrationFactor != 0 {
       try visitor.visitSingularFloatField(value: self.calibrationFactor, fieldNumber: 2)
     }
     try unknownFields.traverse(visitor: &visitor)

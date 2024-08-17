@@ -24,10 +24,16 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// This message is handled by the Admin module and is responsible for all settings/channel read/write operations.
 /// This message is used to do settings operations to both remote AND local nodes.
 /// (Prior to 1.2 these operations were done via special ToRadio operations)
-public struct AdminMessage: Sendable {
+public struct AdminMessage {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
+
+  ///
+  /// The node generates this key and sends it with any get_x_response packets.
+  /// The client MUST include the same key with any set_x commands. Key expires after 300 seconds.
+  /// Prevents replay attacks for admin messages.
+  public var sessionPasskey: Data = Data()
 
   ///
   /// TODO: REPLACE
@@ -370,6 +376,17 @@ public struct AdminMessage: Sendable {
   }
 
   ///
+  /// Set time only on the node
+  /// Convenience method to set the time on the node (as Net quality) without any other position data
+  public var setTimeOnly: UInt32 {
+    get {
+      if case .setTimeOnly(let v)? = payloadVariant {return v}
+      return 0
+    }
+    set {payloadVariant = .setTimeOnly(newValue)}
+  }
+
+  ///
   /// Begins an edit transaction for config, module config, owner, and channel settings changes
   /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
   public var beginEditSettings: Bool {
@@ -466,7 +483,7 @@ public struct AdminMessage: Sendable {
 
   ///
   /// TODO: REPLACE
-  public enum OneOf_PayloadVariant: Equatable, Sendable {
+  public enum OneOf_PayloadVariant: Equatable {
     ///
     /// Send the specified channel in the response to this message
     /// NOTE: This field is sent with the channel index + 1 (to ensure we never try to send 'zero' - which protobufs treats as not present)
@@ -573,6 +590,10 @@ public struct AdminMessage: Sendable {
     /// Clear fixed position coordinates and then set position.fixed_position = false
     case removeFixedPosition(Bool)
     ///
+    /// Set time only on the node
+    /// Convenience method to set the time on the node (as Net quality) without any other position data
+    case setTimeOnly(UInt32)
+    ///
     /// Begins an edit transaction for config, module config, owner, and channel settings changes
     /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
     case beginEditSettings(Bool)
@@ -603,11 +624,193 @@ public struct AdminMessage: Sendable {
     /// Tell the node to reset the nodedb.
     case nodedbReset(Int32)
 
+  #if !swift(>=4.1)
+    public static func ==(lhs: AdminMessage.OneOf_PayloadVariant, rhs: AdminMessage.OneOf_PayloadVariant) -> Bool {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch (lhs, rhs) {
+      case (.getChannelRequest, .getChannelRequest): return {
+        guard case .getChannelRequest(let l) = lhs, case .getChannelRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getChannelResponse, .getChannelResponse): return {
+        guard case .getChannelResponse(let l) = lhs, case .getChannelResponse(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getOwnerRequest, .getOwnerRequest): return {
+        guard case .getOwnerRequest(let l) = lhs, case .getOwnerRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getOwnerResponse, .getOwnerResponse): return {
+        guard case .getOwnerResponse(let l) = lhs, case .getOwnerResponse(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getConfigRequest, .getConfigRequest): return {
+        guard case .getConfigRequest(let l) = lhs, case .getConfigRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getConfigResponse, .getConfigResponse): return {
+        guard case .getConfigResponse(let l) = lhs, case .getConfigResponse(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getModuleConfigRequest, .getModuleConfigRequest): return {
+        guard case .getModuleConfigRequest(let l) = lhs, case .getModuleConfigRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getModuleConfigResponse, .getModuleConfigResponse): return {
+        guard case .getModuleConfigResponse(let l) = lhs, case .getModuleConfigResponse(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getCannedMessageModuleMessagesRequest, .getCannedMessageModuleMessagesRequest): return {
+        guard case .getCannedMessageModuleMessagesRequest(let l) = lhs, case .getCannedMessageModuleMessagesRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getCannedMessageModuleMessagesResponse, .getCannedMessageModuleMessagesResponse): return {
+        guard case .getCannedMessageModuleMessagesResponse(let l) = lhs, case .getCannedMessageModuleMessagesResponse(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getDeviceMetadataRequest, .getDeviceMetadataRequest): return {
+        guard case .getDeviceMetadataRequest(let l) = lhs, case .getDeviceMetadataRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getDeviceMetadataResponse, .getDeviceMetadataResponse): return {
+        guard case .getDeviceMetadataResponse(let l) = lhs, case .getDeviceMetadataResponse(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getRingtoneRequest, .getRingtoneRequest): return {
+        guard case .getRingtoneRequest(let l) = lhs, case .getRingtoneRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getRingtoneResponse, .getRingtoneResponse): return {
+        guard case .getRingtoneResponse(let l) = lhs, case .getRingtoneResponse(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getDeviceConnectionStatusRequest, .getDeviceConnectionStatusRequest): return {
+        guard case .getDeviceConnectionStatusRequest(let l) = lhs, case .getDeviceConnectionStatusRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getDeviceConnectionStatusResponse, .getDeviceConnectionStatusResponse): return {
+        guard case .getDeviceConnectionStatusResponse(let l) = lhs, case .getDeviceConnectionStatusResponse(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setHamMode, .setHamMode): return {
+        guard case .setHamMode(let l) = lhs, case .setHamMode(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getNodeRemoteHardwarePinsRequest, .getNodeRemoteHardwarePinsRequest): return {
+        guard case .getNodeRemoteHardwarePinsRequest(let l) = lhs, case .getNodeRemoteHardwarePinsRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getNodeRemoteHardwarePinsResponse, .getNodeRemoteHardwarePinsResponse): return {
+        guard case .getNodeRemoteHardwarePinsResponse(let l) = lhs, case .getNodeRemoteHardwarePinsResponse(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.enterDfuModeRequest, .enterDfuModeRequest): return {
+        guard case .enterDfuModeRequest(let l) = lhs, case .enterDfuModeRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.deleteFileRequest, .deleteFileRequest): return {
+        guard case .deleteFileRequest(let l) = lhs, case .deleteFileRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setScale, .setScale): return {
+        guard case .setScale(let l) = lhs, case .setScale(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setOwner, .setOwner): return {
+        guard case .setOwner(let l) = lhs, case .setOwner(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setChannel, .setChannel): return {
+        guard case .setChannel(let l) = lhs, case .setChannel(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setConfig, .setConfig): return {
+        guard case .setConfig(let l) = lhs, case .setConfig(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setModuleConfig, .setModuleConfig): return {
+        guard case .setModuleConfig(let l) = lhs, case .setModuleConfig(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setCannedMessageModuleMessages, .setCannedMessageModuleMessages): return {
+        guard case .setCannedMessageModuleMessages(let l) = lhs, case .setCannedMessageModuleMessages(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setRingtoneMessage, .setRingtoneMessage): return {
+        guard case .setRingtoneMessage(let l) = lhs, case .setRingtoneMessage(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.removeByNodenum, .removeByNodenum): return {
+        guard case .removeByNodenum(let l) = lhs, case .removeByNodenum(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setFavoriteNode, .setFavoriteNode): return {
+        guard case .setFavoriteNode(let l) = lhs, case .setFavoriteNode(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.removeFavoriteNode, .removeFavoriteNode): return {
+        guard case .removeFavoriteNode(let l) = lhs, case .removeFavoriteNode(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setFixedPosition, .setFixedPosition): return {
+        guard case .setFixedPosition(let l) = lhs, case .setFixedPosition(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.removeFixedPosition, .removeFixedPosition): return {
+        guard case .removeFixedPosition(let l) = lhs, case .removeFixedPosition(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setTimeOnly, .setTimeOnly): return {
+        guard case .setTimeOnly(let l) = lhs, case .setTimeOnly(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.beginEditSettings, .beginEditSettings): return {
+        guard case .beginEditSettings(let l) = lhs, case .beginEditSettings(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.commitEditSettings, .commitEditSettings): return {
+        guard case .commitEditSettings(let l) = lhs, case .commitEditSettings(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.factoryResetDevice, .factoryResetDevice): return {
+        guard case .factoryResetDevice(let l) = lhs, case .factoryResetDevice(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.rebootOtaSeconds, .rebootOtaSeconds): return {
+        guard case .rebootOtaSeconds(let l) = lhs, case .rebootOtaSeconds(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.exitSimulator, .exitSimulator): return {
+        guard case .exitSimulator(let l) = lhs, case .exitSimulator(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.rebootSeconds, .rebootSeconds): return {
+        guard case .rebootSeconds(let l) = lhs, case .rebootSeconds(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.shutdownSeconds, .shutdownSeconds): return {
+        guard case .shutdownSeconds(let l) = lhs, case .shutdownSeconds(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.factoryResetConfig, .factoryResetConfig): return {
+        guard case .factoryResetConfig(let l) = lhs, case .factoryResetConfig(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.nodedbReset, .nodedbReset): return {
+        guard case .nodedbReset(let l) = lhs, case .nodedbReset(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      default: return false
+      }
+    }
+  #endif
   }
 
   ///
   /// TODO: REPLACE
-  public enum ConfigType: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public enum ConfigType: SwiftProtobuf.Enum {
     public typealias RawValue = Int
 
     ///
@@ -675,23 +878,11 @@ public struct AdminMessage: Sendable {
       }
     }
 
-    // The compiler won't synthesize support with the UNRECOGNIZED case.
-    public static let allCases: [AdminMessage.ConfigType] = [
-      .deviceConfig,
-      .positionConfig,
-      .powerConfig,
-      .networkConfig,
-      .displayConfig,
-      .loraConfig,
-      .bluetoothConfig,
-      .securityConfig,
-    ]
-
   }
 
   ///
   /// TODO: REPLACE
-  public enum ModuleConfigType: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public enum ModuleConfigType: SwiftProtobuf.Enum {
     public typealias RawValue = Int
 
     ///
@@ -789,31 +980,51 @@ public struct AdminMessage: Sendable {
       }
     }
 
-    // The compiler won't synthesize support with the UNRECOGNIZED case.
-    public static let allCases: [AdminMessage.ModuleConfigType] = [
-      .mqttConfig,
-      .serialConfig,
-      .extnotifConfig,
-      .storeforwardConfig,
-      .rangetestConfig,
-      .telemetryConfig,
-      .cannedmsgConfig,
-      .audioConfig,
-      .remotehardwareConfig,
-      .neighborinfoConfig,
-      .ambientlightingConfig,
-      .detectionsensorConfig,
-      .paxcounterConfig,
-    ]
-
   }
 
   public init() {}
 }
 
+#if swift(>=4.2)
+
+extension AdminMessage.ConfigType: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [AdminMessage.ConfigType] = [
+    .deviceConfig,
+    .positionConfig,
+    .powerConfig,
+    .networkConfig,
+    .displayConfig,
+    .loraConfig,
+    .bluetoothConfig,
+    .securityConfig,
+  ]
+}
+
+extension AdminMessage.ModuleConfigType: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [AdminMessage.ModuleConfigType] = [
+    .mqttConfig,
+    .serialConfig,
+    .extnotifConfig,
+    .storeforwardConfig,
+    .rangetestConfig,
+    .telemetryConfig,
+    .cannedmsgConfig,
+    .audioConfig,
+    .remotehardwareConfig,
+    .neighborinfoConfig,
+    .ambientlightingConfig,
+    .detectionsensorConfig,
+    .paxcounterConfig,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
 ///
 /// Parameters for setting up Meshtastic for ameteur radio usage
-public struct HamParameters: Sendable {
+public struct HamParameters {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -843,7 +1054,7 @@ public struct HamParameters: Sendable {
 
 ///
 /// Response envelope for node_remote_hardware_pins
-public struct NodeRemoteHardwarePinsResponse: Sendable {
+public struct NodeRemoteHardwarePinsResponse {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -857,6 +1068,15 @@ public struct NodeRemoteHardwarePinsResponse: Sendable {
   public init() {}
 }
 
+#if swift(>=5.5) && canImport(_Concurrency)
+extension AdminMessage: @unchecked Sendable {}
+extension AdminMessage.OneOf_PayloadVariant: @unchecked Sendable {}
+extension AdminMessage.ConfigType: @unchecked Sendable {}
+extension AdminMessage.ModuleConfigType: @unchecked Sendable {}
+extension HamParameters: @unchecked Sendable {}
+extension NodeRemoteHardwarePinsResponse: @unchecked Sendable {}
+#endif  // swift(>=5.5) && canImport(_Concurrency)
+
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate let _protobuf_package = "meshtastic"
@@ -864,6 +1084,7 @@ fileprivate let _protobuf_package = "meshtastic"
 extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AdminMessage"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    101: .standard(proto: "session_passkey"),
     1: .standard(proto: "get_channel_request"),
     2: .standard(proto: "get_channel_response"),
     3: .standard(proto: "get_owner_request"),
@@ -897,6 +1118,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     40: .standard(proto: "remove_favorite_node"),
     41: .standard(proto: "set_fixed_position"),
     42: .standard(proto: "remove_fixed_position"),
+    43: .standard(proto: "set_time_only"),
     64: .standard(proto: "begin_edit_settings"),
     65: .standard(proto: "commit_edit_settings"),
     94: .standard(proto: "factory_reset_device"),
@@ -1243,6 +1465,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .removeFixedPosition(v)
         }
       }()
+      case 43: try {
+        var v: UInt32?
+        try decoder.decodeSingularFixed32Field(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .setTimeOnly(v)
+        }
+      }()
       case 64: try {
         var v: Bool?
         try decoder.decodeSingularBoolField(value: &v)
@@ -1315,6 +1545,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .nodedbReset(v)
         }
       }()
+      case 101: try { try decoder.decodeSingularBytesField(value: &self.sessionPasskey) }()
       default: break
       }
     }
@@ -1458,6 +1689,10 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       guard case .removeFixedPosition(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 42)
     }()
+    case .setTimeOnly?: try {
+      guard case .setTimeOnly(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularFixed32Field(value: v, fieldNumber: 43)
+    }()
     case .beginEditSettings?: try {
       guard case .beginEditSettings(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 64)
@@ -1496,10 +1731,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     }()
     case nil: break
     }
+    if !self.sessionPasskey.isEmpty {
+      try visitor.visitSingularBytesField(value: self.sessionPasskey, fieldNumber: 101)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: AdminMessage, rhs: AdminMessage) -> Bool {
+    if lhs.sessionPasskey != rhs.sessionPasskey {return false}
     if lhs.payloadVariant != rhs.payloadVariant {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
@@ -1568,7 +1807,7 @@ extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if self.txPower != 0 {
       try visitor.visitSingularInt32Field(value: self.txPower, fieldNumber: 2)
     }
-    if self.frequency.bitPattern != 0 {
+    if self.frequency != 0 {
       try visitor.visitSingularFloatField(value: self.frequency, fieldNumber: 3)
     }
     if !self.shortName.isEmpty {

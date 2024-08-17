@@ -20,7 +20,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
-public struct Config: Sendable {
+public struct Config {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -97,7 +97,7 @@ public struct Config: Sendable {
 
   ///
   /// Payload Variant
-  public enum OneOf_PayloadVariant: Equatable, Sendable {
+  public enum OneOf_PayloadVariant: Equatable {
     case device(Config.DeviceConfig)
     case position(Config.PositionConfig)
     case power(Config.PowerConfig)
@@ -107,11 +107,53 @@ public struct Config: Sendable {
     case bluetooth(Config.BluetoothConfig)
     case security(Config.SecurityConfig)
 
+  #if !swift(>=4.1)
+    public static func ==(lhs: Config.OneOf_PayloadVariant, rhs: Config.OneOf_PayloadVariant) -> Bool {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch (lhs, rhs) {
+      case (.device, .device): return {
+        guard case .device(let l) = lhs, case .device(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.position, .position): return {
+        guard case .position(let l) = lhs, case .position(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.power, .power): return {
+        guard case .power(let l) = lhs, case .power(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.network, .network): return {
+        guard case .network(let l) = lhs, case .network(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.display, .display): return {
+        guard case .display(let l) = lhs, case .display(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.lora, .lora): return {
+        guard case .lora(let l) = lhs, case .lora(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.bluetooth, .bluetooth): return {
+        guard case .bluetooth(let l) = lhs, case .bluetooth(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.security, .security): return {
+        guard case .security(let l) = lhs, case .security(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      default: return false
+      }
+    }
+  #endif
   }
 
   ///
   /// Configuration
-  public struct DeviceConfig: Sendable {
+  public struct DeviceConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -123,16 +165,12 @@ public struct Config: Sendable {
     ///
     /// Disabling this will disable the SerialConsole by not initilizing the StreamAPI
     /// Moved to SecurityConfig
-    ///
-    /// NOTE: This field was marked as deprecated in the .proto file.
     public var serialEnabled: Bool = false
 
     ///
     /// By default we turn off logging as soon as an API client connects (to keep shared serial link quiet).
     /// Set this to true to leave the debug log outputting even when API is active.
     /// Moved to SecurityConfig
-    ///
-    /// NOTE: This field was marked as deprecated in the .proto file.
     public var debugLogEnabled: Bool = false
 
     ///
@@ -162,8 +200,6 @@ public struct Config: Sendable {
     /// If true, device is considered to be "managed" by a mesh administrator
     /// Clients should then limit available configuration and administrative options inside the user interface
     /// Moved to SecurityConfig
-    ///
-    /// NOTE: This field was marked as deprecated in the .proto file.
     public var isManaged: Bool = false
 
     ///
@@ -182,7 +218,7 @@ public struct Config: Sendable {
 
     ///
     /// Defines the device's role on the Mesh network
-    public enum Role: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public enum Role: SwiftProtobuf.Enum {
       public typealias RawValue = Int
 
       ///
@@ -200,8 +236,6 @@ public struct Config: Sendable {
       ///   The wifi radio and the oled screen will be put to sleep.
       ///   This mode may still potentially have higher power usage due to it's preference in message rebroadcasting on the mesh.
       case router // = 2
-
-      /// NOTE: This enum value was marked as deprecated in the .proto file
       case routerClient // = 3
 
       ///
@@ -292,26 +326,11 @@ public struct Config: Sendable {
         }
       }
 
-      // The compiler won't synthesize support with the UNRECOGNIZED case.
-      public static let allCases: [Config.DeviceConfig.Role] = [
-        .client,
-        .clientMute,
-        .router,
-        .routerClient,
-        .repeater,
-        .tracker,
-        .sensor,
-        .tak,
-        .clientHidden,
-        .lostAndFound,
-        .takTracker,
-      ]
-
     }
 
     ///
     /// Defines the device's behavior for how messages are rebroadcast
-    public enum RebroadcastMode: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public enum RebroadcastMode: SwiftProtobuf.Enum {
       public typealias RawValue = Int
 
       ///
@@ -359,14 +378,6 @@ public struct Config: Sendable {
         }
       }
 
-      // The compiler won't synthesize support with the UNRECOGNIZED case.
-      public static let allCases: [Config.DeviceConfig.RebroadcastMode] = [
-        .all,
-        .allSkipDecoding,
-        .localOnly,
-        .knownOnly,
-      ]
-
     }
 
     public init() {}
@@ -374,7 +385,7 @@ public struct Config: Sendable {
 
   ///
   /// Position Config
-  public struct PositionConfig: Sendable {
+  public struct PositionConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -396,8 +407,6 @@ public struct Config: Sendable {
 
     ///
     /// Is GPS enabled for this node?
-    ///
-    /// NOTE: This field was marked as deprecated in the .proto file.
     public var gpsEnabled: Bool = false
 
     ///
@@ -408,8 +417,6 @@ public struct Config: Sendable {
 
     ///
     /// Deprecated in favor of using smart / regular broadcast intervals as implicit attempt time
-    ///
-    /// NOTE: This field was marked as deprecated in the .proto file.
     public var gpsAttemptTime: UInt32 = 0
 
     ///
@@ -450,7 +457,7 @@ public struct Config: Sendable {
     /// are always included (also time if GPS-synced)
     /// NOTE: the more fields are included, the larger the message will be -
     ///   leading to longer airtime and a higher risk of packet loss
-    public enum PositionFlags: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public enum PositionFlags: SwiftProtobuf.Enum {
       public typealias RawValue = Int
 
       ///
@@ -540,24 +547,9 @@ public struct Config: Sendable {
         }
       }
 
-      // The compiler won't synthesize support with the UNRECOGNIZED case.
-      public static let allCases: [Config.PositionConfig.PositionFlags] = [
-        .unset,
-        .altitude,
-        .altitudeMsl,
-        .geoidalSeparation,
-        .dop,
-        .hvdop,
-        .satinview,
-        .seqNo,
-        .timestamp,
-        .heading,
-        .speed,
-      ]
-
     }
 
-    public enum GpsMode: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public enum GpsMode: SwiftProtobuf.Enum {
       public typealias RawValue = Int
 
       ///
@@ -595,13 +587,6 @@ public struct Config: Sendable {
         }
       }
 
-      // The compiler won't synthesize support with the UNRECOGNIZED case.
-      public static let allCases: [Config.PositionConfig.GpsMode] = [
-        .disabled,
-        .enabled,
-        .notPresent,
-      ]
-
     }
 
     public init() {}
@@ -610,7 +595,7 @@ public struct Config: Sendable {
   ///
   /// Power Config\
   /// See [Power Config](/docs/settings/config/power) for additional power config details.
-  public struct PowerConfig: Sendable {
+  public struct PowerConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -670,7 +655,7 @@ public struct Config: Sendable {
 
   ///
   /// Network Config
-  public struct NetworkConfig: Sendable {
+  public struct NetworkConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -717,7 +702,7 @@ public struct Config: Sendable {
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    public enum AddressMode: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public enum AddressMode: SwiftProtobuf.Enum {
       public typealias RawValue = Int
 
       ///
@@ -749,15 +734,9 @@ public struct Config: Sendable {
         }
       }
 
-      // The compiler won't synthesize support with the UNRECOGNIZED case.
-      public static let allCases: [Config.NetworkConfig.AddressMode] = [
-        .dhcp,
-        .static,
-      ]
-
     }
 
-    public struct IpV4Config: Sendable {
+    public struct IpV4Config {
       // SwiftProtobuf.Message conformance is added in an extension below. See the
       // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
       // methods supported on all messages.
@@ -790,7 +769,7 @@ public struct Config: Sendable {
 
   ///
   /// Display Config
-  public struct DisplayConfig: Sendable {
+  public struct DisplayConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -846,7 +825,7 @@ public struct Config: Sendable {
 
     ///
     /// How the GPS coordinates are displayed on the OLED screen.
-    public enum GpsCoordinateFormat: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public enum GpsCoordinateFormat: SwiftProtobuf.Enum {
       public typealias RawValue = Int
 
       ///
@@ -909,21 +888,11 @@ public struct Config: Sendable {
         }
       }
 
-      // The compiler won't synthesize support with the UNRECOGNIZED case.
-      public static let allCases: [Config.DisplayConfig.GpsCoordinateFormat] = [
-        .dec,
-        .dms,
-        .utm,
-        .mgrs,
-        .olc,
-        .osgr,
-      ]
-
     }
 
     ///
     /// Unit display preference
-    public enum DisplayUnits: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public enum DisplayUnits: SwiftProtobuf.Enum {
       public typealias RawValue = Int
 
       ///
@@ -955,17 +924,11 @@ public struct Config: Sendable {
         }
       }
 
-      // The compiler won't synthesize support with the UNRECOGNIZED case.
-      public static let allCases: [Config.DisplayConfig.DisplayUnits] = [
-        .metric,
-        .imperial,
-      ]
-
     }
 
     ///
     /// Override OLED outo detect with this if it fails.
-    public enum OledType: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public enum OledType: SwiftProtobuf.Enum {
       public typealias RawValue = Int
 
       ///
@@ -1009,17 +972,9 @@ public struct Config: Sendable {
         }
       }
 
-      // The compiler won't synthesize support with the UNRECOGNIZED case.
-      public static let allCases: [Config.DisplayConfig.OledType] = [
-        .oledAuto,
-        .oledSsd1306,
-        .oledSh1106,
-        .oledSh1107,
-      ]
-
     }
 
-    public enum DisplayMode: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public enum DisplayMode: SwiftProtobuf.Enum {
       public typealias RawValue = Int
 
       ///
@@ -1063,17 +1018,9 @@ public struct Config: Sendable {
         }
       }
 
-      // The compiler won't synthesize support with the UNRECOGNIZED case.
-      public static let allCases: [Config.DisplayConfig.DisplayMode] = [
-        .default,
-        .twocolor,
-        .inverted,
-        .color,
-      ]
-
     }
 
-    public enum CompassOrientation: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public enum CompassOrientation: SwiftProtobuf.Enum {
       public typealias RawValue = Int
 
       ///
@@ -1141,18 +1088,6 @@ public struct Config: Sendable {
         }
       }
 
-      // The compiler won't synthesize support with the UNRECOGNIZED case.
-      public static let allCases: [Config.DisplayConfig.CompassOrientation] = [
-        .degrees0,
-        .degrees90,
-        .degrees180,
-        .degrees270,
-        .degrees0Inverted,
-        .degrees90Inverted,
-        .degrees180Inverted,
-        .degrees270Inverted,
-      ]
-
     }
 
     public init() {}
@@ -1160,7 +1095,7 @@ public struct Config: Sendable {
 
   ///
   /// Lora Config
-  public struct LoRaConfig: @unchecked Sendable {
+  public struct LoRaConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1317,7 +1252,7 @@ public struct Config: Sendable {
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    public enum RegionCode: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public enum RegionCode: SwiftProtobuf.Enum {
       public typealias RawValue = Int
 
       ///
@@ -1451,35 +1386,12 @@ public struct Config: Sendable {
         }
       }
 
-      // The compiler won't synthesize support with the UNRECOGNIZED case.
-      public static let allCases: [Config.LoRaConfig.RegionCode] = [
-        .unset,
-        .us,
-        .eu433,
-        .eu868,
-        .cn,
-        .jp,
-        .anz,
-        .kr,
-        .tw,
-        .ru,
-        .in,
-        .nz865,
-        .th,
-        .lora24,
-        .ua433,
-        .ua868,
-        .my433,
-        .my919,
-        .sg923,
-      ]
-
     }
 
     ///
     /// Standard predefined channel settings
     /// Note: these mappings must match ModemPreset Choice in the device code.
-    public enum ModemPreset: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public enum ModemPreset: SwiftProtobuf.Enum {
       public typealias RawValue = Int
 
       ///
@@ -1493,8 +1405,6 @@ public struct Config: Sendable {
       ///
       /// Very Long Range - Slow
       /// Deprecated in 2.5: Works only with txco and is unusably slow
-      ///
-      /// NOTE: This enum value was marked as deprecated in the .proto file
       case veryLongSlow // = 2
 
       ///
@@ -1558,19 +1468,6 @@ public struct Config: Sendable {
         }
       }
 
-      // The compiler won't synthesize support with the UNRECOGNIZED case.
-      public static let allCases: [Config.LoRaConfig.ModemPreset] = [
-        .longFast,
-        .longSlow,
-        .veryLongSlow,
-        .mediumSlow,
-        .mediumFast,
-        .shortSlow,
-        .shortFast,
-        .longModerate,
-        .shortTurbo,
-      ]
-
     }
 
     public init() {}
@@ -1578,7 +1475,7 @@ public struct Config: Sendable {
     fileprivate var _storage = _StorageClass.defaultInstance
   }
 
-  public struct BluetoothConfig: Sendable {
+  public struct BluetoothConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1598,13 +1495,11 @@ public struct Config: Sendable {
     ///
     /// Enables device (serial style logs) over Bluetooth
     /// Moved to SecurityConfig
-    ///
-    /// NOTE: This field was marked as deprecated in the .proto file.
     public var deviceLoggingEnabled: Bool = false
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    public enum PairingMode: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public enum PairingMode: SwiftProtobuf.Enum {
       public typealias RawValue = Int
 
       ///
@@ -1642,19 +1537,12 @@ public struct Config: Sendable {
         }
       }
 
-      // The compiler won't synthesize support with the UNRECOGNIZED case.
-      public static let allCases: [Config.BluetoothConfig.PairingMode] = [
-        .randomPin,
-        .fixedPin,
-        .noPin,
-      ]
-
     }
 
     public init() {}
   }
 
-  public struct SecurityConfig: @unchecked Sendable {
+  public struct SecurityConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1702,6 +1590,201 @@ public struct Config: Sendable {
 
   public init() {}
 }
+
+#if swift(>=4.2)
+
+extension Config.DeviceConfig.Role: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Config.DeviceConfig.Role] = [
+    .client,
+    .clientMute,
+    .router,
+    .routerClient,
+    .repeater,
+    .tracker,
+    .sensor,
+    .tak,
+    .clientHidden,
+    .lostAndFound,
+    .takTracker,
+  ]
+}
+
+extension Config.DeviceConfig.RebroadcastMode: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Config.DeviceConfig.RebroadcastMode] = [
+    .all,
+    .allSkipDecoding,
+    .localOnly,
+    .knownOnly,
+  ]
+}
+
+extension Config.PositionConfig.PositionFlags: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Config.PositionConfig.PositionFlags] = [
+    .unset,
+    .altitude,
+    .altitudeMsl,
+    .geoidalSeparation,
+    .dop,
+    .hvdop,
+    .satinview,
+    .seqNo,
+    .timestamp,
+    .heading,
+    .speed,
+  ]
+}
+
+extension Config.PositionConfig.GpsMode: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Config.PositionConfig.GpsMode] = [
+    .disabled,
+    .enabled,
+    .notPresent,
+  ]
+}
+
+extension Config.NetworkConfig.AddressMode: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Config.NetworkConfig.AddressMode] = [
+    .dhcp,
+    .static,
+  ]
+}
+
+extension Config.DisplayConfig.GpsCoordinateFormat: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Config.DisplayConfig.GpsCoordinateFormat] = [
+    .dec,
+    .dms,
+    .utm,
+    .mgrs,
+    .olc,
+    .osgr,
+  ]
+}
+
+extension Config.DisplayConfig.DisplayUnits: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Config.DisplayConfig.DisplayUnits] = [
+    .metric,
+    .imperial,
+  ]
+}
+
+extension Config.DisplayConfig.OledType: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Config.DisplayConfig.OledType] = [
+    .oledAuto,
+    .oledSsd1306,
+    .oledSh1106,
+    .oledSh1107,
+  ]
+}
+
+extension Config.DisplayConfig.DisplayMode: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Config.DisplayConfig.DisplayMode] = [
+    .default,
+    .twocolor,
+    .inverted,
+    .color,
+  ]
+}
+
+extension Config.DisplayConfig.CompassOrientation: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Config.DisplayConfig.CompassOrientation] = [
+    .degrees0,
+    .degrees90,
+    .degrees180,
+    .degrees270,
+    .degrees0Inverted,
+    .degrees90Inverted,
+    .degrees180Inverted,
+    .degrees270Inverted,
+  ]
+}
+
+extension Config.LoRaConfig.RegionCode: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Config.LoRaConfig.RegionCode] = [
+    .unset,
+    .us,
+    .eu433,
+    .eu868,
+    .cn,
+    .jp,
+    .anz,
+    .kr,
+    .tw,
+    .ru,
+    .in,
+    .nz865,
+    .th,
+    .lora24,
+    .ua433,
+    .ua868,
+    .my433,
+    .my919,
+    .sg923,
+  ]
+}
+
+extension Config.LoRaConfig.ModemPreset: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Config.LoRaConfig.ModemPreset] = [
+    .longFast,
+    .longSlow,
+    .veryLongSlow,
+    .mediumSlow,
+    .mediumFast,
+    .shortSlow,
+    .shortFast,
+    .longModerate,
+    .shortTurbo,
+  ]
+}
+
+extension Config.BluetoothConfig.PairingMode: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Config.BluetoothConfig.PairingMode] = [
+    .randomPin,
+    .fixedPin,
+    .noPin,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
+#if swift(>=5.5) && canImport(_Concurrency)
+extension Config: @unchecked Sendable {}
+extension Config.OneOf_PayloadVariant: @unchecked Sendable {}
+extension Config.DeviceConfig: @unchecked Sendable {}
+extension Config.DeviceConfig.Role: @unchecked Sendable {}
+extension Config.DeviceConfig.RebroadcastMode: @unchecked Sendable {}
+extension Config.PositionConfig: @unchecked Sendable {}
+extension Config.PositionConfig.PositionFlags: @unchecked Sendable {}
+extension Config.PositionConfig.GpsMode: @unchecked Sendable {}
+extension Config.PowerConfig: @unchecked Sendable {}
+extension Config.NetworkConfig: @unchecked Sendable {}
+extension Config.NetworkConfig.AddressMode: @unchecked Sendable {}
+extension Config.NetworkConfig.IpV4Config: @unchecked Sendable {}
+extension Config.DisplayConfig: @unchecked Sendable {}
+extension Config.DisplayConfig.GpsCoordinateFormat: @unchecked Sendable {}
+extension Config.DisplayConfig.DisplayUnits: @unchecked Sendable {}
+extension Config.DisplayConfig.OledType: @unchecked Sendable {}
+extension Config.DisplayConfig.DisplayMode: @unchecked Sendable {}
+extension Config.DisplayConfig.CompassOrientation: @unchecked Sendable {}
+extension Config.LoRaConfig: @unchecked Sendable {}
+extension Config.LoRaConfig.RegionCode: @unchecked Sendable {}
+extension Config.LoRaConfig.ModemPreset: @unchecked Sendable {}
+extension Config.BluetoothConfig: @unchecked Sendable {}
+extension Config.BluetoothConfig.PairingMode: @unchecked Sendable {}
+extension Config.SecurityConfig: @unchecked Sendable {}
+#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
@@ -2177,7 +2260,7 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if self.onBatteryShutdownAfterSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.onBatteryShutdownAfterSecs, fieldNumber: 2)
     }
-    if self.adcMultiplierOverride.bitPattern != 0 {
+    if self.adcMultiplierOverride != 0 {
       try visitor.visitSingularFloatField(value: self.adcMultiplierOverride, fieldNumber: 3)
     }
     if self.waitBluetoothSecs != 0 {
@@ -2621,7 +2704,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       if _storage._codingRate != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._codingRate, fieldNumber: 5)
       }
-      if _storage._frequencyOffset.bitPattern != 0 {
+      if _storage._frequencyOffset != 0 {
         try visitor.visitSingularFloatField(value: _storage._frequencyOffset, fieldNumber: 6)
       }
       if _storage._region != .unset {
@@ -2645,7 +2728,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       if _storage._sx126XRxBoostedGain != false {
         try visitor.visitSingularBoolField(value: _storage._sx126XRxBoostedGain, fieldNumber: 13)
       }
-      if _storage._overrideFrequency.bitPattern != 0 {
+      if _storage._overrideFrequency != 0 {
         try visitor.visitSingularFloatField(value: _storage._overrideFrequency, fieldNumber: 14)
       }
       if _storage._paFanDisabled != false {
