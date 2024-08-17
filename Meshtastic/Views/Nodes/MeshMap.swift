@@ -62,7 +62,6 @@ struct MeshMap: View {
 				MapReader { reader in
 					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
 						MeshMapContent(showUserLocation: $showUserLocation, showTraffic: $showTraffic, showPointsOfInterest: $showPointsOfInterest, selectedMapLayer: $selectedMapLayer, selectedPosition: $selectedPosition, selectedWaypoint: $selectedWaypoint)
-
 					}
 					.mapScope(mapScope)
 					.mapStyle(mapStyle)
@@ -159,6 +158,7 @@ struct MeshMap: View {
 			}
 			.safeAreaInset(edge: .bottom, alignment: .trailing) {
 				HStack {
+					Spacer()
 					Button(action: {
 						withAnimation {
 							editingSettings = !editingSettings
@@ -170,18 +170,17 @@ struct MeshMap: View {
 					.tint(Color(UIColor.secondarySystemBackground))
 					.foregroundColor(.accentColor)
 					.buttonStyle(.borderedProminent)
-					Spacer()
-					Button(action: {
-						withAnimation {
-							editingFilters = !editingFilters
-						}
-					}) {
-						Image(systemName: !editingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
-							.padding(.vertical, 5)
-					}
-					.tint(Color(UIColor.secondarySystemBackground))
-					.foregroundColor(.accentColor)
-					.buttonStyle(.borderedProminent)
+//					Button(action: {
+//						withAnimation {
+//							editingFilters = !editingFilters
+//						}
+//					}) {
+//						Image(systemName: !editingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+//							.padding(.vertical, 5)
+//					}
+//					.tint(Color(UIColor.secondarySystemBackground))
+//					.foregroundColor(.accentColor)
+//					.buttonStyle(.borderedProminent)
 				}
 				.controlSize(.regular)
 				.padding(5)

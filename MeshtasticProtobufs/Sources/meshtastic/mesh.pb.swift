@@ -343,6 +343,10 @@ public enum HardwareModel: SwiftProtobuf.Enum {
   case radiomaster900Bandit // = 74
 
   ///
+  /// Minewsemi ME25LS01 (ME25LE01_V1.0). NRF52840 w/ LR1110 radio, buttons and leds and pins.
+  case me25Ls014Y10Td // = 75
+
+  ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -429,6 +433,7 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case 72: self = .rak3172
     case 73: self = .wioE5
     case 74: self = .radiomaster900Bandit
+    case 75: self = .me25Ls014Y10Td
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -510,6 +515,7 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case .rak3172: return 72
     case .wioE5: return 73
     case .radiomaster900Bandit: return 74
+    case .me25Ls014Y10Td: return 75
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -596,6 +602,7 @@ extension HardwareModel: CaseIterable {
     .rak3172,
     .wioE5,
     .radiomaster900Bandit,
+    .me25Ls014Y10Td,
     .privateHw,
   ]
 }
@@ -1219,15 +1226,27 @@ public struct User {
 }
 
 ///
-/// A message used in our Dynamic Source Routing protocol (RFC 4728 based)
+/// A message used in a traceroute
 public struct RouteDiscovery {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
-  /// The list of nodenums this packet has visited so far
+  /// The list of nodenums this packet has visited so far to the destination.
   public var route: [UInt32] = []
+
+  ///
+  /// The list of SNRs (in dB, scaled by 4) in the route towards the destination.
+  public var snrTowards: [Int32] = []
+
+  ///
+  /// The list of nodenums the packet has visited on the way back from the destination.
+  public var routeBack: [UInt32] = []
+
+  ///
+  /// The list of SNRs (in dB, scaled by 4) in the route back from the destination.
+  public var snrBack: [Int32] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -3221,6 +3240,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     72: .same(proto: "RAK3172"),
     73: .same(proto: "WIO_E5"),
     74: .same(proto: "RADIOMASTER_900_BANDIT"),
+    75: .same(proto: "ME25LS01_4Y10TD"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
@@ -3600,6 +3620,9 @@ extension RouteDiscovery: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
   public static let protoMessageName: String = _protobuf_package + ".RouteDiscovery"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "route"),
+    2: .standard(proto: "snr_towards"),
+    3: .standard(proto: "route_back"),
+    4: .standard(proto: "snr_back"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -3609,6 +3632,9 @@ extension RouteDiscovery: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeRepeatedFixed32Field(value: &self.route) }()
+      case 2: try { try decoder.decodeRepeatedInt32Field(value: &self.snrTowards) }()
+      case 3: try { try decoder.decodeRepeatedFixed32Field(value: &self.routeBack) }()
+      case 4: try { try decoder.decodeRepeatedInt32Field(value: &self.snrBack) }()
       default: break
       }
     }
@@ -3618,11 +3644,23 @@ extension RouteDiscovery: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if !self.route.isEmpty {
       try visitor.visitPackedFixed32Field(value: self.route, fieldNumber: 1)
     }
+    if !self.snrTowards.isEmpty {
+      try visitor.visitPackedInt32Field(value: self.snrTowards, fieldNumber: 2)
+    }
+    if !self.routeBack.isEmpty {
+      try visitor.visitPackedFixed32Field(value: self.routeBack, fieldNumber: 3)
+    }
+    if !self.snrBack.isEmpty {
+      try visitor.visitPackedInt32Field(value: self.snrBack, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: RouteDiscovery, rhs: RouteDiscovery) -> Bool {
     if lhs.route != rhs.route {return false}
+    if lhs.snrTowards != rhs.snrTowards {return false}
+    if lhs.routeBack != rhs.routeBack {return false}
+    if lhs.snrBack != rhs.snrBack {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

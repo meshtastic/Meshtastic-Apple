@@ -154,6 +154,22 @@ struct PositionPopover: View {
 							 .rotationEffect(degrees)
 					}
 					.padding(.bottom, 5)
+					/// Distance
+					if let lastLocation = locationsHandler.locationsArray.last {
+						/// Distance
+						if lastLocation.distance(from: CLLocation(latitude: LocationsHandler.DefaultLocation.latitude, longitude: LocationsHandler.DefaultLocation.longitude)) > 0.0 {
+							let metersAway = position.coordinate.distance(from: CLLocationCoordinate2D(latitude: lastLocation.coordinate.latitude, longitude: lastLocation.coordinate.longitude))
+							Label {
+								Text("distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
+									.foregroundColor(.primary)
+									.font(idiom == .phone ? .callout : .body)
+							} icon: {
+								Image(systemName: "lines.measurement.horizontal")
+									.symbolRenderingMode(.hierarchical)
+									.frame(width: 35)
+							}
+						}
+					}
 					/// Speed
 					let speed = Measurement(value: Double(position.speed), unit: UnitSpeed.kilometersPerHour)
 					Label {
@@ -178,21 +194,6 @@ struct PositionPopover: View {
 								 .rotationEffect(degrees)
 						}
 						.padding(.bottom, 5)
-					}
-					if let lastLocation = locationsHandler.locationsArray.last {
-						/// Distance
-						if lastLocation.distance(from: CLLocation(latitude: LocationsHandler.DefaultLocation.latitude, longitude: LocationsHandler.DefaultLocation.longitude)) > 0.0 {
-							let metersAway = position.coordinate.distance(from: CLLocationCoordinate2D(latitude: lastLocation.coordinate.latitude, longitude: lastLocation.coordinate.longitude))
-							Label {
-								Text("distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
-									.foregroundColor(.primary)
-									.font(idiom == .phone ? .callout : .body)
-							} icon: {
-								Image(systemName: "lines.measurement.horizontal")
-									.symbolRenderingMode(.hierarchical)
-									.frame(width: 35)
-							}
-						}
 					}
 					Spacer()
 				}

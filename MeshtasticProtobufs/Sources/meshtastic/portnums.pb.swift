@@ -167,7 +167,7 @@ public enum PortNum: SwiftProtobuf.Enum {
 
   ///
   /// Provides a traceroute functionality to show the route a packet towards
-  /// a certain destination would take on the mesh.
+  /// a certain destination would take on the mesh. Contains a RouteDiscovery message as payload.
   /// ENCODING: Protobuf
   case tracerouteApp // = 70
 

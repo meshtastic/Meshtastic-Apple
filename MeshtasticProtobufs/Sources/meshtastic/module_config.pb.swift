@@ -1044,7 +1044,7 @@ public struct ModuleConfig {
 
     ///
     /// Input event origin accepted by the canned message module.
-    /// Can be e.g. "rotEnc1", "upDownEnc1" or keyword "_any"
+    /// Can be e.g. "rotEnc1", "upDownEnc1", "scanAndSelect", "cardkb", "serialkb", or keyword "_any"
     public var allowInputSource: String = String()
 
     ///

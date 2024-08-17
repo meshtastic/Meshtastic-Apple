@@ -893,6 +893,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				lastConnectionError = ""
 				isSubscribed = true
 				Logger.mesh.info("🤜 [BLE] Want Config Complete. ID:\(decodedInfo.configCompleteID)")
+				sendTime()
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again
 
@@ -1296,6 +1297,30 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				_ = sendPosition(channel: 0, destNum: connectedPeripheral.num, wantResponse: false)
 			}
 		}
+	}
+
+	public func sendTime() -> Bool {
+		var adminPacket = AdminMessage()
+		adminPacket.setTimeOnly = UInt32(Date().timeIntervalSince1970)
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = 0
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		meshPacket.channel = 0
+		var dataMessage = DataMessage()
+		if let serializedData: Data = try? adminPacket.serializedData() {
+			dataMessage.payload = serializedData
+			dataMessage.portnum = PortNum.adminApp
+			meshPacket.decoded = dataMessage
+		} else {
+			return false
+		}
+		let messageDescription = "🕛 Sent Set Time Admin Message to the connectecd node."
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
+			return true
+		}
+		return false
 	}
 
 	public func sendShutdown(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
