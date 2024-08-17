@@ -91,6 +91,7 @@ struct NodeMap: View {
 				bounds: MapCameraBounds(minimumDistance: 100, maximumDistance: .infinity),
 				scope: mapScope
 			) {
+				UserAnnotation()
 				NodeMapContent(node: node)
 			}
 			.mapScope(mapScope)

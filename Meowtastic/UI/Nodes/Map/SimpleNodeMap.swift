@@ -1,6 +1,6 @@
 import CoreLocation
-import SwiftUI
 import MapKit
+import SwiftUI
 
 struct SimpleNodeMap: View {
 	@Environment(\.managedObjectContext)
@@ -47,10 +47,24 @@ struct SimpleNodeMap: View {
 				bounds: MapCameraBounds(minimumDistance: 100, maximumDistance: .infinity),
 				scope: mapScope
 			) {
+				UserAnnotation()
 				NodeMapContent(node: node)
 			}
 			.mapScope(mapScope)
 			.mapStyle(mapStyle)
+			.mapControls {
+				MapScaleView(scope: mapScope)
+					.mapControlVisibility(.visible)
+
+				MapUserLocationButton(scope: mapScope)
+					.mapControlVisibility(.hidden)
+
+				MapPitchToggle(scope: mapScope)
+					.mapControlVisibility(.hidden)
+
+				MapCompass(scope: mapScope)
+					.mapControlVisibility(.hidden)
+			}
 			.onAppear {
 				if
 					let lastCoordinate = (node.positions?.lastObject as? PositionEntity)?.coordinate,

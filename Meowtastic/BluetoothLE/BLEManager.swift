@@ -1,15 +1,13 @@
-import Foundation
-import CoreData
+import CocoaMQTT
 import CoreBluetooth
-import SwiftUI
+import CoreData
+import Foundation
 import MapKit
 import MeshtasticProtobufs
-import CocoaMQTT
 import OSLog
+import SwiftUI
 
-// ---------------------------------------------------------------------------------------
-// Meshtastic BLE Device Manager
-// ---------------------------------------------------------------------------------------
+// swiftlint:disable all
 class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate, ObservableObject {
 
 	let appState: AppState
@@ -3178,3 +3176,4 @@ extension BLEManager: CBCentralManagerDelegate {
 		self.peripherals.removeAll(where: { $0.lastUpdate < visibleDuration})
 	}
 }
+// swiftlint:enable all

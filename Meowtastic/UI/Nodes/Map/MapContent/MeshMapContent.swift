@@ -5,8 +5,6 @@ struct MeshMapContent: MapContent {
 	@StateObject
 	var appState = AppState.shared
 	@Binding
-	var showUserLocation: Bool
-	@Binding
 	var selectedPosition: PositionEntity?
 
 	@FetchRequest(
