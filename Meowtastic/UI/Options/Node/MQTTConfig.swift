@@ -365,7 +365,7 @@ struct MQTTConfig: View {
 			{
 				Logger.mesh.info("empty mqtt module config")
 
-				_ = bleManager.requestMqttModuleConfig(
+				bleManager.requestMQTTModuleConfig(
 					fromUser: connectedNode.user!,
 					toUser: node.user!,
 					adminIndex: connectedNode.myInfo?.adminIndex ?? 0

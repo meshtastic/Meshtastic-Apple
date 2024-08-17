@@ -111,7 +111,7 @@ struct BluetoothConfig: View {
 				Logger.mesh.info("empty bluetooth config")
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let connectedNode {
-					_ = bleManager.requestBluetoothConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+					bleManager.requestBluetoothConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}

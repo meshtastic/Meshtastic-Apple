@@ -668,14 +668,6 @@ struct NodeDetail: View {
 			)
 
 			if let connectedNode {
-				if node.isStoreForwardRouter {
-					ClientHistoryButton(
-						bleManager: bleManager,
-						connectedNode: connectedNode,
-						node: node
-					)
-				}
-
 				DeleteNodeButton(
 					bleManager: bleManager,
 					context: context,

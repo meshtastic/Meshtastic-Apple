@@ -48,7 +48,7 @@ struct TraceRoute: View {
 				if let routes {
 					List {
 						Button {
-							_ = bleManager.sendTraceRouteRequest(
+							bleManager.sendTraceRouteRequest(
 								destNum: node.user?.num ?? 0,
 								wantResponse: true
 							)

@@ -171,7 +171,7 @@ struct DisplayConfig: View {
 				Logger.mesh.info("empty display config")
 				let connectedNode = getNodeInfo(id: bleManager.deviceConnected?.num ?? 0, context: context)
 				if node != nil && connectedNode != nil {
-					_ = bleManager.requestDisplayConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					bleManager.requestDisplayConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}

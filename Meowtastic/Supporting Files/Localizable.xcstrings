@@ -700,9 +700,6 @@
     "An open source, off-grid, decentralized, mesh network built to run on affordable, low-power devices. Obviously, this app would be useless without them" : {
 
     },
-    "Any missed messages will be delivered again." : {
-
-    },
     "App Settings" : {
 
     },
@@ -2953,12 +2950,6 @@
           }
         }
       }
-    },
-    "Client History" : {
-
-    },
-    "Client History Request Sent" : {
-
     },
     "Client Proxy" : {
 

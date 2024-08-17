@@ -90,7 +90,7 @@ struct PositionConfig: View {
 				Logger.mesh.info("empty position config")
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let node, let connectedNode {
-					_ = bleManager.requestPositionConfig(
+					bleManager.requestPositionConfig(
 						fromUser: connectedNode.user!,
 						toUser: node.user!,
 						adminIndex: connectedNode.myInfo?.adminIndex ?? 0

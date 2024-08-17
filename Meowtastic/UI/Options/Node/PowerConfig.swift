@@ -121,7 +121,7 @@ struct PowerConfig: View {
 			if bleManager.deviceConnected != nil && node?.powerConfig == nil {
 				let connectedNode = getNodeInfo(id: bleManager.deviceConnected?.num ?? 0, context: context)
 				if node != nil && connectedNode != nil {
-					_ = bleManager.requestPowerConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					bleManager.requestPowerConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}

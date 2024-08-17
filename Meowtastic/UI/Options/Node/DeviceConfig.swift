@@ -246,7 +246,7 @@ struct DeviceConfig: View {
 				Logger.mesh.info("empty device config")
 				let connectedNode = getNodeInfo(id: bleManager.deviceConnected?.num ?? -1, context: context)
 				if node != nil && connectedNode != nil && connectedNode?.user != nil {
-					_ = bleManager.requestDeviceConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					bleManager.requestDeviceConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}

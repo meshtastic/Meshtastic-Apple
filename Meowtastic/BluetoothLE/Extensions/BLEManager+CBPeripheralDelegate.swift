@@ -24,54 +24,58 @@ extension BLEManager: CBPeripheralDelegate {
 			Logger.services.info("ℹ️ [BLE] peripheral didUpdateNotificationStateFor \(characteristic.uuid, privacy: .public)")
 		}
 	}
-	
-	// MARK: Discover Characteristics Event
-	func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-		
+
+	func peripheral(
+		_ peripheral: CBPeripheral,
+		didDiscoverCharacteristicsFor service: CBService,
+		error: Error?
+	) {
 		if let error {
-			Logger.services.error("🚫 [BLE] Discover Characteristics error for \(peripheral.name ?? "Unknown", privacy: .public) \(error.localizedDescription, privacy: .public) disconnecting device")
-			// Try and stop crashes when this error occurs
+			Logger.services.error(
+				"🚫 [BLE] Discover Characteristics error for \(peripheral.name ?? "Unknown", privacy: .public) \(error.localizedDescription, privacy: .public) disconnecting device"
+			)
+
 			disconnectDevice()
+
 			return
 		}
-		
-		guard let characteristics = service.characteristics else { return }
-		
+
+		guard let characteristics = service.characteristics else {
+			return
+		}
+
 		for characteristic in characteristics {
 			switch characteristic.uuid {
 				
 			case BluetoothUUID.toRadio:
-				Logger.services.info("✅ [BLE] did discover TORADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown", privacy: .public)")
 				characteristicToRadio = characteristic
-				
+
 			case BluetoothUUID.fromRadio:
-				Logger.services.info("✅ [BLE] did discover FROMRADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown", privacy: .public)")
 				characteristicFromRadio = characteristic
 				peripheral.readValue(for: characteristicFromRadio)
-				
+
 			case BluetoothUUID.fromNum:
-				Logger.services.info("✅ [BLE] did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown", privacy: .public)")
 				characteristicFromNum = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
 				
 			case BluetoothUUID.logRadioLegacy:
-				Logger.services.info("✅ [BLE] did discover legacy LOGRADIO (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown", privacy: .public)")
 				characteristicLogRadioLegacy = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
 				
 			case BluetoothUUID.logRadio:
-				Logger.services.info("✅ [BLE] did discover LOGRADIO (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown", privacy: .public)")
 				characteristicLogRadio = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
-				
+
 			default:
 				break
 			}
 		}
+
 		if ![characteristicFromNum, characteristicToRadio].contains(nil) {
 			if mqttProxyConnected {
 				mqttManager.mqttClientProxy?.disconnect()
 			}
+
 			sendWantConfig()
 		}
 	}
@@ -124,10 +128,8 @@ extension BLEManager: CBPeripheralDelegate {
 				let value = characteristic.value,
 				!value.isEmpty,
 				let decodedInfo = try? FromRadio(serializedData: value),
-				var connectedDevice = getConnectedDevice()
+				let connectedDevice = getConnectedDevice()
 			else {
-				Logger.services.error("Failed to decode `fromRadio` data")
-
 				return
 			}
 
@@ -174,8 +176,8 @@ extension BLEManager: CBPeripheralDelegate {
 						connectedDevice.num == nodeInfo.num,
 						let user = nodeInfo.user
 					{
-						connectedDevice.shortName = user.shortName ?? "?"
-						connectedDevice.longName = user.longName ?? "unknown".localized
+						deviceConnected?.shortName = user.shortName ?? "?"
+						deviceConnected?.longName = user.longName ?? "unknown".localized
 					}
 				}
 
@@ -206,17 +208,6 @@ extension BLEManager: CBPeripheralDelegate {
 						nodeNum: Int64(truncatingIfNeeded: connectedDevice.num),
 						nodeLongName: self.deviceConnected.longName
 					)
-
-					if
-						decodedInfo.moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(decodedInfo.moduleConfig.cannedMessage)
-					{
-						if decodedInfo.moduleConfig.cannedMessage.enabled {
-							_ = getCannedMessageModuleMessages(
-								destNum: connectedDevice.num,
-								wantResponse: true
-							)
-						}
-					}
 				}
 
 				// Device Metadata

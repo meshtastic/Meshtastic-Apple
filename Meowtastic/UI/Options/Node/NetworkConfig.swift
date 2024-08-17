@@ -123,7 +123,7 @@ struct NetworkConfig: View {
 				Logger.mesh.info("empty network config")
 				let connectedNode = getNodeInfo(id: bleManager.deviceConnected.num, context: context)
 				if node != nil && connectedNode != nil {
-					_ = bleManager.requestNetworkConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					bleManager.requestNetworkConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}
