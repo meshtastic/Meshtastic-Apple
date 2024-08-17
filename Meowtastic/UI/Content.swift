@@ -19,7 +19,11 @@ struct Content: View {
 		animation: .default
 	)
 	private var nodes: FetchedResults<NodeInfoEntity>
-
+	private var nodeConnected: NodeInfoEntity? {
+		nodes.first(where: { node in
+			node.num == UserDefaults.preferredPeripheralNum
+		})
+	}
 	private var nodeOnlineCount: Int {
 		if bleManager.isNodeConnected {
 			nodes.filter { node in
@@ -30,6 +34,16 @@ struct Content: View {
 			0
 		}
 	}
+	private var unreadMessagesCount: Int {
+		guard let nodeConnected else {
+			return 0
+		}
+
+		let channelUnreadMessages = nodeConnected.user?.unreadMessages ?? 0
+		let usersUnreadMessages = nodeConnected.myInfo?.unreadMessages ?? 0
+
+		return channelUnreadMessages + usersUnreadMessages
+	}
 
 	var body: some View {
 		TabView(selection: $appState.tabSelection) {
@@ -38,8 +52,7 @@ struct Content: View {
 					Label("Messages", systemImage: "message")
 				}
 				.tag(TabTag.messages)
-				.badge(appState.totalUnreadMessages)
-				.badgeProminence(.standard)
+				.badge(unreadMessagesCount)
 
 			NodeList()
 				.tabItem {
@@ -47,7 +60,6 @@ struct Content: View {
 				}
 				.tag(TabTag.nodes)
 				.badge(nodeOnlineCount)
-				.badgeProminence(.decreased)
 
 			MeshMap()
 				.tabItem {

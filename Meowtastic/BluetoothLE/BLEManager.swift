@@ -909,7 +909,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 									mqttManager.mqttClientProxy?.disconnect()
 								}
 							}
-							// Set initial unread message badge states
 							appState.unreadChannelMessages = fetchedNodeInfo[0].myInfo?.unreadMessages ?? 0
 							appState.unreadDirectMessages = fetchedNodeInfo[0].user?.unreadMessages ?? 0
 						}
