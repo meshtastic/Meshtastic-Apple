@@ -14,6 +14,10 @@ extension NodeInfoEntity {
 		return self.positions?.lastObject as? PositionEntity
 	}
 
+	var latestDeviceMetrics: TelemetryEntity? {
+		return self.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity
+	}
+
 	var latestEnvironmentMetrics: TelemetryEntity? {
 		return self.telemetries?.filtered(using: NSPredicate(format: "metricsType == 1")).lastObject as? TelemetryEntity
 	}

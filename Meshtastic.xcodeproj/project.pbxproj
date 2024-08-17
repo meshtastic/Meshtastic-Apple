@@ -152,7 +152,6 @@
 		DDB75A1A2A05EB67006ED576 /* alpha.png in Resources */ = {isa = PBXBuildFile; fileRef = DDB75A192A05EB67006ED576 /* alpha.png */; };
 		DDB75A1E2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A1D2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift */; };
 		DDB75A212A12B954006ED576 /* LoRaSignalStrength.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A202A12B954006ED576 /* LoRaSignalStrength.swift */; };
-		DDB75A232A13CDA9006ED576 /* BatteryLevelCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A222A13CDA9006ED576 /* BatteryLevelCompact.swift */; };
 		DDB8F4102A9EE5B400230ECE /* Messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB8F40F2A9EE5B400230ECE /* Messages.swift */; };
 		DDB8F4122A9EE5DD00230ECE /* UserList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB8F4112A9EE5DD00230ECE /* UserList.swift */; };
 		DDB8F4142A9EE5F000230ECE /* ChannelList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB8F4132A9EE5F000230ECE /* ChannelList.swift */; };
@@ -418,7 +417,6 @@
 		DDB75A1D2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignalStrengthIndicator.swift; sourceTree = "<group>"; };
 		DDB75A1F2A10766D006ED576 /* MeshtasticDataModelV13.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV13.xcdatamodel; sourceTree = "<group>"; };
 		DDB75A202A12B954006ED576 /* LoRaSignalStrength.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignalStrength.swift; sourceTree = "<group>"; };
-		DDB75A222A13CDA9006ED576 /* BatteryLevelCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryLevelCompact.swift; sourceTree = "<group>"; };
 		DDB8F40F2A9EE5B400230ECE /* Messages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Messages.swift; sourceTree = "<group>"; };
 		DDB8F4112A9EE5DD00230ECE /* UserList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserList.swift; sourceTree = "<group>"; };
 		DDB8F4132A9EE5F000230ECE /* ChannelList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelList.swift; sourceTree = "<group>"; };
@@ -921,7 +919,6 @@
 				DD6F65772C6EAB860053C113 /* Help */,
 				DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */,
 				DD3CC24B2C498D6C001BD3A2 /* BatteryCompact.swift */,
-				DDB75A222A13CDA9006ED576 /* BatteryLevelCompact.swift */,
 				DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */,
 				DD47E3D526F17ED900029299 /* CircleText.swift */,
 				DDF924C926FBB953009FE055 /* ConnectedDevice.swift */,
@@ -1310,7 +1307,6 @@
 				DDDB444229F8A88700EE2349 /* Double.swift in Sources */,
 				DDF45C342BC1A48E005ED5F2 /* MQTTIcon.swift in Sources */,
 				DDA9515A2BC6624100CEA535 /* TelemetryWeather.swift in Sources */,
-				DDB75A232A13CDA9006ED576 /* BatteryLevelCompact.swift in Sources */,
 				DDB75A162A0594AD006ED576 /* TileOverlay.swift in Sources */,
 				DD1BD0EB2C601795008C0C70 /* CLLocation.swift in Sources */,
 				DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */,

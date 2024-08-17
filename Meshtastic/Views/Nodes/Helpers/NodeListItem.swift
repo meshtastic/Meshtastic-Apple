@@ -23,8 +23,10 @@ struct NodeListItem: View {
 					VStack(alignment: .leading) {
 						CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 70)
 							.padding(.trailing, 5)
-						BatteryLevelCompact(node: node, font: .caption, iconFont: .callout, color: .accentColor)
-							.padding(.trailing, 5)
+						if node.latestDeviceMetrics != nil {
+							BatteryCompact(batteryLevel: node.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
+								.padding(.trailing, 5)
+						}
 					}
 					VStack(alignment: .leading) {
 						HStack {

@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct BatteryCompact: View {
-	@State var batteryLevel: Int32
+	var batteryLevel: Int32
 	var font: Font
 	var iconFont: Font
 	var color: Color
