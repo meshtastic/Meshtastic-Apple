@@ -88,7 +88,7 @@ struct PowerConfig: View {
 				}
 			}
 		}
-		.disabled(bleManager.connectedPeripheral == nil || node?.powerConfig == nil)
+		.disabled(bleManager.deviceConnected == nil || node?.powerConfig == nil)
 		.navigationTitle("Power Config")
 		.navigationBarItems(
 			trailing: ConnectedDevice()
@@ -118,8 +118,8 @@ struct PowerConfig: View {
 			setPowerValues()
 
 			// Need to request a Power config from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.powerConfig == nil {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
+			if bleManager.deviceConnected != nil && node?.powerConfig == nil {
+				let connectedNode = getNodeInfo(id: bleManager.deviceConnected?.num ?? 0, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestPowerConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
@@ -164,7 +164,7 @@ struct PowerConfig: View {
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			guard
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context),
+				let connectedNode = getNodeInfo(id: bleManager.deviceConnected.num, context: context),
 				let fromUser = connectedNode.user,
 				let toUser = node?.user
 			else {

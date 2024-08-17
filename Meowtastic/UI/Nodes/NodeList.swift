@@ -47,7 +47,7 @@ struct NodeList: View {
 	private var nodes: FetchedResults<NodeInfoEntity>
 
 	private var connectedNodeNum: Int64 {
-		Int64(bleManager.connectedPeripheral?.num ?? 0)
+		Int64(bleManager.deviceConnected?.num ?? 0)
 	}
 	private var connectedNode: NodeInfoEntity? {
 		getNodeInfo(
@@ -56,7 +56,7 @@ struct NodeList: View {
 		)
 	}
 	private var suggestedNodes: [NodeInfoEntity] {
-		let connectedNodeNum = Int(bleManager.connectedPeripheral?.num ?? 0)
+		let connectedNodeNum = Int(bleManager.deviceConnected?.num ?? 0)
 		return nodes.filter { node in
 			node.num != connectedNodeNum
 			&& (node.favorite
@@ -98,7 +98,7 @@ struct NodeList: View {
 				await countNodes()
 			}
 		}
-		.onChange(of: bleManager.connectedPeripheral, initial: true) {
+		.onChange(of: bleManager.deviceConnected, initial: true) {
 			Task {
 				await countNodes()
 			}
@@ -368,8 +368,8 @@ struct NodeList: View {
 				ForEach(nodeList, id: \.num) { node in
 					NodeListItem(
 						node: node,
-						connected: bleManager.connectedPeripheral?.num ?? -1 == node.num,
-						connectedNode: bleManager.connectedPeripheral?.num ?? -1
+						connected: bleManager.deviceConnected?.num ?? -1 == node.num,
+						connectedNode: bleManager.deviceConnected?.num ?? -1
 					)
 					.contextMenu {
 						contextMenuActions(

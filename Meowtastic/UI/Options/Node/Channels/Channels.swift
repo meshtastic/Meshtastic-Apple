@@ -266,7 +266,7 @@ struct Channels: View {
 					} label: {
 						Label("save", systemImage: "square.and.arrow.down")
 					}
-					.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !hasValidKey)
+					.disabled(bleManager.deviceConnected == nil || !hasChanges || !hasValidKey)
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
 					.controlSize(.large)

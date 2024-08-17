@@ -77,13 +77,13 @@ struct BluetoothConfig: View {
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 			}
 		}
-		.disabled(self.bleManager.connectedPeripheral == nil || node?.bluetoothConfig == nil)
+		.disabled(self.bleManager.deviceConnected == nil || node?.bluetoothConfig == nil)
 		.onAppear {
 			Analytics.logEvent(AnalyticEvents.optionsBluetooth.id, parameters: [:])
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			if let myNodeNum = bleManager.connectedPeripheral?.num,
+			if let myNodeNum = bleManager.deviceConnected?.num,
 				let connectedNode = getNodeInfo(id: myNodeNum, context: context) {
 				var bc = Config.BluetoothConfig()
 				bc.enabled = enabled
@@ -107,7 +107,7 @@ struct BluetoothConfig: View {
 		.onAppear {
 			setBluetoothValues()
 			// Need to request a BluetoothConfig from the remote node before allowing changes
-			if let connectedPeripheral = bleManager.connectedPeripheral, let node, node.bluetoothConfig == nil {
+			if let connectedPeripheral = bleManager.deviceConnected, let node, node.bluetoothConfig == nil {
 				Logger.mesh.info("empty bluetooth config")
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let connectedNode {

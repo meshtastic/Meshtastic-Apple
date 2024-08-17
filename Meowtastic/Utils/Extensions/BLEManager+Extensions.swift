@@ -3,11 +3,11 @@ import Foundation
 
 extension BLEManager {
 	var isNodeConnected: Bool {
-		connectedPeripheral != nil
+		deviceConnected != nil
 	}
 
 	var connectedNodeName: String {
-		if let name = connectedPeripheral?.shortName {
+		if let name = deviceConnected?.shortName {
 			return name
 		}
 		else {
@@ -23,12 +23,12 @@ extension BLEManager {
 		let uuid = peripheral.identifier.uuidString
 
 		// connected peripheral
-		if uuid == connectedPeripheral.id {
-			connectedPeripheral.rssi = RSSI.intValue
+		if uuid == deviceConnected.id {
+			deviceConnected.rssi = RSSI.intValue
 		}
 
 		// some other peripheral
-		let updatedPeripheralIndex = peripherals.firstIndex(where: { peripheral in
+		let updatedPeripheralIndex = devices.firstIndex(where: { peripheral in
 			peripheral.id == uuid
 		})
 
@@ -36,8 +36,8 @@ extension BLEManager {
 			return
 		}
 
-		let old = peripherals[updatedPeripheralIndex]
-		let new = Peripheral(
+		let old = devices[updatedPeripheralIndex]
+		let new = Device(
 			id: old.id,
 			num: old.num,
 			name: old.name,
@@ -48,6 +48,6 @@ extension BLEManager {
 			lastUpdate: old.lastUpdate,
 			peripheral: old.peripheral
 		)
-		peripherals[updatedPeripheralIndex] = new
+		devices[updatedPeripheralIndex] = new
 	}
 }

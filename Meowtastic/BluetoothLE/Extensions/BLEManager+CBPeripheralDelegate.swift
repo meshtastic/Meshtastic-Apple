@@ -31,7 +31,7 @@ extension BLEManager: CBPeripheralDelegate {
 		if let error {
 			Logger.services.error("🚫 [BLE] Discover Characteristics error for \(peripheral.name ?? "Unknown", privacy: .public) \(error.localizedDescription, privacy: .public) disconnecting device")
 			// Try and stop crashes when this error occurs
-			disconnectPeripheral()
+			disconnectDevice()
 			return
 		}
 		
@@ -75,272 +75,291 @@ extension BLEManager: CBPeripheralDelegate {
 			sendWantConfig()
 		}
 	}
-	
-	func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-		
+
+	func peripheral(
+		_ peripheral: CBPeripheral,
+		didUpdateValueFor characteristic: CBCharacteristic,
+		error: Error?
+	) {
 		if let error {
-			
-			Logger.services.error("🚫 [BLE] didUpdateValueFor Characteristic error \(error.localizedDescription, privacy: .public)")
+			Logger.services.error(
+				"🚫 [BLE] didUpdateValueFor Characteristic error \(error.localizedDescription, privacy: .public)"
+			)
+
 			let errorCode = (error as NSError).code
 			if errorCode == 5 || errorCode == 15 {
 				// BLE PIN connection errors
 				// 5 CBATTErrorDomain Code=5 "Authentication is insufficient."
 				// 15 CBATTErrorDomain Code=15 "Encryption is insufficient."
-				lastConnectionError = "🚨" + String.localizedStringWithFormat("ble.errorcode.pin %@".localized, error.localizedDescription)
-				Logger.services.error("🚫 [BLE] \(error.localizedDescription, privacy: .public) Please try connecting again and check the PIN carefully.")
-				self.disconnectPeripheral(reconnect: false)
+				lastConnectionError = "Bluetooth authentication or encryption is insufficient. Please check connecting again and pay attention to the PIN code."
+				disconnectDevice(reconnect: false)
 			}
+
 			return
 		}
-		
+
 		switch characteristic.uuid {
 		case BluetoothUUID.logRadio:
-			if characteristic.value == nil || characteristic.value!.isEmpty {
+			guard let value = characteristic.value, !value.isEmpty else {
 				return
 			}
-			do {
-				let logRecord = try LogRecord(serializedData: characteristic.value!)
-				var message = logRecord.source.isEmpty ? logRecord.message : "[\(logRecord.source)] \(logRecord.message)"
-				switch logRecord.level {
-				case .debug:
-					message = "DEBUG | \(message)"
-				case .info:
-					message = "INFO  | \(message)"
-				case .warning:
-					message = "WARN  | \(message)"
-				case .error:
-					message = "ERROR | \(message)"
-				case .critical:
-					message = "CRIT  | \(message)"
-				default:
-					message = "DEBUG | \(message)"
-				}
-				handleRadioLog(radioLog: message)
-			} catch {
-				// Ignore fail to parse as LogRecord
+
+			if let logRecord = try? LogRecord(serializedData: value) {
+				handleRadioLog(
+					"\(logRecord.level.rawValue) | [\(logRecord.source)] \(logRecord.message)"
+				)
 			}
-			
+
 		case BluetoothUUID.logRadioLegacy:
-			if characteristic.value == nil || characteristic.value!.isEmpty {
+			guard let value = characteristic.value, !value.isEmpty else {
 				return
 			}
-			if let log = String(data: characteristic.value!, encoding: .utf8) {
-				handleRadioLog(radioLog: log)
+
+			if let log = String(data: value, encoding: .utf8) {
+				handleRadioLog(log)
 			}
-			
+
 		case BluetoothUUID.fromRadio:
-			
-			if characteristic.value == nil || characteristic.value!.isEmpty {
+			guard
+				let value = characteristic.value,
+				!value.isEmpty,
+				let decodedInfo = try? FromRadio(serializedData: value),
+				var connectedDevice = getConnectedDevice()
+			else {
+				Logger.services.error("Failed to decode `fromRadio` data")
+
 				return
 			}
-			var decodedInfo = FromRadio()
-			
-			do {
-				decodedInfo = try FromRadio(serializedData: characteristic.value!)
-				
-			} catch {
-				Logger.services.error("💥 \(error.localizedDescription, privacy: .public) \(characteristic.value!, privacy: .public)")
-			}
-			
+
 			// Publish mqttClientProxyMessages received on the from radio
-			if decodedInfo.payloadVariant == FromRadio.OneOf_PayloadVariant.mqttClientProxyMessage(decodedInfo.mqttClientProxyMessage) {
+			if decodedInfo.payloadVariant == FromRadio.OneOf_PayloadVariant.mqttClientProxyMessage(decodedInfo.mqttClientProxyMessage)
+			{
 				let message = CocoaMQTTMessage(
 					topic: decodedInfo.mqttClientProxyMessage.topic,
 					payload: [UInt8](decodedInfo.mqttClientProxyMessage.data),
 					retained: decodedInfo.mqttClientProxyMessage.retained
 				)
+
 				mqttManager.mqttClientProxy?.publish(message)
 			}
-			
+
 			switch decodedInfo.packet.decoded.portnum {
-				
-				// Handle Any local only packets we get over BLE
+			// Handle Any local only packets we get over BLE
 			case .unknownApp:
-				var nowKnown = false
-				
 				// MyInfo from initial connection
-				if decodedInfo.myInfo.isInitialized && decodedInfo.myInfo.myNodeNum > 0 {
-					let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, peripheralId: self.connectedPeripheral.id, context: context)
-					
-					if myInfo != nil {
-						UserDefaults.preferredPeripheralNum = Int(myInfo?.myNodeNum ?? 0)
-						connectedPeripheral.num = myInfo?.myNodeNum ?? 0
-						connectedPeripheral.name = myInfo?.bleName ?? "unknown".localized
-						connectedPeripheral.longName = myInfo?.bleName ?? "unknown".localized
-						let newConnection = Int64(UserDefaults.preferredPeripheralNum) != Int64(decodedInfo.myInfo.myNodeNum)
-						if newConnection {
-							let container = NSPersistentContainer(name: "Meshtastic")
-							if let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-								let databasePath = url.appendingPathComponent("backup")
-									.appendingPathComponent("\(UserDefaults.preferredPeripheralNum)")
-									.appendingPathComponent("Meshtastic.sqlite")
-								if FileManager.default.fileExists(atPath: databasePath.path) {
-									do {
-										disconnectPeripheral(reconnect: false)
-										try container.restorePersistentStore(from: databasePath)
-										context.refreshAllObjects()
-										let request = MyInfoEntity.fetchRequest()
-										try context.fetch(request)
-										UserDefaults.preferredPeripheralNum = Int(myInfo?.myNodeNum ?? 0)
-										connectTo(peripheral: peripheral)
-										Logger.data.notice("🗂️ Restored Core data for /\(UserDefaults.preferredPeripheralNum, privacy: .public)")
-									} catch {
-										Logger.data.error("🗂️ Restore Core data copy error: \(error, privacy: .public)")
-									}
-								}
-							}
-						}
+				if decodedInfo.myInfo.isInitialized, decodedInfo.myInfo.myNodeNum > 0 {
+					if let myInfo = myInfoPacket(
+						myInfo: decodedInfo.myInfo,
+						peripheralId: deviceConnected.id,
+						context: context
+					) {
+						UserDefaults.preferredPeripheralNum = Int(myInfo.myNodeNum)
+
+						deviceConnected?.num = myInfo.myNodeNum
+						deviceConnected?.name = myInfo.bleName ?? "unknown".localized
+						deviceConnected?.longName = myInfo.bleName ?? "unknown".localized
 					}
+
 					tryClearExistingChannels()
 				}
+
 				// NodeInfo
 				if decodedInfo.nodeInfo.num > 0 {
-					nowKnown = true
-					if let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, channel: decodedInfo.packet.channel, context: context) {
-						if self.connectedPeripheral != nil && self.connectedPeripheral.num == nodeInfo.num {
-							if nodeInfo.user != nil {
-								connectedPeripheral.shortName = nodeInfo.user?.shortName ?? "?"
-								connectedPeripheral.longName = nodeInfo.user?.longName ?? "unknown".localized
-							}
-						}
+					if
+						let nodeInfo = nodeInfoPacket(
+							nodeInfo: decodedInfo.nodeInfo,
+							channel: decodedInfo.packet.channel,
+							context: context
+						),
+						connectedDevice.num == nodeInfo.num,
+						let user = nodeInfo.user
+					{
+						connectedDevice.shortName = user.shortName ?? "?"
+						connectedDevice.longName = user.longName ?? "unknown".localized
 					}
 				}
+
 				// Channels
-				if decodedInfo.channel.isInitialized && connectedPeripheral != nil {
-					nowKnown = true
-					channelPacket(channel: decodedInfo.channel, fromNum: Int64(truncatingIfNeeded: connectedPeripheral.num), context: context)
+				if decodedInfo.channel.isInitialized {
+					channelPacket(
+						channel: decodedInfo.channel,
+						fromNum: Int64(truncatingIfNeeded: connectedDevice.num),
+						context: context
+					)
 				}
+
 				// Config
-				if decodedInfo.config.isInitialized && !invalidVersion && connectedPeripheral != nil {
-					nowKnown = true
-					localConfig(config: decodedInfo.config, context: context, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral.num), nodeLongName: self.connectedPeripheral.longName)
+				if decodedInfo.config.isInitialized, !isInvalidFwVersion {
+					localConfig(
+						config: decodedInfo.config,
+						context: context,
+						nodeNum: Int64(truncatingIfNeeded: connectedDevice.num),
+						nodeLongName: self.deviceConnected.longName
+					)
 				}
+
 				// Module Config
-				if decodedInfo.moduleConfig.isInitialized && !invalidVersion && self.connectedPeripheral?.num != 0 {
-					nowKnown = true
-					moduleConfig(config: decodedInfo.moduleConfig, context: context, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral?.num ?? 0), nodeLongName: self.connectedPeripheral.longName)
-					if decodedInfo.moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(decodedInfo.moduleConfig.cannedMessage) {
+				if decodedInfo.moduleConfig.isInitialized, !isInvalidFwVersion, connectedDevice.num != 0 {
+					moduleConfig(
+						config: decodedInfo.moduleConfig,
+						context: context,
+						nodeNum: Int64(truncatingIfNeeded: connectedDevice.num),
+						nodeLongName: self.deviceConnected.longName
+					)
+
+					if
+						decodedInfo.moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(decodedInfo.moduleConfig.cannedMessage)
+					{
 						if decodedInfo.moduleConfig.cannedMessage.enabled {
-							_ = self.getCannedMessageModuleMessages(destNum: self.connectedPeripheral.num, wantResponse: true)
+							_ = getCannedMessageModuleMessages(
+								destNum: connectedDevice.num,
+								wantResponse: true
+							)
 						}
 					}
 				}
+
 				// Device Metadata
-				if decodedInfo.metadata.firmwareVersion.count > 0 && !invalidVersion {
-					nowKnown = true
-					deviceMetadataPacket(metadata: decodedInfo.metadata, fromNum: connectedPeripheral.num, context: context)
-					connectedPeripheral.firmwareVersion = decodedInfo.metadata.firmwareVersion
+				if decodedInfo.metadata.firmwareVersion.count > 0, !isInvalidFwVersion {
+					deviceConnected?.firmwareVersion = decodedInfo.metadata.firmwareVersion
+
+					deviceMetadataPacket(
+						metadata: decodedInfo.metadata,
+						fromNum: connectedDevice.num,
+						context: context
+					)
+
 					let lastDotIndex = decodedInfo.metadata.firmwareVersion.lastIndex(of: ".")
 					if lastDotIndex == nil {
-						invalidVersion = true
+						isInvalidFwVersion = true
 						connectedVersion = "0.0.0"
-					} else {
-						let version = decodedInfo.metadata.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: decodedInfo.metadata.firmwareVersion))]
-						nowKnown = true
+					}
+					else {
+						let version = decodedInfo.metadata.firmwareVersion[
+							...(lastDotIndex ?? String.Index(utf16Offset: 6, in: decodedInfo.metadata.firmwareVersion))
+						]
+
 						connectedVersion = String(version.dropLast())
 						UserDefaults.firmwareVersion = connectedVersion
 					}
-					let supportedVersion = connectedVersion == "0.0.0" ||  self.minimumVersion.compare(connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(connectedVersion, options: .numeric) == .orderedSame
+
+					let supportedVersion = connectedVersion == "0.0.0"
+					|| self.minimumVersion.compare(connectedVersion, options: .numeric) == .orderedAscending
+					|| minimumVersion.compare(connectedVersion, options: .numeric) == .orderedSame
+
 					if !supportedVersion {
-						invalidVersion = true
+						isInvalidFwVersion = true
 						lastConnectionError = "🚨" + "update.firmware".localized
+
 						return
 					}
 				}
-				// Log any other unknownApp calls
-				if !nowKnown { MeshLogger.log("🕸️ MESH PACKET received for Unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")") }
+
 			case .textMessageApp, .detectionSensorApp:
 				textMessageAppPacket(
 					packet: decodedInfo.packet,
 					wantRangeTestPackets: wantRangeTestPackets,
-					connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0),
+					connectedNode: (connectedDevice.num),
 					context: context,
 					appState: appState
 				)
-			case .remoteHardwareApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+
 			case .positionApp:
 				upsertPositionPacket(packet: decodedInfo.packet, context: context)
+
 			case .waypointApp:
 				waypointPacket(packet: decodedInfo.packet, context: context)
+
 			case .nodeinfoApp:
-				if !invalidVersion { upsertNodeInfoPacket(packet: decodedInfo.packet, context: context) }
+				if !isInvalidFwVersion {
+					upsertNodeInfoPacket(packet: decodedInfo.packet, context: context)
+				}
+
 			case .routingApp:
-				if !invalidVersion { routingPacket(packet: decodedInfo.packet, connectedNodeNum: self.connectedPeripheral.num, context: context) }
+				if !isInvalidFwVersion {
+					routingPacket(
+						packet: decodedInfo.packet,
+						connectedNodeNum: connectedDevice.num,
+						context: context
+					)
+				}
+
 			case .adminApp:
 				adminAppPacket(packet: decodedInfo.packet, context: context)
+
 			case .replyApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Reply App handling as a text message")
+
 				textMessageAppPacket(
 					packet: decodedInfo.packet,
 					wantRangeTestPackets: wantRangeTestPackets,
-					connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0),
+					connectedNode: connectedDevice.num,
 					context: context,
 					appState: appState
 				)
-			case .ipTunnelApp:
-				// MeshLogger.log("🕸️ MESH PACKET received for IP Tunnel App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-				MeshLogger.log("🕸️ MESH PACKET received for IP Tunnel App UNHANDLED UNHANDLED")
-			case .serialApp:
-				// MeshLogger.log("🕸️ MESH PACKET received for Serial App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-				MeshLogger.log("🕸️ MESH PACKET received for Serial App UNHANDLED UNHANDLED")
+
 			case .storeForwardApp:
 				if wantStoreAndForwardPackets {
-					storeAndForwardPacket(packet: decodedInfo.packet, connectedNodeNum: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context)
-				} else {
-					MeshLogger.log("🕸️ MESH PACKET received for Store and Forward App - Store and Forward is disabled.")
+					storeAndForwardPacket(
+						packet: decodedInfo.packet,
+						connectedNodeNum: connectedDevice.num,
+						context: context
+					)
 				}
+				else {
+					MeshLogger.log(
+						"🕸️ MESH PACKET received for Store and Forward App - Store and Forward is disabled."
+					)
+				}
+
 			case .rangeTestApp:
 				if wantRangeTestPackets {
 					textMessageAppPacket(
 						packet: decodedInfo.packet,
 						wantRangeTestPackets: true,
-						connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0),
+						connectedNode: connectedDevice.num,
 						context: context,
 						appState: appState
 					)
 				} else {
-					MeshLogger.log("🕸️ MESH PACKET received for Range Test App Range testing is disabled.")
+					MeshLogger.log(
+						"🕸️ MESH PACKET received for Range Test App Range testing is disabled."
+					)
 				}
+
 			case .telemetryApp:
-				if !invalidVersion { telemetryPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context) }
-			case .textMessageCompressedApp:
-				// MeshLogger.log("🕸️ MESH PACKET received for Text Message Compressed App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-				MeshLogger.log("🕸️ MESH PACKET received for Text Message Compressed App UNHANDLED")
-			case .zpsApp:
-				// MeshLogger.log("🕸️ MESH PACKET received for Zero Positioning System App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-				MeshLogger.log("🕸️ MESH PACKET received for Zero Positioning System App UNHANDLED")
-			case .privateApp:
-				// MeshLogger.log("🕸️ MESH PACKET received for Private App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-				MeshLogger.log("🕸️ MESH PACKET received for Private App UNHANDLED UNHANDLED")
-			case .atakForwarder:
-				// MeshLogger.log("🕸️ MESH PACKET received for ATAK Forwarder App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-				MeshLogger.log("🕸️ MESH PACKET received for ATAK Forwarder App UNHANDLED UNHANDLED")
-			case .simulatorApp:
-				// MeshLogger.log("🕸️ MESH PACKET received for Simulator App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-				MeshLogger.log("🕸️ MESH PACKET received for Simulator App UNHANDLED UNHANDLED")
-			case .audioApp:
-				// MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-				MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED UNHANDLED")
+				if !isInvalidFwVersion {
+					telemetryPacket(
+						packet: decodedInfo.packet,
+						connectedNode: connectedDevice.num,
+						context: context
+					)
+				}
+
 			case .tracerouteApp:
 				if let routingMessage = try? RouteDiscovery(serializedData: decodedInfo.packet.decoded.payload) {
 					let traceRoute = getTraceRoute(id: Int64(decodedInfo.packet.decoded.requestID), context: context)
 					traceRoute?.response = true
 					traceRoute?.route = routingMessage.route
+
 					if routingMessage.route.count == 0 {
 						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.direct %@".localized, String(decodedInfo.packet.from))
 						MeshLogger.log("🪧 \(logString)")
-						
-					} else {
+					}
+					else {
 						var routeString = "You --> "
 						var hopNodes: [TraceRouteHopEntity] = []
+
 						for node in routingMessage.route {
 							var hopNode = getNodeInfo(id: Int64(node), context: context)
+
 							if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
 								hopNode = createNodeInfo(num: Int64(node), context: context)
 							}
+
 							let traceRouteHop = TraceRouteHopEntity(context: context)
 							traceRouteHop.time = Date()
+
 							if hopNode?.hasPositions ?? false {
 								traceRoute?.hasPositions = true
 								if let mostRecent = hopNode?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
@@ -354,111 +373,129 @@ extension BLEManager: CBPeripheralDelegate {
 							} else {
 								traceRoute?.hasPositions = false
 							}
+
 							traceRouteHop.num = hopNode?.num ?? 0
-							if hopNode != nil {
+
+							if let hopNode {
 								if decodedInfo.packet.rxTime > 0 {
-									hopNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
+									hopNode.lastHeard = Date(
+										timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime))
+									)
 								}
+
 								hopNodes.append(traceRouteHop)
 							}
+
 							routeString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") --> "
 						}
 						routeString += traceRoute?.node?.user?.longName ?? "unknown".localized
 						traceRoute?.routeText = routeString
 						traceRoute?.hops = NSOrderedSet(array: hopNodes)
+
 						do {
 							try context.save()
 							Logger.data.info("💾 Saved Trace Route")
 						} catch {
 							context.rollback()
+
 							let nsError = error as NSError
 							Logger.data.error("Error Updating Core Data TraceRouteHOp: \(nsError, privacy: .public)")
 						}
+
 						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.route %@".localized, routeString)
 						MeshLogger.log("🪧 \(logString)")
 					}
 				}
-			case .neighborinfoApp:
-				if let neighborInfo = try? NeighborInfo(serializedData: decodedInfo.packet.decoded.payload) {
-					// MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED")
-					MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \(neighborInfo)")
-				}
+
 			case .paxcounterApp:
 				paxCounterPacket(packet: decodedInfo.packet, context: context)
-			case .mapReportApp:
-				MeshLogger.log("🕸️ MESH PACKET received Map Report App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-			case .UNRECOGNIZED:
-				MeshLogger.log("🕸️ MESH PACKET received UNRECOGNIZED App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-			case .max:
-				Logger.services.info("MAX PORT NUM OF 511")
-			case .atakPlugin:
-				MeshLogger.log("🕸️ MESH PACKET received for ATAK Plugin App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-			case .powerstressApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Power Stress App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				
+			default:
+				MeshLogger.log("Received unhandled packet")
 			}
-			
-			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
-				invalidVersion = false
+
+			if decodedInfo.configCompleteID != 0, decodedInfo.configCompleteID == configNonce {
+				Logger.mesh.info("🤜 [BLE] Want Config Complete. ID:\(decodedInfo.configCompleteID)")
+
+				isInvalidFwVersion = false
 				lastConnectionError = ""
 				isSubscribed = true
-				Logger.mesh.info("🤜 [BLE] Want Config Complete. ID:\(decodedInfo.configCompleteID)")
-				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
-				// Config conplete returns so we don't read the characteristic again
-				
-				/// MQTT Client Proxy and RangeTest and Store and Forward interest
-				if connectedPeripheral.num > 0 {
-					
+
+				devices.removeAll(where: {
+					$0.peripheral.state == .disconnected
+				})
+
+				if deviceConnected.num > 0 {
 					let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
-					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(connectedPeripheral.num))
-					do {
-						let fetchedNodeInfo = try context.fetch(fetchNodeInfoRequest)
-						if fetchedNodeInfo.count == 1 {
-							// Subscribe to Mqtt Client Proxy if enabled
-							if fetchedNodeInfo[0].mqttConfig != nil && fetchedNodeInfo[0].mqttConfig?.enabled ?? false && fetchedNodeInfo[0].mqttConfig?.proxyToClientEnabled ?? false {
-								mqttManager.connectFromConfigSettings(node: fetchedNodeInfo[0])
-							} else {
-								if mqttProxyConnected {
-									mqttManager.mqttClientProxy?.disconnect()
-								}
-							}
-							// Set initial unread message badge states
-							appState.unreadChannelMessages = fetchedNodeInfo[0].myInfo?.unreadMessages ?? 0
-							appState.unreadDirectMessages = fetchedNodeInfo[0].user?.unreadMessages ?? 0
+					fetchNodeInfoRequest.predicate = NSPredicate(
+						format: "num == %lld",
+						Int64(deviceConnected.num)
+					)
+
+					if
+						let fetchedNodeInfo = try? context.fetch(fetchNodeInfoRequest),
+						!fetchedNodeInfo.isEmpty
+					{
+						let node = fetchedNodeInfo[0]
+
+						if
+							let mqttConfig = node.mqttConfig,
+							mqttConfig.enabled,
+							mqttConfig.proxyToClientEnabled
+						{
+							mqttManager.connectFromConfigSettings(node: node)
 						}
-						if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].rangeTestConfig?.enabled == true {
+						else {
+							if mqttProxyConnected {
+								mqttManager.mqttClientProxy?.disconnect()
+							}
+						}
+
+						// Set initial unread message badge states
+						appState.unreadChannelMessages = node.myInfo?.unreadMessages ?? 0
+						appState.unreadDirectMessages = node.user?.unreadMessages ?? 0
+
+						if let rtConf = node.rangeTestConfig, rtConf.enabled {
 							wantRangeTestPackets = true
 						}
-						if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].storeForwardConfig?.enabled == true {
+
+						if let sfConf = node.storeForwardConfig, sfConf.enabled {
 							wantStoreAndForwardPackets = true
 						}
-						
-					} catch {
-						Logger.data.error("Failed to find a node info for the connected node \(error.localizedDescription)")
 					}
 				}
-				
+
 				// MARK: Share Location Position Update Timer
 				// Use context to pass the radio name with the timer
 				// Use a RunLoop to prevent the timer from running on the main UI thread
 				if UserDefaults.provideLocation {
 					let interval = UserDefaults.provideLocationInterval >= 10 ? UserDefaults.provideLocationInterval : 30
-					positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval(interval), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
-					if positionTimer != nil {
-						RunLoop.current.add(positionTimer!, forMode: .common)
-					}
+
+					let timer = Timer.scheduledTimer(
+						timeInterval: TimeInterval(interval),
+						target: self,
+						selector: #selector(positionTimerFired),
+						userInfo: context,
+						repeats: true
+					)
+					RunLoop.current.add(timer, forMode: .common)
+					
+					positionTimer = timer
 				}
 				return
 			}
-			
-		case BluetoothUUID.fromNum:
-			Logger.services.info("🗞️ [BLE] (Notify) characteristic value will be read next")
+
 		default:
-			Logger.services.error("🚫 Unhandled Characteristic UUID: \(characteristic.uuid, privacy: .public)")
+			Logger.services.error("Unhandled characteristic UUID: \(characteristic.uuid, privacy: .public)")
 		}
-		if characteristicFromRadio != nil {
-			// Either Read the config complete value or from num notify value
+
+		if let characteristicFromRadio {
 			peripheral.readValue(for: characteristicFromRadio)
 		}
+	}
+
+	private func handleRadioLog(_ message: String) {
+		Logger.radio.info("\(message, privacy: .public)")
 	}
 }
 // swiftlint:enable all

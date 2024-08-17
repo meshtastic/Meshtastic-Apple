@@ -145,9 +145,9 @@ struct DeviceConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 				}
 			}
-			.disabled(self.bleManager.connectedPeripheral == nil || node?.deviceConfig == nil)
+			.disabled(self.bleManager.deviceConnected == nil || node?.deviceConfig == nil)
 			// Only show these buttons for the BLE connected node
-			if bleManager.connectedPeripheral != nil && node?.num ?? -1  == bleManager.connectedPeripheral.num {
+			if bleManager.deviceConnected != nil && node?.num ?? -1  == bleManager.deviceConnected.num {
 				HStack {
 					Button("Reset NodeDB", role: .destructive) {
 						isPresentingNodeDBResetConfirm = true
@@ -165,7 +165,7 @@ struct DeviceConfig: View {
 						Button("Erase all device and app data?", role: .destructive) {
 							if bleManager.sendNodeDBReset(fromUser: node!.user!, toUser: node!.user!) {
 								DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-									bleManager.disconnectPeripheral()
+									bleManager.disconnectDevice()
 									clearCoreDataDatabase(context: context, includeRoutes: false)
 								}
 
@@ -190,7 +190,7 @@ struct DeviceConfig: View {
 						Button("Factory reset your device and app? ", role: .destructive) {
 							if bleManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!) {
 								DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-									bleManager.disconnectPeripheral()
+									bleManager.disconnectDevice()
 									clearCoreDataDatabase(context: context, includeRoutes: false)
 								}
 							} else {
@@ -202,7 +202,7 @@ struct DeviceConfig: View {
 			}
 			HStack {
 				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+					let connectedNode = getNodeInfo(id: bleManager.deviceConnected.num, context: context)
 					if connectedNode != nil {
 						var dc = Config.DeviceConfig()
 						dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
@@ -242,9 +242,9 @@ struct DeviceConfig: View {
 			setDeviceValues()
 
 			// Need to request a LoRaConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.deviceConfig == nil {
+			if bleManager.deviceConnected != nil && node?.deviceConfig == nil {
 				Logger.mesh.info("empty device config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
+				let connectedNode = getNodeInfo(id: bleManager.deviceConnected?.num ?? -1, context: context)
 				if node != nil && connectedNode != nil && connectedNode?.user != nil {
 					_ = bleManager.requestDeviceConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}

@@ -24,7 +24,7 @@ struct RetryButton: View {
 			titleVisibility: .visible
 		) {
 			Button("Try Again") {
-				guard bleManager.connectedPeripheral?.peripheral.state == .connected else {
+				guard bleManager.deviceConnected?.peripheral.state == .connected else {
 					return
 				}
 				let messageID = message.messageId

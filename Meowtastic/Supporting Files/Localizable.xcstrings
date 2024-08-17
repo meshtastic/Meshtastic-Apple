@@ -703,9 +703,6 @@
     "Any missed messages will be delivered again." : {
 
     },
-    "App Data" : {
-
-    },
     "App Settings" : {
 
     },
@@ -2840,6 +2837,7 @@
 
     },
     "clear.app.data" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6602,9 +6600,6 @@
 
     },
     "Environment data are stale" : {
-
-    },
-    "Erase all app data?" : {
 
     },
     "Erase all device and app data?" : {

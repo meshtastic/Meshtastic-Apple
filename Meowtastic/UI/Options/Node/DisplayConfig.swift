@@ -129,13 +129,13 @@ struct DisplayConfig: View {
 				.pickerStyle(DefaultPickerStyle())
 			}
 		}
-		.disabled(self.bleManager.connectedPeripheral == nil || node?.displayConfig == nil)
+		.disabled(self.bleManager.deviceConnected == nil || node?.displayConfig == nil)
 		.onAppear {
 			Analytics.logEvent(AnalyticEvents.optionsDisplay.id, parameters: [:])
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+			let connectedNode = getNodeInfo(id: bleManager.deviceConnected.num, context: context)
 			if connectedNode != nil {
 				var dc = Config.DisplayConfig()
 				dc.gpsFormat = GPSFormats(rawValue: gpsFormat)!.protoEnumValue()
@@ -167,9 +167,9 @@ struct DisplayConfig: View {
 			setDisplayValues()
 
 			// Need to request a LoRaConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.displayConfig == nil {
+			if bleManager.deviceConnected != nil && node?.displayConfig == nil {
 				Logger.mesh.info("empty display config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
+				let connectedNode = getNodeInfo(id: bleManager.deviceConnected?.num ?? 0, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestDisplayConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}

@@ -27,7 +27,7 @@ struct ConnectedDevice: View {
 					}
 
 					SignalStrengthIndicator(
-						signalStrength: bleManager.connectedPeripheral.getSignalStrength(),
+						signalStrength: bleManager.deviceConnected.getSignalStrength(),
 						size: 14,
 						color: .green
 					)
@@ -36,7 +36,7 @@ struct ConnectedDevice: View {
 					.clipShape(Circle())
 					.onAppear {
 						Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-							if let peripheral = bleManager.connectedPeripheral {
+							if let peripheral = bleManager.deviceConnected {
 								peripheral.peripheral.readRSSI()
 							}
 						}

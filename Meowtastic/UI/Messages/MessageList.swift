@@ -99,7 +99,7 @@ struct MessageList: View {
 		return ""
 	}
 	private var connectedNodeNum: Int64? {
-		bleManager.connectedPeripheral?.num
+		bleManager.deviceConnected?.num
 	}
 
 	var body: some View {

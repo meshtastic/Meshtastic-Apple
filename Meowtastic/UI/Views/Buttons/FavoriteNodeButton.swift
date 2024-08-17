@@ -11,7 +11,7 @@ struct FavoriteNodeButton: View {
 
 	var body: some View {
 		Button {
-			guard let connectedNodeNum = bleManager.connectedPeripheral?.num else {
+			guard let connectedNodeNum = bleManager.deviceConnected?.num else {
 				return
 			}
 

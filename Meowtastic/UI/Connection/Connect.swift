@@ -19,7 +19,7 @@ struct Connect: View {
 	@State
 	private var node: NodeInfoEntity?
 	@State
-	private var visibleDevices: [Peripheral]
+	private var visibleDevices: [Device]
 	@State
 	private var invalidFirmwareVersion = false
 	@State
@@ -76,7 +76,7 @@ struct Connect: View {
 		.onDisappear {
 			bleManager.stopScanning()
 		}
-		.onChange(of: bleManager.peripherals, initial: true) {
+		.onChange(of: bleManager.devices, initial: true) {
 			Task {
 				await loadPeripherals()
 			}
@@ -93,8 +93,8 @@ struct Connect: View {
 				await fetchNodeInfo()
 			}
 		}
-		.onChange(of: bleManager.invalidVersion) {
-			invalidFirmwareVersion = bleManager.invalidVersion
+		.onChange(of: bleManager.isInvalidFwVersion) {
+			invalidFirmwareVersion = bleManager.isInvalidFwVersion
 		}
 		.sheet(
 			isPresented: $invalidFirmwareVersion,
@@ -138,7 +138,7 @@ struct Connect: View {
 	@ViewBuilder
 	private var connectedDevice: some View {
 		if
-			let connectedPeripheral = bleManager.connectedPeripheral,
+			let connectedPeripheral = bleManager.deviceConnected,
 			connectedPeripheral.peripheral.state == .connected || connectedPeripheral.peripheral.state == .connecting
 		{
 			let node = nodes.first(where: { node in
@@ -165,7 +165,7 @@ struct Connect: View {
 							color: .gray
 						)
 
-						if let name = bleManager.connectedPeripheral?.peripheral.name {
+						if let name = bleManager.deviceConnected?.peripheral.name {
 							Text(name)
 								.font(detailInfoFont)
 								.foregroundColor(.gray)
@@ -202,10 +202,10 @@ struct Connect: View {
 			.swipeActions(edge: .trailing, allowsFullSwipe: true) {
 				Button(role: .destructive) {
 					if
-						let connectedPeripheral = bleManager.connectedPeripheral,
+						let connectedPeripheral = bleManager.deviceConnected,
 						connectedPeripheral.peripheral.state == .connected
 					{
-						bleManager.disconnectPeripheral(reconnect: false)
+						bleManager.disconnectDevice(reconnect: false)
 					}
 				} label: {
 					Label(
@@ -282,8 +282,8 @@ struct Connect: View {
 					Text("Not Connected")
 						.font(detailInfoFont)
 
-					if bleManager.timeoutTimerCount > 0 {
-						Text("Attempt: \(bleManager.timeoutTimerCount) of 10")
+					if bleManager.timeoutCount > 0 {
+						Text("Attempt: \(bleManager.timeoutCount) of 10")
 							.font(detailInfoFont)
 							.foregroundColor(.gray)
 					}
@@ -431,7 +431,7 @@ struct Connect: View {
 	}
 
 	private func loadPeripherals() async {
-		let devices = bleManager.peripherals.filter { device in
+		let devices = bleManager.devices.filter { device in
 			device.peripheral.state != CBPeripheralState.connected
 			&& device.peripheral.state != CBPeripheralState.connecting
 		}
@@ -445,13 +445,13 @@ struct Connect: View {
 		let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 		fetchNodeInfoRequest.predicate = NSPredicate(
 			format: "num == %lld",
-			Int64(bleManager.connectedPeripheral?.num ?? -1)
+			Int64(bleManager.deviceConnected?.num ?? -1)
 		)
 
 		node = try? context.fetch(fetchNodeInfoRequest).first
 	}
 
 	private func didDismissSheet() {
-		bleManager.disconnectPeripheral(reconnect: false)
+		bleManager.disconnectDevice(reconnect: false)
 	}
 }

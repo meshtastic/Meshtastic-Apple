@@ -311,13 +311,13 @@ struct MQTTConfig: View {
 				.font(.callout)
 		}
 		.scrollDismissesKeyboard(.interactively)
-		.disabled(bleManager.connectedPeripheral == nil || node?.mqttConfig == nil)
+		.disabled(bleManager.deviceConnected == nil || node?.mqttConfig == nil)
 		.onAppear {
 			Analytics.logEvent(AnalyticEvents.optionsMQTT.id, parameters: [:])
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
+			let connectedNode = getNodeInfo(id: bleManager.deviceConnected?.num ?? -1, context: context)
 
 			if let connectedNode {
 				var mqtt = ModuleConfig.MQTTConfig()
@@ -359,7 +359,7 @@ struct MQTTConfig: View {
 			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
 			if
 				let node,
-				let peripheral = bleManager.connectedPeripheral,
+				let peripheral = bleManager.deviceConnected,
 				let connectedNode = getNodeInfo(id: peripheral.num, context: context),
 				node.mqttConfig == nil
 			{

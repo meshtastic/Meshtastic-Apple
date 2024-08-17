@@ -18,7 +18,7 @@ struct SaveConfigButton: View {
 		} label: {
 			Label("save", systemImage: "square.and.arrow.down")
 		}
-		.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
+		.disabled(bleManager.deviceConnected == nil || !hasChanges)
 		.buttonStyle(.bordered)
 		.buttonBorderShape(.capsule)
 		.controlSize(.large)

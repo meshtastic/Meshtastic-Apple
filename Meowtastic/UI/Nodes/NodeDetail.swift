@@ -27,7 +27,7 @@ struct NodeDetail: View {
 
 	private var connectedNode: NodeInfoEntity? {
 		getNodeInfo(
-			id: bleManager.connectedPeripheral?.num ?? -1,
+			id: bleManager.deviceConnected?.num ?? -1,
 			context: context
 		)
 	}
@@ -115,7 +115,7 @@ struct NodeDetail: View {
 					if
 						let connectedNode,
 						let nodeMetadata = node.metadata,
-						self.bleManager.connectedPeripheral != nil
+						self.bleManager.deviceConnected != nil
 					{
 						Section("Administration") {
 							admin(node: connectedNode, metadata: nodeMetadata)
@@ -520,7 +520,7 @@ struct NodeDetail: View {
 
 		if let num = connectedNode?.num, num != node.num {
 			if
-				let connectedPeripheral = bleManager.connectedPeripheral,
+				let connectedPeripheral = bleManager.deviceConnected,
 				node.num != connectedPeripheral.num
 			{
 				let routes = node.traceRoutes?.count ?? 0
@@ -659,7 +659,7 @@ struct NodeDetail: View {
 		}
 
 		if
-			let connectedPeripheral = bleManager.connectedPeripheral,
+			let connectedPeripheral = bleManager.deviceConnected,
 			node.num != connectedPeripheral.num
 		{
 			ExchangePositionsButton(

@@ -87,10 +87,10 @@ struct NetworkConfig: View {
 				}
 			}
 			.scrollDismissesKeyboard(.interactively)
-			.disabled(self.bleManager.connectedPeripheral == nil || node?.networkConfig == nil)
+			.disabled(self.bleManager.deviceConnected == nil || node?.networkConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+				let connectedNode = getNodeInfo(id: bleManager.deviceConnected.num, context: context)
 				if connectedNode != nil {
 					var network = Config.NetworkConfig()
 					network.wifiEnabled = self.wifiEnabled
@@ -119,9 +119,9 @@ struct NetworkConfig: View {
 			setNetworkValues()
 
 			// Need to request a NetworkConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.networkConfig == nil {
+			if bleManager.deviceConnected != nil && node?.networkConfig == nil {
 				Logger.mesh.info("empty network config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+				let connectedNode = getNodeInfo(id: bleManager.deviceConnected.num, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestNetworkConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}

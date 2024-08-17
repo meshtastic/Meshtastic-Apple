@@ -90,7 +90,7 @@ struct UserConfig: View {
 							.font(.callout)
 					}
 					// Only manage ham mode for the locally connected node
-					if node?.num ?? 0 > 0 && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
+					if node?.num ?? 0 > 0 && node?.num ?? 0 == bleManager.deviceConnected?.num ?? 0 {
 						Toggle(isOn: $isLicensed) {
 							Label("Licensed Operator", systemImage: "person.text.rectangle")
 						}
@@ -128,14 +128,14 @@ struct UserConfig: View {
 					}
 				}
 			}
-			.disabled(bleManager.connectedPeripheral == nil)
+			.disabled(bleManager.deviceConnected == nil)
 			HStack {
 				Button {
 					isPresentingSaveConfirm = true
 				} label: {
 					Label("save", systemImage: "square.and.arrow.down")
 				}
-				.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
+				.disabled(bleManager.deviceConnected == nil || !hasChanges)
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(.large)
@@ -150,8 +150,8 @@ struct UserConfig: View {
 							return
 						}
 
-						let connectedUser = getUser(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
-						let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
+						let connectedUser = getUser(id: bleManager.deviceConnected?.num ?? -1, context: context)
+						let connectedNode = getNodeInfo(id: bleManager.deviceConnected?.num ?? -1, context: context)
 						if node != nil && connectedNode != nil {
 
 							if !isLicensed {

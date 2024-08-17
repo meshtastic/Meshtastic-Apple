@@ -71,11 +71,11 @@ struct Options: View {
 
 				if !nodes.isEmpty {
 					if connectedNodeNum == 0 {
-						connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? preferredNodeNum : 0)
+						connectedNodeNum = Int(bleManager.deviceConnected != nil ? preferredNodeNum : 0)
 					}
 				}
 				else {
-					connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? preferredNodeNum : 0)
+					connectedNodeNum = Int(bleManager.deviceConnected != nil ? preferredNodeNum : 0)
 				}
 			}
 			.navigationTitle("Options")

@@ -58,12 +58,12 @@ struct LoRaConfig: View {
 				sectionOptions
 				sectionAdvanced
 			}
-			.disabled(bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
+			.disabled(bleManager.deviceConnected == nil || node?.loRaConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
 				if
 					let node,
-					let connectedPeripheral = bleManager.connectedPeripheral,
+					let connectedPeripheral = bleManager.deviceConnected,
 					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				{
 					var lc = Config.LoRaConfig()
@@ -116,7 +116,7 @@ struct LoRaConfig: View {
 			}
 			else if
 				let node,
-				let connectedPeripheral = bleManager.connectedPeripheral,
+				let connectedPeripheral = bleManager.deviceConnected,
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 			{
 				bleManager.requestLoRaConfig(

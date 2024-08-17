@@ -63,7 +63,7 @@ struct Messages: View {
 				return false
 			}
 
-			if let num = bleManager.connectedPeripheral?.num, user.num == num {
+			if let num = bleManager.deviceConnected?.num, user.num == num {
 				return false
 			}
 
@@ -192,7 +192,7 @@ struct Messages: View {
 			)
 		) {
 			ForEach(usersFiltered, id: \.num) { user in
-				if user.num != bleManager.connectedPeripheral?.num ?? 0 {
+				if user.num != bleManager.deviceConnected?.num ?? 0 {
 					makeUserLink(for: user)
 				}
 			}

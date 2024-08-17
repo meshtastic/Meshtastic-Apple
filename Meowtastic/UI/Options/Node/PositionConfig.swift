@@ -56,7 +56,7 @@ struct PositionConfig: View {
 					advancedDeviceGPSSection
 				}
 			}
-			.disabled(self.bleManager.connectedPeripheral == nil || node?.positionConfig == nil)
+			.disabled(self.bleManager.deviceConnected == nil || node?.positionConfig == nil)
 			.alert(setFixedAlertTitle, isPresented: $showingSetFixedAlert) {
 				Button("Cancel", role: .cancel) {
 					fixedPosition = !fixedPosition
@@ -86,7 +86,7 @@ struct PositionConfig: View {
 
 			supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
 			// Need to request a PositionConfig from the remote node before allowing changes
-			if let connectedPeripheral = bleManager.connectedPeripheral, node?.positionConfig == nil {
+			if let connectedPeripheral = bleManager.deviceConnected, node?.positionConfig == nil {
 				Logger.mesh.info("empty position config")
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let node, let connectedNode {
@@ -231,7 +231,7 @@ struct PositionConfig: View {
 						.font(.callout)
 				}
 			}
-			if (gpsMode != 1 && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? -1) || fixedPosition {
+			if (gpsMode != 1 && node?.num ?? 0 == bleManager.deviceConnected?.num ?? -1) || fixedPosition {
 				VStack(alignment: .leading) {
 					Toggle(isOn: $fixedPosition) {
 						Label("Fixed Position", systemImage: "location.square.fill")
@@ -364,7 +364,7 @@ struct PositionConfig: View {
 			if fixedPosition && !supportedVersion {
 				_ = bleManager.sendPosition(channel: 0, destNum: node?.num ?? 0, wantResponse: true)
 			}
-			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral!.num, context: context)
+			let connectedNode = getNodeInfo(id: bleManager.deviceConnected!.num, context: context)
 
 			if connectedNode != nil {
 				var pf: PositionFlags = []
@@ -474,7 +474,7 @@ struct PositionConfig: View {
 	}
 
 	private func setFixedPosition() {
-		guard let nodeNum = bleManager.connectedPeripheral?.num,
+		guard let nodeNum = bleManager.deviceConnected?.num,
 			  nodeNum > 0 else { return }
 		if !bleManager.setFixedPosition(fromUser: node!.user!, channel: 0) {
 			Logger.mesh.error("Set Position Failed")
@@ -491,7 +491,7 @@ struct PositionConfig: View {
 	}
 
 	private func removeFixedPosition() {
-		guard let nodeNum = bleManager.connectedPeripheral?.num,
+		guard let nodeNum = bleManager.deviceConnected?.num,
 			  nodeNum > 0 else { return }
 		if !bleManager.removeFixedPosition(fromUser: node!.user!, channel: 0) {
 			Logger.mesh.error("Remove Fixed Position Failed")

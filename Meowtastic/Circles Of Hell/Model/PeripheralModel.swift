@@ -1,7 +1,7 @@
 import Foundation
 import CoreBluetooth
 
-struct Peripheral: Identifiable, Equatable {
+struct Device: Identifiable, Equatable {
 	var id: String
 	var num: Int64
 	var name: String
@@ -12,7 +12,7 @@ struct Peripheral: Identifiable, Equatable {
 	var lastUpdate: Date
 	var peripheral: CBPeripheral
 	
-	static func == (lhs: Peripheral, rhs: Peripheral) -> Bool {
+	static func == (lhs: Device, rhs: Device) -> Bool {
 		return lhs.id == rhs.id
 	}
 
