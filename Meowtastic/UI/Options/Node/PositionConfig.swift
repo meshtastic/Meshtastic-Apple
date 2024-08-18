@@ -476,7 +476,7 @@ struct PositionConfig: View {
 	private func setFixedPosition() {
 		guard let nodeNum = bleManager.deviceConnected?.num,
 			  nodeNum > 0 else { return }
-		if !bleManager.setFixedPosition(fromUser: node!.user!, channel: 0) {
+		if !bleManager.setFixedPosition(fromUser: node!.user!, adminIndex: 0) {
 			Logger.mesh.error("Set Position Failed")
 		}
 		node?.positionConfig?.fixedPosition = true
@@ -493,7 +493,7 @@ struct PositionConfig: View {
 	private func removeFixedPosition() {
 		guard let nodeNum = bleManager.deviceConnected?.num,
 			  nodeNum > 0 else { return }
-		if !bleManager.removeFixedPosition(fromUser: node!.user!, channel: 0) {
+		if !bleManager.removeFixedPosition(fromUser: node!.user!, adminIndex: 0) {
 			Logger.mesh.error("Remove Fixed Position Failed")
 		}
 		let mutablePositions = node?.positions?.mutableCopy() as? NSMutableOrderedSet

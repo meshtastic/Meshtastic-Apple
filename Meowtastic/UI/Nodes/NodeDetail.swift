@@ -683,9 +683,9 @@ struct NodeDetail: View {
 		if let myInfo = node.myInfo, myInfo.hasAdmin {
 			Button {
 				let adminMessageId = bleManager.requestDeviceMetadata(
-					fromUser: node.user!,
-					toUser: node.user!,
-					adminIndex: node.myInfo!.adminIndex,
+					from: node.user!,
+					to: node.user!,
+					index: node.myInfo!.adminIndex,
 					context: context
 				)
 

@@ -99,10 +99,6 @@ class BLEManager: NSObject, ObservableObject {
 
 	@objc
 	private func timeoutTimerFired(timer: Timer) {
-		guard let timerContext = timer.userInfo as? [String: String] else {
-			return
-		}
-
 		timeoutCount += 1
 		lastConnectionError = ""
 
@@ -192,42 +188,6 @@ class BLEManager: NSObject, ObservableObject {
 
 		stopScanning()
 		startScanning()
-	}
-
-	func requestDeviceMetadata(
-		fromUser: UserEntity,
-		toUser: UserEntity,
-		adminIndex: Int32,
-		context: NSManagedObjectContext
-	) -> Int64 {
-		guard getConnectedDevice() != nil else {
-			return 0
-		}
-
-		var adminPacket = AdminMessage()
-		adminPacket.getDeviceMetadataRequest = true
-
-		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-		meshPacket.to = UInt32(toUser.num)
-		meshPacket.from = UInt32(fromUser.num)
-		meshPacket.priority = MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
-		meshPacket.wantAck = true
-
-		var dataMessage = DataMessage()
-
-		if let serializedData: Data = try? adminPacket.serializedData() {
-			dataMessage.payload = serializedData
-			dataMessage.portnum = PortNum.adminApp
-			dataMessage.wantResponse = true
-			meshPacket.decoded = dataMessage
-		}
-		else {
-			return 0
-		}
-
-		return sendAdminPacket(meshPacket)
 	}
 
 	@discardableResult
@@ -535,87 +495,39 @@ class BLEManager: NSObject, ObservableObject {
 		return success
 	}
 	
-	@MainActor
-	func getPositionFromPhoneGPS(destNum: Int64) -> Position? {
-		var positionPacket = Position()
+	func getPhonePosition() -> Position? {
 		guard let lastLocation = LocationsHandler.shared.locationsArray.last else {
 			return nil
 		}
-		positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
-		positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
+
 		let timestamp = lastLocation.timestamp
+
+		var positionPacket = Position()
 		positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
 		positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
+		positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
+		positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
 		positionPacket.altitude = Int32(lastLocation.altitude)
 		positionPacket.satsInView = UInt32(0)
-		
+
 		let currentSpeed = lastLocation.speed
-		if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite) {
+		if currentSpeed > 0, !currentSpeed.isNaN || !currentSpeed.isInfinite {
 			positionPacket.groundSpeed = UInt32(currentSpeed)
 		}
+
 		let currentHeading = lastLocation.course
-		if (currentHeading > 0  && currentHeading <= 360) && (!currentHeading.isNaN || !currentHeading.isInfinite) {
+		if currentHeading > 0, currentHeading <= 360, !currentHeading.isNaN || !currentHeading.isInfinite {
 			positionPacket.groundTrack = UInt32(currentHeading)
 		}
-		
+
 		return positionPacket
 	}
-	
-	@MainActor
-	func setFixedPosition(fromUser: UserEntity, channel: Int32) -> Bool {
-		var adminPacket = AdminMessage()
-		guard let positionPacket = getPositionFromPhoneGPS(destNum: fromUser.num) else {
-			return false
-		}
-		adminPacket.setFixedPosition = positionPacket
-		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(fromUser.num)
-		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = true
-		meshPacket.channel = UInt32(channel)
-		var dataMessage = DataMessage()
-		meshPacket.decoded = dataMessage
-		if let serializedData: Data = try? adminPacket.serializedData() {
-			dataMessage.payload = serializedData
-			dataMessage.portnum = PortNum.adminApp
-			meshPacket.decoded = dataMessage
-		} else {
-			return false
-		}
 
-		return sendAdminPacket(meshPacket) != 0
-	}
-	
-	func removeFixedPosition(fromUser: UserEntity, channel: Int32) -> Bool {
-		var adminPacket = AdminMessage()
-		adminPacket.removeFixedPosition = true
-		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(fromUser.num)
-		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = true
-		meshPacket.channel = UInt32(channel)
-		var dataMessage = DataMessage()
-		if let serializedData: Data = try? adminPacket.serializedData() {
-			dataMessage.payload = serializedData
-			dataMessage.portnum = PortNum.adminApp
-			meshPacket.decoded = dataMessage
-		} else {
-			return false
-		}
-
-		return sendAdminPacket(meshPacket) != 0
-	}
-	
-	@MainActor
 	@discardableResult
 	func sendPosition(channel: Int32, destNum: Int64, wantResponse: Bool) -> Bool {
 		guard
 			let connectedDevice = getConnectedDevice(),
-			let positionPacket = getPositionFromPhoneGPS(destNum: destNum)
+			let positionPacket = getPhonePosition()
 		else {
 			return false
 		}
@@ -656,7 +568,6 @@ class BLEManager: NSObject, ObservableObject {
 		return true
 	}
 
-	@MainActor
 	@objc
 	func positionTimerFired(timer: Timer) {
 		guard
@@ -672,7 +583,7 @@ class BLEManager: NSObject, ObservableObject {
 			wantResponse: false
 		)
 	}
-	
+
 	func connectToPreferredPeripheral() -> Bool {
 		var success = false
 		// Return false if we are not properly connected to a device, handle retry logic in the view for now
@@ -690,9 +601,8 @@ class BLEManager: NSObject, ObservableObject {
 		}
 		return success
 	}
-	
+
 	func getChannel(channel: Channel, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
-		
 		var adminPacket = AdminMessage()
 		adminPacket.getChannelRequest = UInt32(channel.index + 1)
 		var meshPacket: MeshPacket = MeshPacket()

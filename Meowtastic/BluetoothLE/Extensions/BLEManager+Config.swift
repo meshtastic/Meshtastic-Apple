@@ -208,6 +208,32 @@ extension BLEManager {
 	}
 
 	@discardableResult
+	func setFixedPosition(
+		fromUser: UserEntity,
+		adminIndex: Int32
+	) -> Bool {
+		guard let positionPacket = getPhonePosition() else {
+			return false
+		}
+
+		var message = AdminMessage()
+		message.setFixedPosition = positionPacket
+
+		return saveConfig(from: fromUser, to: fromUser, index: adminIndex, message: message) != 0
+	}
+
+	@discardableResult
+	func removeFixedPosition(
+		fromUser: UserEntity,
+		adminIndex: Int32
+	) -> Bool {
+		var message = AdminMessage()
+		message.removeFixedPosition = true
+
+		return saveConfig(from: fromUser, to: fromUser, index: adminIndex, message: message) != 0
+	}
+
+	@discardableResult
 	func requestPowerConfig(
 		fromUser: UserEntity,
 		toUser: UserEntity,
@@ -321,6 +347,29 @@ extension BLEManager {
 	
 
 	// MARK: - common
+
+	@discardableResult
+	func requestDeviceMetadata(
+		from: UserEntity,
+		to: UserEntity,
+		index: Int32,
+		context: NSManagedObjectContext
+	) -> Int64 {
+		var message = AdminMessage()
+		message.getDeviceMetadataRequest = true
+
+		guard let packet = createPacket(
+			for: message,
+			from: from,
+			to: to,
+			index: index,
+			wantResponse: true
+		) else {
+			return 0
+		}
+
+		return sendAdminPacket(packet)
+	}
 
 	private func requestConfig(
 		from: UserEntity,
