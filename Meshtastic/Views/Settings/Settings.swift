@@ -348,13 +348,13 @@ struct Settings: View {
 				if !(node?.deviceConfig?.isManaged ?? false) {
 					if bleManager.connectedPeripheral != nil {
 						Section("Configure") {
-							if hasAdmin {
+							if node?.canRemoteAdmin ?? false {
 								Picker("Configuring Node", selection: $selectedNode) {
 									if selectedNode == 0 {
 										Text("Connect to a Node").tag(0)
 									}
-
 									ForEach(nodes) { node in
+										/// Connected Node
 										if node.num == bleManager.connectedPeripheral?.num ?? 0 {
 											Label {
 												Text("BLE: \(node.user?.longName ?? "unknown".localized)")
@@ -362,7 +362,14 @@ struct Settings: View {
 												Image(systemName: "antenna.radiowaves.left.and.right")
 											}
 											.tag(Int(node.num))
-										} else if node.metadata != nil {
+										} else if node.canRemoteAdmin { /// Nodes using the new PKI system
+											Label {
+												Text("Remote: \(node.user?.longName ?? "unknown".localized)")
+											} icon: {
+												Image(systemName: "av.remote")
+											}
+											.tag(Int(node.num))
+										} else if node.metadata != nil { /// Nodes using the old admin system
 											Label {
 												Text("Remote: \(node.user?.longName ?? "unknown".localized)")
 											} icon: {

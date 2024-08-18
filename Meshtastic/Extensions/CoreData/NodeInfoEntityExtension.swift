@@ -58,6 +58,15 @@ extension NodeInfoEntity {
 		}
 		return false
 	}
+	
+	var canRemoteAdmin: Bool {
+		if !(securityConfig?.adminKey?.isEmpty ?? true) {
+			return true
+		} else {
+			let adminChannel = myInfo?.channels?.filter { ($0 as AnyObject).name?.lowercased() == "admin" }
+			return adminChannel?.count ?? 0 > 0
+		}
+	}
 }
 
 public func createNodeInfo(num: Int64, context: NSManagedObjectContext) -> NodeInfoEntity {

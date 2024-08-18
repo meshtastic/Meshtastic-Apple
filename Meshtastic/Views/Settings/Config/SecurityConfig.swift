@@ -120,6 +120,9 @@ struct SecurityConfig: View {
 		.onChange(of: adminChannelEnabled) {
 			if $0 != node?.securityConfig?.adminChannelEnabled { hasChanges = true }
 		}
+		.onChange(of: adminKey) { _ in
+			hasChanges = true
+		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			guard let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context),
