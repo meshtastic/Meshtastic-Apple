@@ -226,6 +226,8 @@
         <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="peripheralId" optional="YES" attributeType="String"/>
         <attribute name="rssi" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="sessionExpiration" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="sessionPasskey" optional="YES" attributeType="Binary"/>
         <attribute name="snr" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="viaMqtt" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <relationship name="ambientLightingConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="AmbientLightingConfigEntity" inverseName="ambientLightingConfigNode" inverseEntity="AmbientLightingConfigEntity"/>

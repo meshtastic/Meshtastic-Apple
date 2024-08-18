@@ -6316,7 +6316,7 @@
     "Direct Message Help" : {
 
     },
-    "Direct messages are using the new public key infrastructure for encryption." : {
+    "Direct messages are using the new public key infrastructure for encryption. Reguires firmware version 2.5 or greater." : {
 
     },
     "Direct messages are using the shared key for the channel." : {
