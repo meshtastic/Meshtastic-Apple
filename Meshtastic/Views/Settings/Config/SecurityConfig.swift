@@ -131,7 +131,7 @@ struct SecurityConfig: View {
 			var config = Config.SecurityConfig()
 			//config.publicKey = publicKey
 			//config.privateKey = privateKey
-			//config.adminKey = adminKey
+			config.adminKey = Data(base64Encoded: adminKey) ?? Data()
 			config.isManaged = isManaged
 			config.serialEnabled = serialEnabled
 			config.debugLogApiEnabled = debugLogApiEnabled
