@@ -120,6 +120,12 @@ struct SecurityConfig: View {
 		.onChange(of: adminChannelEnabled) {
 			if $0 != node?.securityConfig?.adminChannelEnabled { hasChanges = true }
 		}
+		.onChange(of: publicKey) { _ in
+			hasChanges = true
+		}
+		.onChange(of: privateKey) { _ in
+			hasChanges = true
+		}
 		.onChange(of: adminKey) { _ in
 			hasChanges = true
 		}
