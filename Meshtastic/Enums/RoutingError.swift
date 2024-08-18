@@ -81,9 +81,9 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .noInterface:
 			return true
 		case .maxRetransmit:
-			return false
+			return true
 		case .noChannel:
-			return false
+			return true
 		case .tooLarge:
 			return false
 		case .noResponse:
