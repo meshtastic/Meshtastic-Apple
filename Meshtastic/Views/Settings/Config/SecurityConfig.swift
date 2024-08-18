@@ -132,8 +132,8 @@ struct SecurityConfig: View {
 			}
 
 			var config = Config.SecurityConfig()
-			//config.publicKey = publicKey
-			//config.privateKey = privateKey
+			config.publicKey = Data(base64Encoded: publicKey) ?? Data()
+			config.privateKey = Data(base64Encoded: privateKey) ?? Data()
 			config.adminKey = Data(base64Encoded: adminKey) ?? Data()
 			config.isManaged = isManaged
 			config.serialEnabled = serialEnabled

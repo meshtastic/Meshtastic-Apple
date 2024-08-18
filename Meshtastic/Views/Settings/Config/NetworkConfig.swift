@@ -133,7 +133,6 @@ struct NetworkConfig: View {
 		}
 		.onChange(of: wifiSsid) { newSSID in
 			if newSSID != node?.networkConfig?.wifiSsid { hasChanges = true }
-			
 		}
 		.onChange(of: wifiPsk) { newPsk in
 			if newPsk != node?.networkConfig?.wifiPsk { hasChanges = true }

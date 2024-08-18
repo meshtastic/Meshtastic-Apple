@@ -58,7 +58,7 @@ extension NodeInfoEntity {
 		}
 		return false
 	}
-	
+
 	var canRemoteAdmin: Bool {
 		if !(securityConfig?.adminKey?.isEmpty ?? true) {
 			return true
