@@ -424,6 +424,7 @@ func upsertBluetoothConfigPacket(config: Config.BluetoothConfig, nodeNum: Int64,
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -482,6 +483,7 @@ func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, sessi
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -538,6 +540,7 @@ func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, ses
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 
@@ -613,6 +616,7 @@ func upsertLoRaConfigPacket(config: Config.LoRaConfig, nodeNum: Int64, sessionPa
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -658,6 +662,7 @@ func upsertNetworkConfigPacket(config: Config.NetworkConfig, nodeNum: Int64, ses
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -722,6 +727,7 @@ func upsertPositionConfigPacket(config: Config.PositionConfig, nodeNum: Int64, s
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -772,6 +778,7 @@ func upsertPowerConfigPacket(config: Config.PowerConfig, nodeNum: Int64, session
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -823,6 +830,7 @@ func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, s
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -876,6 +884,7 @@ func upsertAmbientLightingModuleConfigPacket(config: ModuleConfig.AmbientLightin
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -934,6 +943,7 @@ func upsertCannedMessagesModuleConfigPacket(config: ModuleConfig.CannedMessageCo
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -987,6 +997,7 @@ func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSenso
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -1058,6 +1069,7 @@ func upsertExternalNotificationModuleConfigPacket(config: ModuleConfig.ExternalN
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -1099,6 +1111,7 @@ func upsertPaxCounterModuleConfigPacket(config: ModuleConfig.PaxcounterConfig, n
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -1138,6 +1151,7 @@ func upsertRtttlConfigPacket(ringtone: String, nodeNum: Int64, sessionPasskey: D
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -1199,6 +1213,7 @@ func upsertMqttModuleConfigPacket(config: ModuleConfig.MQTTConfig, nodeNum: Int6
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -1242,6 +1257,7 @@ func upsertRangeTestModuleConfigPacket(config: ModuleConfig.RangeTestConfig, nod
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -1293,6 +1309,7 @@ func upsertSerialModuleConfigPacket(config: ModuleConfig.SerialConfig, nodeNum: 
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -1343,6 +1360,7 @@ func upsertStoreForwardModuleConfigPacket(config: ModuleConfig.StoreForwardConfi
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -1395,6 +1413,7 @@ func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nod
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
