@@ -11,10 +11,17 @@ import OSLog
 import SwiftUI
 
 struct BluetoothConfig: View {
-	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
-	@Environment(\.dismiss) private var goBack
+	@Environment(\.managedObjectContext)
+	private var context
+	@EnvironmentObject
+	private var bleManager: BLEManager
+	@EnvironmentObject
+	private var nodeConfig: NodeConfig
+	@Environment(\.dismiss)
+	private var goBack
+
 	var node: NodeInfoEntity?
+
 	@State var hasChanges = false
 	@State var enabled = true
 	@State var mode = 0
@@ -90,7 +97,7 @@ struct BluetoothConfig: View {
 				bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
 				bc.fixedPin = UInt32(fixedPin) ?? 123456
 				bc.deviceLoggingEnabled	= deviceLoggingEnabled
-				let adminMessageId =  bleManager.saveBluetoothConfig(config: bc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+				let adminMessageId =  nodeConfig.saveBluetoothConfig(config: bc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 				if adminMessageId > 0 {
 					// Should show a saved successfully alert once I know that to be true
 					// for now just disable the button after a successful save
@@ -111,7 +118,7 @@ struct BluetoothConfig: View {
 				Logger.mesh.info("empty bluetooth config")
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let connectedNode {
-					bleManager.requestBluetoothConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+					nodeConfig.requestBluetoothConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}

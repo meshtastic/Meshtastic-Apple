@@ -13,8 +13,11 @@ struct MQTTConfig: View {
 	private var context
 	@EnvironmentObject
 	private var bleManager: BLEManager
+	@EnvironmentObject
+	private var nodeConfig: NodeConfig
 	@Environment(\.dismiss)
 	private var goBack
+
 	@State
 	private var isPresentingSaveConfirm = false
 	@State
@@ -334,7 +337,7 @@ struct MQTTConfig: View {
 				mqtt.mapReportSettings.positionPrecision = UInt32(mapPositionPrecision)
 				mqtt.mapReportSettings.publishIntervalSecs = UInt32(mapPublishIntervalSecs)
 
-				let adminMessageId = bleManager.saveMQTTConfig(
+				let adminMessageId = nodeConfig.saveMQTTConfig(
 					config: mqtt,
 					fromUser: connectedNode.user!,
 					toUser: node!.user!,
@@ -365,7 +368,7 @@ struct MQTTConfig: View {
 			{
 				Logger.mesh.info("empty mqtt module config")
 
-				bleManager.requestMQTTModuleConfig(
+				nodeConfig.requestMQTTModuleConfig(
 					fromUser: connectedNode.user!,
 					toUser: node.user!,
 					adminIndex: connectedNode.myInfo?.adminIndex ?? 0

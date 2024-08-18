@@ -11,9 +11,14 @@ import SwiftUI
 
 struct DeviceConfig: View {
 
-	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
-	@Environment(\.dismiss) private var goBack
+	@Environment(\.managedObjectContext)
+	private var context
+	@EnvironmentObject
+	private var bleManager: BLEManager
+	@EnvironmentObject
+	private var nodeConfig: NodeConfig
+	@Environment(\.dismiss)
+	private var goBack
 
 	var node: NodeInfoEntity?
 
@@ -163,7 +168,7 @@ struct DeviceConfig: View {
 						titleVisibility: .visible
 					) {
 						Button("Erase all device and app data?", role: .destructive) {
-							if bleManager.sendNodeDBReset(fromUser: node!.user!, toUser: node!.user!) {
+							if nodeConfig.sendNodeDBReset(fromUser: node!.user!, toUser: node!.user!) {
 								DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
 									bleManager.disconnectDevice()
 									clearCoreDataDatabase(context: context, includeRoutes: false)
@@ -188,7 +193,7 @@ struct DeviceConfig: View {
 						titleVisibility: .visible
 					) {
 						Button("Factory reset your device and app? ", role: .destructive) {
-							if bleManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!) {
+							if nodeConfig.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!) {
 								DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
 									bleManager.disconnectDevice()
 									clearCoreDataDatabase(context: context, includeRoutes: false)
@@ -220,7 +225,7 @@ struct DeviceConfig: View {
 							serialEnabled = false
 							debugLogEnabled = false
 						}
-						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+						let adminMessageId = nodeConfig.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save
@@ -246,7 +251,7 @@ struct DeviceConfig: View {
 				Logger.mesh.info("empty device config")
 				let connectedNode = getNodeInfo(id: bleManager.deviceConnected?.num ?? -1, context: context)
 				if node != nil && connectedNode != nil && connectedNode?.user != nil {
-					bleManager.requestDeviceConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					nodeConfig.requestDeviceConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}

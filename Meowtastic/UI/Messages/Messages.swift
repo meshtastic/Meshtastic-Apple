@@ -17,6 +17,8 @@ struct Messages: View {
 	private var context
 	@EnvironmentObject
 	private var bleManager: BLEManager
+	@EnvironmentObject
+	private var nodeConfig: NodeConfig
 	@Environment(\.colorScheme)
 	private var colorScheme: ColorScheme
 	@State
@@ -55,7 +57,7 @@ struct Messages: View {
 			}
 		}
 
-		return [ChannelEntity]()
+		return []
 	}
 	private var usersFiltered: [UserEntity] {
 		users.filter { user in
@@ -133,7 +135,7 @@ struct Messages: View {
 
 								channel.mute.toggle()
 
-								let adminMessageId = bleManager.saveChannel(
+								let adminMessageId = nodeConfig.saveChannel(
 									channel: channel.protoBuf,
 									fromUser: user,
 									toUser: user
@@ -374,13 +376,13 @@ struct Messages: View {
 			if let node, let userNode = user.userNode, !userNode.favorite {
 				let success: Bool
 				if userNode.favorite {
-					success = bleManager.removeFavoriteNode(
+					success = nodeConfig.removeFavoriteNode(
 						node: userNode,
 						connectedNodeNum: Int64(node.num)
 					)
 				}
 				else {
-					success = bleManager.setFavoriteNode(
+					success = nodeConfig.saveFavoriteNode(
 						node: userNode,
 						connectedNodeNum: Int64(node.num)
 					)

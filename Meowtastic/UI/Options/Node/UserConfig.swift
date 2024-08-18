@@ -10,10 +10,14 @@ import MeshtasticProtobufs
 import SwiftUI
 
 struct UserConfig: View {
-
-	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
-	@Environment(\.dismiss) private var goBack
+	@Environment(\.managedObjectContext)
+	private var context
+	@EnvironmentObject
+	private var bleManager: BLEManager
+	@EnvironmentObject
+	private var nodeConfig: NodeConfig
+	@Environment(\.dismiss)
+	private var goBack
 
 	var node: NodeInfoEntity?
 
@@ -158,7 +162,7 @@ struct UserConfig: View {
 								var u = User()
 								u.shortName = shortName
 								u.longName = longName
-								let adminMessageId = bleManager.saveUser(config: u, fromUser: connectedUser, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+								let adminMessageId = nodeConfig.saveUser(config: u, fromUser: connectedUser, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 								if adminMessageId > 0 {
 									hasChanges = false
 									goBack()
@@ -169,7 +173,7 @@ struct UserConfig: View {
 								ham.callSign = longName
 								ham.txPower = Int32(txPower)
 								ham.frequency = overrideFrequency
-								let adminMessageId = bleManager.saveLicensedUser(ham: ham, fromUser: connectedUser, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+								let adminMessageId = nodeConfig.saveLicensedUser(ham: ham, fromUser: connectedUser, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 								if adminMessageId > 0 {
 									hasChanges = false
 									goBack()

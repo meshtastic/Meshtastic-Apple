@@ -37,6 +37,8 @@ struct Channels: View {
 	private var context
 	@EnvironmentObject
 	private var bleManager: BLEManager
+	@EnvironmentObject
+	private var nodeConfig: NodeConfig
 	@Environment(\.dismiss)
 	private var goBack
 	@Environment(\.sizeCategory)
@@ -251,7 +253,7 @@ struct Channels: View {
 								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError)")
 							}
 						}
-						let adminMessageId =  bleManager.saveChannel(
+						let adminMessageId =  nodeConfig.saveChannel(
 							channel: channel,
 							fromUser: node!.user!,
 							toUser: node!.user!

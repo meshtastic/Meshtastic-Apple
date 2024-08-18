@@ -10,10 +10,14 @@ import OSLog
 import SwiftUI
 
 struct NetworkConfig: View {
-
-	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
-	@Environment(\.dismiss) private var goBack
+	@Environment(\.managedObjectContext)
+	private var context
+	@EnvironmentObject
+	private var bleManager: BLEManager
+	@EnvironmentObject
+	private var nodeConfig: NodeConfig
+	@Environment(\.dismiss)
+	private var goBack
 
 	var node: NodeInfoEntity?
 
@@ -99,7 +103,7 @@ struct NetworkConfig: View {
 					network.ethEnabled = self.ethEnabled
 					// network.addressMode = Config.NetworkConfig.AddressMode.dhcp
 
-					let adminMessageId =  bleManager.saveNetworkConfig(config: network, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					let adminMessageId = nodeConfig.saveNetworkConfig(config: network, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
@@ -123,7 +127,7 @@ struct NetworkConfig: View {
 				Logger.mesh.info("empty network config")
 				let connectedNode = getNodeInfo(id: bleManager.deviceConnected.num, context: context)
 				if node != nil && connectedNode != nil {
-					bleManager.requestNetworkConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					nodeConfig.requestNetworkConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}

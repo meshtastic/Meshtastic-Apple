@@ -3,9 +3,14 @@ import MeshtasticProtobufs
 import SwiftUI
 
 struct PowerConfig: View {
-	@Environment(\.managedObjectContext) private var context
-	@EnvironmentObject private var bleManager: BLEManager
-	@Environment(\.dismiss) private var goBack
+	@Environment(\.managedObjectContext)
+	private var context
+	@EnvironmentObject
+	private var bleManager: BLEManager
+	@EnvironmentObject
+	private var nodeConfig: NodeConfig
+	@Environment(\.dismiss)
+	private var goBack
 
 	let node: NodeInfoEntity?
 
@@ -121,7 +126,7 @@ struct PowerConfig: View {
 			if bleManager.deviceConnected != nil && node?.powerConfig == nil {
 				let connectedNode = getNodeInfo(id: bleManager.deviceConnected?.num ?? 0, context: context)
 				if node != nil && connectedNode != nil {
-					bleManager.requestPowerConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					nodeConfig.requestPowerConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}
@@ -179,7 +184,7 @@ struct PowerConfig: View {
 			config.lsSecs = UInt32(lsSecs)
 			config.minWakeSecs = UInt32(minWakeSecs)
 
-			let adminMessageId = bleManager.savePowerConfig(
+			let adminMessageId = nodeConfig.savePowerConfig(
 				config: config,
 				fromUser: fromUser,
 				toUser: toUser,

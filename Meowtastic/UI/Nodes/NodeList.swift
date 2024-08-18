@@ -15,6 +15,8 @@ struct NodeList: View {
 	private var colorScheme: ColorScheme
 	@EnvironmentObject
 	private var bleManager: BLEManager
+	@EnvironmentObject
+	private var nodeConfig: NodeConfig
 	@StateObject
 	private var appState = AppState.shared
 
@@ -406,6 +408,7 @@ struct NodeList: View {
 	) -> some View {
 		FavoriteNodeButton(
 			bleManager: bleManager,
+			nodeConfig: nodeConfig,
 			context: context,
 			node: node
 		)

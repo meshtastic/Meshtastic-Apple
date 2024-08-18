@@ -121,20 +121,14 @@ class BLEManager: NSObject, ObservableObject {
 	}
 
 	func connectTo(peripheral: CBPeripheral) {
-		DispatchQueue.main.async { [weak self] in
-			guard let self else {
-				return
-			}
-
-			self.isConnecting = true
-			self.lastConnectionError = ""
-			self.automaticallyReconnect = true
-		}
+		isConnecting = true
+		lastConnectionError = ""
+		automaticallyReconnect = true
+		timeoutTimer?.invalidate()
 
 		disconnectDevice()
 
 		centralManager.connect(peripheral)
-		timeoutTimer?.invalidate()
 
 		let timer = Timer.scheduledTimer(
 			timeInterval: 1.5,
@@ -196,22 +190,21 @@ class BLEManager: NSObject, ObservableObject {
 			return false
 		}
 
+		guard let serializedData = try? RouteDiscovery().serializedData() else {
+			return false
+		}
+
+		var dataMessage = DataMessage()
+		dataMessage.payload = serializedData
+		dataMessage.portnum = PortNum.tracerouteApp
+		dataMessage.wantResponse = true
+
 		var meshPacket = MeshPacket()
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.to = UInt32(destNum)
 		meshPacket.from = UInt32(connectedDevice.num)
 		meshPacket.wantAck = true
-
-		var dataMessage = DataMessage()
-		if let serializedData = try? RouteDiscovery().serializedData() {
-			dataMessage.payload = serializedData
-			dataMessage.portnum = PortNum.tracerouteApp
-			dataMessage.wantResponse = true
-			meshPacket.decoded = dataMessage
-		}
-		else {
-			return false
-		}
+		meshPacket.decoded = dataMessage
 
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
@@ -585,67 +578,33 @@ class BLEManager: NSObject, ObservableObject {
 	}
 
 	func connectToPreferredPeripheral() -> Bool {
-		var success = false
-		// Return false if we are not properly connected to a device, handle retry logic in the view for now
-		if deviceConnected == nil || deviceConnected!.peripheral.state != .connected {
-			self.disconnectDevice()
-			self.startScanning()
+		if getConnectedDevice() != nil {
+			disconnectDevice()
+			startScanning()
+
 			// Try and connect to the preferredPeripherial first
-			let preferredPeripheral = devices.filter({ $0.peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" }).first
-			if preferredPeripheral != nil && preferredPeripheral?.peripheral != nil {
-				connectTo(peripheral: preferredPeripheral!.peripheral)
-				success = true
+			let preferredPeripheral = devices.first(where: { device in
+				guard let preferred = UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String else {
+					return false
+				}
+
+				return device.peripheral.identifier.uuidString == preferred
+			})
+
+			if let peripheral = preferredPeripheral?.peripheral {
+				connectTo(peripheral: peripheral)
+
+				return true
 			}
-		} else if deviceConnected != nil && isSubscribed {
-			success = true
+		} else if deviceConnected != nil, isSubscribed {
+			return true
 		}
-		return success
+
+		return false
 	}
 
-	func getChannel(channel: Channel, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
-		var adminPacket = AdminMessage()
-		adminPacket.getChannelRequest = UInt32(channel.index + 1)
-		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(toUser.num)
-		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-		meshPacket.priority =  MeshPacket.Priority.reliable
-		var dataMessage = DataMessage()
-		guard let adminData: Data = try? adminPacket.serializedData() else {
-			return 0
-		}
-		dataMessage.payload = adminData
-		dataMessage.portnum = PortNum.adminApp
-		dataMessage.wantResponse = true
-		meshPacket.decoded = dataMessage
-		
-
-		return sendAdminPacket(meshPacket)
-	}
-	func saveChannel(channel: Channel, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
-		
-		var adminPacket = AdminMessage()
-		adminPacket.setChannel = channel
-		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(toUser.num)
-		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-		meshPacket.priority =  MeshPacket.Priority.reliable
-		var dataMessage = DataMessage()
-		guard let adminData: Data = try? adminPacket.serializedData() else {
-			return 0
-		}
-		dataMessage.payload = adminData
-		dataMessage.portnum = PortNum.adminApp
-		dataMessage.wantResponse = true
-		meshPacket.decoded = dataMessage
-		
-		return sendAdminPacket(meshPacket)
-	}
-	
 	func saveChannelSet(base64UrlString: String, addChannels: Bool = false) -> Bool {
 		if isConnected {
-			
 			var i: Int32 = 0
 			var myInfo: MyInfoEntity
 			// Before we get started delete the existing channels from the myNodeInfo
@@ -803,89 +762,6 @@ class BLEManager: NSObject, ObservableObject {
 		return false
 	}
 	
-	func setFavoriteNode(node: NodeInfoEntity, connectedNodeNum: Int64) -> Bool {
-		var adminPacket = AdminMessage()
-		adminPacket.setFavoriteNode = UInt32(node.num)
-		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedNodeNum)
-		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = true
-		var dataMessage = DataMessage()
-		guard let adminData: Data = try? adminPacket.serializedData() else {
-			return false
-		}
-		dataMessage.payload = adminData
-		dataMessage.portnum = PortNum.adminApp
-		meshPacket.decoded = dataMessage
-		var toRadio: ToRadio!
-		toRadio = ToRadio()
-		toRadio.packet = meshPacket
-		guard let binaryData: Data = try? toRadio.serializedData() else {
-			return false
-		}
-		
-		if deviceConnected?.peripheral.state ?? .disconnected == .connected {
-			deviceConnected.peripheral.writeValue(binaryData, for: characteristicToRadio, type: .withResponse)
-			return true
-		}
-		return false
-	}
-	
-	func removeFavoriteNode(node: NodeInfoEntity, connectedNodeNum: Int64) -> Bool {
-		var adminPacket = AdminMessage()
-		adminPacket.removeFavoriteNode = UInt32(node.num)
-		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedNodeNum)
-		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = true
-		var dataMessage = DataMessage()
-		guard let adminData: Data = try? adminPacket.serializedData() else {
-			return false
-		}
-		dataMessage.payload = adminData
-		dataMessage.portnum = PortNum.adminApp
-		meshPacket.decoded = dataMessage
-		var toRadio: ToRadio!
-		toRadio = ToRadio()
-		toRadio.packet = meshPacket
-		guard let binaryData: Data = try? toRadio.serializedData() else {
-			return false
-		}
-		
-		if deviceConnected?.peripheral.state ?? .disconnected == .connected {
-			deviceConnected.peripheral.writeValue(binaryData, for: characteristicToRadio, type: .withResponse)
-			return true
-		}
-		return false
-	}
-	
-	@discardableResult
-	func getChannel(channelIndex: UInt32, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Bool {
-		var adminPacket = AdminMessage()
-		adminPacket.getChannelRequest = channelIndex
-		
-		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(toUser.num)
-		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = wantResponse
-		
-		var dataMessage = DataMessage()
-		guard let adminData: Data = try? adminPacket.serializedData() else {
-			return false
-		}
-		dataMessage.payload = adminData
-		dataMessage.portnum = PortNum.adminApp
-		dataMessage.wantResponse = true
-		
-		meshPacket.decoded = dataMessage
-		
-		return sendAdminPacket(meshPacket) != 0
-	}
-
 	@discardableResult
 	func getCannedMessageModuleMessages(destNum: Int64, wantResponse: Bool) -> Bool {
 		var adminPacket = AdminMessage()

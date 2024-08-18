@@ -4,6 +4,7 @@ import SwiftUI
 
 struct FavoriteNodeButton: View {
 	var bleManager: BLEManager
+	var nodeConfig: NodeConfig
 	var context: NSManagedObjectContext
 
 	@ObservedObject
@@ -16,21 +17,25 @@ struct FavoriteNodeButton: View {
 			}
 
 			let success = if node.favorite {
-				bleManager.removeFavoriteNode(
-					node: node,
-					connectedNodeNum: Int64(connectedNodeNum)
-				)
-			} else {
-				bleManager.setFavoriteNode(
+				nodeConfig.removeFavoriteNode(
 					node: node,
 					connectedNodeNum: Int64(connectedNodeNum)
 				)
 			}
+			else {
+				nodeConfig.saveFavoriteNode(
+					node: node,
+					connectedNodeNum: Int64(connectedNodeNum)
+				)
+			}
+
 			if success {
-				node.favorite = !node.favorite
+				node.favorite.toggle()
+
 				do {
 					try context.save()
-				} catch {
+				}
+				catch {
 					context.rollback()
 					Logger.data.error("Save Node Favorite Error")
 				}

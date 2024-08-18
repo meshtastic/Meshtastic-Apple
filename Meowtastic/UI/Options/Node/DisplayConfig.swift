@@ -1,19 +1,17 @@
-//
-//  DeviceSettings.swift
-//  Meshtastic Apple
-//
-//  Copyright (c) Garth Vander Houwen 6/7/22.
-//
 import FirebaseAnalytics
 import MeshtasticProtobufs
 import OSLog
 import SwiftUI
 
 struct DisplayConfig: View {
-
-	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
-	@Environment(\.dismiss) private var goBack
+	@Environment(\.managedObjectContext)
+	private var context
+	@EnvironmentObject
+	private var bleManager: BLEManager
+	@EnvironmentObject
+	private var nodeConfig: NodeConfig
+	@Environment(\.dismiss)
+	private var goBack
 
 	var node: NodeInfoEntity?
 
@@ -148,7 +146,7 @@ struct DisplayConfig: View {
 				dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
 				dc.units = Units(rawValue: units)!.protoEnumValue()
 
-				let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				let adminMessageId =  nodeConfig.saveDisplayConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				if adminMessageId > 0 {
 
 					// Should show a saved successfully alert once I know that to be true
@@ -171,7 +169,7 @@ struct DisplayConfig: View {
 				Logger.mesh.info("empty display config")
 				let connectedNode = getNodeInfo(id: bleManager.deviceConnected?.num ?? 0, context: context)
 				if node != nil && connectedNode != nil {
-					bleManager.requestDisplayConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					nodeConfig.requestDisplayConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}

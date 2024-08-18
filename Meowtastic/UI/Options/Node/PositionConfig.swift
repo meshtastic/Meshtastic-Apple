@@ -36,6 +36,8 @@ struct PositionConfig: View {
 	private var context
 	@EnvironmentObject
 	private var bleManager: BLEManager
+	@EnvironmentObject
+	private var nodeConfig: NodeConfig
 	@Environment(\.dismiss)
 	private var goBack
 	@State
@@ -90,7 +92,7 @@ struct PositionConfig: View {
 				Logger.mesh.info("empty position config")
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let node, let connectedNode {
-					bleManager.requestPositionConfig(
+					nodeConfig.requestPositionConfig(
 						fromUser: connectedNode.user!,
 						toUser: node.user!,
 						adminIndex: connectedNode.myInfo?.adminIndex ?? 0
@@ -393,7 +395,7 @@ struct PositionConfig: View {
 				pc.gpsEnGpio = UInt32(gpsEnGpio)
 				pc.positionFlags = UInt32(pf.rawValue)
 
-				let adminMessageId =  bleManager.savePositionConfig(
+				let adminMessageId =  nodeConfig.savePositionConfig(
 					config: pc,
 					fromUser: connectedNode!.user!,
 					toUser: node!.user!,
@@ -476,7 +478,7 @@ struct PositionConfig: View {
 	private func setFixedPosition() {
 		guard let nodeNum = bleManager.deviceConnected?.num,
 			  nodeNum > 0 else { return }
-		if !bleManager.setFixedPosition(fromUser: node!.user!, adminIndex: 0) {
+		if !nodeConfig.setFixedPosition(fromUser: node!.user!, adminIndex: 0) {
 			Logger.mesh.error("Set Position Failed")
 		}
 		node?.positionConfig?.fixedPosition = true
@@ -493,7 +495,7 @@ struct PositionConfig: View {
 	private func removeFixedPosition() {
 		guard let nodeNum = bleManager.deviceConnected?.num,
 			  nodeNum > 0 else { return }
-		if !bleManager.removeFixedPosition(fromUser: node!.user!, adminIndex: 0) {
+		if !nodeConfig.removeFixedPosition(fromUser: node!.user!, adminIndex: 0) {
 			Logger.mesh.error("Remove Fixed Position Failed")
 		}
 		let mutablePositions = node?.positions?.mutableCopy() as? NSMutableOrderedSet

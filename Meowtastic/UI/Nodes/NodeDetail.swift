@@ -18,6 +18,8 @@ struct NodeDetail: View {
 	@EnvironmentObject
 	private var bleManager: BLEManager
 	@EnvironmentObject
+	private var nodeConfig: NodeConfig
+	@EnvironmentObject
 	private var locationManager: LocationManager
 
 	@State
@@ -646,6 +648,7 @@ struct NodeDetail: View {
 	private var actions: some View {
 		FavoriteNodeButton(
 			bleManager: bleManager,
+			nodeConfig: nodeConfig,
 			context: context,
 			node: node
 		)
@@ -680,12 +683,12 @@ struct NodeDetail: View {
 
 	@ViewBuilder
 	private func admin(node: NodeInfoEntity, metadata: DeviceMetadataEntity) -> some View {
-		if let myInfo = node.myInfo, myInfo.hasAdmin {
+		if let user = node.user, let myInfo = node.myInfo, myInfo.hasAdmin {
 			Button {
-				let adminMessageId = bleManager.requestDeviceMetadata(
-					from: node.user!,
-					to: node.user!,
-					index: node.myInfo!.adminIndex,
+				let adminMessageId = nodeConfig.requestDeviceMetadata(
+					to: user,
+					from: user,
+					index: myInfo.adminIndex,
 					context: context
 				)
 
@@ -718,7 +721,7 @@ struct NodeDetail: View {
 			isPresented: $showingRebootConfirm
 		) {
 			Button("reboot.node", role: .destructive) {
-				if !bleManager.sendReboot(
+				if !nodeConfig.sendReboot(
 					fromUser: node.user!,
 					toUser: node.user!,
 					adminIndex: node.myInfo!.adminIndex
@@ -744,7 +747,7 @@ struct NodeDetail: View {
 				isPresented: $showingShutdownConfirm
 			) {
 				Button("Shut Down Node?", role: .destructive) {
-					if !bleManager.sendShutdown(
+					if !nodeConfig.sendShutdown(
 						fromUser: node.user!,
 						toUser: node.user!,
 						adminIndex: node.myInfo!.adminIndex

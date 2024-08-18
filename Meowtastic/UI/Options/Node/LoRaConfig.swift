@@ -23,6 +23,8 @@ struct LoRaConfig: View {
 	private var context
 	@EnvironmentObject
 	private var bleManager: BLEManager
+	@EnvironmentObject
+	private var nodeConfig: NodeConfig
 	@Environment(\.dismiss)
 	private var goBack
 	@FocusState
@@ -85,7 +87,7 @@ struct LoRaConfig: View {
 						UserDefaults.modemPreset = modemPreset
 					}
 
-					let adminMessageId = bleManager.saveLoRaConfig(
+					let adminMessageId = nodeConfig.saveLoRaConfig(
 						config: lc,
 						fromUser: connectedNode.user!,
 						toUser: node.user!,
@@ -119,7 +121,7 @@ struct LoRaConfig: View {
 				let connectedPeripheral = bleManager.deviceConnected,
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 			{
-				bleManager.requestLoRaConfig(
+				nodeConfig.requestLoRaConfig(
 					fromUser: connectedNode.user!,
 					toUser: node.user!,
 					adminIndex: connectedNode.myInfo?.adminIndex ?? 0

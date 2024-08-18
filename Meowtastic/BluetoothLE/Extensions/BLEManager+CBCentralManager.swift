@@ -92,11 +92,10 @@ extension BLEManager: CBCentralManagerDelegate {
 		_ central: CBCentralManager,
 		didConnect peripheral: CBPeripheral
 	) {
-		isConnecting = false
-		isConnected = true
-
 		UserDefaults.preferredPeripheralId = peripheral.identifier.uuidString
 
+		isConnecting = false
+		isConnected = true
 		timeoutTimer?.invalidate()
 		timeoutCount = 0
 		lastConnectionError = ""
