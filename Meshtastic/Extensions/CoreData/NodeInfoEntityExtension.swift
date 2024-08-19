@@ -60,7 +60,7 @@ extension NodeInfoEntity {
 	}
 
 	var canRemoteAdmin: Bool {
-		if !(securityConfig?.adminKey?.isEmpty ?? true) {
+		if UserDefaults.enableAdministration {
 			return true
 		} else {
 			let adminChannel = myInfo?.channels?.filter { ($0 as AnyObject).name?.lowercased() == "admin" }

@@ -50,6 +50,18 @@ struct SaveChannelQRCode: View {
 					.controlSize(.large)
 					.padding()
 					.disabled(!connectedToDevice)
+#if targetEnvironment(macCatalyst)
+	Button {
+		dismiss()
+	} label: {
+		Label("cancel", systemImage: "xmark")
+
+	}
+	.buttonStyle(.bordered)
+	.buttonBorderShape(.capsule)
+	.controlSize(.large)
+	.padding()
+#endif
 				} else {
 					Button {
 						dismiss()
@@ -62,19 +74,6 @@ struct SaveChannelQRCode: View {
 					.controlSize(.large)
 					.padding()
 				}
-
-			#if targetEnvironment(macCatalyst)
-				Button {
-					dismiss()
-				} label: {
-					Label("cancel", systemImage: "xmark")
-
-				}
-				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
-			#endif
 			}
 		}
 		.onAppear {

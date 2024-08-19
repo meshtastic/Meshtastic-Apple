@@ -362,7 +362,7 @@ struct Settings: View {
 												Image(systemName: "antenna.radiowaves.left.and.right")
 											}
 											.tag(Int(node.num))
-										} else if node.canRemoteAdmin { /// Nodes using the new PKI system
+										} else if node.canRemoteAdmin && UserDefaults.enableAdministration && node.sessionPasskey != nil { /// Nodes using the new PKI system
 											Label {
 												Text("Remote: \(node.user?.longName ?? "unknown".localized)")
 											} icon: {
@@ -376,7 +376,7 @@ struct Settings: View {
 												Image(systemName: "av.remote")
 											}
 											.tag(Int(node.num))
-										} else if hasAdmin {
+										} else if hasAdmin || node.user?.pkiEncrypted ?? false {
 											Label {
 												Text("Request Admin: \(node.user?.longName ?? "unknown".localized)")
 											} icon: {

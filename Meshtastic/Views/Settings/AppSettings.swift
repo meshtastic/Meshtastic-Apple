@@ -13,6 +13,7 @@ struct AppSettings: View {
 	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var isPresentingDeleteMapTilesConfirm = false
 	@AppStorage("environmentEnableWeatherKit") private var  environmentEnableWeatherKit: Bool = true
+	@AppStorage("enableAdministration") private var  enableAdministration: Bool = false
 	var body: some View {
 		VStack {
 			Form {
@@ -23,6 +24,10 @@ struct AppSettings: View {
 							UIApplication.shared.open(url)
 						}
 					}
+					Toggle(isOn: $enableAdministration) {
+						Label("Administration", systemImage: "gearshape.2")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 				Section(header: Text("environment")) {
 					VStack(alignment: .leading) {
