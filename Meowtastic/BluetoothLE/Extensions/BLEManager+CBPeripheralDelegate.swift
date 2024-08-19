@@ -196,7 +196,7 @@ extension BLEManager: CBPeripheralDelegate {
 						config: decodedInfo.config,
 						context: context,
 						nodeNum: Int64(truncatingIfNeeded: connectedDevice.num),
-						nodeLongName: self.deviceConnected.longName
+						nodeLongName: deviceConnected.longName
 					)
 				}
 
@@ -206,7 +206,7 @@ extension BLEManager: CBPeripheralDelegate {
 						config: decodedInfo.moduleConfig,
 						context: context,
 						nodeNum: Int64(truncatingIfNeeded: connectedDevice.num),
-						nodeLongName: self.deviceConnected.longName
+						nodeLongName: deviceConnected.longName
 					)
 				}
 
