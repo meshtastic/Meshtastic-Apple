@@ -115,16 +115,36 @@
       }
     },
     "(Re)define PIN_GPS_EN for your board." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(Om)definiera PIN_GPS_EN för ditt kort."
+          }
+        }
+      }
     },
     "%@" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        }
+      }
     },
     "%@ - %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "%1$@ - %2$@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "%1$@ - %2$@"
           }
         }
@@ -137,6 +157,12 @@
             "state" : "new",
             "value" : "%1$@ - %2$@ - %3$@"
           }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ - %2$@ - %3$@"
+          }
         }
       }
     },
@@ -145,6 +171,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "%1$@ (%2$@)"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "%1$@ (%2$@)"
           }
         }
@@ -157,6 +189,12 @@
             "state" : "new",
             "value" : "%1$@ %2$@"
           }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@"
+          }
         }
       }
     },
@@ -167,11 +205,24 @@
             "state" : "new",
             "value" : "%1$@ %2$lld"
           }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$lld"
+          }
         }
       }
     },
     "%@ away" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ bort"
+          }
+        }
+      }
     },
     "%@ can be up to %@ bytes long." : {
       "localizations" : {
@@ -180,26 +231,66 @@
             "state" : "new",
             "value" : "%1$@ can be up to %2$@ bytes long."
           }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ kan vara upp till %2$@ byte lång."
+          }
         }
       }
     },
     "%@ Channels?" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kanaler?"
+          }
+        }
+      }
     },
     "%@ config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ konfigurationsdata begärdes över administratörskanalen, men inget svar har mottagits från den avlägsna noden. Du kan kontrollera statusen för administratörsmeddelandeförfrågningar i administratörsmeddelandeloggen."
+          }
+        }
+      }
     },
     "%@ dB" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ dB"
+          }
+        }
+      }
     },
     "%@ hPa" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ hPa"
+          }
+        }
+      }
     },
     "%@, %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "%1$@, %2$@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "%1$@, %2$@"
           }
         }
@@ -212,80 +303,254 @@
             "state" : "new",
             "value" : "%1$@: %2$lld / %3$lld"
           }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$lld / %3$lld"
+          }
         }
       }
     },
     "%@%%" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@%%"
+          }
+        }
+      }
     },
     "%@°F" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@°F"
+          }
+        }
+      }
     },
     "%d" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d"
+          }
+        }
+      }
     },
     "%d%%" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d%%"
+          }
+        }
+      }
     },
     "%lf" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lf"
+          }
+        }
+      }
     },
     "%lld" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld"
+          }
+        }
+      }
     },
     "%lld or less hops away" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld eller färre hopp bort"
+          }
+        }
+      }
     },
     "%lld Readings Total" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Avläsningar totalt"
+          }
+        }
+      }
     },
     "%lld Total Detection Events" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Totala upptäckthändelser"
+          }
+        }
+      }
     },
     "%lld%%" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%%"
+          }
+        }
+      }
     },
     "%llddb Transmit Power" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld dB Sändningseffekt"
+          }
+        }
+      }
     },
     "%llddBm Transmit Power" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld dBm Sändningseffekt"
+          }
+        }
+      }
     },
     "< 1%" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "< 1%"
+          }
+        }
+      }
     },
     "🦕 End of life Version 🦖 ☄️" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🦕 Livscykelns slutversion 🦖 ☄️"
+          }
+        }
+      }
     },
     "1 byte" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 byte"
+          }
+        }
+      }
     },
     "1 hop away" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 hopp bort"
+          }
+        }
+      }
     },
     "7" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "7"
+          }
+        }
+      }
     },
     "8" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "8"
+          }
+        }
+      }
     },
     "25" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "25"
+          }
+        }
+      }
     },
     "50" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "50"
+          }
+        }
+      }
     },
     "75" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "75"
+          }
+        }
+      }
     },
     "100" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "100"
+          }
+        }
+      }
     },
     "128 bit" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "128 bitar"
+          }
+        }
+      }
     },
     "256 bit" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "256 bitar"
+          }
+        }
+      }
     },
     "about" : {
       "localizations" : {
@@ -326,6 +591,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Om"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Om"
@@ -389,6 +660,12 @@
             "value" : "Om Meshtastic"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Om Meshtastic"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -404,25 +681,74 @@
       }
     },
     "Accuracy %@" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noggrannhet %@"
+          }
+        }
+      }
     },
     "Ack SNR: %@ dB" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bekräftelse SNR: %@ dB"
+          }
+        }
+      }
     },
     "Ack Time: %@" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bekräftelsetid: %@"
+          }
+        }
+      }
     },
     "Acknowledged" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bekräftat"
+          }
+        }
+      }
     },
     "Acknowledged by another node" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bekräftat av en annan nod"
+          }
+        }
+      }
     },
     "Actions" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Åtgärder"
+          }
+        }
+      }
     },
     "Active" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktiv"
+          }
+        }
+      }
     },
     "activity" : {
       "localizations" : {
@@ -468,6 +794,12 @@
             "value" : "Activity"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktivitet"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -483,22 +815,64 @@
       }
     },
     "Activity" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktivitet"
+          }
+        }
+      }
     },
     "Add Channel" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lägg till kanal"
+          }
+        }
+      }
     },
     "Add Channels" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lägg till kanalel"
+          }
+        }
+      }
     },
     "Add to favorites" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lägg till i favoriter"
+          }
+        }
+      }
     },
     "Additional help" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ytterligare hjälp"
+          }
+        }
+      }
     },
     "Address" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adress"
+          }
+        }
+      }
     },
     "admin" : {
       "extractionState" : "migrated",
@@ -540,6 +914,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administratör"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Administratör"
@@ -604,6 +984,12 @@
             "value" : "Administratörsmeddelandelogg"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administratörsmeddelandelogg"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -619,19 +1005,54 @@
       }
     },
     "Administration" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administration"
+          }
+        }
+      }
     },
     "Advanced" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avancerat"
+          }
+        }
+      }
     },
     "Advanced Device GPS" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avancerad enhets-GPS"
+          }
+        }
+      }
     },
     "Advanced GPIO Options" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avancerade GPIO-alternativ"
+          }
+        }
+      }
     },
     "Advanced Position Flags" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avancerade positionsflaggor"
+          }
+        }
+      }
     },
     "ago" : {
       "extractionState" : "manual",
@@ -1680,6 +2101,12 @@
             "value" : "%@ Appen kommer automatiskt att återansluta till den föredragna radion om den kommer inom räckhåll igen."
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Appen kommer automatiskt att återansluta till den föredragna radion om den kommer tillbaka inom räckvidd."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1739,6 +2166,12 @@
             "value" : "%@ Detta fel kan vanligtvis inte åtgärdas utan att glömma enheten under Inställningar > Bluetooth och återansluta till radion."
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Det här felet kan vanligtvis inte åtgärdas utan att glömma enheten under Inställningar > Bluetooth och återansluta till radion."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1793,6 +2226,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Försök att ansluta igen och kontrollera PIN-koden noggrant."
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ Försök att ansluta igen och kontrollera PIN-koden noggrant."
@@ -3781,6 +4220,12 @@
             "value" : "ADC-överskrivning"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ADC-överskrivning"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4195,6 +4640,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efter"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Efter"
@@ -4622,6 +5073,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Efter att konfigurationsvärdena sparats kommer noden att starta om."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efter att konfigurationsvärdena har sparats kommer noden att starta om."
           }
         },
         "zh-Hans" : {
@@ -18031,6 +18488,12 @@
             "value" : "Bekräftad"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bekräftat"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21432,6 +21895,12 @@
             "value" : "Administratörskanal upptäckt: Välj en nod från rullgardinsmenyn för att hantera anslutna eller fjärranslutna enheter."
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administratörskanal upptäckt: Välj en nod från rullgardinsmenyn för att hantera anslutna eller avlägsna enheter."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21485,6 +21954,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administratörskanal"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Administratörskanal"
@@ -21662,6 +22137,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "En Meshtastic QR-kod innehåller LoRa-konfigurationen och kanalvärden som behövs för kommunikation. De flesta aktiviteter i mesh-nätverket sker på den obligatoriska primärkanalen. Om du inte delar din primärkanal blir din första delade kanal primärkanalen på det andra nätverket. Andra kanaler är för privata grupper, varje med sin egen nyckel."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En Meshtastic QR-kod innehåller LoRa-konfigurationen och kanalvärdena som behövs för att radion ska kunna kommunicera. Du kan dela en komplett kanalkonfiguration med alternativet Ersätt kanaler, om du väljer Lägg till kanaler kommer dina delade kanaler att läggas till kanalerna på den mottagande radion."
           }
         },
         "zh-Hans" : {
