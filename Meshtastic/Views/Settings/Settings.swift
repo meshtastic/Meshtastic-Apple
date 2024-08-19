@@ -17,6 +17,8 @@ struct Settings: View {
 	@FetchRequest(
 		sortDescriptors: [
 			NSSortDescriptor(key: "favorite", ascending: false),
+			NSSortDescriptor(key: "user.pkiEncrypted", ascending: false),
+			NSSortDescriptor(key: "viaMqtt", ascending: true),
 			NSSortDescriptor(key: "user.longName", ascending: true)
 		],
 		animation: .default

@@ -129,6 +129,15 @@ struct SecurityConfig: View {
 		.onChange(of: adminKey) { _ in
 			hasChanges = true
 		}
+		.onFirstAppear {
+			// Need to request a Power config from the remote node before allowing changes
+			if bleManager.connectedPeripheral != nil && node?.securityConfig == nil {
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
+				if node != nil && connectedNode != nil {
+					_ = bleManager.requestSecurityConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				}
+			}
+		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			guard let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context),
