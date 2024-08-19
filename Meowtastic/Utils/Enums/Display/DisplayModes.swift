@@ -18,13 +18,13 @@ enum DisplayModes: Int, CaseIterable, Identifiable {
 			return "Default 128x64 screen layout"
 
 		case .twoColor:
-			return "Optimized for 2 color display"
+			return "Optimized for 2-color display"
 
 		case .inverted:
-			return "Inverted top bar for 2 color display"
+			return "Inverted top bar; 2-color display"
 
 		case .color:
-			return "TFT full color display"
+			return "Full color display"
 		}
 	}
 

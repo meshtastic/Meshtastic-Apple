@@ -50,6 +50,7 @@ struct PositionConfig: View {
 		VStack {
 			Form {
 				ConfigHeader(title: "Position", config: \.positionConfig, node: node)
+
 				positionPacketSection
 				deviceGPSSection
 				positionFlagsSection
@@ -61,13 +62,15 @@ struct PositionConfig: View {
 			.disabled(self.bleManager.deviceConnected == nil || node?.positionConfig == nil)
 			.alert(setFixedAlertTitle, isPresented: $showingSetFixedAlert) {
 				Button("Cancel", role: .cancel) {
-					fixedPosition = !fixedPosition
+					fixedPosition.toggle()
 				}
+
 				if node?.positionConfig?.fixedPosition ?? false {
 					Button("Remove", role: .destructive) {
 						removeFixedPosition()
 					}
-				} else {
+				}
+				else {
 					Button("Set") {
 						setFixedPosition()
 					}
@@ -86,10 +89,14 @@ struct PositionConfig: View {
 
 			setPositionValues()
 
-			supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
+			supportedVersion = bleManager.connectedVersion == "0.0.0"
+			||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending
+			|| minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
+
 			// Need to request a PositionConfig from the remote node before allowing changes
 			if let connectedPeripheral = bleManager.deviceConnected, node?.positionConfig == nil {
 				Logger.mesh.info("empty position config")
+
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let node, let connectedNode {
 					nodeConfig.requestPositionConfig(
@@ -100,47 +107,46 @@ struct PositionConfig: View {
 				}
 			}
 		}
-		.onChange(of: fixedPosition) { newFixed in
+		.onChange(of: fixedPosition) {
 			if supportedVersion {
 				if let positionConfig = node?.positionConfig {
-					/// Fixed Position is off to start
-					if !positionConfig.fixedPosition && newFixed {
+					if !positionConfig.fixedPosition && fixedPosition {
 						showingSetFixedAlert = true
-					} else if positionConfig.fixedPosition && !newFixed {
-						/// Fixed Position is on to start
+					}
+					else if positionConfig.fixedPosition && !fixedPosition {
 						showingSetFixedAlert = true
 					}
 				}
 			}
 		}
-		.onChange(of: gpsMode) { _ in
+		.onChange(of: gpsMode) {
 			handleChanges()
 		}
-		.onChange(of: rxGpio) { _ in
+		.onChange(of: rxGpio) {
 			handleChanges()
 		}
-		.onChange(of: txGpio) { _ in
+		.onChange(of: txGpio) {
 			handleChanges()
 		}
-		.onChange(of: gpsEnGpio) { _ in
+		.onChange(of: gpsEnGpio) {
 			handleChanges()
 		}
-		.onChange(of: smartPositionEnabled) { _ in
+		.onChange(of: smartPositionEnabled) {
 			handleChanges()
 		}
-		.onChange(of: positionBroadcastSeconds) { _ in
+		.onChange(of: positionBroadcastSeconds) {
 			handleChanges()
 		}
-		.onChange(of: broadcastSmartMinimumIntervalSecs) { _ in
+		.onChange(of: broadcastSmartMinimumIntervalSecs) {
 			handleChanges()
 		}
-		.onChange(of: broadcastSmartMinimumDistance) { _ in
+		.onChange(of: broadcastSmartMinimumDistance) {
 			handleChanges()
 		}
-		.onChange(of: gpsUpdateInterval) { _ in
+		.onChange(of: gpsUpdateInterval) {
 			handleChanges()
 		}
-		.onChange(of: positionFlags) { _ in
+		.onChange(of: positionFlags) {
 			handleChanges()
 		}
 	}
@@ -182,15 +188,15 @@ struct PositionConfig: View {
 				}
 
 				VStack(alignment: .leading) {
+					let options = [0, 10, 25, 50, 75, 100, 125, 150]
 					Picker("Minimum Distance", selection: $broadcastSmartMinimumDistance) {
-						ForEach(10..<151) {
+						ForEach(options, id: \.self) {
 							if $0 == 0 {
-								Text("unset")
-							} else {
-								if $0.isMultiple(of: 5) {
-									Text("\($0)")
-										.tag($0)
-								}
+								Text("Unset")
+							}
+							else {
+								Text("\($0)")
+									.tag($0)
 							}
 						}
 					}
@@ -211,13 +217,13 @@ struct PositionConfig: View {
 				ForEach(GPSMode.allCases, id: \.self) { at in
 					Text(at.description)
 						.tag(at.id)
-
 				}
 			}
 			.pickerStyle(SegmentedPickerStyle())
 			.padding(.top, 5)
 			.padding(.bottom, 5)
 			.disabled(fixedPosition && !(gpsMode == 1))
+
 			if gpsMode == 1 {
 				Text("Positions will be provided by your device GPS, if you select disabled or not present you can set a fixed position.")
 					.foregroundColor(.gray)
