@@ -22,7 +22,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 
 ///
 /// Font sizes for the device screen
-public enum ScreenFonts: SwiftProtobuf.Enum, Swift.CaseIterable {
+public enum ScreenFonts: SwiftProtobuf.Enum {
   public typealias RawValue = Int
 
   ///
@@ -60,18 +60,24 @@ public enum ScreenFonts: SwiftProtobuf.Enum, Swift.CaseIterable {
     }
   }
 
+}
+
+#if swift(>=4.2)
+
+extension ScreenFonts: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   public static let allCases: [ScreenFonts] = [
     .fontSmall,
     .fontMedium,
     .fontLarge,
   ]
-
 }
+
+#endif  // swift(>=4.2)
 
 ///
 /// Position with static location information only for NodeDBLite
-public struct PositionLite: Sendable {
+public struct PositionLite {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -106,7 +112,52 @@ public struct PositionLite: Sendable {
   public init() {}
 }
 
-public struct NodeInfoLite: @unchecked Sendable {
+public struct UserLite {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// This is the addr of the radio.
+  public var macaddr: Data = Data()
+
+  ///
+  /// A full name for this user, i.e. "Kevin Hester"
+  public var longName: String = String()
+
+  ///
+  /// A VERY short name, ideally two characters.
+  /// Suitable for a tiny OLED screen
+  public var shortName: String = String()
+
+  ///
+  /// TBEAM, HELTEC, etc...
+  /// Starting in 1.2.11 moved to hw_model enum in the NodeInfo object.
+  /// Apps will still need the string here for older builds
+  /// (so OTA update can find the right image), but if the enum is available it will be used instead.
+  public var hwModel: HardwareModel = .unset
+
+  ///
+  /// In some regions Ham radio operators have different bandwidth limitations than others.
+  /// If this user is a licensed operator, set this flag.
+  /// Also, "long_name" should be their licence number.
+  public var isLicensed: Bool = false
+
+  ///
+  /// Indicates that the user's role in the mesh
+  public var role: Config.DeviceConfig.Role = .client
+
+  ///
+  /// The public key of the user's device.
+  /// This is sent out to other nodes on the mesh to allow them to compute a shared secret key.
+  public var publicKey: Data = Data()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct NodeInfoLite {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -120,8 +171,8 @@ public struct NodeInfoLite: @unchecked Sendable {
 
   ///
   /// The user info for this node
-  public var user: User {
-    get {return _storage._user ?? User()}
+  public var user: UserLite {
+    get {return _storage._user ?? UserLite()}
     set {_uniqueStorage()._user = newValue}
   }
   /// Returns true if `user` has been explicitly set.
@@ -209,7 +260,7 @@ public struct NodeInfoLite: @unchecked Sendable {
 /// FIXME, since we write this each time we enter deep sleep (and have infinite
 /// flash) it would be better to use some sort of append only data structure for
 /// the receive queue and use the preferences store for the other stuff
-public struct DeviceState: @unchecked Sendable {
+public struct DeviceState {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -269,8 +320,6 @@ public struct DeviceState: @unchecked Sendable {
   /// Used only during development.
   /// Indicates developer is testing and changes should never be saved to flash.
   /// Deprecated in 2.3.1
-  ///
-  /// NOTE: This field was marked as deprecated in the .proto file.
   public var noSave: Bool {
     get {return _storage._noSave}
     set {_uniqueStorage()._noSave = newValue}
@@ -319,7 +368,7 @@ public struct DeviceState: @unchecked Sendable {
 
 ///
 /// The on-disk saved channels
-public struct ChannelFile: Sendable {
+public struct ChannelFile {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -342,7 +391,7 @@ public struct ChannelFile: Sendable {
 ///
 /// This can be used for customizing the firmware distribution. If populated,
 /// show a secondary bootup screen with custom logo and text for 2.5 seconds.
-public struct OEMStore: @unchecked Sendable {
+public struct OEMStore {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -400,6 +449,16 @@ public struct OEMStore: @unchecked Sendable {
   fileprivate var _oemLocalConfig: LocalConfig? = nil
   fileprivate var _oemLocalModuleConfig: LocalModuleConfig? = nil
 }
+
+#if swift(>=5.5) && canImport(_Concurrency)
+extension ScreenFonts: @unchecked Sendable {}
+extension PositionLite: @unchecked Sendable {}
+extension UserLite: @unchecked Sendable {}
+extension NodeInfoLite: @unchecked Sendable {}
+extension DeviceState: @unchecked Sendable {}
+extension ChannelFile: @unchecked Sendable {}
+extension OEMStore: @unchecked Sendable {}
+#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
@@ -469,6 +528,74 @@ extension PositionLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
+extension UserLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".UserLite"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "macaddr"),
+    2: .standard(proto: "long_name"),
+    3: .standard(proto: "short_name"),
+    4: .standard(proto: "hw_model"),
+    5: .standard(proto: "is_licensed"),
+    6: .same(proto: "role"),
+    7: .standard(proto: "public_key"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBytesField(value: &self.macaddr) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.longName) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.shortName) }()
+      case 4: try { try decoder.decodeSingularEnumField(value: &self.hwModel) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self.isLicensed) }()
+      case 6: try { try decoder.decodeSingularEnumField(value: &self.role) }()
+      case 7: try { try decoder.decodeSingularBytesField(value: &self.publicKey) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.macaddr.isEmpty {
+      try visitor.visitSingularBytesField(value: self.macaddr, fieldNumber: 1)
+    }
+    if !self.longName.isEmpty {
+      try visitor.visitSingularStringField(value: self.longName, fieldNumber: 2)
+    }
+    if !self.shortName.isEmpty {
+      try visitor.visitSingularStringField(value: self.shortName, fieldNumber: 3)
+    }
+    if self.hwModel != .unset {
+      try visitor.visitSingularEnumField(value: self.hwModel, fieldNumber: 4)
+    }
+    if self.isLicensed != false {
+      try visitor.visitSingularBoolField(value: self.isLicensed, fieldNumber: 5)
+    }
+    if self.role != .client {
+      try visitor.visitSingularEnumField(value: self.role, fieldNumber: 6)
+    }
+    if !self.publicKey.isEmpty {
+      try visitor.visitSingularBytesField(value: self.publicKey, fieldNumber: 7)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: UserLite, rhs: UserLite) -> Bool {
+    if lhs.macaddr != rhs.macaddr {return false}
+    if lhs.longName != rhs.longName {return false}
+    if lhs.shortName != rhs.shortName {return false}
+    if lhs.hwModel != rhs.hwModel {return false}
+    if lhs.isLicensed != rhs.isLicensed {return false}
+    if lhs.role != rhs.role {return false}
+    if lhs.publicKey != rhs.publicKey {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeInfoLite"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -486,7 +613,7 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
 
   fileprivate class _StorageClass {
     var _num: UInt32 = 0
-    var _user: User? = nil
+    var _user: UserLite? = nil
     var _position: PositionLite? = nil
     var _snr: Float = 0
     var _lastHeard: UInt32 = 0
@@ -568,7 +695,7 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       try { if let v = _storage._position {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
       } }()
-      if _storage._snr.bitPattern != 0 {
+      if _storage._snr != 0 {
         try visitor.visitSingularFloatField(value: _storage._snr, fieldNumber: 4)
       }
       if _storage._lastHeard != 0 {

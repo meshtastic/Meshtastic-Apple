@@ -20,7 +20,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
-public struct XModem: @unchecked Sendable {
+public struct XModem {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -35,7 +35,7 @@ public struct XModem: @unchecked Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum Control: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public enum Control: SwiftProtobuf.Enum {
     public typealias RawValue = Int
     case nul // = 0
     case soh // = 1
@@ -79,22 +79,33 @@ public struct XModem: @unchecked Sendable {
       }
     }
 
-    // The compiler won't synthesize support with the UNRECOGNIZED case.
-    public static let allCases: [XModem.Control] = [
-      .nul,
-      .soh,
-      .stx,
-      .eot,
-      .ack,
-      .nak,
-      .can,
-      .ctrlz,
-    ]
-
   }
 
   public init() {}
 }
+
+#if swift(>=4.2)
+
+extension XModem.Control: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [XModem.Control] = [
+    .nul,
+    .soh,
+    .stx,
+    .eot,
+    .ack,
+    .nak,
+    .can,
+    .ctrlz,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
+#if swift(>=5.5) && canImport(_Concurrency)
+extension XModem: @unchecked Sendable {}
+extension XModem.Control: @unchecked Sendable {}
+#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
