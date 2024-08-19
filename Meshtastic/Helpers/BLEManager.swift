@@ -392,9 +392,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getDeviceMetadataRequest = true
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.to = UInt32(toUser.num)
@@ -1152,11 +1149,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			guard let lastLocation = LocationsHandler.shared.locationsArray.last else {
 				return nil
 			}
-		
+
 			if lastLocation == CLLocation(latitude: 0, longitude: 0) {
 				return nil
 			}
-			
+
 			positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
 			positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
 			let timestamp = lastLocation.timestamp
@@ -2540,9 +2537,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.bluetoothConfig
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -2573,9 +2567,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.deviceConfig
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -2606,9 +2597,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.displayConfig
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -2639,9 +2627,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.loraConfig
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -2674,9 +2659,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.networkConfig
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -2706,9 +2688,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.positionConfig
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -2738,9 +2717,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.powerConfig
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -2770,9 +2746,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.securityConfig
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -2802,9 +2775,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.ambientlightingConfig
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -2834,9 +2804,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.cannedmsgConfig
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -2866,9 +2833,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.extnotifConfig
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -2898,9 +2862,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.paxcounterConfig
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -2930,9 +2891,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getRingtoneRequest = true
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -2962,9 +2920,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.rangetestConfig
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -2994,9 +2949,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.mqttConfig
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -3026,9 +2978,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.detectionsensorConfig
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -3058,9 +3007,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.serialConfig
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -3090,9 +3036,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.storeforwardConfig
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -3123,9 +3066,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.telemetryConfig
 		adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
