@@ -186,16 +186,15 @@ struct PositionConfig: View {
 				}
 
 				VStack(alignment: .leading) {
+					let options = [0, 10, 25, 50, 75, 100, 125, 150]
 					Picker("Minimum Distance", selection: $broadcastSmartMinimumDistance) {
-						ForEach(10..<151) {
+						ForEach(options, id: \.self) {
 							if $0 == 0 {
 								Text("Unset")
 							}
 							else {
-								if $0.isMultiple(of: 25) {
-									Text("\($0)")
-										.tag($0)
-								}
+								Text("\($0)")
+									.tag($0)
 							}
 						}
 					}
@@ -216,13 +215,13 @@ struct PositionConfig: View {
 				ForEach(GPSMode.allCases, id: \.self) { at in
 					Text(at.description)
 						.tag(at.id)
-
 				}
 			}
 			.pickerStyle(SegmentedPickerStyle())
 			.padding(.top, 5)
 			.padding(.bottom, 5)
 			.disabled(fixedPosition && !(gpsMode == 1))
+
 			if gpsMode == 1 {
 				Text("Positions will be provided by your device GPS, if you select disabled or not present you can set a fixed position.")
 					.foregroundColor(.gray)
