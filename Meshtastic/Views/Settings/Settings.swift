@@ -343,8 +343,6 @@ struct Settings: View {
 					}
 				}
 
-				let hasAdmin = node?.myInfo?.adminIndex ?? 0 > 0
-
 				if !(node?.deviceConfig?.isManaged ?? false) {
 					if bleManager.connectedPeripheral != nil {
 						Section("Configure") {
@@ -376,7 +374,7 @@ struct Settings: View {
 												Image(systemName: "av.remote")
 											}
 											.tag(Int(node.num))
-										} else if hasAdmin || node.user?.pkiEncrypted ?? false {
+										} else {
 											Label {
 												Text("Request Admin: \(node.user?.longName ?? "unknown".localized)")
 											} icon: {
