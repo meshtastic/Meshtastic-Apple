@@ -17,6 +17,8 @@ struct Settings: View {
 	@FetchRequest(
 		sortDescriptors: [
 			NSSortDescriptor(key: "favorite", ascending: false),
+			NSSortDescriptor(key: "user.pkiEncrypted", ascending: false),
+			NSSortDescriptor(key: "viaMqtt", ascending: true),
 			NSSortDescriptor(key: "user.longName", ascending: true)
 		],
 		animation: .default
@@ -72,6 +74,14 @@ struct Settings: View {
 				}
 			}
 			.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
+
+			NavigationLink(value: SettingsNavigationState.security) {
+				Label {
+					Text("Security")
+				} icon: {
+					Image(systemName: "lock.shield")
+				}
+			}
 
 			NavigationLink(value: SettingsNavigationState.shareQRCode) {
 				Label {
@@ -335,18 +345,16 @@ struct Settings: View {
 					}
 				}
 
-				let hasAdmin = node?.myInfo?.adminIndex ?? 0 > 0
-
 				if !(node?.deviceConfig?.isManaged ?? false) {
 					if bleManager.connectedPeripheral != nil {
 						Section("Configure") {
-							if hasAdmin {
+							if node?.canRemoteAdmin ?? false {
 								Picker("Configuring Node", selection: $selectedNode) {
 									if selectedNode == 0 {
 										Text("Connect to a Node").tag(0)
 									}
-
 									ForEach(nodes) { node in
+										/// Connected Node
 										if node.num == bleManager.connectedPeripheral?.num ?? 0 {
 											Label {
 												Text("BLE: \(node.user?.longName ?? "unknown".localized)")
@@ -354,16 +362,30 @@ struct Settings: View {
 												Image(systemName: "antenna.radiowaves.left.and.right")
 											}
 											.tag(Int(node.num))
-										} else if node.metadata != nil {
+										} else if node.canRemoteAdmin && UserDefaults.enableAdministration && node.sessionPasskey != nil { /// Nodes using the new PKI system
 											Label {
-												Text("Remote: \(node.user?.longName ?? "unknown".localized)")
+												Text("Remote PKI Admin: \(node.user?.longName ?? "unknown".localized)")
 											} icon: {
 												Image(systemName: "av.remote")
 											}
 											.tag(Int(node.num))
-										} else if hasAdmin {
+										} else if  !UserDefaults.enableAdministration && node.metadata != nil { /// Nodes using the old admin system
 											Label {
-												Text("Request Admin: \(node.user?.longName ?? "unknown".localized)")
+												Text("Remote Legacy Admin: \(node.user?.longName ?? "unknown".localized)")
+											} icon: {
+												Image(systemName: "av.remote")
+											}
+											.tag(Int(node.num))
+										} else if UserDefaults.enableAdministration && node.user?.pkiEncrypted ?? false {
+											Label {
+												Text("Request PKI Admin: \(node.user?.longName ?? "unknown".localized)")
+											} icon: {
+												Image(systemName: "rectangle.and.hand.point.up.left")
+											}
+											.tag(Int(node.num))
+										} else if !UserDefaults.enableAdministration {
+											Label {
+												Text("Request Legacy Admin: \(node.user?.longName ?? "unknown".localized)")
 											} icon: {
 												Image(systemName: "rectangle.and.hand.point.up.left")
 											}
@@ -378,7 +400,7 @@ struct Settings: View {
 										let node = nodes.first(where: { $0.num == newValue })
 										let connectedNode = nodes.first(where: { $0.num == preferredNodeNum })
 										preferredNodeNum = Int(connectedNode?.num ?? 0)// Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
-										if connectedNode != nil && connectedNode?.user != nil && connectedNode?.myInfo != nil && node?.user != nil && node?.metadata == nil {
+										if connectedNode != nil && connectedNode?.user != nil && connectedNode?.myInfo != nil && node?.user != nil {// && node?.metadata == nil {
 											let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
 											if adminMessageId > 0 {
 												Logger.mesh.info("Sent node metadata request from node details")
@@ -461,6 +483,8 @@ struct Settings: View {
 					PaxCounterConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .ringtone:
 					RtttlConfig(node: nodes.first(where: { $0.num == selectedNode }))
+				case .security:
+					SecurityConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .serial:
 					SerialConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .storeAndForward:

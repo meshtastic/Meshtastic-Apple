@@ -72,12 +72,16 @@ struct RangeTestConfig: View {
 				}
 			}
 			.navigationTitle("range.test.config")
-			.navigationBarItems(trailing:
-				ZStack {
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-			})
+			.navigationBarItems(
+				trailing: ZStack {
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: bleManager.connectedPeripheral?.shortName ?? "?"
+					)
+				}
+			)
 			.onAppear {
-				setRangeTestValues()
 				// Need to request a RangeTestModule Config from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.rangeTestConfig == nil {
 					Logger.mesh.debug("empty range test module config")
@@ -87,20 +91,14 @@ struct RangeTestConfig: View {
 					}
 				}
 			}
-			.onChange(of: enabled) { newEnabled in
-				if node != nil && node!.rangeTestConfig != nil {
-					if newEnabled != node!.rangeTestConfig!.enabled { hasChanges = true }
-				}
+			.onChange(of: enabled) {
+				if $0 != node?.rangeTestConfig?.enabled { hasChanges = true }
 			}
-			.onChange(of: save) { newSave in
-				if node != nil && node!.rangeTestConfig != nil {
-					if newSave != node!.rangeTestConfig!.save { hasChanges = true }
-				}
+			.onChange(of: save) {
+				if $0 != node?.rangeTestConfig?.save { hasChanges = true }
 			}
-			.onChange(of: sender) { newSender in
-				if node != nil && node!.rangeTestConfig != nil {
-					if newSender != node!.rangeTestConfig!.sender { hasChanges = true }
-				}
+			.onChange(of: sender) {
+				if $0 != node?.rangeTestConfig?.sender ?? -1 { hasChanges = true }
 			}
 		}
 	}

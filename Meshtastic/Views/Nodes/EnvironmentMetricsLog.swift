@@ -93,6 +93,12 @@ struct EnvironmentMetricsLog: View {
 									IndoorAirQuality(iaq: Int(em.iaq), displayMode: IaqDisplayMode.dot )
 								}
 							}
+							TableColumn("Wind Speed") { em in
+								Text("\(String(format: "%.1f", em.windSpeed)) hPa")
+							}
+							TableColumn("Wind Direction") { em in
+								Text("\(String(format: "%.1f", em.windDirection)) hPa")
+							}
 							TableColumn("timestamp") { em in
 								Text(em.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 							}

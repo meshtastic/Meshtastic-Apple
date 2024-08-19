@@ -19,7 +19,8 @@ extension MessageEntity {
 	}
 
 	var canRetry: Bool {
-		return ackError == 9 || ackError == 5 || ackError == 3
+		let re = RoutingError(rawValue: Int(ackError))
+		return re?.canRetry ?? false
 	}
 
 	var tapbacks: [MessageEntity] {

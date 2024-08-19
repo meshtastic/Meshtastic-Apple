@@ -23,11 +23,12 @@ struct ConfigHeader<T>: View {
 					.foregroundColor(.orange)
 			} else {
 				Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
+					.onFirstAppear(onAppear)
 					.font(.title3)
-					.onAppear(perform: onAppear)
 			}
 		} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? -1 {
 			Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
+				.onFirstAppear(onAppear)
 		} else {
 			Text("Please connect to a radio to configure settings.")
 				.font(.callout)

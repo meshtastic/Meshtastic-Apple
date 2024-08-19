@@ -119,7 +119,6 @@ struct PowerConfig: View {
 		}
 		.onAppear {
 			Api().loadDeviceHardwareData { (hw) in
-
 				for device in hw {
 					let currentHardware = node?.user?.hwModel ?? "UNSET"
 					let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "")
@@ -128,8 +127,6 @@ struct PowerConfig: View {
 					}
 				}
 			}
-			setPowerValues()
-
 			// Need to request a Power config from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.powerConfig == nil {
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
@@ -139,40 +136,30 @@ struct PowerConfig: View {
 			}
 		}
 		.onChange(of: isPowerSaving) {
-			if let val = node?.powerConfig?.isPowerSaving {
-				hasChanges = $0 != val
-			}
+			if $0 != node?.powerConfig?.isPowerSaving { hasChanges = true }
 		}
-		.onChange(of: shutdownOnPowerLoss) { _ in
-			hasChanges = true
+		.onChange(of: shutdownOnPowerLoss) { newShutdownOnPowerLoss in
+			if newShutdownOnPowerLoss {
+				hasChanges = true
+			}
 		}
 		.onChange(of: shutdownAfterSecs) {
-			if let val = node?.powerConfig?.onBatteryShutdownAfterSecs {
-				hasChanges = $0 != val
-			}
+			if $0 != node?.powerConfig?.minWakeSecs ?? -1 { hasChanges = true }
 		}
 		.onChange(of: adcOverride) { _ in
 			hasChanges = true
 		}
-		.onChange(of: adcMultiplier) {
-			if let val = node?.powerConfig?.adcMultiplierOverride {
-				hasChanges = $0 != val
-			}
+		.onChange(of: adcMultiplier) { newAdcMultiplier in
+			if newAdcMultiplier != node?.powerConfig?.adcMultiplierOverride ?? -1 { hasChanges = true }
 		}
 		.onChange(of: waitBluetoothSecs) {
-			if let val = node?.powerConfig?.waitBluetoothSecs {
-				hasChanges = $0 != val
-			}
+			if $0 != node?.powerConfig?.waitBluetoothSecs ?? -1 { hasChanges = true }
 		}
 		.onChange(of: lsSecs) {
-			if let val = node?.powerConfig?.lsSecs {
-				hasChanges = $0 != val
-			}
+			if $0 != node?.powerConfig?.lsSecs ?? -1 { hasChanges = true }
 		}
 		.onChange(of: minWakeSecs) {
-			if let val = node?.powerConfig?.minWakeSecs {
-				hasChanges = $0 != val
-			}
+			if $0 != node?.powerConfig?.minWakeSecs ?? -1 { hasChanges = true }
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {

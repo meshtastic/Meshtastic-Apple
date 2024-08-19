@@ -104,8 +104,8 @@ extension NSPersistentContainer {
 	}
 
 	/// Restore backup persistent stores located in the directory referenced by `backupURL`.
-	 ///
-	 /// **Be very careful with this**. To restore a persistent store, the current persistent store must be removed from the container. When that happens, **all currently loaded Core Data objects** will become invalid. Using them after restoring will cause your app to crash. When calling this method you **must** ensure that you do not continue to use any previously fetched managed objects or existing fetched results controllers. **If this method does not throw, that does not mean your app is safe.** You need to take extra steps to prevent crashes. The details vary depending on the nature of your app.
+	/// **Be very careful with this**. To restore a persistent store, the current persistent store must be removed from the container. When that happens, **all currently loaded Core Data objects** will become invalid. Using them after restoring will cause your app to crash. 
+	/// When calling this method you **must** ensure that you do not continue to use any previously fetched managed objects or existing fetched results controllers. **If this method does not throw, that does not mean your app is safe.** You need to take extra steps to prevent crashes. The details vary depending on the nature of your app.
 	 /// - Parameter backupURL: A file URL containing backup copies of all currently loaded persistent stores.
 	 /// - Throws: `CopyPersistentStoreError` in various situations.
 	 /// - Returns: Nothing. If no errors are thrown, the restore is complete.

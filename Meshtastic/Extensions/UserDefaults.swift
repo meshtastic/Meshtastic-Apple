@@ -71,6 +71,7 @@ extension UserDefaults {
 		case modemPreset
 		case firmwareVersion
 		case environmentEnableWeatherKit
+		case enableAdministration
 		case testIntEnum
 	}
 
@@ -161,6 +162,9 @@ extension UserDefaults {
 
 	@UserDefault(.environmentEnableWeatherKit, defaultValue: true)
 	static var environmentEnableWeatherKit: Bool
+
+	@UserDefault(.enableAdministration, defaultValue: false)
+	static var enableAdministration: Bool
 
 	@UserDefault(.testIntEnum, defaultValue: .one)
 	static var testIntEnum: TestIntEnum

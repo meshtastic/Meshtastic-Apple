@@ -58,7 +58,6 @@ struct PaxCounterConfig: View {
 			)
 		})
 		.onAppear {
-			setPaxValues()
 			// Need to request a PAX Counter module config from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.paxCounterConfig == nil {
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
@@ -68,14 +67,10 @@ struct PaxCounterConfig: View {
 			}
 		}
 		.onChange(of: enabled) {
-			if let val = node?.paxCounterConfig?.enabled {
-				hasChanges = $0 != val
-			}
+			if $0 != node?.paxCounterConfig?.enabled { hasChanges = true }
 		}
 		.onChange(of: paxcounterUpdateInterval) {
-			if let val = node?.paxCounterConfig?.updateInterval {
-				hasChanges = $0 != val
-			}
+			if $0 != node?.paxCounterConfig?.updateInterval ?? -1 { hasChanges = true }
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {

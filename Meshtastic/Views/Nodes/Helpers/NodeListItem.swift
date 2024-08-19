@@ -23,14 +23,16 @@ struct NodeListItem: View {
 					VStack(alignment: .leading) {
 						CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 70)
 							.padding(.trailing, 5)
-						BatteryLevelCompact(node: node, font: .caption, iconFont: .callout, color: .accentColor)
-							.padding(.trailing, 5)
+						if node.latestDeviceMetrics != nil {
+							BatteryCompact(batteryLevel: node.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
+								.padding(.trailing, 5)
+						}
 					}
 					VStack(alignment: .leading) {
 						HStack {
 							Text(node.user?.longName ?? "unknown".localized)
-								.fontWeight(.medium)
 								.font(.headline)
+								.allowsTightening(true)
 							if node.favorite {
 								Spacer()
 								Image(systemName: "star.fill")
@@ -98,7 +100,7 @@ struct NodeListItem: View {
 												DistanceText(meters: metersAway)
 													.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 													.foregroundColor(.gray)
-												let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: CLLocation(latitude: lastPostion.coordinate.latitude, longitude: lastPostion.coordinate.longitude))
+												let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: nodeCoord)
 												let headingDegrees = Angle.degrees(trueBearing)
 												Image(systemName: "location.north")
 													.font(.callout)
@@ -124,7 +126,7 @@ struct NodeListItem: View {
 											DistanceText(meters: metersAway)
 												.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 												.foregroundColor(.secondary)
-											let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: CLLocation(latitude: lastPostion.coordinate.latitude, longitude: lastPostion.coordinate.longitude))
+											let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: nodeCoord)
 											let headingDegrees = Angle.degrees(trueBearing)
 											Image(systemName: "location.north")
 												.font(.callout)
@@ -145,7 +147,6 @@ struct NodeListItem: View {
 								HStack {
 									Image(systemName: "\(node.channel).circle.fill")
 										.font(.title2)
-										.symbolRenderingMode(.multicolor)
 										.frame(width: 30)
 									Text("Channel")
 										.foregroundColor(.secondary)
@@ -216,7 +217,6 @@ struct NodeListItem: View {
 									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 								Image(systemName: "\(node.hopsAway).square")
 									.font(.title2)
-									.symbolRenderingMode(.multicolor)
 							}
 						} else {
 							if node.snr != 0 && !node.viaMqtt {

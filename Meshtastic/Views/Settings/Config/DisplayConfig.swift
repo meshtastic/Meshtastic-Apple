@@ -154,13 +154,16 @@ struct DisplayConfig: View {
 		}
 
 		.navigationTitle("display.config")
-		.navigationBarItems(trailing:
-			ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
 		.onAppear {
-			setDisplayValues()
-
 			// Need to request a LoRaConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.displayConfig == nil {
 				Logger.mesh.info("empty display config")
@@ -171,49 +174,31 @@ struct DisplayConfig: View {
 			}
 		}
 		.onChange(of: screenOnSeconds) { newScreenSecs in
-			if node != nil && node!.displayConfig != nil {
-				if newScreenSecs != node!.displayConfig!.screenOnSeconds { hasChanges = true }
-			}
+			if newScreenSecs != node?.displayConfig?.screenOnSeconds ?? -1 { hasChanges = true }
 		}
 		.onChange(of: screenCarouselInterval) { newCarouselSecs in
-			if node != nil && node!.displayConfig != nil {
-				if newCarouselSecs != node!.displayConfig!.screenCarouselInterval { hasChanges = true }
-			}
+			if newCarouselSecs != node?.displayConfig?.screenCarouselInterval ?? -1 { hasChanges = true }
 		}
-		.onChange(of: compassNorthTop) { newCompassNorthTop in
-			if node != nil && node!.displayConfig != nil {
-				if newCompassNorthTop != node!.displayConfig!.compassNorthTop { hasChanges = true }
-			}
+		.onChange(of: compassNorthTop) {
+			if $0 != node?.displayConfig?.compassNorthTop { hasChanges = true }
 		}
-		.onChange(of: wakeOnTapOrMotion) { newWakeOnTapOrMotion in
-			if node != nil && node!.displayConfig != nil {
-				if newWakeOnTapOrMotion != node!.displayConfig!.wakeOnTapOrMotion { hasChanges = true }
-			}
+		.onChange(of: wakeOnTapOrMotion) {
+			if $0 != node?.displayConfig?.wakeOnTapOrMotion { hasChanges = true }
 		}
 		.onChange(of: gpsFormat) { newGpsFormat in
-			if node != nil && node!.displayConfig != nil {
-				if newGpsFormat != node!.displayConfig!.gpsFormat { hasChanges = true }
-			}
+			if newGpsFormat != node?.displayConfig?.gpsFormat ?? -1 { hasChanges = true }
 		}
-		.onChange(of: flipScreen) { newFlipScreen in
-			if node != nil && node!.displayConfig != nil {
-				if newFlipScreen != node!.displayConfig!.flipScreen { hasChanges = true }
-			}
+		.onChange(of: flipScreen) {
+			if $0 != node?.displayConfig?.flipScreen { hasChanges = true }
 		}
 		.onChange(of: oledType) { newOledType in
-			if node != nil && node!.displayConfig != nil {
-				if newOledType != node!.displayConfig!.oledType { hasChanges = true }
-			}
+			if newOledType != node?.displayConfig?.oledType ?? -1 { hasChanges = true }
 		}
 		.onChange(of: displayMode) { newDisplayMode in
-			if node != nil && node!.displayConfig != nil {
-				if newDisplayMode != node!.displayConfig!.displayMode { hasChanges = true }
-			}
+			if newDisplayMode != node?.displayConfig?.displayMode ?? -1 { hasChanges = true }
 		}
 		.onChange(of: units) { newUnits in
-			if node != nil && node!.displayConfig != nil {
-				if newUnits != node!.displayConfig!.units { hasChanges = true }
-			}
+			if newUnits != node?.displayConfig?.units ?? -1 { hasChanges = true }
 		}
 	}
 	func setDisplayValues() {

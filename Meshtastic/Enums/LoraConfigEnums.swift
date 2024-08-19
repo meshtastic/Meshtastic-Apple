@@ -210,6 +210,7 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 	case medFast = 4
 	case shortSlow = 5
 	case shortFast = 6
+	case shortTurbo = 8
 
 	var id: Int { self.rawValue }
 	var description: String {
@@ -230,6 +231,8 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return "Short Range - Slow"
 		case .shortFast:
 			return "Short Range - Fast"
+		case .shortTurbo:
+			return "Short Range - Turbo"
 		}
 	}
 	var name: String {
@@ -250,6 +253,8 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return "ShortSlow"
 		case .shortFast:
 			return "ShortFast"
+		case .shortTurbo:
+			return "ShortTurbo"
 		}
 	}
 	func snrLimit() -> Float {
@@ -269,6 +274,8 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 		case .shortSlow:
 			return -10
 		case .shortFast:
+			return -7.5
+		case .shortTurbo:
 			return -7.5
 		}
 	}
@@ -290,6 +297,8 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return Config.LoRaConfig.ModemPreset.shortSlow
 		case .shortFast:
 			return Config.LoRaConfig.ModemPreset.shortFast
+		case .shortTurbo:
+			return Config.LoRaConfig.ModemPreset.shortTurbo
 		}
 	}
 }

@@ -44,6 +44,24 @@ struct NodeDetail: View {
 					NodeInfoItem(node: node)
 				}
 				Section("Node") {
+					if let user = node.user {
+						if !user.keyMatch {
+							Label {
+								VStack(alignment: .leading) {
+									Text("Public Key Mismatch")
+										.font(.title3)
+										.foregroundStyle(.red)
+									Text("The public key does not match the recorded key. You may delete the node and let it exchange keys again, but this may indicate a more serious security problem. Contact the user through another trusted channel, to determine if the key change was due to a factory reset or other intentional action.")
+										.font(.caption)
+										.foregroundStyle(.red)
+								}
+							} icon: {
+								Image(systemName: "key.slash.fill")
+									.symbolRenderingMode(.multicolor)
+									.foregroundStyle(.red)
+							}
+						}
+					}
 					HStack {
 						Label {
 							Text("Node Number")

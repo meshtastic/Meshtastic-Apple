@@ -50,10 +50,6 @@ struct AmbientLightingConfig: View {
 						Stepper("Current: \(current)", value: $current, in: 0...31, step: 1)
 							.padding(5)
 					}
-					.onChange(of: color, initial: true) {
-						components = color.resolve(in: environment)
-						hasChanges = true
-					}
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.ambientLightingConfig == nil)
@@ -80,12 +76,16 @@ struct AmbientLightingConfig: View {
 				}
 			}
 			.navigationTitle("ambient.lighting.config")
-			.navigationBarItems(trailing:
-				ZStack {
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-			})
+			.navigationBarItems(
+				trailing: ZStack {
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: bleManager.connectedPeripheral?.shortName ?? "?"
+					)
+				}
+			)
 			.onAppear {
-				setAmbientLightingConfigValue()
 				// Need to request a Ambient Lighting Config from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.ambientLightingConfig == nil {
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
@@ -94,9 +94,19 @@ struct AmbientLightingConfig: View {
 					}
 				}
 			}
-			.onChange(of: ledState) { newLedState in
-				if node != nil && node!.ambientLightingConfig != nil {
-					if newLedState != node!.ambientLightingConfig!.ledState { hasChanges = true }
+			.onChange(of: ledState) {
+				if let val = node?.ambientLightingConfig?.ledState {
+					hasChanges = $0 != val
+				}
+			}
+			.onChange(of: current) {
+				if let val = node?.ambientLightingConfig?.current {
+					hasChanges = $0 != val
+				}
+			}
+			.onChange(of: color) { c in
+				if color != c {
+					hasChanges = true
 				}
 			}
 		}

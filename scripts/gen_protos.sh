@@ -1,12 +1,5 @@
 #!/bin/bash
 
-# simple sanity checking for repo
-if [ ! -d "./protobufs" ]; then
-  git submodule update --init
-else 
-  git submodule update --remote --merge
-fi
-
 # simple sanity checking for executable
 if [ ! -x "$(which protoc)" ]; then
   brew install swift-protobuf
