@@ -662,8 +662,8 @@ struct NodeDetail: View {
 		}
 
 		if
-			let connectedPeripheral = bleManager.deviceConnected,
-			node.num != connectedPeripheral.num
+			let connectedDevice = bleManager.getConnectedDevice(),
+			node.num != connectedDevice.num
 		{
 			ExchangePositionsButton(
 				bleManager: bleManager,
@@ -672,8 +672,9 @@ struct NodeDetail: View {
 
 			if let connectedNode {
 				DeleteNodeButton(
-					bleManager: bleManager,
 					context: context,
+					bleManager: bleManager,
+					nodeConfig: nodeConfig,
 					connectedNode: connectedNode,
 					node: node
 				)

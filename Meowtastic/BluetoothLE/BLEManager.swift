@@ -36,17 +36,17 @@ class BLEManager: NSObject, ObservableObject {
 	var isConnecting = false
 	var isConnected = false
 	var isSubscribed = false
-	var configNonce: UInt32 = 1
 	var timeoutTimer: Timer?
 	var timeoutCount = 0
 	var positionTimer: Timer?
 	var wantRangeTestPackets = false
 	var wantStoreAndForwardPackets = false
-	var characteristicToRadio: CBCharacteristic!
-	var characteristicFromRadio: CBCharacteristic!
-	var characteristicFromNum: CBCharacteristic!
-	var characteristicLogRadio: CBCharacteristic!
-	var characteristicLogRadioLegacy: CBCharacteristic!
+	var lastConfigNonce = UInt32.min
+	var characteristicToRadio: CBCharacteristic?
+	var characteristicFromRadio: CBCharacteristic?
+	var characteristicFromNum: CBCharacteristic?
+	var characteristicLogRadio: CBCharacteristic?
+	var characteristicLogRadioLegacy: CBCharacteristic?
 
 	init(
 		appState: AppState,
@@ -95,6 +95,10 @@ class BLEManager: NSObject, ObservableObject {
 		centralManager.stopScan()
 
 		Logger.services.info("🛑 [BLE] Stopped Scanning")
+	}
+
+	func setIsInvalidFwVersion() {
+		isInvalidFwVersion = true
 	}
 
 	@objc
@@ -273,34 +277,6 @@ class BLEManager: NSObject, ObservableObject {
 		}
 
 		return false
-	}
-
-	func sendWantConfig() {
-		guard let connectedDevice = getConnectedDevice() else {
-			return
-		}
-
-		guard let characteristicFromRadio else {
-			MeshLogger.log("🚨 \("firmware.version.unsupported".localized)")
-			isInvalidFwVersion = true
-			return
-		}
-
-		var toRadio = ToRadio()
-		configNonce += 1
-		toRadio.wantConfigID = configNonce
-
-		guard let binaryData: Data = try? toRadio.serializedData() else {
-			return
-		}
-
-		connectedDevice.peripheral.writeValue(
-			binaryData,
-			for: characteristicToRadio,
-			type: .withResponse
-		)
-
-		connectedDevice.peripheral.readValue(for: characteristicFromRadio)
 	}
 
 	func sendMessage(
@@ -610,181 +586,6 @@ class BLEManager: NSObject, ObservableObject {
 		return false
 	}
 
-	func saveChannelSet(base64UrlString: String, addChannels: Bool = false) -> Bool {
-		if isConnected {
-			var i: Int32 = 0
-			var myInfo: MyInfoEntity
-			// Before we get started delete the existing channels from the myNodeInfo
-			if !addChannels {
-				tryClearExistingChannels()
-			}
-			
-			let decodedString = base64UrlString.base64urlToBase64()
-			if let decodedData = Data(base64Encoded: decodedString) {
-				do {
-					let channelSet: ChannelSet = try ChannelSet(serializedData: decodedData)
-					for cs in channelSet.settings {
-						if addChannels {
-							// We are trying to add a channel so lets get the last index
-							let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
-							fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(deviceConnected.num))
-							do {
-								let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
-								if fetchedMyInfo.count == 1 {
-									i = Int32(fetchedMyInfo[0].channels?.count ?? -1)
-									myInfo = fetchedMyInfo[0]
-									// Bail out if the index is negative or bigger than our max of 8
-									if i < 0 || i > 8 {
-										return false
-									}
-									// Bail out if there are no channels or if the same channel name already exists
-									guard let mutableChannels = myInfo.channels!.mutableCopy() as? NSMutableOrderedSet else {
-										return false
-									}
-									if mutableChannels.first(where: {($0 as AnyObject).name == cs.name }) is ChannelEntity {
-										return false
-									}
-								}
-							} catch {
-								Logger.data.error("Failed to find a node MyInfo to save these channels to: \(error.localizedDescription)")
-							}
-						}
-						
-						var chan = Channel()
-						if i == 0 {
-							chan.role = Channel.Role.primary
-						} else {
-							chan.role = Channel.Role.secondary
-						}
-						chan.settings = cs
-						chan.index = i
-						i += 1
-						
-						var adminPacket = AdminMessage()
-						adminPacket.setChannel = chan
-						var meshPacket: MeshPacket = MeshPacket()
-						meshPacket.to = UInt32(deviceConnected.num)
-						meshPacket.from	= UInt32(deviceConnected.num)
-						meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-						meshPacket.priority =  MeshPacket.Priority.reliable
-						meshPacket.wantAck = true
-						meshPacket.channel = 0
-						var dataMessage = DataMessage()
-						guard let adminData: Data = try? adminPacket.serializedData() else {
-							return false
-						}
-						dataMessage.payload = adminData
-						dataMessage.portnum = PortNum.adminApp
-						meshPacket.decoded = dataMessage
-						var toRadio: ToRadio!
-						toRadio = ToRadio()
-						toRadio.packet = meshPacket
-						guard let binaryData: Data = try? toRadio.serializedData() else {
-							return false
-						}
-						if let connectedDevice = getConnectedDevice() {
-							connectedDevice.peripheral.writeValue(
-								binaryData,
-								for: characteristicToRadio,
-								type: .withResponse
-							)
-						}
-					}
-
-					// Save the LoRa Config and the device will reboot
-					var adminPacket = AdminMessage()
-					adminPacket.setConfig.lora = channelSet.loraConfig
-					var meshPacket: MeshPacket = MeshPacket()
-					meshPacket.to = UInt32(deviceConnected.num)
-					meshPacket.from	= UInt32(deviceConnected.num)
-					meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-					meshPacket.priority =  MeshPacket.Priority.reliable
-					meshPacket.wantAck = true
-					meshPacket.channel = 0
-					var dataMessage = DataMessage()
-					guard let adminData: Data = try? adminPacket.serializedData() else {
-						return false
-					}
-					dataMessage.payload = adminData
-					dataMessage.portnum = PortNum.adminApp
-					meshPacket.decoded = dataMessage
-					var toRadio: ToRadio!
-					toRadio = ToRadio()
-					toRadio.packet = meshPacket
-					guard let binaryData: Data = try? toRadio.serializedData() else {
-						return false
-					}
-					if let connectedDevice = getConnectedDevice() {
-						connectedDevice.peripheral.writeValue(
-							binaryData,
-							for: characteristicToRadio,
-							type: .withResponse
-						)
-					}
-					
-					if deviceConnected != nil {
-						sendWantConfig()
-						return true
-					}
-				} catch {
-					return false
-				}
-			}
-		}
-		return false
-	}
-	
-	func removeNode(node: NodeInfoEntity, connectedNodeNum: Int64) -> Bool {
-		var adminPacket = AdminMessage()
-		adminPacket.removeByNodenum = UInt32(node.num)
-		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedNodeNum)
-		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = true
-		var dataMessage = DataMessage()
-		if let serializedData: Data = try? adminPacket.serializedData() {
-			dataMessage.payload = serializedData
-			dataMessage.portnum = PortNum.adminApp
-			meshPacket.decoded = dataMessage
-		} else {
-			return false
-		}
-		var toRadio: ToRadio!
-		toRadio = ToRadio()
-		toRadio.packet = meshPacket
-		guard let binaryData: Data = try? toRadio.serializedData() else {
-			return false
-		}
-		
-		if let connectedDevice = getConnectedDevice() {
-			connectedDevice.peripheral.writeValue(
-				binaryData,
-				for: characteristicToRadio,
-				type: .withResponse
-			)
-
-			connectedDevice.peripheral.writeValue(
-				binaryData,
-				for: characteristicToRadio,
-				type: .withResponse
-			)
-
-			context.delete(node.user!)
-			context.delete(node)
-
-			do {
-				try context.save()
-				return true
-			} catch {
-				context.rollback()
-				let nsError = error as NSError
-				Logger.data.error("🚫 Error deleting node from core data: \(nsError)")
-			}
-		}
-		return false
-	}
-	
 	func storeAndForwardPacket(
 		packet: MeshPacket,
 		connectedNodeNum: Int64,
@@ -874,27 +675,6 @@ class BLEManager: NSObject, ObservableObject {
 			default:
 				return
 			}
-		}
-	}
-	
-	func tryClearExistingChannels() {
-		guard let connectedDevice = getConnectedDevice() else {
-			return
-		}
-
-		let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
-		fetchMyInfoRequest.predicate = NSPredicate(
-			format: "myNodeNum == %lld",
-			Int64(connectedDevice.num)
-		)
-
-		if
-			let myInfo = try? context.fetch(fetchMyInfoRequest),
-			!myInfo.isEmpty
-		{
-			myInfo[0].channels = NSOrderedSet()
-
-			try? context.save()
 		}
 	}
 }

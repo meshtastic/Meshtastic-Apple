@@ -74,6 +74,7 @@
 		B2A5F31C2C566D98009457AB /* TraceRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F31B2C566D98009457AB /* TraceRoute.swift */; };
 		B2BDCD7A2C6CB6440040D7ED /* AnalyticEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BDCD792C6CB6440040D7ED /* AnalyticEvents.swift */; };
 		B2CC14B22C66280000588C16 /* UIColor+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2CC14B12C66280000588C16 /* UIColor+Extension.swift */; };
+		B2CC552C2C7374EC003FB487 /* CBPeripheral+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2CC552B2C7374EC003FB487 /* CBPeripheral+Extensions.swift */; };
 		B399E8A42B6F486400E4488E /* RetryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B399E8A32B6F486400E4488E /* RetryButton.swift */; };
 		B3E905B12B71F7F300654D07 /* TextMessageField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E905B02B71F7F300654D07 /* TextMessageField.swift */; };
 		C9697FA527933B8C00250207 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = C9697FA427933B8C00250207 /* SQLite */; };
@@ -275,6 +276,7 @@
 		B2A5F31B2C566D98009457AB /* TraceRoute.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TraceRoute.swift; sourceTree = "<group>"; };
 		B2BDCD792C6CB6440040D7ED /* AnalyticEvents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticEvents.swift; sourceTree = "<group>"; };
 		B2CC14B12C66280000588C16 /* UIColor+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Extension.swift"; sourceTree = "<group>"; };
+		B2CC552B2C7374EC003FB487 /* CBPeripheral+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CBPeripheral+Extensions.swift"; sourceTree = "<group>"; };
 		B399E8A32B6F486400E4488E /* RetryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryButton.swift; sourceTree = "<group>"; };
 		B3E905B02B71F7F300654D07 /* TextMessageField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageField.swift; sourceTree = "<group>"; };
 		D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageContextMenuItems.swift; sourceTree = "<group>"; };
@@ -513,6 +515,7 @@
 				B284A42E2C6F889000D5122B /* BLEManager+CBPeripheralDelegate.swift */,
 				B284A4302C6F88F400D5122B /* BLEManager+MqttClientProxyManagerDelegate.swift */,
 				B28DC0E22C710318007990B3 /* Data+Extensions.swift */,
+				B2CC552B2C7374EC003FB487 /* CBPeripheral+Extensions.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -961,6 +964,7 @@
 				DDC2E1A726CEB3400042C5E4 /* LocationManager.swift in Sources */,
 				6D825E622C34786C008DBEE4 /* CommonRegex.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
+				B2CC552C2C7374EC003FB487 /* CBPeripheral+Extensions.swift in Sources */,
 				DDDB444C29F8AAA600EE2349 /* Color+Extension.swift in Sources */,
 				B2A5F3142C5668FD009457AB /* NodeList.swift in Sources */,
 				DDB75A0F2A05920E006ED576 /* FileManager.swift in Sources */,

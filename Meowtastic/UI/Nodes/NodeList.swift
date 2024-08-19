@@ -420,10 +420,12 @@ struct NodeList: View {
 				user: user
 			)
 		}
+
 		if let connectedNode {
 			DeleteNodeButton(
-				bleManager: bleManager,
 				context: context,
+				bleManager: bleManager,
+				nodeConfig: nodeConfig,
 				connectedNode: connectedNode,
 				node: node
 			)

@@ -948,6 +948,9 @@
     "Are you sure you want to delete this message?" : {
 
     },
+    "Are you sure?" : {
+
+    },
     "are.you.sure" : {
       "localizations" : {
         "de" : {

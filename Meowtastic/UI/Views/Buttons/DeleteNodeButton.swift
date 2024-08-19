@@ -3,15 +3,17 @@ import OSLog
 import SwiftUI
 
 struct DeleteNodeButton: View {
-	var bleManager: BLEManager
 	var context: NSManagedObjectContext
+	var bleManager: BLEManager
+	var nodeConfig: NodeConfig
 	var connectedNode: NodeInfoEntity
 	var node: NodeInfoEntity
 
 	@State
 	private var isPresentingAlert = false
 
-    var body: some View {
+	@ViewBuilder
+	var body: some View {
 		Button(role: .destructive) {
 			isPresentingAlert = true
 		} label: {
@@ -23,26 +25,20 @@ struct DeleteNodeButton: View {
 			}
 		}
 		.confirmationDialog(
-			"are.you.sure",
+			"Are you sure?",
 			isPresented: $isPresentingAlert,
 			titleVisibility: .visible
 		) {
 			Button("Delete Node", role: .destructive) {
-				guard let deleteNode = getNodeInfo(
-					id: node.num,
-					context: context
-				) else {
-					Logger.data.error("Unable to find node info to delete node \(node.num)")
+				guard let nodeToDelete = getNodeInfo(id: node.num, context: context) else {
 					return
 				}
-				let success = bleManager.removeNode(
-					node: deleteNode,
+
+				nodeConfig.removeNode(
+					node: nodeToDelete,
 					connectedNodeNum: connectedNode.num
 				)
-				if !success {
-					Logger.data.error("Failed to delete node \(deleteNode.user?.longName ?? "unknown".localized)")
-				}
 			}
 		}
-    }
+	}
 }

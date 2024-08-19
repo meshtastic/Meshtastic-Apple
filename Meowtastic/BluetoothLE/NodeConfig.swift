@@ -5,6 +5,8 @@ import SwiftProtobuf
 
 // swiftlint:disable file_length
 final class NodeConfig: ObservableObject {
+	private static var configNonce: UInt32 = 1
+
 	private let bleManager: BLEManager
 	private let context: NSManagedObjectContext
 
@@ -76,6 +78,18 @@ final class NodeConfig: ObservableObject {
 	) -> Int64 {
 		var message = AdminMessage()
 		message.getChannelRequest = UInt32(channel.index + 1)
+
+		return sendRequest(to: toUser, from: fromUser, message: message)
+	}
+
+	@discardableResult
+	func saveChannel(
+		channel: Channel,
+		fromUser: Int64,
+		toUser: Int64
+	) -> Int64 {
+		var message = AdminMessage()
+		message.setChannel = channel
 
 		return sendRequest(to: toUser, from: fromUser, message: message)
 	}
@@ -193,6 +207,21 @@ final class NodeConfig: ObservableObject {
 			index: adminIndex,
 			type: AdminMessage.ConfigType.loraConfig
 		)
+	}
+
+	@discardableResult
+	func saveLoRaConfig(
+		config: Config.LoRaConfig,
+		fromUser: Int64,
+		toUser: Int64,
+		adminIndex: Int32
+	) -> Int64 {
+		var message = AdminMessage()
+		message.setConfig.lora = config
+
+		return sendRequest(to: toUser, from: fromUser, index: adminIndex, message: message) {
+			upsertLoRaConfigPacket(config: config, nodeNum: toUser, context: self.context)
+		}
 	}
 
 	@discardableResult
@@ -356,14 +385,40 @@ final class NodeConfig: ObservableObject {
 
 	// MARK: - requests
 
-	@discardableResult
-	func getCannedMessageModuleMessages(destNum: Int64, wantResponse: Bool) -> Bool {
-		var message = AdminMessage()
-		message.getCannedMessageModuleMessagesRequest = true
+	func sendWantConfig() -> UInt32 {
+		guard bleManager.characteristicFromRadio != nil else {
+			bleManager.setIsInvalidFwVersion()
 
-		return sendRequest(to: destNum, message: message) != 0
+			return UInt32.min
+		}
+
+		Self.configNonce += 1
+		let nonce = Self.configNonce
+
+		var toRadio = ToRadio()
+		toRadio.wantConfigID = nonce
+
+		guard
+			let connectedDevice = bleManager.getConnectedDevice(),
+			let binaryData: Data = try? toRadio.serializedData()
+		else {
+			return UInt32.min
+		}
+
+		connectedDevice.peripheral.writeValue(
+			binaryData,
+			for: bleManager.characteristicToRadio,
+			type: .withResponse
+		)
+
+		connectedDevice.peripheral.readValue(
+			for: bleManager.characteristicFromRadio
+		)
+
+		return nonce
 	}
 
+	@discardableResult
 	func sendShutdown(
 		fromUser: UserEntity,
 		toUser: UserEntity,
@@ -375,6 +430,7 @@ final class NodeConfig: ObservableObject {
 		return sendRequest(to: toUser, from: fromUser, index: adminIndex, message: message) != 0
 	}
 
+	@discardableResult
 	func sendReboot(
 		fromUser: UserEntity,
 		toUser: UserEntity,
@@ -386,6 +442,7 @@ final class NodeConfig: ObservableObject {
 		return sendRequest(to: toUser, from: fromUser, index: adminIndex, message: message) != 0
 	}
 
+	@discardableResult
 	func sendRebootOta(
 		fromUser: UserEntity,
 		toUser: UserEntity,
@@ -397,6 +454,7 @@ final class NodeConfig: ObservableObject {
 		return sendRequest(to: toUser, from: fromUser, index: adminIndex, message: message) != 0
 	}
 
+	@discardableResult
 	func sendFactoryReset(
 		fromUser: UserEntity,
 		toUser: UserEntity
@@ -407,11 +465,38 @@ final class NodeConfig: ObservableObject {
 		return sendRequest(to: toUser, from: fromUser, message: message) != 0
 	}
 
+	@discardableResult
 	func sendNodeDBReset(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 		var message = AdminMessage()
 		message.nodedbReset = 5
 
 		return sendRequest(to: toUser, from: fromUser, message: message) != 0
+	}
+
+	@discardableResult
+	func removeNode(node: NodeInfoEntity, connectedNodeNum: Int64) -> Bool {
+		var message = AdminMessage()
+		message.removeByNodenum = UInt32(node.num)
+
+		guard sendRequest(to: connectedNodeNum, message: message) != 0 else {
+			return false
+		}
+
+		if let user = node.user {
+			context.delete(user)
+		}
+		context.delete(node)
+
+		do {
+			try context.save()
+
+			return true
+		}
+		catch {
+			context.rollback()
+
+			return false
+		}
 	}
 
 	@discardableResult
@@ -435,6 +520,14 @@ final class NodeConfig: ObservableObject {
 		}
 
 		return sendAdminPacket(packet)
+	}
+
+	@discardableResult
+	func getCannedMessageModuleMessages(destNum: Int64, wantResponse: Bool) -> Bool {
+		var message = AdminMessage()
+		message.getCannedMessageModuleMessagesRequest = true
+
+		return sendRequest(to: destNum, message: message) != 0
 	}
 
 	// MARK: - common
@@ -507,6 +600,7 @@ final class NodeConfig: ObservableObject {
 
 	private func sendRequest(
 		to: Int64,
+		from: Int64? = nil,
 		index: Int32? = nil,
 		message: AdminMessage,
 		onSuccess: (() -> Void)? = nil
@@ -514,6 +608,7 @@ final class NodeConfig: ObservableObject {
 		guard let packet = createPacket(
 			for: message,
 			to: to,
+			from: from,
 			index: index,
 			wantResponse: true
 		) else {
