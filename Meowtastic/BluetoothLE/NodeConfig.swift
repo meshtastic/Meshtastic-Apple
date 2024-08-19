@@ -27,7 +27,7 @@ final class NodeConfig: ObservableObject {
 		var message = AdminMessage()
 		message.setOwner = config
 
-		return saveConfig(to: toUser, from: fromUser, index: adminIndex, message: message)
+		return sendRequest(to: toUser, from: fromUser, index: adminIndex, message: message)
 	}
 
 	@discardableResult
@@ -40,7 +40,7 @@ final class NodeConfig: ObservableObject {
 		var message = AdminMessage()
 		message.setHamMode = ham
 
-		return saveConfig(to: toUser, from: fromUser, index: adminIndex, message: message)
+		return sendRequest(to: toUser, from: fromUser, index: adminIndex, message: message)
 	}
 
 	// MARK: - node
@@ -53,7 +53,7 @@ final class NodeConfig: ObservableObject {
 		var message = AdminMessage()
 		message.setFavoriteNode = UInt32(node.num)
 
-		return saveConfig(to: connectedNodeNum, message: message) != 0
+		return sendRequest(to: connectedNodeNum, message: message) != 0
 	}
 
 	func removeFavoriteNode(
@@ -63,7 +63,7 @@ final class NodeConfig: ObservableObject {
 		var message = AdminMessage()
 		message.setFavoriteNode = UInt32(node.num)
 
-		return saveConfig(to: connectedNodeNum, message: message) != 0
+		return sendRequest(to: connectedNodeNum, message: message) != 0
 	}
 
 	// MARK: - channel
@@ -77,7 +77,7 @@ final class NodeConfig: ObservableObject {
 		var message = AdminMessage()
 		message.getChannelRequest = UInt32(channel.index + 1)
 
-		return saveConfig(to: toUser, from: fromUser, message: message)
+		return sendRequest(to: toUser, from: fromUser, message: message)
 	}
 
 	@discardableResult
@@ -89,7 +89,7 @@ final class NodeConfig: ObservableObject {
 		var message = AdminMessage()
 		message.setChannel = channel
 
-		return saveConfig(to: toUser, from: fromUser, message: message)
+		return sendRequest(to: toUser, from: fromUser, message: message)
 	}
 
 	// MARK: - device
@@ -100,7 +100,7 @@ final class NodeConfig: ObservableObject {
 		toUser: UserEntity,
 		adminIndex: Int32
 	) -> Bool {
-		requestConfig(
+		sendConfigRequest(
 			to: toUser,
 			from: fromUser,
 			index: adminIndex,
@@ -118,7 +118,7 @@ final class NodeConfig: ObservableObject {
 		var message = AdminMessage()
 		message.setConfig.bluetooth = config
 
-		return saveConfig(to: toUser, from: fromUser, index: adminIndex, message: message) {
+		return sendRequest(to: toUser, from: fromUser, index: adminIndex, message: message) {
 			upsertBluetoothConfigPacket(config: config, nodeNum: toUser.num, context: self.context)
 		}
 	}
@@ -129,7 +129,7 @@ final class NodeConfig: ObservableObject {
 		toUser: UserEntity,
 		adminIndex: Int32
 	) -> Bool {
-		requestConfig(
+		sendConfigRequest(
 			to: toUser,
 			from: fromUser,
 			index: adminIndex,
@@ -147,7 +147,7 @@ final class NodeConfig: ObservableObject {
 		var message = AdminMessage()
 		message.setConfig.device = config
 
-		return saveConfig(to: toUser, from: fromUser, index: adminIndex, message: message) {
+		return sendRequest(to: toUser, from: fromUser, index: adminIndex, message: message) {
 			upsertDeviceConfigPacket(config: config, nodeNum: toUser.num, context: self.context)
 		}
 	}
@@ -158,7 +158,7 @@ final class NodeConfig: ObservableObject {
 		toUser: UserEntity,
 		adminIndex: Int32
 	) -> Bool {
-		requestConfig(
+		sendConfigRequest(
 			to: toUser,
 			from: fromUser,
 			index: adminIndex,
@@ -176,7 +176,7 @@ final class NodeConfig: ObservableObject {
 		var message = AdminMessage()
 		message.setConfig.display = config
 
-		return saveConfig(to: toUser, from: fromUser, index: adminIndex, message: message) {
+		return sendRequest(to: toUser, from: fromUser, index: adminIndex, message: message) {
 			upsertDisplayConfigPacket(config: config, nodeNum: toUser.num, context: self.context)
 		}
 	}
@@ -187,7 +187,7 @@ final class NodeConfig: ObservableObject {
 		toUser: UserEntity,
 		adminIndex: Int32
 	) -> Bool {
-		requestConfig(
+		sendConfigRequest(
 			to: toUser,
 			from: fromUser,
 			index: adminIndex,
@@ -205,7 +205,7 @@ final class NodeConfig: ObservableObject {
 		var message = AdminMessage()
 		message.setConfig.lora = config
 
-		return saveConfig(to: toUser, from: fromUser, index: adminIndex, message: message) {
+		return sendRequest(to: toUser, from: fromUser, index: adminIndex, message: message) {
 			upsertLoRaConfigPacket(config: config, nodeNum: toUser.num, context: self.context)
 		}
 	}
@@ -216,7 +216,7 @@ final class NodeConfig: ObservableObject {
 		toUser: UserEntity,
 		adminIndex: Int32
 	) -> Bool {
-		requestConfig(
+		sendConfigRequest(
 			to: toUser,
 			from: fromUser,
 			index: adminIndex,
@@ -234,7 +234,7 @@ final class NodeConfig: ObservableObject {
 		var message = AdminMessage()
 		message.setConfig.network = config
 
-		return saveConfig(to: toUser, from: fromUser, index: adminIndex, message: message) {
+		return sendRequest(to: toUser, from: fromUser, index: adminIndex, message: message) {
 			upsertNetworkConfigPacket(config: config, nodeNum: toUser.num, context: self.context)
 		}
 	}
@@ -245,7 +245,7 @@ final class NodeConfig: ObservableObject {
 		toUser: UserEntity,
 		adminIndex: Int32
 	) -> Bool {
-		requestConfig(
+		sendConfigRequest(
 			to: toUser,
 			from: fromUser,
 			index: adminIndex,
@@ -263,7 +263,7 @@ final class NodeConfig: ObservableObject {
 		var message = AdminMessage()
 		message.setConfig.position = config
 
-		return saveConfig(to: toUser, from: fromUser, index: adminIndex, message: message) {
+		return sendRequest(to: toUser, from: fromUser, index: adminIndex, message: message) {
 			upsertPositionConfigPacket(config: config, nodeNum: toUser.num, context: self.context)
 		}
 	}
@@ -280,7 +280,7 @@ final class NodeConfig: ObservableObject {
 		var message = AdminMessage()
 		message.setFixedPosition = positionPacket
 
-		return saveConfig(to: fromUser, from: fromUser, index: adminIndex, message: message) != 0
+		return sendRequest(to: fromUser, from: fromUser, index: adminIndex, message: message) != 0
 	}
 
 	@discardableResult
@@ -291,7 +291,7 @@ final class NodeConfig: ObservableObject {
 		var message = AdminMessage()
 		message.removeFixedPosition = true
 
-		return saveConfig(to: fromUser, from: fromUser, index: adminIndex, message: message) != 0
+		return sendRequest(to: fromUser, from: fromUser, index: adminIndex, message: message) != 0
 	}
 
 	@discardableResult
@@ -300,7 +300,7 @@ final class NodeConfig: ObservableObject {
 		toUser: UserEntity,
 		adminIndex: Int32
 	) -> Bool {
-		requestConfig(
+		sendConfigRequest(
 			to: toUser,
 			from: fromUser,
 			index: adminIndex,
@@ -318,7 +318,7 @@ final class NodeConfig: ObservableObject {
 		var message = AdminMessage()
 		message.setConfig.power = config
 
-		return saveConfig(to: toUser, from: fromUser, index: adminIndex, message: message) {
+		return sendRequest(to: toUser, from: fromUser, index: adminIndex, message: message) {
 			upsertPowerConfigPacket(config: config, nodeNum: toUser.num, context: self.context)
 		}
 	}
@@ -331,7 +331,7 @@ final class NodeConfig: ObservableObject {
 		toUser: UserEntity,
 		adminIndex: Int32
 	) -> Bool {
-		requestConfig(
+		sendConfigRequest(
 			to: toUser,
 			from: fromUser,
 			index: adminIndex,
@@ -349,12 +349,20 @@ final class NodeConfig: ObservableObject {
 		var message = AdminMessage()
 		message.setModuleConfig.mqtt = config
 
-		return saveConfig(to: toUser, from: fromUser, index: adminIndex, message: message) {
+		return sendRequest(to: toUser, from: fromUser, index: adminIndex, message: message) {
 			upsertMqttModuleConfigPacket(config: config, nodeNum: toUser.num, context: self.context)
 		}
 	}
 
-	// MARK: - commands
+	// MARK: - requests
+
+	@discardableResult
+	func getCannedMessageModuleMessages(destNum: Int64, wantResponse: Bool) -> Bool {
+		var message = AdminMessage()
+		message.getCannedMessageModuleMessagesRequest = true
+
+		return sendRequest(to: destNum, message: message) != 0
+	}
 
 	func sendShutdown(
 		fromUser: UserEntity,
@@ -364,7 +372,7 @@ final class NodeConfig: ObservableObject {
 		var message = AdminMessage()
 		message.shutdownSeconds = 5
 
-		return saveConfig(to: toUser, from: fromUser, index: adminIndex, message: message) != 0
+		return sendRequest(to: toUser, from: fromUser, index: adminIndex, message: message) != 0
 	}
 
 	func sendReboot(
@@ -375,7 +383,7 @@ final class NodeConfig: ObservableObject {
 		var message = AdminMessage()
 		message.rebootSeconds = 5
 
-		return saveConfig(to: toUser, from: fromUser, index: adminIndex, message: message) != 0
+		return sendRequest(to: toUser, from: fromUser, index: adminIndex, message: message) != 0
 	}
 
 	func sendRebootOta(
@@ -386,7 +394,7 @@ final class NodeConfig: ObservableObject {
 		var message = AdminMessage()
 		message.rebootOtaSeconds = 5
 
-		return saveConfig(to: toUser, from: fromUser, index: adminIndex, message: message) != 0
+		return sendRequest(to: toUser, from: fromUser, index: adminIndex, message: message) != 0
 	}
 
 	func sendFactoryReset(
@@ -396,17 +404,15 @@ final class NodeConfig: ObservableObject {
 		var message = AdminMessage()
 		message.factoryResetDevice = 5
 
-		return saveConfig(to: toUser, from: fromUser, message: message) != 0
+		return sendRequest(to: toUser, from: fromUser, message: message) != 0
 	}
 
 	func sendNodeDBReset(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 		var message = AdminMessage()
 		message.nodedbReset = 5
 
-		return saveConfig(to: toUser, from: fromUser, message: message) != 0
+		return sendRequest(to: toUser, from: fromUser, message: message) != 0
 	}
-
-	// MARK: - common
 
 	@discardableResult
 	func requestDeviceMetadata(
@@ -431,7 +437,9 @@ final class NodeConfig: ObservableObject {
 		return sendAdminPacket(packet)
 	}
 
-	private func requestConfig(
+	// MARK: - common
+
+	private func sendConfigRequest(
 		to: UserEntity,
 		from: UserEntity,
 		index: Int32,
@@ -454,7 +462,7 @@ final class NodeConfig: ObservableObject {
 		return sendAdminPacket(packet, onSuccess: onSuccess) != 0
 	}
 
-	private func requestConfig(
+	private func sendConfigRequest(
 		to: UserEntity,
 		from: UserEntity,
 		index: Int32,
@@ -477,7 +485,7 @@ final class NodeConfig: ObservableObject {
 		return sendAdminPacket(packet, onSuccess: onSuccess) != 0
 	}
 
-	private func saveConfig(
+	private func sendRequest(
 		to: UserEntity,
 		from: UserEntity,
 		index: Int32? = nil,
@@ -497,7 +505,7 @@ final class NodeConfig: ObservableObject {
 		return sendAdminPacket(packet, onSuccess: onSuccess)
 	}
 
-	private func saveConfig(
+	private func sendRequest(
 		to: Int64,
 		index: Int32? = nil,
 		message: AdminMessage,

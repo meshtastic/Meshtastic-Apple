@@ -235,8 +235,7 @@ extension BLEManager: CBPeripheralDelegate {
 					}
 
 					let supportedVersion = connectedVersion == "0.0.0"
-					|| self.minimumVersion.compare(connectedVersion, options: .numeric) == .orderedAscending
-					|| minimumVersion.compare(connectedVersion, options: .numeric) == .orderedSame
+					|| [.orderedAscending, .orderedSame].contains(minimumVersion.compare(connectedVersion, options: .numeric))
 
 					if !supportedVersion {
 						isInvalidFwVersion = true
