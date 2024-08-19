@@ -2374,6 +2374,12 @@
             "value" : "Anslutningen misslyckades efter %d försök att ansluta till %@. Du kan behöva glömma din enhet under Inställningar > Bluetooth."
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anslutningen misslyckades efter %d försök att ansluta till %@. Du kan behöva glömma enheten under Inställningar > Bluetooth."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2814,6 +2820,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fast PIN"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fast PIN"
@@ -3895,6 +3907,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inaktiverad"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Inaktiverad"
@@ -5921,6 +5939,12 @@
             "value" : "Ansluten Radio"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ansluten radio"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5979,6 +6003,12 @@
             "value" : "Ansluter..."
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ansluter..."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5994,7 +6024,14 @@
       }
     },
     "Connection Attempt %lld of 10" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anslutningsförsök %lld av 10"
+          }
+        }
+      }
     },
     "contacts" : {
       "extractionState" : "manual",
@@ -6041,6 +6078,12 @@
             "value" : "Kontakter"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontakter"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6056,7 +6099,14 @@
       }
     },
     "Contacts" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontakter"
+          }
+        }
+      }
     },
     "contacts %@" : {
       "extractionState" : "migrated",
@@ -6103,6 +6153,12 @@
             "value" : "Kontakter (%@)"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontakter (%@)"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6118,16 +6174,37 @@
       }
     },
     "Control Type" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontrolltyp"
+          }
+        }
+      }
     },
     "Controls the blinking LED on the device.  For most devices this will control one of the up to 4 LEDS, the charger and GPS LEDs are not controllable." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Styr den blinkande LED-lampan på enheten. För de flesta enheter kommer detta att styra en av upp till 4 LED-lampor; laddarens och GPS:ens LED-lampor är inte kontrollerbara."
+          }
+        }
+      }
     },
     "Convex Hull" : {
 
     },
     "Coordinate" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koordinat"
+          }
+        }
+      }
     },
     "Coordinate %@, %@" : {
       "localizations" : {
@@ -6135,6 +6212,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Coordinate %1$@, %2$@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koordinat %1$@, %2$@"
           }
         }
       }
@@ -6145,6 +6228,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Coordinates: %1$@, %2$@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koordinater: %1$@, %2$@"
           }
         }
       }
@@ -6193,6 +6282,12 @@
             "value" : "Kopiera"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiera"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6208,13 +6303,34 @@
       }
     },
     "Counter Clockwise Rotary Event" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Händelse för rotering moturs"
+          }
+        }
+      }
     },
     "Create Waypoint" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skapa vägpunkt"
+          }
+        }
+      }
     },
     "Created: %@" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skapad: %@"
+          }
+        }
+      }
     },
     "current" : {
       "extractionState" : "stale",
@@ -6261,6 +6377,12 @@
             "value" : "Aktuell"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktuell"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6276,7 +6398,14 @@
       }
     },
     "Current Firmware Version: %@" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktuell firmwareversion: %@"
+          }
+        }
+      }
     },
     "Current Firmware Version: %@, Latest Firmware Version: %@" : {
       "localizations" : {
@@ -6285,26 +6414,74 @@
             "state" : "new",
             "value" : "Current Firmware Version: %1$@, Latest Firmware Version: %2$@"
           }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktuell firmwareversion: %1$@, senaste firmwareversion: %2$@"
+          }
         }
       }
     },
     "Current: %lld" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ström: %lld"
+          }
+        }
+      }
     },
     "Currently the reccomended way to update ESP32 devices is using the web flasher on a desktop computer from a chrome based browser. It does not work on mobile devices or over BLE." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "För närvarande är det rekommenderade sättet att uppdatera ESP32-enheter att använda webbladdaren på en stationär dator från en webbläsare baserad på Chrome. Det fungerar inte på mobila enheter eller över BLE."
+          }
+        }
+      }
     },
     "Date" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datum"
+          }
+        }
+      }
     },
     "Debug" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Felsök"
+          }
+        }
+      }
     },
     "Debug Log" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Felsökningslogg"
+          }
+        }
+      }
     },
     "Debug Logs%@" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Felsökningsloggar%@"
+          }
+        }
+      }
     },
     "default" : {
       "extractionState" : "migrated",
@@ -6351,6 +6528,12 @@
             "value" : "Standard"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6366,7 +6549,14 @@
       }
     },
     "Default" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard"
+          }
+        }
+      }
     },
     "delete" : {
       "localizations" : {
@@ -6412,6 +6602,12 @@
             "value" : "Ta bort"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radera"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6427,43 +6623,134 @@
       }
     },
     "Delete all environment metrics?" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radera alla miljödata?"
+          }
+        }
+      }
     },
     "Delete all map tiles?" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radera alla kartbrickor?"
+          }
+        }
+      }
     },
     "Delete all positions?" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radera alla positioner?"
+          }
+        }
+      }
     },
     "Delete Message" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radera meddelande"
+          }
+        }
+      }
     },
     "Delete Messages" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radera meddelanden"
+          }
+        }
+      }
     },
     "Delete Node" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radera nod"
+          }
+        }
+      }
     },
     "Delete Node?" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radera nod?"
+          }
+        }
+      }
     },
     "Description" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beskrivning"
+          }
+        }
+      }
     },
     "Detection" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detektering"
+          }
+        }
+      }
     },
     "Detection event" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detekteringshändelse"
+          }
+        }
+      }
     },
     "Detection Sensor Log" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Logg för detekteringssensor"
+          }
+        }
+      }
     },
     "Detection sensor messages are received as text messages.  If you enable notifications you will recieve a notification for each detection message received and a corresponding unread message badge." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meddelanden från detekteringssensorer tas emot som textmeddelanden. Om du aktiverar aviseringar kommer du att få en avisering för varje mottaget detekteringsmeddelande och en motsvarande oläst meddelande-badge."
+          }
+        }
+      }
     },
     "Detection trigger High" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detekteringstrigger Hög"
+          }
+        }
+      }
     },
     "detection.sensor" : {
       "localizations" : {
@@ -6507,6 +6794,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Detektionssensor"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detekteringssensor"
           }
         },
         "zh-Hans" : {
@@ -6554,6 +6847,12 @@
             "state" : "translated",
             "value" : "Konfiguration av Detektionssensor"
           }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguration för detekteringssensor"
+          }
         }
       }
     },
@@ -6588,11 +6887,24 @@
             "state" : "translated",
             "value" : "Logg för Detektionssensor"
           }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Logg för detekteringssensor"
+          }
         }
       }
     },
     "Developers" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utvecklare"
+          }
+        }
+      }
     },
     "device" : {
       "localizations" : {
@@ -6638,6 +6950,12 @@
             "value" : "Enhet"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhet"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6653,25 +6971,74 @@
       }
     },
     "Device GPS" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhets-GPS"
+          }
+        }
+      }
     },
     "Device Logging Enabled" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhetsloggning aktiverad"
+          }
+        }
+      }
     },
     "Device Metrics" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhetsdata"
+          }
+        }
+      }
     },
     "Device Metrics Log" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Logg för enhetsdata"
+          }
+        }
+      }
     },
     "Device Model: %@" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhetsmodell: %@"
+          }
+        }
+      }
     },
     "Device Role" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhetsroll"
+          }
+        }
+      }
     },
     "Device Screen" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhetsskärm"
+          }
+        }
+      }
     },
     "device.config" : {
       "localizations" : {
@@ -6712,6 +7079,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhetskonfiguration"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enhetskonfiguration"
@@ -6767,6 +7140,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enhetsinställningar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhetskonfiguration"
           }
         },
         "zh-Hans" : {
@@ -6827,6 +7206,12 @@
             "value" : "Ta bort alla enhetsmätvärden?"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radera alla enhetsdata?"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6883,6 +7268,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Logg för Enhetsmätvärden"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Logg för enhetsdata"
           }
         },
         "zh-Hans" : {
@@ -7009,6 +7400,12 @@
             "value" : "Enhet som endast sänder ut när det behövs för stealth eller energibesparing."
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhet som endast sänder ut när det behövs för att spara ström eller för stealth."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7063,6 +7460,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhet som inte vidarebefordrar paket från andra enheter."
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enhet som inte vidarebefordrar paket från andra enheter."
@@ -7499,6 +7902,12 @@
             "value" : "Aktiverar automatiska TAK PLI-utsändningar och minskar rutinutsändningar."
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktiverar automatisk TAK PLI-sändning och minskar rutinmässiga sändningar."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7579,10 +7988,24 @@
       }
     },
     "Dilution of precision (DOP) PDOP used by default" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dilution of Precision (DOP) PDOP används som standard"
+          }
+        }
+      }
     },
     "Direct" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direkt"
+          }
+        }
+      }
     },
     "direct.messages" : {
       "localizations" : {
@@ -7628,6 +8051,12 @@
             "value" : "Direktmeddelanden"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direktmeddelanden"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7643,7 +8072,14 @@
       }
     },
     "Disabled" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inaktiverad"
+          }
+        }
+      }
     },
     "disconnect" : {
       "localizations" : {
@@ -7687,6 +8123,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Koppla från"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koppla bort"
           }
         },
         "zh-Hans" : {
@@ -7747,6 +8189,12 @@
             "value" : "Stäng"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avvisa"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7805,6 +8253,12 @@
             "value" : "Skärm"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skärm"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7820,13 +8274,34 @@
       }
     },
     "Display Fahrenheit" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visa Fahrenheit"
+          }
+        }
+      }
     },
     "Display Mode" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visningsläge"
+          }
+        }
+      }
     },
     "Display Units" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visningsenheter"
+          }
+        }
+      }
     },
     "display.config" : {
       "localizations" : {
@@ -7867,6 +8342,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skärmkonfiguration"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Skärmkonfiguration"
@@ -7931,6 +8412,12 @@
             "value" : "Distans"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avstånd"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7946,28 +8433,84 @@
       }
     },
     "Distance" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avstånd"
+          }
+        }
+      }
     },
     "Documentation" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dokumentation"
+          }
+        }
+      }
     },
     "Double Tap as Button" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dubbelt knack som knapp"
+          }
+        }
+      }
     },
     "Downlink Enabled" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nedlänk aktiverad"
+          }
+        }
+      }
     },
     "Drag & Drop Firmware Update" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dra och släpp firmwareuppdatering"
+          }
+        }
+      }
     },
     "Drag & Drop Firmware Update Documentation" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dokumentation för dra och släpp firmwareuppdatering"
+          }
+        }
+      }
     },
     "Drag & Drop is the recommended way to update firmware for NRF devices. If your iPhone or iPad is USB-C it will work with your regular USB-C charging cable, for lightning devices you need the Apple Lightning to USB camera adaptor." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dra och släpp är det rekommenderade sättet att uppdatera firmware för NRF-enheter. Om din iPhone eller iPad har USB-C fungerar det med din vanliga USB-C-laddningskabel. För enheter med Lightning-port behöver du Apples Lightning till USB-kameraadapter."
+          }
+        }
+      }
     },
     "Each node is an available contact. Contacts with recent messages or marked as favorites show up at the top of the list. Select a contact to send or view messages. Long press to favorite or mute the contact or delete the conversation." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Varje nod är en tillgänglig kontakt. Kontakter med nyligen mottagna meddelanden eller som är markerade som favoriter visas högst upp i listan. Välj en kontakt för att skicka eller visa meddelanden. Håll intryckt för att markera som favorit, stänga av ljudet för kontakten eller radera konversationen."
+          }
+        }
+      }
     },
     "echo" : {
       "localizations" : {
@@ -8013,6 +8556,12 @@
             "value" : "Eko"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eko"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8028,10 +8577,24 @@
       }
     },
     "Editing Waypoint" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redigerar vägpunkt"
+          }
+        }
+      }
     },
     "Elev. Gain" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Höjdökning"
+          }
+        }
+      }
     },
     "email.address" : {
       "extractionState" : "manual",
@@ -8078,6 +8641,12 @@
             "value" : "E-postadress"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E-postadress"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8093,13 +8662,34 @@
       }
     },
     "Empty" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tom"
+          }
+        }
+      }
     },
     "Enable Notifications" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktivera aviseringar"
+          }
+        }
+      }
     },
     "Enable Offline Maps" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktivera offlinekartor"
+          }
+        }
+      }
     },
     "enabled" : {
       "localizations" : {
@@ -8145,6 +8735,12 @@
             "value" : "Aktiverad"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktiverad"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8160,25 +8756,74 @@
       }
     },
     "Enables devices with native I2S audio output to use the RTTTL over speaker like a buzzer. T-Watch S3 and T-Deck for example have this capability." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktiverar enheter med inbyggd I2S-ljudutgång att använda RTTTL över högtalare, likt en summer. Till exempel har T-Watch S3 och T-Deck denna kapabilitet."
+          }
+        }
+      }
     },
     "Enables the detection sensor module, it needs to be enabled on both the node with the sensor, and any nodes that you want to receive detection sensor text messages or view the detection sensor log and chart." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktiverar detekteringssensormodulen. Den måste aktiveras både på noden med sensorn och på de noder som du vill ta emot textmeddelanden från detekteringssensorn på, eller för att visa logg och diagram från detekteringssensorn."
+          }
+        }
+      }
     },
     "Enables the store and forward module. Store and forward must be enabled on both client and router devices." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktiverar lagrings- och vidarebefordringsmodulen. Lagring och vidarebefordran måste vara aktiverat på både klient- och routerenheter."
+          }
+        }
+      }
     },
     "Enabling Ethernet will disable the bluetooth connection to the app." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktivering av Ethernet kommer att inaktivera Bluetooth-anslutningen till appen."
+          }
+        }
+      }
     },
     "Enabling Managed mode will restrict access to all radio configurations, such as short/long names, regions, channels, modules, etc. and will only be accessible through the Admin channel. To avoid being locked out, make sure the Admin channel is working properly before enabling it." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktivering av hanterat läge kommer att begränsa åtkomsten till alla radiokonfigurationer, såsom korta/långa namn, regioner, kanaler, moduler, etc., och kommer endast att vara tillgänglig via Admin-kanalen. För att undvika att bli utelåst, se till att Admin-kanalen fungerar korrekt innan du aktiverar det."
+          }
+        }
+      }
     },
     "Enabling WiFi will disable the bluetooth connection to the app." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktivering av WiFi kommer att inaktivera Bluetooth-anslutningen till appen."
+          }
+        }
+      }
     },
     "Encoder Press Event" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kodsvarhändelse"
+          }
+        }
+      }
     },
     "encrypted" : {
       "localizations" : {
@@ -8224,6 +8869,12 @@
             "value" : "Krypterad"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Krypterad"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8239,16 +8890,44 @@
       }
     },
     "Encryption Enabled" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kryptering aktiverad"
+          }
+        }
+      }
     },
     "Enter DFU Mode" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gå in i DFU-läge"
+          }
+        }
+      }
     },
     "environment" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "miljö"
+          }
+        }
+      }
     },
     "Environment" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miljö"
+          }
+        }
+      }
     },
     "Environment Metrics Log" : {
       "localizations" : {
@@ -8261,31 +8940,94 @@
       }
     },
     "Erase all app data?" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radera all appdata?"
+          }
+        }
+      }
     },
     "Erase all device and app data?" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radera all enhets- och appdata?"
+          }
+        }
+      }
     },
     "ESP 32 OTA update is a work in progress, click the button below to send your device a reboot into ota admin message." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ESP 32 OTA-uppdatering är under utveckling. Klicka på knappen nedan för att skicka ett omstartmeddelande till din enhet för OTA-administration."
+          }
+        }
+      }
     },
     "ESP32 Device Firmware Update" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Firmwareuppdatering för ESP32-enhet"
+          }
+        }
+      }
     },
     "Ethernet Options" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ethernet-alternativ"
+          }
+        }
+      }
     },
     "Exchange Positions" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utbyte av positioner"
+          }
+        }
+      }
     },
     "Expire" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gå ut"
+          }
+        }
+      }
     },
     "Expires" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Går ut"
+          }
+        }
+      }
     },
     "Expires: %@" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Går ut: %@"
+          }
+        }
+      }
     },
     "export" : {
       "localizations" : {
@@ -8329,6 +9071,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Export"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportera"
           }
         },
         "zh-Hans" : {
@@ -8389,6 +9137,12 @@
             "value" : "Extern Notifikation"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extern avisering"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8447,6 +9201,12 @@
             "value" : "Konfiguration av Extern Notifikation"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguration för extern avisering"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8462,34 +9222,104 @@
       }
     },
     "Factory Reset" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Återställ fabriksinställningar"
+          }
+        }
+      }
     },
     "Factory reset your device and app? " : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Återställ din enhet och app till fabriksinställningar?"
+          }
+        }
+      }
     },
     "Failed to get a valid position to exchange" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Misslyckades med att hämta en giltig position för utbyte"
+          }
+        }
+      }
     },
     "Failed to get a valid position to exchange." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Misslyckades med att hämta en giltig position för utbyte."
+          }
+        }
+      }
     },
     "Favorite" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favorit"
+          }
+        }
+      }
     },
     "Favorites" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favoriter"
+          }
+        }
+      }
     },
     "Fifteen Minutes" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Femton minuter"
+          }
+        }
+      }
     },
     "File Storage" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filhantering"
+          }
+        }
+      }
     },
     "Find a contact" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hitta en kontakt"
+          }
+        }
+      }
     },
     "Find a node" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hitta en nod"
+          }
+        }
+      }
     },
     "finish" : {
       "localizations" : {
@@ -8535,6 +9365,12 @@
             "value" : "Avsluta"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avsluta"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8550,13 +9386,34 @@
       }
     },
     "Firmware" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Firmware"
+          }
+        }
+      }
     },
     "Firmware update docs" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dokumentation för firmwareuppdatering"
+          }
+        }
+      }
     },
     "Firmware Updates" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Firmwareuppdateringar"
+          }
+        }
+      }
     },
     "firmware.version" : {
       "localizations" : {
@@ -8597,6 +9454,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Firmwareversion"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Firmwareversion"
@@ -8676,31 +9539,94 @@
       }
     },
     "First heard" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Först hörd"
+          }
+        }
+      }
     },
     "Five Minutes" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fem minuter"
+          }
+        }
+      }
     },
     "Fixed Position" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fast position"
+          }
+        }
+      }
     },
     "Flip Screen" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vänd skärm"
+          }
+        }
+      }
     },
     "Flip screen vertically" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vänd skärmen vertikalt"
+          }
+        }
+      }
     },
     "For all Mqtt functionality other than the map report you must also set uplink and downlink for each channel you want to bridge over Mqtt." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "För all MQTT-funktionalitet utom kartrapporten måste du även ställa in uplink och downlink för varje kanal som du vill brygga över MQTT."
+          }
+        }
+      }
     },
     "For everyone" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "För alla"
+          }
+        }
+      }
     },
     "For me" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "För mig"
+          }
+        }
+      }
     },
     "Frequency" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frekvens"
+          }
+        }
+      }
     },
     "Frequency Override" : {
       "localizations" : {
@@ -8713,10 +9639,24 @@
       }
     },
     "Frequency Slot" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frekvensslot"
+          }
+        }
+      }
     },
     "Friendly name" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vänligt namn"
+          }
+        }
+      }
     },
     "Friendly name used to format message sent to mesh. Example: A name \"Motion\" would result in a message \"Motion detected\"" : {
       "localizations" : {
@@ -8768,6 +9708,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gas"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gas"
@@ -8832,6 +9778,12 @@
             "value" : "Gasmotstånd"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gasmotstånd"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8890,6 +9842,12 @@
             "value" : "Generera QR-kod"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generera QR-kod"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8905,46 +9863,144 @@
       }
     },
     "Get custom waterproof solar and detection sensor router nodes, aluminium desktop nodes and rugged handsets." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Få specialanpassade vattentäta sol- och detekteringssensorrouter-noder, aluminium-skrivbordsnoder och robusta handdatorer."
+          }
+        }
+      }
     },
     "Get NRF DFU from the App Store" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hämta NRF DFU från App Store"
+          }
+        }
+      }
     },
     "Get the latest alpha firmware" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hämta den senaste alfa-firmware"
+          }
+        }
+      }
     },
     "Get the latest stable firmware" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hämta den senaste stabila firmware"
+          }
+        }
+      }
     },
     "GPIO" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPIO"
+          }
+        }
+      }
     },
     "GPIO Output Duration" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPIO-utgångens varaktighet"
+          }
+        }
+      }
     },
     "GPIO pin for rotary encoder A port." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPIO-stift för roterande encoder A-port."
+          }
+        }
+      }
     },
     "GPIO pin for rotary encoder B port." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPIO-stift för roterande encoder B-port."
+          }
+        }
+      }
     },
     "GPIO pin for rotary encoder Press port." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPIO-stift för roterande encoder tryckport."
+          }
+        }
+      }
     },
     "GPIO Pin to monitor" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPIO-stift att övervaka"
+          }
+        }
+      }
     },
     "GPS EN GPIO" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPS EN GPIO"
+          }
+        }
+      }
     },
     "GPS Format" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPS Format"
+          }
+        }
+      }
     },
     "GPS Receive GPIO" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPS-mottagning GPIO"
+          }
+        }
+      }
     },
     "GPS Transmit GPIO" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPS-sändning GPIO"
+          }
+        }
+      }
     },
     "gpsformat.dec" : {
       "extractionState" : "migrated",
@@ -8989,6 +10045,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Decimalgrader"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Format för decimalgrader"
           }
         },
         "zh-Hans" : {
@@ -9048,6 +10110,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Grader Minuter Sekunder"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grader, minuter, sekunder"
           }
         },
         "zh-Hans" : {
@@ -9332,6 +10400,12 @@
             "state" : "translated",
             "value" : "Inaktiverad"
           }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inaktiverad"
+          }
         }
       }
     },
@@ -9363,6 +10437,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktiverad"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aktiverad"
@@ -10048,6 +11128,12 @@
             "value" : "Ner"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ner"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10405,6 +11491,12 @@
             "value" : "Arton Timmar"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arton timmar"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10481,6 +11573,12 @@
             "value" : "Femton Minuter"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Femton minuter"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10538,6 +11636,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Femton Sekunder"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Femton sekunder"
           }
         },
         "zh-Hans" : {
@@ -10599,6 +11703,12 @@
             "value" : "Fem Timmar"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fem timmar"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10656,6 +11766,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fem Minuter"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fem minuter"
           }
         },
         "zh-Hans" : {
@@ -10717,6 +11833,12 @@
             "value" : "Fem Sekunder"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fem sekunder"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10775,6 +11897,12 @@
             "state" : "translated",
             "value" : "Fyrtioåtta Timmar"
           }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fyrtioåtta timmar"
+          }
         }
       }
     },
@@ -10821,6 +11949,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fyrtiofem Sekunder"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fyrtiofem sekunder"
           }
         },
         "zh-Hans" : {
@@ -10882,6 +12016,12 @@
             "value" : "Fyra Timmar"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fyra timmar"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10939,6 +12079,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fyra Sekunder"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fyra sekunder"
           }
         },
         "zh-Hans" : {
@@ -12950,6 +14096,12 @@
             "value" : "Radera Alla Kartplattor"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radera alla kartbrickor"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13004,6 +14156,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standardtyp"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Standardtyp"
@@ -13186,6 +14344,12 @@
             "value" : "Följ"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Följ"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13240,6 +14404,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Följ med riktning"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Följ med riktning"
@@ -13931,6 +15101,12 @@
             "value" : "Konfiguration för detektionssensormodulen mottagen: %@"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguration för detekteringssensormodul mottagen: %@"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13985,6 +15161,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhetskonfiguration mottagen: %@"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enhetskonfiguration mottagen: %@"
@@ -14047,6 +15229,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Metadata för enhet mottagen från: %@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhetsmetadata mottagen från: %@"
           }
         },
         "zh-Hans" : {
@@ -14167,6 +15355,12 @@
             "value" : "Skärmkonfiguration mottagen: %@"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skärmkonfiguration mottagen: %@"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14224,6 +15418,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Konfiguration för modulen för externa notifikationer mottagen: %@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguration för extern avisering mottagen: %@"
           }
         },
         "zh-Hans" : {
@@ -16421,6 +17621,12 @@
             "value" : "Koppla från MQTT"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koppla bort från MQTT"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17577,6 +18783,12 @@
             "state" : "translated",
             "value" : "Radera all paxdata?"
           }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radera all pax-data?"
+          }
         }
       }
     },
@@ -18581,6 +19793,12 @@
             "state" : "translated",
             "value" : "Noite"
           }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kväll"
+          }
         }
       }
     },
@@ -19084,6 +20302,12 @@
             "state" : "translated",
             "value" : "Conduzir"
           }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Körning"
+          }
         }
       }
     },
@@ -19123,6 +20347,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Conduzir"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "köra"
           }
         }
       }
@@ -20645,6 +21875,12 @@
             "value" : "Standard"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21796,6 +23032,12 @@
             "value" : "Utropstecken"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utropstecken"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22661,6 +23903,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ansluten Radio"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ansluten radio"
           }
         },
         "zh-Hans" : {
