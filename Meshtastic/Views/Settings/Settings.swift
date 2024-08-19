@@ -364,21 +364,28 @@ struct Settings: View {
 											.tag(Int(node.num))
 										} else if node.canRemoteAdmin && UserDefaults.enableAdministration && node.sessionPasskey != nil { /// Nodes using the new PKI system
 											Label {
-												Text("Remote: \(node.user?.longName ?? "unknown".localized)")
+												Text("Remote PKI Admin: \(node.user?.longName ?? "unknown".localized)")
 											} icon: {
 												Image(systemName: "av.remote")
 											}
 											.tag(Int(node.num))
-										} else if node.metadata != nil { /// Nodes using the old admin system
+										} else if  !UserDefaults.enableAdministration && node.metadata != nil { /// Nodes using the old admin system
 											Label {
-												Text("Remote: \(node.user?.longName ?? "unknown".localized)")
+												Text("Remote Legacy Admin: \(node.user?.longName ?? "unknown".localized)")
 											} icon: {
 												Image(systemName: "av.remote")
 											}
 											.tag(Int(node.num))
-										} else {
+										} else if UserDefaults.enableAdministration && node.user?.pkiEncrypted ?? false {
 											Label {
-												Text("Request Admin: \(node.user?.longName ?? "unknown".localized)")
+												Text("Request PKI Admin: \(node.user?.longName ?? "unknown".localized)")
+											} icon: {
+												Image(systemName: "rectangle.and.hand.point.up.left")
+											}
+											.tag(Int(node.num))
+										} else if !UserDefaults.enableAdministration {
+											Label {
+												Text("Request Legacy Admin: \(node.user?.longName ?? "unknown".localized)")
 											} icon: {
 												Image(systemName: "rectangle.and.hand.point.up.left")
 											}

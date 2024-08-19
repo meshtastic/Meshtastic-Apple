@@ -17261,7 +17261,10 @@
     "Remote administration for: %@" : {
 
     },
-    "Remote: %@" : {
+    "Remote Legacy Admin: %@" : {
+
+    },
+    "Remote PKI Admin: %@" : {
 
     },
     "Remove" : {
@@ -17331,7 +17334,10 @@
         }
       }
     },
-    "Request Admin: %@" : {
+    "Request Legacy Admin: %@" : {
+
+    },
+    "Request PKI Admin: %@" : {
 
     },
     "Requires that there be an accelerometer on your device." : {
