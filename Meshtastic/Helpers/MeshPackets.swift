@@ -198,7 +198,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 	}
 }
 
-func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NSManagedObjectContext) {
+func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	if metadata.isInitialized {
 		let logString = String.localizedStringWithFormat("mesh.log.device.metadata.received %@".localized, fromNum.toHex())
@@ -231,6 +231,10 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 					let newNode = createNodeInfo(num: Int64(fromNum), context: context)
 					newNode.metadata = newMetadata
 				}
+			}
+			if sessionPasskey?.count != 0 {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -488,7 +492,7 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getChannelResponse(adminMessage.getChannelResponse) {
 			channelPacket(channel: adminMessage.getChannelResponse, fromNum: Int64(packet.from), context: context)
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getDeviceMetadataResponse(adminMessage.getDeviceMetadataResponse) {
-			deviceMetadataPacket(metadata: adminMessage.getDeviceMetadataResponse, fromNum: Int64(packet.from), context: context)
+			deviceMetadataPacket(metadata: adminMessage.getDeviceMetadataResponse, fromNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getConfigResponse(adminMessage.getConfigResponse) {
 			let config = adminMessage.getConfigResponse
 			if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
@@ -506,7 +510,7 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.power(config.power) {
 				upsertPowerConfigPacket(config: config.power, nodeNum: Int64(packet.from), context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.security(config.security) {
-				upsertSecurityConfigPacket(config: config.security, nodeNum: Int64(packet.from), context: context)
+				upsertSecurityConfigPacket(config: config.security, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			}
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getModuleConfigResponse(adminMessage.getModuleConfigResponse) {
 			let moduleConfig = adminMessage.getModuleConfigResponse

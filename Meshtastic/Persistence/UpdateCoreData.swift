@@ -828,7 +828,7 @@ func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, s
 				fetchedNode[0].securityConfig?.debugLogApiEnabled = config.debugLogApiEnabled
 				fetchedNode[0].securityConfig?.bluetoothLoggingEnabled = config.bluetoothLoggingEnabled
 			}
-			if sessionPasskey != nil {
+			if sessionPasskey?.count != 0 {
 				fetchedNode[0].sessionPasskey = sessionPasskey
 				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
