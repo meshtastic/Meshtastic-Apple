@@ -49,6 +49,8 @@ struct LoRaConfig: View {
 	let floatFormatter: NumberFormatter = {
 		let formatter = NumberFormatter()
 		formatter.numberStyle = .decimal
+		formatter.allowsFloats = true
+		formatter.maximumFractionDigits = 4
 		return formatter
 	}()
 
