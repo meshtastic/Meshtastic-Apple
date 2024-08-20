@@ -149,9 +149,11 @@ struct SecurityConfig: View {
 			}
 			hasChanges = true
 		}
-		.onChange(of: adminKey) { _ in
-			let tempAdminKey = Data(base64Encoded: adminKey) ?? Data()
-			if tempAdminKey.count == 0 || tempAdminKey.count == 32 {
+		.onChange(of: adminKey) { key in
+			let tempKey = Data(base64Encoded: key) ?? Data()
+			if key.isEmpty {
+				hasValidAdminKey = true
+			} else if tempKey.count == 32 {
 				hasValidAdminKey = true
 			} else {
 				hasValidAdminKey = false
