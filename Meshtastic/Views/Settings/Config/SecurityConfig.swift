@@ -172,7 +172,7 @@ struct SecurityConfig: View {
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 
-			if !hasValidAdminKey || !hasValidPrivateKey || !hasValidAdminKey {
+			if !hasValidPublicKey || !hasValidPrivateKey || !hasValidAdminKey {
 				return
 			}
 
