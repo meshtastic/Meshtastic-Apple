@@ -45,7 +45,7 @@ extension UserEntity {
 			return "HELTECWIRELESSTRACKER"
 		case "HELTECWSLV3":
 			return "HELTECWSLV3"
-		case "LILYGOTBEAMSCORE":
+		case "LILYGOTBEAMS3CORE":
 			return "LILYGOTBEAMS3CORE"
 		case "NANOG1", "NANOG1EXPLORER":
 			return "NANOG1"
@@ -57,10 +57,10 @@ extension UserEntity {
 			return "RAK11200"
 		case "SOLAR_NODE":
 			return "SOLAR_NODE"
-		case "STATIONG1":
+		case "STATIONG1", "STATIONG2":
 			return "STATIONG1"
-		case "ТВЕАМ", "TBEAMVOP7":
-			return "ТВЕАМ"
+		case "TBEAM", "TBEAMVOP7":
+			return "TBEAM"
 		case "TECHO":
 			return "TECHO"
 		case "TLORAV1", "TLORAV11P3":
@@ -69,6 +69,24 @@ extension UserEntity {
 			return "TLORABOARD"
 		case "UNPHONE":
 			return "UNPHONE"
+		case "RPIPICO", "PICOMPUTERS3":
+			return "RPIPICO"
+		case "HELTECVISIONMASTERE290":
+			return "VISIONMASTERE290"
+		case "RADIOMASTER900BANDITNANO":
+			return "BANDITNANO"
+		case "TRACKER_T1000_E":
+			return "T1000E"
+		case "HELTECVISIONMASTERE213":
+			return "VISIONMASTERE290"
+		case "HELTECVISIONMASTERT190":
+			return "VISIONMASTERT190"
+		case "TDECK":
+			return "TDECK"
+		case "TWATCHS3":
+			return "TWATCHS3"
+		case "PORTDUINO":
+			return "LINUX"
 		default:
 			return "UNSET"
 		}
