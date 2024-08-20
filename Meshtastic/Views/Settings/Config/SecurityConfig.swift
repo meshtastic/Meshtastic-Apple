@@ -22,8 +22,11 @@ struct SecurityConfig: View {
 
 	@State var hasChanges = false
 	@State var publicKey = ""
+	@State var hasValidPublicKey: Bool = false
 	@State var privateKey = ""
+	@State var hasValidPrivateKey: Bool = false
 	@State var adminKey = ""
+	@State var hasValidAdminKey: Bool = true
 	@State var isManaged = false
 	@State var serialEnabled = false
 	@State var debugLogApiEnabled = false
@@ -38,21 +41,29 @@ struct SecurityConfig: View {
 				Section(header: Text("Admin & Direct Message Keys")) {
 					VStack(alignment: .leading) {
 						Label("Public Key", systemImage: "key")
-						SecureInput("Public Key", text: $publicKey)
+						SecureInput("Public Key", text: $publicKey, isValid: $hasValidPublicKey)
+							.background(
+								RoundedRectangle(cornerRadius: 10.0)
+									.stroke(hasValidPublicKey ?	Color.clear : Color.red, lineWidth: 2.0)
+							)
 						Text("Sent out to other nodes on the mesh to allow them to compute a shared secret key.")
 							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
 					}
 					VStack(alignment: .leading) {
 						Label("Private Key", systemImage: "key.fill")
-						SecureInput("Private Key", text: $privateKey)
+						SecureInput("Private Key", text: $privateKey, isValid: $hasValidPrivateKey)
+							.background(
+								RoundedRectangle(cornerRadius: 10.0)
+									.stroke(hasValidPrivateKey ? Color.clear : Color.red, lineWidth: 2.0)
+							)
 						Text("Used to create a shared key with a remote device.")
 							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
 					}
 					VStack(alignment: .leading) {
 						Label("Admin Key", systemImage: "key.viewfinder")
-						SecureInput("Private Key", text: $adminKey)
+						SecureInput("Admin Key", text: $adminKey, isValid: $hasValidAdminKey)
 						Text("The public key authorized to send admin messages to this node.")
 							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
@@ -121,12 +132,32 @@ struct SecurityConfig: View {
 			if $0 != node?.securityConfig?.adminChannelEnabled { hasChanges = true }
 		}
 		.onChange(of: publicKey) { _ in
+			let tempKey = Data(base64Encoded: publicKey) ?? Data()
+			if tempKey.count == 32 {
+				hasValidPublicKey = true
+			} else {
+				hasValidPublicKey = false
+			}
 			hasChanges = true
 		}
 		.onChange(of: privateKey) { _ in
+			let tempKey = Data(base64Encoded: privateKey) ?? Data()
+			if tempKey.count == 32 {
+				hasValidPrivateKey = true
+			} else {
+				hasValidPrivateKey = false
+			}
 			hasChanges = true
 		}
-		.onChange(of: adminKey) { _ in
+		.onChange(of: adminKey) { key in
+			let tempKey = Data(base64Encoded: key) ?? Data()
+			if key.isEmpty {
+				hasValidAdminKey = true
+			} else if tempKey.count == 32 {
+				hasValidAdminKey = true
+			} else {
+				hasValidAdminKey = false
+			}
 			hasChanges = true
 		}
 		.onFirstAppear {
@@ -140,6 +171,11 @@ struct SecurityConfig: View {
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
+
+			if !hasValidPublicKey || !hasValidPrivateKey || !hasValidAdminKey {
+				return
+			}
+
 			guard let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context),
 				  let fromUser = connectedNode.user,
 				  let toUser = node?.user else {
