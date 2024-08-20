@@ -11,12 +11,14 @@ struct SecureInput: View {
 
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@Binding private var text: String
+	@Binding private var isValid: Bool
 	@State private var isSecure: Bool = true
 	private var title: String
 
-	init(_ title: String, text: Binding<String>) {
+	init(_ title: String, text: Binding<String>, isValid: Binding<Bool>) {
 		self.title = title
 		self._text = text
+		self._isValid = isValid
 	}
 
 	var body: some View {
@@ -41,6 +43,10 @@ struct SecureInput: View {
 						.disableAutocorrection(true)
 						.textSelection(.enabled)
 						.lineLimit(...3)
+						.background(
+							RoundedRectangle(cornerRadius: 10.0)
+								.stroke(isValid ? Color.clear : Color.red, lineWidth: 2.0)
+						)
 				}
 			}.padding(.trailing, 36)
 
