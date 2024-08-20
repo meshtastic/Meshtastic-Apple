@@ -32,7 +32,6 @@ struct SecureInput: View {
 						.keyboardType(.alphabet)
 						.foregroundStyle(.tertiary)
 						.disableAutocorrection(true)
-						.textSelection(.enabled)
 				} else {
 					TextField(title, text: $text, axis: .vertical)
 						.font(idiom == .phone ? .caption : .callout)
