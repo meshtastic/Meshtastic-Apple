@@ -6,6 +6,9 @@ import SwiftUI
 struct NodeList: View {
 	private let detailInfoFont = Font.system(size: 14, weight: .regular, design: .rounded)
 	private let detailIconSize: CGFloat = 16
+	private let debounce = Debounce<() async -> Void>(duration: .milliseconds(500)) { action in
+		await action()
+	}
 
 	@SceneStorage("selectedDetailView")
 	private var selectedDetailView: String?
@@ -96,12 +99,12 @@ struct NodeList: View {
 			)
 		}
 		.onChange(of: nodes, initial: true) {
-			Task {
+			debounce.emit {
 				await countNodes()
 			}
 		}
 		.onChange(of: bleManager.deviceConnected, initial: true) {
-			Task {
+			debounce.emit {
 				await countNodes()
 			}
 		}

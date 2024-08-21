@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		084A3D422C7651EC0026433E /* StateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 084A3D412C7651E70026433E /* StateMachine.swift */; };
+		084A3D442C76520A0026433E /* SafeStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 084A3D432C7652080026433E /* SafeStorage.swift */; };
+		084A3D462C76522A0026433E /* Debounce.swift in Sources */ = {isa = PBXBuildFile; fileRef = 084A3D452C7652280026433E /* Debounce.swift */; };
 		085721B62C76220B000CE2B7 /* Meowtastic.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 0857218B2C76220B000CE2B7 /* Meowtastic.xcdatamodeld */; };
 		08DD7E512C41B0BA00548159 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E502C41B0BA00548159 /* AppState.swift */; };
 		08DD7E532C41CBBD00548159 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 08DD7E522C41CBBD00548159 /* Localizable.xcstrings */; };
@@ -120,7 +123,7 @@
 		DD994B69295F88B60013760A /* UpdateIntervals.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD994B68295F88B60013760A /* UpdateIntervals.swift */; };
 		DDA0B6B2294CDC55001356EC /* Channels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA0B6B1294CDC55001356EC /* Channels.swift */; };
 		DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */; };
-		DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */; };
+		DDA6B2E928419CF2003E8C16 /* BLEManager+MeshPackets.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA6B2E828419CF2003E8C16 /* BLEManager+MeshPackets.swift */; };
 		DDAB580F2B0DAFBC00147258 /* LocationEntity+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAB580E2B0DAFBC00147258 /* LocationEntity+Extension.swift */; };
 		DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5226EB1DF10058C060 /* BLEManager.swift */; };
 		DDB6ABD628AE742000384BA1 /* BluetoothConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */; };
@@ -176,6 +179,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		084A3D412C7651E70026433E /* StateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMachine.swift; sourceTree = "<group>"; };
+		084A3D432C7652080026433E /* SafeStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafeStorage.swift; sourceTree = "<group>"; };
+		084A3D452C7652280026433E /* Debounce.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Debounce.swift; sourceTree = "<group>"; };
 		0857218C2C76220B000CE2B7 /* MeshtasticDataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModel.xcdatamodel; sourceTree = "<group>"; };
 		0857218D2C76220B000CE2B7 /* MeshtasticDataModelV 23.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 23.xcdatamodel"; sourceTree = "<group>"; };
 		0857218E2C76220B000CE2B7 /* MeshtasticDataModelV 24.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 24.xcdatamodel"; sourceTree = "<group>"; };
@@ -325,7 +331,7 @@
 		DD994B68295F88B60013760A /* UpdateIntervals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateIntervals.swift; sourceTree = "<group>"; };
 		DDA0B6B1294CDC55001356EC /* Channels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channels.swift; sourceTree = "<group>"; };
 		DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelRoles.swift; sourceTree = "<group>"; };
-		DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshPackets.swift; sourceTree = "<group>"; };
+		DDA6B2E828419CF2003E8C16 /* BLEManager+MeshPackets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BLEManager+MeshPackets.swift"; sourceTree = "<group>"; };
 		DDAB580E2B0DAFBC00147258 /* LocationEntity+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LocationEntity+Extension.swift"; sourceTree = "<group>"; };
 		DDAF8C5226EB1DF10058C060 /* BLEManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEManager.swift; sourceTree = "<group>"; };
 		DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothConfig.swift; sourceTree = "<group>"; };
@@ -388,6 +394,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		084A3D402C7651CD0026433E /* Debouncer */ = {
+			isa = PBXGroup;
+			children = (
+				084A3D452C7652280026433E /* Debounce.swift */,
+				084A3D432C7652080026433E /* SafeStorage.swift */,
+				084A3D412C7651E70026433E /* StateMachine.swift */,
+			);
+			path = Debouncer;
+			sourceTree = "<group>";
+		};
 		08DD7E4D2C41AC8F00548159 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
@@ -410,7 +426,6 @@
 				DDC2E18826CE24EE0042C5E4 /* Model */,
 				DDC4D5662754996200A4208E /* Persistence */,
 				DDD43FE12A78C86B0083A3E9 /* MQTT */,
-				DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */,
 				B28CFF7E2C5D029D0012DCB4 /* README.md */,
 			);
 			path = "Circles Of Hell";
@@ -513,9 +528,10 @@
 			children = (
 				B284A42C2C6F87B200D5122B /* BLEManager+CBCentralManager.swift */,
 				B284A42E2C6F889000D5122B /* BLEManager+CBPeripheralDelegate.swift */,
+				DDA6B2E828419CF2003E8C16 /* BLEManager+MeshPackets.swift */,
 				B284A4302C6F88F400D5122B /* BLEManager+MqttClientProxyManagerDelegate.swift */,
-				B28DC0E22C710318007990B3 /* Data+Extensions.swift */,
 				B2CC552B2C7374EC003FB487 /* CBPeripheral+Extensions.swift */,
+				B28DC0E22C710318007990B3 /* Data+Extensions.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -764,6 +780,7 @@
 		DDC2E1A526CEB32B0042C5E4 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				084A3D402C7651CD0026433E /* Debouncer */,
 				B266A74F2C59218100DFC723 /* Api */,
 				08DD7E542C41D63800548159 /* AppConstants.swift */,
 				6D825E612C34786C008DBEE4 /* CommonRegex.swift */,
@@ -1039,8 +1056,10 @@
 				DD2553592855B52700E55709 /* PositionConfig.swift in Sources */,
 				DD97E96828EFE9A00056DDA4 /* About.swift in Sources */,
 				085721B62C76220B000CE2B7 /* Meowtastic.xcdatamodeld in Sources */,
+				084A3D442C76520A0026433E /* SafeStorage.swift in Sources */,
 				DDDB444029F79AB000EE2349 /* UserDefaults.swift in Sources */,
 				DDB6ABE028B13AC700384BA1 /* DeviceRoles.swift in Sources */,
+				084A3D462C76522A0026433E /* Debounce.swift in Sources */,
 				B2A5F3132C5668FD009457AB /* MeshMap.swift in Sources */,
 				D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */,
 				DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */,
@@ -1053,7 +1072,7 @@
 				B266A7672C5927F300DFC723 /* ModemPresets.swift in Sources */,
 				DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */,
 				B2A5F3092C5668FD009457AB /* NodeListItem.swift in Sources */,
-				DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */,
+				DDA6B2E928419CF2003E8C16 /* BLEManager+MeshPackets.swift in Sources */,
 				DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */,
 				DDB75A212A12B954006ED576 /* LoraSignalView.swift in Sources */,
 				B2A5F2FF2C5668FD009457AB /* FavoriteNodeButton.swift in Sources */,
@@ -1080,6 +1099,7 @@
 				DDAB580F2B0DAFBC00147258 /* LocationEntity+Extension.swift in Sources */,
 				B3E905B12B71F7F300654D07 /* TextMessageField.swift in Sources */,
 				D93068D72B8146690066FBC8 /* MessageView.swift in Sources */,
+				084A3D422C7651EC0026433E /* StateMachine.swift in Sources */,
 				DDC2E15826CE248E0042C5E4 /* Meowtastic.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

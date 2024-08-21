@@ -9,6 +9,9 @@ struct Connect: View {
 	private let isInSheet: Bool
 	private let deviceFont = Font.system(size: 18, weight: .regular, design: .rounded)
 	private let detailInfoFont = Font.system(size: 14, weight: .regular, design: .rounded)
+	private let debounce = Debounce<() async -> Void>(duration: .milliseconds(500)) { action in
+		await action()
+	}
 
 	@Environment(\.managedObjectContext)
 	private var context
@@ -77,18 +80,19 @@ struct Connect: View {
 			bleManager.stopScanning()
 		}
 		.onChange(of: bleManager.devices, initial: true) {
-			Task {
+			debounce.emit {
 				await loadPeripherals()
+				await fetchNodeInfo()
 			}
 		}
 		.onChange(of: bleManager.isConnected, initial: true) {
-			Task {
+			debounce.emit {
 				await loadPeripherals()
 				await fetchNodeInfo()
 			}
 		}
 		.onChange(of: bleManager.isSubscribed) {
-			Task {
+			debounce.emit {
 				await loadPeripherals()
 				await fetchNodeInfo()
 			}
