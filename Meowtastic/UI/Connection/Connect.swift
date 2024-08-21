@@ -150,7 +150,7 @@ struct Connect: View {
 			})
 
 			HStack(alignment: .top, spacing: 8) {
-				connectionAvatar
+				connectionAvatar(for: node)
 
 				VStack(alignment: .leading, spacing: 8) {
 					if node != nil {
@@ -306,8 +306,68 @@ struct Connect: View {
 		}
 	}
 
+
 	@ViewBuilder
-	private var connectionAvatar: some View {
+	private var visible: some View {
+		Section("Visible Devices") {
+			ForEach(visibleDevices) { peripheral in
+				Button {
+					bleManager.connectTo(peripheral: peripheral.peripheral)
+				} label: {
+					HStack(alignment: .center, spacing: 16) {
+						HStack(spacing: 16) {
+							SignalStrengthIndicator(
+								signalStrength: peripheral.getSignalStrength(),
+								size: 14,
+								color: .gray
+							)
+
+							Text(peripheral.name)
+								.font(deviceFont)
+								.foregroundColor(.gray)
+						}
+
+						if UserDefaults.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
+							Spacer()
+
+							Image(systemName: "star.fill")
+								.font(deviceFont)
+								.foregroundColor(.gray)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	init(
+		node: NodeInfoEntity? = nil,
+		isInSheet: Bool = false
+	) {
+		self.node = node
+		self.isInSheet = isInSheet
+		self.visibleDevices = []
+
+		UNUserNotificationCenter.current().getNotificationSettings(
+			completionHandler: { settings in
+				if settings.authorizationStatus == .notDetermined {
+					UNUserNotificationCenter.current().requestAuthorization(
+						options: [.alert, .badge, .sound]
+					) { success, error in
+						if success {
+							Logger.services.info("Notifications are all set!")
+						}
+						else if let error = error {
+							Logger.services.error("\(error.localizedDescription)")
+						}
+					}
+				}
+			}
+		)
+	}
+
+	@ViewBuilder
+	private func connectionAvatar(for node: NodeInfoEntity?) -> some View {
 		ZStack(alignment: .top) {
 			if let node {
 				AvatarNode(
@@ -373,65 +433,6 @@ struct Connect: View {
 			}
 		}
 		.frame(width: 80, height: 80)
-	}
-
-	@ViewBuilder
-	private var visible: some View {
-		Section("Visible Devices") {
-			ForEach(visibleDevices) { peripheral in
-				Button {
-					bleManager.connectTo(peripheral: peripheral.peripheral)
-				} label: {
-					HStack(alignment: .center, spacing: 16) {
-						HStack(spacing: 16) {
-							SignalStrengthIndicator(
-								signalStrength: peripheral.getSignalStrength(),
-								size: 14,
-								color: .gray
-							)
-
-							Text(peripheral.name)
-								.font(deviceFont)
-								.foregroundColor(.gray)
-						}
-
-						if UserDefaults.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
-							Spacer()
-
-							Image(systemName: "star.fill")
-								.font(deviceFont)
-								.foregroundColor(.gray)
-						}
-					}
-				}
-			}
-		}
-	}
-
-	init(
-		node: NodeInfoEntity? = nil,
-		isInSheet: Bool = false
-	) {
-		self.node = node
-		self.isInSheet = isInSheet
-		self.visibleDevices = []
-
-		UNUserNotificationCenter.current().getNotificationSettings(
-			completionHandler: { settings in
-				if settings.authorizationStatus == .notDetermined {
-					UNUserNotificationCenter.current().requestAuthorization(
-						options: [.alert, .badge, .sound]
-					) { success, error in
-						if success {
-							Logger.services.info("Notifications are all set!")
-						}
-						else if let error = error {
-							Logger.services.error("\(error.localizedDescription)")
-						}
-					}
-				}
-			}
-		)
 	}
 
 	private func loadPeripherals() async {

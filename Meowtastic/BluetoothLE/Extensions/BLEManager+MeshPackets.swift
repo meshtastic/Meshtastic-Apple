@@ -5,6 +5,7 @@ import OSLog
 import RegexBuilder
 import SwiftUI
 
+// swiftlint:disable file_length
 extension BLEManager {
 	func generateMessageMarkdown(message: String) -> String {
 		guard !message.isEmoji() else {
@@ -194,30 +195,23 @@ extension BLEManager {
 			myInfoEntity.myNodeNum = Int64(myInfo.myNodeNum)
 			myInfoEntity.rebootCount = Int32(myInfo.rebootCount)
 
-			do {
-				try context.save()
+			debounce.emit { [weak self] in
+				await self?.saveData()
+			}
 
-				return myInfoEntity
-			}
-			catch {
-				context.rollback()
-			}
-		} else {
+			return myInfoEntity
+		}
+		else {
 			fetchedMyInfo[0].peripheralId = peripheralId
 			fetchedMyInfo[0].myNodeNum = Int64(myInfo.myNodeNum)
 			fetchedMyInfo[0].rebootCount = Int32(myInfo.rebootCount)
 
-			do {
-				try context.save()
+			debounce.emit { [weak self] in
+				await self?.saveData()
+			}
 
-				return fetchedMyInfo[0]
-			}
-			catch {
-				context.rollback()
-			}
+			return fetchedMyInfo[0]
 		}
-
-		return nil
 	}
 
 	func channelPacket(channel: Channel, fromNum: Int64, context: NSManagedObjectContext) {
@@ -259,7 +253,8 @@ extension BLEManager {
 		}) as? ChannelEntity {
 			let index = mutableChannels.index(of: oldChannel as Any)
 			mutableChannels.replaceObject(at: index, with: newChannel)
-		} else {
+		}
+		else {
 			mutableChannels.add(newChannel)
 		}
 
@@ -269,11 +264,9 @@ extension BLEManager {
 		}
 
 		context.refresh(newChannel, mergeChanges: true)
-		do {
-			try context.save()
-		}
-		catch {
-			context.rollback()
+
+		debounce.emit { [weak self] in
+			await self?.saveData()
 		}
 	}
 
@@ -321,14 +314,12 @@ extension BLEManager {
 			}
 		}
 
-		do {
-			try context.save()
-		}
-		catch {
-			context.rollback()
+		debounce.emit { [weak self] in
+			await self?.saveData()
 		}
 	}
 
+	// swiftlint:disable:next cyclomatic_complexity
 	func nodeInfoPacket(
 		nodeInfo: NodeInfo,
 		channel: UInt32,
@@ -428,16 +419,11 @@ extension BLEManager {
 					newNode.myInfo = fetchedMyInfo[0]
 				}
 
-				do {
-					try context.save()
-					Logger.data.info("💾 Saved a new Node Info For: \(String(nodeInfo.num))")
-					return newNode
+				debounce.emit { [weak self] in
+					await self?.saveData()
 				}
-				catch {
-					context.rollback()
-					let nsError = error as NSError
-					Logger.data.error("Error Saving Core Data NodeInfoEntity: \(nsError)")
-				}
+
+				return newNode
 			}
 		}
 		else if nodeInfo.num > 0 {
@@ -453,22 +439,26 @@ extension BLEManager {
 				if fetchedNode[0].user == nil {
 					fetchedNode[0].user = UserEntity(context: context)
 				}
-				fetchedNode[0].user!.userId = nodeInfo.user.id
-				fetchedNode[0].user!.num = Int64(nodeInfo.num)
-				fetchedNode[0].user!.numString = String(nodeInfo.num)
-				fetchedNode[0].user!.longName = nodeInfo.user.longName
-				fetchedNode[0].user!.shortName = nodeInfo.user.shortName
-				fetchedNode[0].user!.isLicensed = nodeInfo.user.isLicensed
-				fetchedNode[0].user!.role = Int32(nodeInfo.user.role.rawValue)
-				fetchedNode[0].user!.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
-				fetchedNode[0].user!.hwModelId = Int32(nodeInfo.user.hwModel.rawValue)
+				fetchedNode[0].user?.userId = nodeInfo.user.id
+				fetchedNode[0].user?.num = Int64(nodeInfo.num)
+				fetchedNode[0].user?.numString = String(nodeInfo.num)
+				fetchedNode[0].user?.longName = nodeInfo.user.longName
+				fetchedNode[0].user?.shortName = nodeInfo.user.shortName
+				fetchedNode[0].user?.isLicensed = nodeInfo.user.isLicensed
+				fetchedNode[0].user?.role = Int32(nodeInfo.user.role.rawValue)
+				fetchedNode[0].user?.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
+				fetchedNode[0].user?.hwModelId = Int32(nodeInfo.user.hwModel.rawValue)
 
 				Task {
 					Api().loadDeviceHardwareData { hw in
 						let dh = hw.first(where: {
-							$0.hwModel == fetchedNode[0].user!.hwModelId
+							guard let id = fetchedNode[0].user?.hwModelId else {
+								return false
+							}
+
+							return $0.hwModel == id
 						})
-						fetchedNode[0].user!.hwDisplayName = dh?.displayName
+						fetchedNode[0].user?.hwDisplayName = dh?.displayName
 					}
 				}
 			}
@@ -486,7 +476,9 @@ extension BLEManager {
 				newTelemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
 				newTelemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
 
-				guard let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as? NSMutableOrderedSet else {
+				guard
+					let mutableTelemetries = fetchedNode[0].telemetries?.mutableCopy() as? NSMutableOrderedSet
+				else {
 					return nil
 				}
 
@@ -507,7 +499,9 @@ extension BLEManager {
 					position.satsInView = Int32(nodeInfo.position.satsInView)
 					position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
 
-					guard let mutablePositions = fetchedNode[0].positions!.mutableCopy() as? NSMutableOrderedSet else {
+					guard
+						let mutablePositions = fetchedNode[0].positions?.mutableCopy() as? NSMutableOrderedSet
+					else {
 						return nil
 					}
 
@@ -525,19 +519,18 @@ extension BLEManager {
 					fetchedNode[0].myInfo = fetchedMyInfo[0]
 				}
 
-				do {
-					try context.save()
-
-					return fetchedNode[0]
-				} catch {
-					context.rollback()
+				debounce.emit { [weak self] in
+					await self?.saveData()
 				}
+
+				return fetchedNode[0]
 			}
 		}
 
 		return nil
 	}
 
+	// swiftlint:disable:next cyclomatic_complexity
 	func adminAppPacket(packet: MeshPacket, context: NSManagedObjectContext) {
 		guard
 			let message = try? AdminMessage(serializedData: packet.decoded.payload),
@@ -562,17 +555,14 @@ extension BLEManager {
 				break
 			}
 
-			let messages =  String(cmmc.textFormatString())
+			let messages = String(cmmc.textFormatString())
 				.replacingOccurrences(of: "11: ", with: "")
 				.replacingOccurrences(of: "\"", with: "")
 				.trimmingCharacters(in: .whitespacesAndNewlines)
 			fetchedNode[0].cannedMessageConfig?.messages = messages
 
-			do {
-				try context.save()
-			}
-			catch {
-				context.rollback()
+			debounce.emit { [weak self] in
+				await self?.saveData()
 			}
 
 		case AdminMessage.OneOf_PayloadVariant.getChannelResponse(message.getChannelResponse):
@@ -754,11 +744,8 @@ extension BLEManager {
 		fetchedMessage[0].ackSNR = packet.rxSnr
 		fetchedMessage[0].fromUser?.objectWillChange.send()
 
-		do {
-			try context.save()
-		}
-		catch {
-			context.rollback()
+		debounce.emit { [weak self] in
+			await self?.saveData()
 		}
 	}
 
@@ -784,7 +771,9 @@ extension BLEManager {
 		mutablePax.add(newPax)
 		fetchedNode[0].pax = mutablePax
 
-		try? context.save()
+		debounce.emit { [weak self] in
+			await self?.saveData()
+		}
 	}
 
 	func routingPacket(packet: MeshPacket, connectedNodeNum: Int64, context: NSManagedObjectContext) {
@@ -799,9 +788,6 @@ extension BLEManager {
 			return
 		}
 
-		let routingError = RoutingError(rawValue: routingMessage.errorReason.rawValue)
-		let routingErrorString = routingError?.display ?? "unknown".localized
-
 		fetchedMessage[0].ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
 		fetchedMessage[0].ackSNR = packet.rxSnr
 		fetchedMessage[0].ackError = Int32(routingMessage.errorReason.rawValue)
@@ -811,15 +797,16 @@ extension BLEManager {
 				fetchedMessage[0].realACK = true
 			}
 
-			fetchedMessage[0].toUser!.objectWillChange.send()
-		} else {
+			fetchedMessage[0].toUser?.objectWillChange.send()
+		}
+		else {
 			let myInfoRequest = MyInfoEntity.fetchRequest()
 			myInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", connectedNodeNum)
 
 			if
 				let fetchedMyInfo = try? context.fetch(myInfoRequest),
 				!fetchedMyInfo.isEmpty,
-				let channels = fetchedMyInfo[0].channels!.array as? [ChannelEntity]
+				let channels = fetchedMyInfo[0].channels?.array as? [ChannelEntity]
 			{
 				for channel in channels where channel.index == packet.channel {
 					channel.objectWillChange.send()
@@ -831,11 +818,8 @@ extension BLEManager {
 			fetchedMessage[0].receivedACK = true
 		}
 
-		do {
-			try context.save()
-		}
-		catch {
-			context.rollback()
+		debounce.emit { [weak self] in
+			await self?.saveData()
 		}
 	}
 
@@ -894,7 +878,7 @@ extension BLEManager {
 			return
 		}
 
-		guard let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as? NSMutableOrderedSet else {
+		guard let mutableTelemetries = fetchedNode[0].telemetries?.mutableCopy() as? NSMutableOrderedSet else {
 			return
 		}
 		mutableTelemetries.add(telemetry)
@@ -904,14 +888,12 @@ extension BLEManager {
 		)
 		fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
 
-		do {
-			try context.save()
-		}
-		catch {
-			context.rollback()
+		debounce.emit { [weak self] in
+			await self?.saveData()
 		}
 	}
 
+	// swiftlint:disable:next cyclomatic_complexity
 	func textMessageAppPacket(
 		packet: MeshPacket,
 		wantRangeTestPackets: Bool,
@@ -963,12 +945,12 @@ extension BLEManager {
 			return
 		}
 
-
 		let newMessage = MessageEntity(context: context)
 		newMessage.messageId = Int64(packet.id)
 		if packet.rxTime == 0 {
 			newMessage.messageTimestamp = Int32(Date().timeIntervalSince1970)
-		} else {
+		}
+		else {
 			newMessage.messageTimestamp = Int32(packet.rxTime)
 		}
 		newMessage.receivedACK = false
@@ -1019,78 +1001,77 @@ extension BLEManager {
 			newMessage.fromUser?.lastMessage = Date.now
 		}
 
-		do {
-			try context.save()
+		debounce.emit { [weak self] in
+			await self?.saveData()
+		}
 
-			guard
-				UserDefaults.enableDetectionNotifications,
-				packet.decoded.portnum != .detectionSensorApp,
-				let fromUser = newMessage.fromUser
-			else {
-				return
+		guard
+			UserDefaults.enableDetectionNotifications,
+			packet.decoded.portnum != .detectionSensorApp,
+			let fromUser = newMessage.fromUser
+		else {
+			return
+		}
+
+		if let toUser = newMessage.toUser {
+			// Set Unread Message Indicators
+			if packet.to == connectedNode {
+				appState.unreadDirectMessages = toUser.unreadMessages
 			}
 
-			if let toUser = newMessage.toUser {
-				// Set Unread Message Indicators
-				if packet.to == connectedNode {
-					appState.unreadDirectMessages = toUser.unreadMessages
-				}
+			if !fromUser.mute {
+				let manager = LocalNotificationManager()
+				manager.notifications = [
+					Notification(
+						id: ("notification.id.\(newMessage.messageId)"),
+						title: "\(fromUser.longName ?? "unknown".localized)",
+						subtitle: "AKA \(fromUser.shortName ?? "?")",
+						content: messageText,
+						target: "messages",
+						path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)"
+					)
+				]
 
-				if !fromUser.mute {
-					let manager = LocalNotificationManager()
-					manager.notifications = [
-						Notification(
-							id: ("notification.id.\(newMessage.messageId)"),
-							title: "\(fromUser.longName ?? "unknown".localized)",
-							subtitle: "AKA \(fromUser.shortName ?? "?")",
-							content: messageText,
-							target: "messages",
-							path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)"
-						)
-					]
-
-					manager.schedule()
-				}
+				manager.schedule()
 			}
-			else {
-				let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
-				fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedNode))
+		}
+		else {
+			let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
+			fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedNode))
 
-				if
-					let fetchedMyInfo = try? context.fetch(fetchMyInfoRequest),
-					!fetchedMyInfo.isEmpty,
-					let channels = fetchedMyInfo[0].channels?.array as? [ChannelEntity]
-				{
-					appState.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
+			if
+				let fetchedMyInfo = try? context.fetch(fetchMyInfoRequest),
+				!fetchedMyInfo.isEmpty,
+				let channels = fetchedMyInfo[0].channels?.array as? [ChannelEntity]
+			{
+				appState.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
 
-					for channel in channels {
-						if channel.index == newMessage.channel {
-							context.refresh(channel, mergeChanges: true)
-						}
+				for channel in channels {
+					if channel.index == newMessage.channel {
+						context.refresh(channel, mergeChanges: true)
+					}
 
-						if
-							UserDefaults.channelMessageNotifications,
-							channel.index == newMessage.channel,
-							!channel.mute
-						{
-							let manager = LocalNotificationManager()
-							manager.notifications = [
-								Notification(
-									id: ("notification.id.\(newMessage.messageId)"),
-									title: "\(fromUser.longName ?? "unknown".localized)",
-									subtitle: "AKA \(fromUser.shortName ?? "?")",
-									content: messageText,
-									target: "messages",
-									path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.messageId)")
-							]
+					if
+						UserDefaults.channelMessageNotifications,
+						channel.index == newMessage.channel,
+						!channel.mute
+					{
+						let manager = LocalNotificationManager()
+						manager.notifications = [
+							Notification(
+								id: ("notification.id.\(newMessage.messageId)"),
+								title: "\(fromUser.longName ?? "unknown".localized)",
+								subtitle: "AKA \(fromUser.shortName ?? "?")",
+								content: messageText,
+								target: "messages",
+								path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.messageId)"
+							)
+						]
 
-							manager.schedule()
-						}
+						manager.schedule()
 					}
 				}
 			}
-		} catch {
-			context.rollback()
 		}
 	}
 
@@ -1120,34 +1101,34 @@ extension BLEManager {
 				waypoint.expire = Date(
 					timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire))
 				)
-			} else {
+			}
+			else {
 				waypoint.expire = nil
 			}
 
-			do {
-				try context.save()
-
-				let manager = LocalNotificationManager()
-				let icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
-				let latitude = Double(waypoint.latitudeI) / 1e7
-				let longitude = Double(waypoint.longitudeI) / 1e7
-
-				manager.notifications = [
-					Notification(
-						id: ("notification.id.\(waypoint.id)"),
-						title: "New Waypoint Received",
-						subtitle: "\(icon) \(waypoint.name ?? "Dropped Pin")",
-						content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")",
-						target: "map",
-						path: "meshtastic:///map?waypointid=\(waypoint.id)"
-					)
-				]
-
-				manager.schedule()
-			} catch {
-				context.rollback()
+			debounce.emit { [weak self] in
+				await self?.saveData()
 			}
-		} else {
+
+			let manager = LocalNotificationManager()
+			let icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
+			let latitude = Double(waypoint.latitudeI) / 1e7
+			let longitude = Double(waypoint.longitudeI) / 1e7
+
+			manager.notifications = [
+				Notification(
+					id: ("notification.id.\(waypoint.id)"),
+					title: "New Waypoint Received",
+					subtitle: "\(icon) \(waypoint.name ?? "Dropped Pin")",
+					content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")",
+					target: "map",
+					path: "meshtastic:///map?waypointid=\(waypoint.id)"
+				)
+			]
+
+			manager.schedule()
+		}
+		else {
 			fetchedWaypoint[0].id = Int64(packet.id)
 			fetchedWaypoint[0].name = waypointMessage.name
 			fetchedWaypoint[0].longDescription = waypointMessage.description_p
@@ -1160,14 +1141,13 @@ extension BLEManager {
 				fetchedWaypoint[0].expire = Date(
 					timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire))
 				)
-			} else {
+			}
+			else {
 				fetchedWaypoint[0].expire = nil
 			}
 
-			do {
-				try context.save()
-			} catch {
-				context.rollback()
+			debounce.emit { [weak self] in
+				await self?.saveData()
 			}
 		}
 	}
@@ -1205,3 +1185,4 @@ extension BLEManager {
 		manager.schedule()
 	}
 }
+// swiftlint:enable file_length

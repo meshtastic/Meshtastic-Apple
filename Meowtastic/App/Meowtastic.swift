@@ -74,15 +74,17 @@ struct Meowtastic: App {
 							addChannels = Bool(incomingUrl?["add"] ?? "false") ?? false
 
 							if incomingUrl?.absoluteString.lowercased().contains("?") != nil {
-								guard let cs = components.last!.components(separatedBy: "?").first else {
+								guard let cs = components.last?.components(separatedBy: "?").first else {
 									return
 								}
-								self.channelSettings = cs
+
+								channelSettings = cs
 							}
 							else {
 								guard let cs = components.first else {
 									return
 								}
+
 								channelSettings = cs
 							}
 							Logger.services.debug("Add Channel \(addChannels)")

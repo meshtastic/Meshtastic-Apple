@@ -113,7 +113,7 @@ final class NodeConfig: ObservableObject {
 		fromUser: UserEntity,
 		toUser: UserEntity
 	) -> Int64 {
-		return saveChannel(
+		saveChannel(
 			channel: channel,
 			fromUser: fromUser.num,
 			toUser: toUser.num
@@ -269,7 +269,7 @@ final class NodeConfig: ObservableObject {
 		toUser: UserEntity,
 		adminIndex: Int32
 	) -> Int64 {
-		return saveLoRaConfig(
+		saveLoRaConfig(
 			config: config,
 			fromUser: fromUser.num,
 			toUser: toUser.num,

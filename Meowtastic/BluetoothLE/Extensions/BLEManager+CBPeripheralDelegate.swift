@@ -212,12 +212,12 @@ extension BLEManager: CBPeripheralDelegate {
 						context: context
 					) {
 						UserDefaults.preferredPeripheralNum = Int(myInfo.myNodeNum)
-						
+
 						deviceConnected?.num = myInfo.myNodeNum
 						deviceConnected?.name = myInfo.bleName ?? "unknown".localized
 						deviceConnected?.longName = myInfo.bleName ?? "unknown".localized
 					}
-					
+
 					tryClearExistingChannels()
 				}
 

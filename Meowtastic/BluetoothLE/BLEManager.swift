@@ -8,13 +8,17 @@ import MeshtasticProtobufs
 import OSLog
 import SwiftUI
 
-// swiftlint:disable all
+// swiftlint:disable file_length
 class BLEManager: NSObject, ObservableObject {
 	let appState: AppState
 	let context: NSManagedObjectContext
+	let privateContext: NSManagedObjectContext
 	let centralManager: CBCentralManager
 	let mqttManager: MqttClientProxyManager
 	let minimumVersion = "2.0.0"
+	let debounce = Debounce<() async -> Void>(duration: .milliseconds(33)) { action in
+		await action()
+	}
 
 	@Published
 	var devices: [Device] = []
@@ -32,7 +36,7 @@ class BLEManager: NSObject, ObservableObject {
 	var mqttProxyConnected = false
 	@Published
 	var mqttError = ""
-	
+
 	var connectedVersion: String
 	var isConnecting = false
 	var isConnected = false
@@ -55,6 +59,7 @@ class BLEManager: NSObject, ObservableObject {
 	) {
 		self.appState = appState
 		self.context = context
+		self.privateContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
 		self.centralManager = CBCentralManager()
 		self.mqttManager = MqttClientProxyManager.shared
 
@@ -258,6 +263,7 @@ class BLEManager: NSObject, ObservableObject {
 			traceRoute.time = Date()
 			traceRoute.node = receivingNode
 
+			// swiftlint:disable:next force_unwrapping
 			let lastDay = Calendar.current.date(byAdding: .hour, value: -24, to: Date.now)!
 			if
 				let positions = connectedNode?.positions,
@@ -271,20 +277,11 @@ class BLEManager: NSObject, ObservableObject {
 				traceRoute.hasPositions = true
 			}
 
-			do {
-				try context.save()
-
-				Logger.data.info(
-					"💾 Saved TraceRoute sent to node: \(String(receivingNode?.user?.longName ?? "unknown".localized), privacy: .public)"
-				)
-
-				return true
-			} catch {
-				context.rollback()
-
-				let nsError = error as NSError
-				Logger.data.error("Error Updating Core Data BluetoothConfigEntity: \(nsError, privacy: .public)")
+			debounce.emit { [weak self] in
+				await self?.saveData()
 			}
+
+			return true
 		}
 
 		return false
@@ -319,7 +316,7 @@ class BLEManager: NSObject, ObservableObject {
 
 		let newMessage = MessageEntity(context: context)
 		newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
-		newMessage.messageTimestamp =  Int32(Date.now.timeIntervalSince1970)
+		newMessage.messageTimestamp = Int32(Date.now.timeIntervalSince1970)
 		newMessage.receivedACK = false
 		newMessage.read = true
 		if toUserNum > 0 {
@@ -347,7 +344,7 @@ class BLEManager: NSObject, ObservableObject {
 			.replacingOccurrences(of: "’", with: "'")
 			.replacingOccurrences(of: "”", with: "\"")
 			.data(using: String.Encoding.utf8)!
-		
+
 		var meshPacket = MeshPacket()
 		meshPacket.id = UInt32(newMessage.messageId)
 		if toUserNum > 0 {
@@ -364,11 +361,11 @@ class BLEManager: NSObject, ObservableObject {
 			meshPacket.decoded.replyID = UInt32(replyID)
 		}
 		meshPacket.wantAck = true
-		
+
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
-		
+
 		guard let binaryData: Data = try? toRadio.serializedData() else {
 			AnalyticEvents.trackBLEEvent(for: .message, status: .failureProcess)
 			return false
@@ -380,17 +377,16 @@ class BLEManager: NSObject, ObservableObject {
 			type: .withResponse
 		)
 
-		do {
-			try context.save()
-			AnalyticEvents.trackBLEEvent(for: .message, status: .success)
-
-			return true
-		} catch {
-			context.rollback()
+		debounce.emit { [weak self] in
+			if let status = await self?.saveData(), status{
+				AnalyticEvents.trackBLEEvent(for: .message, status: .success)
+			}
+			else {
+				AnalyticEvents.trackBLEEvent(for: .message, status: .failureSend)
+			}
 		}
 
-		AnalyticEvents.trackBLEEvent(for: .message, status: .failureSend)
-		return false
+		return true
 	}
 
 	@discardableResult
@@ -414,11 +410,12 @@ class BLEManager: NSObject, ObservableObject {
 			dataMessage.portnum = PortNum.positionApp
 			dataMessage.wantResponse = wantResponse
 			meshPacket.decoded = dataMessage
-		} else {
+		}
+		else {
 			AnalyticEvents.trackBLEEvent(for: .position, status: .failureProcess)
 			return false
 		}
-		
+
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
@@ -467,6 +464,31 @@ class BLEManager: NSObject, ObservableObject {
 		return positionPacket
 	}
 
+	@discardableResult
+	func saveData() async -> Bool {
+		privateContext.performAndWait { [weak self] in
+			guard
+				let self,
+				privateContext.hasChanges
+			else {
+				return false
+			}
+
+			do {
+				try privateContext.save()
+
+				return true
+			}
+			catch let error {
+				privateContext.rollback()
+
+				Logger.app.debug("context save failed misrably: \(error.localizedDescription)")
+
+				return false
+			}
+		}
+	}
+
 	@objc
 	private func timeoutTimerFired(timer: Timer) {
 		timeoutCount += 1
@@ -490,4 +512,4 @@ class BLEManager: NSObject, ObservableObject {
 		}
 	}
 }
-// swiftlint:enable all
+// swiftlint:enable file_length
