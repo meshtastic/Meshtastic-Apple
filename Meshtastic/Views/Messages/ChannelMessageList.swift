@@ -84,14 +84,16 @@ struct ChannelMessageList: View {
 									}
 
 									HStack {
-										if currentUser && message.ackError == 0 {
-											// Empty Error
-											Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.orange)
-										} else if currentUser && message.ackError > 0 {
-											let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
+										let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
+										if currentUser && message.receivedACK {
 											Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
-												.foregroundStyle(ackErrorVal?.color ?? .red)
+												.foregroundStyle(ackErrorVal?.color ?? Color.red)
 												.font(.caption2)
+										} else if currentUser && message.ackError == 0 {
+											// Empty Error
+											Text("Waiting to be acknowledged. . .").font(
+												.caption2)
+												.foregroundColor(.orange)
 										} else if isDetectionSensorMessage {
 											let messageDate = message.timestamp
 											Text(" \(messageDate.formattedDate(format: MessageText.dateFormatString))").font(.caption2).foregroundColor(.gray)
