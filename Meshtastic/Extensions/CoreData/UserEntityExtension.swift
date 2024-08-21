@@ -87,6 +87,12 @@ extension UserEntity {
 			return "TWATCHS3"
 		case "PORTDUINO":
 			return "LINUX"
+		case "CANARYONE":
+			return "CANARYONE"
+		case "HYDRA":
+			return "HYDRA"
+		case "WIOWM1110":
+			return "WIOWM1110"
 		default:
 			return "UNSET"
 		}
