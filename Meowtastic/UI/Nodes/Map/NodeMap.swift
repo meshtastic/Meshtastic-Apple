@@ -1,7 +1,7 @@
 import CoreLocation
 import FirebaseAnalytics
-import SwiftUI
 import MapKit
+import SwiftUI
 
 struct NodeMap: View {
 	@Environment(\.managedObjectContext)
@@ -116,11 +116,6 @@ struct NodeMap: View {
 					.tint(Color(UIColor.secondarySystemBackground))
 					.foregroundColor(.accentColor)
 					.buttonStyle(.borderedProminent)
-
-					if positionCount > 1 {
-						AltitudeHistoryView(node: node)
-							.frame(height: 200)
-					}
 				}
 				.controlSize(.regular)
 				.padding(8)

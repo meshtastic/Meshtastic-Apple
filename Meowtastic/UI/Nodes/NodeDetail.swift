@@ -156,7 +156,7 @@ struct NodeDetail: View {
 						)
 					} label: {
 						SimpleNodeMap(node: node)
-							.frame(width: .infinity, height: 200)
+							.frame(height: 200)
 							.cornerRadius(8)
 							.padding(.top, 8)
 							.disabled(true)

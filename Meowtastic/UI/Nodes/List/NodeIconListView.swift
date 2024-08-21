@@ -196,7 +196,7 @@ struct NodeIconListView: View {
 			if small, !node.isOnline {
 				divider
 
-				Image(systemName: "network.slash")
+				Image(systemName: "antenna.radiowaves.left.and.right.slash")
 					.font(detailInfoIconFont)
 					.foregroundColor(.gray)
 					.frame(width: detailIconSize)

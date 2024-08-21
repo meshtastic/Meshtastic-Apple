@@ -331,19 +331,6 @@ struct Messages: View {
 						)
 				}
 			}
-			else if !(user.userNode?.isOnline ?? false) {
-				HStack(spacing: 0) {
-					Spacer()
-
-					Image(systemName: "network.slash")
-						.font(.system(size: 24))
-						.foregroundColor(colorScheme == .dark ? .white : .gray)
-						.background(
-							Circle()
-								.foregroundColor(.listBackground(for: colorScheme))
-						)
-				}
-			}
 		}
 		.frame(width: 80, height: 80)
 	}
