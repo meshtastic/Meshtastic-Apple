@@ -158,11 +158,13 @@ struct WindCompactWidget: View {
 		VStack(alignment: .leading) {
 			Label { Text("WIND") } icon: { Image(systemName: "wind").foregroundColor(.accentColor) }
 			Text("\(direction)")
-				.font(.caption)
+				.font(gust.isEmpty ? .callout : .caption)
 				.padding(.bottom, 10)
 			Text(speed)
-				.font(.system(size: 35))
-			Text("Gusts \(gust)")
+				.font(gust.isEmpty ? .system(size: 45) : .system(size: 35))
+			if !gust.isEmpty {
+				Text("Gusts \(gust)")
+			}
 		}
 		.padding(10)
 		.frame(maxWidth: .infinity)
