@@ -150,7 +150,7 @@ struct Connect: View {
 			})
 
 			HStack(alignment: .top, spacing: 8) {
-				getConnectionAvatar(for: node)
+				connectionAvatar
 
 				VStack(alignment: .leading, spacing: 8) {
 					if node != nil {
@@ -307,66 +307,7 @@ struct Connect: View {
 	}
 
 	@ViewBuilder
-	private var visible: some View {
-		Section("Visible Devices") {
-			ForEach(visibleDevices) { peripheral in
-				Button {
-					bleManager.connectTo(peripheral: peripheral.peripheral)
-				} label: {
-					HStack(alignment: .center, spacing: 16) {
-						HStack(spacing: 16) {
-							SignalStrengthIndicator(
-								signalStrength: peripheral.getSignalStrength(),
-								size: 14,
-								color: .gray
-							)
-
-							Text(peripheral.name)
-								.font(deviceFont)
-								.foregroundColor(.gray)
-						}
-
-						if UserDefaults.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
-							Spacer()
-
-							Image(systemName: "star.fill")
-								.font(deviceFont)
-								.foregroundColor(.gray)
-						}
-					}
-				}
-			}
-		}
-	}
-
-	init(
-		node: NodeInfoEntity? = nil,
-		isInSheet: Bool = false
-	) {
-		self.node = node
-		self.isInSheet = isInSheet
-		self.visibleDevices = []
-
-		UNUserNotificationCenter.current().getNotificationSettings(
-			completionHandler: { settings in
-				if settings.authorizationStatus == .notDetermined {
-					UNUserNotificationCenter.current().requestAuthorization(
-						options: [.alert, .badge, .sound]
-					) { success, error in
-						if success {
-							Logger.services.info("Notifications are all set!")
-						}
-						else if let error = error {
-							Logger.services.error("\(error.localizedDescription)")
-						}
-					}
-				}
-			}
-		)
-	}
-
-	@ViewBuilder
-	private func getConnectionAvatar(for node: NodeInfoEntity?) -> some View {
+	private var connectionAvatar: some View {
 		ZStack(alignment: .top) {
 			if let node {
 				AvatarNode(
@@ -434,6 +375,65 @@ struct Connect: View {
 		.frame(width: 80, height: 80)
 	}
 
+	@ViewBuilder
+	private var visible: some View {
+		Section("Visible Devices") {
+			ForEach(visibleDevices) { peripheral in
+				Button {
+					bleManager.connectTo(peripheral: peripheral.peripheral)
+				} label: {
+					HStack(alignment: .center, spacing: 16) {
+						HStack(spacing: 16) {
+							SignalStrengthIndicator(
+								signalStrength: peripheral.getSignalStrength(),
+								size: 14,
+								color: .gray
+							)
+
+							Text(peripheral.name)
+								.font(deviceFont)
+								.foregroundColor(.gray)
+						}
+
+						if UserDefaults.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
+							Spacer()
+
+							Image(systemName: "star.fill")
+								.font(deviceFont)
+								.foregroundColor(.gray)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	init(
+		node: NodeInfoEntity? = nil,
+		isInSheet: Bool = false
+	) {
+		self.node = node
+		self.isInSheet = isInSheet
+		self.visibleDevices = []
+
+		UNUserNotificationCenter.current().getNotificationSettings(
+			completionHandler: { settings in
+				if settings.authorizationStatus == .notDetermined {
+					UNUserNotificationCenter.current().requestAuthorization(
+						options: [.alert, .badge, .sound]
+					) { success, error in
+						if success {
+							Logger.services.info("Notifications are all set!")
+						}
+						else if let error = error {
+							Logger.services.error("\(error.localizedDescription)")
+						}
+					}
+				}
+			}
+		)
+	}
+
 	private func loadPeripherals() async {
 		let devices = bleManager.devices.filter { device in
 			device.peripheral.state != CBPeripheralState.connected
@@ -446,15 +446,10 @@ struct Connect: View {
 	}
 
 	private func fetchNodeInfo() async {
-		guard let connectedDevice = bleManager.deviceConnected else { // use it for not connected devices
-			node = nil
-			return
-		}
-
 		let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 		fetchNodeInfoRequest.predicate = NSPredicate(
 			format: "num == %lld",
-			Int64(connectedDevice.num)
+			Int64(bleManager.deviceConnected?.num ?? -1)
 		)
 
 		node = try? context.fetch(fetchNodeInfoRequest).first

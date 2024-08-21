@@ -15,9 +15,6 @@ class BLEManager: NSObject, ObservableObject {
 	let centralManager: CBCentralManager
 	let mqttManager: MqttClientProxyManager
 	let minimumVersion = "2.0.0"
-	let contextSaveDebounce = Debounce<() async -> Void>(duration: .milliseconds(277)) { action in
-		await action()
-	}
 
 	@Published
 	var devices: [Device] = []
@@ -468,24 +465,6 @@ class BLEManager: NSObject, ObservableObject {
 		}
 
 		return positionPacket
-	}
-
-	@discardableResult
-	func saveData() async -> Bool {
-		guard context.hasChanges else {
-			return true
-		}
-
-		do {
-			try context.save()
-
-			return true
-		}
-		catch let error {
-			context.rollback()
-
-			return false
-		}
 	}
 
 	@objc

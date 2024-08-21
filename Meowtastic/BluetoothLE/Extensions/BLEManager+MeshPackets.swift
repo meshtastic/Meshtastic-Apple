@@ -194,22 +194,30 @@ extension BLEManager {
 			myInfoEntity.myNodeNum = Int64(myInfo.myNodeNum)
 			myInfoEntity.rebootCount = Int32(myInfo.rebootCount)
 
-			contextSaveDebounce.emit { [weak self] in
-				await self?.saveData()
-			}
+			do {
+				try context.save()
 
-			return myInfoEntity
+				return myInfoEntity
+			}
+			catch {
+				context.rollback()
+			}
 		} else {
 			fetchedMyInfo[0].peripheralId = peripheralId
 			fetchedMyInfo[0].myNodeNum = Int64(myInfo.myNodeNum)
 			fetchedMyInfo[0].rebootCount = Int32(myInfo.rebootCount)
 
-			contextSaveDebounce.emit { [weak self] in
-				await self?.saveData()
-			}
+			do {
+				try context.save()
 
-			return fetchedMyInfo[0]
+				return fetchedMyInfo[0]
+			}
+			catch {
+				context.rollback()
+			}
 		}
+
+		return nil
 	}
 
 	func channelPacket(channel: Channel, fromNum: Int64, context: NSManagedObjectContext) {
@@ -261,8 +269,11 @@ extension BLEManager {
 		}
 
 		context.refresh(newChannel, mergeChanges: true)
-		contextSaveDebounce.emit { [weak self] in
-			await self?.saveData()
+		do {
+			try context.save()
+		}
+		catch {
+			context.rollback()
 		}
 	}
 
@@ -310,8 +321,11 @@ extension BLEManager {
 			}
 		}
 
-		contextSaveDebounce.emit { [weak self] in
-			await self?.saveData()
+		do {
+			try context.save()
+		}
+		catch {
+			context.rollback()
 		}
 	}
 
@@ -414,11 +428,16 @@ extension BLEManager {
 					newNode.myInfo = fetchedMyInfo[0]
 				}
 
-				contextSaveDebounce.emit { [weak self] in
-					await self?.saveData()
+				do {
+					try context.save()
+					Logger.data.info("💾 Saved a new Node Info For: \(String(nodeInfo.num))")
+					return newNode
 				}
-
-				return newNode
+				catch {
+					context.rollback()
+					let nsError = error as NSError
+					Logger.data.error("Error Saving Core Data NodeInfoEntity: \(nsError)")
+				}
 			}
 		}
 		else if nodeInfo.num > 0 {
@@ -506,11 +525,13 @@ extension BLEManager {
 					fetchedNode[0].myInfo = fetchedMyInfo[0]
 				}
 
-				contextSaveDebounce.emit { [weak self] in
-					await self?.saveData()
-				}
+				do {
+					try context.save()
 
-				return fetchedNode[0]
+					return fetchedNode[0]
+				} catch {
+					context.rollback()
+				}
 			}
 		}
 
@@ -547,8 +568,11 @@ extension BLEManager {
 				.trimmingCharacters(in: .whitespacesAndNewlines)
 			fetchedNode[0].cannedMessageConfig?.messages = messages
 
-			contextSaveDebounce.emit { [weak self] in
-				await self?.saveData()
+			do {
+				try context.save()
+			}
+			catch {
+				context.rollback()
 			}
 
 		case AdminMessage.OneOf_PayloadVariant.getChannelResponse(message.getChannelResponse):
@@ -730,8 +754,11 @@ extension BLEManager {
 		fetchedMessage[0].ackSNR = packet.rxSnr
 		fetchedMessage[0].fromUser?.objectWillChange.send()
 
-		contextSaveDebounce.emit { [weak self] in
-			await self?.saveData()
+		do {
+			try context.save()
+		}
+		catch {
+			context.rollback()
 		}
 	}
 
@@ -773,6 +800,7 @@ extension BLEManager {
 		}
 
 		let routingError = RoutingError(rawValue: routingMessage.errorReason.rawValue)
+		let routingErrorString = routingError?.display ?? "unknown".localized
 
 		fetchedMessage[0].ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
 		fetchedMessage[0].ackSNR = packet.rxSnr
@@ -803,8 +831,11 @@ extension BLEManager {
 			fetchedMessage[0].receivedACK = true
 		}
 
-		contextSaveDebounce.emit { [weak self] in
-			await self?.saveData()
+		do {
+			try context.save()
+		}
+		catch {
+			context.rollback()
 		}
 	}
 
@@ -873,8 +904,11 @@ extension BLEManager {
 		)
 		fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
 
-		contextSaveDebounce.emit { [weak self] in
-			await self?.saveData()
+		do {
+			try context.save()
+		}
+		catch {
+			context.rollback()
 		}
 	}
 
@@ -1130,8 +1164,10 @@ extension BLEManager {
 				fetchedWaypoint[0].expire = nil
 			}
 
-			contextSaveDebounce.emit { [weak self] in
-				await self?.saveData()
+			do {
+				try context.save()
+			} catch {
+				context.rollback()
 			}
 		}
 	}
