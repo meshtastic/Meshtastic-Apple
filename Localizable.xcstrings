@@ -1735,6 +1735,12 @@
             "value" : "New Node Notifications"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meddelanden om nya noder"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2890,6 +2896,12 @@
             "value" : "Ingen PIN (Bara fungerar)"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen PIN-kod (Fungerar direkt)"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3575,6 +3587,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manuell konfiguration"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Manuell konfiguration"
@@ -4780,6 +4798,12 @@
             "value" : "Hur ofta vi kan skicka ett meddelande till mesh-nätverket när personer upptäcks."
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hur ofta vi kan skicka ett meddelande till nätverket när personer upptäcks."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4827,6 +4851,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Multiplikator"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Multiplikator"
@@ -4943,6 +4973,12 @@
             "value" : "Intervall för Ljussömn"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intervall för lätt sömn"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4994,6 +5030,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Minsta Väckningsintervall"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meddelanden"
           }
         },
         "zh-Hans" : {
@@ -6194,7 +6236,14 @@
       }
     },
     "Convex Hull" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konvex omslutning"
+          }
+        }
+      }
     },
     "Coordinate" : {
       "localizations" : {
@@ -7595,6 +7644,12 @@
             "value" : "Infrastrukturnod för att utöka nätverkstäckningen genom att vidarebefordra meddelanden med minimal overhead. Syns inte i Noder-listan."
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Infrastrukturnod för att utöka nätverkets täckning genom att vidarebefordra meddelanden med minimal overhead. Ej synlig i nodlistan."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7652,6 +7707,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Infrastrukturnod för att utöka nätverkstäckningen genom att vidarebefordra meddelanden. Synlig i Noder-listan."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Infrastrukturnod för att utöka nätverkets täckning genom att vidarebefordra meddelanden. Synlig i nodlistan."
           }
         },
         "zh-Hans" : {
@@ -10177,6 +10238,12 @@
             "value" : "Militärt rutnätsreferenssystem"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Militärt rutnätreferenssystem"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10482,20 +10549,54 @@
             "state" : "translated",
             "value" : "Inte närvarande"
           }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inte närvarande"
+          }
         }
       }
     },
     "Gusts %@" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vindbyar: %@"
+          }
+        }
+      }
     },
     "Hardware" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hårdvara"
+          }
+        }
+      }
     },
     "Heading" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riktning"
+          }
+        }
+      }
     },
     "Heading: %@" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riktning: %@"
+          }
+        }
+      }
     },
     "heard" : {
       "extractionState" : "migrated",
@@ -10537,6 +10638,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hörd"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hörd"
@@ -10601,6 +10708,12 @@
             "value" : "Senast Hörd"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senast hörd"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10616,67 +10729,214 @@
       }
     },
     "Help with App Development" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hjälp med apputveckling"
+          }
+        }
+      }
     },
     "Hide alerts" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dölj aviseringar"
+          }
+        }
+      }
     },
     "Hide Alerts" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dölj Aviseringar"
+          }
+        }
+      }
     },
     "HIGH" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HÖG"
+          }
+        }
+      }
     },
     "History Return Max" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maximal historikåtergivning"
+          }
+        }
+      }
     },
     "History Return Window" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Historikåtergivningsfönster"
+          }
+        }
+      }
     },
     "Hops Away" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hopp bort"
+          }
+        }
+      }
     },
     "Hops Away %d) dB" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hopp bort %d) dB"
+          }
+        }
+      }
     },
     "Hops Away:" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hopp bort:"
+          }
+        }
+      }
     },
     "Hour" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timme"
+          }
+        }
+      }
     },
     "Hourly Duty Cycle" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timvis arbetscykel"
+          }
+        }
+      }
     },
     "How long the screen remains on after the user button is pressed or messages are received." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hur länge skärmen förblir på efter att användarens knapp har tryckts eller meddelanden har mottagits."
+          }
+        }
+      }
     },
     "How often device metrics are sent out over the mesh. Default is 30 minutes." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hur ofta enhetsmått skickas över nätverket. Standard är 30 minuter."
+          }
+        }
+      }
     },
     "How often power metrics are sent out over the mesh. Default is 30 minutes." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hur ofta enhetsmått skickas över nätverket. Standard är 30 minuter."
+          }
+        }
+      }
     },
     "How often sensor metrics are sent out over the mesh. Default is 30 minutes." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hur ofta enhetsmått skickas över nätverket. Standard är 30 minuter."
+          }
+        }
+      }
     },
     "How often should we try to get a GPS position." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hur ofta ska vi försöka få en GPS-position?"
+          }
+        }
+      }
     },
     "How often to send detection sensor state to mesh regardless of detection. Default is Never." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hur ofta ska detekteringssensorstatus skickas till nätverket oavsett detektion. Standard är Aldrig."
+          }
+        }
+      }
     },
     "How to update Firmware" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hur man uppdaterar firmware"
+          }
+        }
+      }
     },
     "Hum" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fukt"
+          }
+        }
+      }
     },
     "Humidity" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fuktighet"
+          }
+        }
+      }
     },
     "HUMIDITY" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FUKTIGHET"
+          }
+        }
+      }
     },
     "hybrid" : {
       "extractionState" : "migrated",
@@ -10718,6 +10978,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hybrid"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hybrid"
@@ -10782,6 +11048,12 @@
             "value" : "Hybrid Flygöversikt"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hybridflygning"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10807,34 +11079,104 @@
       }
     },
     "IAQ " : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IAQ (Inomhusluftkvalitet)"
+          }
+        }
+      }
     },
     "IAQ %lld" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IAQ %lld"
+          }
+        }
+      }
     },
     "Icon" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ikon"
+          }
+        }
+      }
     },
     "If DOP is set, use HDOP / VDOP values instead of PDOP" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Om DOP är inställt, använd HDOP / VDOP-värden istället för PDOP."
+          }
+        }
+      }
     },
     "If enabled, the 'output' Pin will be pulled active high, disabled means active low." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Om det är aktiverat kommer 'output'-pinnen att dras till hög nivå, inaktiverat betyder låg nivå."
+          }
+        }
+      }
     },
     "If it is hard to access your device's reset button enter DFU mode here." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Om det är svårt att nå din enhets återställningsknapp, gå in i DFU-läge här."
+          }
+        }
+      }
     },
     "If set, any packets you send will be echoed back to your device." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Om det är inställt kommer alla paket du skickar att skickas tillbaka till din enhet."
+          }
+        }
+      }
     },
     "If the default region topic is too busy you can choose a more local topic." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Om den förvalda regionens ämne är för överbelastat kan du välja ett mer lokalt ämne."
+          }
+        }
+      }
     },
     "Ignore MQTT" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignorera MQTT"
+          }
+        }
+      }
     },
     "Import Route" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importera rutt"
+          }
+        }
+      }
     },
     "include" : {
       "localizations" : {
@@ -10875,6 +11217,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inkludera"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Inkludera"
@@ -10933,6 +11281,12 @@
             "value" : "Incomplete"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ofullständig"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10948,10 +11302,24 @@
       }
     },
     "Indoor Air Quality" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inomhusluftkvalitet"
+          }
+        }
+      }
     },
     "Indoor Air Quality (IAQ)" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inomhusluftkvalitet (IAQ)"
+          }
+        }
+      }
     },
     "inputevent.back" : {
       "extractionState" : "migrated",
@@ -11193,6 +11561,12 @@
             "value" : "Vänster"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vänster"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11250,6 +11624,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ingen"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inget"
           }
         },
         "zh-Hans" : {
@@ -11444,7 +11824,14 @@
       }
     },
     "Inputs" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indata"
+          }
+        }
+      }
     },
     "interval.eighteen.hours" : {
       "extractionState" : "migrated",
@@ -13228,19 +13615,54 @@
       }
     },
     "JSON Enabled" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JSON aktiverad"
+          }
+        }
+      }
     },
     "JSON mode is a limited, unencrypted MQTT output for locally integrating with home assistant" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JSON-läget är en begränsad, okrypterad MQTT-utgång för lokal integrering med Home Assistant."
+          }
+        }
+      }
     },
     "Key" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nyckel"
+          }
+        }
+      }
     },
     "Key Mapping" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nyckelmappar"
+          }
+        }
+      }
     },
     "Key Size" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nyckelstorlek"
+          }
+        }
+      }
     },
     "keyboard.type" : {
       "extractionState" : "manual",
@@ -13287,6 +13709,12 @@
             "value" : "Tangentbordstyp"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tangentbordstyp"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13302,37 +13730,114 @@
       }
     },
     "Last heard" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senast hörd"
+          }
+        }
+      }
     },
     "Latitude" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Latitud"
+          }
+        }
+      }
     },
     "LED Heartbeat" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LED-hjärtslag"
+          }
+        }
+      }
     },
     "LED State" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LED-status"
+          }
+        }
+      }
     },
     "Licensed Operator" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Licensierad operatör"
+          }
+        }
+      }
     },
     "Limit all periodic broadcast intervals especially telemetry and position. If you need to increase hops, do it on nodes at the edges, not the ones in the middle. MQTT is not advised when you are duty cycle restricted because the gateway node is then doing all the work." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Begränsa alla periodiska sändningsintervall, särskilt telemetri och position. Om du behöver öka hopp, gör det på noderna vid kanterna, inte de i mitten. MQTT rekommenderas inte när du har begränsad tjänstgöringscykel eftersom gateway-noden då utför allt arbete."
+          }
+        }
+      }
     },
     "Line Series" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linjär serie"
+          }
+        }
+      }
     },
     "Loading Logs. . ." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laddar loggar..."
+          }
+        }
+      }
     },
     "Location: %@" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plats: %@"
+          }
+        }
+      }
     },
     "Locked" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Låst"
+          }
+        }
+      }
     },
     "Log Levels" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loggnivåer"
+          }
+        }
+      }
     },
     "log.category" : {
       "localizations" : {
@@ -13430,6 +13935,12 @@
             "value" : "Level"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nivå"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13480,6 +13991,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Message"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meddelande"
           }
         },
         "zh-Hans" : {
@@ -13698,6 +14215,12 @@
             "value" : "Loggning"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loggning"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13713,19 +14236,54 @@
       }
     },
     "Logs" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loggar"
+          }
+        }
+      }
     },
     "Logs:" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loggar:"
+          }
+        }
+      }
     },
     "Long Name" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Långt namn"
+          }
+        }
+      }
     },
     "Long Name: %@" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Långt namn: %@"
+          }
+        }
+      }
     },
     "Longitude" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Longitud"
+          }
+        }
+      }
     },
     "lora" : {
       "localizations" : {
@@ -13766,6 +14324,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LoRa"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "LoRa"
@@ -13829,6 +14393,12 @@
             "value" : "LoRa Konfiguration"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LoRa-konfiguration"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13844,10 +14414,24 @@
       }
     },
     "LOW" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LÅG"
+          }
+        }
+      }
     },
     "Managed Device" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hanterad enhet"
+          }
+        }
+      }
     },
     "map" : {
       "localizations" : {
@@ -13893,6 +14477,12 @@
             "value" : "Mesh Karta"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesh-karta"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13908,19 +14498,54 @@
       }
     },
     "Map Options" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kartalternativ"
+          }
+        }
+      }
     },
     "Map Publish Interval" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kartpubliceringsintervall"
+          }
+        }
+      }
     },
     "Map Report" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kartrapport"
+          }
+        }
+      }
     },
     "Map Tile Data" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kartplattadata"
+          }
+        }
+      }
     },
     "Map Type" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kartalternativ"
+          }
+        }
+      }
     },
     "map.centering" : {
       "extractionState" : "manual",
@@ -14474,6 +15099,12 @@
             "value" : "Ingen"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inget"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14489,7 +15120,14 @@
       }
     },
     "Mesh activity update" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uppdatering av mesh-aktivitet"
+          }
+        }
+      }
     },
     "mesh.live.activity" : {
       "localizations" : {
@@ -14533,6 +15171,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mesh Live Aktivitet"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesh-aktivitet i realtid"
           }
         },
         "zh-Hans" : {
@@ -14588,6 +15232,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesh-logg"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mesh-logg"
@@ -15485,6 +16135,12 @@
             "value" : "LoRa-konfiguration mottagen: %@"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LoRa-konfiguration mottagen: %@"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15603,6 +16259,12 @@
             "value" : "MQTT-modulkonfiguration mottagen: %@"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MQTT-modulkonfiguration mottagen: %@"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15660,6 +16322,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Min info mottagen: %@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MyInfo mottaget: %@"
           }
         },
         "zh-Hans" : {
@@ -15721,6 +16389,12 @@
             "value" : "Nätverkskonfiguration mottagen: %@"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nätverkskonfiguration mottagen: %@"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15775,6 +16449,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nodinformation mottagen för: %@"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nodinformation mottagen för: %@"
@@ -16534,6 +17214,12 @@
             "value" : "Meddelande mottaget från textmeddelandeappen."
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meddelande mottaget från textmeddelande-appen."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16591,6 +17277,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Misslyckades med att skicka meddelande, inte korrekt ansluten till %@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Misslyckades med att skicka meddelandet, inte korrekt ansluten till %@"
           }
         },
         "zh-Hans" : {
@@ -16888,6 +17580,12 @@
             "value" : "Utfärdar Want Config till %@"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utfärdar Want Config till %@"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17021,10 +17719,24 @@
       }
     },
     "Meshtastic Node %@ has shared channels with you" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meshtastic-nod %@ har delat kanaler med dig"
+          }
+        }
+      }
     },
     "Meshtastic® Copyright Meshtastic LLC" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meshtastic® Upphovsrätt Meshtastic LLC"
+          }
+        }
+      }
     },
     "message" : {
       "localizations" : {
@@ -17065,6 +17777,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meddelande"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meddelande"
@@ -17128,6 +17846,12 @@
             "value" : "Meddelandedetaljer"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meddelandedetaljer"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17186,6 +17910,12 @@
             "value" : "Meddelanden"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meddelanden"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17201,22 +17931,64 @@
       }
     },
     "Messages" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meddelanden"
+          }
+        }
+      }
     },
     "Messages separate with |" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meddelanden separerade med |"
+          }
+        }
+      }
     },
     "Minimum Distance" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minsta avstånd"
+          }
+        }
+      }
     },
     "Minimum Interval" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minsta intervall"
+          }
+        }
+      }
     },
     "Minimum time between detection broadcasts" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minsta tid mellan upptäcktssändningar"
+          }
+        }
+      }
     },
     "Mininum time between detection broadcasts. Default is 45 seconds." : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minsta tid mellan upptäcktssändningar. Standard är 45 sekunder."
+          }
+        }
+      }
     },
     "mode" : {
       "localizations" : {
@@ -17257,6 +18029,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Läge"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Läge"
@@ -17320,6 +18098,12 @@
             "value" : "Modulkonfiguration"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modulkonfiguration"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17378,6 +18162,12 @@
             "value" : "MQTT"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MQTT"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17393,7 +18183,14 @@
       }
     },
     "MQTT" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MQTT"
+          }
+        }
+      }
     },
     "mqtt.clientproxy" : {
       "localizations" : {
@@ -17437,6 +18234,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "MQTT-klientproxy"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minsta tid mellan upptäcktssändningar"
           }
         },
         "zh-Hans" : {
@@ -17492,6 +18295,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MQTT-konfiguration"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "MQTT-konfiguration"
@@ -17700,7 +18509,14 @@
       }
     },
     "Nag timeout" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Påminnelse-timeout"
+          }
+        }
+      }
     },
     "name" : {
       "localizations" : {
@@ -17746,6 +18562,12 @@
             "value" : "Namn"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namn"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17761,10 +18583,24 @@
       }
     },
     "Name" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namn"
+          }
+        }
+      }
     },
     "Nearby Topics" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Närliggande ämnen"
+          }
+        }
+      }
     },
     "network" : {
       "localizations" : {
@@ -17810,6 +18646,12 @@
             "value" : "Nätverk"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nätverk"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17825,10 +18667,24 @@
       }
     },
     "Network Status Orange" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nätverksstatus Orange"
+          }
+        }
+      }
     },
     "Network Status Red" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nätverksstatus Röd"
+          }
+        }
+      }
     },
     "network.config" : {
       "localizations" : {
@@ -17874,6 +18730,12 @@
             "value" : "Nätverkskonfiguration"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nätverkskonfiguration"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17889,13 +18751,34 @@
       }
     },
     "Never" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aldrig"
+          }
+        }
+      }
     },
     "Newer firmware is available" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nyare firmware är tillgänglig"
+          }
+        }
+      }
     },
     "No Device Metrics" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inga enhetsmätvärden"
+          }
+        }
+      }
     },
     "No Environment Metrics" : {
       "localizations" : {
@@ -17908,7 +18791,14 @@
       }
     },
     "No Positions" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inga positioner"
+          }
+        }
+      }
     },
     "no.nodes" : {
       "extractionState" : "manual",
@@ -17955,6 +18845,12 @@
             "value" : "Inga Meshtastic-noder hittades"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inga Meshtastic-noder hittades"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17970,7 +18866,14 @@
       }
     },
     "Node" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nod"
+          }
+        }
+      }
     },
     "Node Core Data Backup %@/%@ - %@ - %@" : {
       "localizations" : {
@@ -17979,20 +18882,54 @@
             "state" : "new",
             "value" : "Node Core Data Backup %1$@/%2$@ - %3$@ - %4$@"
           }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Säkerhetskopiering av kärndata för nod %1$@/%2$@ - %3$@ - %4$@"
+          }
         }
       }
     },
     "Node History" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nodhistorik"
+          }
+        }
+      }
     },
     "Node Info Broadcast Interval" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sändningsintervall för nodinformation"
+          }
+        }
+      }
     },
     "Node Map" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nodkarta"
+          }
+        }
+      }
     },
     "Node Number" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nodnummer"
+          }
+        }
+      }
     },
     "nodelist.filter.distance %@" : {
       "extractionState" : "migrated",
@@ -18091,6 +19028,12 @@
             "value" : "Noder"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noder"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18145,6 +19088,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noder (%@)"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Noder (%@)"
@@ -18218,6 +19167,12 @@
             "value" : "Ingen enhet ansluten"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen enhet ansluten"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18233,19 +19188,54 @@
       }
     },
     "Notes" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anteckningar"
+          }
+        }
+      }
     },
     "Num: %@" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Num: %@"
+          }
+        }
+      }
     },
     "Number of hops" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antal hopp"
+          }
+        }
+      }
     },
     "Number of records" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antal poster"
+          }
+        }
+      }
     },
     "Number of satellites" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antal satelliter"
+          }
+        }
+      }
     },
     "numbers.punctuation" : {
       "extractionState" : "manual",
@@ -18290,6 +19280,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Siffror och skiljetecken"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siffror och interpunktion"
           }
         },
         "zh-Hans" : {
@@ -18346,6 +19342,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Av"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Av"
@@ -18410,6 +19412,12 @@
             "value" : "Offline"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frånkopplad"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18425,10 +19433,24 @@
       }
     },
     "Offline Maps" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kartor i frånkopplatläge"
+          }
+        }
+      }
     },
     "OK" : {
-
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
     },
     "OLED Type" : {
 
@@ -18761,6 +19783,12 @@
             "state" : "translated",
             "value" : "Inga loggar för PAX-räknare"
           }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inga PAX Counter-loggar"
+          }
         }
       }
     },
@@ -18959,6 +19987,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hur ofta din telefon skickar din plats till enheten, platsuppdateringar till mesh-nätverket hanteras av enheten."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hur ofta din telefon skickar din plats till enheten, platsuppdateringar till nätverket hanteras av enheten."
           }
         },
         "zh-Hans" : {
@@ -19816,6 +20850,12 @@
             "state" : "translated",
             "value" : "Meio-dia"
           }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mitt på dagen"
+          }
         }
       }
     },
@@ -19833,6 +20873,12 @@
             "state" : "translated",
             "value" : "Manhã"
           }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Morgon"
+          }
         }
       }
     },
@@ -19849,6 +20895,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Noite"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nattetid"
           }
         }
       }
@@ -20371,6 +21423,12 @@
             "state" : "translated",
             "value" : "Caminhar na Montanha"
           }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vandring"
+          }
         }
       }
     },
@@ -20438,6 +21496,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Caminhada na Montanha"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vandring"
           }
         }
       }
@@ -20786,6 +21850,12 @@
             "value" : "Max antal omsändningar nått"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maximal återutsändning nådd"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20840,6 +21910,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen kanal"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ingen kanal"
@@ -20904,6 +21980,12 @@
             "value" : "Inget gränssnitt"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inget gränssnitt"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20963,6 +22045,12 @@
             "value" : "Inget svar"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inga positioner"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21017,6 +22105,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen rutt"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ingen rutt"
@@ -21079,6 +22173,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Inte auktoriserad"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ej auktoriserad"
           }
         },
         "zh-Hans" : {
@@ -21935,6 +23035,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NMEA-positioner"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "NMEA-positioner"
@@ -23097,6 +24203,12 @@
             "value" : "HaHa"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haha"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23151,6 +24263,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hjärta"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hjärta"
@@ -24097,6 +25215,12 @@
             "value" : "De flesta data i ditt mesh-nätverk skickas över primärkanalen. Du kan ställa in sekundära kanaler för att skapa ytterligare meddelandegrupper skyddade av sin egen nyckel. Tips för kanalkonfiguration"
           }
         },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Majoriteten av datan i din mesh skickas över huvudkanalen. Du kan ställa in sekundära kanaler för att skapa ytterligare meddelandegrupper som säkras med sina egna nycklar. [Tips för kanalkonfiguration](https://meshtastic.org/docs/configuration/tips/)"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24153,6 +25277,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hantera Kanaler"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hantera kanaler"
           }
         },
         "zh-Hans" : {
@@ -24388,6 +25518,12 @@
           }
         },
         "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meddelanden"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meddelanden"
