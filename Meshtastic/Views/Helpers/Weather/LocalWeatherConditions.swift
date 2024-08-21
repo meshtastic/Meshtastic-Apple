@@ -100,9 +100,8 @@ struct WeatherConditionsCompactWidget: View {
 			Text(temperature)
 				.font(temperature.length < 4 ? .system(size: 80) : .system(size: 60) )
 		}
-		.padding(10)
-		.frame(maxWidth: .infinity)
-		.frame(height: 175)
+		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 130, idealHeight: 140, maxHeight: 150)
+		.padding()
 		.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 	}
 }
@@ -122,9 +121,8 @@ struct HumidityCompactWidget: View {
 				.fixedSize(horizontal: false, vertical: true)
 				.font(.caption)
 		}
-		.padding(10)
-		.frame(maxWidth: .infinity)
-		.frame(height: 175)
+		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 130, idealHeight: 140, maxHeight: 150)
+		.padding()
 		.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 	}
 }
@@ -143,9 +141,8 @@ struct PressureCompactWidget: View {
 				.padding(.bottom)
 			Text(unit)
 		}
-		.padding(10)
-		.frame(maxWidth: .infinity)
-		.frame(height: 175)
+		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 130, idealHeight: 140, maxHeight: 150)
+		.padding()
 		.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 	}
 }
@@ -166,9 +163,8 @@ struct WindCompactWidget: View {
 				Text("Gusts \(gust)")
 			}
 		}
-		.padding(10)
-		.frame(maxWidth: .infinity)
-		.frame(height: 175)
+		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 130, idealHeight: 140, maxHeight: 150)
+		.padding()
 		.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 	}
 }
