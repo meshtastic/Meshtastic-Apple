@@ -14,6 +14,10 @@ extension NodeInfoEntity {
 		return self.positions?.lastObject as? PositionEntity
 	}
 
+	var latestDeviceMetrics: TelemetryEntity? {
+		return self.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity
+	}
+
 	var latestEnvironmentMetrics: TelemetryEntity? {
 		return self.telemetries?.filtered(using: NSPredicate(format: "metricsType == 1")).lastObject as? TelemetryEntity
 	}
@@ -53,6 +57,15 @@ extension NodeInfoEntity {
 			 return true
 		}
 		return false
+	}
+
+	var canRemoteAdmin: Bool {
+		if UserDefaults.enableAdministration {
+			return true
+		} else {
+			let adminChannel = myInfo?.channels?.filter { ($0 as AnyObject).name?.lowercased() == "admin" }
+			return adminChannel?.count ?? 0 > 0
+		}
 	}
 }
 

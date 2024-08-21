@@ -223,12 +223,16 @@ struct LoRaConfig: View {
 			}
 		}
 		.navigationTitle("lora.config")
-		.navigationBarItems(trailing:
-								ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
 		.onAppear {
-			setLoRaValues()
 			// Need to request a LoRaConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.loRaConfig == nil {
 				Logger.mesh.info("empty lora config")
@@ -239,69 +243,43 @@ struct LoRaConfig: View {
 			}
 		}
 		.onChange(of: region) { newRegion in
-			if node != nil && node!.loRaConfig != nil {
-				if newRegion != node!.loRaConfig!.regionCode { hasChanges = true }
-			}
+			if newRegion != node?.loRaConfig?.regionCode ?? -1 { hasChanges = true }
 		}
-		.onChange(of: usePreset) { newUsePreset in
-			if node != nil && node!.loRaConfig != nil {
-				if newUsePreset != node!.loRaConfig!.usePreset { hasChanges = true }
-			}
+		.onChange(of: usePreset) {
+			if $0 != node?.loRaConfig?.usePreset { hasChanges = true }
 		}
 		.onChange(of: modemPreset) { newModemPreset in
-			if node != nil && node!.loRaConfig != nil {
-				if newModemPreset != node!.loRaConfig!.modemPreset { hasChanges = true }
-			}
+			if newModemPreset != node?.loRaConfig?.modemPreset ?? -1 { hasChanges = true }
 		}
 		.onChange(of: hopLimit) { newHopLimit in
-			if node != nil && node!.loRaConfig != nil {
-				if newHopLimit != node!.loRaConfig!.hopLimit { hasChanges = true }
-			}
+			if newHopLimit != node?.loRaConfig?.hopLimit ?? -1 { hasChanges = true }
 		}
 		.onChange(of: channelNum) { newChannelNum in
-			if node != nil && node!.loRaConfig != nil {
-				if newChannelNum != node!.loRaConfig!.channelNum { hasChanges = true }
-			}
+			if newChannelNum != node?.loRaConfig?.channelNum ?? -1 { hasChanges = true }
 		}
 		.onChange(of: bandwidth) { newBandwidth in
-			if node != nil && node!.loRaConfig != nil {
-				if newBandwidth != node!.loRaConfig!.bandwidth { hasChanges = true }
-			}
+			if newBandwidth != node?.loRaConfig?.bandwidth ?? -1 { hasChanges = true }
 		}
 		.onChange(of: codingRate) { newCodingRate in
-			if node != nil && node!.loRaConfig != nil {
-				if newCodingRate != node!.loRaConfig!.codingRate { hasChanges = true }
-			}
+			if newCodingRate != node?.loRaConfig?.codingRate ?? -1 { hasChanges = true }
 		}
 		.onChange(of: spreadFactor) { newSpreadFactor in
-			if node != nil && node!.loRaConfig != nil {
-				if newSpreadFactor != node!.loRaConfig!.spreadFactor { hasChanges = true }
-			}
+			if newSpreadFactor != node?.loRaConfig?.spreadFactor ?? -1 { hasChanges = true }
 		}
-		.onChange(of: rxBoostedGain) { newRxBoostedGain in
-			if node != nil && node!.loRaConfig != nil {
-				if newRxBoostedGain != node!.loRaConfig!.sx126xRxBoostedGain { hasChanges = true }
-			}
+		.onChange(of: rxBoostedGain) {
+			if $0 != node?.loRaConfig?.sx126xRxBoostedGain { hasChanges = true }
 		}
 		.onChange(of: overrideFrequency) { newOverrideFrequency in
-			if node != nil && node!.loRaConfig != nil {
-				if newOverrideFrequency != node!.loRaConfig!.overrideFrequency { hasChanges = true }
-			}
+			if newOverrideFrequency != node?.loRaConfig?.overrideFrequency { hasChanges = true }
 		}
 		.onChange(of: txPower) { newTxPower in
-			if node != nil && node!.loRaConfig != nil {
-				if newTxPower != node!.loRaConfig!.txPower { hasChanges = true }
-			}
+			if newTxPower != node?.loRaConfig?.txPower ?? -1 { hasChanges = true }
 		}
-		.onChange(of: txEnabled) { newTxEnabled in
-			if node != nil && node!.loRaConfig != nil {
-				if newTxEnabled != node!.loRaConfig!.txEnabled { hasChanges = true }
-			}
+		.onChange(of: txEnabled) {
+			if $0 != node?.loRaConfig?.txEnabled { hasChanges = true }
 		}
-		.onChange(of: ignoreMqtt) { newIgnoreMqtt in
-			if node != nil && node!.loRaConfig != nil {
-				if newIgnoreMqtt != node!.loRaConfig!.ignoreMqtt { hasChanges = true }
-			}
+		.onChange(of: ignoreMqtt) {
+			if $0 != node?.loRaConfig?.ignoreMqtt { hasChanges = true }
 		}
 	}
 	func setLoRaValues() {

@@ -109,12 +109,16 @@ struct NetworkConfig: View {
 			}
 		}
 		.navigationTitle("network.config")
-		.navigationBarItems(trailing:
-			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
 		.onAppear {
-			setNetworkValues()
 			// Need to request a NetworkConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.networkConfig == nil {
 				Logger.mesh.info("empty network config")
@@ -124,30 +128,20 @@ struct NetworkConfig: View {
 				}
 			}
 		}
-		.onChange(of: wifiEnabled) { newEnabled in
-			if node != nil && node!.networkConfig != nil {
-				if newEnabled != node!.networkConfig!.wifiEnabled { hasChanges = true }
-			}
+		.onChange(of: wifiEnabled) {
+			if $0 != node?.networkConfig?.wifiEnabled { hasChanges = true }
 		}
 		.onChange(of: wifiSsid) { newSSID in
-			if node != nil && node!.networkConfig != nil {
-				if newSSID != node!.networkConfig!.wifiSsid { hasChanges = true }
-			}
+			if newSSID != node?.networkConfig?.wifiSsid { hasChanges = true }
 		}
 		.onChange(of: wifiPsk) { newPsk in
-			if node != nil && node!.networkConfig != nil {
-				if newPsk != node!.networkConfig!.wifiPsk { hasChanges = true }
-			}
+			if newPsk != node?.networkConfig?.wifiPsk { hasChanges = true }
 		}
-		.onChange(of: wifiMode) { newMode in
-			if node != nil && node!.networkConfig != nil {
-				if newMode != node!.networkConfig!.wifiMode { hasChanges = true }
-			}
+		.onChange(of: wifiMode) {
+			if $0 != node?.networkConfig?.wifiMode ?? -1 { hasChanges = true }
 		}
-		.onChange(of: ethEnabled) { newEthEnabled in
-			if node != nil && node!.networkConfig != nil {
-				if newEthEnabled != node!.networkConfig!.ethEnabled { hasChanges = true }
-			}
+		.onChange(of: ethEnabled) {
+			if $0 != node?.networkConfig?.ethEnabled { hasChanges = true }
 		}
 	}
 	func setNetworkValues() {

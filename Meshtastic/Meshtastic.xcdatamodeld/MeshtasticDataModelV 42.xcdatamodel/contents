@@ -155,7 +155,9 @@
         <attribute name="messagePayload" optional="YES" attributeType="String" defaultValueString=""/>
         <attribute name="messagePayloadMarkdown" optional="YES" attributeType="String"/>
         <attribute name="messageTimestamp" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="pkiEncrypted" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="portNum" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="publicKey" optional="YES" attributeType="Binary"/>
         <attribute name="read" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="realACK" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="receivedACK" attributeType="Boolean" usesScalarValueType="YES"/>
@@ -224,6 +226,8 @@
         <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="peripheralId" optional="YES" attributeType="String"/>
         <attribute name="rssi" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="sessionExpiration" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="sessionPasskey" optional="YES" attributeType="Binary"/>
         <attribute name="snr" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="viaMqtt" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <relationship name="ambientLightingConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="AmbientLightingConfigEntity" inverseName="ambientLightingConfigNode" inverseEntity="AmbientLightingConfigEntity"/>
@@ -245,6 +249,7 @@
         <relationship name="powerConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PowerConfigEntity" inverseName="powerConfigNode" inverseEntity="PowerConfigEntity"/>
         <relationship name="rangeTestConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RangeTestConfigEntity" inverseName="rangeTestConfigNode" inverseEntity="RangeTestConfigEntity"/>
         <relationship name="rtttlConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RTTTLConfigEntity" inverseName="rtttlConfigNode" inverseEntity="RTTTLConfigEntity"/>
+        <relationship name="securityConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="SecurityConfigEntity" inverseName="securityConfigNode" inverseEntity="SecurityConfigEntity"/>
         <relationship name="serialConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="SerialConfigEntity" inverseName="serialConfigNode" inverseEntity="SerialConfigEntity"/>
         <relationship name="storeForwardConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="StoreForwardConfigEntity" inverseName="storeForwardConfigNode" inverseEntity="StoreForwardConfigEntity"/>
         <relationship name="telemetries" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="TelemetryEntity" inverseName="nodeTelemetry" inverseEntity="TelemetryEntity"/>
@@ -334,6 +339,17 @@
         <attribute name="ringtone" optional="YES" attributeType="String" maxValueString="228" defaultValueString=""/>
         <relationship name="rtttlConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="rtttlConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
+    <entity name="SecurityConfigEntity" representedClassName="SecurityConfigEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="adminChannelEnabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="adminKey" optional="YES" attributeType="Binary"/>
+        <attribute name="bluetoothLoggingEnabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="debugLogApiEnabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="isManaged" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="privateKey" optional="YES" attributeType="Binary"/>
+        <attribute name="publicKey" optional="YES" attributeType="Binary"/>
+        <attribute name="serialEnabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <relationship name="securityConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="securityConfig" inverseEntity="NodeInfoEntity"/>
+    </entity>
     <entity name="SerialConfigEntity" representedClassName="SerialConfigEntity" syncable="YES" codeGenerationType="class">
         <attribute name="baudRate" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="echo" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
@@ -418,11 +434,15 @@
         <attribute name="hwModel" attributeType="String"/>
         <attribute name="hwModelId" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="isLicensed" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="keyMatch" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="lastMessage" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="longName" attributeType="String"/>
         <attribute name="mute" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="newPublicKey" optional="YES" attributeType="Binary"/>
         <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="numString" optional="YES" attributeType="String"/>
+        <attribute name="pkiEncrypted" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="publicKey" optional="YES" attributeType="Binary"/>
         <attribute name="role" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="shortName" attributeType="String"/>
         <attribute name="userId" attributeType="String"/>

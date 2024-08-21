@@ -33,13 +33,27 @@ struct MeshMap: View {
 	@Namespace var mapScope
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .flat, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .excludingAll, showsTraffic: false)
 	@State var position = MapCameraPosition.automatic
-	@State var isEditingSettings = false
+	@State private var editingSettings = false
+	@State private var editingFilters = false
 	@State var selectedPosition: PositionEntity?
 	@State var editingWaypoint: WaypointEntity?
 	@State var selectedWaypoint: WaypointEntity?
 	@State var selectedWaypointId: String?
 	@State var newWaypointCoord: CLLocationCoordinate2D?
 	@State var isMeshMap = true
+	/// Filter
+	@State private var searchText = ""
+	@State private var viaLora = true
+	@State private var viaMqtt = true
+	@State private var isOnline = false
+	@State private var isPkiEncrypted = false
+	@State private var isFavorite = false
+	@State private var isEnvironment = false
+	@State private var distanceFilter = false
+	@State private var maxDistance: Double = 800000
+	@State private var hopsAway: Double = -1.0
+	@State private var roleFilter = false
+	@State private var deviceRoles: Set<Int> = []
 
 	var body: some View {
 
@@ -48,7 +62,6 @@ struct MeshMap: View {
 				MapReader { reader in
 					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
 						MeshMapContent(showUserLocation: $showUserLocation, showTraffic: $showTraffic, showPointsOfInterest: $showPointsOfInterest, selectedMapLayer: $selectedMapLayer, selectedPosition: $selectedPosition, selectedWaypoint: $selectedWaypoint)
-
 					}
 					.mapScope(mapScope)
 					.mapStyle(mapStyle)
@@ -106,7 +119,7 @@ struct MeshMap: View {
 				WaypointForm(waypoint: selection, editMode: true)
 					.padding()
 			}
-			.sheet(isPresented: $isEditingSettings) {
+			.sheet(isPresented: $editingSettings) {
 				MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap)
 			}
 			.onChange(of: router.navigationState) {
@@ -128,19 +141,46 @@ struct MeshMap: View {
 					return
 				}
 			}
+			.sheet(isPresented: $editingFilters) {
+				NodeListFilter(
+					viaLora: $viaLora,
+					viaMqtt: $viaMqtt,
+					isOnline: $isOnline,
+					isPkiEncrypted: $isPkiEncrypted,
+					isFavorite: $isFavorite,
+					isEnvironment: $isEnvironment,
+					distanceFilter: $distanceFilter,
+					maximumDistance: $maxDistance,
+					hopsAway: $hopsAway,
+					roleFilter: $roleFilter,
+					deviceRoles: $deviceRoles
+				)
+			}
 			.safeAreaInset(edge: .bottom, alignment: .trailing) {
 				HStack {
+					Spacer()
 					Button(action: {
 						withAnimation {
-							isEditingSettings = !isEditingSettings
+							editingSettings = !editingSettings
 						}
 					}) {
-						Image(systemName: isEditingSettings ? "info.circle.fill" : "info.circle")
+						Image(systemName: editingSettings ? "info.circle.fill" : "info.circle")
 							.padding(.vertical, 5)
 					}
 					.tint(Color(UIColor.secondarySystemBackground))
 					.foregroundColor(.accentColor)
 					.buttonStyle(.borderedProminent)
+//					Button(action: {
+//						withAnimation {
+//							editingFilters = !editingFilters
+//						}
+//					}) {
+//						Image(systemName: !editingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+//							.padding(.vertical, 5)
+//					}
+//					.tint(Color(UIColor.secondarySystemBackground))
+//					.foregroundColor(.accentColor)
+//					.buttonStyle(.borderedProminent)
 				}
 				.controlSize(.regular)
 				.padding(5)

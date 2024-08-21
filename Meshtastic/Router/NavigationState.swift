@@ -46,6 +46,7 @@ enum SettingsNavigationState: String {
 	case paxCounter
 	case ringtone
 	case serial
+	case security
 	case storeAndForward
 	case telemetry
 	case meshLog

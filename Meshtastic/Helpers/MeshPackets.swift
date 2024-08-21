@@ -49,7 +49,7 @@ func generateMessageMarkdown (message: String) -> String {
 }
 
 func localConfig (config: Config, context: NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
-	// We don't care about any of the Power settings, config is available for everything else
+
 	if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
 		upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
@@ -64,6 +64,8 @@ func localConfig (config: Config, context: NSManagedObjectContext, nodeNum: Int6
 		upsertPositionConfigPacket(config: config.position, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.power(config.power) {
 		upsertPowerConfigPacket(config: config.power, nodeNum: nodeNum, context: context)
+	} else if config.payloadVariant == Config.OneOf_PayloadVariant.security(config.security) {
+		upsertSecurityConfigPacket(config: config.security, nodeNum: nodeNum, context: context)
 	}
 }
 
@@ -196,7 +198,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 	}
 }
 
-func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NSManagedObjectContext) {
+func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	if metadata.isInitialized {
 		let logString = String.localizedStringWithFormat("mesh.log.device.metadata.received %@".localized, fromNum.toHex())
@@ -229,6 +231,10 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 					let newNode = createNodeInfo(num: Int64(fromNum), context: context)
 					newNode.metadata = newMetadata
 				}
+			}
+			if sessionPasskey?.count != 0 {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -276,6 +282,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				newTelemetries.append(telemetry)
 				newNode.telemetries? = NSOrderedSet(array: newTelemetries)
 			}
+
 			newNode.firstHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
 			newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
 			newNode.snr = nodeInfo.snr
@@ -296,6 +303,10 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				}
 				newUser.isLicensed = nodeInfo.user.isLicensed
 				newUser.role = Int32(nodeInfo.user.role.rawValue)
+				if !nodeInfo.user.publicKey.isEmpty {
+					newUser.pkiEncrypted = true
+					newUser.publicKey = nodeInfo.user.publicKey
+				}
 				newNode.user = newUser
 			} else if nodeInfo.num > Constants.minimumNodeNum {
 				let newUser = createUser(num: Int64(nodeInfo.num), context: context)
@@ -352,6 +363,11 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			if nodeInfo.hasUser {
 				if fetchedNode[0].user == nil {
 					fetchedNode[0].user = UserEntity(context: context)
+				}
+				// Set the public key for a user if it is empty, don't update
+				if fetchedNode[0].user?.publicKey?.isEmpty == nil && !nodeInfo.user.publicKey.isEmpty {
+					fetchedNode[0].user?.pkiEncrypted = true
+					fetchedNode[0].user?.publicKey = nodeInfo.user.publicKey
 				}
 				fetchedNode[0].user!.userId = nodeInfo.user.id
 				fetchedNode[0].user!.num = Int64(nodeInfo.num)
@@ -476,7 +492,7 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getChannelResponse(adminMessage.getChannelResponse) {
 			channelPacket(channel: adminMessage.getChannelResponse, fromNum: Int64(packet.from), context: context)
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getDeviceMetadataResponse(adminMessage.getDeviceMetadataResponse) {
-			deviceMetadataPacket(metadata: adminMessage.getDeviceMetadataResponse, fromNum: Int64(packet.from), context: context)
+			deviceMetadataPacket(metadata: adminMessage.getDeviceMetadataResponse, fromNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getConfigResponse(adminMessage.getConfigResponse) {
 			let config = adminMessage.getConfigResponse
 			if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
@@ -493,6 +509,8 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				upsertPositionConfigPacket(config: config.position, nodeNum: Int64(packet.from), context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.power(config.power) {
 				upsertPowerConfigPacket(config: config.power, nodeNum: Int64(packet.from), context: context)
+			} else if config.payloadVariant == Config.OneOf_PayloadVariant.security(config.security) {
+				upsertSecurityConfigPacket(config: config.security, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			}
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getModuleConfigResponse(adminMessage.getModuleConfigResponse) {
 			let moduleConfig = adminMessage.getModuleConfigResponse
@@ -614,13 +632,21 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 					}
 				}
 				fetchedMessage[0].ackError = Int32(routingMessage.errorReason.rawValue)
+				if routingError == RoutingError.pkiFailed {
+					fetchedMessage[0].toUser?.keyMatch = false
+					fetchedMessage[0].toUser?.newPublicKey = fetchedMessage[0].publicKey
+				}
 
 				if routingMessage.errorReason == Routing.Error.none {
 
 					fetchedMessage[0].receivedACK = true
 				}
 				fetchedMessage[0].ackSNR = packet.rxSnr
-				fetchedMessage[0].ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
+				if packet.rxTime > 0 {
+					fetchedMessage[0].ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
+				} else {
+					fetchedMessage[0].ackTimestamp = Int32(Date().timeIntervalSince1970)
+				}
 
 				if fetchedMessage[0].toUser != nil {
 					fetchedMessage[0].toUser!.objectWillChange.send()
@@ -709,7 +735,11 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					return
 				}
 				mutableTelemetries.add(telemetry)
-				fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(truncatingIfNeeded: packet.rxTime)))
+				if packet.rxTime > 0 {
+					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(packet.rxTime))
+				} else {
+					fetchedNode[0].lastHeard = Date()
+				}
 				fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
 			}
 			try context.save()
@@ -808,13 +838,19 @@ func textMessageAppPacket(
 			let fetchedUsers = try context.fetch(messageUsers)
 			let newMessage = MessageEntity(context: context)
 			newMessage.messageId = Int64(packet.id)
-			newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
+			if packet.rxTime > 0 {
+				newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
+			} else {
+				newMessage.messageTimestamp = Int32(Date().timeIntervalSince1970)
+			}
 			newMessage.receivedACK = false
 			newMessage.snr = packet.rxSnr
 			newMessage.rssi = packet.rxRssi
 			newMessage.isEmoji = packet.decoded.emoji == 1
 			newMessage.channel = Int32(packet.channel)
 			newMessage.portNum = Int32(packet.decoded.portnum.rawValue)
+			newMessage.publicKey = packet.publicKey
+			newMessage.pkiEncrypted = packet.pkiEncrypted
 			if packet.decoded.portnum == PortNum.detectionSensorApp {
 				if !UserDefaults.enableDetectionNotifications {
 					newMessage.read = true
@@ -831,8 +867,21 @@ func textMessageAppPacket(
 			}
 			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
 				newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
+				if !(newMessage.fromUser?.publicKey?.isEmpty ?? true) {
+					/// We have a key, check if it matches
+					if newMessage.fromUser?.publicKey != newMessage.publicKey {
+						newMessage.fromUser?.keyMatch = false
+						newMessage.fromUser?.newPublicKey = newMessage.publicKey
+					}
+				} else {
+					/// We have no key, set it
+					newMessage.fromUser?.publicKey = packet.publicKey
+					newMessage.fromUser?.pkiEncrypted = packet.pkiEncrypted
+				}
 				if packet.rxTime > 0 {
 					newMessage.fromUser?.userNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+				} else {
+					newMessage.fromUser?.userNode?.lastHeard = Date()
 				}
 			}
 			newMessage.messagePayload = messageText

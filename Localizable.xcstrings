@@ -335,9 +335,6 @@
     "Ack Time: %@" : {
 
     },
-    "Acknowledged" : {
-
-    },
     "Acknowledged by another node" : {
 
     },
@@ -481,6 +478,12 @@
           }
         }
       }
+    },
+    "Admin & Direct Message Keys" : {
+
+    },
+    "Admin Key" : {
+
     },
     "admin.log" : {
       "extractionState" : "manual",
@@ -703,7 +706,10 @@
     "All" : {
 
     },
-    "All device and app data will be deleted. You will also need to forget your devices under Settings > Bluetooth." : {
+    "All device and app data will be deleted." : {
+
+    },
+    "Allow incoming device control over the insecure legacy admin channel." : {
 
     },
     "Allow Position Requests" : {
@@ -1843,6 +1849,9 @@
           }
         }
       }
+    },
+    "Bluetooth Logs" : {
+
     },
     "bluetooth.config" : {
       "localizations" : {
@@ -4805,9 +4814,6 @@
         }
       }
     },
-    "Contacts" : {
-
-    },
     "contacts %@" : {
       "extractionState" : "migrated",
       "localizations" : {
@@ -5347,6 +5353,9 @@
         }
       }
     },
+    "Developer" : {
+
+    },
     "Developers" : {
 
     },
@@ -5409,6 +5418,9 @@
       }
     },
     "Device GPS" : {
+
+    },
+    "Device is managed by a mesh administrator." : {
 
     },
     "Device Logging Enabled" : {
@@ -6310,6 +6322,15 @@
     "Direct" : {
 
     },
+    "Direct Message Help" : {
+
+    },
+    "Direct messages are using the new public key infrastructure for encryption. Reguires firmware version 2.5 or greater." : {
+
+    },
+    "Direct messages are using the shared key for the channel." : {
+
+    },
     "direct.messages" : {
       "localizations" : {
         "de" : {
@@ -6692,9 +6713,6 @@
     "Drag & Drop is the recommended way to update firmware for NRF devices. If your iPhone or iPad is USB-C it will work with your regular USB-C charging cable, for lightning devices you need the Apple Lightning to USB camera adaptor." : {
 
     },
-    "Each node is an available contact. Contacts with recent messages or marked as favorites show up at the top of the list. Select a contact to send or view messages. Long press to favorite or mute the contact or delete the conversation." : {
-
-    },
     "echo" : {
       "localizations" : {
         "de" : {
@@ -6967,6 +6985,9 @@
         }
       }
     },
+    "Encrypted" : {
+
+    },
     "Encryption Enabled" : {
 
     },
@@ -7208,7 +7229,10 @@
 
     },
     "Fetch the latest position of a cetain node" : {
-
+    
+    },
+    "Favorites and nodes with recent messages show up at the top of the contact list." : {
+    
     },
     "Fifteen Minutes" : {
 
@@ -8276,10 +8300,13 @@
     "Hops Away" : {
 
     },
-    "Hops Away %d) dB" : {
+    "Hops Away %d" : {
 
     },
     "Hops Away:" : {
+
+    },
+    "Hops Away: %d" : {
 
     },
     "Hour" : {
@@ -10868,6 +10895,9 @@
     "LED State" : {
 
     },
+    "Legacy Administration" : {
+
+    },
     "Licensed Operator" : {
 
     },
@@ -11274,6 +11304,9 @@
 
     },
     "Long Name: %@" : {
+
+    },
+    "Long press to favorite or mute the contact or delete a conversation." : {
 
     },
     "Longitude" : {
@@ -14532,7 +14565,9 @@
 
     },
     "Message content exceeds 228 bytes." : {
-
+    },
+    "Message Status Options" : {
+    
     },
     "message.details" : {
       "localizations" : {
@@ -16022,6 +16057,9 @@
     "Other data sources" : {
 
     },
+    "Output live debug logging over serial." : {
+
+    },
     "Output pin buzzer GPIO " : {
 
     },
@@ -16672,7 +16710,19 @@
     "Primary GPIO" : {
 
     },
+    "Private Key" : {
+
+    },
     "Project information" : {
+
+    },
+    "Public Key" : {
+
+    },
+    "Public Key Encryption" : {
+
+    },
+    "Public Key Mismatch" : {
 
     },
     "PWD" : {
@@ -17252,7 +17302,10 @@
     "Remote administration for: %@" : {
 
     },
-    "Remote: %@" : {
+    "Remote Legacy Admin: %@" : {
+
+    },
+    "Remote PKI Admin: %@" : {
 
     },
     "Remove" : {
@@ -17322,7 +17375,10 @@
         }
       }
     },
-    "Request Admin: %@" : {
+    "Request Legacy Admin: %@" : {
+
+    },
+    "Request PKI Admin: %@" : {
 
     },
     "Requires that there be an accelerometer on your device." : {
@@ -18452,6 +18508,28 @@
         }
       }
     },
+    "routing.pkifailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encrypted Send Failed"
+          }
+        }
+      }
+    },
+    "routing.pkiunknownpubkey" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unknown Public Key"
+          }
+        }
+      }
+    },
     "routing.timeout" : {
       "extractionState" : "migrated",
       "localizations" : {
@@ -18847,6 +18925,12 @@
     "Secondary" : {
 
     },
+    "Security" : {
+
+    },
+    "Security Config" : {
+
+    },
     "Select a channel" : {
 
     },
@@ -19071,6 +19155,9 @@
     "Sensor Options" : {
 
     },
+    "Sent out to other nodes on the mesh to allow them to compute a shared secret key." : {
+
+    },
     "Sequence number" : {
 
     },
@@ -19136,6 +19223,12 @@
       }
     },
     "Serial Console" : {
+
+    },
+    "Serial Console over the Stream API." : {
+
+    },
+    "Serial Debug Logs" : {
 
     },
     "serial.config" : {
@@ -19741,6 +19834,9 @@
           }
         }
       }
+    },
+    "Shared Key" : {
+
     },
     "Short Name" : {
 
@@ -20971,6 +21067,12 @@
     "The minimum distance change in meters to be considered for a smart position broadcast." : {
 
     },
+    "The public key authorized to send admin messages to this node." : {
+
+    },
+    "The public key does not match the recorded key. You may delete the node and let it exchange keys again, but this may indicate a more serious security problem. Contact the user through another trusted channel, to determine if the key change was due to a factory reset or other intentional action." : {
+
+    },
     "The region where you will be using your radios." : {
 
     },
@@ -22182,6 +22284,9 @@
     "Use PWM Buzzer" : {
 
     },
+    "Used to create a shared key with a remote device." : {
+
+    },
     "user" : {
       "localizations" : {
         "de" : {
@@ -22349,6 +22454,12 @@
     "Via Mqtt" : {
 
     },
+    "View and export position-redacted device logs over Bluetooth" : {
+
+    },
+    "View Logs" : {
+
+    },
     "voltage" : {
       "localizations" : {
         "de" : {
@@ -22486,6 +22597,9 @@
     "Website" : {
 
     },
+    "What does the lock mean?" : {
+
+    },
     "What is Meshtastic?" : {
 
     },
@@ -22502,6 +22616,12 @@
 
     },
     "WIND" : {
+
+    },
+    "Wind Direction" : {
+
+    },
+    "Wind Speed" : {
 
     },
     "x" : {

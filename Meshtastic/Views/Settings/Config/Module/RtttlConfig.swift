@@ -62,12 +62,16 @@ struct RtttlConfig: View {
 				}
 			}
 			.navigationTitle("config.ringtone.title")
-			.navigationBarItems(trailing:
-				ZStack {
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-			})
+			.navigationBarItems(
+				trailing: ZStack {
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: bleManager.connectedPeripheral?.shortName ?? "?"
+					)
+				}
+			)
 			.onAppear {
-				setRtttLConfigValue()
 				// Need to request a Rtttl Config from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && (node?.rtttlConfig == nil || node?.rtttlConfig?.ringtone?.count ?? 0 == 0) {
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)

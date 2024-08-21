@@ -14,6 +14,7 @@ struct PositionPopover: View {
 	@ObservedObject var locationsHandler = LocationsHandler.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@Environment(\.dismiss) private var dismiss
 	var position: PositionEntity
 	var popover: Bool = true
@@ -52,9 +53,13 @@ struct PositionPopover: View {
 				VStack(alignment: .leading) {
 					/// Time
 					Label {
-						Text("heard".localized + ":")
+						if idiom != .phone {
+							Text("heard".localized + ":")
+						}
 						LastHeardText(lastHeard: position.time)
 							.foregroundColor(.primary)
+							.font(idiom == .phone ? .callout : .body)
+							.allowsTightening(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
 					} icon: {
 						Image(systemName: position.nodePosition?.isOnline ?? false ? "checkmark.circle.fill" : "moon.circle.fill")
 							.symbolRenderingMode(.hierarchical)
@@ -67,12 +72,28 @@ struct PositionPopover: View {
 						Text("\(String(format: "%.6f", position.coordinate.latitude)), \(String(format: "%.6f", position.coordinate.longitude))")
 							.textSelection(.enabled)
 							.foregroundColor(.primary)
+							.font(idiom == .phone ? .callout : .body)
+							.allowsTightening(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
 					} icon: {
 						Image(systemName: "mappin.and.ellipse")
 							.symbolRenderingMode(.hierarchical)
 							.frame(width: 35)
 					}
 					.padding(.bottom, 5)
+					/// Hops Away
+					if position.nodePosition?.hopsAway ?? 0 > 0 {
+						Label {
+							Text("Hops Away: \(position.nodePosition?.hopsAway ?? 0)")
+								.textSelection(.enabled)
+								.foregroundColor(.primary)
+								.font(idiom == .phone ? .callout : .body)
+						} icon: {
+							Image(systemName: "hare")
+								.symbolRenderingMode(.hierarchical)
+								.frame(width: 35)
+						}
+						.padding(.bottom, 5)
+					}
 					/// Altitude
 					Label {
 						let formatter = MeasurementFormatter()
@@ -81,9 +102,11 @@ struct PositionPopover: View {
 						if Locale.current.measurementSystem == .metric {
 							Text(altitudeFormatter.string(from: distanceInMeters))
 								.foregroundColor(.primary)
+								.font(idiom == .phone ? .callout : .body)
 						} else {
 							Text(altitudeFormatter.string(from: distanceInFeet))
 								.foregroundColor(.primary)
+								.font(idiom == .phone ? .callout : .body)
 						}
 
 					} icon: {
@@ -98,6 +121,7 @@ struct PositionPopover: View {
 						Label {
 							Text("Sats in view: \(String(position.satsInView))")
 								.foregroundColor(.primary)
+								.font(idiom == .phone ? .callout : .body)
 						} icon: {
 							Image(systemName: "sparkles")
 								.symbolRenderingMode(.hierarchical)
@@ -110,6 +134,7 @@ struct PositionPopover: View {
 						Label {
 							Text("Sequence: \(String(position.seqNo))")
 								.foregroundColor(.primary)
+								.font(idiom == .phone ? .callout : .body)
 						} icon: {
 							Image(systemName: "number")
 								.symbolRenderingMode(.hierarchical)
@@ -129,11 +154,28 @@ struct PositionPopover: View {
 							 .rotationEffect(degrees)
 					}
 					.padding(.bottom, 5)
+					/// Distance
+					if let lastLocation = locationsHandler.locationsArray.last {
+						/// Distance
+						if lastLocation.distance(from: CLLocation(latitude: LocationsHandler.DefaultLocation.latitude, longitude: LocationsHandler.DefaultLocation.longitude)) > 0.0 {
+							let metersAway = position.coordinate.distance(from: CLLocationCoordinate2D(latitude: lastLocation.coordinate.latitude, longitude: lastLocation.coordinate.longitude))
+							Label {
+								Text("distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
+									.foregroundColor(.primary)
+									.font(idiom == .phone ? .callout : .body)
+							} icon: {
+								Image(systemName: "lines.measurement.horizontal")
+									.symbolRenderingMode(.hierarchical)
+									.frame(width: 35)
+							}
+						}
+					}
 					/// Speed
 					let speed = Measurement(value: Double(position.speed), unit: UnitSpeed.kilometersPerHour)
 					Label {
 						Text("Speed: \(speed.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))))")
 							.foregroundColor(.primary)
+							.font(idiom == .phone ? .callout : .body)
 					} icon: {
 						Image(systemName: "gauge.with.dots.needle.33percent")
 							.symbolRenderingMode(.hierarchical)
@@ -144,6 +186,7 @@ struct PositionPopover: View {
 
 						Label {
 							Text("MQTT")
+								.font(idiom == .phone ? .callout : .body)
 						} icon: {
 							Image(systemName: "network")
 								 .symbolRenderingMode(.hierarchical)
@@ -151,20 +194,6 @@ struct PositionPopover: View {
 								 .rotationEffect(degrees)
 						}
 						.padding(.bottom, 5)
-					}
-					if let lastLocation = locationsHandler.locationsArray.last {
-						/// Distance
-						if lastLocation.distance(from: CLLocation(latitude: LocationsHandler.DefaultLocation.latitude, longitude: LocationsHandler.DefaultLocation.longitude)) > 0.0 {
-							let metersAway = position.coordinate.distance(from: CLLocationCoordinate2D(latitude: lastLocation.coordinate.latitude, longitude: lastLocation.coordinate.longitude))
-							Label {
-								Text("distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
-									.foregroundColor(.primary)
-							} icon: {
-								Image(systemName: "lines.measurement.horizontal")
-									.symbolRenderingMode(.hierarchical)
-									.frame(width: 35)
-							}
-						}
 					}
 					Spacer()
 				}
@@ -223,9 +252,9 @@ struct PositionPopover: View {
 #endif
 			}
 		}
-		.presentationDetents([.medium, .large])
+		.presentationDetents([.fraction(0.65), .large])
 		.presentationContentInteraction(.scrolls)
 		.presentationDragIndicator(.visible)
-		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
+		.presentationBackgroundInteraction(.enabled(upThrough: .large))
 	}
 }
