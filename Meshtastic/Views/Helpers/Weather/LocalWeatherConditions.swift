@@ -100,9 +100,9 @@ struct WeatherConditionsCompactWidget: View {
 			Text(temperature)
 				.font(temperature.length < 4 ? .system(size: 80) : .system(size: 60) )
 		}
-		.padding(.horizontal, 5)
+		.padding(10)
 		.frame(maxWidth: .infinity)
-		.frame(height: 150)
+		.frame(height: 175)
 		.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 	}
 }
@@ -122,9 +122,9 @@ struct HumidityCompactWidget: View {
 				.fixedSize(horizontal: false, vertical: true)
 				.font(.caption)
 		}
-		.padding(.horizontal, 5)
+		.padding(10)
 		.frame(maxWidth: .infinity)
-		.frame(height: 150)
+		.frame(height: 175)
 		.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 	}
 }
@@ -136,16 +136,16 @@ struct PressureCompactWidget: View {
 	var body: some View {
 		VStack(alignment: .leading) {
 			Label { Text("PRESSURE") } icon: { Image(systemName: "gauge").symbolRenderingMode(.multicolor) }
-				.font(.callout)
+				.font(.caption)
 			Text(pressure)
 				.font(pressure.length < 7 ? .system(size: 35) : .system(size: 30) )
 			Text(low ? "LOW" : "HIGH")
 				.padding(.bottom)
 			Text(unit)
 		}
-		.padding(.horizontal, 5)
+		.padding(10)
 		.frame(maxWidth: .infinity)
-		.frame(height: 150)
+		.frame(height: 175)
 		.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 	}
 }
@@ -158,14 +158,15 @@ struct WindCompactWidget: View {
 		VStack(alignment: .leading) {
 			Label { Text("WIND") } icon: { Image(systemName: "wind").foregroundColor(.accentColor) }
 			Text("\(direction)")
+				.font(.caption)
 				.padding(.bottom, 10)
 			Text(speed)
 				.font(.system(size: 35))
 			Text("Gusts \(gust)")
 		}
-		.padding(.horizontal, 5)
+		.padding(10)
 		.frame(maxWidth: .infinity)
-		.frame(height: 150)
+		.frame(height: 175)
 		.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 	}
 }
