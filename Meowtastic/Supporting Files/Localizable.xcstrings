@@ -10689,6 +10689,9 @@
     "Long Name" : {
 
     },
+    "Look & Feel" : {
+
+    },
     "lora" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -14192,6 +14195,9 @@
           }
         }
       }
+    },
+    "More Colors" : {
+
     },
     "mqtt" : {
       "localizations" : {

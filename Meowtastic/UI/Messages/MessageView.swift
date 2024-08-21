@@ -4,7 +4,7 @@ import SwiftUI
 
 struct MessageView: View {
 	let message: MessageEntity
-	let originalMessage: String?
+	let originalMessage: MessageEntity?
 	let tapBackDestination: MessageDestination
 	let isCurrentUser: Bool
 	let onReply: () -> Void
@@ -30,48 +30,21 @@ struct MessageView: View {
 		message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
 	}
 
-	private var foregroundColor: Color {
-		if backgroundColor.isLight() {
-			return Color.black
-		}
-		else {
-			return Color.white
-		}
-	}
-
-	private var statusForegroundColor: Color {
-		foregroundColor.opacity(0.5)
-	}
-
-	private var backgroundColor: Color {
-		if isCurrentUser {
-			return Color.accentColor
-		}
-		else {
-			if colorScheme == .dark {
-				return Color(white: 0.1)
-			}
-			else {
-				return Color(white: 0.9)
-			}
-		}
-	}
-
 	private var corners: RectangleCornerRadii {
 		if isCurrentUser {
 			RectangleCornerRadii(
-				topLeading: 8,
-				bottomLeading: 8,
-				bottomTrailing: 0,
-				topTrailing: 8
+				topLeading: 24,
+				bottomLeading: 24,
+				bottomTrailing: 4,
+				topTrailing: 24
 			)
 		}
 		else {
 			RectangleCornerRadii(
-				topLeading: 0,
-				bottomLeading: 8,
-				bottomTrailing: 8,
-				topTrailing: 8
+				topLeading: 8,
+				bottomLeading: 24,
+				bottomTrailing: 4,
+				topTrailing: 24
 			)
 		}
 	}
@@ -83,7 +56,10 @@ struct MessageView: View {
 			)
 
 			VStack(alignment: isCurrentUser ? .trailing : .leading) {
-				if let originalMessage {
+				if
+					let originalMessage,
+					let payload = originalMessage.messagePayload
+				{
 					HStack(spacing: 0) {
 						Spacer()
 							.frame(width: 12)
@@ -92,16 +68,26 @@ struct MessageView: View {
 							Image(systemName: "arrowshape.turn.up.left")
 								.font(.system(size: 14))
 								.symbolRenderingMode(.monochrome)
-								.foregroundColor(foregroundColor.opacity(0.8))
+								.foregroundColor(
+									getForegroundColor(
+										for: originalMessage,
+										isCurrentUser: isCurrentUser
+									)
+									.opacity(0.8))
 
-							Text(originalMessage)
+							Text(payload)
 								.font(.system(size: 14))
-								.foregroundColor(foregroundColor)
+								.foregroundColor(
+									getForegroundColor(
+										for: originalMessage,
+										isCurrentUser: isCurrentUser
+									)
+								)
 								.opacity(0.8)
 						}
 						.padding(.vertical, 4)
 						.padding(.horizontal, 8)
-						.background(backgroundColor)
+						.background(getBackgroundColor(for: originalMessage, isCurrentUser: isCurrentUser))
 						.overlay(
 							RoundedRectangle(cornerRadius: 8)
 								.stroke(
@@ -122,7 +108,12 @@ struct MessageView: View {
 				VStack(alignment: .leading, spacing: 8) {
 					Text(markdownText)
 						.font(.body)
-						.foregroundColor(foregroundColor)
+						.foregroundColor(
+							getForegroundColor(
+								for: message,
+								isCurrentUser: isCurrentUser
+							)
+						)
 						.tint(linkColor)
 						.padding([.leading, .trailing, .top], 16)
 
@@ -141,7 +132,7 @@ struct MessageView: View {
 						}
 					}
 				}
-				.background(backgroundColor)
+				.background(getBackgroundColor(for: message, isCurrentUser: isCurrentUser))
 				.clipShape(
 					UnevenRoundedRectangle(cornerRadii: corners, style: .continuous)
 				)
@@ -193,12 +184,12 @@ struct MessageView: View {
 		HStack(spacing: 4) {
 			Image(systemName: "clock")
 				.font(.system(size: statusFontSize))
-				.foregroundColor(statusForegroundColor)
+				.foregroundColor(getForegroundColor(for: message).opacity(0.5))
 
 			Text(message.timestamp.relative())
 				.font(.system(size: statusFontSize))
 				.lineLimit(1)
-				.foregroundColor(statusForegroundColor)
+				.foregroundColor(getForegroundColor(for: message).opacity(0.5))
 				.fixedSize(horizontal: true, vertical: false)
 		}
 	}
@@ -211,42 +202,100 @@ struct MessageView: View {
 			HStack(spacing: 4) {
 				Image(systemName: "checkmark.circle.fill")
 					.font(.system(size: statusFontSize))
-					.foregroundColor(statusForegroundColor)
+					.foregroundColor(getForegroundColor(for: message).opacity(0.5))
 
 				Text(ackAt.relative())
 					.font(.system(size: statusFontSize))
 					.lineLimit(1)
-					.foregroundColor(statusForegroundColor)
+					.foregroundColor(getForegroundColor(for: message).opacity(0.5))
 			}
 		}
 		else if message.ackError == 0 {
 			HStack(spacing: 4) {
 				Image(systemName: "checkmark.circle.badge.questionmark")
 					.font(.system(size: statusFontSize))
-					.foregroundColor(statusForegroundColor)
+					.foregroundColor(getForegroundColor(for: message).opacity(0.5))
 
 				Text(message.timestamp.relative())
 					.font(.system(size: statusFontSize))
 					.lineLimit(1)
-					.foregroundColor(statusForegroundColor)
+					.foregroundColor(getForegroundColor(for: message).opacity(0.5))
 			}
 		}
 		else if message.ackError > 0 {
 			Image(systemName: "checkmark.circle.trianglebadge.exclamationmark")
 				.font(.system(size: statusFontSize))
-				.foregroundColor(statusForegroundColor)
+				.foregroundColor(getForegroundColor(for: message).opacity(0.5))
 
 			if let ackError = RoutingError(rawValue: Int(message.ackError)) {
 				Text(ackError.display)
 					.font(.system(size: statusFontSize))
 					.lineLimit(1)
-					.foregroundColor(statusForegroundColor)
+					.foregroundColor(getForegroundColor(for: message).opacity(0.5))
 			}
 			else {
 				Text("Unknown ACK error")
 					.font(.system(size: statusFontSize))
 					.lineLimit(1)
-					.foregroundColor(statusForegroundColor)
+					.foregroundColor(getForegroundColor(for: message).opacity(0.5))
+			}
+		}
+	}
+
+	private func getBackgroundColor(
+		for message: MessageEntity,
+		isCurrentUser: Bool
+	) -> Color {
+		if UserDefaults.moreColors {
+			if let num = message.fromUser?.num {
+				return Color(
+					UIColor(hex: UInt32(num))
+				)
+			}
+			else {
+				if isCurrentUser {
+					return Color.accentColor
+				}
+				else {
+					if colorScheme == .dark {
+						return Color(white: 0.1)
+					}
+					else {
+						return Color(white: 0.9)
+					}
+				}
+			}
+		}
+		else {
+			if colorScheme == .dark {
+				return Color(white: 0.1)
+			}
+			else {
+				return Color(white: 0.9)
+			}
+		}
+	}
+
+	private func getForegroundColor(
+		for message: MessageEntity,
+		isCurrentUser: Bool = false
+	) -> Color {
+		let background = getBackgroundColor(for: message, isCurrentUser: isCurrentUser)
+
+		if UserDefaults.moreColors {
+			if background.isLight() {
+				return Color.black
+			}
+			else {
+				return Color.white
+			}
+		}
+		else {
+			if background.isLight() {
+				return Color.black
+			}
+			else {
+				return Color.white
 			}
 		}
 	}

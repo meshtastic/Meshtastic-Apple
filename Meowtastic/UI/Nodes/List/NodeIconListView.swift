@@ -24,10 +24,10 @@ struct NodeIconListView: View {
 			.lastObject as? TelemetryEntity
 	}
 	private var detailIconSize: CGFloat {
-		small ? 10 : 16
+		small ? 12 : 16
 	}
 	private var detailIconSpacing: CGFloat {
-		small ? 4 : 6
+		6
 	}
 
 	@Environment(\.colorScheme)
@@ -35,7 +35,7 @@ struct NodeIconListView: View {
 
 	@ViewBuilder
 	var body: some View {
-		let detailInfoIconFont = Font.system(size: small ? 10 : 14, weight: .regular, design: .rounded)
+		let detailInfoIconFont = Font.system(size: small ? 12 : 14, weight: .regular, design: .rounded)
 		let detailInfoTextFont = Font.system(size: small ? 10 : 12, weight: .semibold, design: .rounded)
 		let detailHopsIconFont = Font.system(size: small ? 8 : 10, weight: .semibold, design: .rounded)
 
@@ -102,7 +102,7 @@ struct NodeIconListView: View {
 					.frame(width: detailIconSize)
 			}
 
-			if node.hasPositions {
+			if !small, node.hasPositions {
 				divider
 
 				if
@@ -192,15 +192,23 @@ struct NodeIconListView: View {
 						.frame(width: detailIconSize)
 				}
 			}
+
+			if small, !node.isOnline {
+				divider
+
+				Image(systemName: "network.slash")
+					.font(detailInfoIconFont)
+					.foregroundColor(.gray)
+					.frame(width: detailIconSize)
+
+			}
 		}
 	}
 
 	@ViewBuilder
 	private var divider: some View {
-		if !small {
-			Divider()
-				.frame(height: 16)
-				.foregroundColor(.gray)
-		}
+		Divider()
+			.frame(height: small ? 10 : 16)
+			.foregroundColor(.gray)
 	}
 }

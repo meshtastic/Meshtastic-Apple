@@ -53,6 +53,7 @@ extension UserDefaults {
 		case modemPreset
 		case firmwareVersion
 		case ignoreMQTT
+		case moreColors
 	}
 
 	@UserDefault(.preferredPeripheralId, defaultValue: "")
@@ -96,6 +97,9 @@ extension UserDefaults {
 
 	@UserDefault(.ignoreMQTT, defaultValue: false)
 	static var ignoreMQTT: Bool
+
+	@UserDefault(.moreColors, defaultValue: true)
+	static var moreColors: Bool
 
 	func reset() {
 		Keys.allCases.forEach { key in

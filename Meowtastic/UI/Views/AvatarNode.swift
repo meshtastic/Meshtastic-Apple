@@ -17,9 +17,7 @@ struct AvatarNode: View {
 
 	private var background: Color {
 		if node.isOnline || ignoreOffline {
-			return Color(
-				UIColor(hex: UInt32(node.num))
-			)
+			return node.color
 		}
 		else {
 			return Color.gray.opacity(0.7)

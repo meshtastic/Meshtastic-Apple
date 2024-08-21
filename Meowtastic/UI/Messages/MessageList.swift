@@ -267,6 +267,7 @@ struct MessageList: View {
 				if let node = message.fromUser?.userNode {
 					AvatarNode(
 						node,
+						ignoreOffline: true,
 						size: 64,
 						corners: isCurrentUser ? (true, true, false, true) : nil
 					)
@@ -296,6 +297,7 @@ struct MessageList: View {
 			if let node = message.fromUser?.userNode {
 				AvatarNode(
 					node,
+					ignoreOffline: true,
 					size: 64
 				)
 			}
@@ -366,15 +368,15 @@ struct MessageList: View {
 		}
 	}
 
-	private func getOriginalMessage(for message: MessageEntity) -> String? {
+	private func getOriginalMessage(for message: MessageEntity) -> MessageEntity? {
 		if
 			message.replyID > 0,
 			let messageReply = filteredMessages.first(where: { msg in
 				msg.messageId == message.replyID
 			}),
-			let messagePayload = messageReply.messagePayload
+			messageReply.messagePayload != nil
 		{
-			return messagePayload
+			return messageReply
 		}
 
 		return nil

@@ -1,5 +1,6 @@
 import CoreData
 import Foundation
+import SwiftUI
 
 extension NodeInfoEntity {
 	var latestEnvironmentMetrics: TelemetryEntity? {
