@@ -9,8 +9,9 @@ final class MeowtasticDelegate: UIResponder, UIApplicationDelegate, UNUserNotifi
 		didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
 	) -> Bool {
 		FirebaseApp.configure()
+
 		Analytics.setAnalyticsCollectionEnabled(true)
-		Analytics.logEvent(AnalyticEvents.appLaunch.id, parameters: [:])
+		Analytics.logEvent(AnalyticEvents.appLaunch.id, parameters: nil)
 
 		// Default User Default Values
 		UserDefaults.standard.register(defaults: ["meshMapRecentering": true])

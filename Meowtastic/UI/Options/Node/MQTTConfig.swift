@@ -316,7 +316,7 @@ struct MQTTConfig: View {
 		.scrollDismissesKeyboard(.interactively)
 		.disabled(bleManager.deviceConnected == nil || node?.mqttConfig == nil)
 		.onAppear {
-			Analytics.logEvent(AnalyticEvents.optionsMQTT.id, parameters: [:])
+			Analytics.logEvent(AnalyticEvents.optionsMQTT.id, parameters: nil)
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {

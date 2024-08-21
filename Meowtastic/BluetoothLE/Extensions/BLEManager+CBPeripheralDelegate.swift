@@ -4,17 +4,17 @@ import CoreData
 import MeshtasticProtobufs
 import OSLog
 
-// swiftlint:disable all
 extension BLEManager: CBPeripheralDelegate {
 	func peripheral(
 		_ peripheral: CBPeripheral,
 		didDiscoverServices error: Error?
 	) {
-		if let error {
-			Logger.services.error("🚫 [BLE] Discover Services error \(error.localizedDescription, privacy: .public)")
-		}
-
 		guard let services = peripheral.services else {
+			AnalyticEvents.trackPeripheralEvent(
+				for: .didDiscoverServices,
+				status: .failureProcess
+			)
+
 			return
 		}
 
@@ -30,8 +30,22 @@ extension BLEManager: CBPeripheralDelegate {
 				for: service
 			)
 		}
+
+		if let error {
+			AnalyticEvents.trackPeripheralEvent(
+				for: .didDiscoverServices,
+				status: .error(error.localizedDescription)
+			)
+		}
+		else {
+			AnalyticEvents.trackPeripheralEvent(
+				for: .didDiscoverServices,
+				status: .success
+			)
+		}
 	}
 
+	// swiftlint:disable:next cyclomatic_complexity
 	func peripheral(
 		_ peripheral: CBPeripheral,
 		didDiscoverCharacteristicsFor service: CBService,
@@ -44,16 +58,25 @@ extension BLEManager: CBPeripheralDelegate {
 
 			disconnectDevice()
 
+			AnalyticEvents.trackPeripheralEvent(
+				for: .didDiscoverCharacteristics,
+				status: .error(error.localizedDescription)
+			)
+
 			return
 		}
 
 		guard let characteristics = service.characteristics else {
+			AnalyticEvents.trackPeripheralEvent(
+				for: .didDiscoverCharacteristics,
+				status: .failureProcess
+			)
+
 			return
 		}
 
 		for characteristic in characteristics {
 			switch characteristic.uuid {
-
 			case BluetoothUUID.toRadio:
 				characteristicToRadio = characteristic
 
@@ -86,8 +109,14 @@ extension BLEManager: CBPeripheralDelegate {
 			let nodeConfig = NodeConfig(bleManager: self, context: context)
 			lastConfigNonce = nodeConfig.sendWantConfig()
 		}
+
+		AnalyticEvents.trackPeripheralEvent(
+			for: .didDiscoverCharacteristics,
+			status: .success
+		)
 	}
 
+	// swiftlint:disable:next cyclomatic_complexity
 	func peripheral(
 		_ peripheral: CBPeripheral,
 		didUpdateValueFor characteristic: CBCharacteristic,
@@ -107,6 +136,11 @@ extension BLEManager: CBPeripheralDelegate {
 				disconnectDevice(reconnect: false)
 			}
 
+			AnalyticEvents.trackPeripheralEvent(
+				for: .didUpdate,
+				status: .error(error.localizedDescription)
+			)
+
 			return
 		}
 
@@ -123,6 +157,12 @@ extension BLEManager: CBPeripheralDelegate {
 				"\(logRecord.level.rawValue) | [\(logRecord.source)] \(logRecord.message)"
 			)
 
+			AnalyticEvents.trackPeripheralEvent(
+				for: .didUpdate,
+				status: .success,
+				characteristic: .logRadio
+			)
+
 		case BluetoothUUID.logRadioLegacy:
 			guard
 				let value = characteristic.value,
@@ -132,6 +172,12 @@ extension BLEManager: CBPeripheralDelegate {
 			}
 
 			handleRadioLog(log)
+
+			AnalyticEvents.trackPeripheralEvent(
+				for: .didUpdate,
+				status: .success,
+				characteristic: .logRadioLegacy
+			)
 
 		case BluetoothUUID.fromRadio:
 			guard
@@ -171,7 +217,7 @@ extension BLEManager: CBPeripheralDelegate {
 						deviceConnected?.name = myInfo.bleName ?? "unknown".localized
 						deviceConnected?.longName = myInfo.bleName ?? "unknown".localized
 					}
-
+					
 					tryClearExistingChannels()
 				}
 
@@ -251,6 +297,13 @@ extension BLEManager: CBPeripheralDelegate {
 					}
 				}
 
+				AnalyticEvents.trackPeripheralEvent(
+					for: .didUpdate,
+					status: .success,
+					characteristic: .fromRadio,
+					app: .unknown
+				)
+
 			case .textMessageApp, .detectionSensorApp:
 				textMessageAppPacket(
 					packet: info.packet,
@@ -260,32 +313,76 @@ extension BLEManager: CBPeripheralDelegate {
 					appState: appState
 				)
 
+				AnalyticEvents.trackPeripheralEvent(
+					for: .didUpdate,
+					status: .success,
+					characteristic: .fromRadio,
+					app: .message
+				)
+
 			case .positionApp:
 				upsertPositionPacket(packet: info.packet, context: context)
+
+				AnalyticEvents.trackPeripheralEvent(
+					for: .didUpdate,
+					status: .success,
+					characteristic: .fromRadio,
+					app: .position
+				)
 
 			case .waypointApp:
 				waypointPacket(packet: info.packet, context: context)
 
+				AnalyticEvents.trackPeripheralEvent(
+					for: .didUpdate,
+					status: .success,
+					characteristic: .fromRadio,
+					app: .waypoint
+				)
+
 			case .nodeinfoApp:
-				if !isInvalidFwVersion {
-					upsertNodeInfoPacket(packet: info.packet, context: context)
+				guard !isInvalidFwVersion else {
+					break
 				}
 
+				upsertNodeInfoPacket(packet: info.packet, context: context)
+
+				AnalyticEvents.trackPeripheralEvent(
+					for: .didUpdate,
+					status: .success,
+					characteristic: .fromRadio,
+					app: .nodeInfo
+				)
+
 			case .routingApp:
-				if !isInvalidFwVersion {
-					routingPacket(
-						packet: info.packet,
-						connectedNodeNum: connectedDevice.num,
-						context: context
-					)
+				guard !isInvalidFwVersion else {
+					break
 				}
+
+				routingPacket(
+					packet: info.packet,
+					connectedNodeNum: connectedDevice.num,
+					context: context
+				)
+
+				AnalyticEvents.trackPeripheralEvent(
+					for: .didUpdate,
+					status: .success,
+					characteristic: .fromRadio,
+					app: .routing
+				)
 
 			case .adminApp:
 				adminAppPacket(packet: info.packet, context: context)
 
-			case .replyApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Reply App handling as a text message")
+				AnalyticEvents.trackPeripheralEvent(
+					for: .didUpdate,
+					status: .success,
+					characteristic: .fromRadio,
+					app: .admin
+				)
 
+			case .replyApp:
 				textMessageAppPacket(
 					packet: info.packet,
 					wantRangeTestPackets: wantRangeTestPackets,
@@ -294,135 +391,188 @@ extension BLEManager: CBPeripheralDelegate {
 					appState: appState
 				)
 
+				AnalyticEvents.trackPeripheralEvent(
+					for: .didUpdate,
+					status: .success,
+					characteristic: .fromRadio,
+					app: .reply
+				)
+
 			case .storeForwardApp:
-				if wantStoreAndForwardPackets {
-					storeAndForwardPacket(
-						packet: info.packet,
-						connectedNodeNum: connectedDevice.num,
-						context: context
-					)
+				guard wantStoreAndForwardPackets else {
+					break
 				}
+
+				storeAndForwardPacket(
+					packet: info.packet,
+					connectedNodeNum: connectedDevice.num,
+					context: context
+				)
+
+				AnalyticEvents.trackPeripheralEvent(
+					for: .didUpdate,
+					status: .success,
+					characteristic: .fromRadio,
+					app: .storeAndForward
+				)
 
 			case .rangeTestApp:
-				if wantRangeTestPackets {
-					textMessageAppPacket(
-						packet: info.packet,
-						wantRangeTestPackets: true,
-						connectedNode: connectedDevice.num,
-						context: context,
-						appState: appState
-					)
+				guard wantRangeTestPackets else {
+					break
 				}
+
+				textMessageAppPacket(
+					packet: info.packet,
+					wantRangeTestPackets: true,
+					connectedNode: connectedDevice.num,
+					context: context,
+					appState: appState
+				)
+
+				AnalyticEvents.trackPeripheralEvent(
+					for: .didUpdate,
+					status: .success,
+					characteristic: .fromRadio,
+					app: .rangeTest
+				)
 
 			case .telemetryApp:
-				if !isInvalidFwVersion {
-					telemetryPacket(
-						packet: info.packet,
-						connectedNode: connectedDevice.num,
-						context: context
-					)
+				guard !isInvalidFwVersion else {
+					break
 				}
 
+				telemetryPacket(
+					packet: info.packet,
+					connectedNode: connectedDevice.num,
+					context: context
+				)
+
+				AnalyticEvents.trackPeripheralEvent(
+					for: .didUpdate,
+					status: .success,
+					characteristic: .fromRadio,
+					app: .telemetry
+				)
+
 			case .tracerouteApp:
-				if
+				guard
 					let routingMessage = try? RouteDiscovery(serializedData: info.packet.decoded.payload),
 					!routingMessage.route.isEmpty
-				{
-					var routeString = "You --> "
-					var hopNodes: [TraceRouteHopEntity] = []
+				else {
+					break
+				}
 
-					let traceRoute = getTraceRoute(id: Int64(info.packet.decoded.requestID), context: context)
-					traceRoute?.response = true
-					traceRoute?.route = routingMessage.route
+				var routeString = "You --> "
+				var hopNodes: [TraceRouteHopEntity] = []
 
-					for node in routingMessage.route {
-						var hopNode = getNodeInfo(id: Int64(node), context: context)
+				let traceRoute = getTraceRoute(id: Int64(info.packet.decoded.requestID), context: context)
+				traceRoute?.response = true
+				traceRoute?.route = routingMessage.route
 
-						if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
-							hopNode = createNodeInfo(num: Int64(node), context: context)
-						}
+				for node in routingMessage.route {
+					var hopNode = getNodeInfo(id: Int64(node), context: context)
 
-						let traceRouteHop = TraceRouteHopEntity(context: context)
-						traceRouteHop.time = Date.now
+					if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
+						hopNode = createNodeInfo(num: Int64(node), context: context)
+					}
 
-						if hopNode?.hasPositions ?? false {
-							if
-								let mostRecent = hopNode?.positions?.lastObject as? PositionEntity,
-								let time = mostRecent.time,
-								time >= Calendar.current.date(byAdding: .minute, value: -60, to: Date.now)!
-							{
-								traceRouteHop.altitude = mostRecent.altitude
-								traceRouteHop.latitudeI = mostRecent.latitudeI
-								traceRouteHop.longitudeI = mostRecent.longitudeI
-								traceRouteHop.name = hopNode?.user?.longName ?? "unknown".localized
+					let traceRouteHop = TraceRouteHopEntity(context: context)
+					traceRouteHop.time = Date.now
 
-								traceRoute?.hasPositions = true
-							}
-							else {
-								traceRoute?.hasPositions = false
-							}
+					if hopNode?.hasPositions ?? false {
+						if
+							let mostRecent = hopNode?.positions?.lastObject as? PositionEntity,
+							let time = mostRecent.time,
+							time >= Calendar.current.date(byAdding: .minute, value: -60, to: Date.now)!
+						{
+							traceRouteHop.altitude = mostRecent.altitude
+							traceRouteHop.latitudeI = mostRecent.latitudeI
+							traceRouteHop.longitudeI = mostRecent.longitudeI
+							traceRouteHop.name = hopNode?.user?.longName ?? "unknown".localized
+							
+							traceRoute?.hasPositions = true
 						}
 						else {
 							traceRoute?.hasPositions = false
 						}
+					}
+					else {
+						traceRoute?.hasPositions = false
+					}
 
-						traceRouteHop.num = hopNode?.num ?? 0
+					traceRouteHop.num = hopNode?.num ?? 0
 
-						if let hopNode {
-							if info.packet.rxTime > 0 {
-								hopNode.lastHeard = Date(
-									timeIntervalSince1970: TimeInterval(Int64(info.packet.rxTime))
-								)
-							}
-							
-							hopNodes.append(traceRouteHop)
+					if let hopNode {
+						if info.packet.rxTime > 0 {
+							hopNode.lastHeard = Date(
+								timeIntervalSince1970: TimeInterval(Int64(info.packet.rxTime))
+							)
 						}
-						
-						routeString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") --> "
-					}
-					routeString += traceRoute?.node?.user?.longName ?? "unknown".localized
-					traceRoute?.routeText = routeString
-					traceRoute?.hops = NSOrderedSet(array: hopNodes)
 
-					do {
-						try context.save()
-					} catch {
-						context.rollback()
+						hopNodes.append(traceRouteHop)
 					}
+
+					routeString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") --> "
 				}
+				routeString += traceRoute?.node?.user?.longName ?? "unknown".localized
+				traceRoute?.routeText = routeString
+				traceRoute?.hops = NSOrderedSet(array: hopNodes)
+
+				do {
+					try context.save()
+				} catch {
+					context.rollback()
+				}
+
+				AnalyticEvents.trackPeripheralEvent(
+					for: .didUpdate,
+					status: .success,
+					characteristic: .fromRadio,
+					app: .traceRoute
+				)
 
 			case .paxcounterApp:
 				paxCounterPacket(packet: info.packet, context: context)
 
+				AnalyticEvents.trackPeripheralEvent(
+					for: .didUpdate,
+					status: .success,
+					characteristic: .fromRadio,
+					app: .paxCounter
+				)
+
 			default:
-				MeshLogger.log("Received unhandled packet")
+				AnalyticEvents.trackPeripheralEvent(
+					for: .didUpdate,
+					status: .success,
+					characteristic: .fromRadio,
+					app: .unhandled
+				)
 			}
 
 			let id = info.configCompleteID
 			if id != UInt32.min, id == lastConfigNonce {
-				Logger.mesh.info("🤜 [BLE] Want Config Complete. ID: \(id)")
-				
 				isInvalidFwVersion = false
 				lastConnectionError = ""
 				isSubscribed = true
-				
+
 				devices.removeAll(where: {
 					$0.peripheral.state == .disconnected
 				})
-				
+
 				if deviceConnected.num > 0 {
 					let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 					fetchNodeInfoRequest.predicate = NSPredicate(
 						format: "num == %lld",
 						Int64(deviceConnected.num)
 					)
-					
+
 					if
 						let fetchedNodeInfo = try? context.fetch(fetchNodeInfoRequest),
 						!fetchedNodeInfo.isEmpty
 					{
 						let node = fetchedNodeInfo[0]
-						
+
 						if
 							let mqttConfig = node.mqttConfig,
 							mqttConfig.enabled,
@@ -447,36 +597,126 @@ extension BLEManager: CBPeripheralDelegate {
 						}
 					}
 				}
-				
-				// MARK: Share Location Position Update Timer
-				// Use context to pass the radio name with the timer
-				// Use a RunLoop to prevent the timer from running on the main UI thread
+
 				if UserDefaults.provideLocation {
-					let interval = UserDefaults.provideLocationInterval >= 10 ? UserDefaults.provideLocationInterval : 30
-					
 					let timer = Timer.scheduledTimer(
-						timeInterval: TimeInterval(interval),
+						timeInterval: TimeInterval(UserDefaults.provideLocationInterval),
 						target: self,
 						selector: #selector(positionTimerFired),
 						userInfo: context,
 						repeats: true
 					)
 					RunLoop.current.add(timer, forMode: .common)
-					
+
 					positionTimer = timer
 				}
+
+				AnalyticEvents.trackBLEEvent(for: .wantConfigComplete, status: .success)
+
 				return
 			}
-			
+
 		default:
 			Logger.services.error("Unhandled characteristic UUID: \(characteristic.uuid, privacy: .public)")
 		}
-		
+
 		if let characteristicFromRadio {
 			peripheral.readValue(for: characteristicFromRadio)
 		}
 	}
-	
+
+	private func storeAndForwardPacket(
+		packet: MeshPacket,
+		connectedNodeNum: Int64,
+		context: NSManagedObjectContext
+	) {
+		if let storeAndForwardMessage = try? StoreAndForward(serializedData: packet.decoded.payload) {
+			MeshLogger.log(
+				"Store & Forward: Message \(storeAndForwardMessage.rr.rawValue) received from \(packet.from.toHex())"
+			)
+
+			switch storeAndForwardMessage.rr {
+			case .routerHeartbeat:
+				/// When we get a router heartbeat we know there is a store and forward node on the network
+				/// Check if it is the primary S&F Router and save the timestamp of the last
+				/// heartbeat so that we can show the request message history menu item on node
+				/// long press if the router has been seen recently
+				guard
+					storeAndForwardMessage.heartbeat.secondary != 0,
+					let router = getNodeInfo(
+						id: Int64(packet.from),
+						context: context
+					)
+				else {
+					return
+				}
+
+				if router.storeForwardConfig != nil {
+					router.storeForwardConfig?.enabled = true
+					router.storeForwardConfig?.isRouter = storeAndForwardMessage.heartbeat.secondary == 0
+					router.storeForwardConfig?.lastHeartbeat = Date.now
+				} else {
+					let newConfig = StoreForwardConfigEntity(context: context)
+					newConfig.enabled = true
+					newConfig.isRouter = storeAndForwardMessage.heartbeat.secondary == 0
+					newConfig.lastHeartbeat = Date.now
+
+					router.storeForwardConfig = newConfig
+				}
+
+				do {
+					try context.save()
+				} catch {
+					context.rollback()
+				}
+
+			case .routerHistory:
+				/// Set the Router History Last Request Value
+				guard let routerNode = getNodeInfo(id: Int64(packet.from), context: context) else {
+					return
+				}
+
+				if routerNode.storeForwardConfig != nil {
+					routerNode.storeForwardConfig?.lastRequest = Int32(storeAndForwardMessage.history.lastRequest)
+				} else {
+					let newConfig = StoreForwardConfigEntity(context: context)
+					newConfig.lastRequest = Int32(storeAndForwardMessage.history.lastRequest)
+
+					routerNode.storeForwardConfig = newConfig
+				}
+
+				do {
+					try context.save()
+				} catch {
+					context.rollback()
+				}
+
+			case .routerTextDirect:
+				textMessageAppPacket(
+					packet: packet,
+					wantRangeTestPackets: false,
+					connectedNode: connectedNodeNum,
+					storeForward: true,
+					context: context,
+					appState: appState
+				)
+
+			case .routerTextBroadcast:
+				textMessageAppPacket(
+					packet: packet,
+					wantRangeTestPackets: false,
+					connectedNode: connectedNodeNum,
+					storeForward: true,
+					context: context,
+					appState: appState
+				)
+
+			default:
+				return
+			}
+		}
+	}
+
 	private func handleRadioLog(_ message: String) {
 		Logger.radio.info("\(message, privacy: .public)")
 	}
@@ -485,13 +725,13 @@ extension BLEManager: CBPeripheralDelegate {
 		guard let connectedDevice = getConnectedDevice() else {
 			return
 		}
-
+		
 		let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
 		fetchMyInfoRequest.predicate = NSPredicate(
 			format: "myNodeNum == %lld",
 			Int64(connectedDevice.num)
 		)
-
+		
 		if
 			let myInfo = try? context.fetch(fetchMyInfoRequest),
 			!myInfo.isEmpty
@@ -500,5 +740,20 @@ extension BLEManager: CBPeripheralDelegate {
 			try? context.save()
 		}
 	}
+
+	@objc
+	private func positionTimerFired(timer: Timer) {
+		guard
+			let connectedDevice = getConnectedDevice(),
+			UserDefaults.provideLocation
+		else {
+			return
+		}
+
+		sendPosition(
+			channel: 0,
+			destNum: connectedDevice.num,
+			wantResponse: false
+		)
+	}
 }
-// swiftlint:enable all

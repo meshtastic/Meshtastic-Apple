@@ -112,7 +112,7 @@ struct Messages: View {
 			)
 		}
 		.onAppear {
-			Analytics.logEvent(AnalyticEvents.messages.id, parameters: [:])
+			Analytics.logEvent(AnalyticEvents.messages.id, parameters: nil)
 		}
 	}
 

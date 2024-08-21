@@ -69,7 +69,7 @@ struct About: View {
 			trailing: ConnectedDevice()
 		)
 		.onAppear {
-			Analytics.logEvent(AnalyticEvents.optionsAbout.id, parameters: [:])
+			Analytics.logEvent(AnalyticEvents.optionsAbout.id, parameters: nil)
 		}
 	}
 }

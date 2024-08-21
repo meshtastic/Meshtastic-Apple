@@ -85,7 +85,7 @@ struct PositionConfig: View {
 			trailing: ConnectedDevice()
 		)
 		.onAppear {
-			Analytics.logEvent(AnalyticEvents.optionsPosition.id, parameters: [:])
+			Analytics.logEvent(AnalyticEvents.optionsPosition.id, parameters: nil)
 
 			setPositionValues()
 

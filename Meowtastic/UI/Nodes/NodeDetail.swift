@@ -130,7 +130,7 @@ struct NodeDetail: View {
 		.onAppear {
 			Analytics.logEvent(
 				AnalyticEvents.nodeDetail.id,
-				parameters: AnalyticEvents.getAnalParams(for: node, [ "sheet": isInSheet ])
+				parameters: AnalyticEvents.getParams(for: node, [ "sheet": isInSheet ])
 			)
 		}
 	}

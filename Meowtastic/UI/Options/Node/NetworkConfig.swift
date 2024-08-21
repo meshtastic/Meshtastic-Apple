@@ -118,7 +118,7 @@ struct NetworkConfig: View {
 			trailing: ConnectedDevice()
 		)
 		.onAppear {
-			Analytics.logEvent(AnalyticEvents.optionsNetwork.id, parameters: [:])
+			Analytics.logEvent(AnalyticEvents.optionsNetwork.id, parameters: nil)
 
 			setNetworkValues()
 

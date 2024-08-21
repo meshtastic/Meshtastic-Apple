@@ -84,7 +84,7 @@ struct Options: View {
 			)
 		}
 		.onAppear {
-			Analytics.logEvent(AnalyticEvents.options.id, parameters: [:])
+			Analytics.logEvent(AnalyticEvents.options.id, parameters: nil)
 		}
 	}
 

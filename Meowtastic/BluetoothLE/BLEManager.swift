@@ -1,6 +1,7 @@
 import CocoaMQTT
 import CoreBluetooth
 import CoreData
+import FirebaseAnalytics
 import Foundation
 import MapKit
 import MeshtasticProtobufs
@@ -101,29 +102,6 @@ class BLEManager: NSObject, ObservableObject {
 		isInvalidFwVersion = true
 	}
 
-	@objc
-	private func timeoutTimerFired(timer: Timer) {
-		timeoutCount += 1
-		lastConnectionError = ""
-
-		if timeoutCount >= 10 {
-			if let deviceConnected {
-				centralManager.cancelPeripheralConnection(deviceConnected.peripheral)
-			}
-
-			deviceConnected = nil
-			isConnected = false
-			isConnecting = false
-			timeoutCount = 0
-			timeoutTimer?.invalidate()
-			lastConnectionError = "Bluetooth connection timed out"
-
-			MeshLogger.log(lastConnectionError)
-
-			startScanning()
-		}
-	}
-
 	func connectTo(peripheral: CBPeripheral) {
 		isConnecting = true
 		lastConnectionError = ""
@@ -144,9 +122,36 @@ class BLEManager: NSObject, ObservableObject {
 		RunLoop.current.add(timer, forMode: .common)
 		timeoutTimer = timer
 
-		Logger.services.info("ℹ️ BLE Connecting: \(peripheral.name ?? "Unknown", privacy: .public)")
+		Analytics.logEvent(AnalyticEvents.bleConnect.id, parameters: nil)
 	}
-	
+
+	func connectToPreferredPeripheral() -> Bool {
+		if getConnectedDevice() != nil {
+			disconnectDevice()
+			startScanning()
+
+			// Try and connect to the preferredPeripherial first
+			let preferredPeripheral = devices.first(where: { device in
+				guard let preferred = UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String else {
+					return false
+				}
+
+				return device.peripheral.identifier.uuidString == preferred
+			})
+
+			if let peripheral = preferredPeripheral?.peripheral {
+				connectTo(peripheral: peripheral)
+
+				return true
+			}
+		}
+		else if deviceConnected != nil, isSubscribed {
+			return true
+		}
+
+		return false
+	}
+
 	func cancelPeripheralConnection() {
 		if let mqttClientProxy = mqttManager.mqttClientProxy, mqttProxyConnected {
 			mqttClientProxy.disconnect()
@@ -162,6 +167,8 @@ class BLEManager: NSObject, ObservableObject {
 		deviceConnected = nil
 		timeoutTimer?.invalidate()
 		automaticallyReconnect = false
+
+		Analytics.logEvent(AnalyticEvents.bleCancelConnecting.id, parameters: nil)
 
 		stopScanning()
 		startScanning()
@@ -183,6 +190,8 @@ class BLEManager: NSObject, ObservableObject {
 		isSubscribed = false
 		isInvalidFwVersion = false
 		connectedVersion = "0.0.0"
+
+		Analytics.logEvent(AnalyticEvents.bleDisconnect.id, parameters: nil)
 
 		stopScanning()
 		startScanning()
@@ -224,6 +233,8 @@ class BLEManager: NSObject, ObservableObject {
 				for: characteristicToRadio,
 				type: .withResponse
 			)
+
+			Analytics.logEvent(AnalyticEvents.bleTraceRoute.id, parameters: nil)
 
 			let nodeRequest = NodeInfoEntity.fetchRequest()
 			nodeRequest.predicate = NSPredicate(
@@ -286,191 +297,148 @@ class BLEManager: NSObject, ObservableObject {
 		isEmoji: Bool,
 		replyID: Int64
 	) -> Bool {
-		var success = false
-
-		// Return false if we are not properly connected to a device, handle retry logic in the view for now
-		if deviceConnected == nil || deviceConnected!.peripheral.state != .connected {
-			disconnectDevice()
-			startScanning()
-			
-			// Try and connect to the preferredPeripherial first
-			let preferredPeripheral = devices.filter({ $0.peripheral.identifier.uuidString == UserDefaults.preferredPeripheralId as String }).first
-			if preferredPeripheral != nil && preferredPeripheral?.peripheral != nil {
-				connectTo(peripheral: preferredPeripheral!.peripheral)
-			}
-			let nodeName = deviceConnected?.peripheral.name ?? "unknown".localized
-			let logString = String.localizedStringWithFormat("mesh.log.textmessage.send.failed %@".localized, nodeName)
-			MeshLogger.log("🚫 \(logString)")
-			
-			success = false
-		} else if message.count < 1 {
-			
-			// Don't send an empty message
-			Logger.mesh.info("🚫 Don't Send an Empty Message")
-			success = false
-			
-		} else {
-			let fromUserNum: Int64 = self.deviceConnected.num
-			
-			let messageUsers = UserEntity.fetchRequest()
-			messageUsers.predicate = NSPredicate(format: "num IN %@", [fromUserNum, Int64(toUserNum)])
-			
-			do {
-				
-				let fetchedUsers = try context.fetch(messageUsers)
-				if fetchedUsers.isEmpty {
-					
-					Logger.data.error("🚫 Message Users Not Found, Fail")
-					success = false
-				} else if fetchedUsers.count >= 1 {
-					
-					let newMessage = MessageEntity(context: context)
-					newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
-					newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
-					newMessage.receivedACK = false
-					newMessage.read = true
-					if toUserNum > 0 {
-						newMessage.toUser = fetchedUsers.first(where: { $0.num == toUserNum })
-						newMessage.toUser?.lastMessage = Date()
-					}
-					newMessage.fromUser = fetchedUsers.first(where: { $0.num == fromUserNum })
-					newMessage.isEmoji = isEmoji
-					newMessage.admin = false
-					newMessage.channel = channel
-					if replyID > 0 {
-						newMessage.replyID = replyID
-					}
-					newMessage.messagePayload = message
-					newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: message)
-					newMessage.read = true
-					
-					let dataType = PortNum.textMessageApp
-					var messageQuotesReplaced = message.replacingOccurrences(of: "’", with: "'")
-					messageQuotesReplaced = message.replacingOccurrences(of: "”", with: "\"")
-					let payloadData: Data = messageQuotesReplaced.data(using: String.Encoding.utf8)!
-					
-					var dataMessage = DataMessage()
-					dataMessage.payload = payloadData
-					dataMessage.portnum = dataType
-					
-					var meshPacket = MeshPacket()
-					meshPacket.id = UInt32(newMessage.messageId)
-					if toUserNum > 0 {
-						meshPacket.to = UInt32(toUserNum)
-					} else {
-						meshPacket.to = Constants.maximumNodeNum
-					}
-					meshPacket.channel = UInt32(channel)
-					meshPacket.from	= UInt32(fromUserNum)
-					meshPacket.decoded = dataMessage
-					meshPacket.decoded.emoji = isEmoji ? 1 : 0
-					if replyID > 0 {
-						meshPacket.decoded.replyID = UInt32(replyID)
-					}
-					meshPacket.wantAck = true
-					
-					var toRadio: ToRadio!
-					toRadio = ToRadio()
-					toRadio.packet = meshPacket
-					guard let binaryData: Data = try? toRadio.serializedData() else {
-						return false
-					}
-					if let connectedDevice = getConnectedDevice() {
-						connectedDevice.peripheral.writeValue(
-							binaryData,
-							for: characteristicToRadio,
-							type: .withResponse
-						)
-
-						do {
-							try context.save()
-							Logger.data.info("💾 Saved a new sent message from \(self.deviceConnected.num.toHex(), privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
-							success = true
-						} catch {
-							context.rollback()
-							let nsError = error as NSError
-							Logger.data.error("Unresolved Core Data error in Send Message Function your database is corrupted running a node db reset should clean up the data. Error: \(nsError, privacy: .public)")
-						}
-					}
-				}
-			} catch {
-				Logger.data.error("💥 Send message failure \(self.deviceConnected.num.toHex(), privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
-			}
-		}
-		return success
-	}
-	
-	func sendWaypoint(waypoint: Waypoint) -> Bool {
-		if waypoint.latitudeI == 373346000 && waypoint.longitudeI == -1220090000 {
+		guard
+			let connectedDevice = getConnectedDevice(),
+			!message.isEmpty
+		else {
+			AnalyticEvents.trackBLEEvent(for: .message, status: .failureProcess)
 			return false
 		}
-		var success = false
-		let fromNodeNum = UInt32(deviceConnected.num)
-		var meshPacket = MeshPacket()
-		meshPacket.to = Constants.maximumNodeNum
-		meshPacket.from	= fromNodeNum
-		meshPacket.wantAck = true
+
+		let fromUserNum: Int64 = connectedDevice.num
+		let messageUsers = UserEntity.fetchRequest()
+		messageUsers.predicate = NSPredicate(format: "num IN %@", [fromUserNum, Int64(toUserNum)])
+
+		guard
+			let fetchedUsers = try? context.fetch(messageUsers),
+			!fetchedUsers.isEmpty
+		else {
+			AnalyticEvents.trackBLEEvent(for: .message, status: .failureProcess)
+			return false
+		}
+
+		let newMessage = MessageEntity(context: context)
+		newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+		newMessage.messageTimestamp =  Int32(Date.now.timeIntervalSince1970)
+		newMessage.receivedACK = false
+		newMessage.read = true
+		if toUserNum > 0 {
+			newMessage.toUser = fetchedUsers.first(where: {
+				$0.num == toUserNum
+			})
+			newMessage.toUser?.lastMessage = Date()
+		}
+		newMessage.fromUser = fetchedUsers.first(where: {
+			$0.num == fromUserNum
+		})
+		newMessage.isEmoji = isEmoji
+		newMessage.admin = false
+		newMessage.channel = channel
+		if replyID > 0 {
+			newMessage.replyID = replyID
+		}
+		newMessage.messagePayload = message
+		newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: message)
+		newMessage.read = true
+
 		var dataMessage = DataMessage()
-		do {
-			dataMessage.payload = try waypoint.serializedData()
-		} catch {
-			// Could not serialiaze the payload
-			return false
-		}
+		dataMessage.portnum = PortNum.textMessageApp
+		dataMessage.payload = message
+			.replacingOccurrences(of: "’", with: "'")
+			.replacingOccurrences(of: "”", with: "\"")
+			.data(using: String.Encoding.utf8)!
 		
-		dataMessage.portnum = PortNum.waypointApp
+		var meshPacket = MeshPacket()
+		meshPacket.id = UInt32(newMessage.messageId)
+		if toUserNum > 0 {
+			meshPacket.to = UInt32(toUserNum)
+		}
+		else {
+			meshPacket.to = Constants.maximumNodeNum
+		}
+		meshPacket.channel = UInt32(channel)
+		meshPacket.from	= UInt32(fromUserNum)
 		meshPacket.decoded = dataMessage
+		meshPacket.decoded.emoji = isEmoji ? 1 : 0
+		if replyID > 0 {
+			meshPacket.decoded.replyID = UInt32(replyID)
+		}
+		meshPacket.wantAck = true
+		
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
+		
 		guard let binaryData: Data = try? toRadio.serializedData() else {
+			AnalyticEvents.trackBLEEvent(for: .message, status: .failureProcess)
 			return false
 		}
-		let logString = String.localizedStringWithFormat("mesh.log.waypoint.sent %@".localized, String(fromNodeNum))
-		MeshLogger.log("📍 \(logString)")
-		if let connectedDevice = getConnectedDevice() {
-			connectedDevice.peripheral.writeValue(
-				binaryData,
-				for: characteristicToRadio,
-				type: .withResponse
-			)
 
-			success = true
+		connectedDevice.peripheral.writeValue(
+			binaryData,
+			for: characteristicToRadio,
+			type: .withResponse
+		)
 
-			let wayPointEntity = getWaypoint(id: Int64(waypoint.id), context: context)
-			wayPointEntity.id = Int64(waypoint.id)
-			wayPointEntity.name = waypoint.name.count >= 1 ? waypoint.name : "Dropped Pin"
-			wayPointEntity.longDescription = waypoint.description_p
-			wayPointEntity.icon	= Int64(waypoint.icon)
-			wayPointEntity.latitudeI = waypoint.latitudeI
-			wayPointEntity.longitudeI = waypoint.longitudeI
-			if waypoint.expire > 1 {
-				wayPointEntity.expire = Date.init(timeIntervalSince1970: Double(waypoint.expire))
-			} else {
-				wayPointEntity.expire = nil
-			}
-			if waypoint.lockedTo > 0 {
-				wayPointEntity.locked = Int64(waypoint.lockedTo)
-			} else {
-				wayPointEntity.locked = 0
-			}
-			if wayPointEntity.created == nil {
-				wayPointEntity.created = Date()
-			} else {
-				wayPointEntity.lastUpdated = Date()
-			}
-			do {
-				try context.save()
-				Logger.data.info("💾 Updated Waypoint from Waypoint App Packet From: \(fromNodeNum.toHex(), privacy: .public)")
-			} catch {
-				context.rollback()
-				let nsError = error as NSError
-				Logger.data.error("Error Saving NodeInfoEntity from WAYPOINT_APP \(nsError, privacy: .public)")
-			}
+		do {
+			try context.save()
+			AnalyticEvents.trackBLEEvent(for: .message, status: .success)
+
+			return true
+		} catch {
+			context.rollback()
 		}
-		return success
+
+		AnalyticEvents.trackBLEEvent(for: .message, status: .failureSend)
+		return false
 	}
-	
+
+	@discardableResult
+	func sendPosition(channel: Int32, destNum: Int64, wantResponse: Bool) -> Bool {
+		guard
+			let connectedDevice = getConnectedDevice(),
+			let positionPacket = getPhonePosition()
+		else {
+			AnalyticEvents.trackBLEEvent(for: .position, status: .failureProcess)
+			return false
+		}
+
+		var meshPacket = MeshPacket()
+		meshPacket.to = UInt32(destNum)
+		meshPacket.channel = UInt32(channel)
+		meshPacket.from = UInt32(connectedDevice.num)
+
+		var dataMessage = DataMessage()
+		if let serializedData: Data = try? positionPacket.serializedData() {
+			dataMessage.payload = serializedData
+			dataMessage.portnum = PortNum.positionApp
+			dataMessage.wantResponse = wantResponse
+			meshPacket.decoded = dataMessage
+		} else {
+			AnalyticEvents.trackBLEEvent(for: .position, status: .failureProcess)
+			return false
+		}
+		
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+
+		guard let binaryData: Data = try? toRadio.serializedData() else {
+			AnalyticEvents.trackBLEEvent(for: .position, status: .failureProcess)
+			return false
+		}
+
+		connectedDevice.peripheral.writeValue(
+			binaryData,
+			for: characteristicToRadio,
+			type: .withResponse
+		)
+
+		AnalyticEvents.trackBLEEvent(for: .position, status: .success)
+
+		return true
+	}
+
 	func getPhonePosition() -> Position? {
 		guard let lastLocation = LocationsHandler.shared.locationsArray.last else {
 			return nil
@@ -499,182 +467,26 @@ class BLEManager: NSObject, ObservableObject {
 		return positionPacket
 	}
 
-	@discardableResult
-	func sendPosition(channel: Int32, destNum: Int64, wantResponse: Bool) -> Bool {
-		guard
-			let connectedDevice = getConnectedDevice(),
-			let positionPacket = getPhonePosition()
-		else {
-			return false
-		}
-
-		var meshPacket = MeshPacket()
-		meshPacket.to = UInt32(destNum)
-		meshPacket.channel = UInt32(channel)
-		meshPacket.from = UInt32(connectedDevice.num)
-
-		var dataMessage = DataMessage()
-		if let serializedData: Data = try? positionPacket.serializedData() {
-			dataMessage.payload = serializedData
-			dataMessage.portnum = PortNum.positionApp
-			dataMessage.wantResponse = wantResponse
-			meshPacket.decoded = dataMessage
-		} else {
-			Logger.services.error("Failed to serialize position packet data")
-			return false
-		}
-		
-		var toRadio: ToRadio!
-		toRadio = ToRadio()
-		toRadio.packet = meshPacket
-
-		guard let binaryData: Data = try? toRadio.serializedData() else {
-			Logger.services.error("Failed to serialize position packet")
-			return false
-		}
-
-		connectedDevice.peripheral.writeValue(
-			binaryData,
-			for: characteristicToRadio,
-			type: .withResponse
-		)
-
-		Logger.services.debug("📍 Location shared from \(connectedDevice.num)")
-
-		return true
-	}
-
 	@objc
-	func positionTimerFired(timer: Timer) {
-		guard
-			let connectedDevice = getConnectedDevice(),
-			UserDefaults.provideLocation
-		else {
-			return
-		}
-		
-		sendPosition(
-			channel: 0,
-			destNum: connectedDevice.num,
-			wantResponse: false
-		)
-	}
+	private func timeoutTimerFired(timer: Timer) {
+		timeoutCount += 1
+		lastConnectionError = ""
 
-	func connectToPreferredPeripheral() -> Bool {
-		if getConnectedDevice() != nil {
-			disconnectDevice()
+		if timeoutCount >= 10 {
+			if let deviceConnected {
+				centralManager.cancelPeripheralConnection(deviceConnected.peripheral)
+			}
+
+			deviceConnected = nil
+			isConnected = false
+			isConnecting = false
+			timeoutCount = 0
+			timeoutTimer?.invalidate()
+			lastConnectionError = "Bluetooth connection timed out"
+
+			Analytics.logEvent(AnalyticEvents.bleTimeout.id, parameters: nil)
+
 			startScanning()
-
-			// Try and connect to the preferredPeripherial first
-			let preferredPeripheral = devices.first(where: { device in
-				guard let preferred = UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String else {
-					return false
-				}
-
-				return device.peripheral.identifier.uuidString == preferred
-			})
-
-			if let peripheral = preferredPeripheral?.peripheral {
-				connectTo(peripheral: peripheral)
-
-				return true
-			}
-		} else if deviceConnected != nil, isSubscribed {
-			return true
-		}
-
-		return false
-	}
-
-	func storeAndForwardPacket(
-		packet: MeshPacket,
-		connectedNodeNum: Int64,
-		context: NSManagedObjectContext
-	) {
-		if let storeAndForwardMessage = try? StoreAndForward(serializedData: packet.decoded.payload) {
-			MeshLogger.log(
-				"Store & Forward: Message \(storeAndForwardMessage.rr.rawValue) received from \(packet.from.toHex())"
-			)
-
-			switch storeAndForwardMessage.rr {
-			case .routerHeartbeat:
-				/// When we get a router heartbeat we know there is a store and forward node on the network
-				/// Check if it is the primary S&F Router and save the timestamp of the last
-				/// heartbeat so that we can show the request message history menu item on node
-				/// long press if the router has been seen recently
-				guard
-					storeAndForwardMessage.heartbeat.secondary != 0,
-					let router = getNodeInfo(
-						id: Int64(packet.from),
-						context: context
-					)
-				else {
-					return
-				}
-
-				if router.storeForwardConfig != nil {
-					router.storeForwardConfig?.enabled = true
-					router.storeForwardConfig?.isRouter = storeAndForwardMessage.heartbeat.secondary == 0
-					router.storeForwardConfig?.lastHeartbeat = Date.now
-				} else {
-					let newConfig = StoreForwardConfigEntity(context: context)
-					newConfig.enabled = true
-					newConfig.isRouter = storeAndForwardMessage.heartbeat.secondary == 0
-					newConfig.lastHeartbeat = Date.now
-
-					router.storeForwardConfig = newConfig
-				}
-
-				do {
-					try context.save()
-				} catch {
-					context.rollback()
-				}
-
-			case .routerHistory:
-				/// Set the Router History Last Request Value
-				guard let routerNode = getNodeInfo(id: Int64(packet.from), context: context) else {
-					return
-				}
-
-				if routerNode.storeForwardConfig != nil {
-					routerNode.storeForwardConfig?.lastRequest = Int32(storeAndForwardMessage.history.lastRequest)
-				} else {
-					let newConfig = StoreForwardConfigEntity(context: context)
-					newConfig.lastRequest = Int32(storeAndForwardMessage.history.lastRequest)
-
-					routerNode.storeForwardConfig = newConfig
-				}
-
-				do {
-					try context.save()
-				} catch {
-					context.rollback()
-				}
-
-			case .routerTextDirect:
-				textMessageAppPacket(
-					packet: packet,
-					wantRangeTestPackets: false,
-					connectedNode: connectedNodeNum,
-					storeForward: true,
-					context: context,
-					appState: appState
-				)
-
-			case .routerTextBroadcast:
-				textMessageAppPacket(
-					packet: packet,
-					wantRangeTestPackets: false,
-					connectedNode: connectedNodeNum,
-					storeForward: true,
-					context: context,
-					appState: appState
-				)
-
-			default:
-				return
-			}
 		}
 	}
 }

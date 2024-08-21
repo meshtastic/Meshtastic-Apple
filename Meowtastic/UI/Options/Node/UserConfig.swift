@@ -192,7 +192,7 @@ struct UserConfig: View {
 			trailing: ConnectedDevice()
 		)
 		.onAppear {
-			Analytics.logEvent(AnalyticEvents.optionsUser.id, parameters: [:])
+			Analytics.logEvent(AnalyticEvents.optionsUser.id, parameters: nil)
 
 			self.shortName = node?.user?.shortName ?? ""
 			self.longName = node?.user?.longName ?? ""

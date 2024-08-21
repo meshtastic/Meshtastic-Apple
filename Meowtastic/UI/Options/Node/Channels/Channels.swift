@@ -323,7 +323,7 @@ struct Channels: View {
 			trailing: ConnectedDevice()
 		)
 		.onAppear {
-			Analytics.logEvent(AnalyticEvents.optionsChannels.id, parameters: [:])
+			Analytics.logEvent(AnalyticEvents.optionsChannels.id, parameters: nil)
 		}
 	}
 }

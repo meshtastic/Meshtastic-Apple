@@ -242,7 +242,7 @@ struct DeviceConfig: View {
 			trailing: ConnectedDevice()
 		)
 		.onAppear {
-			Analytics.logEvent(AnalyticEvents.optionsDevice.id, parameters: [:])
+			Analytics.logEvent(AnalyticEvents.optionsDevice.id, parameters: nil)
 
 			setDeviceValues()
 

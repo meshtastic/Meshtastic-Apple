@@ -129,7 +129,7 @@ struct DisplayConfig: View {
 		}
 		.disabled(self.bleManager.deviceConnected == nil || node?.displayConfig == nil)
 		.onAppear {
-			Analytics.logEvent(AnalyticEvents.optionsDisplay.id, parameters: [:])
+			Analytics.logEvent(AnalyticEvents.optionsDisplay.id, parameters: nil)
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {

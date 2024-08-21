@@ -86,7 +86,7 @@ struct BluetoothConfig: View {
 		}
 		.disabled(self.bleManager.deviceConnected == nil || node?.bluetoothConfig == nil)
 		.onAppear {
-			Analytics.logEvent(AnalyticEvents.optionsBluetooth.id, parameters: [:])
+			Analytics.logEvent(AnalyticEvents.optionsBluetooth.id, parameters: nil)
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {

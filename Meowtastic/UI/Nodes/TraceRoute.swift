@@ -214,7 +214,7 @@ struct TraceRoute: View {
 			trailing: ConnectedDevice()
 		)
 		.onAppear {
-			Analytics.logEvent(AnalyticEvents.traceRoute.id, parameters: [:])
+			Analytics.logEvent(AnalyticEvents.traceRoute.id, parameters: nil)
 		}
 	}
 

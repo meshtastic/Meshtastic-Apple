@@ -34,7 +34,7 @@ struct AppSettings: View {
 			trailing: ConnectedDevice()
 		)
 		.onAppear {
-			Analytics.logEvent(AnalyticEvents.optionsAppSettings.id, parameters: [:])
+			Analytics.logEvent(AnalyticEvents.optionsAppSettings.id, parameters: nil)
 		}
 	}
 }

@@ -108,7 +108,7 @@ struct LoRaConfig: View {
 			trailing: ConnectedDevice()
 		)
 		.onAppear {
-			Analytics.logEvent(AnalyticEvents.optionsLoRa.id, parameters: [:])
+			Analytics.logEvent(AnalyticEvents.optionsLoRa.id, parameters: nil)
 
 			setLoRaValues()
 

@@ -65,7 +65,7 @@ struct NodeMap: View {
 				.onAppear {
 					Analytics.logEvent(
 						AnalyticEvents.nodeMap.id,
-						parameters: AnalyticEvents.getAnalParams(for: node)
+						parameters: AnalyticEvents.getParams(for: node)
 					)
 				}
 		}

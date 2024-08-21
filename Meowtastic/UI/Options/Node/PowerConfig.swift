@@ -108,7 +108,7 @@ struct PowerConfig: View {
 			}
 		}
 		.onAppear {
-			Analytics.logEvent(AnalyticEvents.optionsPower.id, parameters: [:])
+			Analytics.logEvent(AnalyticEvents.optionsPower.id, parameters: nil)
 
 			Api().loadDeviceHardwareData { hw in
 				for device in hw {
