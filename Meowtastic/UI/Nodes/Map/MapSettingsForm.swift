@@ -1,5 +1,5 @@
-import SwiftUI
 import MapKit
+import SwiftUI
 
 struct MapSettingsForm: View {
 	@Binding
@@ -42,9 +42,7 @@ struct MapSettingsForm: View {
 				}
 			}
 		}
-		.presentationDetents([
-			.medium
-		])
+		.presentationDetents([ .medium ])
 		.presentationDragIndicator(.visible)
 	}
 }

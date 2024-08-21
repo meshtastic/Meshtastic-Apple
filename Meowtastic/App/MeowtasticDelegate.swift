@@ -14,7 +14,6 @@ final class MeowtasticDelegate: UIResponder, UIApplicationDelegate, UNUserNotifi
 		Analytics.logEvent(AnalyticEvents.appLaunch.id, parameters: nil)
 
 		// Default User Default Values
-		UserDefaults.standard.register(defaults: ["meshMapRecentering": true])
 		UserDefaults.standard.register(defaults: ["meshMapShowNodeHistory": true])
 
 		UNUserNotificationCenter.current().delegate = self

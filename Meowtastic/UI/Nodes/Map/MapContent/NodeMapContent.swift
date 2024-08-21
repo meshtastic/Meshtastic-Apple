@@ -63,9 +63,9 @@ struct NodeMapContent: MapContent {
 
 	@MapContentBuilder
 	private var latest: some MapContent {
-		let latest = positions.filter { position in
+		let latest = positions.first(where: { position in
 			position.latest
-		}.first
+		})
 
 		if let latest = latest {
 			let precision = PositionPrecision(rawValue: Int(latest.precisionBits))
@@ -84,10 +84,12 @@ struct NodeMapContent: MapContent {
 				Image(systemName: "flipphone")
 					.font(.system(size: 32))
 					.foregroundColor(nodeColor)
-			} label: { }
-				.tag(latest.time)
-				.annotationTitles(.automatic)
-				.annotationSubtitles(.automatic)
+			} label: {
+				
+			}
+			.tag(latest.time)
+			.annotationTitles(.automatic)
+			.annotationSubtitles(.automatic)
 		}
 		else {
 			EmptyMapContent()
