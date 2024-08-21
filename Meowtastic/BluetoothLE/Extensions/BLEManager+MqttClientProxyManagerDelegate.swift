@@ -1,19 +1,22 @@
 import CocoaMQTT
 import CoreBluetooth
+import FirebaseAnalytics
 import MeshtasticProtobufs
 import OSLog
 
 extension BLEManager: MqttClientProxyManagerDelegate {
 	func onMqttConnected() {
-		mqttProxyConnected = true
 		mqttError = ""
-		Logger.services.info("📲 [MQTT Client Proxy] onMqttConnected now subscribing to \(self.mqttManager.topic, privacy: .public).")
+		mqttProxyConnected = true
 		mqttManager.mqttClientProxy?.subscribe(mqttManager.topic)
+
+		Analytics.logEvent(AnalyticEvents.mqttConnect.id, parameters: nil)
 	}
 
 	func onMqttDisconnected() {
 		mqttProxyConnected = false
-		Logger.services.info("📲 MQTT Disconnected")
+
+		Analytics.logEvent(AnalyticEvents.mqttDisconnect.id, parameters: nil)
 	}
 
 	func onMqttMessageReceived(message: CocoaMQTTMessage) {
@@ -31,13 +34,20 @@ extension BLEManager: MqttClientProxyManagerDelegate {
 		toRadio.mqttClientProxyMessage = proxyMessage
 
 		if
-			let binaryData: Data = try? toRadio.serializedData(),
-			let connectedDevice = getConnectedDevice()
+			let connectedDevice = getConnectedDevice(),
+			let binaryData: Data = try? toRadio.serializedData()
 		{
 			connectedDevice.peripheral.writeValue(
 				binaryData,
 				for: characteristicToRadio,
 				type: .withResponse
+			)
+
+			Analytics.logEvent(
+				AnalyticEvents.mqttMessage.id,
+				parameters: [
+					"topic": message.topic
+				]
 			)
 		}
 	}
@@ -45,6 +55,12 @@ extension BLEManager: MqttClientProxyManagerDelegate {
 	func onMqttError(message: String) {
 		mqttProxyConnected = false
 		mqttError = message
-		Logger.services.info("📲 [MQTT Client Proxy] onMqttError: \(message, privacy: .public)")
+
+		Analytics.logEvent(
+			AnalyticEvents.mqttError.id,
+			parameters: [
+				"error": message
+			]
+		)
 	}
 }

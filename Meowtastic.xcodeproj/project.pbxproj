@@ -420,9 +420,9 @@
 			isa = PBXGroup;
 			children = (
 				DDAF8C5226EB1DF10058C060 /* BLEManager.swift */,
+				B284A4322C6F8AE400D5122B /* BluetoothUUID.swift */,
 				B28DC0E42C7107C4007990B3 /* NodeConfig.swift */,
 				B284A42B2C6F877D00D5122B /* Extensions */,
-				B284A4322C6F8AE400D5122B /* BluetoothUUID.swift */,
 			);
 			path = BluetoothLE;
 			sourceTree = "<group>";

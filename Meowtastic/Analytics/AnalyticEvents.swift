@@ -36,9 +36,13 @@ enum AnalyticEvents: String {
 	case bleDisconnect
 	case bleTraceRoute
 	case peripheral
+	case mqttConnect
+	case mqttDisconnect
+	case mqttMessage
+	case mqttError
 	case nodeListCount
 
-	// MARK: - peripheral events
+	// MARK: - specific events
 	enum PeripheralEvents: String {
 		case didDiscoverServices
 		case didDiscoverCharacteristics
@@ -69,7 +73,6 @@ enum AnalyticEvents: String {
 		}
 	}
 
-	// MARK: - BLE events
 	enum BLERequest: String {
 		case bluetoothConfig
 		case bluetoothConfigSave
