@@ -207,7 +207,7 @@ struct NodeListItem: View {
 								}
 							}
 						}
-						if node.hopsAway > 0 {
+						if node.hopsAway > 0  && !connected{
 							HStack {
 								Image(systemName: "hare")
 									.font(.callout)
