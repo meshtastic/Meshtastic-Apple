@@ -818,6 +818,7 @@ func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, s
 				newSecurityConfig.serialEnabled = config.serialEnabled
 				newSecurityConfig.debugLogApiEnabled = config.debugLogApiEnabled
 				newSecurityConfig.bluetoothLoggingEnabled = config.bluetoothLoggingEnabled
+				newSecurityConfig.adminChannelEnabled = config.adminChannelEnabled
 				fetchedNode[0].securityConfig = newSecurityConfig
 			} else {
 				fetchedNode[0].securityConfig?.publicKey = config.publicKey
@@ -827,6 +828,7 @@ func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, s
 				fetchedNode[0].securityConfig?.serialEnabled = config.serialEnabled
 				fetchedNode[0].securityConfig?.debugLogApiEnabled = config.debugLogApiEnabled
 				fetchedNode[0].securityConfig?.bluetoothLoggingEnabled = config.bluetoothLoggingEnabled
+				fetchedNode[0].securityConfig?.adminChannelEnabled = config.adminChannelEnabled
 			}
 			if sessionPasskey?.count != 0 {
 				fetchedNode[0].sessionPasskey = sessionPasskey

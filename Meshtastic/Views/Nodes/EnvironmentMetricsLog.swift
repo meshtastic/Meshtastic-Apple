@@ -94,10 +94,12 @@ struct EnvironmentMetricsLog: View {
 								}
 							}
 							TableColumn("Wind Speed") { em in
-								Text("\(String(format: "%.1f", em.windSpeed)) hPa")
+								let windSpeed = Measurement(value: Double(em.windSpeed), unit: UnitSpeed.kilometersPerHour)
+								Text(windSpeed.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))))
 							}
 							TableColumn("Wind Direction") { em in
-								Text("\(String(format: "%.1f", em.windDirection)) hPa")
+								let direction = cardinalValue(from: Double(em.windDirection))
+								Text(direction)
 							}
 							TableColumn("timestamp") { em in
 								Text(em.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
