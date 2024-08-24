@@ -116,14 +116,14 @@ struct UserMessageList: View {
 				}
 				.padding([.top])
 				.scrollDismissesKeyboard(.immediately)
-				.onAppear {
-					if user.messageList.count > 0 {
-						scrollView.scrollTo(user.messageList.last!.messageId)
+				.onFirstAppear {
+					withAnimation {
+						scrollView.scrollTo(user.messageList.last?.messageId ?? 0, anchor: .bottom)
 					}
 				}
 				.onChange(of: user.messageList, perform: { _ in
-					if user.messageList.count > 0 {
-						scrollView.scrollTo(user.messageList.last!.messageId)
+					withAnimation {
+						scrollView.scrollTo(user.messageList.last?.messageId ?? 0, anchor: .bottom)
 					}
 				})
 			}
