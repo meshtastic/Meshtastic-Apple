@@ -128,14 +128,14 @@ struct ChannelMessageList: View {
 				}
 				.padding([.top])
 				.scrollDismissesKeyboard(.immediately)
-				.onAppear {
-					if channel.allPrivateMessages.count > 0 {
-						scrollView.scrollTo(channel.allPrivateMessages.last!.messageId)
+				.onFirstAppear {
+					withAnimation {
+						scrollView.scrollTo(channel.allPrivateMessages.last?.messageId ?? 0, anchor: .bottom)
 					}
 				}
 				.onChange(of: channel.allPrivateMessages, perform: { _ in
-					if channel.allPrivateMessages.count > 0 {
-						scrollView.scrollTo(channel.allPrivateMessages.last!.messageId)
+					withAnimation {
+						scrollView.scrollTo(channel.allPrivateMessages.last?.messageId ?? 0, anchor: .bottom)
 					}
 				})
 			}

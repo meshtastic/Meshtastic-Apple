@@ -194,7 +194,11 @@ struct NodeDetail: View {
 										PressureCompactWidget(pressure: String(format: "%.2f", node.latestEnvironmentMetrics?.barometricPressure ?? 0.0), unit: "hPA", low: node.latestEnvironmentMetrics?.barometricPressure ?? 0.0 <= 1009.144)
 									}
 									if node.latestEnvironmentMetrics?.windSpeed ?? 0.0 > 0.0 {
-										WindCompactWidget(speed: String(node.latestEnvironmentMetrics?.windSpeed ?? 0.0), gust: String(node.latestEnvironmentMetrics?.windGust ?? 0.0), direction: "")
+										let windSpeed = Measurement(value: Double(node.latestEnvironmentMetrics?.windSpeed ?? 0.0), unit: UnitSpeed.metersPerSecond)
+										let windGust = Measurement(value: Double(node.latestEnvironmentMetrics?.windGust ?? 0.0), unit: UnitSpeed.metersPerSecond)
+										let direction = cardinalValue(from: Double(node.latestEnvironmentMetrics?.windDirection ?? 0))
+										WindCompactWidget(speed: windSpeed.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))),
+														  gust: node.latestEnvironmentMetrics?.windGust ?? 0.0 > 0.0 ? windGust.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))) : "", direction: direction)
 									}
 								}
 								.padding(node.latestEnvironmentMetrics?.iaq ?? -1 > 0 ? .bottom : .vertical)
@@ -409,5 +413,30 @@ struct NodeDetail: View {
 			}
 			.listStyle(.insetGrouped)
 		}
+	}
+}
+
+func cardinalValue(from heading: Double) -> String {
+	switch heading {
+	case 0 ..< 22.5:
+		return "North"
+	case 22.5 ..< 67.5:
+		return "North East"
+	case 67.5 ..< 112.5:
+		return "East"
+	case 112.5 ..< 157.5:
+		return "South East"
+	case 157.5 ..< 202.5:
+		return "South"
+	case 202.5 ..< 247.5:
+		return "South West"
+	case 247.5 ..< 292.5:
+		return "West"
+	case 292.5 ..< 337.5:
+		return "North West"
+	case 337.5 ... 360.0:
+		return "North"
+	default:
+		return ""
 	}
 }
