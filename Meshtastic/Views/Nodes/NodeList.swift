@@ -344,7 +344,7 @@ struct NodeList: View {
 				self.selectedNode = nil
 			}
 		}
-		.onFirstAppear {
+		.onAppear {
 			Task {
 				await searchNodeList()
 			}
