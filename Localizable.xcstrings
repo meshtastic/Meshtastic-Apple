@@ -16405,6 +16405,9 @@
     "Pin B" : {
 
     },
+    "PKI based node administration, requires firmware version 2.5+" : {
+
+    },
     "Please connect to a radio to configure settings." : {
 
     },
@@ -18888,6 +18891,9 @@
 
     },
     "Security Config" : {
+
+    },
+    "Security Config Settings require a firmware version 2.5+" : {
 
     },
     "Select a channel" : {

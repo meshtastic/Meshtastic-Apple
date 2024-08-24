@@ -28,6 +28,9 @@ struct AppSettings: View {
 						Label("Administration", systemImage: "gearshape.2")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Text("PKI based node administration, requires firmware version 2.5+")
+						.foregroundStyle(.secondary)
+						.font(.caption)
 				}
 				Section(header: Text("environment")) {
 					VStack(alignment: .leading) {
