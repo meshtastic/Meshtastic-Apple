@@ -2789,6 +2789,9 @@
     "Channel Name" : {
 
     },
+    "Channel number must be between 0 and 7." : {
+
+    },
     "Channel Role" : {
 
     },
@@ -4960,6 +4963,9 @@
         }
       }
     },
+    "Could not find node" : {
+
+    },
     "Counter Clockwise Rotary Event" : {
 
     },
@@ -5201,6 +5207,9 @@
 
     },
     "Description" : {
+
+    },
+    "Description must be less than 100 bytes" : {
 
     },
     "Detection" : {
@@ -6827,6 +6836,9 @@
         }
       }
     },
+    "Emoji" : {
+
+    },
     "Empty" : {
 
     },
@@ -6995,6 +7007,9 @@
 
     },
     "Erase all device and app data?" : {
+
+    },
+    "Error: %@" : {
 
     },
     "ESP 32 OTA update is a work in progress, click the button below to send your device a reboot into ota admin message." : {
@@ -7198,6 +7213,9 @@
     "Factory reset your device and app? " : {
 
     },
+    "Failed to encode message content" : {
+
+    },
     "Failed to get a valid position to exchange" : {
 
     },
@@ -7210,8 +7228,11 @@
     "Favorites" : {
 
     },
+    "Fetch the latest position of a cetain node" : {
+    
+    },
     "Favorites and nodes with recent messages show up at the top of the contact list." : {
-
+    
     },
     "Fifteen Minutes" : {
 
@@ -7625,6 +7646,9 @@
       }
     },
     "Get custom waterproof solar and detection sensor router nodes, aluminium desktop nodes and rugged handsets." : {
+
+    },
+    "Get Node Position" : {
 
     },
     "Get NRF DFU from the App Store" : {
@@ -10884,6 +10908,9 @@
 
     },
     "Loading Logs. . ." : {
+
+    },
+    "Location" : {
 
     },
     "Location: %@" : {
@@ -14537,8 +14564,10 @@
     "Message" : {
 
     },
+    "Message content exceeds 228 bytes." : {
+    },
     "Message Status Options" : {
-
+    
     },
     "message.details" : {
       "localizations" : {
@@ -15143,6 +15172,9 @@
         }
       }
     },
+    "Must be a single emoji" : {
+
+    },
     "Nag timeout" : {
 
     },
@@ -15205,6 +15237,9 @@
       }
     },
     "Name" : {
+
+    },
+    "Name must be less than 30 bytes" : {
 
     },
     "Nearby Topics" : {
@@ -15338,6 +15373,9 @@
     "Newer firmware is available" : {
 
     },
+    "No Connected Node" : {
+
+    },
     "No Device Metrics" : {
 
     },
@@ -15418,6 +15456,9 @@
           }
         }
       }
+    },
+    "Node does not have positions" : {
+
     },
     "Node History" : {
 
@@ -19082,6 +19123,15 @@
       }
     },
     "Send" : {
+
+    },
+    "Send a channel message" : {
+
+    },
+    "Send a message to a certain meshtastic channel" : {
+
+    },
+    "Send a waypoint" : {
 
     },
     "Send ASCII bell with alert message. Useful for triggering external notification on bell." : {
