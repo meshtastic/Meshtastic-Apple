@@ -94,7 +94,7 @@ struct ChannelMessageList: View {
 											Text("Waiting to be acknowledged. . .").font(
 												.caption2)
 												.foregroundColor(.orange)
-										} else if !isDetectionSensorMessage {
+										} else if currentUser && !isDetectionSensorMessage {
 											Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
 												.foregroundStyle(ackErrorVal?.color ?? Color.red)
 												.font(.caption2)
