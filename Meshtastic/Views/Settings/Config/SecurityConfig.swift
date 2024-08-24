@@ -37,7 +37,8 @@ struct SecurityConfig: View {
 		VStack {
 			Form {
 				ConfigHeader(title: "Security", config: \.securityConfig, node: node, onAppear: setSecurityValues)
-
+				Text("Security Config Settings require a firmware version 2.5+")
+					.font(.title3)
 				Section(header: Text("Admin & Direct Message Keys")) {
 					VStack(alignment: .leading) {
 						Label("Public Key", systemImage: "key")

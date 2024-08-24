@@ -384,12 +384,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					}
 				}
 			} else {
-
-				if (try? NodeInfo(serializedData: packet.decoded.payload)) != nil {
-					upsertNodeInfoPacket(packet: packet, context: context)
-				} else {
-					Logger.data.error("💥 Empty POSITION_APP Packet: \((try? packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
-				}
+				Logger.data.error("💥 Empty POSITION_APP Packet: \((try? packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			}
 		}
 	} catch {

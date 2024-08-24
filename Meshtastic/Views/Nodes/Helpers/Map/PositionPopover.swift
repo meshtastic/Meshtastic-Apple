@@ -232,7 +232,9 @@ struct PositionPopover: View {
 						}
 						BatteryGauge(node: position.nodePosition!)
 					}
-					LoRaSignalStrengthMeter(snr: position.nodePosition?.snr ?? 0.0, rssi: position.nodePosition?.rssi ?? 0, preset: ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast, compact: false)
+					if position.nodePosition?.hopsAway ?? 0 == 0 && !(position.nodePosition?.viaMqtt ?? false) {
+						LoRaSignalStrengthMeter(snr: position.nodePosition?.snr ?? 0.0, rssi: position.nodePosition?.rssi ?? 0, preset: ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast, compact: false)
+					}
 					Spacer()
 				}
 			}

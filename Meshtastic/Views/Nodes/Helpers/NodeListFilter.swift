@@ -91,18 +91,18 @@ struct NodeListFilter: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 
-					Toggle(isOn: $isEnvironment) {
-
-						Label {
-							Text("Environment")
-						} icon: {
-							Image(systemName: "cloud.sun")
-								.symbolRenderingMode(.multicolor)
+					if filterTitle == "Node Filters" {
+						Toggle(isOn: $isEnvironment) {
+							Label {
+								Text("Environment")
+							} icon: {
+								Image(systemName: "cloud.sun")
+									.symbolRenderingMode(.multicolor)
+							}
 						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.listRowSeparator(.visible)
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.listRowSeparator(.visible)
-
 					Toggle(isOn: $distanceFilter) {
 
 						Label {
