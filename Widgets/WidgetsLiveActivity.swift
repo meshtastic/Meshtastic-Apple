@@ -13,7 +13,16 @@ struct WidgetsLiveActivity: Widget {
     var body: some WidgetConfiguration {
 
         ActivityConfiguration(for: MeshActivityAttributes.self) { context in
-			LiveActivityView(nodeName: context.attributes.name, channelUtilization: context.state.channelUtilization, airtime: context.state.airtime, batteryLevel: context.state.batteryLevel, nodes: 17, nodesOnline: 7, timerRange: context.state.timerRange)
+			LiveActivityView(nodeName: context.attributes.name,
+							 uptimeSeconds: 0, // context.attributes.uptimeSeconds,
+							 channelUtilization: context.state.channelUtilization,
+							 airtime: context.state.airtime,
+							 sentPackets: context.state.sentPackets,
+							 receivedPackets: context.state.receivedPackets,
+							 badReceivedPackets: context.state.badReceivedPackets,
+							 nodesOnline: context.state.nodesOnline,
+							 totalNodes: context.state.totalNodes,
+							 timerRange: context.state.timerRange)
 				.widgetURL(URL(string: "meshtastic:///node/\(context.attributes.name)"))
 
         } dynamicIsland: { context in
@@ -38,24 +47,7 @@ struct WidgetsLiveActivity: Widget {
 					Spacer()
 				}
 				DynamicIslandExpandedRegion(.center) {
-					VStack(alignment: .center, spacing: 0) {
-						BatteryIcon(batteryLevel: Int32(context.state.batteryLevel), font: .title, color: .accentColor)
-						if context.state.batteryLevel == 0 {
-							Text("< 1%")
-								.font(.title3)
-								.foregroundColor(.gray)
-								.fixedSize()
-						} else if context.state.batteryLevel < 101 {
-							Text(String(context.state.batteryLevel) + "%")
-								.font(.title3)
-								.foregroundColor(.gray)
-								.fixedSize()
-						} else {
-							Text("PWD")
-								.font(.title3)
-								.foregroundColor(.gray)
-						}
-					}
+					// Used to be battery
 				}
 				DynamicIslandExpandedRegion(.trailing, priority: 1) {
 					TimerView(timerRange: context.state.timerRange)
@@ -100,38 +92,40 @@ struct WidgetsLiveActivity: Widget {
     }
 }
 
-struct WidgetsLiveActivity_Previews: PreviewProvider {
-	static let attributes = MeshActivityAttributes(nodeNum: 123456789, name: "RAK Compact Rotary Handset Gray 8E6G")
-	static let state = MeshActivityAttributes.ContentState(
-		timerRange: Date.now...Date(timeIntervalSinceNow: 60), connected: true, channelUtilization: 25.84, airtime: 10.01, batteryLevel: 39, nodes: 17, nodesOnline: 9)
-
-    static var previews: some View {
-        attributes
-            .previewContext(state, viewKind: .dynamicIsland(.compact))
-            .previewDisplayName("Compact")
-		attributes
-			.previewContext(state, viewKind: .dynamicIsland(.minimal))
-			.previewDisplayName("Minimal")
-        attributes
-            .previewContext(state, viewKind: .dynamicIsland(.expanded))
-            .previewDisplayName("Expanded")
-		attributes
-			.previewContext(state, viewKind: .content)
-			.previewDisplayName("Notification")
-    }
-}
+//struct WidgetsLiveActivity_Previews: PreviewProvider {
+//	static let attributes = MeshActivityAttributes(nodeNum: 123456789, name: "RAK Compact Rotary Handset Gray 8E6G")
+//	static let state = MeshActivityAttributes.ContentState(
+//		timerRange: Date.now...Date(timeIntervalSinceNow: 60), connected: true, channelUtilization: 25.84, airtime: 10.01, batteryLevel: 39, nodes: 17, nodesOnline: 9)
+//
+//    static var previews: some View {
+//        attributes
+//            .previewContext(state, viewKind: .dynamicIsland(.compact))
+//            .previewDisplayName("Compact")
+//		attributes
+//			.previewContext(state, viewKind: .dynamicIsland(.minimal))
+//			.previewDisplayName("Minimal")
+//        attributes
+//            .previewContext(state, viewKind: .dynamicIsland(.expanded))
+//            .previewDisplayName("Expanded")
+//		attributes
+//			.previewContext(state, viewKind: .content)
+//			.previewDisplayName("Notification")
+//    }
+//}
 
 struct LiveActivityView: View {
 	@Environment(\.colorScheme) private var colorScheme
 	@Environment(\.isLuminanceReduced) var isLuminanceReduced
 
 	var nodeName: String
-	// var connected: Bool
+	var uptimeSeconds: UInt32
 	var channelUtilization: Float
 	var airtime: Float
-	var batteryLevel: UInt32
-	var nodes: Int
-	var nodesOnline: Int
+	var sentPackets: UInt32
+	var receivedPackets: UInt32
+	var badReceivedPackets: UInt32
+	var nodesOnline: UInt32
+	var totalNodes: UInt32
 	var timerRange: ClosedRange<Date>
 
 	var body: some View {
@@ -143,33 +137,8 @@ struct LiveActivityView: View {
 				.aspectRatio(contentMode: .fit)
 				.frame(width: 65)
 			Spacer()
-			NodeInfoView(nodeName: nodeName, timerRange: timerRange, channelUtilization: channelUtilization, airtime: airtime, batteryLevel: batteryLevel, nodes: nodes, nodesOnline: nodesOnline)
+			NodeInfoView(isLuminanceReduced: _isLuminanceReduced, nodeName: nodeName, uptimeSeconds: uptimeSeconds, channelUtilization: channelUtilization, airtime: airtime, sentPackets: sentPackets, receivedPackets: receivedPackets, badReceivedPackets: badReceivedPackets, nodesOnline: nodesOnline, totalNodes: totalNodes, timerRange: timerRange)
 			Spacer()
-			VStack {
-				BatteryIcon(batteryLevel: Int32(batteryLevel), font: .title, color: .secondary)
-				if batteryLevel == 0 {
-					Text("< 1%")
-						.font(.headline)
-						.fontWeight(.medium)
-						.foregroundStyle(.secondary)
-						.opacity(isLuminanceReduced ? 0.8 : 1.0)
-						.fixedSize()
-				} else if batteryLevel < 101 {
-					Text(String(batteryLevel) + "%")
-						.font(.headline)
-						.fontWeight(.medium)
-						.foregroundStyle(.secondary)
-						.opacity(isLuminanceReduced ? 0.8 : 1.0)
-						.fixedSize()
-				} else {
-					Text("Plugged In")
-						.font(.headline)
-						.fontWeight(.medium)
-						.foregroundStyle(.secondary)
-						.opacity(isLuminanceReduced ? 0.8 : 1.0)
-						.fixedSize()
-				}
-			}
 		}
 		.tint(.primary)
 		.padding([.leading, .top, .bottom])
@@ -183,12 +152,15 @@ struct NodeInfoView: View {
 	@Environment(\.isLuminanceReduced) var isLuminanceReduced
 
 	var nodeName: String
-	var timerRange: ClosedRange<Date>
+	var uptimeSeconds: UInt32
 	var channelUtilization: Float
 	var airtime: Float
-	var batteryLevel: UInt32
-	var nodes: Int
-	var nodesOnline: Int
+	var sentPackets: UInt32
+	var receivedPackets: UInt32
+	var badReceivedPackets: UInt32
+	var nodesOnline: UInt32
+	var totalNodes: UInt32
+	var timerRange: ClosedRange<Date>
 
 	var body: some View {
 		VStack(alignment: .leading, spacing: 0) {

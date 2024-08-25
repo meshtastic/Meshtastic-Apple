@@ -327,17 +327,25 @@ struct Connect: View {
 	#if canImport(ActivityKit)
 	func startNodeActivity() {
 		liveActivityStarted = true
-		let timerSeconds = 60
-		let deviceMetrics = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
-		let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
+		// 15 Minutes Local Stats Interval
+		let timerSeconds = 900
+		let localStats = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 6"))
+		let mostRecent = localStats?.lastObject as? TelemetryEntity
 
 		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName ?? "unknown")
 
 		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
+		let initialContentState = MeshActivityAttributes.ContentState(uptimeSeconds: UInt32(mostRecent?.uptimeSeconds ?? 0),
+																	  channelUtilization: mostRecent?.channelUtilization ?? 0.0,
+																	  airtime: mostRecent?.airUtilTx ?? 0.0,
+																	  sentPackets: UInt32(mostRecent?.numPacketsTx ?? 0),
+																	  receivedPackets: UInt32(mostRecent?.numPacketsRx ?? 0),
+																	  badReceivedPackets: UInt32(mostRecent?.numPacketsRxBad ?? 0),
+																	  nodesOnline: UInt32(mostRecent?.numOnlineNodes ?? 0),
+																	  totalNodes: UInt32(mostRecent?.numTotalNodes ?? 0),
+																	  timerRange: Date.now...future)
 
-		let initialContentState = MeshActivityAttributes.ContentState(timerRange: Date.now...future, connected: true, channelUtilization: mostRecent?.channelUtilization ?? 0.0, airtime: mostRecent?.airUtilTx ?? 0.0, batteryLevel: UInt32(mostRecent?.batteryLevel ?? 0), nodes: 17, nodesOnline: 9)
-
-		let activityContent = ActivityContent(state: initialContentState, staleDate: Calendar.current.date(byAdding: .minute, value: 2, to: Date())!)
+		let activityContent = ActivityContent(state: initialContentState, staleDate: Calendar.current.date(byAdding: .minute, value: 15, to: Date())!)
 
 		do {
 			let myActivity = try Activity<MeshActivityAttributes>.request(attributes: activityAttributes, content: activityContent,

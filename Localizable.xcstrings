@@ -6325,7 +6325,7 @@
     "Direct Message Help" : {
 
     },
-    "Direct messages are using the new public key infrastructure for encryption. Reguires firmware version 2.5 or greater." : {
+    "Direct messages are using the new public key infrastructure for encryption. Requires firmware version 2.5 or greater." : {
 
     },
     "Direct messages are using the shared key for the channel." : {
@@ -7228,11 +7228,11 @@
     "Favorites" : {
 
     },
-    "Fetch the latest position of a cetain node" : {
-    
-    },
     "Favorites and nodes with recent messages show up at the top of the contact list." : {
-    
+
+    },
+    "Fetch the latest position of a cetain node" : {
+
     },
     "Fifteen Minutes" : {
 
@@ -14565,9 +14565,10 @@
 
     },
     "Message content exceeds 228 bytes." : {
+
     },
     "Message Status Options" : {
-    
+
     },
     "message.details" : {
       "localizations" : {
@@ -22241,7 +22242,7 @@
         }
       }
     },
-    "Updated Device Metrics Data." : {
+    "Updated Node Stats Data." : {
 
     },
     "Updated: %@" : {
