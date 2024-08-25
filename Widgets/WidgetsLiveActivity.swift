@@ -275,6 +275,7 @@ struct TimerView: View {
 				.fontWeight(.semibold)
 				.foregroundStyle(.tint)
 			Image(systemName: "timer")
+				.symbolRenderingMode(.multicolor)
 				.resizable()
 				.foregroundStyle(.secondary)
 				.frame(width: 30, height: 30)
