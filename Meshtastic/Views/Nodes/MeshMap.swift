@@ -126,7 +126,7 @@ struct MeshMap: View {
 				guard case .map(let selectedNodeNum) = router.navigationState else { return }
 				// TODO: handle deep link for waypoints
 			}
-			.onChange(of: (selectedMapLayer)) { newMapLayer in
+			.onChange(of: selectedMapLayer) { newMapLayer in
 				switch selectedMapLayer {
 				case .standard:
 					UserDefaults.mapLayer = newMapLayer

@@ -344,6 +344,11 @@ struct NodeList: View {
 				self.selectedNode = nil
 			}
 		}
+		.onReceive(nodes.publisher) { _ in
+			Task {
+				await searchNodeList()
+			}
+		}
 		.onAppear {
 			Task {
 				await searchNodeList()
