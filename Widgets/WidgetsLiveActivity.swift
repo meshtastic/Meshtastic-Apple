@@ -28,41 +28,62 @@ struct WidgetsLiveActivity: Widget {
         } dynamicIsland: { context in
             DynamicIsland {
 				DynamicIslandExpandedRegion(.leading) {
-					Text("Network")
-						.font(.headline)
-						.fontWeight(.bold)
+					HStack(alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/) {
+						Spacer()
+						Text("Mesh")
+							.font(.callout)
+							.fontWeight(.medium)
+							.foregroundStyle(.primary)
+							.padding(.bottom, 10)
+							.fixedSize()
+						Spacer()
+					}
+					Text("\(context.state.nodesOnline) online")
+						.font(.caption)
 						.foregroundStyle(.secondary)
 						.fixedSize()
-						.padding(.top, 10)
 					Text("\(String(format: "Ch. Util: %.2f", context.state.channelUtilization))%")
-						.font(.headline)
-						.fontWeight(.medium)
+						.font(.caption)
 						.foregroundStyle(.secondary)
 						.fixedSize()
 					Text("\(String(format: "Airtime: %.2f", context.state.airtime))%")
-						.font(.headline)
-						.fontWeight(.medium)
+						.font(.caption)
 						.foregroundStyle(.secondary)
 						.fixedSize()
-					Spacer()
 				}
 				DynamicIslandExpandedRegion(.center) {
-					// Used to be battery
-				}
-				DynamicIslandExpandedRegion(.trailing, priority: 1) {
 					TimerView(timerRange: context.state.timerRange)
 						.tint(Color("LightIndigo"))
-
+				}
+				DynamicIslandExpandedRegion(.trailing, priority: 1) {
+					HStack(alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/) {
+						Spacer()
+						Text("Packets")
+							.font(.callout)
+							.fontWeight(.medium)
+							.foregroundStyle(.primary)
+							.padding(.bottom, 10)
+							.fixedSize()
+						Spacer()
+					}
+					Text("Sent \(context.state.sentPackets)")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+						.fixedSize()
+					Text("Received \(context.state.receivedPackets)")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+						.fixedSize()
+					Text("Bad \(context.state.badReceivedPackets)")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+						.fixedSize()
 				}
 				DynamicIslandExpandedRegion(.bottom) {
-					Text(context.attributes.name)
-						.font(context.attributes.name.count > 14 ? .callout : .title3)
-						.fontWeight(.semibold)
-						.foregroundStyle(.tint)
 					Text("Last Heard: \(Date().formatted())")
 						.font(.caption)
 						.fontWeight(.medium)
-						.foregroundStyle(.secondary)
+						.foregroundStyle(.tint)
 						.fixedSize()
 				}
 
@@ -240,8 +261,9 @@ struct TimerView: View {
 
 	var body: some View {
 		VStack(alignment: .center) {
-			Text("NEXT UPDATE")
-				.font(.caption)
+			Text("UPDATE IN")
+				.font(.caption2)
+				.allowsTightening(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
 				.fontWeight(.medium)
 				.foregroundStyle(.secondary)
 				.opacity(isLuminanceReduced ? 0.5 : 1.0)
@@ -257,6 +279,7 @@ struct TimerView: View {
 				.foregroundStyle(.secondary)
 				.frame(width: 30, height: 30)
 				.opacity(isLuminanceReduced ? 0.5 : 1.0)
+				.offset(y: -5)
 		}
 	}
 }
