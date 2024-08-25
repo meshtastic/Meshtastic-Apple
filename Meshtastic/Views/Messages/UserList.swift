@@ -307,7 +307,7 @@ struct UserList: View {
 		}
 		/// Online
 		if isOnline {
-			let isOnlinePredicate = NSPredicate(format: "userNode.lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -15, to: Date())! as NSDate)
+			let isOnlinePredicate = NSPredicate(format: "userNode.lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -120, to: Date())! as NSDate)
 			predicates.append(isOnlinePredicate)
 		}
 		/// Encrypted
