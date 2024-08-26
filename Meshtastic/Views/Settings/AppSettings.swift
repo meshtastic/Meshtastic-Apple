@@ -76,8 +76,10 @@ struct AppSettings: View {
 							}
 							clearCoreDataDatabase(context: context, includeRoutes: true)
 							context.refreshAllObjects()
-							UserDefaults.standard.reset()
 						}
+					}
+					Button("Reset App Settings", systemImage: "clipboard") {
+						UserDefaults.standard.reset()
 					}
 				}
 				if totalDownloadedTileSize != "0MB" {

@@ -23,7 +23,7 @@ struct WidgetsLiveActivity: Widget {
 							 nodesOnline: context.state.nodesOnline,
 							 totalNodes: context.state.totalNodes,
 							 timerRange: context.state.timerRange)
-				.widgetURL(URL(string: "meshtastic:///node/\(context.attributes.name)"))
+				.widgetURL(URL(string: "meshtastic:///bluetooth"))
 
         } dynamicIsland: { context in
             DynamicIsland {
@@ -38,10 +38,17 @@ struct WidgetsLiveActivity: Widget {
 							.fixedSize()
 						Spacer()
 					}
-					Text("\(context.state.nodesOnline) nodes online")
-						.font(.caption)
-						.foregroundStyle(.secondary)
-						.fixedSize()
+					if context.state.nodesOnline >= 100 {
+						Text("100+ online")
+							.font(.caption)
+							.foregroundStyle(.secondary)
+							.fixedSize()
+					} else {
+						Text("\(context.state.nodesOnline) of \(context.state.totalNodes) online")
+							.font(.caption)
+							.foregroundStyle(.secondary)
+							.fixedSize()
+					}
 					Text("\(String(format: "Ch. Util: %.2f", context.state.channelUtilization))%")
 						.font(.caption)
 						.foregroundStyle(.secondary)
@@ -74,7 +81,7 @@ struct WidgetsLiveActivity: Widget {
 						.font(.caption)
 						.foregroundStyle(.secondary)
 						.fixedSize()
-					Text("Dupe / Bad: \(context.state.badReceivedPackets)")
+					Text("Dupe / Bad \(context.state.badReceivedPackets)")
 						.font(.caption)
 						.foregroundStyle(.secondary)
 						.fixedSize()
@@ -108,7 +115,7 @@ struct WidgetsLiveActivity: Widget {
 			.contentMargins(.trailing, 32, for: .expanded)
 			.contentMargins([.leading, .top, .bottom], 6, for: .compactLeading)
 			.contentMargins(.all, 6, for: .minimal)
-			.widgetURL(URL(string: "meshtastic:///node/\(context.attributes.name)"))
+			.widgetURL(URL(string: "meshtastic:///bluetooth"))
         }
     }
 }
@@ -214,12 +221,21 @@ struct NodeInfoView: View {
 				.foregroundStyle(.secondary)
 				.opacity(isLuminanceReduced ? 0.8 : 1.0)
 				.fixedSize()
-			Text("\(String(format: "Connected: %d nodes online", nodesOnline, totalNodes))")
-				.font(.caption)
-				.fontWeight(.medium)
-				.foregroundStyle(.secondary)
-				.opacity(isLuminanceReduced ? 0.8 : 1.0)
-				.fixedSize()
+			if totalNodes >= 100 {
+				Text("\(String(format: "Connected: %d nodes online", nodesOnline))")
+					.font(.caption)
+					.fontWeight(.medium)
+					.foregroundStyle(.secondary)
+					.opacity(isLuminanceReduced ? 0.8 : 1.0)
+					.fixedSize()
+			} else {
+				Text("\(String(format: "Connected: %d of %d nodes online", nodesOnline, totalNodes))")
+					.font(.caption)
+					.fontWeight(.medium)
+					.foregroundStyle(.secondary)
+					.opacity(isLuminanceReduced ? 0.8 : 1.0)
+					.fixedSize()
+			}
 			let now = Date()
 			Text("Last Heard: \(now.formatted())")
 				.font(.caption)

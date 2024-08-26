@@ -24,7 +24,7 @@ struct MQTTConfig: View {
 	@State var password = ""
 	@State var encryptionEnabled = true
 	@State var jsonEnabled = false
-	@State var tlsEnabled = true
+	@State var tlsEnabled = false
 	@State var root = "msh"
 	@State var selectedTopic = ""
 	@State var mqttConnected: Bool = false
@@ -234,7 +234,7 @@ struct MQTTConfig: View {
 					.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
 					Toggle(isOn: $tlsEnabled) {
 						Label("TLS Enabled", systemImage: "checkmark.shield.fill")
-						Text("Your MQTT Server must support TLS.")
+						Text("Your MQTT Server must support TLS. Not available via the public mqtt server.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
@@ -288,9 +288,6 @@ struct MQTTConfig: View {
 				jsonEnabled = false
 			}
 			if newProxyToClientEnabled != node?.mqttConfig?.proxyToClientEnabled { hasChanges = true }
-			if newProxyToClientEnabled {
-				jsonEnabled = false
-			}
 		}
 		.onChange(of: address) { newAddress in
 			if node != nil && node?.mqttConfig != nil {
@@ -324,8 +321,12 @@ struct MQTTConfig: View {
 			}
 			if newJsonEnabled != node?.mqttConfig?.jsonEnabled { hasChanges = true }
 		}
-		.onChange(of: tlsEnabled) {
-			if $0 != node?.mqttConfig?.tlsEnabled { hasChanges = true }
+		.onChange(of: tlsEnabled) { newTlsEnabled in
+			if address.lowercased() == "mqtt.meshtastic.org" {
+				tlsEnabled = false
+			} else {
+				if newTlsEnabled != node?.mqttConfig?.tlsEnabled { hasChanges = true }
+			}
 		}
 		.onChange(of: mqttConnected) { newMqttConnected in
 			if newMqttConnected == false {

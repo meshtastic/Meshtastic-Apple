@@ -141,6 +141,16 @@
     "%@%%" : {
 
     },
+    "%@%% %@%%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%% %2$@%%"
+          }
+        }
+      }
+    },
     "%@°F" : {
 
     },
@@ -6711,6 +6721,9 @@
 
     },
     "Drag & Drop is the recommended way to update firmware for NRF devices. If your iPhone or iPad is USB-C it will work with your regular USB-C charging cable, for lightning devices you need the Apple Lightning to USB camera adaptor." : {
+
+    },
+    "Dupe / Bad Packets: %d" : {
 
     },
     "echo" : {
@@ -16073,6 +16086,12 @@
     "Override automatic OLED screen detection." : {
 
     },
+    "Packets Received: %d" : {
+
+    },
+    "Packets Sent: %d" : {
+
+    },
     "password" : {
       "localizations" : {
         "de" : {
@@ -17386,6 +17405,9 @@
 
     },
     "Requires that there be an accelerometer on your device." : {
+
+    },
+    "Reset App Settings" : {
 
     },
     "Reset NodeDB" : {
@@ -22679,7 +22701,7 @@
     "Your Firmware is up to date" : {
 
     },
-    "Your MQTT Server must support TLS." : {
+    "Your MQTT Server must support TLS. Not available via the public mqtt server." : {
 
     },
     "Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned." : {

@@ -157,11 +157,20 @@ struct ChannelForm: View {
 						if !preciseLocation {
 							VStack(alignment: .leading) {
 								Label("Approximate Location", systemImage: "location.slash.circle.fill")
-								Slider(value: $positionPrecision, in: 10...19, step: 1) {
-								} minimumValueLabel: {
-									Image(systemName: "minus")
-								} maximumValueLabel: {
-									Image(systemName: "plus")
+								if channelKeySize == -1 {
+									Slider(value: $positionPrecision, in: 10...16, step: 1) {
+									} minimumValueLabel: {
+										Image(systemName: "minus")
+									} maximumValueLabel: {
+										Image(systemName: "plus")
+									}
+								} else {
+									Slider(value: $positionPrecision, in: 10...19, step: 1) {
+									} minimumValueLabel: {
+										Image(systemName: "minus")
+									} maximumValueLabel: {
+										Image(systemName: "plus")
+									}
 								}
 								Text(PositionPrecision(rawValue: Int(positionPrecision))?.description ?? "")
 									.foregroundColor(.gray)
@@ -198,6 +207,11 @@ struct ChannelForm: View {
 			}
 			.onChange(of: channelKey) { _ in
 				hasChanges = true
+			}
+			.onChange(of: channelKeySize) { _ in
+				if channelKeySize == -1 {
+					preciseLocation = false
+				}
 			}
 			.onChange(of: channelRole) { _ in
 				hasChanges = true
