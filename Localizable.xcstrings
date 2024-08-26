@@ -1167,6 +1167,9 @@
     "Are you sure you want to delete this message?" : {
 
     },
+    "Are you sure you want to factory reset the node?" : {
+
+    },
     "are.you.sure" : {
       "localizations" : {
         "de" : {
@@ -6325,7 +6328,7 @@
     "Direct Message Help" : {
 
     },
-    "Direct messages are using the new public key infrastructure for encryption. Reguires firmware version 2.5 or greater." : {
+    "Direct messages are using the new public key infrastructure for encryption. Requires firmware version 2.5 or greater." : {
 
     },
     "Direct messages are using the shared key for the channel." : {
@@ -7210,6 +7213,9 @@
     "Factory Reset" : {
 
     },
+    "Factory Reset Node" : {
+
+    },
     "Factory reset your device and app? " : {
 
     },
@@ -7228,11 +7234,11 @@
     "Favorites" : {
 
     },
-    "Fetch the latest position of a cetain node" : {
-    
-    },
     "Favorites and nodes with recent messages show up at the top of the contact list." : {
-    
+
+    },
+    "Fetch the latest position of a cetain node" : {
+
     },
     "Fifteen Minutes" : {
 
@@ -14564,10 +14570,14 @@
     "Message" : {
 
     },
+    "Message Channel" : {
+
+    },
     "Message content exceeds 228 bytes." : {
+
     },
     "Message Status Options" : {
-    
+
     },
     "message.details" : {
       "localizations" : {
@@ -16320,6 +16330,9 @@
         }
       }
     },
+    "Perform a factory reset on the node you are connected to" : {
+
+    },
     "phone.gps" : {
       "localizations" : {
         "de" : {
@@ -17025,6 +17038,9 @@
         }
       }
     },
+    "Reboot Node?" : {
+
+    },
     "reboot.node" : {
       "localizations" : {
         "de" : {
@@ -17388,6 +17404,12 @@
 
     },
     "Reset NodeDB" : {
+
+    },
+    "Restart Node" : {
+
+    },
+    "Restart to the node you are connected to" : {
 
     },
     "restore" : {
@@ -19131,13 +19153,16 @@
     "Send" : {
 
     },
-    "Send a channel message" : {
+    "Send a Channel Message" : {
 
     },
     "Send a message to a certain meshtastic channel" : {
 
     },
-    "Send a waypoint" : {
+    "Send a shutdown to the node you are connected to" : {
+
+    },
+    "Send a Waypoint" : {
 
     },
     "Send ASCII bell with alert message. Useful for triggering external notification on bell." : {
@@ -19875,6 +19900,12 @@
 
     },
     "Show Weather" : {
+
+    },
+    "Shut Down Node" : {
+
+    },
+    "Shut Down Node?" : {
 
     },
     "Shutdown Node?" : {
