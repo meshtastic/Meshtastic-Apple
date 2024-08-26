@@ -68,7 +68,6 @@
 		B2A5F3092C5668FD009457AB /* NodeListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2E82C5668FD009457AB /* NodeListItem.swift */; };
 		B2A5F30A2C5668FD009457AB /* MeshMapContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2EA2C5668FD009457AB /* MeshMapContent.swift */; };
 		B2A5F30B2C5668FD009457AB /* NodeMapContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2EB2C5668FD009457AB /* NodeMapContent.swift */; };
-		B2A5F30C2C5668FD009457AB /* AltitudeHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2ED2C5668FD009457AB /* AltitudeHistoryView.swift */; };
 		B2A5F30D2C5668FD009457AB /* MapSettingsForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2EE2C5668FD009457AB /* MapSettingsForm.swift */; };
 		B2A5F30E2C5668FD009457AB /* NodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2EF2C5668FD009457AB /* NodeMap.swift */; };
 		B2A5F30F2C5668FD009457AB /* SimpleNodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2F02C5668FD009457AB /* SimpleNodeMap.swift */; };
@@ -273,7 +272,6 @@
 		B2A5F2E82C5668FD009457AB /* NodeListItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeListItem.swift; sourceTree = "<group>"; };
 		B2A5F2EA2C5668FD009457AB /* MeshMapContent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MeshMapContent.swift; sourceTree = "<group>"; };
 		B2A5F2EB2C5668FD009457AB /* NodeMapContent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeMapContent.swift; sourceTree = "<group>"; };
-		B2A5F2ED2C5668FD009457AB /* AltitudeHistoryView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AltitudeHistoryView.swift; sourceTree = "<group>"; };
 		B2A5F2EE2C5668FD009457AB /* MapSettingsForm.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapSettingsForm.swift; sourceTree = "<group>"; };
 		B2A5F2EF2C5668FD009457AB /* NodeMap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeMap.swift; sourceTree = "<group>"; };
 		B2A5F2F02C5668FD009457AB /* SimpleNodeMap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SimpleNodeMap.swift; sourceTree = "<group>"; };
@@ -560,7 +558,6 @@
 			isa = PBXGroup;
 			children = (
 				B2A5F2EC2C5668FD009457AB /* MapContent */,
-				B2A5F2ED2C5668FD009457AB /* AltitudeHistoryView.swift */,
 				B2A5F2EE2C5668FD009457AB /* MapSettingsForm.swift */,
 				B2A5F2EF2C5668FD009457AB /* NodeMap.swift */,
 				B2A5F2F52C5668FD009457AB /* MeshMap.swift */,
@@ -1067,7 +1064,6 @@
 				DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */,
 				DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */,
 				DDB75A112A059258006ED576 /* Url.swift in Sources */,
-				B2A5F30C2C5668FD009457AB /* AltitudeHistoryView.swift in Sources */,
 				DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */,
 				B266A7672C5927F300DFC723 /* ModemPresets.swift in Sources */,
 				DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */,

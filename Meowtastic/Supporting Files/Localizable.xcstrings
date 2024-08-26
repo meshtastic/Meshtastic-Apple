@@ -7,9 +7,6 @@
     "(Re)define PIN_GPS_EN for your board." : {
 
     },
-    "%@" : {
-
-    },
     "%@ can be up to %@ bytes long." : {
       "localizations" : {
         "en" : {
@@ -27,6 +24,9 @@
 
     },
     "%d hops" : {
+
+    },
+    "%f" : {
 
     },
     "%lld" : {
@@ -20127,6 +20127,9 @@
           }
         }
       }
+    },
+    "Temp" : {
+
     },
     "The compass heading on the screen outside of the circle will always point north." : {
 

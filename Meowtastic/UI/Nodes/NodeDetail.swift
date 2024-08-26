@@ -1,3 +1,4 @@
+import Charts
 import FirebaseAnalytics
 import MapKit
 import OSLog
@@ -26,6 +27,16 @@ struct NodeDetail: View {
 	private var showingShutdownConfirm = false
 	@State
 	private var showingRebootConfirm = false
+	@State
+	private var yesterdayMidnight = Calendar.current.startOfDay(
+		// swiftlint:disable:next force_unwrapping
+		for: Calendar.current.date(byAdding: .day, value: -1, to: .now)!
+	)
+	@State
+	private var tomorrowMidnight = Calendar.current.startOfDay(
+		// swiftlint:disable:next force_unwrapping
+		for: Calendar.current.date(byAdding: .day, value: +1, to: .now)!
+	)
 
 	private var connectedNode: NodeInfoEntity? {
 		getNodeInfo(
@@ -49,13 +60,16 @@ struct NodeDetail: View {
 			)
 			.lastObject as? TelemetryEntity
 	}
-	private var nodeEnvironment: TelemetryEntity? {
+	private var nodeEnvironmentHistory: [TelemetryEntity]? {
 		node
 			.telemetries?
 			.filtered(
 				using: NSPredicate(format: "metricsType == 1")
 			)
-			.lastObject as? TelemetryEntity
+			.array as? [TelemetryEntity]
+	}
+	private var nodeEnvironment: TelemetryEntity? {
+		nodeEnvironmentHistory?.last
 	}
 	private var nodeEnvironmentStale: Bool {
 		nodeEnvironment != nil
@@ -74,8 +88,11 @@ struct NodeDetail: View {
 					}
 
 					if nodeEnvironment != nil {
-						environmentInfo
-							.padding(.horizontal, 4)
+						VStack(alignment: .leading, spacing: 8) {
+							environmentInfo
+							temperatureHistory
+						}
+						.padding(.horizontal, 4)
 					}
 
 					if nodePositionStale || nodeEnvironmentStale {
@@ -363,6 +380,46 @@ struct NodeDetail: View {
 						.foregroundColor(.gray)
 				}
 			}
+		}
+		else {
+			EmptyView()
+		}
+	}
+
+	@ViewBuilder
+	private var temperatureHistory: some View {
+		if let nodeEnvironmentHistory {
+			Chart(nodeEnvironmentHistory, id: \.time) { measurement in
+				if let time = measurement.time, time >= yesterdayMidnight {
+					LineMark(
+						x: .value("Time", time),
+						y: .value("Temp", measurement.temperature)
+					)
+					.interpolationMethod(.monotone)
+					.foregroundStyle(.gray)
+					.lineStyle(
+						StrokeStyle(lineWidth: 3)
+					)
+					.cornerRadius(8)
+					.accessibilityLabel(time.formatted(date: .omitted, time: .shortened))
+					.accessibilityValue("\(measurement.temperature)")
+
+					BarMark(
+						x: .value("Time", time),
+						y: .value("Temp", measurement.temperature),
+						width: 1
+					)
+					.foregroundStyle(.gray)
+				}
+			}
+			.chartXAxis(.visible)
+			.chartXScale(
+				domain: [
+					yesterdayMidnight,
+					tomorrowMidnight
+				]
+			)
+			.chartYAxis(.visible)
 		}
 		else {
 			EmptyView()
