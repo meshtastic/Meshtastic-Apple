@@ -15,13 +15,15 @@ struct MeshActivityAttributes: ActivityAttributes {
 	public typealias MeshActivityStatus = ContentState
 	public struct ContentState: Codable, Hashable {
 		// Dynamic stateful properties about your activity go here!
-		var timerRange: ClosedRange<Date>
-		var connected: Bool
+		var uptimeSeconds: UInt32
 		var channelUtilization: Float
 		var airtime: Float
-		var batteryLevel: UInt32
-		var nodes: Int
-		var nodesOnline: Int
+		var sentPackets: UInt32
+		var receivedPackets: UInt32
+		var badReceivedPackets: UInt32
+		var nodesOnline: UInt32
+		var totalNodes: UInt32
+		var timerRange: ClosedRange<Date>
 	}
 
 	// Fixed non-changing properties about your activity go here!
