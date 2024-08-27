@@ -25,13 +25,10 @@ struct ShortcutsProvider: AppShortcutsProvider {
 							  "Start node again in \(.applicationName)"],
 					shortTitle: "Restart Node",
 					systemImageName: "arrow.circlepath")
-		
+
 		AppShortcut(intent: MessageChannelIntent(),
-					   phrases: ["Message channel in \(.applicationName)",],
-					   shortTitle: "Message Channel",
-					   systemImageName: "message")
+					phrases: ["Message channel in \(.applicationName)"],
+					shortTitle: "Message Channel",
+					systemImageName: "message")
 	}
 }
-
-
-
