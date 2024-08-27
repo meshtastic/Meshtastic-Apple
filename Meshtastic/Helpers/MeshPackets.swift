@@ -681,14 +681,10 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 
 	if let telemetryMessage = try? Telemetry(serializedData: packet.decoded.payload) {
 
-		// Only log telemetry from the mesh not the connected device
-		if connectedNode != Int64(packet.from) {
-			let logString = String.localizedStringWithFormat("mesh.log.telemetry.received %@".localized, String(packet.from))
-			MeshLogger.log("📈 \(logString)")
-		} else {
-			// If it is the connected node
-		}
-		if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) {
+		let logString = String.localizedStringWithFormat("mesh.log.telemetry.received %@".localized, String(packet.from))
+		MeshLogger.log("📈 \(logString)")
+
+		if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) {
 			/// Other unhandled telemetry packets
 			return
 		}
@@ -727,6 +723,18 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.windLull = telemetryMessage.environmentMetrics.windLull
 					telemetry.windDirection = Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.windDirection)
 					telemetry.metricsType = 1
+				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) {
+					// Local Stats for Live activity
+					telemetry.uptimeSeconds = Int32(telemetryMessage.localStats.uptimeSeconds)
+					telemetry.channelUtilization = telemetryMessage.localStats.channelUtilization
+					telemetry.airUtilTx = telemetryMessage.localStats.airUtilTx
+					telemetry.numPacketsTx = Int32(truncatingIfNeeded: telemetryMessage.localStats.numPacketsTx)
+					telemetry.numPacketsRx = Int32(truncatingIfNeeded: telemetryMessage.localStats.numPacketsRx)
+					telemetry.numPacketsRxBad = Int32(truncatingIfNeeded: telemetryMessage.localStats.numPacketsRxBad)
+					telemetry.numOnlineNodes = Int32(truncatingIfNeeded: telemetryMessage.localStats.numOnlineNodes)
+					telemetry.numTotalNodes = Int32(truncatingIfNeeded: telemetryMessage.localStats.numTotalNodes)
+					telemetry.metricsType = 6
+					Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.localStats.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.localStats.airUtilTx, privacy: .public) Packets Sent: \(telemetryMessage.localStats.numPacketsTx, privacy: .public) Packets Received: \(telemetryMessage.localStats.numPacketsRx, privacy: .public) Bad Packets Received: \(telemetryMessage.localStats.numPacketsRxBad, privacy: .public) Nodes Online: \(telemetryMessage.localStats.numOnlineNodes, privacy: .public) of \(telemetryMessage.localStats.numTotalNodes, privacy: .public) nodes for Node: \(packet.from.toHex(), privacy: .public)")
 				}
 				telemetry.snr = packet.rxSnr
 				telemetry.rssi = packet.rxRssi
@@ -743,34 +751,45 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 				fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
 			}
 			try context.save()
-			// Only log telemetry from the mesh not the connected device
-			if connectedNode != Int64(packet.from) {
-				Logger.data.info("💾 [TelemetryEntity] Saved for Node: \(packet.from.toHex())")
-			} else if telemetry.metricsType == 0 {
+
+			Logger.data.info("💾 [TelemetryEntity] Saved for Node: \(packet.from.toHex())")
+			if telemetry.metricsType == 0 {
 				// Connected Device Metrics
 				// ------------------------
 				// Low Battery notification
-				if UserDefaults.lowBatteryNotifications && telemetry.batteryLevel > 0 && telemetry.batteryLevel < 4 {
-					let manager = LocalNotificationManager()
-					manager.notifications = [
-						Notification(
-							id: ("notification.id.\(UUID().uuidString)"),
-							title: "Critically Low Battery!",
-							subtitle: "AKA \(telemetry.nodeTelemetry?.user?.shortName ?? "UNK")",
-							content: "Time to charge your radio, there is \(telemetry.batteryLevel)% battery remaining.",
-							target: "nodes",
-							path: "meshtastic:///nodes?nodenum=\(telemetry.nodeTelemetry?.num ?? 0)"
-						)
-					]
-					manager.schedule()
+				if connectedNode != Int64(packet.from) {
+					if UserDefaults.lowBatteryNotifications && telemetry.batteryLevel > 0 && telemetry.batteryLevel < 4 {
+						let manager = LocalNotificationManager()
+						manager.notifications = [
+							Notification(
+								id: ("notification.id.\(UUID().uuidString)"),
+								title: "Critically Low Battery!",
+								subtitle: "AKA \(telemetry.nodeTelemetry?.user?.shortName ?? "UNK")",
+								content: "Time to charge your radio, there is \(telemetry.batteryLevel)% battery remaining.",
+								target: "nodes",
+								path: "meshtastic:///nodes?nodenum=\(telemetry.nodeTelemetry?.num ?? 0)"
+							)
+						]
+						manager.schedule()
+					}
 				}
+			} else if telemetry.metricsType == 6 {
 				// Update our live activity if there is one running, not available on mac iOS >= 16.2
 #if !targetEnvironment(macCatalyst)
 
-					let oneMinuteLater = Calendar.current.date(byAdding: .minute, value: (Int(1) ), to: Date())!
-					let date = Date.now...oneMinuteLater
-				let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(timerRange: date, connected: true, channelUtilization: telemetry.channelUtilization, airtime: telemetry.airUtilTx, batteryLevel: UInt32(telemetry.batteryLevel), nodes: 17, nodesOnline: 9)
-				let alertConfiguration = AlertConfiguration(title: "Mesh activity update", body: "Updated Device Metrics Data.", sound: .default)
+				let fifteenMinutesLater = Calendar.current.date(byAdding: .minute, value: (Int(15) ), to: Date())!
+				let date = Date.now...fifteenMinutesLater
+				let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(uptimeSeconds: UInt32(telemetry.uptimeSeconds),
+																				  channelUtilization: telemetry.channelUtilization,
+																				  airtime: telemetry.airUtilTx,
+																				  sentPackets: UInt32(telemetry.numPacketsTx),
+																				  receivedPackets: UInt32(telemetry.numPacketsRx),
+																				  badReceivedPackets: UInt32(telemetry.numPacketsRxBad),
+																				  nodesOnline: UInt32(telemetry.numOnlineNodes),
+																				  totalNodes: UInt32(telemetry.numTotalNodes),
+																				  timerRange: date)
+
+				let alertConfiguration = AlertConfiguration(title: "Mesh activity update", body: "Updated Node Stats Data.", sound: .default)
 					let updatedContent = ActivityContent(state: updatedMeshStatus, staleDate: nil)
 
 					let meshActivity = Activity<MeshActivityAttributes>.activities.first(where: { $0.attributes.nodeNum == connectedNode })

@@ -92,13 +92,22 @@ struct Channels: View {
 								positionPrecision = 32
 								preciseLocation = true
 								positionsEnabled = true
-
+								if channelKey == "AQ==" {
+									positionPrecision = 13
+									preciseLocation = false
+									positionsEnabled = true
+								}
 							} else if !supportedVersion && channelRole == 2 {
 								positionPrecision = 0
 								preciseLocation = false
 								positionsEnabled = false
 							} else {
-								if positionPrecision == 32 {
+								if channelKey == "AQ==" {
+									preciseLocation = false
+									if positionPrecision < 10 || positionPrecision > 16 {
+										positionPrecision = 13
+									}
+								} else if positionPrecision == 32 {
 									preciseLocation = true
 									positionsEnabled = true
 								} else {
@@ -250,7 +259,7 @@ struct Channels: View {
 					channelKey = key
 					positionsEnabled = false
 					preciseLocation = false
-					positionPrecision = 0
+					positionPrecision = 13
 					uplink = false
 					downlink = false
 					hasChanges = true

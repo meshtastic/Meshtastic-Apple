@@ -344,6 +344,11 @@ struct NodeList: View {
 				self.selectedNode = nil
 			}
 		}
+		.onReceive(nodes.publisher) { _ in
+			Task {
+				await searchNodeList()
+			}
+		}
 		.onAppear {
 			Task {
 				await searchNodeList()
@@ -390,7 +395,7 @@ struct NodeList: View {
 		}
 		/// Online
 		if isOnline {
-			let isOnlinePredicate = NSPredicate(format: "lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -15, to: Date())! as NSDate)
+			let isOnlinePredicate = NSPredicate(format: "lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -120, to: Date())! as NSDate)
 			predicates.append(isOnlinePredicate)
 		}
 		/// Encrypted

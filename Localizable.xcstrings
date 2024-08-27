@@ -141,6 +141,16 @@
     "%@%%" : {
 
     },
+    "%@%% %@%%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%% %2$@%%"
+          }
+        }
+      }
+    },
     "%@°F" : {
 
     },
@@ -6325,7 +6335,7 @@
     "Direct Message Help" : {
 
     },
-    "Direct messages are using the new public key infrastructure for encryption. Reguires firmware version 2.5 or greater." : {
+    "Direct messages are using the new public key infrastructure for encryption. Requires firmware version 2.5 or greater." : {
 
     },
     "Direct messages are using the shared key for the channel." : {
@@ -6711,6 +6721,9 @@
 
     },
     "Drag & Drop is the recommended way to update firmware for NRF devices. If your iPhone or iPad is USB-C it will work with your regular USB-C charging cable, for lightning devices you need the Apple Lightning to USB camera adaptor." : {
+
+    },
+    "Dupe / Bad Packets: %d" : {
 
     },
     "echo" : {
@@ -7228,11 +7241,11 @@
     "Favorites" : {
 
     },
-    "Fetch the latest position of a cetain node" : {
-    
-    },
     "Favorites and nodes with recent messages show up at the top of the contact list." : {
-    
+
+    },
+    "Fetch the latest position of a cetain node" : {
+
     },
     "Fifteen Minutes" : {
 
@@ -14565,9 +14578,10 @@
 
     },
     "Message content exceeds 228 bytes." : {
+
     },
     "Message Status Options" : {
-    
+
     },
     "message.details" : {
       "localizations" : {
@@ -16072,6 +16086,12 @@
     "Override automatic OLED screen detection." : {
 
     },
+    "Packets Received: %d" : {
+
+    },
+    "Packets Sent: %d" : {
+
+    },
     "password" : {
       "localizations" : {
         "de" : {
@@ -17385,6 +17405,9 @@
 
     },
     "Requires that there be an accelerometer on your device." : {
+
+    },
+    "Reset App Settings" : {
 
     },
     "Reset NodeDB" : {
@@ -22241,7 +22264,7 @@
         }
       }
     },
-    "Updated Device Metrics Data." : {
+    "Updated Node Stats Data." : {
 
     },
     "Updated: %@" : {
@@ -22678,7 +22701,7 @@
     "Your Firmware is up to date" : {
 
     },
-    "Your MQTT Server must support TLS." : {
+    "Your MQTT Server must support TLS. Not available via the public mqtt server." : {
 
     },
     "Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned." : {

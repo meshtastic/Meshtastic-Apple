@@ -52,36 +52,78 @@ struct Connect: View {
 								if #available(iOS 17.0, macOS 14.0, *) {
 									TipView(BluetoothConnectionTip(), arrowEdge: .bottom)
 								}
-								HStack {
-									VStack(alignment: .center) {
-										CircleText(text: node?.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90)
-									}
-									.padding(.trailing)
-									VStack(alignment: .leading) {
-										if node != nil {
-											Text(connectedPeripheral.longName).font(.title2)
+								VStack(alignment: .leading) {
+									HStack {
+										VStack(alignment: .center) {
+											CircleText(text: node?.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90)
+												.padding(.trailing, 5)
+											if node?.latestDeviceMetrics != nil {
+												BatteryCompact(batteryLevel: node?.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
+													.padding(.trailing, 5)
+											}
 										}
-										Text("ble.name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name ?? "unknown".localized)")
-											.font(.callout).foregroundColor(Color.gray)
-										if node != nil {
-											Text("firmware.version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "unknown".localized)")
+										.padding(.trailing)
+										VStack(alignment: .leading) {
+											if node != nil {
+												Text(connectedPeripheral.longName).font(.title2)
+											}
+											Text("ble.name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name ?? "unknown".localized)")
 												.font(.callout).foregroundColor(Color.gray)
-										}
-										if bleManager.isSubscribed {
-											Text("subscribed").font(.callout)
-												.foregroundColor(.green)
-										} else {
-
-											HStack {
-												if #available(iOS 17.0, macOS 14.0, *) {
-													Image(systemName: "square.stack.3d.down.forward")
-														.symbolRenderingMode(.multicolor)
-														.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+											if node != nil {
+												Text("firmware.version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "unknown".localized)")
+													.font(.callout).foregroundColor(Color.gray)
+											}
+											if bleManager.isSubscribed {
+												Text("subscribed").font(.callout)
+													.foregroundColor(.green)
+											} else {
+												HStack {
+													if #available(iOS 17.0, macOS 14.0, *) {
+														Image(systemName: "square.stack.3d.down.forward")
+															.symbolRenderingMode(.multicolor)
+															.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+															.foregroundColor(.orange)
+													}
+													Text("communicating").font(.callout)
 														.foregroundColor(.orange)
 												}
-												Text("communicating").font(.callout)
-													.foregroundColor(.orange)
 											}
+										}
+									}
+									VStack {
+										let localStats = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 6")).lastObject as? TelemetryEntity
+										if localStats != nil {
+											Divider()
+											if localStats?.numTotalNodes ?? 0 >= 100 {
+												Text("\(String(format: "Connected: %d nodes online", localStats?.numOnlineNodes ?? 0))")
+													.font(.callout)
+													.fontWeight(.medium)
+													.foregroundStyle(.secondary)
+													.fixedSize()
+											} else {
+												Text("\(String(format: "Connected: %d of %d nodes online", localStats?.numOnlineNodes ?? 0, localStats?.numTotalNodes ?? 0))")
+													.font(.callout)
+													.fontWeight(.medium)
+													.foregroundStyle(.secondary)
+													.fixedSize()
+											}
+											Text("\(String(format: "Ch. Util: %.2f", localStats?.channelUtilization ?? 0))% \(String(format: "Airtime: %.2f", localStats?.airUtilTx ?? 0))%")
+												.font(.caption)
+												.fontWeight(.medium)
+												.foregroundStyle(.secondary)
+											Text("Packets Sent: \(localStats?.numPacketsTx ?? 0)")
+												.font(.caption)
+												.fontWeight(.medium)
+												.foregroundStyle(.secondary)
+											Text("Packets Received: \(localStats?.numPacketsRx ?? 0)")
+												.font(.caption)
+												.fontWeight(.medium)
+												.foregroundStyle(.secondary)
+											Text("Dupe / Bad Packets: \(localStats?.numPacketsRxBad ?? 0)")
+												.font(.caption)
+												.fontWeight(.medium)
+												.foregroundStyle(.secondary)
+												.fixedSize()
 										}
 									}
 								}
@@ -327,17 +369,25 @@ struct Connect: View {
 	#if canImport(ActivityKit)
 	func startNodeActivity() {
 		liveActivityStarted = true
-		let timerSeconds = 60
-		let deviceMetrics = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
-		let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
+		// 15 Minutes Local Stats Interval
+		let timerSeconds = 900
+		let localStats = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 6"))
+		let mostRecent = localStats?.lastObject as? TelemetryEntity
 
 		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName ?? "unknown")
 
 		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
+		let initialContentState = MeshActivityAttributes.ContentState(uptimeSeconds: UInt32(mostRecent?.uptimeSeconds ?? 0),
+																	  channelUtilization: mostRecent?.channelUtilization ?? 0.0,
+																	  airtime: mostRecent?.airUtilTx ?? 0.0,
+																	  sentPackets: UInt32(mostRecent?.numPacketsTx ?? 0),
+																	  receivedPackets: UInt32(mostRecent?.numPacketsRx ?? 0),
+																	  badReceivedPackets: UInt32(mostRecent?.numPacketsRxBad ?? 0),
+																	  nodesOnline: UInt32(mostRecent?.numOnlineNodes ?? 0),
+																	  totalNodes: UInt32(mostRecent?.numTotalNodes ?? 0),
+																	  timerRange: Date.now...future)
 
-		let initialContentState = MeshActivityAttributes.ContentState(timerRange: Date.now...future, connected: true, channelUtilization: mostRecent?.channelUtilization ?? 0.0, airtime: mostRecent?.airUtilTx ?? 0.0, batteryLevel: UInt32(mostRecent?.batteryLevel ?? 0), nodes: 17, nodesOnline: 9)
-
-		let activityContent = ActivityContent(state: initialContentState, staleDate: Calendar.current.date(byAdding: .minute, value: 2, to: Date())!)
+		let activityContent = ActivityContent(state: initialContentState, staleDate: Calendar.current.date(byAdding: .minute, value: 15, to: Date())!)
 
 		do {
 			let myActivity = try Activity<MeshActivityAttributes>.request(attributes: activityAttributes, content: activityContent,
