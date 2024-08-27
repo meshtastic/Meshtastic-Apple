@@ -157,20 +157,12 @@ struct ChannelForm: View {
 						if !preciseLocation {
 							VStack(alignment: .leading) {
 								Label("Approximate Location", systemImage: "location.slash.circle.fill")
-								if channelKeySize == -1 {
-									Slider(value: $positionPrecision, in: 10...16, step: 1) {
-									} minimumValueLabel: {
-										Image(systemName: "minus")
-									} maximumValueLabel: {
-										Image(systemName: "plus")
-									}
-								} else {
-									Slider(value: $positionPrecision, in: 10...19, step: 1) {
-									} minimumValueLabel: {
-										Image(systemName: "minus")
-									} maximumValueLabel: {
-										Image(systemName: "plus")
-									}
+
+								Slider(value: $positionPrecision, in: 10...16, step: 1) {
+								} minimumValueLabel: {
+									Image(systemName: "minus")
+								} maximumValueLabel: {
+									Image(systemName: "plus")
 								}
 								Text(PositionPrecision(rawValue: Int(positionPrecision))?.description ?? "")
 									.foregroundColor(.gray)
@@ -211,6 +203,7 @@ struct ChannelForm: View {
 			.onChange(of: channelKeySize) { _ in
 				if channelKeySize == -1 {
 					preciseLocation = false
+					channelKey = "AQ=="
 				}
 			}
 			.onChange(of: channelRole) { _ in
@@ -220,7 +213,7 @@ struct ChannelForm: View {
 				if loc == true {
 					positionPrecision = 32
 				} else {
-					positionPrecision = 14
+					positionPrecision = 13
 				}
 				hasChanges = true
 			}
@@ -230,7 +223,7 @@ struct ChannelForm: View {
 			.onChange(of: positionsEnabled) { pe in
 				if pe {
 					if positionPrecision == 0 {
-						positionPrecision = 32
+						positionPrecision = 13
 					}
 				} else {
 					positionPrecision = 0
@@ -243,7 +236,7 @@ struct ChannelForm: View {
 			.onChange(of: downlink) { _ in
 				hasChanges = true
 			}
-			.onAppear {
+			.onFirstAppear {
 				let tempKey = Data(base64Encoded: channelKey) ?? Data()
 				if tempKey.count == channelKeySize || channelKeySize == -1 {
 					hasValidKey = true

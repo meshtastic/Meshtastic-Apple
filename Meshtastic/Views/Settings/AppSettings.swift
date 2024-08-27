@@ -78,8 +78,11 @@ struct AppSettings: View {
 							context.refreshAllObjects()
 						}
 					}
-					Button("Reset App Settings", systemImage: "clipboard") {
+					Button {
 						UserDefaults.standard.reset()
+					} label: {
+						Label("Reset App Settings", systemImage: "arrow.counterclockwise.circle")
+							.foregroundColor(.red)
 					}
 				}
 				if totalDownloadedTileSize != "0MB" {
