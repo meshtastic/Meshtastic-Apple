@@ -299,13 +299,10 @@ struct Settings: View {
 		NavigationStack(
 			path: Binding<[SettingsNavigationState]>(
 				get: {
-					guard case .settings(let route) = router.navigationState, let setting = route else {
-						return []
-					}
-					return [setting]
+					[router.navigationState.settings].compactMap { $0 }
 				},
 				set: { newPath in
-					router.navigationState = .settings(newPath.first)
+					router.navigationState.settings = newPath.first
 				}
 			)
 		) {
