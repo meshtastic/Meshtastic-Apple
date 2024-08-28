@@ -7226,9 +7226,6 @@
     "Factory Reset" : {
 
     },
-    "Factory Reset Node" : {
-
-    },
     "Factory reset your device and app? " : {
 
     },
@@ -8167,6 +8164,9 @@
           }
         }
       }
+    },
+    "Group Message" : {
+
     },
     "Gusts %@" : {
 
@@ -14583,9 +14583,6 @@
     "Message" : {
 
     },
-    "Message Channel" : {
-
-    },
     "Message content exceeds 228 bytes." : {
 
     },
@@ -17428,7 +17425,7 @@
     "Reset NodeDB" : {
 
     },
-    "Restart Node" : {
+    "Restart" : {
 
     },
     "Restart to the node you are connected to" : {
@@ -19175,7 +19172,7 @@
     "Send" : {
 
     },
-    "Send a Channel Message" : {
+    "Send a Group Message" : {
 
     },
     "Send a message to a certain meshtastic channel" : {
@@ -19924,7 +19921,7 @@
     "Show Weather" : {
 
     },
-    "Shut Down Node" : {
+    "Shut Down" : {
 
     },
     "Shut Down Node?" : {

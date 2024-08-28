@@ -9,7 +9,7 @@ import Foundation
 import AppIntents
 
 struct FactoryResetNodeIntent: AppIntent {
-	static var title: LocalizedStringResource = "Factory Reset Node"
+	static var title: LocalizedStringResource = "Factory Reset"
 	static var description: IntentDescription = "Perform a factory reset on the node you are connected to"
 	
 	func perform() async throws -> some IntentResult {

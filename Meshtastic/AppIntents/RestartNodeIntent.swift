@@ -9,13 +9,12 @@ import Foundation
 import AppIntents
 
 struct RestartNodeIntent: AppIntent {
-	static var title: LocalizedStringResource = "Restart Node"
+	static var title: LocalizedStringResource = "Restart"
 
 	static var description: IntentDescription = "Restart to the node you are connected to"
-	
 
 	func perform() async throws -> some IntentResult {
-		
+
 		try await requestConfirmation(result: .result(dialog: "Reboot Node?"))
 
 		if !BLEManager.shared.isConnected {
@@ -27,7 +26,7 @@ struct RestartNodeIntent: AppIntent {
 		   let fromUser = connectedNode.user,
 		   let toUser = connectedNode.user,
 		   let adminIndex = connectedNode.myInfo?.adminIndex {
-		   
+
 			// Attempt to send shutdown, throw an error if it fails
 			if !BLEManager.shared.sendReboot(fromUser: fromUser, toUser: toUser, adminIndex: adminIndex) {
 				throw AppIntentErrors.AppIntentError.message("Failed to restart")
@@ -35,8 +34,6 @@ struct RestartNodeIntent: AppIntent {
 		} else {
 			throw AppIntentErrors.AppIntentError.message("Failed to retrieve connected node or required data")
 		}
-		
 		return .result()
 	}
 }
-

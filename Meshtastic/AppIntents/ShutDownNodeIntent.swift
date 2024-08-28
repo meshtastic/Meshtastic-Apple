@@ -9,10 +9,9 @@ import Foundation
 import AppIntents
 
 struct ShutDownNodeIntent: AppIntent {
-	static var title: LocalizedStringResource = "Shut Down Node"
+	static var title: LocalizedStringResource = "Shut Down"
 
 	static var description: IntentDescription = "Send a shutdown to the node you are connected to"
-	
 
 	func perform() async throws -> some IntentResult {
 		try await requestConfirmation(result: .result(dialog: "Shut Down Node?"))
@@ -27,7 +26,7 @@ struct ShutDownNodeIntent: AppIntent {
 		   let fromUser = connectedNode.user,
 		   let toUser = connectedNode.user,
 		   let adminIndex = connectedNode.myInfo?.adminIndex {
-		   
+
 			// Attempt to send shutdown, throw an error if it fails
 			if !BLEManager.shared.sendShutdown(fromUser: fromUser, toUser: toUser, adminIndex: adminIndex) {
 				throw AppIntentErrors.AppIntentError.message("Failed to shut down")
@@ -35,7 +34,6 @@ struct ShutDownNodeIntent: AppIntent {
 		} else {
 			throw AppIntentErrors.AppIntentError.message("Failed to retrieve connected node or required data")
 		}
-		
 		return .result()
 	}
 }
