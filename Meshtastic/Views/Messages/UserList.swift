@@ -227,9 +227,6 @@ struct UserList: View {
 			.onChange(of: maxDistance) { _ in
 				searchUserList()
 			}
-			.onReceive(users.publisher) { _ in
-				searchUserList()
-			}
 			.onAppear {
 				searchUserList()
 			}
