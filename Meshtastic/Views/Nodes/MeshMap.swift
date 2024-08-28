@@ -123,7 +123,7 @@ struct MeshMap: View {
 				MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap)
 			}
 			.onChange(of: router.navigationState) {
-				guard case .map(let selectedNodeNum) = router.navigationState else { return }
+				guard case .map = router.navigationState.selectedTab else { return }
 				// TODO: handle deep link for waypoints
 			}
 			.onChange(of: selectedMapLayer) { newMapLayer in

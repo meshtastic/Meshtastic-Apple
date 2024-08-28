@@ -5,53 +5,144 @@ import XCTest
 
 final class RouterTests: XCTestCase {
 
-	func testInitialState() throws {
-		XCTAssertEqual(Router().navigationState, .bluetooth)
+	func testInitialState() async throws {
+		let router = await Router()
+		let tab = await router.navigationState.selectedTab
+		XCTAssertEqual(tab, .bluetooth)
 	}
 
-    func testRouteTo() throws {
-		let router = Router(navigationState: .bluetooth)
-		router.route(to: .settings(.about))
-		XCTAssertEqual(router.navigationState, .settings(.about))
+	func testRouteMessages() async throws {
+		try await assertRoute(
+			router: Router(),
+			"meshtastic:///messages",
+			NavigationState(selectedTab: .messages)
+		)
 	}
 
-	func testRouteURL() throws {
-		// Messages
-		try assertRoute("meshtastic:///messages", .messages())
-		try assertRoute(
+	func testRouteMessagesWithChannelIdAndMessageId() async throws {
+		try await assertRoute(
+			router: Router(),
 			"meshtastic:///messages?channelId=0&messageId=1122334455",
-			.messages(.channels(channelId: 0, messageId: 1122334455))
+			NavigationState(
+				selectedTab: .messages,
+				messages: .channels(
+					channelId: 0,
+					messageId: 1122334455
+				)
+			)
 		)
-		try assertRoute(
+	}
+
+	func testRouteMessagesWithUserNumAndMessageId() async throws {
+		try await assertRoute(
+			router: Router(),
 			"meshtastic:///messages?userNum=123456789&messageId=9876543210",
-			.messages(.directMessages(userNum: 123456789, messageId: 9876543210))
+			NavigationState(
+				selectedTab: .messages,
+				messages: .directMessages(
+					userNum: 123456789,
+					messageId: 9876543210
+				)
+			)
 		)
+	}
 
-		// Bluetooth
-		try assertRoute("meshtastic:///bluetooth", .bluetooth)
+	func testRouteBluetooth() async throws {
+		try await assertRoute(
+			router: Router(),
+			"meshtastic:///bluetooth",
+			NavigationState(selectedTab: .bluetooth)
+		)
+	}
 
-		// Nodes
-		try assertRoute("meshtastic:///nodes", .nodes())
-		try assertRoute("meshtastic:///nodes?nodenum=1234567890", .nodes(selectedNodeNum: 1234567890))
+	func testRouteNodes() async throws {
+		try await assertRoute(
+			router: Router(),
+			"meshtastic:///nodes",
+			NavigationState(selectedTab: .nodes)
+		)
+	}
 
-		// Map
-		try assertRoute("meshtastic:///map", .map())
-		try assertRoute("meshtastic:///map?waypointId=123456", .map(.waypoint(123456)))
-		try assertRoute("meshtastic:///map?nodenum=1234567890", .map(.selectedNode(1234567890)))
+	func testRouteNodesWithNodeNum() async throws {
+		try await assertRoute(
+			router: Router(),
+			"meshtastic:///nodes?nodenum=1234567890",
+			NavigationState(
+				selectedTab: .nodes,
+				nodeListSelectedNodeNum: 1234567890
+			)
+		)
+	}
 
-		// Settings
-		try assertRoute("meshtastic:///settings", .settings())
-		try assertRoute("meshtastic:///settings/about", .settings(.about))
-		try assertRoute("meshtastic:///settings/invalidSetting", .settings())
+	func testRouteMap() async throws {
+		try await assertRoute(
+			router: Router(),
+			"meshtastic:///map",
+			NavigationState(selectedTab: .map)
+		)
+	}
+
+	func testRouteMapWithWaypointId() async throws {
+		try await assertRoute(
+			router: Router(),
+			"meshtastic:///map?waypointId=123456",
+			NavigationState(
+				selectedTab: .map,
+				map: .waypoint(123456)
+			)
+		)
+	}
+
+	func testRouteMapWithNodeNum() async throws {
+		try await assertRoute(
+			router: Router(),
+			"meshtastic:///map?nodenum=1234567890",
+			NavigationState(
+				selectedTab: .map,
+				map: .selectedNode(1234567890)
+			)
+		)
+	}
+
+	func testRouteSettings() async throws {
+		try await assertRoute(
+			router: Router(),
+			"meshtastic:///settings",
+			NavigationState(
+				selectedTab: .settings
+			)
+		)
+	}
+
+	func testRouteSettingsAbout() async throws {
+		try await assertRoute(
+			router: Router(),
+			"meshtastic:///settings/about",
+			NavigationState(
+				selectedTab: .settings,
+				settings: .about
+			)
+		)
+	}
+
+	func testRouteSettingsInvalidSetting() async throws {
+		try await assertRoute(
+			router: Router(),
+			"meshtastic:///settings/invalidSetting",
+			NavigationState(
+				selectedTab: .settings
+			)
+		)
 	}
 
 	private func assertRoute(
-		router: Router = Router(),
+		router: Router,
 		_ urlString: String,
 		_ destination: NavigationState
-	) throws {
+	) async throws {
 		let url = try XCTUnwrap(URL(string: urlString))
-		router.route(url: url)
-		XCTAssertEqual(router.navigationState, destination)
+		await router.route(url: url)
+		let state = await router.navigationState
+		XCTAssertEqual(state, destination)
 	}
 }
