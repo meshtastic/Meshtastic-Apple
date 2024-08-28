@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 class AppIntentErrors {
 	enum AppIntentError: Swift.Error, CustomLocalizedStringResourceConvertible {
@@ -14,8 +15,12 @@ class AppIntentErrors {
 
 		var localizedStringResource: LocalizedStringResource {
 			switch self {
-			case let .message(message): return "Error: \(message)"
-			case .notConnected: return "No Connected Node"
+			case let .message(message): 
+				Logger.services.error("App Intent: \(message)")
+				return "Error: \(message)"
+			case .notConnected:
+				Logger.services.error("App Intent: No Connected Node")
+				return "No Connected Node"
 			}
 		}
 	}

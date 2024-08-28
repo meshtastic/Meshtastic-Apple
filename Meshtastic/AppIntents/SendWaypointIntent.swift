@@ -12,7 +12,7 @@ import MeshtasticProtobufs
 
 struct SendWaypointIntent: AppIntent {
 
-	static var title = LocalizedStringResource("Send a waypoint")
+	static var title = LocalizedStringResource("Send a Waypoint")
 
 	@Parameter(title: "Name", default: "Dropped Pin")
 	var nameParameter: String?

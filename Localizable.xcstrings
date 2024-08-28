@@ -1177,6 +1177,9 @@
     "Are you sure you want to delete this message?" : {
 
     },
+    "Are you sure you want to factory reset the node?" : {
+
+    },
     "are.you.sure" : {
       "localizations" : {
         "de" : {
@@ -8161,6 +8164,9 @@
           }
         }
       }
+    },
+    "Group Message" : {
+
     },
     "Gusts %@" : {
 
@@ -16340,6 +16346,9 @@
         }
       }
     },
+    "Perform a factory reset on the node you are connected to" : {
+
+    },
     "phone.gps" : {
       "localizations" : {
         "de" : {
@@ -17045,6 +17054,9 @@
         }
       }
     },
+    "Reboot Node?" : {
+
+    },
     "reboot.node" : {
       "localizations" : {
         "de" : {
@@ -17411,6 +17423,12 @@
 
     },
     "Reset NodeDB" : {
+
+    },
+    "Restart" : {
+
+    },
+    "Restart to the node you are connected to" : {
 
     },
     "restore" : {
@@ -19154,13 +19172,16 @@
     "Send" : {
 
     },
-    "Send a channel message" : {
+    "Send a Group Message" : {
 
     },
     "Send a message to a certain meshtastic channel" : {
 
     },
-    "Send a waypoint" : {
+    "Send a shutdown to the node you are connected to" : {
+
+    },
+    "Send a Waypoint" : {
 
     },
     "Send ASCII bell with alert message. Useful for triggering external notification on bell." : {
@@ -19898,6 +19919,12 @@
 
     },
     "Show Weather" : {
+
+    },
+    "Shut Down" : {
+
+    },
+    "Shut Down Node?" : {
 
     },
     "Shutdown Node?" : {
