@@ -5,11 +5,8 @@ struct AlertButton: View {
 
 	var body: some View {
 		Button(action: action) {
-			Text("Alert")
-			Image(systemName: "bell.fill")
-				.symbolRenderingMode(.hierarchical)
-				.imageScale(.large)
-				.foregroundColor(.accentColor)
+			Image(systemName: "bell.and.waves.left.and.right")
+				.foregroundColor(.primary)
 		}
 	}
 }

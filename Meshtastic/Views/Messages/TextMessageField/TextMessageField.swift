@@ -13,9 +13,10 @@ struct TextMessageField: View {
 	@State private var typingMessage: String = ""
 	@State private var totalBytes = 0
 	@State private var sendPositionWithMessage = false
+	@State private var textEffects = false
 
 	var body: some View {
-		#if targetEnvironment(macCatalyst)
+#if targetEnvironment(macCatalyst)
 		HStack {
 			if destination.showAlertButton {
 				Spacer()
@@ -25,7 +26,7 @@ struct TextMessageField: View {
 			RequestPositionButton(action: requestPosition)
 			TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes).padding(.trailing)
 		}
-		#endif
+#endif
 
 		HStack(alignment: .top) {
 			ZStack {
@@ -40,19 +41,70 @@ struct TextMessageField: View {
 					.keyboardType(.default)
 					.toolbar {
 						ToolbarItemGroup(placement: .keyboard) {
-							Button("dismiss.keyboard") {
-								isFocused = false
-							}
-							.font(.subheadline)
-
-							if destination.showAlertButton {
+							if !textEffects {
+								VStack {
+									HStack {
+										TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes)
+										Spacer()
+										if destination.showAlertButton {
+											AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
+											Spacer()
+										}
+										RequestPositionButton(action: requestPosition)
+										Spacer()
+										Button {
+											textEffects = true
+										}
+										label: {
+											Image(systemName: "bold.italic.underline")
+												.foregroundColor(.primary)
+										}
+										Spacer()
+										Spacer()
+										Button {
+											isFocused = false
+										}
+										label: {
+											Image(systemName: "keyboard.chevron.compact.down")
+												.foregroundColor(.primary)
+										}
+									}
+								}
+							} else {
 								Spacer()
-								AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
+								Button {
+									textEffects = false
+								}
+								label: {
+									Image(systemName: "bold")
+										.foregroundColor(.primary)
+								}
+								Spacer()
+								Button {
+									textEffects = false
+								}
+								label: {
+									Image(systemName: "italic")
+										.foregroundColor(.primary)
+								}
+								Spacer()
+								Button {
+									textEffects = false
+								}
+								label: {
+									Image(systemName: "underline")
+										.foregroundColor(.primary)
+								}
+								Spacer()
+								Button {
+									textEffects = false
+								}
+								label: {
+									Image(systemName: "strikethrough")
+										.foregroundColor(.primary)
+								}
+								Spacer()
 							}
-
-							Spacer()
-							RequestPositionButton(action: requestPosition)
-							TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes)
 						}
 					}
 					.padding(.horizontal, 8)
@@ -61,18 +113,16 @@ struct TextMessageField: View {
 					.frame(minHeight: 50)
 					.keyboardShortcut(.defaultAction)
 					.onSubmit {
-					#if targetEnvironment(macCatalyst)
+#if targetEnvironment(macCatalyst)
 						sendMessage()
-					#endif
+#endif
 					}
-
 				Text(typingMessage)
 					.opacity(0)
 					.padding(.all, 0)
 			}
 			.overlay(RoundedRectangle(cornerRadius: 20).stroke(.tertiary, lineWidth: 1))
 			.padding(.bottom, 15)
-
 			Button(action: sendMessage) {
 				Image(systemName: "arrow.up.circle.fill")
 					.font(.largeTitle)
@@ -122,21 +172,21 @@ private extension MessageDestination {
 		case .channel: return "has shared their position with you"
 		}
 	}
-
+	
 	var positionDestNum: Int64 {
 		switch self {
 		case let .user(user): return user.num
 		case .channel: return Int64(Constants.maximumNodeNum)
 		}
 	}
-
+	
 	var showAlertButton: Bool {
 		switch self {
 		case .user: return true
 		case .channel: return true
 		}
 	}
-
+	
 	var wantPositionResponse: Bool {
 		switch self {
 		case .user: return true

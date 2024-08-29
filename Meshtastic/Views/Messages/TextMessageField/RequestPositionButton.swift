@@ -6,11 +6,8 @@ struct RequestPositionButton: View {
 	var body: some View {
 		Button(action: action) {
 			Image(systemName: "mappin.and.ellipse")
-				.symbolRenderingMode(.hierarchical)
-				.imageScale(.large)
-				.foregroundColor(.accentColor)
+				.foregroundColor(.primary)
 		}
-		.padding(.trailing)
 	}
 }
 

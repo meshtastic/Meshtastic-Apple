@@ -692,9 +692,6 @@
     "Airtime %@%%" : {
 
     },
-    "Alert" : {
-
-    },
     "Alert GPIO buzzer when receiving a bell" : {
 
     },
