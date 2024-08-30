@@ -5,12 +5,13 @@ import OSLog
 // swiftlint:disable all
 extension CoreDataTools {
 	public func clearPositions(destNum: Int64, context: NSManagedObjectContext) -> Bool {
-		let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
-		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(destNum))
+		let request = NodeInfoEntity.fetchRequest()
+		request.predicate = NSPredicate(format: "num == %lld", Int64(destNum))
 
-		if let fetchedNode = try? context.fetch(fetchNodeInfoRequest) {
-			let newPostions = [PositionEntity]()
-			fetchedNode[0].positions? = NSOrderedSet(array: newPostions)
+		if let nodes = try? context.fetch(request), !nodes.isEmpty {
+			nodes[0].positions? = NSOrderedSet(
+				array: [PositionEntity]()
+			)
 
 			debounce.emit { [weak self] in
 				await self?.saveData()
@@ -24,13 +25,13 @@ extension CoreDataTools {
 	}
 
 	public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManagedObjectContext) -> Bool {
-		let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
-		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(destNum))
+		let request = NodeInfoEntity.fetchRequest()
+		request.predicate = NSPredicate(format: "num == %lld", Int64(destNum))
 
-		do {
-			let fetchedNode = try context.fetch(fetchNodeInfoRequest)
-			let emptyTelemetry = [TelemetryEntity]()
-			fetchedNode[0].telemetries? = NSOrderedSet(array: emptyTelemetry)
+		if let nodes = try? context.fetch(request) {
+			nodes[0].telemetries? = NSOrderedSet(
+				array: [TelemetryEntity]()
+			)
 
 			debounce.emit { [weak self] in
 				await self?.saveData()
@@ -38,10 +39,8 @@ extension CoreDataTools {
 
 			return true
 		}
-		catch {
-			Logger.data.error("💥 [NodeInfoEntity] fetch data error")
-			return false
-		}
+
+		return false
 	}
 
 	public func deleteChannelMessages(channel: ChannelEntity, context: NSManagedObjectContext) {
@@ -73,22 +72,19 @@ extension CoreDataTools {
 	}
 
 	public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes: Bool) {
-		let persistenceController = Persistence.shared.container
-		for i in 0...persistenceController.managedObjectModel.entities.count-1 {
-			let entity = persistenceController.managedObjectModel.entities[i]
-			let query = NSFetchRequest<NSFetchRequestResult>(entityName: entity.name!)
-			var deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
-			let entityName = entity.name ?? "UNK"
+		let model = Persistence.shared.container.managedObjectModel
 
-			if includeRoutes {
-				deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
-			} else if !includeRoutes {
-				if !(entityName.contains("RouteEntity") || entityName.contains("LocationEntity")) {
-					deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
-				}
+		for i in 0...model.entities.count - 1 {
+			guard let entityName = model.entities[i].name else {
+				continue
 			}
+
+
+			let query = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+			let request: NSBatchDeleteRequest = NSBatchDeleteRequest(fetchRequest: query)
+
 			do {
-				try context.executeAndMergeChanges(using: deleteRequest)
+				try context.executeAndMergeChanges(using: request)
 			} catch {
 				Logger.data.error("\(error.localizedDescription)")
 			}
@@ -96,19 +92,15 @@ extension CoreDataTools {
 	}
 
 	func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) {
-
-		let logString = String.localizedStringWithFormat("mesh.log.nodeinfo.received %@".localized, packet.from.toHex())
-		MeshLogger.log("📟 \(logString)")
-
-		guard packet.from > 0 else { return }
+		guard packet.from > 0 else {
+			return
+		}
 
 		let fetchNodeInfoAppRequest = NodeInfoEntity.fetchRequest()
 		fetchNodeInfoAppRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
 
-		do {
-
-			let fetchedNode = try context.fetch(fetchNodeInfoAppRequest)
-			if fetchedNode.count == 0 {
+		if let fetchedNode = try? context.fetch(fetchNodeInfoAppRequest) {
+			if fetchedNode.isEmpty {
 				// Not Found Insert
 				let newNode = NodeInfoEntity(context: context)
 				newNode.id = Int64(packet.from)
@@ -208,7 +200,6 @@ extension CoreDataTools {
 				}
 
 				if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
-
 					fetchedNode[0].hopsAway = Int32(nodeInfoMessage.hopsAway)
 					fetchedNode[0].favorite = nodeInfoMessage.isFavorite
 					if nodeInfoMessage.hasDeviceMetrics {
@@ -237,9 +228,11 @@ extension CoreDataTools {
 							}
 						}
 					}
-				} else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
+				}
+				else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 					fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
 				}
+
 				if fetchedNode[0].user == nil {
 					let newUser = createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
 					fetchedNode[0].user? = newUser
@@ -250,9 +243,6 @@ extension CoreDataTools {
 					await self?.saveData()
 				}
 			}
-		}
-		catch {
-			Logger.data.error("💥 [NodeInfoEntity] fetch data error for NODEINFO_APP")
 		}
 	}
 
@@ -1203,3 +1193,4 @@ extension CoreDataTools {
 		}
 	}
 }
+// swiftlint:enable all

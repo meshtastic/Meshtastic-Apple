@@ -22,7 +22,7 @@ class CoreDataTools {
 
 				return true
 			}
-			catch let error {
+			catch {
 				privateContext.rollback()
 
 				return false

@@ -47,8 +47,7 @@ struct NodeList: View {
 			NSSortDescriptor(key: "lastHeard", ascending: false),
 			NSSortDescriptor(key: "hopsAway", ascending: true),
 			NSSortDescriptor(key: "user.longName", ascending: true)
-		],
-		animation: .default
+		]
 	)
 	private var nodes: FetchedResults<NodeInfoEntity>
 
