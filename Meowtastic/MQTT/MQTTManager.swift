@@ -2,7 +2,7 @@ import CocoaMQTT
 import Foundation
 import OSLog
 
-class MQTTManager {
+final class MQTTManager {
 	var topic: String?
 	var client: CocoaMQTT?
 	var delegate: MQTTManagerDelegate?

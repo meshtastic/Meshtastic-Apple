@@ -14,6 +14,7 @@
 		08933D342C81BE80006D57EA /* MQTTManager+CocoaMQTTDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08933D332C81BE7C006D57EA /* MQTTManager+CocoaMQTTDelegate.swift */; };
 		08933D362C81CAA5006D57EA /* MQTTManagerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08933D352C81CA9F006D57EA /* MQTTManagerDelegate.swift */; };
 		08933D382C81D03A006D57EA /* CoreDataTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08933D372C81D035006D57EA /* CoreDataTools.swift */; };
+		08933D3B2C821901006D57EA /* NSManagedObjectContext+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08933D3A2C8218FD006D57EA /* NSManagedObjectContext+Extensions.swift */; };
 		08DD7E512C41B0BA00548159 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E502C41B0BA00548159 /* AppState.swift */; };
 		08DD7E532C41CBBD00548159 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 08DD7E522C41CBBD00548159 /* Localizable.xcstrings */; };
 		08DD7E552C41D63800548159 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E542C41D63800548159 /* AppConstants.swift */; };
@@ -229,6 +230,7 @@
 		08933D332C81BE7C006D57EA /* MQTTManager+CocoaMQTTDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MQTTManager+CocoaMQTTDelegate.swift"; sourceTree = "<group>"; };
 		08933D352C81CA9F006D57EA /* MQTTManagerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MQTTManagerDelegate.swift; sourceTree = "<group>"; };
 		08933D372C81D035006D57EA /* CoreDataTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataTools.swift; sourceTree = "<group>"; };
+		08933D3A2C8218FD006D57EA /* NSManagedObjectContext+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSManagedObjectContext+Extensions.swift"; sourceTree = "<group>"; };
 		08DD7E502C41B0BA00548159 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		08DD7E522C41CBBD00548159 /* Localizable.xcstrings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		08DD7E542C41D63800548159 /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
@@ -419,6 +421,7 @@
 		08933D392C81D1BE006D57EA /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				08933D3A2C8218FD006D57EA /* NSManagedObjectContext+Extensions.swift */,
 				DD964FC52975DBFD007C176F /* CoreDataTools+Query.swift */,
 				DD3CC6C128EB9D4900FA9159 /* CoreDataTools+Update.swift */,
 			);
@@ -1019,6 +1022,7 @@
 				B284A42F2C6F889000D5122B /* BLEManager+CBPeripheralDelegate.swift in Sources */,
 				DDC4D568275499A500A4208E /* Persistence.swift in Sources */,
 				DDDB445429F8AD1600EE2349 /* Data.swift in Sources */,
+				08933D3B2C821901006D57EA /* NSManagedObjectContext+Extensions.swift in Sources */,
 				08DD7E552C41D63800548159 /* AppConstants.swift in Sources */,
 				B2A5F3002C5668FD009457AB /* NodeAlertsButton.swift in Sources */,
 				B2A064CE2C64D16E00B7E9F2 /* NavigationLazyView.swift in Sources */,

@@ -9,7 +9,7 @@ import OSLog
 import SwiftUI
 
 // swiftlint:disable file_length
-class BLEManager: NSObject, ObservableObject {
+final class BLEManager: NSObject, ObservableObject {
 	let appState: AppState
 	let context: NSManagedObjectContext
 	let privateContext: NSManagedObjectContext
