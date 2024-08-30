@@ -321,7 +321,7 @@ extension BLEManager: CBPeripheralDelegate {
 				)
 
 			case .positionApp:
-				upsertPositionPacket(packet: info.packet, context: context)
+				coreDataTools.upsertPositionPacket(packet: info.packet, context: context)
 
 				AnalyticEvents.trackPeripheralEvent(
 					for: .didUpdate,
@@ -345,7 +345,7 @@ extension BLEManager: CBPeripheralDelegate {
 					break
 				}
 
-				upsertNodeInfoPacket(packet: info.packet, context: context)
+				coreDataTools.upsertNodeInfoPacket(packet: info.packet, context: context)
 
 				AnalyticEvents.trackPeripheralEvent(
 					for: .didUpdate,
@@ -465,12 +465,12 @@ extension BLEManager: CBPeripheralDelegate {
 				var routeString = "You --> "
 				var hopNodes: [TraceRouteHopEntity] = []
 
-				let traceRoute = getTraceRoute(id: Int64(info.packet.decoded.requestID), context: context)
+				let traceRoute = coreDataTools.getTraceRoute(id: Int64(info.packet.decoded.requestID), context: context)
 				traceRoute?.response = true
 				traceRoute?.route = routingMessage.route
 
 				for node in routingMessage.route {
-					var hopNode = getNodeInfo(id: Int64(node), context: context)
+					var hopNode = coreDataTools.getNodeInfo(id: Int64(node), context: context)
 
 					if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
 						hopNode = createNodeInfo(num: Int64(node), context: context)
@@ -489,7 +489,7 @@ extension BLEManager: CBPeripheralDelegate {
 							traceRouteHop.latitudeI = mostRecent.latitudeI
 							traceRouteHop.longitudeI = mostRecent.longitudeI
 							traceRouteHop.name = hopNode?.user?.longName ?? "unknown".localized
-							
+
 							traceRoute?.hasPositions = true
 						}
 						else {
@@ -518,10 +518,8 @@ extension BLEManager: CBPeripheralDelegate {
 				traceRoute?.routeText = routeString
 				traceRoute?.hops = NSOrderedSet(array: hopNodes)
 
-				do {
-					try context.save()
-				} catch {
-					context.rollback()
+				debounce.emit { [weak self] in
+					await self?.saveData()
 				}
 
 				AnalyticEvents.trackPeripheralEvent(
@@ -643,7 +641,7 @@ extension BLEManager: CBPeripheralDelegate {
 				/// long press if the router has been seen recently
 				guard
 					storeAndForwardMessage.heartbeat.secondary != 0,
-					let router = getNodeInfo(
+					let router = coreDataTools.getNodeInfo(
 						id: Int64(packet.from),
 						context: context
 					)
@@ -655,7 +653,8 @@ extension BLEManager: CBPeripheralDelegate {
 					router.storeForwardConfig?.enabled = true
 					router.storeForwardConfig?.isRouter = storeAndForwardMessage.heartbeat.secondary == 0
 					router.storeForwardConfig?.lastHeartbeat = Date.now
-				} else {
+				}
+				else {
 					let newConfig = StoreForwardConfigEntity(context: context)
 					newConfig.enabled = true
 					newConfig.isRouter = storeAndForwardMessage.heartbeat.secondary == 0
@@ -664,31 +663,28 @@ extension BLEManager: CBPeripheralDelegate {
 					router.storeForwardConfig = newConfig
 				}
 
-				do {
-					try context.save()
-				} catch {
-					context.rollback()
+				debounce.emit { [weak self] in
+					await self?.saveData()
 				}
 
 			case .routerHistory:
 				/// Set the Router History Last Request Value
-				guard let routerNode = getNodeInfo(id: Int64(packet.from), context: context) else {
+				guard let routerNode = coreDataTools.getNodeInfo(id: Int64(packet.from), context: context) else {
 					return
 				}
 
 				if routerNode.storeForwardConfig != nil {
 					routerNode.storeForwardConfig?.lastRequest = Int32(storeAndForwardMessage.history.lastRequest)
-				} else {
+				}
+				else {
 					let newConfig = StoreForwardConfigEntity(context: context)
 					newConfig.lastRequest = Int32(storeAndForwardMessage.history.lastRequest)
 
 					routerNode.storeForwardConfig = newConfig
 				}
 
-				do {
-					try context.save()
-				} catch {
-					context.rollback()
+				debounce.emit { [weak self] in
+					await self?.saveData()
 				}
 
 			case .routerTextDirect:
@@ -737,7 +733,10 @@ extension BLEManager: CBPeripheralDelegate {
 			!myInfo.isEmpty
 		{
 			myInfo[0].channels = NSOrderedSet()
-			try? context.save()
+
+			debounce.emit { [weak self] in
+				await self?.saveData()
+			}
 		}
 	}
 

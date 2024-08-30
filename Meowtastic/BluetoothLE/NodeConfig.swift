@@ -9,6 +9,7 @@ final class NodeConfig: ObservableObject {
 
 	private let bleManager: BLEManager
 	private let context: NSManagedObjectContext
+	private let coreDataTools = CoreDataTools()
 
 	init(
 		bleManager: BLEManager,
@@ -171,7 +172,11 @@ final class NodeConfig: ObservableObject {
 			message: message,
 			event: .bluetoothConfigSave
 		) {
-			upsertBluetoothConfigPacket(config: config, nodeNum: toUser.num, context: self.context)
+			self.coreDataTools.upsertBluetoothConfigPacket(
+				config: config,
+				nodeNum: toUser.num,
+				context: self.context
+			)
 		}
 	}
 
@@ -207,7 +212,11 @@ final class NodeConfig: ObservableObject {
 			message: message,
 			event: .deviceConfigSave
 		) {
-			upsertDeviceConfigPacket(config: config, nodeNum: toUser.num, context: self.context)
+			self.coreDataTools.upsertDeviceConfigPacket(
+				config: config,
+				nodeNum: toUser.num,
+				context: self.context
+			)
 		}
 	}
 
@@ -243,7 +252,11 @@ final class NodeConfig: ObservableObject {
 			message: message,
 			event: .displayConfigSave
 		) {
-			upsertDisplayConfigPacket(config: config, nodeNum: toUser.num, context: self.context)
+			self.coreDataTools.upsertDisplayConfigPacket(
+				config: config,
+				nodeNum: toUser.num,
+				context: self.context
+			)
 		}
 	}
 
@@ -294,7 +307,11 @@ final class NodeConfig: ObservableObject {
 			message: message,
 			event: .loraConfigSave
 		) {
-			upsertLoRaConfigPacket(config: config, nodeNum: toUser, context: self.context)
+			self.coreDataTools.upsertLoRaConfigPacket(
+				config: config,
+				nodeNum: toUser,
+				context: self.context
+			)
 		}
 	}
 
@@ -330,7 +347,11 @@ final class NodeConfig: ObservableObject {
 			message: message,
 			event: .networkConfigSave
 		) {
-			upsertNetworkConfigPacket(config: config, nodeNum: toUser.num, context: self.context)
+			self.coreDataTools.upsertNetworkConfigPacket(
+				config: config,
+				nodeNum: toUser.num,
+				context: self.context
+			)
 		}
 	}
 
@@ -366,7 +387,11 @@ final class NodeConfig: ObservableObject {
 			message: message,
 			event: .positionConfigSave
 		) {
-			upsertPositionConfigPacket(config: config, nodeNum: toUser.num, context: self.context)
+			self.coreDataTools.upsertPositionConfigPacket(
+				config: config,
+				nodeNum: toUser.num,
+				context: self.context
+			)
 		}
 	}
 
@@ -440,7 +465,11 @@ final class NodeConfig: ObservableObject {
 			message: message,
 			event: .powerConfigSave
 		) {
-			upsertPowerConfigPacket(config: config, nodeNum: toUser.num, context: self.context)
+			self.coreDataTools.upsertPowerConfigPacket(
+				config: config,
+				nodeNum: toUser.num,
+				context: self.context
+			)
 		}
 	}
 
@@ -478,7 +507,11 @@ final class NodeConfig: ObservableObject {
 			message: message,
 			event: .mqttConfigSave
 		) {
-			upsertMqttModuleConfigPacket(config: config, nodeNum: toUser.num, context: self.context)
+			self.coreDataTools.upsertMqttModuleConfigPacket(
+				config: config,
+				nodeNum: toUser.num,
+				context: self.context
+			)
 		}
 	}
 

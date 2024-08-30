@@ -11,6 +11,8 @@ import OSLog
 import SwiftUI
 
 struct BluetoothConfig: View {
+	private let coreDataTools = CoreDataTools()
+
 	@Environment(\.managedObjectContext)
 	private var context
 	@EnvironmentObject
@@ -90,13 +92,15 @@ struct BluetoothConfig: View {
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			if let myNodeNum = bleManager.deviceConnected?.num,
-				let connectedNode = getNodeInfo(id: myNodeNum, context: context) {
+			if
+				let myNodeNum = bleManager.deviceConnected?.num,
+				let connectedNode = coreDataTools.getNodeInfo(id: myNodeNum, context: context)
+			{
 				var bc = Config.BluetoothConfig()
 				bc.enabled = enabled
 				bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
 				bc.fixedPin = UInt32(fixedPin) ?? 123456
-				bc.deviceLoggingEnabled	= deviceLoggingEnabled
+				bc.deviceLoggingEnabled = deviceLoggingEnabled
 				let adminMessageId =  nodeConfig.saveBluetoothConfig(config: bc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 				if adminMessageId > 0 {
 					// Should show a saved successfully alert once I know that to be true
@@ -116,7 +120,7 @@ struct BluetoothConfig: View {
 			// Need to request a BluetoothConfig from the remote node before allowing changes
 			if let connectedPeripheral = bleManager.deviceConnected, let node, node.bluetoothConfig == nil {
 				Logger.mesh.info("empty bluetooth config")
-				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				let connectedNode = coreDataTools.getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let connectedNode {
 					nodeConfig.requestBluetoothConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 				}

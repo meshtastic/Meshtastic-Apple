@@ -3,6 +3,8 @@ import MeshtasticProtobufs
 import SwiftUI
 
 struct PowerConfig: View {
+	private let coreDataTools = CoreDataTools()
+
 	@Environment(\.managedObjectContext)
 	private var context
 	@EnvironmentObject
@@ -124,7 +126,10 @@ struct PowerConfig: View {
 
 			// Need to request a Power config from the remote node before allowing changes
 			if bleManager.deviceConnected != nil && node?.powerConfig == nil {
-				let connectedNode = getNodeInfo(id: bleManager.deviceConnected?.num ?? 0, context: context)
+				let connectedNode = coreDataTools.getNodeInfo(
+					id: bleManager.deviceConnected?.num ?? 0,
+					context: context
+				)
 				if node != nil && connectedNode != nil {
 					nodeConfig.requestPowerConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
@@ -169,7 +174,7 @@ struct PowerConfig: View {
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			guard
-				let connectedNode = getNodeInfo(id: bleManager.deviceConnected.num, context: context),
+				let connectedNode = coreDataTools.getNodeInfo(id: bleManager.deviceConnected.num, context: context),
 				let fromUser = connectedNode.user,
 				let toUser = node?.user
 			else {

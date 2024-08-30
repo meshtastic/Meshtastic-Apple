@@ -4,6 +4,8 @@ import OSLog
 import SwiftUI
 
 struct DisplayConfig: View {
+	private let coreDataTools = CoreDataTools()
+
 	@Environment(\.managedObjectContext)
 	private var context
 	@EnvironmentObject
@@ -133,7 +135,7 @@ struct DisplayConfig: View {
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			let connectedNode = getNodeInfo(id: bleManager.deviceConnected.num, context: context)
+			let connectedNode = coreDataTools.getNodeInfo(id: bleManager.deviceConnected.num, context: context)
 			if connectedNode != nil {
 				var dc = Config.DisplayConfig()
 				dc.gpsFormat = GPSFormats(rawValue: gpsFormat)!.protoEnumValue()
@@ -167,7 +169,7 @@ struct DisplayConfig: View {
 			// Need to request a LoRaConfig from the remote node before allowing changes
 			if bleManager.deviceConnected != nil && node?.displayConfig == nil {
 				Logger.mesh.info("empty display config")
-				let connectedNode = getNodeInfo(id: bleManager.deviceConnected?.num ?? 0, context: context)
+				let connectedNode = coreDataTools.getNodeInfo(id: bleManager.deviceConnected?.num ?? 0, context: context)
 				if node != nil && connectedNode != nil {
 					nodeConfig.requestDisplayConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}

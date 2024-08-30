@@ -8,6 +8,7 @@ struct MQTTConfig: View {
 	var node: NodeInfoEntity?
 
 	private let locale = Locale.current
+	private let coreDataTools = CoreDataTools()
 
 	@Environment(\.managedObjectContext)
 	private var context
@@ -320,7 +321,10 @@ struct MQTTConfig: View {
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			let connectedNode = getNodeInfo(id: bleManager.deviceConnected?.num ?? -1, context: context)
+			let connectedNode = coreDataTools.getNodeInfo(
+				id: bleManager.deviceConnected?.num ?? -1,
+				context: context
+			)
 
 			if let connectedNode {
 				var mqtt = ModuleConfig.MQTTConfig()
@@ -363,7 +367,7 @@ struct MQTTConfig: View {
 			if
 				let node,
 				let peripheral = bleManager.deviceConnected,
-				let connectedNode = getNodeInfo(id: peripheral.num, context: context),
+				let connectedNode = coreDataTools.getNodeInfo(id: peripheral.num, context: context),
 				node.mqttConfig == nil
 			{
 				Logger.mesh.info("empty mqtt module config")

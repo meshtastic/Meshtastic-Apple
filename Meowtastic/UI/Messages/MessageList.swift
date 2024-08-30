@@ -9,6 +9,9 @@ struct MessageList: View {
 	private let user: UserEntity?
 	private let myInfo: MyInfoEntity?
 	private let textFieldPlaceholderID = "text_field_placeholder"
+	private let debounce = Debounce<() async -> Void>(duration: .milliseconds(250)) { action in
+		await action()
+	}
 
 	@Environment(\.managedObjectContext)
 	private var context
@@ -246,7 +249,10 @@ struct MessageList: View {
 			}
 
 			Logger.app.info("Marking \(didRead) message(s) as read")
-			try? context.save()
+
+			debounce.emit {
+				await self.saveData()
+			}
 
 			if let myInfo {
 				appState.unreadChannelMessages = myInfo.unreadMessages
@@ -415,6 +421,26 @@ struct MessageList: View {
 			}
 			else {
 				return "Unknown Name"
+			}
+		}
+	}
+
+	@discardableResult
+	func saveData() async -> Bool {
+		context.performAndWait {
+			guard context.hasChanges else {
+				return false
+			}
+
+			do {
+				try context.save()
+
+				return true
+			}
+			catch let error {
+				context.rollback()
+
+				return false
 			}
 		}
 	}

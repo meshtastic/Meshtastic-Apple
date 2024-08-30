@@ -4,6 +4,7 @@ import OSLog
 import SwiftUI
 
 struct NodeList: View {
+	private let coreDataTools = CoreDataTools()
 	private let detailInfoFont = Font.system(size: 14, weight: .regular, design: .rounded)
 	private let detailIconSize: CGFloat = 16
 	private let debounce = Debounce<() async -> Void>(duration: .milliseconds(500)) { action in
@@ -55,7 +56,7 @@ struct NodeList: View {
 		Int64(bleManager.deviceConnected?.num ?? 0)
 	}
 	private var connectedNode: NodeInfoEntity? {
-		getNodeInfo(
+		coreDataTools.getNodeInfo(
 			id: connectedNodeNum,
 			context: context
 		)

@@ -4,6 +4,7 @@ import OSLog
 import SwiftUI
 
 struct Messages: View {
+	private let coreDataTools = CoreDataTools()
 	private let restrictedChannels = ["gpio", "mqtt", "serial"]
 	private let dateFormatter = {
 		let formatter = DateFormatter()
@@ -12,6 +13,9 @@ struct Messages: View {
 
 		return formatter
 	}()
+	private let debounce = Debounce<() async -> Void>(duration: .milliseconds(250)) { action in
+		await action()
+	}
 
 	@Environment(\.managedObjectContext)
 	private var context
@@ -145,12 +149,8 @@ struct Messages: View {
 									context.refresh(channel, mergeChanges: true)
 								}
 
-								do {
-									try context.save()
-								}
-								catch {
-									context.rollback()
-									Logger.data.error("💥 Save Channel Mute Error")
+								debounce.emit {
+									await self.saveData()
 								}
 							} label: {
 								Label(
@@ -169,7 +169,7 @@ struct Messages: View {
 									return
 								}
 
-								deleteChannelMessages(channel: channelSelection, context: context)
+								coreDataTools.deleteChannelMessages(channel: channelSelection, context: context)
 								if let myInfo = node?.myInfo {
 									context.refresh(myInfo, mergeChanges: true)
 								}
@@ -382,12 +382,8 @@ struct Messages: View {
 
 			context.refresh(user, mergeChanges: true)
 
-			do {
-				try context.save()
-			}
-			catch {
-				context.rollback()
-				Logger.data.error("Save Node Favorite Error")
+			debounce.emit {
+				await self.saveData()
 			}
 		} label: {
 			Label(
@@ -399,12 +395,8 @@ struct Messages: View {
 		Button {
 			user.mute.toggle()
 
-			do {
-				try context.save()
-			}
-			catch {
-				context.rollback()
-				Logger.data.error("Save User Mute Error")
+			debounce.emit {
+				await self.saveData()
 			}
 		} label: {
 			Label(
@@ -412,7 +404,7 @@ struct Messages: View {
 				systemImage: user.mute ? "bell" : "bell.slash"
 			)
 		}
-		
+
 		if hasMessages {
 			Button(role: .destructive) {
 				isPresentingDeleteUserMessagesConfirm = true
@@ -457,5 +449,25 @@ struct Messages: View {
 
 	private func getLastMessage(for user: UserEntity) -> MessageEntity? {
 		user.messageList?.last
+	}
+
+	@discardableResult
+	func saveData() async -> Bool {
+		context.performAndWait {
+			guard context.hasChanges else {
+				return false
+			}
+
+			do {
+				try context.save()
+
+				return true
+			}
+			catch let error {
+				context.rollback()
+
+				return false
+			}
+		}
 	}
 }

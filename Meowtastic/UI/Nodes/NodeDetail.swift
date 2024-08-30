@@ -10,6 +10,7 @@ struct NodeDetail: View {
 	@ObservedObject
 	var node: NodeInfoEntity
 
+	private let coreDataTools = CoreDataTools()
 	private let distanceFormatter = MKDistanceFormatter()
 	private let detailInfoFont = Font.system(size: 12, weight: .regular, design: .rounded)
 	private let detailIconSize: CGFloat = 12
@@ -39,7 +40,7 @@ struct NodeDetail: View {
 	)
 
 	private var connectedNode: NodeInfoEntity? {
-		getNodeInfo(
+		coreDataTools.getNodeInfo(
 			id: bleManager.deviceConnected?.num ?? -1,
 			context: context
 		)

@@ -72,25 +72,25 @@ extension BLEManager {
 		nodeLongName: String
 	) {
 		if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
-			upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: nodeNum, context: context)
+			coreDataTools.upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: nodeNum, context: context)
 		}
 		else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
-			upsertDeviceConfigPacket(config: config.device, nodeNum: nodeNum, context: context)
+			coreDataTools.upsertDeviceConfigPacket(config: config.device, nodeNum: nodeNum, context: context)
 		}
 		else if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
-			upsertDisplayConfigPacket(config: config.display, nodeNum: nodeNum, context: context)
+			coreDataTools.upsertDisplayConfigPacket(config: config.display, nodeNum: nodeNum, context: context)
 		}
 		else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
-			upsertLoRaConfigPacket(config: config.lora, nodeNum: nodeNum, context: context)
+			coreDataTools.upsertLoRaConfigPacket(config: config.lora, nodeNum: nodeNum, context: context)
 		}
 		else if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
-			upsertNetworkConfigPacket(config: config.network, nodeNum: nodeNum, context: context)
+			coreDataTools.upsertNetworkConfigPacket(config: config.network, nodeNum: nodeNum, context: context)
 		}
 		else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
-			upsertPositionConfigPacket(config: config.position, nodeNum: nodeNum, context: context)
+			coreDataTools.upsertPositionConfigPacket(config: config.position, nodeNum: nodeNum, context: context)
 		}
 		else if config.payloadVariant == Config.OneOf_PayloadVariant.power(config.power) {
-			upsertPowerConfigPacket(config: config.power, nodeNum: nodeNum, context: context)
+			coreDataTools.upsertPowerConfigPacket(config: config.power, nodeNum: nodeNum, context: context)
 		}
 	}
 
@@ -101,21 +101,21 @@ extension BLEManager {
 		nodeLongName: String
 	) {
 		if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.ambientLighting(config.ambientLighting) {
-			upsertAmbientLightingModuleConfigPacket(
+			coreDataTools.upsertAmbientLightingModuleConfigPacket(
 				config: config.ambientLighting,
 				nodeNum: nodeNum,
 				context: context
 			)
 		}
 		else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(config.cannedMessage) {
-			upsertCannedMessagesModuleConfigPacket(
+			coreDataTools.upsertCannedMessagesModuleConfigPacket(
 				config: config.cannedMessage,
 				nodeNum: nodeNum,
 				context: context
 			)
 		}
 		else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.detectionSensor(config.detectionSensor) {
-			upsertDetectionSensorModuleConfigPacket(
+			coreDataTools.upsertDetectionSensorModuleConfigPacket(
 				config: config.detectionSensor,
 				nodeNum: nodeNum,
 				context: context
@@ -124,49 +124,49 @@ extension BLEManager {
 		else if config.payloadVariant
 					== ModuleConfig.OneOf_PayloadVariant.externalNotification(config.externalNotification)
 		{
-			upsertExternalNotificationModuleConfigPacket(
+			coreDataTools.upsertExternalNotificationModuleConfigPacket(
 				config: config.externalNotification,
 				nodeNum: nodeNum,
 				context: context
 			)
 		}
 		else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.mqtt(config.mqtt) {
-			upsertMqttModuleConfigPacket(
+			coreDataTools.upsertMqttModuleConfigPacket(
 				config: config.mqtt,
 				nodeNum: nodeNum,
 				context: context
 			)
 		}
 		else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.paxcounter(config.paxcounter) {
-			upsertPaxCounterModuleConfigPacket(
+			coreDataTools.upsertPaxCounterModuleConfigPacket(
 				config: config.paxcounter,
 				nodeNum: nodeNum,
 				context: context
 			)
 		}
 		else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.rangeTest(config.rangeTest) {
-			upsertRangeTestModuleConfigPacket(
+			coreDataTools.upsertRangeTestModuleConfigPacket(
 				config: config.rangeTest,
 				nodeNum: nodeNum,
 				context: context
 			)
 		}
 		else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.serial(config.serial) {
-			upsertSerialModuleConfigPacket(
+			coreDataTools.upsertSerialModuleConfigPacket(
 				config: config.serial,
 				nodeNum: nodeNum,
 				context: context
 			)
 		}
 		else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.telemetry(config.telemetry) {
-			upsertTelemetryModuleConfigPacket(
+			coreDataTools.upsertTelemetryModuleConfigPacket(
 				config: config.telemetry,
 				nodeNum: nodeNum,
 				context: context
 			)
 		}
 		else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.storeForward(config.storeForward) {
-			upsertStoreForwardModuleConfigPacket(
+			coreDataTools.upsertStoreForwardModuleConfigPacket(
 				config: config.storeForward,
 				nodeNum: nodeNum,
 				context: context
@@ -587,49 +587,49 @@ extension BLEManager {
 
 			switch variant {
 			case Config.OneOf_PayloadVariant.bluetooth(config.bluetooth):
-				upsertBluetoothConfigPacket(
+				coreDataTools.upsertBluetoothConfigPacket(
 					config: config.bluetooth,
 					nodeNum: Int64(packet.from),
 					context: context
 				)
 
 			case Config.OneOf_PayloadVariant.device(config.device):
-				upsertDeviceConfigPacket(
+				coreDataTools.upsertDeviceConfigPacket(
 					config: config.device,
 					nodeNum: Int64(packet.from),
 					context: context
 				)
 
 			case Config.OneOf_PayloadVariant.display(config.display):
-				upsertDisplayConfigPacket(
+				coreDataTools.upsertDisplayConfigPacket(
 					config: config.display,
 					nodeNum: Int64(packet.from),
 					context: context
 				)
 
 			case Config.OneOf_PayloadVariant.lora(config.lora):
-				upsertLoRaConfigPacket(
+				coreDataTools.upsertLoRaConfigPacket(
 					config: config.lora,
 					nodeNum: Int64(packet.from),
 					context: context
 				)
 
 			case Config.OneOf_PayloadVariant.network(config.network):
-				upsertNetworkConfigPacket(
+				coreDataTools.upsertNetworkConfigPacket(
 					config: config.network,
 					nodeNum: Int64(packet.from),
 					context: context
 				)
 
 			case Config.OneOf_PayloadVariant.position(config.position):
-				upsertPositionConfigPacket(
+				coreDataTools.upsertPositionConfigPacket(
 					config: config.position,
 					nodeNum: Int64(packet.from),
 					context: context
 				)
 
 			case Config.OneOf_PayloadVariant.power(config.power):
-				upsertPowerConfigPacket(
+				coreDataTools.upsertPowerConfigPacket(
 					config: config.power,
 					nodeNum: Int64(packet.from),
 					context: context
@@ -647,67 +647,67 @@ extension BLEManager {
 
 			switch variant {
 			case ModuleConfig.OneOf_PayloadVariant.ambientLighting(moduleConfig.ambientLighting):
-					upsertAmbientLightingModuleConfigPacket(
-						config: moduleConfig.ambientLighting,
-						nodeNum: Int64(packet.from),
-						context: context
-					)
+				coreDataTools.upsertAmbientLightingModuleConfigPacket(
+					config: moduleConfig.ambientLighting,
+					nodeNum: Int64(packet.from),
+					context: context
+				)
 
 			case ModuleConfig.OneOf_PayloadVariant.cannedMessage(moduleConfig.cannedMessage):
-					upsertCannedMessagesModuleConfigPacket(
-						config: moduleConfig.cannedMessage,
-						nodeNum: Int64(packet.from),
-						context: context
-					)
+				coreDataTools.upsertCannedMessagesModuleConfigPacket(
+					config: moduleConfig.cannedMessage,
+					nodeNum: Int64(packet.from),
+					context: context
+				)
 
 			case ModuleConfig.OneOf_PayloadVariant.detectionSensor(moduleConfig.detectionSensor):
-					upsertDetectionSensorModuleConfigPacket(
-						config: moduleConfig.detectionSensor,
-						nodeNum: Int64(packet.from),
-						context: context
-					)
+				coreDataTools.upsertDetectionSensorModuleConfigPacket(
+					config: moduleConfig.detectionSensor,
+					nodeNum: Int64(packet.from),
+					context: context
+				)
 
 			case ModuleConfig.OneOf_PayloadVariant.externalNotification(moduleConfig.externalNotification):
-					upsertExternalNotificationModuleConfigPacket(
-						config: moduleConfig.externalNotification,
-						nodeNum: Int64(packet.from),
-						context: context
-					)
+				coreDataTools.upsertExternalNotificationModuleConfigPacket(
+					config: moduleConfig.externalNotification,
+					nodeNum: Int64(packet.from),
+					context: context
+				)
 
 			case ModuleConfig.OneOf_PayloadVariant.mqtt(moduleConfig.mqtt):
-					upsertMqttModuleConfigPacket(
-						config: moduleConfig.mqtt,
-						nodeNum: Int64(packet.from),
-						context: context
-					)
+				coreDataTools.upsertMqttModuleConfigPacket(
+					config: moduleConfig.mqtt,
+					nodeNum: Int64(packet.from),
+					context: context
+				)
 
 			case ModuleConfig.OneOf_PayloadVariant.rangeTest(moduleConfig.rangeTest):
-					upsertRangeTestModuleConfigPacket(
-						config: moduleConfig.rangeTest,
-						nodeNum: Int64(packet.from),
-						context: context
-					)
+				coreDataTools.upsertRangeTestModuleConfigPacket(
+					config: moduleConfig.rangeTest,
+					nodeNum: Int64(packet.from),
+					context: context
+				)
 
 			case ModuleConfig.OneOf_PayloadVariant.serial(moduleConfig.serial):
-					upsertSerialModuleConfigPacket(
-						config: moduleConfig.serial,
-						nodeNum: Int64(packet.from),
-						context: context
-					)
+				coreDataTools.upsertSerialModuleConfigPacket(
+					config: moduleConfig.serial,
+					nodeNum: Int64(packet.from),
+					context: context
+				)
 
 			case ModuleConfig.OneOf_PayloadVariant.storeForward(moduleConfig.storeForward):
-					upsertStoreForwardModuleConfigPacket(
-						config: moduleConfig.storeForward,
-						nodeNum: Int64(packet.from),
-						context: context
-					)
+				coreDataTools.upsertStoreForwardModuleConfigPacket(
+					config: moduleConfig.storeForward,
+					nodeNum: Int64(packet.from),
+					context: context
+				)
 
 			case ModuleConfig.OneOf_PayloadVariant.telemetry(moduleConfig.telemetry):
-					upsertTelemetryModuleConfigPacket(
-						config: moduleConfig.telemetry,
-						nodeNum: Int64(packet.from),
-						context: context
-					)
+				coreDataTools.upsertTelemetryModuleConfigPacket(
+					config: moduleConfig.telemetry,
+					nodeNum: Int64(packet.from),
+					context: context
+				)
 
 			default:
 				break
@@ -715,7 +715,7 @@ extension BLEManager {
 
 		case AdminMessage.OneOf_PayloadVariant.getRingtoneResponse(message.getRingtoneResponse):
 			let ringtone = message.getRingtoneResponse
-			upsertRtttlConfigPacket(ringtone: ringtone, nodeNum: Int64(packet.from), context: context)
+			coreDataTools.upsertRtttlConfigPacket(ringtone: ringtone, nodeNum: Int64(packet.from), context: context)
 
 		default:
 			MeshLogger.log(

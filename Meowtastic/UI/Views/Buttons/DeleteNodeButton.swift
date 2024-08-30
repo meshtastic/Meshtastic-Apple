@@ -3,6 +3,8 @@ import OSLog
 import SwiftUI
 
 struct DeleteNodeButton: View {
+	private let coreDataTools = CoreDataTools()
+
 	var context: NSManagedObjectContext
 	var bleManager: BLEManager
 	var nodeConfig: NodeConfig
@@ -30,7 +32,7 @@ struct DeleteNodeButton: View {
 			titleVisibility: .visible
 		) {
 			Button("Delete Node", role: .destructive) {
-				guard let nodeToDelete = getNodeInfo(id: node.num, context: context) else {
+				guard let nodeToDelete = coreDataTools.getNodeInfo(id: node.num, context: context) else {
 					return
 				}
 

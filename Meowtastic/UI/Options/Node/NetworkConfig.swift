@@ -10,6 +10,8 @@ import OSLog
 import SwiftUI
 
 struct NetworkConfig: View {
+	private let coreDataTools = CoreDataTools()
+
 	@Environment(\.managedObjectContext)
 	private var context
 	@EnvironmentObject
@@ -94,7 +96,7 @@ struct NetworkConfig: View {
 			.disabled(self.bleManager.deviceConnected == nil || node?.networkConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = getNodeInfo(id: bleManager.deviceConnected.num, context: context)
+				let connectedNode = coreDataTools.getNodeInfo(id: bleManager.deviceConnected.num, context: context)
 				if connectedNode != nil {
 					var network = Config.NetworkConfig()
 					network.wifiEnabled = self.wifiEnabled
@@ -125,7 +127,7 @@ struct NetworkConfig: View {
 			// Need to request a NetworkConfig from the remote node before allowing changes
 			if bleManager.deviceConnected != nil && node?.networkConfig == nil {
 				Logger.mesh.info("empty network config")
-				let connectedNode = getNodeInfo(id: bleManager.deviceConnected.num, context: context)
+				let connectedNode = coreDataTools.getNodeInfo(id: bleManager.deviceConnected.num, context: context)
 				if node != nil && connectedNode != nil {
 					nodeConfig.requestNetworkConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}

@@ -10,6 +10,8 @@ import MeshtasticProtobufs
 import SwiftUI
 
 struct UserConfig: View {
+	private let coreDataTools = CoreDataTools()
+
 	@Environment(\.managedObjectContext)
 	private var context
 	@EnvironmentObject
@@ -154,8 +156,8 @@ struct UserConfig: View {
 							return
 						}
 
-						let connectedUser = getUser(id: bleManager.deviceConnected?.num ?? -1, context: context)
-						let connectedNode = getNodeInfo(id: bleManager.deviceConnected?.num ?? -1, context: context)
+						let connectedUser = coreDataTools.getUser(id: bleManager.deviceConnected?.num ?? -1, context: context)
+						let connectedNode = coreDataTools.getNodeInfo(id: bleManager.deviceConnected?.num ?? -1, context: context)
 						if node != nil && connectedNode != nil {
 
 							if !isLicensed {

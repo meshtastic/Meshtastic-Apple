@@ -4,6 +4,8 @@ import OSLog
 import SwiftUI
 
 struct PositionConfig: View {
+	private let coreDataTools = CoreDataTools()
+
 	var node: NodeInfoEntity?
 
 	@State var hasChanges = false
@@ -97,7 +99,7 @@ struct PositionConfig: View {
 			if let connectedPeripheral = bleManager.deviceConnected, node?.positionConfig == nil {
 				Logger.mesh.info("empty position config")
 
-				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				let connectedNode = coreDataTools.getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let node, let connectedNode {
 					nodeConfig.requestPositionConfig(
 						fromUser: connectedNode.user!,
@@ -372,7 +374,7 @@ struct PositionConfig: View {
 			if fixedPosition && !supportedVersion {
 				_ = bleManager.sendPosition(channel: 0, destNum: node?.num ?? 0, wantResponse: true)
 			}
-			let connectedNode = getNodeInfo(id: bleManager.deviceConnected!.num, context: context)
+			let connectedNode = coreDataTools.getNodeInfo(id: bleManager.deviceConnected!.num, context: context)
 
 			if connectedNode != nil {
 				var pf: PositionFlags = []

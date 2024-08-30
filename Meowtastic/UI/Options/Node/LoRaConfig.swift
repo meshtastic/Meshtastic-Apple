@@ -10,6 +10,7 @@ struct LoRaConfig: View {
 		case frequencyOverride
 	}
 
+	private let coreDataTools = CoreDataTools()
 	private let formatter: NumberFormatter = {
 		let formatter = NumberFormatter()
 		formatter.numberStyle = .decimal
@@ -66,7 +67,7 @@ struct LoRaConfig: View {
 				if
 					let node,
 					let connectedPeripheral = bleManager.deviceConnected,
-					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+					let connectedNode = coreDataTools.getNodeInfo(id: connectedPeripheral.num, context: context)
 				{
 					var lc = Config.LoRaConfig()
 					lc.hopLimit = UInt32(hopLimit)
@@ -119,7 +120,7 @@ struct LoRaConfig: View {
 			else if
 				let node,
 				let connectedPeripheral = bleManager.deviceConnected,
-				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				let connectedNode = coreDataTools.getNodeInfo(id: connectedPeripheral.num, context: context)
 			{
 				nodeConfig.requestLoRaConfig(
 					fromUser: connectedNode.user!,

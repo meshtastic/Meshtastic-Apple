@@ -5,10 +5,7 @@ import OSLog
 class MQTTManager {
 	var topic: String?
 	var client: CocoaMQTT?
-
-	weak var delegate: MQTTManagerDelegate?
-
-	private var debugLog = false
+	var delegate: MQTTManagerDelegate?
 
 	func connectFromConfigSettings(node: NodeInfoEntity) {
 		let host: String
@@ -47,8 +44,7 @@ class MQTTManager {
 			useSsl: useSsl,
 			username: node.mqttConfig?.username,
 			password: node.mqttConfig?.password,
-			topic: topic,
-			cleanSession: true
+			topic: topic
 		)
 	}
 
@@ -59,8 +55,7 @@ class MQTTManager {
 		useSsl: Bool,
 		username: String?,
 		password: String?,
-		topic: String?,
-		cleanSession: Bool
+		topic: String?
 	) {
 		guard !host.isEmpty else {
 			delegate?.onMqttDisconnected()
@@ -75,17 +70,15 @@ class MQTTManager {
 		)
 
 		client.delegate = self
-		client.enableSSL = useSsl
-		client.allowUntrustCACertificate = true
 		client.username = username
 		client.password = password
-		client.keepAlive = 60
-		client.cleanSession = cleanSession
-		client.willMessage = CocoaMQTTMessage(topic: "/will", string: "dieout")
+		client.enableSSL = useSsl
+		client.allowUntrustCACertificate = true
 		client.autoReconnect = true
-		if debugLog {
-			client.logLevel = .debug
-		}
+		client.willMessage = CocoaMQTTMessage(topic: "/will", string: "dieout")
+		#if DEBUG
+		client.logLevel = .debug
+		#endif
 
 		if !client.connect() {
 			delegate?.onMqttError(message: "Mqtt connect error")
