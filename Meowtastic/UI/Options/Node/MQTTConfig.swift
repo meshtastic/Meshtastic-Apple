@@ -102,33 +102,6 @@ struct MQTTConfig: View {
 					}
 				}
 
-				if enabled, proxyToClientEnabled, node?.mqttConfig?.proxyToClientEnabled ?? false == true {
-					Toggle(isOn: $mqttConnected) {
-						Label(
-							mqttConnected ? "Connected" : "Not Connected",
-							systemImage: "server.rack"
-						)
-
-						if bleManager.mqttError.count > 0 {
-							Text(bleManager.mqttError)
-								.fixedSize(horizontal: false, vertical: true)
-								.foregroundColor(.red)
-						}
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.onChange(of: mqttConnected) {
-						if mqttConnected, !bleManager.mqttConnected, let node {
-							bleManager.mqttManager.connectFromConfigSettings(node: node)
-						}
-						else if !mqttConnected, bleManager.mqttConnected {
-							bleManager.mqttManager.disconnect()
-						}
-					}
-					.onChange(of: bleManager.mqttConnected, initial: true) {
-						mqttConnected = bleManager.mqttConnected
-					}
-				}
-
 				Toggle(isOn: $encryptionEnabled) {
 					Label("Encryption Enabled", systemImage: "lock.icloud")
 				}
@@ -187,7 +160,7 @@ struct MQTTConfig: View {
 							hasChanges = true
 						}
 					}
-					
+
 					if !preciseLocation {
 						VStack(alignment: .leading) {
 							Label("Approximate Location", systemImage: "location.slash.circle.fill")
@@ -254,7 +227,7 @@ struct MQTTConfig: View {
 							hasChanges = true
 						}
 				}
-				
+
 				HStack {
 					Label(
 						"Username",
@@ -349,9 +322,15 @@ struct MQTTConfig: View {
 				)
 
 				if adminMessageId > 0 {
-					// Should show a saved successfully alert once I know that to be true
-					// for now just disable the button after a successful save
 					hasChanges = false
+
+					if mqtt.enabled, let config = node?.mqttConfig {
+						bleManager.connectMQTT(config: config)
+					}
+					else {
+						bleManager.disconnectMQTT()
+					}
+
 					goBack()
 				}
 			}

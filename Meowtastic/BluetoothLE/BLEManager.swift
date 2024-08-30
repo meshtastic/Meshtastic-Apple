@@ -14,7 +14,6 @@ class BLEManager: NSObject, ObservableObject {
 	let context: NSManagedObjectContext
 	let privateContext: NSManagedObjectContext
 	let centralManager: CBCentralManager
-	let mqttManager: MQTTManager
 	let coreDataTools = CoreDataTools()
 	let minimumVersion = "2.0.0"
 	let debounce = Debounce<() async -> Void>(duration: .milliseconds(33)) { action in
@@ -38,6 +37,7 @@ class BLEManager: NSObject, ObservableObject {
 	@Published
 	var mqttError = ""
 
+	var mqttManager: MQTTManager?
 	var connectedVersion: String
 	var isConnecting = false
 	var isConnected = false
@@ -70,7 +70,24 @@ class BLEManager: NSObject, ObservableObject {
 		super.init()
 
 		centralManager.delegate = self
-		mqttManager.delegate = self
+	}
+
+	func connectMQTT(config: MQTTConfigEntity) {
+		guard config.enabled else {
+			return
+		}
+
+		let manager = MQTTManager()
+		manager.delegate = self
+		manager.connect(config: config)
+
+		mqttManager = manager
+	}
+
+	func disconnectMQTT() {
+		mqttManager?.disconnect()
+		mqttManager?.delegate = nil
+		mqttManager = nil
 	}
 
 	func getConnectedDevice() -> Device? {
@@ -159,7 +176,7 @@ class BLEManager: NSObject, ObservableObject {
 	}
 
 	func cancelPeripheralConnection() {
-		if let mqttClientProxy = mqttManager.client, mqttConnected {
+		if let mqttClientProxy = mqttManager?.client, mqttConnected {
 			mqttClientProxy.disconnect()
 		}
 
@@ -185,7 +202,7 @@ class BLEManager: NSObject, ObservableObject {
 			return
 		}
 
-		if let mqttClientProxy = mqttManager.client, mqttConnected {
+		if let mqttClientProxy = mqttManager?.client, mqttConnected {
 			mqttClientProxy.disconnect()
 		}
 

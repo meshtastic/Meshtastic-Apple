@@ -6,7 +6,11 @@ import OSLog
 
 extension BLEManager: MQTTManagerDelegate {
 	func onMqttConnected() {
-		guard let client = mqttManager.client, let topic = mqttManager.topic else {
+		guard
+			let client = mqttManager?.client,
+			client.connState == .connected,
+			let topic = mqttManager?.topic
+		else {
 			return
 		}
 
@@ -21,12 +25,16 @@ extension BLEManager: MQTTManagerDelegate {
 				"topic": topic
 			]
 		)
+
+		Logger.mqtt.info("MQTT connected")
 	}
 
 	func onMqttDisconnected() {
 		mqttConnected = false
 
 		Analytics.logEvent(AnalyticEvents.mqttDisconnect.id, parameters: nil)
+
+		Logger.mqtt.info("MQTT disconnected")
 	}
 
 	func onMqttMessageReceived(message: CocoaMQTTMessage) {

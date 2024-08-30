@@ -7,12 +7,17 @@ class MQTTManager {
 	var client: CocoaMQTT?
 	var delegate: MQTTManagerDelegate?
 
-	func connectFromConfigSettings(node: NodeInfoEntity) {
+	func connect(config: MQTTConfigEntity) {
+		guard config.enabled else {
+			Logger.mqtt.info("MQTT proxy is disabled, not connecting to MQTT broker")
+			return
+		}
+
 		let host: String
-		let useSsl = node.mqttConfig?.tlsEnabled == true
+		let useSsl = config.tlsEnabled == true
 		var port = useSsl ? 8883 : 1883
 
-		if let address = node.mqttConfig?.address, !address.isEmpty {
+		if let address = config.address, !address.isEmpty {
 			if address.contains(":") {
 				host = address.components(separatedBy: ":")[0]
 				port = Int(address.components(separatedBy: ":")[1]) ?? (useSsl ? 8883 : 1883)
@@ -30,7 +35,7 @@ class MQTTManager {
 			.contains(minimumVersion.compare(UserDefaults.firmwareVersion, options: .numeric))
 
 		let rootTopic: String
-		if let root = node.mqttConfig?.root, !root.isEmpty {
+		if let root = config.root, !root.isEmpty {
 			rootTopic = root
 		}
 		else {
@@ -42,14 +47,14 @@ class MQTTManager {
 			host: host,
 			port: port,
 			useSsl: useSsl,
-			username: node.mqttConfig?.username,
-			password: node.mqttConfig?.password,
+			username: config.username,
+			password: config.password,
 			topic: topic
 		)
 	}
 
 	// swiftlint:disable:next function_parameter_count
-	func connect(
+	private func connect(
 		host: String,
 		port: Int,
 		useSsl: Bool,
@@ -101,5 +106,6 @@ class MQTTManager {
 
 	func disconnect() {
 		client?.disconnect()
+		client = nil
 	}
 }
