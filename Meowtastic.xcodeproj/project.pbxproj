@@ -11,6 +11,8 @@
 		084A3D442C76520A0026433E /* SafeStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 084A3D432C7652080026433E /* SafeStorage.swift */; };
 		084A3D462C76522A0026433E /* Debounce.swift in Sources */ = {isa = PBXBuildFile; fileRef = 084A3D452C7652280026433E /* Debounce.swift */; };
 		085721B62C76220B000CE2B7 /* Meowtastic.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 0857218B2C76220B000CE2B7 /* Meowtastic.xcdatamodeld */; };
+		08933D342C81BE80006D57EA /* MQTTManager+CocoaMQTTDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08933D332C81BE7C006D57EA /* MQTTManager+CocoaMQTTDelegate.swift */; };
+		08933D362C81CAA5006D57EA /* MQTTManagerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08933D352C81CA9F006D57EA /* MQTTManagerDelegate.swift */; };
 		08DD7E512C41B0BA00548159 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E502C41B0BA00548159 /* AppState.swift */; };
 		08DD7E532C41CBBD00548159 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 08DD7E522C41CBBD00548159 /* Localizable.xcstrings */; };
 		08DD7E552C41D63800548159 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD7E542C41D63800548159 /* AppConstants.swift */; };
@@ -47,7 +49,7 @@
 		B26C91F62C59740F0029F249 /* PositionFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = B26C91F52C59740F0029F249 /* PositionFlags.swift */; };
 		B284A42D2C6F87B200D5122B /* BLEManager+CBCentralManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B284A42C2C6F87B200D5122B /* BLEManager+CBCentralManager.swift */; };
 		B284A42F2C6F889000D5122B /* BLEManager+CBPeripheralDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B284A42E2C6F889000D5122B /* BLEManager+CBPeripheralDelegate.swift */; };
-		B284A4312C6F88F400D5122B /* BLEManager+MqttClientProxyManagerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B284A4302C6F88F400D5122B /* BLEManager+MqttClientProxyManagerDelegate.swift */; };
+		B284A4312C6F88F400D5122B /* BLEManager+MQTTManagerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B284A4302C6F88F400D5122B /* BLEManager+MQTTManagerDelegate.swift */; };
 		B284A4332C6F8AE400D5122B /* BluetoothUUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = B284A4322C6F8AE400D5122B /* BluetoothUUID.swift */; };
 		B28CFF7F2C5D029D0012DCB4 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = B28CFF7E2C5D029D0012DCB4 /* README.md */; };
 		B28CFF842C5E0F360012DCB4 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = B28CFF832C5E0F360012DCB4 /* FirebaseAnalyticsWithoutAdIdSupport */; };
@@ -142,7 +144,7 @@
 		DDC2E1A726CEB3400042C5E4 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E1A626CEB3400042C5E4 /* LocationManager.swift */; };
 		DDC4D568275499A500A4208E /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC4D567275499A500A4208E /* Persistence.swift */; };
 		DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */; };
-		DDD43FE32A78C8900083A3E9 /* MqttClientProxyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD43FE22A78C8900083A3E9 /* MqttClientProxyManager.swift */; };
+		DDD43FE32A78C8900083A3E9 /* MQTTManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD43FE22A78C8900083A3E9 /* MQTTManager.swift */; };
 		DDD5BB182C2F9C36007E03CA /* OSLogEntryLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB172C2F9C36007E03CA /* OSLogEntryLog.swift */; };
 		DDD9E4E4284B208E003777C5 /* UserEntity+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD9E4E3284B208E003777C5 /* UserEntity+Extension.swift */; };
 		DDDB444029F79AB000EE2349 /* UserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB443F29F79AB000EE2349 /* UserDefaults.swift */; };
@@ -223,6 +225,8 @@
 		085721B32C76220B000CE2B7 /* MeshtasticDataModelV22.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV22.xcdatamodel; sourceTree = "<group>"; };
 		085721B42C76220B000CE2B7 /* MeshtasticDataModelV32.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV32.xcdatamodel; sourceTree = "<group>"; };
 		085721B52C76220B000CE2B7 /* MeshtasticDataModelV33.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV33.xcdatamodel; sourceTree = "<group>"; };
+		08933D332C81BE7C006D57EA /* MQTTManager+CocoaMQTTDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MQTTManager+CocoaMQTTDelegate.swift"; sourceTree = "<group>"; };
+		08933D352C81CA9F006D57EA /* MQTTManagerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MQTTManagerDelegate.swift; sourceTree = "<group>"; };
 		08DD7E502C41B0BA00548159 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		08DD7E522C41CBBD00548159 /* Localizable.xcstrings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		08DD7E542C41D63800548159 /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
@@ -254,7 +258,7 @@
 		B26C91F52C59740F0029F249 /* PositionFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionFlags.swift; sourceTree = "<group>"; };
 		B284A42C2C6F87B200D5122B /* BLEManager+CBCentralManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BLEManager+CBCentralManager.swift"; sourceTree = "<group>"; };
 		B284A42E2C6F889000D5122B /* BLEManager+CBPeripheralDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BLEManager+CBPeripheralDelegate.swift"; sourceTree = "<group>"; };
-		B284A4302C6F88F400D5122B /* BLEManager+MqttClientProxyManagerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BLEManager+MqttClientProxyManagerDelegate.swift"; sourceTree = "<group>"; };
+		B284A4302C6F88F400D5122B /* BLEManager+MQTTManagerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BLEManager+MQTTManagerDelegate.swift"; sourceTree = "<group>"; };
 		B284A4322C6F8AE400D5122B /* BluetoothUUID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothUUID.swift; sourceTree = "<group>"; };
 		B28CFF7E2C5D029D0012DCB4 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		B28DC0E22C710318007990B3 /* Data+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Extensions.swift"; sourceTree = "<group>"; };
@@ -351,7 +355,7 @@
 		DDC2E1A626CEB3400042C5E4 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 		DDC4D567275499A500A4208E /* Persistence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserConfig.swift; sourceTree = "<group>"; };
-		DDD43FE22A78C8900083A3E9 /* MqttClientProxyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MqttClientProxyManager.swift; sourceTree = "<group>"; };
+		DDD43FE22A78C8900083A3E9 /* MQTTManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MQTTManager.swift; sourceTree = "<group>"; };
 		DDD5BB0C2C285F00007E03CA /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		DDD5BB172C2F9C36007E03CA /* OSLogEntryLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSLogEntryLog.swift; sourceTree = "<group>"; };
 		DDD9E4E3284B208E003777C5 /* UserEntity+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserEntity+Extension.swift"; sourceTree = "<group>"; };
@@ -402,6 +406,14 @@
 			path = Debouncer;
 			sourceTree = "<group>";
 		};
+		08933D322C81BE72006D57EA /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				08933D332C81BE7C006D57EA /* MQTTManager+CocoaMQTTDelegate.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
 		08DD7E4D2C41AC8F00548159 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
@@ -423,7 +435,6 @@
 				B26C91F02C59708B0029F249 /* Legacy Wrappers */,
 				DDC2E18826CE24EE0042C5E4 /* Model */,
 				DDC4D5662754996200A4208E /* Persistence */,
-				DDD43FE12A78C86B0083A3E9 /* MQTT */,
 				B28CFF7E2C5D029D0012DCB4 /* README.md */,
 			);
 			path = "Circles Of Hell";
@@ -527,7 +538,7 @@
 				B284A42C2C6F87B200D5122B /* BLEManager+CBCentralManager.swift */,
 				B284A42E2C6F889000D5122B /* BLEManager+CBPeripheralDelegate.swift */,
 				DDA6B2E828419CF2003E8C16 /* BLEManager+MeshPackets.swift */,
-				B284A4302C6F88F400D5122B /* BLEManager+MqttClientProxyManagerDelegate.swift */,
+				B284A4302C6F88F400D5122B /* BLEManager+MQTTManagerDelegate.swift */,
 				B2CC552B2C7374EC003FB487 /* CBPeripheral+Extensions.swift */,
 				B28DC0E22C710318007990B3 /* Data+Extensions.swift */,
 			);
@@ -727,11 +738,12 @@
 		DDC2E15626CE248E0042C5E4 /* Meowtastic */ = {
 			isa = PBXGroup;
 			children = (
-				B25A0B522C5F9A16004288DC /* GoogleService-Info.plist */,
 				B2BDCD782C6CB6360040D7ED /* Analytics */,
 				B2A5F31D2C567F06009457AB /* App */,
 				B25AF8A42C6F6B3200A2BA85 /* BluetoothLE */,
 				B233CA082C5662C200CBD7EF /* Circles Of Hell */,
+				B25A0B522C5F9A16004288DC /* GoogleService-Info.plist */,
+				DDD43FE12A78C86B0083A3E9 /* MQTT */,
 				08DD7E4D2C41AC8F00548159 /* Supporting Files */,
 				DDC2E18726CE24E40042C5E4 /* UI */,
 				DDC2E1A526CEB32B0042C5E4 /* Utils */,
@@ -805,7 +817,9 @@
 		DDD43FE12A78C86B0083A3E9 /* MQTT */ = {
 			isa = PBXGroup;
 			children = (
-				DDD43FE22A78C8900083A3E9 /* MqttClientProxyManager.swift */,
+				08933D322C81BE72006D57EA /* Extensions */,
+				DDD43FE22A78C8900083A3E9 /* MQTTManager.swift */,
+				08933D352C81CA9F006D57EA /* MQTTManagerDelegate.swift */,
 			);
 			path = MQTT;
 			sourceTree = "<group>";
@@ -971,6 +985,7 @@
 				B266A7592C59258100DFC723 /* RebroadcastModes.swift in Sources */,
 				B266A7652C5927D100DFC723 /* Bandwidths.swift in Sources */,
 				D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */,
+				08933D362C81CAA5006D57EA /* MQTTManagerDelegate.swift in Sources */,
 				DDD5BB182C2F9C36007E03CA /* OSLogEntryLog.swift in Sources */,
 				DD3501892852FC3B000FC853 /* Options.swift in Sources */,
 				08DD7E5F2C4283A100548159 /* LoRaSignal.swift in Sources */,
@@ -1020,6 +1035,7 @@
 				DD41582628582E9B009B0E59 /* DeviceConfig.swift in Sources */,
 				B266A7552C5921BB00DFC723 /* Releases.swift in Sources */,
 				DDF45C372BC46A5A005ED5F2 /* TimeZone.swift in Sources */,
+				08933D342C81BE80006D57EA /* MQTTManager+CocoaMQTTDelegate.swift in Sources */,
 				B2A5F2FD2C5668FD009457AB /* DeleteNodeButton.swift in Sources */,
 				B28DC0E52C7107C4007990B3 /* NodeConfig.swift in Sources */,
 				B266A7512C59218D00DFC723 /* DeviceHardware.swift in Sources */,
@@ -1033,7 +1049,7 @@
 				DDE0F7C5295F77B700B8AAB3 /* MapLayer.swift in Sources */,
 				B28DC0E32C710318007990B3 /* Data+Extensions.swift in Sources */,
 				DDB6ABE628B1406100384BA1 /* LoraConfigEnums.swift in Sources */,
-				DDD43FE32A78C8900083A3E9 /* MqttClientProxyManager.swift in Sources */,
+				DDD43FE32A78C8900083A3E9 /* MQTTManager.swift in Sources */,
 				DD007BB02AA5981000F5FA12 /* NodeInfoEntity+Extension.swift in Sources */,
 				DDDB444629F8A96500EE2349 /* Character.swift in Sources */,
 				DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */,
@@ -1060,7 +1076,7 @@
 				B2A5F3132C5668FD009457AB /* MeshMap.swift in Sources */,
 				D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */,
 				DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */,
-				B284A4312C6F88F400D5122B /* BLEManager+MqttClientProxyManagerDelegate.swift in Sources */,
+				B284A4312C6F88F400D5122B /* BLEManager+MQTTManagerDelegate.swift in Sources */,
 				DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */,
 				DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */,
 				DDB75A112A059258006ED576 /* Url.swift in Sources */,

@@ -4,17 +4,27 @@ import FirebaseAnalytics
 import MeshtasticProtobufs
 import OSLog
 
-extension BLEManager: MqttClientProxyManagerDelegate {
+extension BLEManager: MQTTManagerDelegate {
 	func onMqttConnected() {
-		mqttError = ""
-		mqttProxyConnected = true
-		mqttManager.mqttClientProxy?.subscribe(mqttManager.topic)
+		guard let client = mqttManager.client, let topic = mqttManager.topic else {
+			return
+		}
 
-		Analytics.logEvent(AnalyticEvents.mqttConnect.id, parameters: nil)
+		mqttError = ""
+		mqttConnected = true
+
+		client.subscribe(topic)
+
+		Analytics.logEvent(
+			AnalyticEvents.mqttConnect.id,
+			parameters: [
+				"topic": topic
+			]
+		)
 	}
 
 	func onMqttDisconnected() {
-		mqttProxyConnected = false
+		mqttConnected = false
 
 		Analytics.logEvent(AnalyticEvents.mqttDisconnect.id, parameters: nil)
 	}
@@ -53,7 +63,7 @@ extension BLEManager: MqttClientProxyManagerDelegate {
 	}
 
 	func onMqttError(message: String) {
-		mqttProxyConnected = false
+		mqttConnected = false
 		mqttError = message
 
 		Analytics.logEvent(

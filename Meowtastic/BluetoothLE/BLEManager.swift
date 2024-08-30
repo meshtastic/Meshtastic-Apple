@@ -14,7 +14,7 @@ class BLEManager: NSObject, ObservableObject {
 	let context: NSManagedObjectContext
 	let privateContext: NSManagedObjectContext
 	let centralManager: CBCentralManager
-	let mqttManager: MqttClientProxyManager
+	let mqttManager: MQTTManager
 	let minimumVersion = "2.0.0"
 	let debounce = Debounce<() async -> Void>(duration: .milliseconds(33)) { action in
 		await action()
@@ -33,7 +33,7 @@ class BLEManager: NSObject, ObservableObject {
 	@Published
 	var automaticallyReconnect = true
 	@Published
-	var mqttProxyConnected = false
+	var mqttConnected = false
 	@Published
 	var mqttError = ""
 
@@ -61,7 +61,7 @@ class BLEManager: NSObject, ObservableObject {
 		self.context = context
 		self.privateContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
 		self.centralManager = CBCentralManager()
-		self.mqttManager = MqttClientProxyManager.shared
+		self.mqttManager = MQTTManager()
 
 		self.lastConnectionError = ""
 		self.connectedVersion = "0.0.0"
@@ -158,7 +158,7 @@ class BLEManager: NSObject, ObservableObject {
 	}
 
 	func cancelPeripheralConnection() {
-		if let mqttClientProxy = mqttManager.mqttClientProxy, mqttProxyConnected {
+		if let mqttClientProxy = mqttManager.client, mqttConnected {
 			mqttClientProxy.disconnect()
 		}
 
@@ -184,7 +184,7 @@ class BLEManager: NSObject, ObservableObject {
 			return
 		}
 
-		if let mqttClientProxy = mqttManager.mqttClientProxy, mqttProxyConnected {
+		if let mqttClientProxy = mqttManager.client, mqttConnected {
 			mqttClientProxy.disconnect()
 		}
 

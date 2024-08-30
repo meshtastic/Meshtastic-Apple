@@ -102,8 +102,8 @@ extension BLEManager: CBPeripheralDelegate {
 		}
 
 		if ![characteristicFromNum, characteristicToRadio].contains(nil) {
-			if mqttProxyConnected {
-				mqttManager.mqttClientProxy?.disconnect()
+			if mqttConnected {
+				mqttManager.client?.disconnect()
 			}
 
 			let nodeConfig = NodeConfig(bleManager: self, context: context)
@@ -199,7 +199,7 @@ extension BLEManager: CBPeripheralDelegate {
 					retained: info.mqttClientProxyMessage.retained
 				)
 
-				mqttManager.mqttClientProxy?.publish(message)
+				mqttManager.client?.publish(message)
 			}
 
 			switch info.packet.decoded.portnum {
@@ -580,8 +580,8 @@ extension BLEManager: CBPeripheralDelegate {
 						{
 							mqttManager.connectFromConfigSettings(node: node)
 						}
-						else if mqttProxyConnected {
-							mqttManager.mqttClientProxy?.disconnect()
+						else if mqttConnected {
+							mqttManager.client?.disconnect()
 						}
 
 						// Set initial unread message badge states

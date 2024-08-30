@@ -116,15 +116,15 @@ struct MQTTConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.onChange(of: mqttConnected) {
-						if mqttConnected, !bleManager.mqttProxyConnected, let node {
+						if mqttConnected, !bleManager.mqttConnected, let node {
 							bleManager.mqttManager.connectFromConfigSettings(node: node)
 						}
-						else if !mqttConnected, bleManager.mqttProxyConnected {
+						else if !mqttConnected, bleManager.mqttConnected {
 							bleManager.mqttManager.disconnect()
 						}
 					}
-					.onChange(of: bleManager.mqttProxyConnected, initial: true) {
-						mqttConnected = bleManager.mqttProxyConnected
+					.onChange(of: bleManager.mqttConnected, initial: true) {
+						mqttConnected = bleManager.mqttConnected
 					}
 				}
 

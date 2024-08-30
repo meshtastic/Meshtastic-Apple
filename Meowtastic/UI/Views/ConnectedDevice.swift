@@ -15,14 +15,14 @@ struct ConnectedDevice: View {
 				HStack(spacing: 4) {
 					if mqttChannelInfo {
 						MQTTChannelIcon(
-							connected: bleManager.mqttProxyConnected,
+							connected: bleManager.mqttConnected,
 							uplink: mqttUplinkEnabled,
 							downlink: mqttDownlinkEnabled
 						)
 					}
 					else {
 						MQTTConnectionIcon(
-							connected: bleManager.mqttProxyConnected
+							connected: bleManager.mqttConnected
 						)
 					}
 
