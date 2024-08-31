@@ -119,7 +119,7 @@ struct Connect: View {
 												.font(.caption)
 												.fontWeight(.medium)
 												.foregroundStyle(.secondary)
-											Text("Dupe / Bad Packets: \(localStats?.numPacketsRxBad ?? 0)")
+											Text("Bad Packets: \(localStats?.numPacketsRxBad ?? 0)")
 												.font(.caption)
 												.fontWeight(.medium)
 												.foregroundStyle(.secondary)
