@@ -202,7 +202,9 @@ struct ChannelForm: View {
 			}
 			.onChange(of: channelKeySize) { _ in
 				if channelKeySize == -1 {
-					preciseLocation = false
+					if channelRole == 0 {
+						preciseLocation = false
+					}
 					channelKey = "AQ=="
 				}
 			}
@@ -211,7 +213,7 @@ struct ChannelForm: View {
 			}
 			.onChange(of: preciseLocation) { loc in
 				if loc == true {
-					if channelKey == "AQ==" {
+					if channelKey == "AQ==" && channelRole == 0 {
 						preciseLocation = false
 					} else {
 						positionPrecision = 32
