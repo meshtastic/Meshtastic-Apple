@@ -151,6 +151,81 @@ struct NodeDetail: View {
 				parameters: AnalyticEvents.getParams(for: node, [ "sheet": isInSheet ])
 			)
 		}
+		.navigationBarItems(
+			trailing: navigationBarButtons
+		)
+	}
+
+	@ViewBuilder
+	private var navigationBarButtons: some View {
+		HStack(spacing: 4) {
+			Button {
+				guard let connectedNodeNum = bleManager.deviceConnected?.num else {
+					return
+				}
+
+				let success = if node.favorite {
+					nodeConfig.removeFavoriteNode(
+						node: node,
+						connectedNodeNum: Int64(connectedNodeNum)
+					)
+				}
+				else {
+					nodeConfig.saveFavoriteNode(
+						node: node,
+						connectedNodeNum: Int64(connectedNodeNum)
+					)
+				}
+
+				if success {
+					node.favorite.toggle()
+					context.refresh(node, mergeChanges: true)
+
+					do {
+						try context.save()
+					}
+					catch {
+						context.rollback()
+					}
+				}
+			} label: {
+				Image(systemName: node.favorite ? "star.slash" : "star")
+					.symbolRenderingMode(.monochrome)
+					.foregroundColor(.accentColor)
+			}
+
+			if
+				let user = node.user,
+				let connectedPeripheral = bleManager.deviceConnected,
+				node.num != connectedPeripheral.num
+			{
+				Button {
+					user.mute.toggle()
+					context.refresh(node, mergeChanges: true)
+
+					do {
+						try context.save()
+					}
+					catch {
+						context.rollback()
+					}
+				} label: {
+					Image(systemName: user.mute ? "bell.slash" : "bell")
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
+				}
+
+				NavigationLink {
+					NavigationLazyView(
+						MessageList(user: user, myInfo: node.myInfo)
+					)
+				} label: {
+					Image(systemName: "bubble.left.and.bubble.right")
+						.symbolRenderingMode(.monochrome)
+						.foregroundColor(.accentColor)
+				}
+			}
+		}
 	}
 
 	@ViewBuilder
@@ -704,21 +779,6 @@ struct NodeDetail: View {
 
 	@ViewBuilder
 	private var actions: some View {
-		FavoriteNodeButton(
-			bleManager: bleManager,
-			nodeConfig: nodeConfig,
-			context: context,
-			node: node
-		)
-
-		if let user = node.user {
-			NodeAlertsButton(
-				context: context,
-				node: node,
-				user: user
-			)
-		}
-
 		if
 			let connectedDevice = bleManager.getConnectedDevice(),
 			node.num != connectedDevice.num
@@ -727,16 +787,20 @@ struct NodeDetail: View {
 				bleManager: bleManager,
 				node: node
 			)
+		}
 
-			if let connectedNode {
-				DeleteNodeButton(
-					context: context,
-					bleManager: bleManager,
-					nodeConfig: nodeConfig,
-					connectedNode: connectedNode,
-					node: node
-				)
-			}
+		if
+			let connectedDevice = bleManager.getConnectedDevice(),
+			node.num != connectedDevice.num,
+			let connectedNode
+		{
+			DeleteNodeButton(
+				context: context,
+				bleManager: bleManager,
+				nodeConfig: nodeConfig,
+				connectedNode: connectedNode,
+				node: node
+			)
 		}
 	}
 
