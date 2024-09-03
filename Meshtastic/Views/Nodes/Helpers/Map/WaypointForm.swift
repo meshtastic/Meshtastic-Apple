@@ -269,10 +269,8 @@ struct WaypointForm: View {
 									.fixedSize(horizontal: false, vertical: true)
 							} icon: {
 								Image(systemName: "doc.plaintext")
-									.symbolRenderingMode(.hierarchical)
-									.frame(width: 35)
 							}
-							.padding(.bottom, 5)
+							.padding(.bottom)
 						}
 						/// Coordinate
 						Label {
@@ -280,11 +278,18 @@ struct WaypointForm: View {
 								.textSelection(.enabled)
 								.foregroundColor(.primary)
 						} icon: {
-							Image(systemName: "mappin.and.ellipse")
-								.symbolRenderingMode(.hierarchical)
-								.frame(width: 35)
+							Image(systemName: "mappin.circle")
 						}
-						.padding(.bottom, 5)
+						.padding(.bottom)
+						// Drop Maps Pin
+						Button(action: {
+							if let url = URL(string: "http://maps.apple.com/?ll=\(waypoint.coordinate.latitude),\(waypoint.coordinate.longitude)&q=\(waypoint.name ?? "Dropped Pin")") {
+							   UIApplication.shared.open(url)
+							}
+						}) {
+							Label("Drop Pin in Maps", systemImage: "mappin.and.ellipse")
+						}
+						.padding(.bottom)
 						/// Created
 						Label {
 							Text("Created: \(waypoint.created?.formatted() ?? "?")")
@@ -292,9 +297,8 @@ struct WaypointForm: View {
 						} icon: {
 							Image(systemName: "clock.badge.checkmark")
 								.symbolRenderingMode(.hierarchical)
-								.frame(width: 35)
 						}
-						.padding(.bottom, 5)
+						.padding(.bottom)
 						/// Updated
 						if waypoint.lastUpdated != nil {
 							Label {
@@ -303,9 +307,8 @@ struct WaypointForm: View {
 							} icon: {
 								Image(systemName: "clock.arrow.circlepath")
 									.symbolRenderingMode(.hierarchical)
-									.frame(width: 35)
 							}
-							.padding(.bottom, 5)
+							.padding(.bottom)
 						}
 						/// Expires
 						if waypoint.expire != nil {
