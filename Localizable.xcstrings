@@ -4911,15 +4911,8 @@
         }
       }
     },
-    "Coordinates: %@, %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Coordinates: %1$@, %2$@"
-          }
-        }
-      }
+    "Coordinates:" : {
+
     },
     "copy" : {
       "localizations" : {
@@ -10933,6 +10926,9 @@
 
     },
     "Location" : {
+
+    },
+    "Location:" : {
 
     },
     "Location: %@" : {
