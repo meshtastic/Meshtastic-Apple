@@ -54,6 +54,12 @@ struct NodeDetail: View {
 									Text("The public key does not match the recorded key. You may delete the node and let it exchange keys again, but this may indicate a more serious security problem. Contact the user through another trusted channel, to determine if the key change was due to a factory reset or other intentional action.")
 										.font(.caption)
 										.foregroundStyle(.red)
+									Text("Public Key\(user.publicKey?.base64EncodedString() ?? "Empty Key")")
+										.monospaced()
+										.allowsTightening(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
+									Text("New Key\(user.newPublicKey?.base64EncodedString() ?? "Empty Key")")
+										.monospaced()
+										.allowsTightening(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
 								}
 							} icon: {
 								Image(systemName: "key.slash.fill")
