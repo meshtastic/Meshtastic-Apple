@@ -15389,9 +15389,6 @@
     "Never" : {
 
     },
-    "New Key%@" : {
-
-    },
     "Newer firmware is available" : {
 
     },
@@ -16757,9 +16754,6 @@
 
     },
     "Public Key Mismatch" : {
-
-    },
-    "Public Key%@" : {
 
     },
     "PWD" : {
@@ -21126,6 +21120,9 @@
 
     },
     "The minimum distance change in meters to be considered for a smart position broadcast." : {
+
+    },
+    "The most recent public key for this node does not match the previously recorded key. You can delete the node and let it exchange keys again, but this also may indicate a more serious security problem. Contact the user through another trusted channel to determine if the key change was due to a factory reset or other intentional action." : {
 
     },
     "The public key authorized to send admin messages to this node." : {
