@@ -55,11 +55,14 @@ struct NodeDetail: View {
 										.font(.caption)
 										.foregroundStyle(.red)
 									Text("Public Key\(user.publicKey?.base64EncodedString() ?? "Empty Key")")
+										.font(.caption2)
 										.monospaced()
 										.allowsTightening(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
 									Text("New Key\(user.newPublicKey?.base64EncodedString() ?? "Empty Key")")
+										.font(.caption2)
 										.monospaced()
 										.allowsTightening(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
+									
 								}
 							} icon: {
 								Image(systemName: "key.slash.fill")
