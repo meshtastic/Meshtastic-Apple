@@ -376,18 +376,23 @@ struct PositionConfig: View {
 				)
 			}
 		)
-		.onAppear {
+		.onFirstAppear {
 			supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
-			// Need to request a PositionConfig from the remote node before allowing changes
-			if let connectedPeripheral = bleManager.connectedPeripheral, node?.positionConfig == nil {
+			// Need to request a NetworkConfig from the remote node before allowing changes
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
 				Logger.mesh.info("empty position config")
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
-				if let node, let connectedNode {
-					_ = bleManager.requestPositionConfig(
-						fromUser: connectedNode.user!,
-						toUser: node.user!,
-						adminIndex: connectedNode.myInfo?.adminIndex ?? 0
-					)
+				if let connectedNode {
+					if UserDefaults.enableAdministration {
+						/// 2.5 Administration with session passkey
+						let expiration = node.sessionExpiration ?? Date()
+						if expiration < Date() || node.positionConfig == nil {
+							_ = bleManager.requestPositionConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					} else {
+						/// Legacy Administration
+						_ = bleManager.requestPositionConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+					}
 				}
 			}
 		}
