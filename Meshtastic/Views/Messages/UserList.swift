@@ -46,6 +46,7 @@ struct UserList: View {
 						  NSSortDescriptor(key: "userNode.favorite", ascending: false),
 						  NSSortDescriptor(key: "pkiEncrypted", ascending: false),
 						  NSSortDescriptor(key: "longName", ascending: true)],
+		predicate: NSPredicate(format: "hwModelId != nil"),
 		animation: .default
 	)
 	private var users: FetchedResults<UserEntity>
@@ -95,6 +96,7 @@ struct UserList: View {
 									Text(user.longName ?? "unknown".localized)
 										.font(.headline)
 										.allowsTightening(true)
+									Text(user.hwModel ?? "")
 									Spacer()
 									if user.userNode?.favorite ?? false {
 										Image(systemName: "star.fill")
