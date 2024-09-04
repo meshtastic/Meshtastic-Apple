@@ -96,7 +96,6 @@ struct UserList: View {
 									Text(user.longName ?? "unknown".localized)
 										.font(.headline)
 										.allowsTightening(true)
-									Text(user.hwModel ?? "")
 									Spacer()
 									if user.userNode?.favorite ?? false {
 										Image(systemName: "star.fill")
