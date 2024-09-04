@@ -242,13 +242,24 @@ struct DeviceConfig: View {
 				)
 			}
 		)
-		.onAppear {
+		.onFirstAppear {
 			// Need to request a DeviceConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.deviceConfig == nil {
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
 				Logger.mesh.info("empty device config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
-				if node != nil && connectedNode != nil && connectedNode?.user != nil {
-					_ = bleManager.requestDeviceConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let connectedNode {
+					if UserDefaults.enableAdministration {
+						/// 2.5 Administration with session passkey
+						let expiration = node.sessionExpiration ?? Date()
+						if expiration < Date() || node.deviceConfig == nil {
+							_ = bleManager.requestDeviceConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					} else {
+						if node.deviceConfig == nil {
+							/// Legacy Administration
+							_ = bleManager.requestDeviceConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					}
 				}
 			}
 		}

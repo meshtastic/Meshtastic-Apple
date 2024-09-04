@@ -109,7 +109,7 @@
     "%@ Channels?" : {
 
     },
-    "%@ config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log." : {
+    "%@ config data was requested over the admin channel but no response has been returned from the remote node." : {
 
     },
     "%@ dB" : {
@@ -1865,9 +1865,6 @@
           }
         }
       }
-    },
-    "Bluetooth Logs" : {
-
     },
     "bluetooth.config" : {
       "localizations" : {
@@ -5071,6 +5068,9 @@
     "Debug Log" : {
 
     },
+    "Debug Logs" : {
+
+    },
     "Debug Logs%@" : {
 
     },
@@ -5361,9 +5361,6 @@
           }
         }
       }
-    },
-    "Developer" : {
-
     },
     "Developers" : {
 
@@ -16073,7 +16070,7 @@
     "Other data sources" : {
 
     },
-    "Output live debug logging over serial." : {
+    "Output live debug logging over serial, view and export position-redacted device logs over Bluetooth." : {
 
     },
     "Output pin buzzer GPIO " : {
@@ -19272,9 +19269,6 @@
 
     },
     "Serial Console over the Stream API." : {
-
-    },
-    "Serial Debug Logs" : {
 
     },
     "serial.config" : {
@@ -22507,12 +22501,6 @@
 
     },
     "Via Mqtt" : {
-
-    },
-    "View and export position-redacted device logs over Bluetooth" : {
-
-    },
-    "View Logs" : {
 
     },
     "voltage" : {

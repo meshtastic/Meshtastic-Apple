@@ -163,13 +163,22 @@ struct DisplayConfig: View {
 				)
 			}
 		)
-		.onAppear {
-			// Need to request a LoRaConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.displayConfig == nil {
+		.onFirstAppear {
+			// Need to request a DisplayConfig from the remote node before allowing changes
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
 				Logger.mesh.info("empty display config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestDisplayConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let connectedNode {
+					if UserDefaults.enableAdministration {
+						/// 2.5 Administration with session passkey
+						let expiration = node.sessionExpiration ?? Date()
+						if expiration < Date() || node.displayConfig == nil {
+							_ = bleManager.requestDisplayConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					} else {
+						/// Legacy Administration
+						_ = bleManager.requestDisplayConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+					}
 				}
 			}
 		}

@@ -498,19 +498,18 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			let config = adminMessage.getConfigResponse
 			if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
 				upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
-			/// upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: Int64(packet.from), context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
-				upsertDeviceConfigPacket(config: config.device, nodeNum: Int64(packet.from), context: context)
+				upsertDeviceConfigPacket(config: config.device, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
-				upsertDisplayConfigPacket(config: config.display, nodeNum: Int64(packet.from), context: context)
+				upsertDisplayConfigPacket(config: config.display, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
-				upsertLoRaConfigPacket(config: config.lora, nodeNum: Int64(packet.from), context: context)
+				upsertLoRaConfigPacket(config: config.lora, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
-				upsertNetworkConfigPacket(config: config.network, nodeNum: Int64(packet.from), context: context)
+				upsertNetworkConfigPacket(config: config.network, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
-				upsertPositionConfigPacket(config: config.position, nodeNum: Int64(packet.from), context: context)
+				upsertPositionConfigPacket(config: config.position, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.power(config.power) {
-				upsertPowerConfigPacket(config: config.power, nodeNum: Int64(packet.from), context: context)
+				upsertPowerConfigPacket(config: config.power, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.security(config.security) {
 				upsertSecurityConfigPacket(config: config.security, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			}

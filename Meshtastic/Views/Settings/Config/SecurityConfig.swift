@@ -30,7 +30,6 @@ struct SecurityConfig: View {
 	@State var isManaged = false
 	@State var serialEnabled = false
 	@State var debugLogApiEnabled = false
-	@State var bluetoothLoggingEnabled = false
 	@State var adminChannelEnabled = false
 
 	var body: some View {
@@ -71,10 +70,15 @@ struct SecurityConfig: View {
 					}
 				}
 				Section(header: Text("Logs")) {
-					Toggle(isOn: $bluetoothLoggingEnabled) {
-						Label("Bluetooth Logs", systemImage: "dot.radiowaves.right")
-						Text("View and export position-redacted device logs over Bluetooth")
-						Link("View Logs", destination: URL(string: "meshtastic:///settings/debugLogs")!)
+					Toggle(isOn: $serialEnabled) {
+						Label("Serial Console", systemImage: "terminal")
+						Text("Serial Console over the Stream API.")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
+					Toggle(isOn: $debugLogApiEnabled) {
+						Label("Debug Logs", systemImage: "ant.fill")
+						Text("Output live debug logging over serial, view and export position-redacted device logs over Bluetooth.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
@@ -91,20 +95,6 @@ struct SecurityConfig: View {
 						Text("Allow incoming device control over the insecure legacy admin channel.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				}
-				Section(header: Text("Developer")) {
-					Toggle(isOn: $serialEnabled) {
-						Label("Serial Console", systemImage: "terminal")
-						Text("Serial Console over the Stream API.")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					if serialEnabled {
-						Toggle(isOn: $debugLogApiEnabled) {
-							Label("Serial Debug Logs", systemImage: "ant.fill")
-							Text("Output live debug logging over serial.")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					}
 				}
 			}
 		}
@@ -125,9 +115,6 @@ struct SecurityConfig: View {
 		}
 		.onChange(of: debugLogApiEnabled) {
 			if $0 != node?.securityConfig?.debugLogApiEnabled { hasChanges = true }
-		}
-		.onChange(of: bluetoothLoggingEnabled) {
-			if $0 != node?.securityConfig?.bluetoothLoggingEnabled { hasChanges = true }
 		}
 		.onChange(of: adminChannelEnabled) {
 			if $0 != node?.securityConfig?.adminChannelEnabled { hasChanges = true }
@@ -162,11 +149,23 @@ struct SecurityConfig: View {
 			hasChanges = true
 		}
 		.onFirstAppear {
-			// Need to request a Power config from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.securityConfig == nil {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestSecurityConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+			// Need to request a DeviceConfig from the remote node before allowing changes
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+				Logger.mesh.info("empty security config")
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let connectedNode {
+					if UserDefaults.enableAdministration {
+						/// 2.5 Administration with session passkey
+						let expiration = node.sessionExpiration ?? Date()
+						if expiration < Date() || node.securityConfig == nil {
+							_ = bleManager.requestSecurityConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					} else {
+						if node.deviceConfig == nil {
+							/// Legacy Administration
+							_ = bleManager.requestSecurityConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					}
 				}
 			}
 		}
@@ -190,7 +189,6 @@ struct SecurityConfig: View {
 			config.isManaged = isManaged
 			config.serialEnabled = serialEnabled
 			config.debugLogApiEnabled = debugLogApiEnabled
-			config.bluetoothLoggingEnabled = bluetoothLoggingEnabled
 			config.adminChannelEnabled = adminChannelEnabled
 
 			let adminMessageId = bleManager.saveSecurityConfig(
@@ -215,7 +213,6 @@ struct SecurityConfig: View {
 		self.isManaged = node?.securityConfig?.isManaged ?? false
 		self.serialEnabled = node?.securityConfig?.serialEnabled ?? false
 		self.debugLogApiEnabled = node?.securityConfig?.debugLogApiEnabled ?? false
-		self.bluetoothLoggingEnabled = node?.securityConfig?.bluetoothLoggingEnabled ?? false
 		self.adminChannelEnabled = node?.securityConfig?.adminChannelEnabled ?? false
 		self.hasChanges = false
 	}
