@@ -366,7 +366,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 					fetchedNode[0].user = UserEntity(context: context)
 				}
 				// Set the public key for a user if it is empty, don't update
-				if fetchedNode[0].user?.publicKey?.isEmpty == nil && !nodeInfo.user.publicKey.isEmpty {
+				if fetchedNode[0].user?.publicKey == nil && !nodeInfo.user.publicKey.isEmpty {
 					fetchedNode[0].user?.pkiEncrypted = true
 					fetchedNode[0].user?.publicKey = nodeInfo.user.publicKey
 				}

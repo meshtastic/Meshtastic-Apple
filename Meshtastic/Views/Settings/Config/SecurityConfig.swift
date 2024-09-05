@@ -75,7 +75,6 @@ struct SecurityConfig: View {
 						Text("Serial Console over the Stream API.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
 					Toggle(isOn: $debugLogApiEnabled) {
 						Label("Debug Logs", systemImage: "ant.fill")
 						Text("Output live debug logging over serial, view and export position-redacted device logs over Bluetooth.")
@@ -86,7 +85,7 @@ struct SecurityConfig: View {
 					if adminKey.length > 0 || adminChannelEnabled {
 						Toggle(isOn: $isManaged) {
 							Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
-							Text("Device is managed by a mesh administrator.")
+							Text("Device is managed by a mesh administrator, the user is unable to access any of the device settings.")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}

@@ -5426,7 +5426,7 @@
     "Device GPS" : {
 
     },
-    "Device is managed by a mesh administrator." : {
+    "Device is managed by a mesh administrator, the user is unable to access any of the device settings." : {
 
     },
     "Device Metrics" : {
@@ -6922,9 +6922,6 @@
 
     },
     "Enabling Ethernet will disable the bluetooth connection to the app." : {
-
-    },
-    "Enabling Managed mode will restrict access to all radio configurations, such as short/long names, regions, channels, modules, etc. and will only be accessible through the Admin channel. To avoid being locked out, make sure the Admin channel is working properly before enabling it." : {
 
     },
     "Enabling WiFi will disable the bluetooth connection to the app." : {

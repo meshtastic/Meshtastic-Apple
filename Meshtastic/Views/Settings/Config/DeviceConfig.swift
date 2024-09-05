@@ -29,7 +29,6 @@ struct DeviceConfig: View {
 	@State var nodeInfoBroadcastSecs = 10800
 	@State var doubleTapAsButtonPress = false
 	@State var ledHeartbeatEnabled = true
-	@State var isManaged = false
 	@State var tzdef = ""
 
 	var body: some View {
@@ -61,12 +60,6 @@ struct DeviceConfig: View {
 							.font(.callout)
 					}
 					.pickerStyle(DefaultPickerStyle())
-
-					Toggle(isOn: $isManaged) {
-						Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
-						Text("Enabling Managed mode will restrict access to all radio configurations, such as short/long names, regions, channels, modules, etc. and will only be accessible through the Admin channel. To avoid being locked out, make sure the Admin channel is working properly before enabling it.")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
 					Picker("Node Info Broadcast Interval", selection: $nodeInfoBroadcastSecs ) {
 						ForEach(UpdateIntervals.allCases) { ui in
@@ -213,13 +206,8 @@ struct DeviceConfig: View {
 						dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
 						dc.nodeInfoBroadcastSecs = UInt32(nodeInfoBroadcastSecs)
 						dc.doubleTapAsButtonPress = doubleTapAsButtonPress
-						dc.isManaged = isManaged
 						dc.tzdef = tzdef
 						dc.ledHeartbeatDisabled = !ledHeartbeatEnabled
-						if isManaged {
-							serialEnabled = false
-							debugLogEnabled = false
-						}
 						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
@@ -287,9 +275,6 @@ struct DeviceConfig: View {
 		.onChange(of: doubleTapAsButtonPress) {
 			if $0 != node?.deviceConfig?.doubleTapAsButtonPress { hasChanges = true }
 		}
-		.onChange(of: isManaged) {
-			if $0 != node?.deviceConfig?.isManaged { hasChanges = true }
-		}
 		.onChange(of: tzdef) { newTzdef in
 			if newTzdef != node?.deviceConfig?.tzdef { hasChanges = true }
 		}
@@ -312,7 +297,6 @@ struct DeviceConfig: View {
 		}
 		self.doubleTapAsButtonPress = node?.deviceConfig?.doubleTapAsButtonPress ?? false
 		self.ledHeartbeatEnabled = node?.deviceConfig?.ledHeartbeatEnabled ?? true
-		self.isManaged = node?.deviceConfig?.isManaged ?? false
 		self.tzdef = node?.deviceConfig?.tzdef ?? ""
 		if self.tzdef.isEmpty {
 			self.tzdef = TimeZone.current.posixDescription

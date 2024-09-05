@@ -766,6 +766,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .waypointApp:
 				waypointPacket(packet: decodedInfo.packet, context: context)
 			case .nodeinfoApp:
+				MeshLogger.log("🕸️ MESH PACKET received for Node Info App for PKI LOCK debugging \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 				if !invalidVersion { upsertNodeInfoPacket(packet: decodedInfo.packet, context: context) }
 			case .routingApp:
 				if !invalidVersion { routingPacket(packet: decodedInfo.packet, connectedNodeNum: self.connectedPeripheral.num, context: context) }
