@@ -269,6 +269,8 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].user!.role = Int32(nodeInfoMessage.user.role.rawValue)
 					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
 					fetchedNode[0].user!.hwModelId = Int32(nodeInfoMessage.user.hwModel.rawValue)
+					fetchedNode[0].user!.pkiEncrypted = packet.pkiEncrypted
+					fetchedNode[0].user!.publicKey = packet.publicKey
 					Task {
 						Api().loadDeviceHardwareData { (hw) in
 							let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user?.hwModelId ?? 0 })
