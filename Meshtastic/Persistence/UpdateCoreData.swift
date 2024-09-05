@@ -209,6 +209,8 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			} else {
 				if packet.from > Constants.minimumNodeNum {
 					let newUser = createUser(num: Int64(packet.from), context: context)
+					newNode.user?.pkiEncrypted = packet.pkiEncrypted
+					newNode.user?.publicKey = packet.publicKey
 					newNode.user = newUser
 				}
 			}
