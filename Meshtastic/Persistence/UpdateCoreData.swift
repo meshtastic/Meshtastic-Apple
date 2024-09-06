@@ -209,6 +209,8 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			} else {
 				if packet.from > Constants.minimumNodeNum {
 					let newUser = createUser(num: Int64(packet.from), context: context)
+					newNode.user?.pkiEncrypted = packet.pkiEncrypted
+					newNode.user?.publicKey = packet.publicKey
 					newNode.user = newUser
 				}
 			}
@@ -269,6 +271,11 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].user!.role = Int32(nodeInfoMessage.user.role.rawValue)
 					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
 					fetchedNode[0].user!.hwModelId = Int32(nodeInfoMessage.user.hwModel.rawValue)
+					
+					if !packet.publicKey.isEmpty {
+						fetchedNode[0].user!.pkiEncrypted = packet.pkiEncrypted
+						fetchedNode[0].user!.publicKey = packet.publicKey
+					}
 					Task {
 						Api().loadDeviceHardwareData { (hw) in
 							let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user?.hwModelId ?? 0 })
@@ -409,13 +416,11 @@ func upsertBluetoothConfigPacket(config: Config.BluetoothConfig, nodeNum: Int64,
 				newBluetoothConfig.enabled = config.enabled
 				newBluetoothConfig.mode = Int32(config.mode.rawValue)
 				newBluetoothConfig.fixedPin = Int32(config.fixedPin)
-				newBluetoothConfig.deviceLoggingEnabled = config.deviceLoggingEnabled
 				fetchedNode[0].bluetoothConfig = newBluetoothConfig
 			} else {
 				fetchedNode[0].bluetoothConfig?.enabled = config.enabled
 				fetchedNode[0].bluetoothConfig?.mode = Int32(config.mode.rawValue)
 				fetchedNode[0].bluetoothConfig?.fixedPin = Int32(config.fixedPin)
-				fetchedNode[0].bluetoothConfig?.deviceLoggingEnabled = config.deviceLoggingEnabled
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey

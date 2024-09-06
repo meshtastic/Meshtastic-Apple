@@ -46,6 +46,7 @@ struct UserList: View {
 						  NSSortDescriptor(key: "userNode.favorite", ascending: false),
 						  NSSortDescriptor(key: "pkiEncrypted", ascending: false),
 						  NSSortDescriptor(key: "longName", ascending: true)],
+		predicate: NSPredicate(format: "hwModelId != nil"),
 		animation: .default
 	)
 	private var users: FetchedResults<UserEntity>

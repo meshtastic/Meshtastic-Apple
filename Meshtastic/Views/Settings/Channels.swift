@@ -95,7 +95,6 @@ struct Channels: View {
 								if channelKey == "AQ==" {
 									positionPrecision = 13
 									preciseLocation = false
-									positionsEnabled = true
 								}
 							} else if !supportedVersion && channelRole == 2 {
 								positionPrecision = 0
@@ -104,7 +103,7 @@ struct Channels: View {
 							} else {
 								if channelKey == "AQ==" {
 									preciseLocation = false
-									if positionPrecision < 10 || positionPrecision > 16 {
+									if (positionPrecision > 0 && positionPrecision < 10) || positionPrecision > 16 {
 										positionPrecision = 13
 									}
 								} else if positionPrecision == 32 {
@@ -226,7 +225,7 @@ struct Channels: View {
 					} label: {
 						Label("save", systemImage: "square.and.arrow.down")
 					}
-					.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !hasValidKey)
+					.disabled(bleManager.connectedPeripheral == nil)// || !hasChanges)// !hasValidKey)
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
 					.controlSize(.large)
@@ -259,10 +258,9 @@ struct Channels: View {
 					channelKey = key
 					positionsEnabled = false
 					preciseLocation = false
-					positionPrecision = 13
+					positionPrecision = 0
 					uplink = false
 					downlink = false
-					hasChanges = true
 
 					let newChannel = ChannelEntity(context: context)
 					newChannel.id = channelIndex
@@ -274,6 +272,7 @@ struct Channels: View {
 					newChannel.psk = Data(base64Encoded: channelKey) ?? Data()
 					newChannel.positionPrecision = Int32(positionPrecision)
 					selectedChannel = newChannel
+					hasChanges = true
 
 				} label: {
 					Label("Add Channel", systemImage: "plus.square")

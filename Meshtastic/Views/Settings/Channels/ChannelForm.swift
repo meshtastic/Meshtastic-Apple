@@ -130,7 +130,6 @@ struct ChannelForm: View {
 				}
 
 				Section(header: Text("position")) {
-
 					VStack(alignment: .leading) {
 						Toggle(isOn: $positionsEnabled) {
 							Label(channelRole == 1 ? "Positions Enabled" : "Allow Position Requests", systemImage: positionsEnabled ? "mappin" : "mappin.slash")
@@ -140,20 +139,21 @@ struct ChannelForm: View {
 					}
 
 					if positionsEnabled {
-						VStack(alignment: .leading) {
-							Toggle(isOn: $preciseLocation) {
-								Label("Precise Location", systemImage: "scope")
-							}
-							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							.disabled(!supportedVersion)
-							.listRowSeparator(.visible)
-							.onChange(of: preciseLocation) { pl in
-								if pl == false {
-									positionPrecision = 13
+						if channelKey != "AQ=="  && channelRole > 0 {
+							VStack(alignment: .leading) {
+								Toggle(isOn: $preciseLocation) {
+									Label("Precise Location", systemImage: "scope")
+								}
+								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+								.disabled(!supportedVersion)
+								.listRowSeparator(.visible)
+								.onChange(of: preciseLocation) { pl in
+									if pl == false {
+										positionPrecision = 13
+									}
 								}
 							}
 						}
-
 						if !preciseLocation {
 							VStack(alignment: .leading) {
 								Label("Approximate Location", systemImage: "location.slash.circle.fill")
@@ -213,7 +213,7 @@ struct ChannelForm: View {
 			}
 			.onChange(of: preciseLocation) { loc in
 				if loc == true {
-					if channelKey == "AQ==" && channelRole == 0 {
+					if channelKey == "AQ==" {
 						preciseLocation = false
 					} else {
 						positionPrecision = 32
