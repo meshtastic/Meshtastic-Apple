@@ -130,7 +130,9 @@ struct NodeMapSwiftUI: View {
 						if node.positions?.count ?? 0 > 1 {
 							position = .automatic
 						} else {
-							position = .camera(MapCamera(centerCoordinate: mostRecent!.coordinate, distance: 8000, heading: 0, pitch: 60))
+							if let mr = mostRecent?.coordinate {
+								position = .camera(MapCamera(centerCoordinate: mr.coordinate, distance: 8000, heading: 0, pitch: 60))
+							}
 						}
 						if self.scene == nil {
 							Task {
