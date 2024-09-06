@@ -118,17 +118,6 @@ struct PowerConfig: View {
 				.font(.subheadline)
 			}
 		}
-		.onAppear {
-			
-			// Need to request a Power config from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.powerConfig == nil {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestPowerConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-				}
-			}
-		}
-		
 		.onFirstAppear {
 			Api().loadDeviceHardwareData { (hw) in
 				for device in hw {
@@ -144,15 +133,17 @@ struct PowerConfig: View {
 				Logger.mesh.info("empty power config")
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let connectedNode {
-					if UserDefaults.enableAdministration {
-						/// 2.5 Administration with session passkey
-						let expiration = node.sessionExpiration ?? Date()
-						if expiration < Date() || node.positionConfig == nil {
-							_ = bleManager.requestPositionConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+					if node.num != connectedNode.num {
+						if UserDefaults.enableAdministration {
+							/// 2.5 Administration with session passkey
+							let expiration = node.sessionExpiration ?? Date()
+							if expiration < Date() || node.powerConfig == nil {
+								_ = bleManager.requestPowerConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						} else {
+							/// Legacy Administration
+							_ = bleManager.requestPowerConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 						}
-					} else {
-						/// Legacy Administration
-						_ = bleManager.requestPowerConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 					}
 				}
 			}

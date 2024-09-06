@@ -236,16 +236,18 @@ struct DeviceConfig: View {
 				Logger.mesh.info("empty device config")
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let connectedNode {
-					if UserDefaults.enableAdministration {
-						/// 2.5 Administration with session passkey
-						let expiration = node.sessionExpiration ?? Date()
-						if expiration < Date() || node.deviceConfig == nil {
-							_ = bleManager.requestDeviceConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
-						}
-					} else {
-						if node.deviceConfig == nil {
-							/// Legacy Administration
-							_ = bleManager.requestDeviceConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+					if node.num != connectedNode.num {
+						if UserDefaults.enableAdministration {
+							/// 2.5 Administration with session passkey
+							let expiration = node.sessionExpiration ?? Date()
+							if expiration < Date() || node.deviceConfig == nil {
+								_ = bleManager.requestDeviceConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						} else {
+							if node.deviceConfig == nil {
+								/// Legacy Administration
+								_ = bleManager.requestDeviceConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
 						}
 					}
 				}

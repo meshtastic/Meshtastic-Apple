@@ -383,15 +383,17 @@ struct PositionConfig: View {
 				Logger.mesh.info("empty position config")
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let connectedNode {
-					if UserDefaults.enableAdministration {
-						/// 2.5 Administration with session passkey
-						let expiration = node.sessionExpiration ?? Date()
-						if expiration < Date() || node.positionConfig == nil {
+					if node.num != connectedNode.num {
+						if UserDefaults.enableAdministration {
+							/// 2.5 Administration with session passkey
+							let expiration = node.sessionExpiration ?? Date()
+							if expiration < Date() || node.positionConfig == nil {
+								_ = bleManager.requestPositionConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						} else {
+							/// Legacy Administration
 							_ = bleManager.requestPositionConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 						}
-					} else {
-						/// Legacy Administration
-						_ = bleManager.requestPositionConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 					}
 				}
 			}

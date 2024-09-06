@@ -6,6 +6,7 @@
 //
 import MeshtasticProtobufs
 import SwiftUI
+import OSLog
 
 @available(iOS 17.0, macOS 14.0, *)
 struct AmbientLightingConfig: View {
@@ -85,12 +86,24 @@ struct AmbientLightingConfig: View {
 					)
 				}
 			)
-			.onAppear {
+			.onFirstAppear {
 				// Need to request a Ambient Lighting Config from the remote node before allowing changes
-				if bleManager.connectedPeripheral != nil && node?.ambientLightingConfig == nil {
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if node != nil && connectedNode != nil {
-						_ = bleManager.requestAmbientLightingConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+					Logger.mesh.info("empty ambient lighting config")
+					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+					if let connectedNode {
+						if node.num != connectedNode.num {
+							if UserDefaults.enableAdministration {
+								/// 2.5 Administration with session passkey
+								let expiration = node.sessionExpiration ?? Date()
+								if expiration < Date() || node.ambientLightingConfig == nil {
+									_ = bleManager.requestAmbientLightingConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								}
+							} else {
+								/// Legacy Administration
+								_ = bleManager.requestAmbientLightingConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						}
 					}
 				}
 			}
