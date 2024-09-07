@@ -35,7 +35,6 @@ struct UserList: View {
 	var boolFilters: [Bool] {[
 		isFavorite,
 		isOnline,
-		isPkiEncrypted,
 		isEnvironment,
 		distanceFilter,
 		roleFilter
@@ -45,11 +44,12 @@ struct UserList: View {
 		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false),
 						  NSSortDescriptor(key: "userNode.favorite", ascending: false),
 						  NSSortDescriptor(key: "pkiEncrypted", ascending: false),
+						  NSSortDescriptor(key: "userNode.lastHeard", ascending: false),
 						  NSSortDescriptor(key: "longName", ascending: true)],
-		predicate: NSPredicate(format: "hwModelId != nil"),
+		predicate: NSPredicate(format: "longName != ''"),
 		animation: .default
 	)
-	private var users: FetchedResults<UserEntity>
+	var users: FetchedResults<UserEntity>
 
 	@Binding var node: NodeInfoEntity?
 	@Binding var userSelection: UserEntity?
@@ -202,34 +202,55 @@ struct UserList: View {
 				DirectMessagesHelp()
 			}
 			.onChange(of: searchText) { _ in
-				searchUserList()
+				Task {
+					await searchUserList()
+				}
 			}
 			.onChange(of: viaLora) { _ in
 				if !viaLora && !viaMqtt {
 					viaMqtt = true
 				}
-				searchUserList()
+				Task {
+					await searchUserList()
+				}
 			}
 			.onChange(of: viaMqtt) { _ in
 				if !viaLora && !viaMqtt {
 					viaLora = true
 				}
-				searchUserList()
+				Task {
+					await searchUserList()
+				}
 			}
 			.onChange(of: [deviceRoles]) { _ in
-				searchUserList()
+				Task {
+					await searchUserList()
+				}
 			}
 			.onChange(of: hopsAway) { _ in
-				searchUserList()
+				Task {
+					await searchUserList()
+				}
 			}
 			.onChange(of: [boolFilters]) { _ in
-				searchUserList()
+				Task {
+					await searchUserList()
+				}
 			}
 			.onChange(of: maxDistance) { _ in
-				searchUserList()
+				Task {
+					await searchUserList()
+				}
+			}
+			.onChange(of: isPkiEncrypted) { _ in
+				Task {
+					await searchUserList()
+				}
 			}
 			.onAppear {
-				searchUserList()
+				Task {
+					await searchUserList()
+				}
 			}
 			.safeAreaInset(edge: .bottom, alignment: .leading) {
 				HStack {
@@ -267,8 +288,7 @@ struct UserList: View {
 				.scrollDismissesKeyboard(.immediately)
 		}
 	}
-
-	private func searchUserList() {
+	private func searchUserList() async {
 
 		/// Case Insensitive Search Text Predicates
 		let searchPredicates = ["userId", "numString", "hwModel", "hwDisplayName", "longName", "shortName"].map { property in

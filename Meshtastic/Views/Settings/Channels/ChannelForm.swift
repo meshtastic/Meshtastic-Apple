@@ -158,7 +158,7 @@ struct ChannelForm: View {
 							VStack(alignment: .leading) {
 								Label("Approximate Location", systemImage: "location.slash.circle.fill")
 
-								Slider(value: $positionPrecision, in: 10...16, step: 1) {
+								Slider(value: $positionPrecision, in: 11...14, step: 1) {
 								} minimumValueLabel: {
 									Image(systemName: "minus")
 								} maximumValueLabel: {
