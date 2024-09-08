@@ -120,7 +120,12 @@ struct MeshMap: View {
 					.padding()
 			}
 			.sheet(isPresented: $editingSettings) {
-				MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap)
+				MapSettingsForm(
+					traffic: $showTraffic,
+					pointsOfInterest: $showPointsOfInterest,
+					mapLayer: $selectedMapLayer,
+					meshMap: $isMeshMap
+				)
 			}
 			.onChange(of: router.navigationState) {
 				guard case .map = router.navigationState.selectedTab else { return }

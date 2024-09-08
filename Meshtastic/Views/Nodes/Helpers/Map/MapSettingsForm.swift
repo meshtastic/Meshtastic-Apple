@@ -18,6 +18,7 @@ struct MapSettingsForm: View {
 	@AppStorage("meshMapShowRouteLines") private var routeLines = false
 	@AppStorage("enableMapConvexHull") private var convexHull = false
 	@AppStorage("enableMapWaypoints") private var waypoints = true
+	@AppStorage("meshMapShowLocationPrecision") private var showLocationPrecision = true
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
 	@Binding var mapLayer: MapLayer
@@ -55,6 +56,13 @@ struct MapSettingsForm: View {
 						}
 						.onChange(of: meshMapDistance) { newMeshMapDistance in
 							UserDefaults.meshMapDistance = newMeshMapDistance
+						}
+						Toggle(isOn: $showLocationPrecision) {
+							Label("Show Location Precision", systemImage: "circle.dotted.and.circle")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.onTapGesture {
+							UserDefaults.meshMapShowLocationPrecision = !showLocationPrecision
 						}
 						Toggle(isOn: $waypoints) {
 							Label("Show Waypoints ", systemImage: "signpost.right.and.left")

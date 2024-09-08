@@ -50,6 +50,7 @@ extension UserDefaults {
 		case meshMapRecentering
 		case meshMapShowNodeHistory
 		case meshMapShowRouteLines
+		case meshMapShowLocationPrecision
 		case enableMapConvexHull
 		case enableMapRecentering
 		case enableMapNodeHistoryPins
@@ -96,6 +97,9 @@ extension UserDefaults {
 
 	@UserDefault(.meshMapDistance, defaultValue: 800000)
 	static var meshMapDistance: Double
+	
+	@UserDefault(.meshMapShowLocationPrecision, defaultValue: true)
+	static var meshMapShowLocationPrecision: Bool
 
 	@UserDefault(.enableMapWaypoints, defaultValue: false)
 	static var enableMapWaypoints: Bool
