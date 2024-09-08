@@ -38,7 +38,7 @@ struct WidgetsLiveActivity: Widget {
 							.fixedSize()
 						Spacer()
 					}
-					if context.state.nodesOnline >= 100 {
+					if context.state.totalNodes >= 100 {
 						Text("100+ online")
 							.font(.caption)
 							.foregroundStyle(.secondary)
@@ -81,7 +81,7 @@ struct WidgetsLiveActivity: Widget {
 						.font(.caption)
 						.foregroundStyle(.secondary)
 						.fixedSize()
-					Text("Bad \(context.state.badReceivedPackets)")
+					Text("Bad: \(context.state.badReceivedPackets)")
 						.font(.caption)
 						.foregroundStyle(.secondary)
 						.fixedSize()
@@ -97,7 +97,7 @@ struct WidgetsLiveActivity: Widget {
             } compactLeading: {
 				Image("m-logo-black")
 					.resizable()
-					.frame(width: 30.0)
+					.frame(width: 25)
 					.padding(4)
 					.background(.green.gradient, in: ContainerRelativeShape())
             } compactTrailing: {
@@ -120,26 +120,25 @@ struct WidgetsLiveActivity: Widget {
     }
 }
 
-//struct WidgetsLiveActivity_Previews: PreviewProvider {
-//	static let attributes = MeshActivityAttributes(nodeNum: 123456789, name: "RAK Compact Rotary Handset Gray 8E6G")
-//	static let state = MeshActivityAttributes.ContentState(
-//		timerRange: Date.now...Date(timeIntervalSinceNow: 60), connected: true, channelUtilization: 25.84, airtime: 10.01, batteryLevel: 39, nodes: 17, nodesOnline: 9)
-//
-//    static var previews: some View {
-//        attributes
-//            .previewContext(state, viewKind: .dynamicIsland(.compact))
-//            .previewDisplayName("Compact")
-//		attributes
-//			.previewContext(state, viewKind: .dynamicIsland(.minimal))
-//			.previewDisplayName("Minimal")
-//        attributes
-//            .previewContext(state, viewKind: .dynamicIsland(.expanded))
-//            .previewDisplayName("Expanded")
-//		attributes
-//			.previewContext(state, viewKind: .content)
-//			.previewDisplayName("Notification")
-//    }
-//}
+struct WidgetsLiveActivity_Previews: PreviewProvider {
+	static let attributes = MeshActivityAttributes(nodeNum: 123456789, name: "RAK Compact Rotary Handset Gray 8E6G")
+	static let state = MeshActivityAttributes.ContentState(uptimeSeconds: 600, channelUtilization: 1.2, airtime: 3.5, sentPackets: 12587, receivedPackets: 12555, badReceivedPackets: 800, nodesOnline: 99, totalNodes: 100, timerRange: Date.now...Date(timeIntervalSinceNow: 300))
+
+    static var previews: some View {
+        attributes
+            .previewContext(state, viewKind: .dynamicIsland(.compact))
+            .previewDisplayName("Compact")
+		attributes
+			.previewContext(state, viewKind: .dynamicIsland(.minimal))
+			.previewDisplayName("Minimal")
+        attributes
+            .previewContext(state, viewKind: .dynamicIsland(.expanded))
+            .previewDisplayName("Expanded")
+		attributes
+			.previewContext(state, viewKind: .content)
+			.previewDisplayName("Notification")
+    }
+}
 
 struct LiveActivityView: View {
 	@Environment(\.colorScheme) private var colorScheme
@@ -203,13 +202,7 @@ struct NodeInfoView: View {
 				.foregroundStyle(.secondary)
 				.opacity(isLuminanceReduced ? 0.8 : 1.0)
 				.fixedSize()
-			Text("Packets Sent: \(sentPackets)")
-				.font(.caption)
-				.fontWeight(.medium)
-				.foregroundStyle(.secondary)
-				.opacity(isLuminanceReduced ? 0.8 : 1.0)
-				.fixedSize()
-			Text("Packets Received: \(receivedPackets)")
+			Text("Packets: Sent \(sentPackets) Rec. \(receivedPackets)")
 				.font(.caption)
 				.fontWeight(.medium)
 				.foregroundStyle(.secondary)
