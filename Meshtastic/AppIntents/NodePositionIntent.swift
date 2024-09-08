@@ -14,13 +14,12 @@ struct NodePositionIntent: AppIntent {
 
 	@Parameter(title: "Node Number")
 	var nodeNum: Int
-	
+
 	static var title: LocalizedStringResource = "Get Node Position"
 	static var description: IntentDescription = "Fetch the latest position of a cetain node"
-	
-	
+
 	func perform() async throws -> some IntentResult & ReturnsValue<CLPlacemark> {
-		if (!BLEManager.shared.isConnected) {
+		if !BLEManager.shared.isConnected {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 			let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "NodeInfoEntity")
@@ -29,17 +28,17 @@ struct NodePositionIntent: AppIntent {
 				guard let fetchedNode = try PersistenceController.shared.container.viewContext.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity], fetchedNode.count == 1 else {
 					throw $nodeNum.needsValueError("Could not find node")
 				}
-				
+
 				let nodeInfo = fetchedNode[0]
 				nodeInfo.latestEnvironmentMetrics?.batteryLevel
 				if let latitude = nodeInfo.latestPosition?.coordinate.latitude,
 				   let longitude = nodeInfo.latestPosition?.coordinate.longitude {
 					let nodeLocation = CLLocation(latitude: latitude, longitude: longitude)
-					
+
 					// Reverse geocode the CLLocation to get a CLPlacemark
 					let geocoder = CLGeocoder()
 					let placemarks = try await geocoder.reverseGeocodeLocation(nodeLocation)
-					
+
 					if let placemark = placemarks.first {
 						return .result(value: placemark)
 					} else {
@@ -52,6 +51,5 @@ struct NodePositionIntent: AppIntent {
 				throw AppIntentErrors.AppIntentError.message("Fetch Failure")
 			}
 		}
-	
-}
 
+}

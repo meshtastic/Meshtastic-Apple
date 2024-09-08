@@ -77,8 +77,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		   centralManager = CBCentralManager(delegate: self, queue: nil)
 		   mqttManager.delegate = self
 	   }
-   
-
 
 	// MARK: Scanning for BLE Devices
 	// Scan for nearby BLE devices using the Meshtastic BLE service ID
@@ -1970,7 +1968,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		let messageDescription = "🛟 Saved LoRa Config for \(toUser.longName ?? "unknown".localized)"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
-			upsertLoRaConfigPacket(config: config, nodeNum: toUser.num, sessionPasskey: toUser.userNode?.sessionPasskey,context: context)
+			upsertLoRaConfigPacket(config: config, nodeNum: toUser.num, sessionPasskey: toUser.userNode?.sessionPasskey, context: context)
 			return Int64(meshPacket.id)
 		}
 
