@@ -208,7 +208,8 @@ struct NodeInfoView: View {
 				.foregroundStyle(.secondary)
 				.opacity(isLuminanceReduced ? 0.8 : 1.0)
 				.fixedSize()
-			Text("Bad Packets: \(badReceivedPackets)")
+			let errorRate = (Double(badReceivedPackets) / Double(receivedPackets)) * 100
+			Text("Bad: \(badReceivedPackets) \(String(format: "Error Rate: %.2f", errorRate))%")
 				.font(.caption)
 				.fontWeight(.medium)
 				.foregroundStyle(.secondary)
