@@ -14,6 +14,7 @@ struct MeshMapContent: MapContent {
 	/// Parameters
 	@Binding var showUserLocation: Bool
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
+	@AppStorage("meshMapShowLocationPrecision") private var showLocationPrecision = true
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
 	@AppStorage("enableMapConvexHull") private var showConvexHull = false
 	@Binding var showTraffic: Bool
@@ -134,7 +135,7 @@ struct MeshMapContent: MapContent {
 			if 10...19 ~= position.precisionBits {
 				let pp = PositionPrecision(rawValue: Int(position.precisionBits))
 				let radius: CLLocationDistance = pp?.precisionMeters ?? 0
-				if radius > 0.0 {
+				if radius > 0.0 && showLocationPrecision {
 					MapCircle(center: position.coordinate, radius: radius)
 						.foregroundStyle(Color(nodeColor).opacity(0.25))
 						.stroke(.white, lineWidth: 2)
