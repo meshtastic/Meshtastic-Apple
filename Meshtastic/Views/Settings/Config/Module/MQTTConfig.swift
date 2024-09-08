@@ -32,7 +32,7 @@ struct MQTTConfig: View {
 	@State var nearbyTopics = [String]()
 	@State var mapReportingEnabled = false
 	@State var mapPublishIntervalSecs = 3600
-	@State var mapPositionPrecision: Double = 13.0
+	@State var mapPositionPrecision: Double = 14.0
 
 	let locale = Locale.current
 
