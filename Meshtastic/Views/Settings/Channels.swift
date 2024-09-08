@@ -93,7 +93,7 @@ struct Channels: View {
 								preciseLocation = true
 								positionsEnabled = true
 								if channelKey == "AQ==" {
-									positionPrecision = 13
+									positionPrecision = 14
 									preciseLocation = false
 								}
 							} else if !supportedVersion && channelRole == 2 {
@@ -103,8 +103,8 @@ struct Channels: View {
 							} else {
 								if channelKey == "AQ==" {
 									preciseLocation = false
-									if (positionPrecision > 0 && positionPrecision < 10) || positionPrecision > 16 {
-										positionPrecision = 13
+									if (positionPrecision > 0 && positionPrecision < 11) || positionPrecision > 14 {
+										positionPrecision = 14
 									}
 								} else if positionPrecision == 32 {
 									preciseLocation = true
