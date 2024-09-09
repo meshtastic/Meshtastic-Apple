@@ -80,6 +80,7 @@ final class MQTTManager {
 		client.enableSSL = useSsl
 		client.allowUntrustCACertificate = true
 		client.autoReconnect = true
+		client.cleanSession = false // allow delivering old messages
 		client.willMessage = CocoaMQTTMessage(topic: "/will", string: "dieout")
 		#if DEBUG
 		client.logLevel = .debug
