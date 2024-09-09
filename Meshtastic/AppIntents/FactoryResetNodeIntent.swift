@@ -11,10 +11,10 @@ import AppIntents
 struct FactoryResetNodeIntent: AppIntent {
 	static var title: LocalizedStringResource = "Factory Reset"
 	static var description: IntentDescription = "Perform a factory reset on the node you are connected to"
-	
+
 	func perform() async throws -> some IntentResult {
 		// Request user confirmation before performing the factory reset
-		try await requestConfirmation(result: .result(dialog: "Are you sure you want to factory reset the node?"),confirmationActionName: ConfirmationActionName
+		try await requestConfirmation(result: .result(dialog: "Are you sure you want to factory reset the node?"), confirmationActionName: ConfirmationActionName
 			.custom(acceptLabel: "Factory Reset", acceptAlternatives: [], denyLabel: "Cancel", denyAlternatives: [], destructive: true))
 
 		// Ensure the node is connected
@@ -27,7 +27,7 @@ struct FactoryResetNodeIntent: AppIntent {
 		   let connectedNode = getNodeInfo(id: connectedPeripheralNum, context: PersistenceController.shared.container.viewContext),
 		   let fromUser = connectedNode.user,
 		   let toUser = connectedNode.user {
-		   
+
 			// Attempt to send a factory reset command, throw an error if it fails
 			if !BLEManager.shared.sendFactoryReset(fromUser: fromUser, toUser: toUser) {
 				throw AppIntentErrors.AppIntentError.message("Failed to perform factory reset")

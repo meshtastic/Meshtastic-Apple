@@ -271,7 +271,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].user!.role = Int32(nodeInfoMessage.user.role.rawValue)
 					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
 					fetchedNode[0].user!.hwModelId = Int32(nodeInfoMessage.user.hwModel.rawValue)
-					
+
 					if !packet.publicKey.isEmpty {
 						fetchedNode[0].user!.pkiEncrypted = packet.pkiEncrypted
 						fetchedNode[0].user!.publicKey = packet.publicKey

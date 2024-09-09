@@ -16,10 +16,10 @@ struct SendWaypointIntent: AppIntent {
 
 	@Parameter(title: "Name", default: "Dropped Pin")
 	var nameParameter: String?
-	
+
 	@Parameter(title: "Description", default: "")
 	var descriptionParameter: String?
-	
+
 	@Parameter(title: "Emoji", default: "📍")
 	var emojiParameter: String?
 
@@ -27,19 +27,19 @@ struct SendWaypointIntent: AppIntent {
 	var locationParameter: CLPlacemark
 
 	func perform() async throws -> some IntentResult {
-		if (!BLEManager.shared.isConnected){
+		if !BLEManager.shared.isConnected {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 		// Provide default values if parameters are nil
 		let name = nameParameter ?? "Dropped Pin"
 		let description = descriptionParameter ?? ""
 		let emoji = emojiParameter ?? "📍"
-		
+
 		// Validate name length
 		if name.utf8.count > 30 {
 			throw $nameParameter.needsValueError("Name must be less than 30 bytes")
 		}
-		
+
 		// Validate description length
 		if description.utf8.count > 100 {
 			throw $descriptionParameter.needsValueError("Description must be less than 100 bytes")
@@ -60,7 +60,6 @@ struct SendWaypointIntent: AppIntent {
 			newWaypoint.longitudeI = Int32(longitude * 10_000_000)
 		}
 
-
 		newWaypoint.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		// Unicode scalar value for the icon emoji string
 		let unicodeScalers = emoji.unicodeScalars
@@ -69,12 +68,10 @@ struct SendWaypointIntent: AppIntent {
 		newWaypoint.icon = unicode
 		newWaypoint.name = name
 		newWaypoint.description_p = description
-		if(!BLEManager.shared.sendWaypoint(waypoint: newWaypoint)){
+		if !BLEManager.shared.sendWaypoint(waypoint: newWaypoint) {
 			throw AppIntentErrors.AppIntentError.message("Failed to Send Waypoint")
 		}
-		
-		
-		
+
 		return .result()
 	}
 

@@ -120,7 +120,7 @@ struct WidgetsLiveActivity: Widget {
     }
 }
 
-//struct WidgetsLiveActivity_Previews: PreviewProvider {
+// struct WidgetsLiveActivity_Previews: PreviewProvider {
 //	static let attributes = MeshActivityAttributes(nodeNum: 123456789, name: "RAK Compact Rotary Handset Gray 8E6G")
 //	static let state = MeshActivityAttributes.ContentState(
 //		timerRange: Date.now...Date(timeIntervalSinceNow: 60), connected: true, channelUtilization: 25.84, airtime: 10.01, batteryLevel: 39, nodes: 17, nodesOnline: 9)
@@ -139,7 +139,7 @@ struct WidgetsLiveActivity: Widget {
 //			.previewContext(state, viewKind: .content)
 //			.previewDisplayName("Notification")
 //    }
-//}
+// }
 
 struct LiveActivityView: View {
 	@Environment(\.colorScheme) private var colorScheme
