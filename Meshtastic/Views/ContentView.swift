@@ -13,14 +13,7 @@ struct ContentView: View {
 	var router: Router
 
 	var body: some View {
-		TabView(selection: Binding(
-			get: {
-				appState.router.navigationState.tab
-			},
-			set: { newValue in
-				appState.router.navigationState.tab = newValue
-			}
-		)) {
+		TabView(selection: $appState.router.navigationState.selectedTab) {
 			Messages(
 				router: appState.router,
 				unreadChannelMessages: $appState.unreadChannelMessages,

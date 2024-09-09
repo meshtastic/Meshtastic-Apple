@@ -98,9 +98,6 @@ struct ChannelMessageList: View {
 											Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
 												.foregroundStyle(ackErrorVal?.color ?? Color.red)
 												.font(.caption2)
-										} else {
-											let messageDate = message.timestamp
-											Text(" \(messageDate.formattedDate(format: MessageText.dateFormatString))").font(.caption2).foregroundColor(.gray)
 										}
 									}
 								}

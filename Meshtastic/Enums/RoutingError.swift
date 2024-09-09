@@ -95,7 +95,7 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .notAuthorized:
 			return true
 		case .pkiFailed:
-			return false
+			return true
 		case .pkiUnknownPubkey:
 			return false
 		}

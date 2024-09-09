@@ -36,6 +36,10 @@
 		BCB613832C672A2600485544 /* MessageChannelIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613822C672A2600485544 /* MessageChannelIntent.swift */; };
 		BCB613852C68703800485544 /* NodePositionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613842C68703800485544 /* NodePositionIntent.swift */; };
 		BCB613872C69A0FB00485544 /* AppIntentErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613862C69A0FB00485544 /* AppIntentErrors.swift */; };
+		BCE2D3C32C7ADF42008E6199 /* ShutDownNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C22C7ADF42008E6199 /* ShutDownNodeIntent.swift */; };
+		BCE2D3C52C7AE369008E6199 /* RestartNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C42C7AE369008E6199 /* RestartNodeIntent.swift */; };
+		BCE2D3C72C7B0D0A008E6199 /* ShortcutsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */; };
+		BCE2D3C92C7C377F008E6199 /* FactoryResetNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C82C7C377F008E6199 /* FactoryResetNodeIntent.swift */; };
 		C9697FA527933B8C00250207 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = C9697FA427933B8C00250207 /* SQLite */; };
 		D93068D32B8129510066FBC8 /* MessageContextMenuItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */; };
 		D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D42B812B700066FBC8 /* MessageDestination.swift */; };
@@ -275,6 +279,10 @@
 		BCB613822C672A2600485544 /* MessageChannelIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageChannelIntent.swift; sourceTree = "<group>"; };
 		BCB613842C68703800485544 /* NodePositionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodePositionIntent.swift; sourceTree = "<group>"; };
 		BCB613862C69A0FB00485544 /* AppIntentErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntentErrors.swift; sourceTree = "<group>"; };
+		BCE2D3C22C7ADF42008E6199 /* ShutDownNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShutDownNodeIntent.swift; sourceTree = "<group>"; };
+		BCE2D3C42C7AE369008E6199 /* RestartNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestartNodeIntent.swift; sourceTree = "<group>"; };
+		BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsProvider.swift; sourceTree = "<group>"; };
+		BCE2D3C82C7C377F008E6199 /* FactoryResetNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FactoryResetNodeIntent.swift; sourceTree = "<group>"; };
 		D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageContextMenuItems.swift; sourceTree = "<group>"; };
 		D93068D42B812B700066FBC8 /* MessageDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDestination.swift; sourceTree = "<group>"; };
 		D93068D62B8146690066FBC8 /* MessageText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageText.swift; sourceTree = "<group>"; };
@@ -368,6 +376,7 @@
 		DD77093C2AA1AFA3007A8BF0 /* ChannelTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelTips.swift; sourceTree = "<group>"; };
 		DD77093E2AA1B146007A8BF0 /* UIColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor.swift; sourceTree = "<group>"; };
 		DD798B062915928D005217CD /* ChannelMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelMessageList.swift; sourceTree = "<group>"; };
+		DD7E235F2C7AA3E50078ACDF /* MeshtasticDataModelV 43.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 43.xcdatamodel"; sourceTree = "<group>"; };
 		DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshLogger.swift; sourceTree = "<group>"; };
 		DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshLog.swift; sourceTree = "<group>"; };
 		DD8169FE272476C700F4AB02 /* LogDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDocument.swift; sourceTree = "<group>"; };
@@ -573,6 +582,10 @@
 				BCB613822C672A2600485544 /* MessageChannelIntent.swift */,
 				BCB613842C68703800485544 /* NodePositionIntent.swift */,
 				BCB613862C69A0FB00485544 /* AppIntentErrors.swift */,
+				BCE2D3C22C7ADF42008E6199 /* ShutDownNodeIntent.swift */,
+				BCE2D3C42C7AE369008E6199 /* RestartNodeIntent.swift */,
+				BCE2D3C82C7C377F008E6199 /* FactoryResetNodeIntent.swift */,
+				BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */,
 			);
 			path = AppIntents;
 			sourceTree = "<group>";
@@ -706,8 +719,8 @@
 				DD41582528582E9B009B0E59 /* DeviceConfig.swift */,
 				DD8EBF42285058FA00426DCA /* DisplayConfig.swift */,
 				DD2553562855B02500E55709 /* LoRaConfig.swift */,
-				DD2553582855B52700E55709 /* PositionConfig.swift */,
 				DD8ED9C42898D51F00B3B0AB /* NetworkConfig.swift */,
+				DD2553582855B52700E55709 /* PositionConfig.swift */,
 				D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */,
 				DD1BD0F22C63C65E008C0C70 /* SecurityConfig.swift */,
 				DD61937B2863877A00E59241 /* Module */,
@@ -1257,6 +1270,7 @@
 				25F26B1F2C2F611300C9CD9D /* AppData.swift in Sources */,
 				25F26B1E2C2F610D00C9CD9D /* Logger.swift in Sources */,
 				259792252C2F114500AD1659 /* ChannelEntityExtension.swift in Sources */,
+				BCE2D3C52C7AE369008E6199 /* RestartNodeIntent.swift in Sources */,
 				259792262C2F114500AD1659 /* PositionEntityExtension.swift in Sources */,
 				259792272C2F114500AD1659 /* TraceRouteEntityExtension.swift in Sources */,
 				DDDB444829F8A9C900EE2349 /* String.swift in Sources */,
@@ -1361,6 +1375,7 @@
 				D93068D32B8129510066FBC8 /* MessageContextMenuItems.swift in Sources */,
 				DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */,
 				DD964FC42974767D007C176F /* MapViewFitExtension.swift in Sources */,
+				BCE2D3C72C7B0D0A008E6199 /* ShortcutsProvider.swift in Sources */,
 				DD47E3D626F17ED900029299 /* CircleText.swift in Sources */,
 				DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */,
 				DD2553572855B02500E55709 /* LoRaConfig.swift in Sources */,
@@ -1421,6 +1436,7 @@
 				BCB613872C69A0FB00485544 /* AppIntentErrors.swift in Sources */,
 				DD73FD1128750779000852D6 /* PositionLog.swift in Sources */,
 				DD15E4F52B8BFC8E00654F61 /* PaxCounterLog.swift in Sources */,
+				BCE2D3C32C7ADF42008E6199 /* ShutDownNodeIntent.swift in Sources */,
 				25F5D5C22C3F6E4B008036E3 /* AppState.swift in Sources */,
 				DD3CC6C028E7A60700FA9159 /* MessagingEnums.swift in Sources */,
 				DD6F657B2C6EC2900053C113 /* LockLegend.swift in Sources */,
@@ -1436,6 +1452,7 @@
 				DDDB26442AAC0206003AFCB7 /* NodeDetail.swift in Sources */,
 				DD77093F2AA1B146007A8BF0 /* UIColor.swift in Sources */,
 				DDF6B2482A9AEBF500BA6931 /* StoreForwardConfig.swift in Sources */,
+				BCE2D3C92C7C377F008E6199 /* FactoryResetNodeIntent.swift in Sources */,
 				DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */,
 				DD93800B2BA3F968008BEC06 /* NodeMapContent.swift in Sources */,
 				DD41582A28585C32009B0E59 /* RangeTestConfig.swift in Sources */,
@@ -1669,7 +1686,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.5.2;
+				MARKETING_VERSION = 2.5.4;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1704,7 +1721,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.5.2;
+				MARKETING_VERSION = 2.5.4;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1736,7 +1753,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.5.2;
+				MARKETING_VERSION = 2.5.4;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1769,7 +1786,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.5.2;
+				MARKETING_VERSION = 2.5.4;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1881,6 +1898,7 @@
 		DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DD7E235F2C7AA3E50078ACDF /* MeshtasticDataModelV 43.xcdatamodel */,
 				DD1BD0F12C61D3AD008C0C70 /* MeshtasticDataModelV 42.xcdatamodel */,
 				DD2984A82C5AEF7500B1268D /* MeshtasticDataModelV 41.xcdatamodel */,
 				DD68BAE72C417A74004C01A0 /* MeshtasticDataModelV 40.xcdatamodel */,
@@ -1924,7 +1942,7 @@
 				DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
 				DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
 			);
-			currentVersion = DD1BD0F12C61D3AD008C0C70 /* MeshtasticDataModelV 42.xcdatamodel */;
+			currentVersion = DD7E235F2C7AA3E50078ACDF /* MeshtasticDataModelV 43.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";

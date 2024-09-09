@@ -1153,7 +1153,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	}
 
 	@MainActor
-	public func getPositionFromPhoneGPS(destNum: Int64) -> Position? {
+	public func getPositionFromPhoneGPS(destNum: Int64, fixedPosition: Bool) -> Position? {
 		var positionPacket = Position()
 		if #available(iOS 17.0, macOS 14.0, *) {
 
@@ -1172,7 +1172,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
 			positionPacket.altitude = Int32(lastLocation.altitude)
 			positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
-
 			let currentSpeed = lastLocation.speed
 			if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite) {
 				positionPacket.groundSpeed = UInt32(currentSpeed)
@@ -1180,6 +1179,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			let currentHeading = lastLocation.course
 			if (currentHeading > 0  && currentHeading <= 360) && (!currentHeading.isNaN || !currentHeading.isInfinite) {
 				positionPacket.groundTrack = UInt32(currentHeading)
+			}
+			/// Set location source for time
+			if !fixedPosition {
+				/// From GPS treat time as good
+				positionPacket.locationSource = Position.LocSource.locExternal
+			} else {
+				/// From GPS, but time can be old and have drifted
+				positionPacket.locationSource = Position.LocSource.locManual
 			}
 
 		} else {
@@ -1199,6 +1206,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			if (currentHeading > 0  && currentHeading <= 360) && (!currentHeading.isNaN || !currentHeading.isInfinite) {
 				positionPacket.groundTrack = UInt32(currentHeading)
 			}
+			/// Set location source for time
+			if !fixedPosition {
+				/// From GPS treat time as good
+				positionPacket.locationSource = Position.LocSource.locExternal
+			} else {
+				/// From GPS, but time can be old and have drifted
+				positionPacket.locationSource = Position.LocSource.locManual
+			}
 		}
 		return positionPacket
 	}
@@ -1206,7 +1221,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	@MainActor
 	public func setFixedPosition(fromUser: UserEntity, channel: Int32) -> Bool {
 		var adminPacket = AdminMessage()
-		guard let positionPacket = getPositionFromPhoneGPS(destNum: fromUser.num) else {
+		guard let positionPacket = getPositionFromPhoneGPS(destNum: fromUser.num, fixedPosition: true) else {
 			return false
 		}
 		adminPacket.setFixedPosition = positionPacket
@@ -1261,7 +1276,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	@MainActor
 	public func sendPosition(channel: Int32, destNum: Int64, wantResponse: Bool) -> Bool {
 		let fromNodeNum = connectedPeripheral.num
-		guard let positionPacket = getPositionFromPhoneGPS(destNum: destNum) else {
+		guard let positionPacket = getPositionFromPhoneGPS(destNum: destNum, fixedPosition: false) else {
 			Logger.services.error("Unable to get position data from device GPS to send to node")
 			return false
 		}
@@ -1314,7 +1329,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var adminPacket = AdminMessage()
 		adminPacket.setTimeOnly = UInt32(Date().timeIntervalSince1970)
 		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = 0
+		meshPacket.to = UInt32(self.connectedPeripheral.num)
+		meshPacket.from = UInt32(self.connectedPeripheral.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -2548,6 +2564,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.bluetoothConfig
+		if UserDefaults.enableAdministration {
+			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
+		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)

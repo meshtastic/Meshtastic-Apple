@@ -24,7 +24,7 @@ struct MQTTConfig: View {
 	@State var password = ""
 	@State var encryptionEnabled = true
 	@State var jsonEnabled = false
-	@State var tlsEnabled = true
+	@State var tlsEnabled = false
 	@State var root = "msh"
 	@State var selectedTopic = ""
 	@State var mqttConnected: Bool = false
@@ -32,8 +32,7 @@ struct MQTTConfig: View {
 	@State var nearbyTopics = [String]()
 	@State var mapReportingEnabled = false
 	@State var mapPublishIntervalSecs = 3600
-	@State var preciseLocation: Bool = false
-	@State var mapPositionPrecision: Double = 13.0
+	@State var mapPositionPrecision: Double = 14.0
 
 	let locale = Locale.current
 
@@ -105,35 +104,17 @@ struct MQTTConfig: View {
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
-
 						VStack(alignment: .leading) {
-							Toggle(isOn: $preciseLocation) {
-								Label("Precise Location", systemImage: "scope")
+							Label("Approximate Location", systemImage: "location.slash.circle.fill")
+							Slider(value: $mapPositionPrecision, in: 11...14, step: 1) {
+							} minimumValueLabel: {
+								Image(systemName: "minus")
+							} maximumValueLabel: {
+								Image(systemName: "plus")
 							}
-							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							.listRowSeparator(.visible)
-							.onChange(of: preciseLocation) { pl in
-								if pl == false {
-									mapPositionPrecision = 12
-								} else {
-									mapPositionPrecision = 32
-								}
-							}
-						}
-
-						if !preciseLocation {
-							VStack(alignment: .leading) {
-								Label("Approximate Location", systemImage: "location.slash.circle.fill")
-								Slider(value: $mapPositionPrecision, in: 11...16, step: 1) {
-								} minimumValueLabel: {
-									Image(systemName: "minus")
-								} maximumValueLabel: {
-									Image(systemName: "plus")
-								}
-								Text(PositionPrecision(rawValue: Int(mapPositionPrecision))?.description ?? "")
-									.foregroundColor(.gray)
-									.font(.callout)
-							}
+							Text(PositionPrecision(rawValue: Int(mapPositionPrecision))?.description ?? "")
+								.foregroundColor(.gray)
+								.font(.callout)
 						}
 					}
 				}
@@ -234,7 +215,7 @@ struct MQTTConfig: View {
 					.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
 					Toggle(isOn: $tlsEnabled) {
 						Label("TLS Enabled", systemImage: "checkmark.shield.fill")
-						Text("Your MQTT Server must support TLS.")
+						Text("Your MQTT Server must support TLS. Not available via the public mqtt server.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
@@ -288,9 +269,6 @@ struct MQTTConfig: View {
 				jsonEnabled = false
 			}
 			if newProxyToClientEnabled != node?.mqttConfig?.proxyToClientEnabled { hasChanges = true }
-			if newProxyToClientEnabled {
-				jsonEnabled = false
-			}
 		}
 		.onChange(of: address) { newAddress in
 			if node != nil && node?.mqttConfig != nil {
@@ -324,8 +302,12 @@ struct MQTTConfig: View {
 			}
 			if newJsonEnabled != node?.mqttConfig?.jsonEnabled { hasChanges = true }
 		}
-		.onChange(of: tlsEnabled) {
-			if $0 != node?.mqttConfig?.tlsEnabled { hasChanges = true }
+		.onChange(of: tlsEnabled) { newTlsEnabled in
+			if address.lowercased() == "mqtt.meshtastic.org" {
+				tlsEnabled = false
+			} else {
+				if newTlsEnabled != node?.mqttConfig?.tlsEnabled { hasChanges = true }
+			}
 		}
 		.onChange(of: mqttConnected) { newMqttConnected in
 			if newMqttConnected == false {
@@ -346,13 +328,24 @@ struct MQTTConfig: View {
 				if newMapPublishIntervalSecs != node!.mqttConfig!.mapPublishIntervalSecs { hasChanges = true }
 			}
 		}
-		.onAppear {
-			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.mqttConfig == nil {
+		.onFirstAppear {
+			// Need to request a MqttModuleConfig from the remote node before allowing changes
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
 				Logger.mesh.info("empty mqtt module config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let connectedNode {
+					if node.num != connectedNode.num {
+						if UserDefaults.enableAdministration && node.num != connectedNode.num {
+							/// 2.5 Administration with session passkey
+							let expiration = node.sessionExpiration ?? Date()
+							if expiration < Date() || node.mqttConfig == nil {
+								_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						} else {
+							/// Legacy Administration
+							_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					}
 				}
 			}
 		}
@@ -417,11 +410,12 @@ struct MQTTConfig: View {
 		self.mqttConnected = bleManager.mqttProxyConnected
 		self.mapReportingEnabled = node?.mqttConfig?.mapReportingEnabled ?? false
 		self.mapPublishIntervalSecs = Int(node?.mqttConfig?.mapPublishIntervalSecs ?? 3600)
-		self.mapPositionPrecision = Double(node?.mqttConfig?.mapPositionPrecision ?? 12)
-		if mapPositionPrecision == 0.0 {
-			self.mapPositionPrecision = 12
+		self.mapPositionPrecision = Double(node?.mqttConfig?.mapPositionPrecision ?? 14)
+		if mapPositionPrecision < 11 || mapPositionPrecision > 14 {
+			self.mapPositionPrecision = 14
+			self.hasChanges = true
+		} else {
+			self.hasChanges = false
 		}
-		self.preciseLocation = mapPositionPrecision == 32
-		self.hasChanges = false
 	}
 }

@@ -51,9 +51,9 @@ struct NodeDetail: View {
 									Text("Public Key Mismatch")
 										.font(.title3)
 										.foregroundStyle(.red)
-									Text("The public key does not match the recorded key. You may delete the node and let it exchange keys again, but this may indicate a more serious security problem. Contact the user through another trusted channel, to determine if the key change was due to a factory reset or other intentional action.")
-										.font(.caption)
-										.foregroundStyle(.red)
+									Text("The most recent public key for this node does not match the previously recorded key. You can delete the node and let it exchange keys again, but this also may indicate a more serious security problem. Contact the user through another trusted channel to determine if the key change was due to a factory reset or other intentional action.")
+										.foregroundStyle(.secondary)
+										.font(.callout)
 								}
 							} icon: {
 								Image(systemName: "key.slash.fill")

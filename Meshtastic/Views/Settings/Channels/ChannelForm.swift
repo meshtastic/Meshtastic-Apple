@@ -130,7 +130,6 @@ struct ChannelForm: View {
 				}
 
 				Section(header: Text("position")) {
-
 					VStack(alignment: .leading) {
 						Toggle(isOn: $positionsEnabled) {
 							Label(channelRole == 1 ? "Positions Enabled" : "Allow Position Requests", systemImage: positionsEnabled ? "mappin" : "mappin.slash")
@@ -140,24 +139,26 @@ struct ChannelForm: View {
 					}
 
 					if positionsEnabled {
-						VStack(alignment: .leading) {
-							Toggle(isOn: $preciseLocation) {
-								Label("Precise Location", systemImage: "scope")
-							}
-							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							.disabled(!supportedVersion)
-							.listRowSeparator(.visible)
-							.onChange(of: preciseLocation) { pl in
-								if pl == false {
-									positionPrecision = 13
+						if channelKey != "AQ=="  && channelRole > 0 {
+							VStack(alignment: .leading) {
+								Toggle(isOn: $preciseLocation) {
+									Label("Precise Location", systemImage: "scope")
+								}
+								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+								.disabled(!supportedVersion)
+								.listRowSeparator(.visible)
+								.onChange(of: preciseLocation) { pl in
+									if pl == false {
+										positionPrecision = 14
+									}
 								}
 							}
 						}
-
 						if !preciseLocation {
 							VStack(alignment: .leading) {
 								Label("Approximate Location", systemImage: "location.slash.circle.fill")
-								Slider(value: $positionPrecision, in: 10...19, step: 1) {
+
+								Slider(value: $positionPrecision, in: 11...14, step: 1) {
 								} minimumValueLabel: {
 									Image(systemName: "minus")
 								} maximumValueLabel: {
@@ -199,11 +200,24 @@ struct ChannelForm: View {
 			.onChange(of: channelKey) { _ in
 				hasChanges = true
 			}
+			.onChange(of: channelKeySize) { _ in
+				if channelKeySize == -1 {
+					if channelRole == 0 {
+						preciseLocation = false
+					}
+					channelKey = "AQ=="
+				}
+			}
 			.onChange(of: channelRole) { _ in
 				hasChanges = true
 			}
 			.onChange(of: preciseLocation) { loc in
 				if loc == true {
+					if channelKey == "AQ==" {
+						preciseLocation = false
+					} else {
+						positionPrecision = 32
+					}
 					positionPrecision = 32
 				} else {
 					positionPrecision = 14
@@ -216,7 +230,7 @@ struct ChannelForm: View {
 			.onChange(of: positionsEnabled) { pe in
 				if pe {
 					if positionPrecision == 0 {
-						positionPrecision = 32
+						positionPrecision = 14
 					}
 				} else {
 					positionPrecision = 0
@@ -229,7 +243,7 @@ struct ChannelForm: View {
 			.onChange(of: downlink) { _ in
 				hasChanges = true
 			}
-			.onAppear {
+			.onFirstAppear {
 				let tempKey = Data(base64Encoded: channelKey) ?? Data()
 				if tempKey.count == channelKeySize || channelKeySize == -1 {
 					hasValidKey = true

@@ -28,6 +28,8 @@ struct WaypointForm: View {
 	@State private var expire: Date = Date.now.addingTimeInterval(60 * 480) // 1 minute * 480 = 8 Hours
 	@State private var locked: Bool = false
 	@State private var lockedTo: Int64 = 0
+	@State private var detents: Set<PresentationDetent> = [.medium, .fraction(0.85)]
+	@State private var selectedDetent: PresentationDetent = .medium
 
 	var body: some View {
 		NavigationStack {
@@ -39,9 +41,12 @@ struct WaypointForm: View {
 					let distance = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude).distance(from: CLLocation(latitude: waypoint.coordinate.latitude, longitude: waypoint.coordinate.longitude ))
 					Section(header: Text("Coordinate") ) {
 						HStack {
-							Text("Location: \(String(format: "%.5f", waypoint.coordinate.latitude) + "," + String(format: "%.5f", waypoint.coordinate.longitude))")
+							Text("Location:")
+								.foregroundColor(.secondary)
+							Text("\(String(format: "%.5f", waypoint.coordinate.latitude) + "," + String(format: "%.5f", waypoint.coordinate.longitude))")
 								.textSelection(.enabled)
-								.foregroundColor(Color.gray)
+								.foregroundColor(.secondary)
+								.font(.caption)
 						}
 						HStack {
 							if waypoint.coordinate.latitude != 0 && waypoint.coordinate.longitude != 0 {
@@ -124,6 +129,7 @@ struct WaypointForm: View {
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
 				}
+				.scrollDismissesKeyboard(.immediately)
 				HStack {
 					Button {
 						/// Send a new or exiting waypoint
@@ -239,7 +245,7 @@ struct WaypointForm: View {
 			} else {
 				VStack {
 					HStack {
-						CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 65)
+						CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 50)
 						Spacer()
 						Text(waypoint.name ?? "?")
 							.font(.largeTitle)
@@ -250,6 +256,7 @@ struct WaypointForm: View {
 						} else {
 							Button {
 								editMode = true
+								selectedDetent = .fraction(0.85)
 							} label: {
 								Image(systemName: "square.and.pencil" )
 									.font(.largeTitle)
@@ -269,22 +276,30 @@ struct WaypointForm: View {
 									.fixedSize(horizontal: false, vertical: true)
 							} icon: {
 								Image(systemName: "doc.plaintext")
-									.symbolRenderingMode(.hierarchical)
-									.frame(width: 35)
 							}
-							.padding(.bottom, 5)
+							.padding(.bottom)
 						}
 						/// Coordinate
 						Label {
-							Text("Coordinates: \(String(format: "%.6f", waypoint.coordinate.latitude)), \(String(format: "%.6f", waypoint.coordinate.longitude))")
-								.textSelection(.enabled)
+							Text("Coordinates:")
 								.foregroundColor(.primary)
+							Text("\(String(format: "%.6f", waypoint.coordinate.latitude)), \(String(format: "%.6f", waypoint.coordinate.longitude))")
+								.textSelection(.enabled)
+								.foregroundColor(.secondary)
+								.font(.caption2)
 						} icon: {
-							Image(systemName: "mappin.and.ellipse")
-								.symbolRenderingMode(.hierarchical)
-								.frame(width: 35)
+							Image(systemName: "mappin.circle")
 						}
-						.padding(.bottom, 5)
+						.padding(.bottom)
+						// Drop Maps Pin
+						Button(action: {
+							if let url = URL(string: "http://maps.apple.com/?ll=\(waypoint.coordinate.latitude),\(waypoint.coordinate.longitude)&q=\(waypoint.name ?? "Dropped Pin")") {
+							   UIApplication.shared.open(url)
+							}
+						}) {
+							Label("Drop Pin in Maps", systemImage: "mappin.and.ellipse")
+						}
+						.padding(.bottom)
 						/// Created
 						Label {
 							Text("Created: \(waypoint.created?.formatted() ?? "?")")
@@ -292,9 +307,8 @@ struct WaypointForm: View {
 						} icon: {
 							Image(systemName: "clock.badge.checkmark")
 								.symbolRenderingMode(.hierarchical)
-								.frame(width: 35)
 						}
-						.padding(.bottom, 5)
+						.padding(.bottom)
 						/// Updated
 						if waypoint.lastUpdated != nil {
 							Label {
@@ -303,9 +317,8 @@ struct WaypointForm: View {
 							} icon: {
 								Image(systemName: "clock.arrow.circlepath")
 									.symbolRenderingMode(.hierarchical)
-									.frame(width: 35)
 							}
-							.padding(.bottom, 5)
+							.padding(.bottom)
 						}
 						/// Expires
 						if waypoint.expire != nil {
@@ -378,7 +391,8 @@ struct WaypointForm: View {
 				longitude = waypoint.coordinate.longitude
 			}
 		}
-		.presentationDetents([.fraction(0.75)])
+		.presentationDetents(detents, selection: $selectedDetent)
+		.presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.85)))
 		.presentationDragIndicator(.visible)
 	}
 }

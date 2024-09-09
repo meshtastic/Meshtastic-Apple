@@ -84,6 +84,7 @@ struct UserMessageList: View {
 											} else if currentUser && message.ackError > 0 {
 												Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
 													.foregroundStyle(ackErrorVal?.color ?? Color.red)
+													.font(.caption2)
 											}
 										}
 									}

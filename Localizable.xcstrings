@@ -109,7 +109,7 @@
     "%@ Channels?" : {
 
     },
-    "%@ config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log." : {
+    "%@ config data was requested over the admin channel but no response has been returned from the remote node." : {
 
     },
     "%@ dB" : {
@@ -140,6 +140,16 @@
     },
     "%@%%" : {
 
+    },
+    "%@%% %@%%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%% %2$@%%"
+          }
+        }
+      }
     },
     "%@°F" : {
 
@@ -1167,6 +1177,9 @@
     "Are you sure you want to delete this message?" : {
 
     },
+    "Are you sure you want to factory reset the node?" : {
+
+    },
     "are.you.sure" : {
       "localizations" : {
         "de" : {
@@ -1414,6 +1427,9 @@
 
     },
     "Bad" : {
+
+    },
+    "Bad Packets: %d" : {
 
     },
     "Bandwidth" : {
@@ -1849,9 +1865,6 @@
           }
         }
       }
-    },
-    "Bluetooth Logs" : {
-
     },
     "bluetooth.config" : {
       "localizations" : {
@@ -4569,9 +4582,6 @@
     "Configure" : {
 
     },
-    "Configuring Node" : {
-
-    },
     "Connect to a Node" : {
 
     },
@@ -4895,15 +4905,8 @@
         }
       }
     },
-    "Coordinates: %@, %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Coordinates: %1$@, %2$@"
-          }
-        }
-      }
+    "Coordinates:" : {
+
     },
     "copy" : {
       "localizations" : {
@@ -5060,6 +5063,9 @@
 
     },
     "Debug Log" : {
+
+    },
+    "Debug Logs" : {
 
     },
     "Debug Logs%@" : {
@@ -5353,9 +5359,6 @@
         }
       }
     },
-    "Developer" : {
-
-    },
     "Developers" : {
 
     },
@@ -5420,10 +5423,7 @@
     "Device GPS" : {
 
     },
-    "Device is managed by a mesh administrator." : {
-
-    },
-    "Device Logging Enabled" : {
+    "Device is managed by a mesh administrator, the user is unable to access any of the device settings." : {
 
     },
     "Device Metrics" : {
@@ -6325,7 +6325,7 @@
     "Direct Message Help" : {
 
     },
-    "Direct messages are using the new public key infrastructure for encryption. Reguires firmware version 2.5 or greater." : {
+    "Direct messages are using the new public key infrastructure for encryption. Requires firmware version 2.5 or greater." : {
 
     },
     "Direct messages are using the shared key for the channel." : {
@@ -6713,6 +6713,9 @@
     "Drag & Drop is the recommended way to update firmware for NRF devices. If your iPhone or iPad is USB-C it will work with your regular USB-C charging cable, for lightning devices you need the Apple Lightning to USB camera adaptor." : {
 
     },
+    "Drop Pin in Maps" : {
+
+    },
     "echo" : {
       "localizations" : {
         "de" : {
@@ -6916,9 +6919,6 @@
 
     },
     "Enabling Ethernet will disable the bluetooth connection to the app." : {
-
-    },
-    "Enabling Managed mode will restrict access to all radio configurations, such as short/long names, regions, channels, modules, etc. and will only be accessible through the Admin channel. To avoid being locked out, make sure the Admin channel is working properly before enabling it." : {
 
     },
     "Enabling WiFi will disable the bluetooth connection to the app." : {
@@ -7228,11 +7228,11 @@
     "Favorites" : {
 
     },
-    "Fetch the latest position of a cetain node" : {
-    
-    },
     "Favorites and nodes with recent messages show up at the top of the contact list." : {
-    
+
+    },
+    "Fetch the latest position of a cetain node" : {
+
     },
     "Fifteen Minutes" : {
 
@@ -8148,6 +8148,9 @@
           }
         }
       }
+    },
+    "Group Message" : {
+
     },
     "Gusts %@" : {
 
@@ -10911,6 +10914,9 @@
 
     },
     "Location" : {
+
+    },
+    "Location:" : {
 
     },
     "Location: %@" : {
@@ -14565,9 +14571,10 @@
 
     },
     "Message content exceeds 228 bytes." : {
+
     },
     "Message Status Options" : {
-    
+
     },
     "message.details" : {
       "localizations" : {
@@ -16057,7 +16064,7 @@
     "Other data sources" : {
 
     },
-    "Output live debug logging over serial." : {
+    "Output live debug logging over serial, view and export position-redacted device logs over Bluetooth." : {
 
     },
     "Output pin buzzer GPIO " : {
@@ -16070,6 +16077,12 @@
 
     },
     "Override automatic OLED screen detection." : {
+
+    },
+    "Packets Received: %d" : {
+
+    },
+    "Packets Sent: %d" : {
 
     },
     "password" : {
@@ -16319,6 +16332,9 @@
           }
         }
       }
+    },
+    "Perform a factory reset on the node you are connected to" : {
+
     },
     "phone.gps" : {
       "localizations" : {
@@ -17025,6 +17041,9 @@
         }
       }
     },
+    "Reboot Node?" : {
+
+    },
     "reboot.node" : {
       "localizations" : {
         "de" : {
@@ -17387,7 +17406,16 @@
     "Requires that there be an accelerometer on your device." : {
 
     },
+    "Reset App Settings" : {
+
+    },
     "Reset NodeDB" : {
+
+    },
+    "Restart" : {
+
+    },
+    "Restart to the node you are connected to" : {
 
     },
     "restore" : {
@@ -19131,13 +19159,16 @@
     "Send" : {
 
     },
-    "Send a channel message" : {
+    "Send a Group Message" : {
 
     },
     "Send a message to a certain meshtastic channel" : {
 
     },
-    "Send a waypoint" : {
+    "Send a shutdown to the node you are connected to" : {
+
+    },
+    "Send a Waypoint" : {
 
     },
     "Send ASCII bell with alert message. Useful for triggering external notification on bell." : {
@@ -19232,9 +19263,6 @@
 
     },
     "Serial Console over the Stream API." : {
-
-    },
-    "Serial Debug Logs" : {
 
     },
     "serial.config" : {
@@ -19875,6 +19903,12 @@
 
     },
     "Show Weather" : {
+
+    },
+    "Shut Down" : {
+
+    },
+    "Shut Down Node?" : {
 
     },
     "Shutdown Node?" : {
@@ -21073,6 +21107,9 @@
     "The minimum distance change in meters to be considered for a smart position broadcast." : {
 
     },
+    "The most recent public key for this node does not match the previously recorded key. You can delete the node and let it exchange keys again, but this also may indicate a more serious security problem. Contact the user through another trusted channel to determine if the key change was due to a factory reset or other intentional action." : {
+
+    },
     "The public key authorized to send admin messages to this node." : {
 
     },
@@ -22241,7 +22278,7 @@
         }
       }
     },
-    "Updated Device Metrics Data." : {
+    "Updated Node Stats Data." : {
 
     },
     "Updated: %@" : {
@@ -22460,12 +22497,6 @@
     "Via Mqtt" : {
 
     },
-    "View and export position-redacted device logs over Bluetooth" : {
-
-    },
-    "View Logs" : {
-
-    },
     "voltage" : {
       "localizations" : {
         "de" : {
@@ -22678,7 +22709,7 @@
     "Your Firmware is up to date" : {
 
     },
-    "Your MQTT Server must support TLS." : {
+    "Your MQTT Server must support TLS. Not available via the public mqtt server." : {
 
     },
     "Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned." : {

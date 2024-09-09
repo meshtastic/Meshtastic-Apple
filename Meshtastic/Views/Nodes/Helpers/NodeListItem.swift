@@ -30,8 +30,22 @@ struct NodeListItem: View {
 					}
 					VStack(alignment: .leading) {
 						HStack {
+							if node.user?.pkiEncrypted ?? false {
+								if !(node.user?.keyMatch ?? false) {
+									/// Public Key on the User and the Public Key on the Last Message don't match
+									Image(systemName: "key.slash")
+										.foregroundColor(.red)
+								} else {
+									Image(systemName: "lock.fill")
+										.foregroundColor(.green)
+								}
+							} else {
+								Image(systemName: "lock.open.fill")
+									.foregroundColor(.yellow)
+							}
 							Text(node.user?.longName ?? "unknown".localized)
 								.font(.headline)
+								.fontWeight(.regular)
 								.allowsTightening(true)
 							if node.favorite {
 								Spacer()

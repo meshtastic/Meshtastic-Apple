@@ -299,13 +299,10 @@ struct Settings: View {
 		NavigationStack(
 			path: Binding<[SettingsNavigationState]>(
 				get: {
-					guard case .settings(let route) = router.navigationState, let setting = route else {
-						return []
-					}
-					return [setting]
+					[router.navigationState.settings].compactMap { $0 }
 				},
 				set: { newPath in
-					router.navigationState = .settings(newPath.first)
+					router.navigationState.settings = newPath.first
 				}
 			)
 		) {
@@ -349,7 +346,7 @@ struct Settings: View {
 					if bleManager.connectedPeripheral != nil {
 						Section("Configure") {
 							if node?.canRemoteAdmin ?? false {
-								Picker("Configuring Node", selection: $selectedNode) {
+								Picker("Node", selection: $selectedNode) {
 									if selectedNode == 0 {
 										Text("Connect to a Node").tag(0)
 									}
@@ -368,6 +365,7 @@ struct Settings: View {
 											} icon: {
 												Image(systemName: "av.remote")
 											}
+											.font(.caption2)
 											.tag(Int(node.num))
 										} else if  !UserDefaults.enableAdministration && node.metadata != nil { /// Nodes using the old admin system
 											Label {
@@ -393,8 +391,7 @@ struct Settings: View {
 										}
 									}
 								}
-								.pickerStyle(.automatic)
-								.labelsHidden()
+								.pickerStyle(.navigationLink)
 								.onChange(of: selectedNode) { newValue in
 									if selectedNode > 0 {
 										let node = nodes.first(where: { $0.num == newValue })

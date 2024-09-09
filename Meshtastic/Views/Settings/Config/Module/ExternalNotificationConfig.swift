@@ -199,13 +199,24 @@ struct ExternalNotificationConfig: View {
 				)
 			}
 		)
-		.onAppear {
-			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.externalNotificationConfig == nil {
-				Logger.mesh.info("empty external notification module config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestExternalNotificationModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+		.onFirstAppear {
+			// Need to request a ExternalNotificationModuleConfig from the remote node before allowing changes
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+				Logger.mesh.info("empty external notificaiton module config")
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let connectedNode {
+					if node.num != connectedNode.num {
+						if UserDefaults.enableAdministration && node.num != connectedNode.num {
+							/// 2.5 Administration with session passkey
+							let expiration = node.sessionExpiration ?? Date()
+							if expiration < Date() || node.externalNotificationConfig == nil {
+								_ = bleManager.requestExternalNotificationModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						} else {
+							/// Legacy Administration
+							_ = bleManager.requestExternalNotificationModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					}
 				}
 			}
 		}
@@ -279,7 +290,7 @@ struct ExternalNotificationConfig: View {
 				if newNagTimeout != node!.externalNotificationConfig!.nagTimeout { hasChanges = true }
 			}
 		}
-		.onChange(of: useI2SAsBuzzer) { 
+		.onChange(of: useI2SAsBuzzer) {
 			if let val = node?.externalNotificationConfig?.useI2SAsBuzzer {
 				hasChanges = $0 != val
 			}

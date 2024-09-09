@@ -9,7 +9,7 @@ import Foundation
 import AppIntents
 
 struct MessageChannelIntent: AppIntent {
-	static var title: LocalizedStringResource = "Send a channel message"
+	static var title: LocalizedStringResource = "Send a Group Message"
 
 	static var description: IntentDescription = "Send a message to a certain meshtastic channel"
 

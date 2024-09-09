@@ -31,6 +31,7 @@ struct NodePositionIntent: AppIntent {
 				}
 				
 				let nodeInfo = fetchedNode[0]
+				nodeInfo.latestEnvironmentMetrics?.batteryLevel
 				if let latitude = nodeInfo.latestPosition?.coordinate.latitude,
 				   let longitude = nodeInfo.latestPosition?.coordinate.longitude {
 					let nodeLocation = CLLocation(latitude: latitude, longitude: longitude)
