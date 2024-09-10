@@ -191,6 +191,7 @@ struct NodeInfoView: View {
 	var timerRange: ClosedRange<Date>
 
 	var body: some View {
+		let errorRate = (Double(badReceivedPackets) / Double(receivedPackets)) * 100
 		VStack(alignment: .leading, spacing: 0) {
 			Text(nodeName)
 				.font(nodeName.count > 14 ? .callout : .title3)
@@ -208,7 +209,6 @@ struct NodeInfoView: View {
 				.foregroundStyle(.secondary)
 				.opacity(isLuminanceReduced ? 0.8 : 1.0)
 				.fixedSize()
-			let errorRate = (Double(badReceivedPackets) / Double(receivedPackets)) * 100
 			Text("Bad: \(badReceivedPackets) \(String(format: "Error Rate: %.2f", errorRate))%")
 				.font(.caption)
 				.fontWeight(.medium)

@@ -92,6 +92,7 @@ struct Connect: View {
 									}
 									VStack {
 										let localStats = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 6")).lastObject as? TelemetryEntity
+									
 										if localStats != nil {
 											Divider()
 											if localStats?.numTotalNodes ?? 0 >= 100 {
@@ -111,25 +112,29 @@ struct Connect: View {
 												.font(.caption)
 												.fontWeight(.medium)
 												.foregroundStyle(.secondary)
-											Text("Packets Sent: \(localStats?.numPacketsTx ?? 0)")
+											Text("Packets: Sent: \(localStats?.numPacketsTx ?? 0) Received: \(localStats?.numPacketsRx ?? 0)")
 												.font(.caption)
 												.fontWeight(.medium)
 												.foregroundStyle(.secondary)
-											Text("Packets Received: \(localStats?.numPacketsRx ?? 0)")
-												.font(.caption)
-												.fontWeight(.medium)
-												.foregroundStyle(.secondary)
-											Text("Bad Packets: \(localStats?.numPacketsRxBad ?? 0)")
+											let errorRate = (Double(localStats?.numPacketsRxBad ?? -1) / Double(localStats?.numPacketsRx ?? -1)) * 100
+											Text("Bad Packets: \(localStats?.numPacketsRxBad ?? 0) \(String(format: "Error Rate: %.2f", errorRate))%")
 												.font(.caption)
 												.fontWeight(.medium)
 												.foregroundStyle(.secondary)
 												.fixedSize()
+											let now = Date.now
+											let later = now + TimeInterval(Double(localStats?.numPacketsRxBad ?? 0))
+											let uptime = (now..<later).formatted(.components(style: .narrow))
+											Text("Uptime: \(uptime)")
+												.font(.caption)
+												.fontWeight(.medium)
+												.foregroundStyle(.secondary)
 										}
 									}
 								}
 								.font(.caption)
 								.foregroundColor(Color.gray)
-								.padding([.top, .bottom])
+								.padding([.top])
 								.swipeActions {
 									Button(role: .destructive) {
 										if let connectedPeripheral = bleManager.connectedPeripheral,
