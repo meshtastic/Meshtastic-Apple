@@ -816,12 +816,10 @@ func textMessageAppPacket(
 	context: NSManagedObjectContext,
 	appState: AppState
 ) {
-
 	var messageText = String(bytes: packet.decoded.payload, encoding: .utf8)
 	let rangeRef = Reference(Int.self)
 	let rangeTestRegex = Regex {
 		"seq "
-
 		TryCapture(as: rangeRef) {
 			OneOrMore(.digit)
 		} transform: { match in
@@ -829,7 +827,7 @@ func textMessageAppPacket(
 		}
 	}
 	let rangeTest = messageText?.contains(rangeTestRegex) ?? false && messageText?.starts(with: "seq ") ?? false
-
+	
 	if !wantRangeTestPackets && rangeTest {
 		return
 	}
@@ -842,15 +840,16 @@ func textMessageAppPacket(
 			}
 		}
 	}
-
+	
 	if messageText?.count ?? 0 > 0 {
-
 		MeshLogger.log("💬 \("mesh.log.textmessage.received".localized)")
-
+		
 		let messageUsers = UserEntity.fetchRequest()
 		messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
+		
 		do {
 			let fetchedUsers = try context.fetch(messageUsers)
+			
 			let newMessage = MessageEntity(context: context)
 			newMessage.messageId = Int64(packet.id)
 			if packet.rxTime > 0 {
@@ -873,19 +872,22 @@ func textMessageAppPacket(
 					newMessage.read = true
 				}
 			}
+			
 			if packet.decoded.replyID > 0 {
 				newMessage.replyID = Int64(packet.decoded.replyID)
 			}
-
+			
 			if fetchedUsers.first(where: { $0.num == packet.to }) != nil && packet.to != Constants.maximumNodeNum {
 				if !storeForwardBroadcast {
 					newMessage.toUser = fetchedUsers.first(where: { $0.num == packet.to })
 				}
 			}
+			
 			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
 				newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
+				
 				if !(newMessage.fromUser?.publicKey?.isEmpty ?? true) {
-					/// We have a key, check if it matches
+					// We have a key, check if it matches
 					if newMessage.fromUser?.publicKey != newMessage.publicKey {
 						newMessage.fromUser?.keyMatch = false
 						newMessage.fromUser?.newPublicKey = newMessage.publicKey
@@ -897,27 +899,29 @@ func textMessageAppPacket(
 						newMessage.fromUser?.publicKey = packet.publicKey
 					}
 				}
+				
 				if packet.rxTime > 0 {
 					newMessage.fromUser?.userNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 				} else {
 					newMessage.fromUser?.userNode?.lastHeard = Date()
 				}
 			}
+			
 			newMessage.messagePayload = messageText
 			newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: messageText!)
+			
 			if packet.to != Constants.maximumNodeNum && newMessage.fromUser != nil {
 				newMessage.fromUser?.lastMessage = Date()
 			}
+			
 			var messageSaved = false
-
+			
 			do {
-
 				try context.save()
 				Logger.data.info("💾 Saved a new message for \(newMessage.messageId)")
 				messageSaved = true
 
 				if messageSaved {
-
 					if packet.decoded.portnum == PortNum.detectionSensorApp && !UserDefaults.enableDetectionNotifications {
 						return
 					}
@@ -936,14 +940,16 @@ func textMessageAppPacket(
 									subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 									content: messageText!,
 									target: "messages",
-									path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)"
+									path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)",
+									messageId: newMessage.messageId,
+									channel: newMessage.channel,
+									userNum: Int64(packet.from)
 								)
 							]
 							manager.schedule()
 							Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
 						}
 					} else if newMessage.fromUser != nil && newMessage.toUser == nil {
-
 						let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
 						fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedNode))
 
@@ -966,7 +972,11 @@ func textMessageAppPacket(
 												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 												content: messageText!,
 												target: "messages",
-												path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.messageId)")
+												path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.messageId)",
+												messageId: newMessage.messageId,
+												channel: newMessage.channel,
+												userNum: Int64(newMessage.fromUser?.userId ?? "0")
+											)
 										]
 										manager.schedule()
 										Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
@@ -974,7 +984,7 @@ func textMessageAppPacket(
 								}
 							}
 						} catch {
-
+							// Handle error
 						}
 					}
 				}
@@ -988,6 +998,7 @@ func textMessageAppPacket(
 		}
 	}
 }
+
 
 func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
