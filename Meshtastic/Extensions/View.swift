@@ -8,13 +8,13 @@
 import SwiftUI
 
 public extension View {
-	func onFirstAppear(_ action: @escaping () -> ()) -> some View {
+	func onFirstAppear(_ action: @escaping () -> Void) -> some View {
 		modifier(FirstAppear(action: action))
 	}
 }
 
 private struct FirstAppear: ViewModifier {
-	let action: () -> ()
+	let action: () -> Void
 
 	// Use this to only fire your block one time
 	@State private var hasAppeared = false

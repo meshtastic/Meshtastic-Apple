@@ -50,6 +50,7 @@ func generateMessageMarkdown (message: String) -> String {
 
 func localConfig (config: Config, context: NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
 
+	let remote = nodeNum != UserDefaults.preferredPeripheralNum
 	if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
 		upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
@@ -365,7 +366,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 					fetchedNode[0].user = UserEntity(context: context)
 				}
 				// Set the public key for a user if it is empty, don't update
-				if fetchedNode[0].user?.publicKey?.isEmpty == nil && !nodeInfo.user.publicKey.isEmpty {
+				if fetchedNode[0].user?.publicKey == nil && !nodeInfo.user.publicKey.isEmpty {
 					fetchedNode[0].user?.pkiEncrypted = true
 					fetchedNode[0].user?.publicKey = nodeInfo.user.publicKey
 				}
@@ -496,19 +497,19 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getConfigResponse(adminMessage.getConfigResponse) {
 			let config = adminMessage.getConfigResponse
 			if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
-				upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: Int64(packet.from), context: context)
+				upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
-				upsertDeviceConfigPacket(config: config.device, nodeNum: Int64(packet.from), context: context)
+				upsertDeviceConfigPacket(config: config.device, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
-				upsertDisplayConfigPacket(config: config.display, nodeNum: Int64(packet.from), context: context)
+				upsertDisplayConfigPacket(config: config.display, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
-				upsertLoRaConfigPacket(config: config.lora, nodeNum: Int64(packet.from), context: context)
+				upsertLoRaConfigPacket(config: config.lora, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
-				upsertNetworkConfigPacket(config: config.network, nodeNum: Int64(packet.from), context: context)
+				upsertNetworkConfigPacket(config: config.network, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
-				upsertPositionConfigPacket(config: config.position, nodeNum: Int64(packet.from), context: context)
+				upsertPositionConfigPacket(config: config.position, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.power(config.power) {
-				upsertPowerConfigPacket(config: config.power, nodeNum: Int64(packet.from), context: context)
+				upsertPowerConfigPacket(config: config.power, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.security(config.security) {
 				upsertSecurityConfigPacket(config: config.security, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			}
@@ -862,9 +863,10 @@ func textMessageAppPacket(
 			newMessage.isEmoji = packet.decoded.emoji == 1
 			newMessage.channel = Int32(packet.channel)
 			newMessage.portNum = Int32(packet.decoded.portnum.rawValue)
-			newMessage.publicKey = packet.publicKey
-			newMessage.pkiEncrypted = packet.pkiEncrypted
-			
+			if newMessage.toUser?.pkiEncrypted ?? false {
+				newMessage.pkiEncrypted = true
+				newMessage.publicKey = packet.publicKey
+			}
 			if packet.decoded.portnum == PortNum.detectionSensorApp {
 				if !UserDefaults.enableDetectionNotifications {
 					newMessage.read = true
@@ -891,9 +893,11 @@ func textMessageAppPacket(
 						newMessage.fromUser?.newPublicKey = newMessage.publicKey
 					}
 				} else {
-					// We have no key, set it
-					newMessage.fromUser?.publicKey = packet.publicKey
-					newMessage.fromUser?.pkiEncrypted = packet.pkiEncrypted
+					/// We have no key, set it if it is not empty
+					if !packet.publicKey.isEmpty {
+						newMessage.fromUser?.pkiEncrypted = true
+						newMessage.fromUser?.publicKey = packet.publicKey
+					}
 				}
 				
 				if packet.rxTime > 0 {

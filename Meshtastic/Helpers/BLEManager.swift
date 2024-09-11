@@ -2564,6 +2564,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.bluetoothConfig
+		if UserDefaults.enableAdministration {
+			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
+		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)

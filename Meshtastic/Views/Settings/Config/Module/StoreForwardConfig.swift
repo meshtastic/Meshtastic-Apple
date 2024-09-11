@@ -146,13 +146,24 @@ struct StoreForwardConfig: View {
 				)
 			}
 		)
-		.onAppear {
-			// Need to request a Detection Sensor Module Config from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.storeForwardConfig == nil {
-				Logger.mesh.debug("empty store and forward module config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestStoreAndForwardModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+		.onFirstAppear {
+			// Need to request a StoreForwardModuleConfig from the remote node before allowing changes
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+				Logger.mesh.info("empty store & forward module config")
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let connectedNode {
+					if node.num != connectedNode.num {
+						if UserDefaults.enableAdministration && node.num != connectedNode.num {
+							/// 2.5 Administration with session passkey
+							let expiration = node.sessionExpiration ?? Date()
+							if expiration < Date() || node.storeForwardConfig == nil {
+								_ = bleManager.requestStoreAndForwardModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						} else {
+							/// Legacy Administration
+							_ = bleManager.requestStoreAndForwardModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					}
 				}
 			}
 		}

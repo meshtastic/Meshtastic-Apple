@@ -719,8 +719,8 @@
 				DD41582528582E9B009B0E59 /* DeviceConfig.swift */,
 				DD8EBF42285058FA00426DCA /* DisplayConfig.swift */,
 				DD2553562855B02500E55709 /* LoRaConfig.swift */,
-				DD2553582855B52700E55709 /* PositionConfig.swift */,
 				DD8ED9C42898D51F00B3B0AB /* NetworkConfig.swift */,
+				DD2553582855B52700E55709 /* PositionConfig.swift */,
 				D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */,
 				DD1BD0F22C63C65E008C0C70 /* SecurityConfig.swift */,
 				DD61937B2863877A00E59241 /* Module */,
@@ -1686,7 +1686,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.5.3;
+				MARKETING_VERSION = 2.5.4;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1721,7 +1721,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.5.3;
+				MARKETING_VERSION = 2.5.4;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1753,7 +1753,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.5.3;
+				MARKETING_VERSION = 2.5.4;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1786,7 +1786,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.5.3;
+				MARKETING_VERSION = 2.5.4;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

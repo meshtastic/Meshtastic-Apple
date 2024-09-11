@@ -109,7 +109,7 @@
     "%@ Channels?" : {
 
     },
-    "%@ config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log." : {
+    "%@ config data was requested over the admin channel but no response has been returned from the remote node." : {
 
     },
     "%@ dB" : {
@@ -1429,8 +1429,15 @@
     "Bad" : {
 
     },
-    "Bad Packets: %d" : {
-
+    "Bad Packets: %d %@%%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Bad Packets: %1$d %2$@%%"
+          }
+        }
+      }
     },
     "Bandwidth" : {
 
@@ -1865,9 +1872,6 @@
           }
         }
       }
-    },
-    "Bluetooth Logs" : {
-
     },
     "bluetooth.config" : {
       "localizations" : {
@@ -4585,9 +4589,6 @@
     "Configure" : {
 
     },
-    "Configuring Node" : {
-
-    },
     "Connect to a Node" : {
 
     },
@@ -5071,6 +5072,9 @@
     "Debug Log" : {
 
     },
+    "Debug Logs" : {
+
+    },
     "Debug Logs%@" : {
 
     },
@@ -5362,9 +5366,6 @@
         }
       }
     },
-    "Developer" : {
-
-    },
     "Developers" : {
 
     },
@@ -5429,10 +5430,7 @@
     "Device GPS" : {
 
     },
-    "Device is managed by a mesh administrator." : {
-
-    },
-    "Device Logging Enabled" : {
+    "Device is managed by a mesh administrator, the user is unable to access any of the device settings." : {
 
     },
     "Device Metrics" : {
@@ -6928,9 +6926,6 @@
 
     },
     "Enabling Ethernet will disable the bluetooth connection to the app." : {
-
-    },
-    "Enabling Managed mode will restrict access to all radio configurations, such as short/long names, regions, channels, modules, etc. and will only be accessible through the Admin channel. To avoid being locked out, make sure the Admin channel is working properly before enabling it." : {
 
     },
     "Enabling WiFi will disable the bluetooth connection to the app." : {
@@ -16076,7 +16071,7 @@
     "Other data sources" : {
 
     },
-    "Output live debug logging over serial." : {
+    "Output live debug logging over serial, view and export position-redacted device logs over Bluetooth." : {
 
     },
     "Output pin buzzer GPIO " : {
@@ -16091,11 +16086,15 @@
     "Override automatic OLED screen detection." : {
 
     },
-    "Packets Received: %d" : {
-
-    },
-    "Packets Sent: %d" : {
-
+    "Packets: Sent: %d Received: %d" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Packets: Sent: %1$d Received: %2$d"
+          }
+        }
+      }
     },
     "password" : {
       "localizations" : {
@@ -19277,9 +19276,6 @@
     "Serial Console over the Stream API." : {
 
     },
-    "Serial Debug Logs" : {
-
-    },
     "serial.config" : {
       "localizations" : {
         "de" : {
@@ -22330,6 +22326,9 @@
         }
       }
     },
+    "Uptime: %@" : {
+
+    },
     "Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead." : {
 
     },
@@ -22510,12 +22509,6 @@
 
     },
     "Via Mqtt" : {
-
-    },
-    "View and export position-redacted device logs over Bluetooth" : {
-
-    },
-    "View Logs" : {
 
     },
     "voltage" : {

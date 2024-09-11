@@ -1,5 +1,6 @@
 import SwiftUI
 import MeshtasticProtobufs
+import OSLog
 
 struct PowerConfig: View {
 	@Environment(\.managedObjectContext) private var context
@@ -117,7 +118,7 @@ struct PowerConfig: View {
 				.font(.subheadline)
 			}
 		}
-		.onAppear {
+		.onFirstAppear {
 			Api().loadDeviceHardwareData { (hw) in
 				for device in hw {
 					let currentHardware = node?.user?.hwModel ?? "UNSET"
@@ -127,11 +128,23 @@ struct PowerConfig: View {
 					}
 				}
 			}
-			// Need to request a Power config from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.powerConfig == nil {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestPowerConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+			// Need to request a NetworkConfig from the remote node before allowing changes
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+				Logger.mesh.info("empty power config")
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let connectedNode {
+					if node.num != connectedNode.num {
+						if UserDefaults.enableAdministration {
+							/// 2.5 Administration with session passkey
+							let expiration = node.sessionExpiration ?? Date()
+							if expiration < Date() || node.powerConfig == nil {
+								_ = bleManager.requestPowerConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						} else {
+							/// Legacy Administration
+							_ = bleManager.requestPowerConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					}
 				}
 			}
 		}

@@ -130,7 +130,6 @@ struct ChannelForm: View {
 				}
 
 				Section(header: Text("position")) {
-
 					VStack(alignment: .leading) {
 						Toggle(isOn: $positionsEnabled) {
 							Label(channelRole == 1 ? "Positions Enabled" : "Allow Position Requests", systemImage: positionsEnabled ? "mappin" : "mappin.slash")
@@ -140,25 +139,26 @@ struct ChannelForm: View {
 					}
 
 					if positionsEnabled {
-						VStack(alignment: .leading) {
-							Toggle(isOn: $preciseLocation) {
-								Label("Precise Location", systemImage: "scope")
-							}
-							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							.disabled(!supportedVersion)
-							.listRowSeparator(.visible)
-							.onChange(of: preciseLocation) { pl in
-								if pl == false {
-									positionPrecision = 13
+						if channelKey != "AQ=="  && channelRole > 0 {
+							VStack(alignment: .leading) {
+								Toggle(isOn: $preciseLocation) {
+									Label("Precise Location", systemImage: "scope")
+								}
+								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+								.disabled(!supportedVersion)
+								.listRowSeparator(.visible)
+								.onChange(of: preciseLocation) { pl in
+									if pl == false {
+										positionPrecision = 14
+									}
 								}
 							}
 						}
-
 						if !preciseLocation {
 							VStack(alignment: .leading) {
 								Label("Approximate Location", systemImage: "location.slash.circle.fill")
 
-								Slider(value: $positionPrecision, in: 10...16, step: 1) {
+								Slider(value: $positionPrecision, in: 11...14, step: 1) {
 								} minimumValueLabel: {
 									Image(systemName: "minus")
 								} maximumValueLabel: {
@@ -213,14 +213,14 @@ struct ChannelForm: View {
 			}
 			.onChange(of: preciseLocation) { loc in
 				if loc == true {
-					if channelKey == "AQ==" && channelRole == 0 {
+					if channelKey == "AQ==" {
 						preciseLocation = false
 					} else {
 						positionPrecision = 32
 					}
 					positionPrecision = 32
 				} else {
-					positionPrecision = 13
+					positionPrecision = 14
 				}
 				hasChanges = true
 			}
@@ -230,7 +230,7 @@ struct ChannelForm: View {
 			.onChange(of: positionsEnabled) { pe in
 				if pe {
 					if positionPrecision == 0 {
-						positionPrecision = 13
+						positionPrecision = 14
 					}
 				} else {
 					positionPrecision = 0

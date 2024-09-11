@@ -136,20 +136,31 @@ struct SerialConfig: View {
 					)
 				}
 			)
-			.onAppear {
+			.onFirstAppear {
 				// Need to request a SerialModuleConfig from the remote node before allowing changes
-				if bleManager.connectedPeripheral != nil && node?.serialConfig == nil {
-					Logger.mesh.debug("empty serial module config")
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if node != nil && connectedNode != nil {
-						_ = bleManager.requestSerialModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+					Logger.mesh.info("empty serial module config")
+					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+					if let connectedNode {
+						if node.num != connectedNode.num {
+							if UserDefaults.enableAdministration && node.num != connectedNode.num {
+								/// 2.5 Administration with session passkey
+								let expiration = node.sessionExpiration ?? Date()
+								if expiration < Date() || node.serialConfig == nil {
+									_ = bleManager.requestSerialModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								}
+							} else {
+								/// Legacy Administration
+								_ = bleManager.requestSerialModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						}
 					}
 				}
 			}
 			.onChange(of: enabled) {
 				if $0 != node?.serialConfig?.enabled { hasChanges = true }
 			}
-			.onChange(of: echo) { 
+			.onChange(of: echo) {
 				if $0 != node?.serialConfig?.echo { hasChanges = true }
 			}
 			.onChange(of: rxd) { newRxd in

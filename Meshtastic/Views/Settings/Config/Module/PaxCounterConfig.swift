@@ -7,6 +7,7 @@
 
 import MeshtasticProtobufs
 import SwiftUI
+import OSLog
 
 struct PaxCounterConfig: View {
 	@Environment(\.managedObjectContext) private var context
@@ -57,12 +58,24 @@ struct PaxCounterConfig: View {
 				name: "\(bleManager.connectedPeripheral?.shortName ?? "?")"
 			)
 		})
-		.onAppear {
-			// Need to request a PAX Counter module config from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.paxCounterConfig == nil {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestPaxCounterModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+		.onFirstAppear {
+			// Need to request a PaxCounterModuleConfig from the remote node before allowing changes
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+				Logger.mesh.info("empty pax counter module config")
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let connectedNode {
+					if node.num != connectedNode.num {
+						if UserDefaults.enableAdministration && node.num != connectedNode.num {
+							/// 2.5 Administration with session passkey
+							let expiration = node.sessionExpiration ?? Date()
+							if expiration < Date() || node.paxCounterConfig == nil {
+								_ = bleManager.requestPaxCounterModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						} else {
+							/// Legacy Administration
+							_ = bleManager.requestPaxCounterModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					}
 				}
 			}
 		}
