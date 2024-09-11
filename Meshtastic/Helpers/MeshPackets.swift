@@ -864,8 +864,10 @@ func textMessageAppPacket(
 			newMessage.isEmoji = packet.decoded.emoji == 1
 			newMessage.channel = Int32(packet.channel)
 			newMessage.portNum = Int32(packet.decoded.portnum.rawValue)
-			newMessage.publicKey = packet.publicKey
-			newMessage.pkiEncrypted = packet.pkiEncrypted
+			if newMessage.toUser?.pkiEncrypted ?? false {
+				newMessage.pkiEncrypted = true
+				newMessage.publicKey = packet.publicKey
+			}
 			if packet.decoded.portnum == PortNum.detectionSensorApp {
 				if !UserDefaults.enableDetectionNotifications {
 					newMessage.read = true
@@ -889,9 +891,11 @@ func textMessageAppPacket(
 						newMessage.fromUser?.newPublicKey = newMessage.publicKey
 					}
 				} else {
-					/// We have no key, set it
-					newMessage.fromUser?.publicKey = packet.publicKey
-					newMessage.fromUser?.pkiEncrypted = packet.pkiEncrypted
+					/// We have no key, set it if it is not empty
+					if !packet.publicKey.isEmpty {
+						newMessage.fromUser?.pkiEncrypted = true
+						newMessage.fromUser?.publicKey = packet.publicKey
+					}
 				}
 				if packet.rxTime > 0 {
 					newMessage.fromUser?.userNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
