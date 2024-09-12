@@ -23,7 +23,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 ///
 /// This abstraction is used to contain any configuration for provisioning a node on any client.
 /// It is useful for importing and exporting configurations.
-public struct DeviceProfile {
+public struct DeviceProfile: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -93,10 +93,6 @@ public struct DeviceProfile {
   fileprivate var _config: LocalConfig? = nil
   fileprivate var _moduleConfig: LocalModuleConfig? = nil
 }
-
-#if swift(>=5.5) && canImport(_Concurrency)
-extension DeviceProfile: @unchecked Sendable {}
-#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
