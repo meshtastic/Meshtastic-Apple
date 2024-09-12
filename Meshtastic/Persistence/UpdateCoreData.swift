@@ -598,6 +598,7 @@ func upsertLoRaConfigPacket(config: Config.LoRaConfig, nodeNum: Int64, sessionPa
 				newLoRaConfig.channelNum = Int32(config.channelNum)
 				newLoRaConfig.sx126xRxBoostedGain = config.sx126XRxBoostedGain
 				newLoRaConfig.ignoreMqtt = config.ignoreMqtt
+				newLoRaConfig.okToMqtt = config.configOkToMqtt
 				fetchedNode[0].loRaConfig = newLoRaConfig
 			} else {
 				fetchedNode[0].loRaConfig?.regionCode = Int32(config.region.rawValue)
@@ -615,6 +616,7 @@ func upsertLoRaConfigPacket(config: Config.LoRaConfig, nodeNum: Int64, sessionPa
 				fetchedNode[0].loRaConfig?.channelNum = Int32(config.channelNum)
 				fetchedNode[0].loRaConfig?.sx126xRxBoostedGain = config.sx126XRxBoostedGain
 				fetchedNode[0].loRaConfig?.ignoreMqtt = config.ignoreMqtt
+				fetchedNode[0].loRaConfig?.okToMqtt = config.configOkToMqtt
 				fetchedNode[0].loRaConfig?.sx126xRxBoostedGain = config.sx126XRxBoostedGain
 			}
 			if sessionPasskey != nil {
