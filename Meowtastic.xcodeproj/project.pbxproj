@@ -59,6 +59,7 @@
 		B28CFF882C5E0F360012DCB4 /* FirebaseAppDistribution-Beta in Frameworks */ = {isa = PBXBuildFile; productRef = B28CFF872C5E0F360012DCB4 /* FirebaseAppDistribution-Beta */; };
 		B28DC0E32C710318007990B3 /* Data+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B28DC0E22C710318007990B3 /* Data+Extensions.swift */; };
 		B28DC0E52C7107C4007990B3 /* NodeConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B28DC0E42C7107C4007990B3 /* NodeConfig.swift */; };
+		B29C39182C92E6660082A3FC /* DevicesDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B29C39172C92E6660082A3FC /* DevicesDelegate.swift */; };
 		B2A064CE2C64D16E00B7E9F2 /* NavigationLazyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A064CD2C64D16E00B7E9F2 /* NavigationLazyView.swift */; };
 		B2A5F2FD2C5668FD009457AB /* DeleteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DB2C5668FD009457AB /* DeleteNodeButton.swift */; };
 		B2A5F2FE2C5668FD009457AB /* ExchangePositionsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A5F2DC2C5668FD009457AB /* ExchangePositionsButton.swift */; };
@@ -267,6 +268,7 @@
 		B28CFF7E2C5D029D0012DCB4 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		B28DC0E22C710318007990B3 /* Data+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Extensions.swift"; sourceTree = "<group>"; };
 		B28DC0E42C7107C4007990B3 /* NodeConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeConfig.swift; sourceTree = "<group>"; };
+		B29C39172C92E6660082A3FC /* DevicesDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicesDelegate.swift; sourceTree = "<group>"; };
 		B2A064CD2C64D16E00B7E9F2 /* NavigationLazyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationLazyView.swift; sourceTree = "<group>"; };
 		B2A5F2DB2C5668FD009457AB /* DeleteNodeButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeleteNodeButton.swift; sourceTree = "<group>"; };
 		B2A5F2DC2C5668FD009457AB /* ExchangePositionsButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExchangePositionsButton.swift; sourceTree = "<group>"; };
@@ -458,6 +460,7 @@
 			children = (
 				DDAF8C5226EB1DF10058C060 /* BLEManager.swift */,
 				B284A4322C6F8AE400D5122B /* BluetoothUUID.swift */,
+				B29C39172C92E6660082A3FC /* DevicesDelegate.swift */,
 				B28DC0E42C7107C4007990B3 /* NodeConfig.swift */,
 				B284A42B2C6F877D00D5122B /* Extensions */,
 			);
@@ -1054,6 +1057,7 @@
 				B2A5F2FD2C5668FD009457AB /* DeleteNodeButton.swift in Sources */,
 				B28DC0E52C7107C4007990B3 /* NodeConfig.swift in Sources */,
 				B266A7512C59218D00DFC723 /* DeviceHardware.swift in Sources */,
+				B29C39182C92E6660082A3FC /* DevicesDelegate.swift in Sources */,
 				DD007BAE2AA4E91200F5FA12 /* MyInfoEntity+Extension.swift in Sources */,
 				B2A5F3072C5668FD009457AB /* NodeInfoView.swift in Sources */,
 				DD33DB622B3D27C7003E1EA0 /* Api.swift in Sources */,

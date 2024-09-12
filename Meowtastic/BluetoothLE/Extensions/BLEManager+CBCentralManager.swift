@@ -71,7 +71,8 @@ extension BLEManager: CBCentralManagerDelegate {
 		)
 		let index = devices.map {
 			$0.peripheral
-		}.firstIndex(of: peripheral)
+		}
+			.firstIndex(of: peripheral)
 
 		if let peripheralIndex = index {
 			devices[peripheralIndex] = device
@@ -81,11 +82,14 @@ extension BLEManager: CBCentralManagerDelegate {
 		}
 
 		let today = Date()
+		// swiftlint:disable:next force_unwrapping
 		let visibleDuration = Calendar.current.date(byAdding: .second, value: -5, to: today)!
 
 		devices.removeAll(where: {
 			$0.lastUpdate < visibleDuration
 		})
+
+		devicesDelegate?.onChange(devices: devices)
 	}
 
 	func centralManager(

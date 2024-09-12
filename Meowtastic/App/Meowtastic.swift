@@ -1,4 +1,7 @@
+import BackgroundTasks
+import CoreBluetooth
 import CoreData
+import FirebaseAnalytics
 import OSLog
 import SwiftUI
 
@@ -39,29 +42,28 @@ struct Meowtastic: App {
 
 					incomingUrl = userActivity.webpageURL
 
-					if incomingUrl?.absoluteString.lowercased().contains("meshtastic.org/e/#") != nil {
-						if let components = incomingUrl?.absoluteString.components(separatedBy: "#") {
-							addChannels = Bool(incomingUrl?["add"] ?? "false") ?? false
+					if
+						incomingUrl?.absoluteString.lowercased().contains("meshtastic.org/e/#") != nil,
+						let components = incomingUrl?.absoluteString.components(separatedBy: "#")
+					{
+						addChannels = Bool(incomingUrl?["add"] ?? "false") ?? false
 
-							if incomingUrl?.absoluteString.lowercased().contains("?") != nil {
-								guard let cs = components.last?.components(separatedBy: "?").first else {
-									return
-								}
-
-								channelSettings = cs
-							}
-							else {
-								guard let cs = components.first else {
-									return
-								}
-
-								channelSettings = cs
+						if incomingUrl?.absoluteString.lowercased().contains("?") != nil {
+							guard let cs = components.last?.components(separatedBy: "?").first else {
+								return
 							}
 
-							Logger.services.debug("Add Channel \(addChannels)")
+							channelSettings = cs
+						}
+						else {
+							guard let cs = components.first else {
+								return
+							}
+
+							channelSettings = cs
 						}
 
-						Logger.mesh.debug("User wants to open a Channel Settings URL: \(incomingUrl?.absoluteString ?? "No QR Code Link")")
+						Logger.services.debug("Add Channel \(addChannels)")
 					}
 				}
 				.onOpenURL { url in
@@ -87,9 +89,13 @@ struct Meowtastic: App {
 
 								channelSettings = cs
 							}
+
 							Logger.services.debug("Add Channel \(addChannels)")
 						}
-						Logger.mesh.debug("User wants to open a Channel Settings URL: \(incomingUrl?.absoluteString ?? "No QR Code Link")")
+
+						Logger.mesh.debug(
+							"User wants to open a Channel Config: \(incomingUrl?.absoluteString ?? "No QR Code Link")"
+						)
 					}
 					else if url.absoluteString.lowercased().contains("meshtastic:///") {
 						appState.navigationPath = url.absoluteString
@@ -101,14 +107,20 @@ struct Meowtastic: App {
 						else if path.starts(with: "meshtastic:///nodes") {
 							AppState.shared.tabSelection = TabTag.nodes
 						}
-
 					}
 				}
 		}
 		.onChange(of: scenePhase, initial: false) {
 			if scenePhase == .background {
 				try? Persistence.shared.container.viewContext.save()
+
+				scheduleAppRefresh()
 			}
+		}
+		.backgroundTask(.appRefresh(AppConstants.backgroundTaskID)) {
+			Logger.app.debug("Background task started")
+
+			await refreshApp()
 		}
 	}
 
@@ -129,5 +141,42 @@ struct Meowtastic: App {
 		self.appState = appState
 		self.bleManager = bleManager
 		self.nodeConfig = nodeConfig
+	}
+
+	private func scheduleAppRefresh() {
+		let request = BGAppRefreshTaskRequest(identifier: AppConstants.backgroundTaskID)
+		request.earliestBeginDate = Calendar.current.date(byAdding: .minute, value: 10, to: .now)
+
+		try? BGTaskScheduler.shared.submit(request)
+
+		Logger.app.debug("Background task scheduled")
+	}
+
+	private func refreshApp() async {
+		Analytics.logEvent(AnalyticEvents.ble.id, parameters: nil)
+
+		guard !bleManager.isSubscribed else {
+			return
+		}
+
+		bleManager.devicesDelegate = self
+		bleManager.startScanning()
+	}
+}
+
+extension Meowtastic: DevicesDelegate {
+	func onChange(devices: [Device]) {
+		let device = devices.first(where: { device in
+			device.peripheral.state != CBPeripheralState.connected
+			&& device.peripheral.state != CBPeripheralState.connecting
+			&& device.peripheral.identifier.uuidString == UserDefaults.preferredPeripheralId
+		})
+
+		guard let device else {
+			return
+		}
+
+		bleManager.stopScanning()
+		bleManager.connectTo(peripheral: device.peripheral)
 	}
 }

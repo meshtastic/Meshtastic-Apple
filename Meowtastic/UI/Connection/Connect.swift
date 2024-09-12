@@ -306,28 +306,27 @@ struct Connect: View {
 		}
 	}
 
-
 	@ViewBuilder
 	private var visible: some View {
 		Section("Visible Devices") {
-			ForEach(visibleDevices) { peripheral in
+			ForEach(visibleDevices) { device in
 				Button {
-					bleManager.connectTo(peripheral: peripheral.peripheral)
+					bleManager.connectTo(peripheral: device.peripheral)
 				} label: {
 					HStack(alignment: .center, spacing: 16) {
 						HStack(spacing: 16) {
 							SignalStrengthIndicator(
-								signalStrength: peripheral.getSignalStrength(),
+								signalStrength: device.getSignalStrength(),
 								size: 14,
 								color: .gray
 							)
 
-							Text(peripheral.name)
+							Text(device.name)
 								.font(deviceFont)
 								.foregroundColor(.gray)
 						}
 
-						if UserDefaults.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
+						if UserDefaults.preferredPeripheralId == device.peripheral.identifier.uuidString {
 							Spacer()
 
 							Image(systemName: "star.fill")

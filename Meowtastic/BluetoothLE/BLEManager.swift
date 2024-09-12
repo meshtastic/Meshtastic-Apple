@@ -37,6 +37,7 @@ final class BLEManager: NSObject, ObservableObject {
 	@Published
 	var mqttError = ""
 
+	var devicesDelegate: DevicesDelegate?
 	var mqttManager: MQTTManager?
 	var connectedVersion: String
 	var isConnecting = false

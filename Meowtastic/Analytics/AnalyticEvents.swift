@@ -29,6 +29,7 @@ enum AnalyticEvents: String {
 	case traceRoute
 
 	// MARK: - events
+	case backgroundUpdate
 	case ble
 	case bleTimeout
 	case bleCancelConnecting
