@@ -153,7 +153,7 @@ struct Meowtastic: App {
 	}
 
 	private func refreshApp() async {
-		Analytics.logEvent(AnalyticEvents.ble.id, parameters: nil)
+		Analytics.logEvent(AnalyticEvents.backgroundUpdate.id, parameters: nil)
 
 		guard !bleManager.isSubscribed else {
 			return
