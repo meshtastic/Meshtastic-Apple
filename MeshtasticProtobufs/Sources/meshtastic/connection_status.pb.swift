@@ -20,7 +20,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
-public struct DeviceConnectionStatus {
+public struct DeviceConnectionStatus: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -81,7 +81,7 @@ public struct DeviceConnectionStatus {
 
 ///
 /// WiFi connection status
-public struct WifiConnectionStatus {
+public struct WifiConnectionStatus: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -114,7 +114,7 @@ public struct WifiConnectionStatus {
 
 ///
 /// Ethernet connection status
-public struct EthernetConnectionStatus {
+public struct EthernetConnectionStatus: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -139,7 +139,7 @@ public struct EthernetConnectionStatus {
 
 ///
 /// Ethernet or WiFi connection status
-public struct NetworkConnectionStatus {
+public struct NetworkConnectionStatus: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -167,7 +167,7 @@ public struct NetworkConnectionStatus {
 
 ///
 /// Bluetooth connection status
-public struct BluetoothConnectionStatus {
+public struct BluetoothConnectionStatus: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -191,7 +191,7 @@ public struct BluetoothConnectionStatus {
 
 ///
 /// Serial connection status
-public struct SerialConnectionStatus {
+public struct SerialConnectionStatus: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -208,15 +208,6 @@ public struct SerialConnectionStatus {
 
   public init() {}
 }
-
-#if swift(>=5.5) && canImport(_Concurrency)
-extension DeviceConnectionStatus: @unchecked Sendable {}
-extension WifiConnectionStatus: @unchecked Sendable {}
-extension EthernetConnectionStatus: @unchecked Sendable {}
-extension NetworkConnectionStatus: @unchecked Sendable {}
-extension BluetoothConnectionStatus: @unchecked Sendable {}
-extension SerialConnectionStatus: @unchecked Sendable {}
-#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 

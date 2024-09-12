@@ -5069,9 +5069,6 @@
     "Debug" : {
 
     },
-    "Debug Log" : {
-
-    },
     "Debug Logs" : {
 
     },
@@ -15913,6 +15910,9 @@
 
     },
     "OK" : {
+
+    },
+    "Ok to MQTT" : {
 
     },
     "OLED Type" : {

@@ -33,7 +33,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// Note: This was formerly a Type enum named 'typ' with the same id #
 /// We have change to this 'portnum' based scheme for specifying app handlers for particular payloads.
 /// This change is backwards compatible by treating the legacy OPAQUE/CLEAR_TEXT values identically.
-public enum PortNum: SwiftProtobuf.Enum {
+public enum PortNum: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -277,11 +277,6 @@ public enum PortNum: SwiftProtobuf.Enum {
     }
   }
 
-}
-
-#if swift(>=4.2)
-
-extension PortNum: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   public static let allCases: [PortNum] = [
     .unknownApp,
@@ -313,13 +308,8 @@ extension PortNum: CaseIterable {
     .atakForwarder,
     .max,
   ]
+
 }
-
-#endif  // swift(>=4.2)
-
-#if swift(>=5.5) && canImport(_Concurrency)
-extension PortNum: @unchecked Sendable {}
-#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 

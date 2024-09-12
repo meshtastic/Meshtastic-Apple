@@ -463,7 +463,6 @@ func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, sessi
 				let newDeviceConfig = DeviceConfigEntity(context: context)
 				newDeviceConfig.role = Int32(config.role.rawValue)
 				newDeviceConfig.serialEnabled = config.serialEnabled
-				newDeviceConfig.debugLogEnabled = config.debugLogEnabled
 				newDeviceConfig.buttonGpio = Int32(config.buttonGpio)
 				newDeviceConfig.buzzerGpio =  Int32(config.buzzerGpio)
 				newDeviceConfig.rebroadcastMode = Int32(config.rebroadcastMode.rawValue)
@@ -476,7 +475,6 @@ func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, sessi
 			} else {
 				fetchedNode[0].deviceConfig?.role = Int32(config.role.rawValue)
 				fetchedNode[0].deviceConfig?.serialEnabled = config.serialEnabled
-				fetchedNode[0].deviceConfig?.debugLogEnabled = config.debugLogEnabled
 				fetchedNode[0].deviceConfig?.buttonGpio = Int32(config.buttonGpio)
 				fetchedNode[0].deviceConfig?.buzzerGpio = Int32(config.buzzerGpio)
 				fetchedNode[0].deviceConfig?.rebroadcastMode = Int32(config.rebroadcastMode.rawValue)
@@ -818,21 +816,23 @@ func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, s
 				let newSecurityConfig = SecurityConfigEntity(context: context)
 				newSecurityConfig.publicKey = config.publicKey
 				newSecurityConfig.privateKey = config.privateKey
-				newSecurityConfig.adminKey = config.adminKey
+				if config.adminKey.count > 0 {
+					newSecurityConfig.adminKey = config.adminKey[0]
+				}
 				newSecurityConfig.isManaged = config.isManaged
 				newSecurityConfig.serialEnabled = config.serialEnabled
 				newSecurityConfig.debugLogApiEnabled = config.debugLogApiEnabled
-				newSecurityConfig.bluetoothLoggingEnabled = config.bluetoothLoggingEnabled
 				newSecurityConfig.adminChannelEnabled = config.adminChannelEnabled
 				fetchedNode[0].securityConfig = newSecurityConfig
 			} else {
 				fetchedNode[0].securityConfig?.publicKey = config.publicKey
 				fetchedNode[0].securityConfig?.privateKey = config.privateKey
-				fetchedNode[0].securityConfig?.adminKey = config.adminKey
+				if config.adminKey.count > 0 {
+					fetchedNode[0].securityConfig?.adminKey = config.adminKey[0]
+				}
 				fetchedNode[0].securityConfig?.isManaged = config.isManaged
 				fetchedNode[0].securityConfig?.serialEnabled = config.serialEnabled
 				fetchedNode[0].securityConfig?.debugLogApiEnabled = config.debugLogApiEnabled
-				fetchedNode[0].securityConfig?.bluetoothLoggingEnabled = config.bluetoothLoggingEnabled
 				fetchedNode[0].securityConfig?.adminChannelEnabled = config.adminChannelEnabled
 			}
 			if sessionPasskey?.count != 0 {

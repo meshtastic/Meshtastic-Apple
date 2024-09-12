@@ -45,6 +45,7 @@ struct LoRaConfig: View {
 	@State var rxBoostedGain = false
 	@State var overrideFrequency: Float = 0.0
 	@State var ignoreMqtt = false
+	@State var okToMqtt = false
 
 	let floatFormatter: NumberFormatter = {
 		let formatter = NumberFormatter()
@@ -98,6 +99,10 @@ struct LoRaConfig: View {
 
 					Toggle(isOn: $ignoreMqtt) {
 						Label("Ignore MQTT", systemImage: "server.rack")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Toggle(isOn: $okToMqtt) {
+						Label("Ok to MQTT", systemImage: "network")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
@@ -209,6 +214,7 @@ struct LoRaConfig: View {
 					lc.sx126XRxBoostedGain = rxBoostedGain
 					lc.overrideFrequency = overrideFrequency
 					lc.ignoreMqtt = ignoreMqtt
+					lc.configOkToMqtt = okToMqtt
 					if connectedNode?.num ?? -1 == node?.user?.num ?? 0 {
 						UserDefaults.modemPreset = modemPreset
 					}
@@ -292,6 +298,9 @@ struct LoRaConfig: View {
 		.onChange(of: ignoreMqtt) {
 			if $0 != node?.loRaConfig?.ignoreMqtt { hasChanges = true }
 		}
+		.onChange(of: okToMqtt) {
+			if $0 != node?.loRaConfig?.okToMqtt { hasChanges = true }
+		}
 	}
 	func setLoRaValues() {
 		self.hopLimit = Int(node?.loRaConfig?.hopLimit ?? 3)
@@ -307,6 +316,7 @@ struct LoRaConfig: View {
 		self.rxBoostedGain = node?.loRaConfig?.sx126xRxBoostedGain ?? false
 		self.overrideFrequency = node?.loRaConfig?.overrideFrequency ?? 0.0
 		self.ignoreMqtt = node?.loRaConfig?.ignoreMqtt ?? false
+		self.okToMqtt = node?.loRaConfig?.okToMqtt ?? false
 		self.hasChanges = false
 	}
 }
