@@ -1,5 +1,5 @@
-import Foundation
 import CoreBluetooth
+import Foundation
 
 struct Device: Identifiable, Equatable {
 	var id: String
@@ -11,9 +11,9 @@ struct Device: Identifiable, Equatable {
 	var rssi: Int
 	var lastUpdate: Date
 	var peripheral: CBPeripheral
-	
+
 	static func == (lhs: Device, rhs: Device) -> Bool {
-		return lhs.id == rhs.id
+		lhs.id == rhs.id
 	}
 
 	func getSignalStrength() -> BLESignalStrength {

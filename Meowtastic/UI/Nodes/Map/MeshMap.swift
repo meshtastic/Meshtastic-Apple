@@ -27,9 +27,6 @@ struct MeshMap: View {
 	)
 	private var positions: FetchedResults<PositionEntity>
 
-	@EnvironmentObject
-	private var bleManager: BLEManager
-
 	var body: some View {
 		NavigationStack {
 			ZStack {
@@ -67,14 +64,17 @@ struct MeshMap: View {
 			}
 			.popover(item: $selectedPosition) { position in
 				if let node = position.nodePosition {
-					NodeDetail(isInSheet: true, node: node)
+					NodeDetail(
+						node: node,
+						isInSheet: true
+					)
 						.presentationDetents([.medium])
 				}
 			}
 			.navigationTitle("Mesh")
 			.navigationBarTitleDisplayMode(.large)
 			.navigationBarItems(
-				trailing: ConnectedDevice()
+				trailing: ConnectionInfo()
 			)
 		}
 		.onAppear {

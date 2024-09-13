@@ -6,11 +6,7 @@ import SwiftUI
 struct NodeMap: View {
 	@Environment(\.managedObjectContext)
 	var context
-	@EnvironmentObject
-	var bleManager: BLEManager
 
-	@ObservedObject
-	private var node: NodeInfoEntity
 	@AppStorage("mapLayer")
 	private var selectedMapLayer: MapLayer = .standard
 	@Namespace
@@ -26,17 +22,7 @@ struct NodeMap: View {
 	@State
 	private var mapRegion = MKCoordinateRegion()
 
-	@FetchRequest(
-		sortDescriptors: [
-			NSSortDescriptor(key: "name", ascending: false)
-		],
-		predicate: NSPredicate(
-			format: "expire == nil || expire >= %@", Date() as NSDate
-		),
-		animation: .none
-	)
-	private var waypoints: FetchedResults<WaypointEntity>
-
+	private let node: NodeInfoEntity
 	private var screenTitle: String {
 		if let name = node.user?.shortName {
 			return name
@@ -60,7 +46,7 @@ struct NodeMap: View {
 					displayMode: .inline
 				)
 				.navigationBarItems(
-					trailing: ConnectedDevice()
+					trailing: ConnectionInfo()
 				)
 				.onAppear {
 					Analytics.logEvent(

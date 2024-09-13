@@ -5,12 +5,9 @@ import OSLog
 import SwiftUI
 
 struct NodeDetail: View {
-	var isInSheet = false
-
-	@ObservedObject
-	var node: NodeInfoEntity
-
 	private let coreDataTools = CoreDataTools()
+	private let node: NodeInfoEntity
+	private let isInSheet: Bool
 	private let distanceFormatter = MKDistanceFormatter()
 	private let detailInfoFont = Font.system(size: 12, weight: .regular, design: .rounded)
 	private let detailIconSize: CGFloat = 12
@@ -18,7 +15,7 @@ struct NodeDetail: View {
 	@Environment(\.managedObjectContext)
 	private var context
 	@EnvironmentObject
-	private var bleManager: BLEManager
+	private var connectedDevice: ConnectedDevice
 	@EnvironmentObject
 	private var nodeConfig: NodeConfig
 	@EnvironmentObject
@@ -41,7 +38,7 @@ struct NodeDetail: View {
 
 	private var connectedNode: NodeInfoEntity? {
 		coreDataTools.getNodeInfo(
-			id: bleManager.deviceConnected?.num ?? -1,
+			id: connectedDevice.device?.num ?? -1,
 			context: context
 		)
 	}
@@ -128,14 +125,12 @@ struct NodeDetail: View {
 				}
 
 				if !isInSheet {
-					Section("Actions") {
-						actions
-					}
+					actions
 
 					if
 						let connectedNode,
 						let nodeMetadata = node.metadata,
-						self.bleManager.deviceConnected != nil
+						connectedDevice != nil
 					{
 						Section("Administration") {
 							admin(node: connectedNode, metadata: nodeMetadata)
@@ -160,7 +155,7 @@ struct NodeDetail: View {
 	private var navigationBarButtons: some View {
 		HStack(spacing: 4) {
 			Button {
-				guard let connectedNodeNum = bleManager.deviceConnected?.num else {
+				guard let connectedNodeNum = connectedDevice.device?.num else {
 					return
 				}
 
@@ -194,11 +189,7 @@ struct NodeDetail: View {
 					.foregroundColor(.accentColor)
 			}
 
-			if
-				let user = node.user,
-				let connectedPeripheral = bleManager.deviceConnected,
-				node.num != connectedPeripheral.num
-			{
+			if let user = node.user, let device = connectedDevice.device, node.num != device.num {
 				Button {
 					user.mute.toggle()
 					context.refresh(node, mergeChanges: true)
@@ -554,7 +545,10 @@ struct NodeDetail: View {
 			}
 		}
 
-		if let num = connectedNode?.num, num != node.num {
+		if
+			let num = connectedNode?.num,
+			num != node.num
+		{
 			HStack {
 				Label {
 					Text("Network")
@@ -654,10 +648,7 @@ struct NodeDetail: View {
 		}
 
 		if let num = connectedNode?.num, num != node.num {
-			if
-				let connectedPeripheral = bleManager.deviceConnected,
-				node.num != connectedPeripheral.num
-			{
+			if let device = connectedDevice.device, node.num != device.num {
 				let routes = node.traceRoutes?.count ?? 0
 
 				NavigationLink {
@@ -779,29 +770,30 @@ struct NodeDetail: View {
 
 	@ViewBuilder
 	private var actions: some View {
-		if
-			let connectedDevice = bleManager.getConnectedDevice(),
-			node.num != connectedDevice.num
-		{
-			ExchangePositionsButton(
-				bleManager: bleManager,
-				node: node
-			)
-		}
+		if let device = connectedDevice.device, node.num != device.num {
+			Section("Actions") {
+				ExchangePositionsButton(
+					node: node
+				)
 
-		if
-			let connectedDevice = bleManager.getConnectedDevice(),
-			node.num != connectedDevice.num,
-			let connectedNode
-		{
-			DeleteNodeButton(
-				context: context,
-				bleManager: bleManager,
-				nodeConfig: nodeConfig,
-				connectedNode: connectedNode,
-				node: node
-			)
+				if let connectedNode {
+					DeleteNodeButton(
+						node: node,
+						nodeConfig: nodeConfig,
+						connectedNode: connectedNode,
+						context: context
+					)
+				}
+			}
 		}
+	}
+
+	init(
+		node: NodeInfoEntity,
+		isInSheet: Bool = false
+	) {
+		self.node = node
+		self.isInSheet = isInSheet
 	}
 
 	@ViewBuilder

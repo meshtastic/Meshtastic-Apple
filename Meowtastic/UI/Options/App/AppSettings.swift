@@ -40,7 +40,7 @@ struct AppSettings: View {
 		}
 		.navigationTitle("App Settings")
 		.navigationBarItems(
-			trailing: ConnectedDevice()
+			trailing: ConnectionInfo()
 		)
 		.onAppear {
 			Analytics.logEvent(AnalyticEvents.optionsAppSettings.id, parameters: nil)

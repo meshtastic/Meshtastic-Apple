@@ -23,7 +23,7 @@ final class BLEManager: NSObject, ObservableObject {
 	@Published
 	var devices: [Device] = []
 	@Published
-	var deviceConnected: Device!
+	var currentDevice = ConnectedDevice()
 	@Published
 	var lastConnectionError: String
 	@Published
@@ -92,11 +92,7 @@ final class BLEManager: NSObject, ObservableObject {
 	}
 
 	func getConnectedDevice() -> Device? {
-		guard let deviceConnected, deviceConnected.peripheral.state == .connected else {
-			return nil
-		}
-
-		return deviceConnected
+		currentDevice.getConnectedDevice()
 	}
 
 	func startScanning() {
@@ -169,7 +165,7 @@ final class BLEManager: NSObject, ObservableObject {
 				return true
 			}
 		}
-		else if deviceConnected != nil, isSubscribed {
+		else if currentDevice.device != nil, isSubscribed {
 			return true
 		}
 
@@ -181,14 +177,13 @@ final class BLEManager: NSObject, ObservableObject {
 			mqttClientProxy.disconnect()
 		}
 
+		currentDevice.clear()
 		characteristicFromRadio = nil
 		isConnecting = false
 		isConnected = false
 		isSubscribed = false
-		deviceConnected = nil
 		isInvalidFwVersion = false
 		connectedVersion = "0.0.0"
-		deviceConnected = nil
 		timeoutTimer?.invalidate()
 		automaticallyReconnect = false
 
@@ -199,7 +194,7 @@ final class BLEManager: NSObject, ObservableObject {
 	}
 
 	func disconnectDevice(reconnect: Bool = true) {
-		guard let deviceConnected else {
+		guard let device = currentDevice.device else {
 			return
 		}
 
@@ -208,7 +203,7 @@ final class BLEManager: NSObject, ObservableObject {
 		}
 
 		automaticallyReconnect = reconnect
-		centralManager.cancelPeripheralConnection(deviceConnected.peripheral)
+		centralManager.cancelPeripheralConnection(device.peripheral)
 		characteristicFromRadio = nil
 		isConnected = false
 		isSubscribed = false
@@ -514,11 +509,11 @@ final class BLEManager: NSObject, ObservableObject {
 		lastConnectionError = ""
 
 		if timeoutCount >= 10 {
-			if let deviceConnected {
-				centralManager.cancelPeripheralConnection(deviceConnected.peripheral)
+			if let device = currentDevice.device {
+				centralManager.cancelPeripheralConnection(device.peripheral)
 			}
 
-			deviceConnected = nil
+			currentDevice.clear()
 			isConnected = false
 			isConnecting = false
 			timeoutCount = 0

@@ -13,6 +13,7 @@ enum AnalyticEvents: String {
 	case nodeDetail
 	case nodeList
 	case nodeMap
+	case nodeRetrievalFailure
 	case options
 	case optionsAbout
 	case optionsAppSettings

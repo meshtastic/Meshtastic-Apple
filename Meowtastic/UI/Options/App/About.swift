@@ -66,7 +66,7 @@ struct About: View {
 		.navigationTitle("About")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(
-			trailing: ConnectedDevice()
+			trailing: ConnectionInfo()
 		)
 		.onAppear {
 			Analytics.logEvent(AnalyticEvents.optionsAbout.id, parameters: nil)

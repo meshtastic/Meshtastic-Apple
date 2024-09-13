@@ -3,8 +3,6 @@ import MapKit
 import SwiftUI
 
 struct NodeMapContent: MapContent {
-	@ObservedObject
-	var node: NodeInfoEntity
 	@Namespace
 	var mapScope
 	@State
@@ -18,6 +16,7 @@ struct NodeMapContent: MapContent {
 	@State
 	var isMeshMap = false
 
+	private let node: NodeInfoEntity?
 	private let historyColor = Color.accentColor
 
 	@Environment(\.colorScheme)
@@ -37,7 +36,7 @@ struct NodeMapContent: MapContent {
 	}
 
 	private var positions: [PositionEntity] {
-		if let positionArray = node.positions?.array as? [PositionEntity] {
+		if let positionArray = node?.positions?.array as? [PositionEntity] {
 			positionArray
 		}
 		else {
@@ -137,6 +136,10 @@ struct NodeMapContent: MapContent {
 			.stroke(gradientBackground, style: strokeBackground)
 		MapPolyline(coordinates: coordinates)
 			.stroke(gradientMain, style: strokeMain)
+	}
+
+	init(node: NodeInfoEntity?) {
+		self.node = node
 	}
 
 	private func getFlags(for position: PositionEntity) -> PositionFlags {

@@ -3,12 +3,9 @@ import OSLog
 import SwiftUI
 
 struct NodeAlertsButton: View {
-	var context: NSManagedObjectContext
-
-	@ObservedObject
 	var node: NodeInfoEntity
-	@ObservedObject
 	var user: UserEntity
+	var context: NSManagedObjectContext
 
 	var body: some View {
 		Button {

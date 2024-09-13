@@ -2,9 +2,10 @@ import CoreData
 import SwiftUI
 
 struct ExchangePositionsButton: View {
-	var bleManager: BLEManager
 	var node: NodeInfoEntity
 
+	@EnvironmentObject
+	private var bleManager: BLEManager
 	@State
 	private var isPresentingPositionSentAlert = false
 

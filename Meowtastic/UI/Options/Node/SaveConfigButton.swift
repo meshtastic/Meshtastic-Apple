@@ -7,7 +7,7 @@ struct SaveConfigButton: View {
 	let onConfirmation: () -> Void
 
 	@EnvironmentObject
-	private var bleManager: BLEManager
+	private var connectedDevice: ConnectedDevice
 	@State
 	private var isPresentingSaveConfirm = false
 
@@ -18,7 +18,7 @@ struct SaveConfigButton: View {
 		} label: {
 			Label("save", systemImage: "square.and.arrow.down")
 		}
-		.disabled(bleManager.deviceConnected == nil || !hasChanges)
+		.disabled(connectedDevice.device == nil || !hasChanges)
 		.buttonStyle(.bordered)
 		.buttonBorderShape(.capsule)
 		.controlSize(.large)

@@ -3,16 +3,16 @@ import OSLog
 import SwiftUI
 
 struct FavoriteNodeButton: View {
-	var bleManager: BLEManager
+	var node: NodeInfoEntity
 	var nodeConfig: NodeConfig
 	var context: NSManagedObjectContext
 
-	@ObservedObject
-	var node: NodeInfoEntity
+	@EnvironmentObject
+	private var connectedDevice: ConnectedDevice
 
 	var body: some View {
 		Button {
-			guard let connectedNodeNum = bleManager.deviceConnected?.num else {
+			guard let connectedNodeNum = connectedDevice.device?.num else {
 				return
 			}
 

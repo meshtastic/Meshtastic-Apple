@@ -268,7 +268,7 @@ struct Channels: View {
 					} label: {
 						Label("save", systemImage: "square.and.arrow.down")
 					}
-					.disabled(bleManager.deviceConnected == nil || !hasChanges || !hasValidKey)
+					.disabled(bleManager.getConnectedDevice() == nil || !hasChanges || !hasValidKey)
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
 					.controlSize(.large)
@@ -320,7 +320,7 @@ struct Channels: View {
 		}
 		.navigationTitle("Channels")
 		.navigationBarItems(
-			trailing: ConnectedDevice()
+			trailing: ConnectionInfo()
 		)
 		.onAppear {
 			Analytics.logEvent(AnalyticEvents.optionsChannels.id, parameters: nil)

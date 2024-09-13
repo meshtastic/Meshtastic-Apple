@@ -21,23 +21,28 @@ extension BLEManager: CBCentralManagerDelegate {
 		switch central.state {
 		case .poweredOff:
 			status = "BLE is powered off"
+
 		case .poweredOn:
 			status = "BLE is poweredOn"
+
 		case .resetting:
 			status = "BLE is resetting"
+
 		case .unauthorized:
 			status = "BLE is unauthorized"
+
 		case .unknown:
 			status = "BLE is unknown"
+
 		case .unsupported:
 			status = "BLE is unsupported"
+
 		default:
 			status = "default"
 		}
 
 		Logger.services.info("📜 [BLE] Bluetooth status: \(status)")
 	}
-
 
 	func centralManager(
 		_ central: CBCentralManager,
@@ -104,12 +109,12 @@ extension BLEManager: CBCentralManagerDelegate {
 		timeoutCount = 0
 		lastConnectionError = ""
 
-		deviceConnected = devices.first(where: {
+		currentDevice.device = devices.first(where: {
 			$0.peripheral.identifier == peripheral.identifier
 		})
 
-		if let deviceConnected {
-			deviceConnected.peripheral.delegate = self
+		if currentDevice.device != nil {
+			currentDevice.device?.peripheral.delegate = self
 		}
 		else {
 			lastConnectionError = "🚫 [BLE] Bluetooth connection error, please try again."
@@ -118,8 +123,9 @@ extension BLEManager: CBCentralManagerDelegate {
 			return
 		}
 
-
-		peripheral.discoverServices([BluetoothUUID.meshtasticService])
+		peripheral.discoverServices(
+			[BluetoothUUID.meshtasticService]
+		)
 
 		Logger.services.info("✅ [BLE] Connected: \(peripheral.name ?? "Unknown", privacy: .public)")
 	}
@@ -139,7 +145,7 @@ extension BLEManager: CBCentralManagerDelegate {
 		didDisconnectPeripheral peripheral: CBPeripheral,
 		error: Error?
 	) {
-		deviceConnected = nil
+		currentDevice.clear()
 		isConnecting = false
 		isConnected = false
 		isSubscribed = false

@@ -15,10 +15,10 @@ struct MessageList: View {
 
 	@Environment(\.managedObjectContext)
 	private var context
-	@EnvironmentObject
-	private var bleManager: BLEManager
 	@AppStorage("preferredPeripheralNum")
 	private var preferredPeripheralNum = -1
+	@EnvironmentObject
+	private var connectedDevice: ConnectedDevice
 	@StateObject
 	private var appState = AppState.shared
 	@FocusState
@@ -101,9 +101,6 @@ struct MessageList: View {
 
 		return ""
 	}
-	private var connectedNodeNum: Int64? {
-		bleManager.deviceConnected?.num
-	}
 
 	var body: some View {
 		ZStack(alignment: .bottom) {
@@ -169,18 +166,21 @@ struct MessageList: View {
 
 			ToolbarItem(placement: .navigationBarTrailing) {
 				if let channel {
-					ConnectedDevice(
+					ConnectionInfo(
 						mqttUplinkEnabled: channel.uplinkEnabled,
 						mqttDownlinkEnabled: channel.downlinkEnabled
 					)
 				}
 				else {
-					ConnectedDevice()
+					ConnectionInfo()
 				}
 			}
 		}
-		.sheet(item: $nodeDetail) { detail in
-			NodeDetail(isInSheet: true, node: detail)
+		.sheet(item: $nodeDetail) { node in
+			NodeDetail(
+				node: node,
+				isInSheet: true
+			)
 				.presentationDragIndicator(.visible)
 				.presentationDetents([.medium])
 		}
@@ -335,9 +335,9 @@ struct MessageList: View {
 							.lineLimit(1)
 							.foregroundColor(.gray)
 
-						if let node = message.fromUser?.userNode, let connectedNodeNum {
+						if let node = message.fromUser?.userNode, let nodeNum = connectedDevice.device?.num {
 							NodeIconListView(
-								connectedNode: connectedNodeNum,
+								connectedNode: nodeNum,
 								small: true,
 								node: node
 							)

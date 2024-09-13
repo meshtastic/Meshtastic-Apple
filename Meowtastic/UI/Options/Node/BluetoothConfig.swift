@@ -16,7 +16,7 @@ struct BluetoothConfig: View {
 	@Environment(\.managedObjectContext)
 	private var context
 	@EnvironmentObject
-	private var bleManager: BLEManager
+	private var connectedDevice: ConnectedDevice
 	@EnvironmentObject
 	private var nodeConfig: NodeConfig
 	@Environment(\.dismiss)
@@ -30,12 +30,15 @@ struct BluetoothConfig: View {
 	@State var fixedPin = "123456"
 	@State var shortPin = false
 	@State var deviceLoggingEnabled = false
+
 	var pinLength: Int = 6
+
 	let numberFormatter: NumberFormatter = {
 		let formatter = NumberFormatter()
 			formatter.numberStyle = .none
 			return formatter
 	}()
+
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Bluetooth", config: \.bluetoothConfig, node: node)
@@ -86,14 +89,14 @@ struct BluetoothConfig: View {
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 			}
 		}
-		.disabled(self.bleManager.deviceConnected == nil || node?.bluetoothConfig == nil)
+		.disabled(connectedDevice.device == nil || node?.bluetoothConfig == nil)
 		.onAppear {
 			Analytics.logEvent(AnalyticEvents.optionsBluetooth.id, parameters: nil)
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			if
-				let myNodeNum = bleManager.deviceConnected?.num,
+				let myNodeNum = connectedDevice.device?.num,
 				let connectedNode = coreDataTools.getNodeInfo(id: myNodeNum, context: context)
 			{
 				var bc = Config.BluetoothConfig()
@@ -113,14 +116,14 @@ struct BluetoothConfig: View {
 
 		.navigationTitle("Bluetooth Config")
 		.navigationBarItems(
-			trailing: ConnectedDevice()
+			trailing: ConnectionInfo()
 		)
 		.onAppear {
 			setBluetoothValues()
 			// Need to request a BluetoothConfig from the remote node before allowing changes
-			if let connectedPeripheral = bleManager.deviceConnected, let node, node.bluetoothConfig == nil {
+			if let device = connectedDevice.device, let node, node.bluetoothConfig == nil {
 				Logger.mesh.info("empty bluetooth config")
-				let connectedNode = coreDataTools.getNodeInfo(id: connectedPeripheral.num, context: context)
+				let connectedNode = coreDataTools.getNodeInfo(id: device.num, context: context)
 				if let connectedNode {
 					nodeConfig.requestBluetoothConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 				}

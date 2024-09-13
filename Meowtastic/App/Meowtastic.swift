@@ -7,8 +7,6 @@ import SwiftUI
 
 @main
 struct Meowtastic: App {
-	private let persistence: NSPersistentContainer
-
 	@UIApplicationDelegateAdaptor(MeowtasticDelegate.self)
 	var appDelegate
 	@Environment(\.scenePhase)
@@ -20,14 +18,11 @@ struct Meowtastic: App {
 	@State
 	var addChannels = false
 
-	@ObservedObject
-	private var appState: AppState
-	@ObservedObject
-	private var bleManager: BLEManager
-	@ObservedObject
-	private var nodeConfig: NodeConfig
-	@ObservedObject
-	private var locationManager: LocationManager
+	private let appState: AppState
+	private let bleManager: BLEManager
+	private let nodeConfig: NodeConfig
+	private let locationManager: LocationManager
+	private let persistence: NSPersistentContainer
 
 	@ViewBuilder
 	var body: some Scene {
@@ -35,6 +30,7 @@ struct Meowtastic: App {
 			Content()
 				.environment(\.managedObjectContext, persistence.viewContext)
 				.environmentObject(bleManager)
+				.environmentObject(bleManager.currentDevice)
 				.environmentObject(nodeConfig)
 				.environmentObject(locationManager)
 				.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in

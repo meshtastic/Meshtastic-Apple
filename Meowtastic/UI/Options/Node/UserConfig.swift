@@ -1,31 +1,25 @@
-//
-//  User.swift
-//  Meshtastic Apple
-//
-//  Copyright (c) Garth Vander Houwen 6/27/22.
-//
 import CoreData
 import FirebaseAnalytics
 import MeshtasticProtobufs
 import SwiftUI
 
 struct UserConfig: View {
+	enum Field: Hashable {
+		case frequencyOverride
+	}
+
 	private let coreDataTools = CoreDataTools()
+
+	var node: NodeInfoEntity?
 
 	@Environment(\.managedObjectContext)
 	private var context
 	@EnvironmentObject
-	private var bleManager: BLEManager
+	private var connectedDevice: ConnectedDevice
 	@EnvironmentObject
 	private var nodeConfig: NodeConfig
 	@Environment(\.dismiss)
 	private var goBack
-
-	var node: NodeInfoEntity?
-
-	enum Field: Hashable {
-		case frequencyOverride
-	}
 
 	@State private var isPresentingFactoryResetConfirm: Bool = false
 	@State private var isPresentingSaveConfirm: Bool = false
@@ -46,11 +40,9 @@ struct UserConfig: View {
 	}()
 
 	var body: some View {
-
 		VStack {
 			Form {
 				Section(header: Text("User Details")) {
-
 					VStack(alignment: .leading) {
 						HStack {
 							Label(isLicensed ? "Call Sign" : "Long Name", systemImage: "person.crop.rectangle.fill")
@@ -66,15 +58,18 @@ struct UserConfig: View {
 						}
 						.keyboardType(.default)
 						.disableAutocorrection(true)
+
 						if longName.isEmpty && isLicensed {
 							Label("Call Sign must not be empty", systemImage: "exclamationmark.square")
 								.foregroundColor(.red)
 						}
+
 						Text("\(String(isLicensed ? "Call Sign" : "Long Name")) can be up to \(isLicensed ? "8" : "36") bytes long.")
 							.foregroundColor(.gray)
 							.font(.callout)
 
 					}
+
 					VStack(alignment: .leading) {
 						HStack {
 							Label("Short Name", systemImage: "circlebadge.fill")
@@ -91,12 +86,19 @@ struct UserConfig: View {
 						}
 						.keyboardType(.default)
 						.disableAutocorrection(true)
+
 						Text("The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long.")
 							.foregroundColor(.gray)
 							.font(.callout)
 					}
+
 					// Only manage ham mode for the locally connected node
-					if node?.num ?? 0 > 0 && node?.num ?? 0 == bleManager.deviceConnected?.num ?? 0 {
+					if
+						let node,
+						let device = connectedDevice.device,
+						node.num > 0,
+						node.num == device.num
+					{
 						Toggle(isOn: $isLicensed) {
 							Label("Licensed Operator", systemImage: "person.text.rectangle")
 						}
@@ -134,14 +136,15 @@ struct UserConfig: View {
 					}
 				}
 			}
-			.disabled(bleManager.deviceConnected == nil)
+			.disabled(connectedDevice.device == nil)
+
 			HStack {
 				Button {
 					isPresentingSaveConfirm = true
 				} label: {
 					Label("save", systemImage: "square.and.arrow.down")
 				}
-				.disabled(bleManager.deviceConnected == nil || !hasChanges)
+				.disabled(connectedDevice.device == nil || !hasChanges)
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(.large)
@@ -156,10 +159,16 @@ struct UserConfig: View {
 							return
 						}
 
-						let connectedUser = coreDataTools.getUser(id: bleManager.deviceConnected?.num ?? -1, context: context)
-						let connectedNode = coreDataTools.getNodeInfo(id: bleManager.deviceConnected?.num ?? -1, context: context)
-						if node != nil && connectedNode != nil {
+						let connectedUser = coreDataTools.getUser(
+							id: connectedDevice.device?.num ?? -1,
+							context: context
+						)
+						let connectedNode = coreDataTools.getNodeInfo(
+							id: connectedDevice.device?.num ?? -1,
+							context: context
+						)
 
+						if node != nil && connectedNode != nil {
 							if !isLicensed {
 								var u = User()
 								u.shortName = shortName
@@ -191,7 +200,7 @@ struct UserConfig: View {
 		}
 		.navigationTitle("User Config")
 		.navigationBarItems(
-			trailing: ConnectedDevice()
+			trailing: ConnectionInfo()
 		)
 		.onAppear {
 			Analytics.logEvent(AnalyticEvents.optionsUser.id, parameters: nil)

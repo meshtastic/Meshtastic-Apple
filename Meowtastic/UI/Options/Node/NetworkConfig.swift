@@ -15,7 +15,7 @@ struct NetworkConfig: View {
 	@Environment(\.managedObjectContext)
 	private var context
 	@EnvironmentObject
-	private var bleManager: BLEManager
+	private var connectedDevice: ConnectedDevice
 	@EnvironmentObject
 	private var nodeConfig: NodeConfig
 	@Environment(\.dismiss)
@@ -93,11 +93,13 @@ struct NetworkConfig: View {
 				}
 			}
 			.scrollDismissesKeyboard(.interactively)
-			.disabled(self.bleManager.deviceConnected == nil || node?.networkConfig == nil)
+			.disabled(connectedDevice.device == nil || node?.networkConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = coreDataTools.getNodeInfo(id: bleManager.deviceConnected.num, context: context)
-				if connectedNode != nil {
+				if
+					let device = connectedDevice.device,
+					let connectedNode = coreDataTools.getNodeInfo(id: device.num, context: context)
+				{
 					var network = Config.NetworkConfig()
 					network.wifiEnabled = self.wifiEnabled
 					network.wifiSsid = self.wifiSsid
@@ -105,7 +107,13 @@ struct NetworkConfig: View {
 					network.ethEnabled = self.ethEnabled
 					// network.addressMode = Config.NetworkConfig.AddressMode.dhcp
 
-					let adminMessageId = nodeConfig.saveNetworkConfig(config: network, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					let adminMessageId = nodeConfig.saveNetworkConfig(
+						config: network,
+						fromUser: connectedNode.user!,
+						toUser: node!.user!,
+						adminIndex: connectedNode.myInfo?.adminIndex ?? 0
+					)
+
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
@@ -117,7 +125,7 @@ struct NetworkConfig: View {
 		}
 		.navigationTitle("Network Config")
 		.navigationBarItems(
-			trailing: ConnectedDevice()
+			trailing: ConnectionInfo()
 		)
 		.onAppear {
 			Analytics.logEvent(AnalyticEvents.optionsNetwork.id, parameters: nil)
@@ -125,11 +133,15 @@ struct NetworkConfig: View {
 			setNetworkValues()
 
 			// Need to request a NetworkConfig from the remote node before allowing changes
-			if bleManager.deviceConnected != nil && node?.networkConfig == nil {
+			if let device = connectedDevice.device, node?.networkConfig == nil {
 				Logger.mesh.info("empty network config")
-				let connectedNode = coreDataTools.getNodeInfo(id: bleManager.deviceConnected.num, context: context)
-				if node != nil && connectedNode != nil {
-					nodeConfig.requestNetworkConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+
+				if let connectedNode = coreDataTools.getNodeInfo(id: device.num, context: context) {
+					nodeConfig.requestNetworkConfig(
+						fromUser: connectedNode.user!,
+						toUser: node!.user!,
+						adminIndex: connectedNode.myInfo?.adminIndex ?? 0
+					)
 				}
 			}
 		}

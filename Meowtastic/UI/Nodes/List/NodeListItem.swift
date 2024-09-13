@@ -3,13 +3,9 @@ import MapKit
 import SwiftUI
 
 struct NodeListItem: View {
-	@ObservedObject
-	var node: NodeInfoEntity
-
-	var connected: Bool
-	var connectedNode: Int64
-	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
-
+	private let connected: Bool
+	private let modemPreset: ModemPresets
+	private let node: NodeInfoEntity
 	private let detailInfoFont = Font.system(size: 14, weight: .regular, design: .rounded)
 	private let detailIconSize: CGFloat = 16
 
@@ -17,6 +13,8 @@ struct NodeListItem: View {
 	private var colorScheme: ColorScheme
 	@EnvironmentObject
 	private var locationManager: LocationManager
+	@EnvironmentObject
+	private var connectedDevice: ConnectedDevice
 
 	private var isSignal: Bool {
 		node.snr != 0 && node.rssi != 0
@@ -57,16 +55,18 @@ struct NodeListItem: View {
 
 					lastHeard
 
-					NodeIconListView(connectedNode: connectedNode, node: node)
-						.padding(.vertical, 4)
-						.padding(.horizontal, 12)
-						.overlay(
-							RoundedRectangle(cornerRadius: 16)
-								.stroke(.gray, lineWidth: 1)
-						)
-						.clipShape(
-							RoundedRectangle(cornerRadius: 16)
-						)
+					if let device = connectedDevice.device {
+						NodeIconListView(connectedNode: device.num, node: node)
+							.padding(.vertical, 4)
+							.padding(.horizontal, 12)
+							.overlay(
+								RoundedRectangle(cornerRadius: 16)
+									.stroke(.gray, lineWidth: 1)
+							)
+							.clipShape(
+								RoundedRectangle(cornerRadius: 16)
+							)
+					}
 				}
 				.frame(maxWidth: .infinity, alignment: .leading)
 			}
@@ -148,7 +148,10 @@ struct NodeListItem: View {
 
 	@ViewBuilder
 	private var lastHeard: some View {
-		if let lastHeard = node.lastHeard, lastHeard.timeIntervalSince1970 > 0 {
+		if
+			let lastHeard = node.lastHeard,
+			lastHeard.timeIntervalSince1970 > 0
+		{
 			HStack {
 				Image(systemName: node.isOnline ? "clock.badge.checkmark.fill" : "clock.badge.exclamationmark.fill")
 					.font(detailInfoFont)
@@ -170,5 +173,14 @@ struct NodeListItem: View {
 					.foregroundColor(.gray)
 			}
 		}
+	}
+
+	init(
+		node: NodeInfoEntity,
+		connected: Bool
+	) {
+		self.node = node
+		self.connected = connected
+		self.modemPreset = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
 	}
 }

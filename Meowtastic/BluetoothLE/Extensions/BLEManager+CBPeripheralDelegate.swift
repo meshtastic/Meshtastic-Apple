@@ -183,7 +183,7 @@ extension BLEManager: CBPeripheralDelegate {
 			guard
 				let value = characteristic.value,
 				let info = try? FromRadio(serializedData: value),
-				let connectedDevice = getConnectedDevice()
+				let device = getConnectedDevice()
 			else {
 				return
 			}
@@ -208,14 +208,14 @@ extension BLEManager: CBPeripheralDelegate {
 				if info.myInfo.isInitialized, info.myInfo.myNodeNum > 0 {
 					if let myInfo = myInfoPacket(
 						myInfo: info.myInfo,
-						peripheralId: deviceConnected.id,
+						peripheralId: device.id,
 						context: context
 					) {
 						UserDefaults.preferredPeripheralNum = Int(myInfo.myNodeNum)
 
-						deviceConnected?.num = myInfo.myNodeNum
-						deviceConnected?.name = myInfo.bleName ?? "unknown".localized
-						deviceConnected?.longName = myInfo.bleName ?? "unknown".localized
+						currentDevice.device?.num = myInfo.myNodeNum
+						currentDevice.device?.name = myInfo.bleName ?? "unknown".localized
+						currentDevice.device?.longName = myInfo.bleName ?? "unknown".localized
 					}
 
 					tryClearExistingChannels()
@@ -230,10 +230,10 @@ extension BLEManager: CBPeripheralDelegate {
 							context: context
 						),
 						let user = nodeInfo.user,
-						connectedDevice.num == nodeInfo.num
+						device.num == nodeInfo.num
 					{
-						deviceConnected?.shortName = user.shortName ?? "?"
-						deviceConnected?.longName = user.longName ?? "unknown".localized
+						currentDevice.device?.shortName = user.shortName ?? "?"
+						currentDevice.device?.longName = user.longName ?? "unknown".localized
 					}
 				}
 
@@ -241,7 +241,7 @@ extension BLEManager: CBPeripheralDelegate {
 				if info.channel.isInitialized {
 					channelPacket(
 						channel: info.channel,
-						fromNum: Int64(truncatingIfNeeded: connectedDevice.num),
+						fromNum: Int64(truncatingIfNeeded: device.num),
 						context: context
 					)
 				}
@@ -251,28 +251,32 @@ extension BLEManager: CBPeripheralDelegate {
 					localConfig(
 						config: info.config,
 						context: context,
-						nodeNum: Int64(truncatingIfNeeded: connectedDevice.num),
-						nodeLongName: deviceConnected.longName
+						nodeNum: Int64(truncatingIfNeeded: device.num),
+						nodeLongName: device.longName
 					)
 				}
 
 				// Module Config
-				if info.moduleConfig.isInitialized, !isInvalidFwVersion, connectedDevice.num != 0 {
+				if
+					device.num != 0,
+					info.moduleConfig.isInitialized,
+					!isInvalidFwVersion
+				{
 					moduleConfig(
 						config: info.moduleConfig,
 						context: context,
-						nodeNum: Int64(truncatingIfNeeded: connectedDevice.num),
-						nodeLongName: deviceConnected.longName
+						nodeNum: Int64(truncatingIfNeeded: device.num),
+						nodeLongName: device.longName
 					)
 				}
 
 				// Device Metadata
 				if info.metadata.firmwareVersion.count > 0, !isInvalidFwVersion {
-					deviceConnected?.firmwareVersion = info.metadata.firmwareVersion
+					currentDevice.device?.firmwareVersion = info.metadata.firmwareVersion
 
 					deviceMetadataPacket(
 						metadata: info.metadata,
-						fromNum: connectedDevice.num,
+						fromNum: device.num,
 						context: context
 					)
 
@@ -308,7 +312,7 @@ extension BLEManager: CBPeripheralDelegate {
 				textMessageAppPacket(
 					packet: info.packet,
 					wantRangeTestPackets: wantRangeTestPackets,
-					connectedNode: (connectedDevice.num),
+					connectedNode: device.num,
 					context: context,
 					appState: appState
 				)
@@ -361,7 +365,7 @@ extension BLEManager: CBPeripheralDelegate {
 
 				routingPacket(
 					packet: info.packet,
-					connectedNodeNum: connectedDevice.num,
+					connectedNodeNum: device.num,
 					context: context
 				)
 
@@ -386,7 +390,7 @@ extension BLEManager: CBPeripheralDelegate {
 				textMessageAppPacket(
 					packet: info.packet,
 					wantRangeTestPackets: wantRangeTestPackets,
-					connectedNode: connectedDevice.num,
+					connectedNode: device.num,
 					context: context,
 					appState: appState
 				)
@@ -405,7 +409,7 @@ extension BLEManager: CBPeripheralDelegate {
 
 				storeAndForwardPacket(
 					packet: info.packet,
-					connectedNodeNum: connectedDevice.num,
+					connectedNodeNum: device.num,
 					context: context
 				)
 
@@ -424,7 +428,7 @@ extension BLEManager: CBPeripheralDelegate {
 				textMessageAppPacket(
 					packet: info.packet,
 					wantRangeTestPackets: true,
-					connectedNode: connectedDevice.num,
+					connectedNode: device.num,
 					context: context,
 					appState: appState
 				)
@@ -443,7 +447,7 @@ extension BLEManager: CBPeripheralDelegate {
 
 				telemetryPacket(
 					packet: info.packet,
-					connectedNode: connectedDevice.num,
+					connectedNode: device.num,
 					context: context
 				)
 
@@ -558,11 +562,11 @@ extension BLEManager: CBPeripheralDelegate {
 					$0.peripheral.state == .disconnected
 				})
 
-				if deviceConnected.num > 0 {
+				if device.num > 0 {
 					let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 					fetchNodeInfoRequest.predicate = NSPredicate(
 						format: "num == %lld",
-						Int64(deviceConnected.num)
+						Int64(device.num)
 					)
 
 					if
@@ -721,13 +725,13 @@ extension BLEManager: CBPeripheralDelegate {
 		guard let connectedDevice = getConnectedDevice() else {
 			return
 		}
-		
+
 		let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
 		fetchMyInfoRequest.predicate = NSPredicate(
 			format: "myNodeNum == %lld",
 			Int64(connectedDevice.num)
 		)
-		
+
 		if
 			let myInfo = try? context.fetch(fetchMyInfoRequest),
 			!myInfo.isEmpty

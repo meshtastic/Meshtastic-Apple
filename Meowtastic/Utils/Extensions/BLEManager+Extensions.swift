@@ -3,11 +3,11 @@ import Foundation
 
 extension BLEManager {
 	var isNodeConnected: Bool {
-		deviceConnected != nil
+		getConnectedDevice() != nil
 	}
 
 	var connectedNodeName: String {
-		if let name = deviceConnected?.shortName {
+		if let name = getConnectedDevice()?.shortName {
 			return name
 		}
 		else {
@@ -23,8 +23,8 @@ extension BLEManager {
 		let uuid = peripheral.identifier.uuidString
 
 		// connected peripheral
-		if uuid == deviceConnected.id {
-			deviceConnected.rssi = RSSI.intValue
+		if let device = getConnectedDevice(), uuid == device.id {
+			currentDevice.device?.rssi = RSSI.intValue
 		}
 
 		// some other peripheral

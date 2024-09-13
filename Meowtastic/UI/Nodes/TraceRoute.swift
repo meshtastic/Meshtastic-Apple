@@ -211,7 +211,7 @@ struct TraceRoute: View {
 		}
 		.navigationTitle("Trace Route")
 		.navigationBarItems(
-			trailing: ConnectedDevice()
+			trailing: ConnectionInfo()
 		)
 		.onAppear {
 			Analytics.logEvent(AnalyticEvents.traceRoute.id, parameters: nil)

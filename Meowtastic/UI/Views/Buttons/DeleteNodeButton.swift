@@ -3,13 +3,12 @@ import OSLog
 import SwiftUI
 
 struct DeleteNodeButton: View {
-	private let coreDataTools = CoreDataTools()
-
-	var context: NSManagedObjectContext
-	var bleManager: BLEManager
+	var node: NodeInfoEntity
 	var nodeConfig: NodeConfig
 	var connectedNode: NodeInfoEntity
-	var node: NodeInfoEntity
+	var context: NSManagedObjectContext
+
+	private let coreDataTools = CoreDataTools()
 
 	@State
 	private var isPresentingAlert = false

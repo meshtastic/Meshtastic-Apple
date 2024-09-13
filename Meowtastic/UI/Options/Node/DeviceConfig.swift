@@ -144,7 +144,8 @@ struct DeviceConfig: View {
 						ForEach(0..<49) {
 							if $0 == 0 {
 								Text("unset")
-							} else {
+							}
+							else {
 								Text("Pin \($0)")
 							}
 						}
@@ -152,9 +153,12 @@ struct DeviceConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 				}
 			}
-			.disabled(self.bleManager.deviceConnected == nil || node?.deviceConfig == nil)
+			.disabled(bleManager.getConnectedDevice() == nil || node?.deviceConfig == nil)
 			// Only show these buttons for the BLE connected node
-			if bleManager.deviceConnected != nil && node?.num ?? -1  == bleManager.deviceConnected.num {
+			if
+				let connectedDevice = bleManager.getConnectedDevice(),
+				node?.num ?? -1 == connectedDevice.num
+			{
 				HStack {
 					Button("Reset NodeDB", role: .destructive) {
 						isPresentingNodeDBResetConfirm = true
@@ -175,8 +179,8 @@ struct DeviceConfig: View {
 									bleManager.disconnectDevice()
 									coreDataTools.clearCoreDataDatabase(context: context, includeRoutes: false)
 								}
-
-							} else {
+							}
+							else {
 								Logger.mesh.error("NodeDB Reset Failed")
 							}
 						}
@@ -200,7 +204,8 @@ struct DeviceConfig: View {
 									bleManager.disconnectDevice()
 									coreDataTools.clearCoreDataDatabase(context: context, includeRoutes: false)
 								}
-							} else {
+							}
+							else {
 								Logger.mesh.error("Factory Reset Failed")
 							}
 						}
@@ -209,12 +214,13 @@ struct DeviceConfig: View {
 			}
 			HStack {
 				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					let connectedNode = coreDataTools.getNodeInfo(
-						id: bleManager.deviceConnected.num,
-						context: context
-					)
-
-					if connectedNode != nil {
+					if
+						let connectedDevice = bleManager.getConnectedDevice(),
+						let connectedNode = coreDataTools.getNodeInfo(
+							id: connectedDevice.num,
+							context: context
+						)
+					{
 						var dc = Config.DeviceConfig()
 						dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
 						dc.serialEnabled = serialEnabled
@@ -231,7 +237,13 @@ struct DeviceConfig: View {
 							serialEnabled = false
 							debugLogEnabled = false
 						}
-						let adminMessageId = nodeConfig.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+						let adminMessageId = nodeConfig.saveDeviceConfig(
+							config: dc,
+							fromUser: connectedNode.user!,
+							toUser: node!.user!,
+							adminIndex: connectedNode.myInfo?.adminIndex ?? 0
+						)
+
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save
@@ -245,7 +257,7 @@ struct DeviceConfig: View {
 		}
 		.navigationTitle("Device Config")
 		.navigationBarItems(
-			trailing: ConnectedDevice()
+			trailing: ConnectionInfo()
 		)
 		.onAppear {
 			Analytics.logEvent(AnalyticEvents.optionsDevice.id, parameters: nil)
@@ -253,10 +265,10 @@ struct DeviceConfig: View {
 			setDeviceValues()
 
 			// Need to request a LoRaConfig from the remote node before allowing changes
-			if bleManager.deviceConnected != nil && node?.deviceConfig == nil {
+			if let device = bleManager.getConnectedDevice(), node?.deviceConfig == nil {
 				Logger.mesh.info("empty device config")
 				let connectedNode = coreDataTools.getNodeInfo(
-					id: bleManager.deviceConnected?.num ?? -1,
+					id: device.num ?? -1,
 					context: context
 				)
 

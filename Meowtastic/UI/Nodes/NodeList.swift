@@ -18,7 +18,7 @@ struct NodeList: View {
 	@Environment(\.colorScheme)
 	private var colorScheme: ColorScheme
 	@EnvironmentObject
-	private var bleManager: BLEManager
+	private var connectedDevice: ConnectedDevice
 	@EnvironmentObject
 	private var nodeConfig: NodeConfig
 	@StateObject
@@ -52,7 +52,7 @@ struct NodeList: View {
 	private var nodes: FetchedResults<NodeInfoEntity>
 
 	private var connectedNodeNum: Int64 {
-		Int64(bleManager.deviceConnected?.num ?? 0)
+		Int64(connectedDevice.device?.num ?? 0)
 	}
 	private var connectedNode: NodeInfoEntity? {
 		coreDataTools.getNodeInfo(
@@ -61,7 +61,7 @@ struct NodeList: View {
 		)
 	}
 	private var suggestedNodes: [NodeInfoEntity] {
-		let connectedNodeNum = Int(bleManager.deviceConnected?.num ?? 0)
+		let connectedNodeNum = Int(connectedDevice.device?.num ?? 0)
 		return nodes.filter { node in
 			node.num != connectedNodeNum
 			&& (node.favorite
@@ -87,7 +87,7 @@ struct NodeList: View {
 			.scrollDismissesKeyboard(.interactively)
 			.navigationTitle("Nodes")
 			.navigationBarItems(
-				trailing: ConnectedDevice()
+				trailing: ConnectionInfo()
 			)
 		}
 		.onAppear {
@@ -103,7 +103,7 @@ struct NodeList: View {
 				await countNodes()
 			}
 		}
-		.onChange(of: bleManager.deviceConnected, initial: true) {
+		.onChange(of: connectedDevice, initial: true) {
 			debounce.emit {
 				await countNodes()
 			}
@@ -237,8 +237,7 @@ struct NodeList: View {
 			ForEach(suggestedNodes, id: \.num) { node in
 				NodeListItem(
 					node: node,
-					connected: connectedNodeNum == node.num,
-					connectedNode: connectedNodeNum
+					connected: connectedNodeNum == node.num
 				)
 				.contextMenu {
 					contextMenuActions(
@@ -373,8 +372,7 @@ struct NodeList: View {
 				ForEach(nodeList, id: \.num) { node in
 					NodeListItem(
 						node: node,
-						connected: bleManager.deviceConnected?.num ?? -1 == node.num,
-						connectedNode: bleManager.deviceConnected?.num ?? -1
+						connected: connectedDevice.device?.num ?? -1 == node.num
 					)
 					.contextMenu {
 						contextMenuActions(
@@ -410,27 +408,25 @@ struct NodeList: View {
 		connectedNode: NodeInfoEntity?
 	) -> some View {
 		FavoriteNodeButton(
-			bleManager: bleManager,
+			node: node,
 			nodeConfig: nodeConfig,
-			context: context,
-			node: node
+			context: context
 		)
 
 		if let user = node.user {
 			NodeAlertsButton(
-				context: context,
 				node: node,
-				user: user
+				user: user,
+				context: context
 			)
 		}
 
 		if let connectedNode {
 			DeleteNodeButton(
-				context: context,
-				bleManager: bleManager,
+				node: node,
 				nodeConfig: nodeConfig,
 				connectedNode: connectedNode,
-				node: node
+				context: context
 			)
 		}
 	}

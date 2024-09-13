@@ -8,7 +8,7 @@ struct PowerConfig: View {
 	@Environment(\.managedObjectContext)
 	private var context
 	@EnvironmentObject
-	private var bleManager: BLEManager
+	private var connectedDevice: ConnectedDevice
 	@EnvironmentObject
 	private var nodeConfig: NodeConfig
 	@Environment(\.dismiss)
@@ -95,10 +95,10 @@ struct PowerConfig: View {
 				}
 			}
 		}
-		.disabled(bleManager.deviceConnected == nil || node?.powerConfig == nil)
+		.disabled(connectedDevice.device == nil || node?.powerConfig == nil)
 		.navigationTitle("Power Config")
 		.navigationBarItems(
-			trailing: ConnectedDevice()
+			trailing: ConnectionInfo()
 		)
 		.toolbar {
 			ToolbarItemGroup(placement: .keyboard) {
@@ -125,14 +125,19 @@ struct PowerConfig: View {
 			setPowerValues()
 
 			// Need to request a Power config from the remote node before allowing changes
-			if bleManager.deviceConnected != nil && node?.powerConfig == nil {
+			if
+				let device = connectedDevice.device,
+				let node,
+				node.powerConfig == nil,
 				let connectedNode = coreDataTools.getNodeInfo(
-					id: bleManager.deviceConnected?.num ?? 0,
+					id: device.num ?? 0,
 					context: context
 				)
-				if node != nil && connectedNode != nil {
-					nodeConfig.requestPowerConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-				}
+			{
+				nodeConfig.requestPowerConfig(
+					fromUser: connectedNode.user!,
+					toUser: node.user!,
+					adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 			}
 		}
 		.onChange(of: isPowerSaving) {
@@ -174,7 +179,11 @@ struct PowerConfig: View {
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			guard
-				let connectedNode = coreDataTools.getNodeInfo(id: bleManager.deviceConnected.num, context: context),
+				let device = connectedDevice.device,
+				let connectedNode = coreDataTools.getNodeInfo(
+					id: device.num,
+					context: context
+				),
 				let fromUser = connectedNode.user,
 				let toUser = node?.user
 			else {

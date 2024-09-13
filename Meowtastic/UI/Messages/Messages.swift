@@ -20,7 +20,7 @@ struct Messages: View {
 	@Environment(\.managedObjectContext)
 	private var context
 	@EnvironmentObject
-	private var bleManager: BLEManager
+	private var connectedDevice: ConnectedDevice
 	@EnvironmentObject
 	private var nodeConfig: NodeConfig
 	@Environment(\.colorScheme)
@@ -69,7 +69,7 @@ struct Messages: View {
 				return false
 			}
 
-			if let num = bleManager.deviceConnected?.num, user.num == num {
+			if let num = connectedDevice.device?.num, user.num == num {
 				return false
 			}
 
@@ -112,7 +112,7 @@ struct Messages: View {
 			}
 			.navigationTitle("Messages")
 			.navigationBarItems(
-				trailing: ConnectedDevice()
+				trailing: ConnectionInfo()
 			)
 		}
 		.onAppear {
@@ -194,7 +194,7 @@ struct Messages: View {
 			)
 		) {
 			ForEach(usersFiltered, id: \.num) { user in
-				if user.num != bleManager.deviceConnected?.num ?? 0 {
+				if user.num != connectedDevice.device?.num ?? 0 {
 					makeUserLink(for: user)
 				}
 			}
@@ -463,7 +463,7 @@ struct Messages: View {
 
 				return true
 			}
-			catch let error {
+			catch {
 				context.rollback()
 
 				return false

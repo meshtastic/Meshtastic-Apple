@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct ConnectedDevice: View {
+struct ConnectionInfo: View {
 	private var mqttChannelInfo = false
 	private var mqttUplinkEnabled = false
 	private var mqttDownlinkEnabled = false
@@ -26,20 +26,23 @@ struct ConnectedDevice: View {
 						)
 					}
 
-					SignalStrengthIndicator(
-						signalStrength: bleManager.deviceConnected.getSignalStrength(),
-						size: 14,
-						color: .green
-					)
-					.padding(8)
-					.background(.green.opacity(0.3))
-					.clipShape(Circle())
-					.onAppear {
-						Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-							if let peripheral = bleManager.deviceConnected {
-								peripheral.peripheral.readRSSI()
+					if let connectedDevice = bleManager.getConnectedDevice() {
+						SignalStrengthIndicator(
+							signalStrength: connectedDevice.getSignalStrength(),
+							size: 14,
+							color: .green
+						)
+						.padding(8)
+						.background(.green.opacity(0.3))
+						.clipShape(Circle())
+						.onAppear {
+							Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+								connectedDevice.peripheral.readRSSI()
 							}
 						}
+					}
+					else {
+						EmptyView()
 					}
 				}
 			}

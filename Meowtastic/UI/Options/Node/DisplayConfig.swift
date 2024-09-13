@@ -9,7 +9,7 @@ struct DisplayConfig: View {
 	@Environment(\.managedObjectContext)
 	private var context
 	@EnvironmentObject
-	private var bleManager: BLEManager
+	private var connectedDevice: ConnectedDevice
 	@EnvironmentObject
 	private var nodeConfig: NodeConfig
 	@Environment(\.dismiss)
@@ -129,14 +129,19 @@ struct DisplayConfig: View {
 				.pickerStyle(DefaultPickerStyle())
 			}
 		}
-		.disabled(self.bleManager.deviceConnected == nil || node?.displayConfig == nil)
+		.disabled(connectedDevice.device == nil || node?.displayConfig == nil)
 		.onAppear {
 			Analytics.logEvent(AnalyticEvents.optionsDisplay.id, parameters: nil)
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			let connectedNode = coreDataTools.getNodeInfo(id: bleManager.deviceConnected.num, context: context)
-			if connectedNode != nil {
+			if
+				let device = connectedDevice.device,
+				let connectedNode = coreDataTools.getNodeInfo(
+					id: device.num,
+					context: context
+				)
+			{
 				var dc = Config.DisplayConfig()
 				dc.gpsFormat = GPSFormats(rawValue: gpsFormat)!.protoEnumValue()
 				dc.screenOnSecs = UInt32(screenOnSeconds)
@@ -148,7 +153,7 @@ struct DisplayConfig: View {
 				dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
 				dc.units = Units(rawValue: units)!.protoEnumValue()
 
-				let adminMessageId =  nodeConfig.saveDisplayConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				let adminMessageId =  nodeConfig.saveDisplayConfig(config: dc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 				if adminMessageId > 0 {
 
 					// Should show a saved successfully alert once I know that to be true
@@ -161,15 +166,16 @@ struct DisplayConfig: View {
 
 		.navigationTitle("Display Config")
 		.navigationBarItems(
-			trailing: ConnectedDevice()
+			trailing: ConnectionInfo()
 		)
 		.onAppear {
 			setDisplayValues()
 
 			// Need to request a LoRaConfig from the remote node before allowing changes
-			if bleManager.deviceConnected != nil && node?.displayConfig == nil {
-				Logger.mesh.info("empty display config")
-				let connectedNode = coreDataTools.getNodeInfo(id: bleManager.deviceConnected?.num ?? 0, context: context)
+			if
+				let device = connectedDevice.device, node?.displayConfig == nil {
+				let connectedNode = coreDataTools.getNodeInfo(id: device.num ?? 0, context: context)
+
 				if node != nil && connectedNode != nil {
 					nodeConfig.requestDisplayConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}

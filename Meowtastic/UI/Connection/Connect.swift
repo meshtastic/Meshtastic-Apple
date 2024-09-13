@@ -61,7 +61,7 @@ struct Connect: View {
 				.navigationTitle("Connection")
 				.navigationBarTitleDisplayMode(.automatic)
 				.navigationBarItems(
-					trailing: ConnectedDevice()
+					trailing: ConnectionInfo()
 				)
 			}
 		}
@@ -142,11 +142,11 @@ struct Connect: View {
 	@ViewBuilder
 	private var connectedDevice: some View {
 		if
-			let connectedPeripheral = bleManager.deviceConnected,
-			connectedPeripheral.peripheral.state == .connected || connectedPeripheral.peripheral.state == .connecting
+			let device = bleManager.getConnectedDevice(),
+			device.peripheral.state == .connected || device.peripheral.state == .connecting
 		{
 			let node = nodes.first(where: { node in
-				node.num == connectedPeripheral.num
+				node.num == device.num
 			})
 
 			HStack(alignment: .top, spacing: 8) {
@@ -154,7 +154,7 @@ struct Connect: View {
 
 				VStack(alignment: .leading, spacing: 8) {
 					if node != nil {
-						Text(connectedPeripheral.longName)
+						Text(device.longName)
 							.font(.title2)
 					}
 					else {
@@ -164,12 +164,12 @@ struct Connect: View {
 
 					HStack(spacing: 8) {
 						SignalStrengthIndicator(
-							signalStrength: connectedPeripheral.getSignalStrength(),
+							signalStrength: device.getSignalStrength(),
 							size: 14,
 							color: .gray
 						)
 
-						if let name = bleManager.deviceConnected?.peripheral.name {
+						if let name = device.peripheral.name {
 							Text(name)
 								.font(detailInfoFont)
 								.foregroundColor(.gray)
@@ -205,10 +205,7 @@ struct Connect: View {
 			}
 			.swipeActions(edge: .trailing, allowsFullSwipe: true) {
 				Button(role: .destructive) {
-					if
-						let connectedPeripheral = bleManager.deviceConnected,
-						connectedPeripheral.peripheral.state == .connected
-					{
+					if device.peripheral.state == .connected {
 						bleManager.disconnectDevice(reconnect: false)
 					}
 				} label: {
@@ -449,7 +446,7 @@ struct Connect: View {
 		let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 		fetchNodeInfoRequest.predicate = NSPredicate(
 			format: "num == %lld",
-			Int64(bleManager.deviceConnected?.num ?? -1)
+			Int64(bleManager.getConnectedDevice()?.num ?? -1)
 		)
 
 		node = try? context.fetch(fetchNodeInfoRequest).first

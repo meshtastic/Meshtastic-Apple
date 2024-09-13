@@ -23,7 +23,7 @@ struct LoRaConfig: View {
 	@Environment(\.managedObjectContext)
 	private var context
 	@EnvironmentObject
-	private var bleManager: BLEManager
+	private var connectedDevice: ConnectedDevice
 	@EnvironmentObject
 	private var nodeConfig: NodeConfig
 	@Environment(\.dismiss)
@@ -61,13 +61,13 @@ struct LoRaConfig: View {
 				sectionOptions
 				sectionAdvanced
 			}
-			.disabled(bleManager.deviceConnected == nil || node?.loRaConfig == nil)
+			.disabled(connectedDevice.device == nil || node?.loRaConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
 				if
 					let node,
-					let connectedPeripheral = bleManager.deviceConnected,
-					let connectedNode = coreDataTools.getNodeInfo(id: connectedPeripheral.num, context: context)
+					let device = connectedDevice.device,
+					let connectedNode = coreDataTools.getNodeInfo(id: device.num, context: context)
 				{
 					var lc = Config.LoRaConfig()
 					lc.hopLimit = UInt32(hopLimit)
@@ -106,7 +106,7 @@ struct LoRaConfig: View {
 		}
 		.navigationTitle("LoRa Config")
 		.navigationBarItems(
-			trailing: ConnectedDevice()
+			trailing: ConnectionInfo()
 		)
 		.onAppear {
 			Analytics.logEvent(AnalyticEvents.optionsLoRa.id, parameters: nil)
@@ -119,8 +119,8 @@ struct LoRaConfig: View {
 			}
 			else if
 				let node,
-				let connectedPeripheral = bleManager.deviceConnected,
-				let connectedNode = coreDataTools.getNodeInfo(id: connectedPeripheral.num, context: context)
+				let device = connectedDevice.device,
+				let connectedNode = coreDataTools.getNodeInfo(id: device.num, context: context)
 			{
 				nodeConfig.requestLoRaConfig(
 					fromUser: connectedNode.user!,
