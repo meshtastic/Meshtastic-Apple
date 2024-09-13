@@ -23,7 +23,7 @@ final class BLEManager: NSObject, ObservableObject {
 	@Published
 	var devices: [Device] = []
 	@Published
-	var currentDevice = ConnectedDevice()
+	var currentDevice: ConnectedDevice
 	@Published
 	var lastConnectionError: String
 	@Published
@@ -64,6 +64,7 @@ final class BLEManager: NSObject, ObservableObject {
 		self.privateContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
 		self.centralManager = CBCentralManager()
 		self.mqttManager = MQTTManager()
+		self.currentDevice = ConnectedDevice(context: context)
 
 		self.lastConnectionError = ""
 		self.connectedVersion = "0.0.0"

@@ -1,5 +1,5 @@
-import SwiftUI
 import OSLog
+import SwiftUI
 
 struct RetryButton: View {
 	let message: MessageEntity

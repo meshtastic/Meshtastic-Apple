@@ -19481,6 +19481,7 @@
       }
     },
     "tapback" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

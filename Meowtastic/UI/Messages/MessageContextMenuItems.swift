@@ -1,5 +1,5 @@
-import SwiftUI
 import CoreData
+import SwiftUI
 
 struct MessageContextMenuItems: View {
 	@Binding
@@ -22,30 +22,8 @@ struct MessageContextMenuItems: View {
 
 	@Environment(\.managedObjectContext)
 	private var context
-	@EnvironmentObject
-	private var bleManager: BLEManager
 
 	var body: some View {
-		Menu("tapback") {
-			ForEach(Tapbacks.allCases) { tb in
-				Button {
-					let sentMessage = bleManager.sendMessage(
-						message: tb.emojiString,
-						toUserNum: tapBackDestination.userNum,
-						channel: tapBackDestination.channelNum,
-						isEmoji: true,
-						replyID: message.messageId
-					)
-					if sentMessage {
-						self.context.refresh(tapBackDestination.managedObject, mergeChanges: true)
-					}
-				} label: {
-					Text(tb.description)
-					Image(uiImage: tb.emojiString.image()!)
-				}
-			}
-		}
-
 		Button(action: onReply) {
 			Text("Reply")
 			Image(systemName: "arrowshape.turn.up.left")
