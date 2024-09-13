@@ -14,7 +14,7 @@ struct TextMessageField: View {
 	var isFocused: Bool
 
 	@EnvironmentObject
-	private var bleManager: BLEManager
+	private var bleActions: BLEActions
 	@Environment(\.colorScheme)
 	private var colorScheme: ColorScheme
 	@State
@@ -108,7 +108,7 @@ struct TextMessageField: View {
 	}
 
 	private func sendMessage() {
-		let messageSent = bleManager.sendMessage(
+		let messageSent = bleActions.sendMessage(
 			message: typingMessage,
 			toUserNum: destination.userNum,
 			channel: destination.channelNum,
@@ -124,7 +124,7 @@ struct TextMessageField: View {
 			onSubmit()
 
 			if sendPositionWithMessage {
-				let positionSent = bleManager.sendPosition(
+				let positionSent = bleActions.sendPosition(
 					channel: destination.channelNum,
 					destNum: destination.positionDestNum,
 					wantResponse: destination.wantPositionResponse

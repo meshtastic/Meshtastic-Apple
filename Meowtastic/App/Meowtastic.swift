@@ -20,6 +20,7 @@ struct Meowtastic: App {
 
 	private let appState: AppState
 	private let bleManager: BLEManager
+	private let bleActions: BLEActions
 	private let nodeConfig: NodeConfig
 	private let locationManager: LocationManager
 	private let persistence: NSPersistentContainer
@@ -31,6 +32,7 @@ struct Meowtastic: App {
 				.environment(\.managedObjectContext, persistence.viewContext)
 				.environmentObject(bleManager)
 				.environmentObject(bleManager.currentDevice)
+				.environmentObject(bleActions)
 				.environmentObject(nodeConfig)
 				.environmentObject(locationManager)
 				.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
@@ -129,6 +131,9 @@ struct Meowtastic: App {
 			appState: appState,
 			context: persistence.viewContext
 		)
+		let bleActions = BLEActions(
+			bleManager: bleManager
+		)
 		let nodeConfig = NodeConfig(
 			bleManager: bleManager,
 			context: persistence.viewContext
@@ -136,6 +141,7 @@ struct Meowtastic: App {
 
 		self.appState = appState
 		self.bleManager = bleManager
+		self.bleActions = bleActions
 		self.nodeConfig = nodeConfig
 	}
 

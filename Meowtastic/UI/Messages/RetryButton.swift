@@ -11,7 +11,9 @@ struct RetryButton: View {
 	@Environment(\.managedObjectContext)
 	private var context
 	@EnvironmentObject
-	private var bleManager: BLEManager
+	private var bleActions: BLEActions
+	@EnvironmentObject
+	private var connectedDevice: ConnectedDevice
 
 	var body: some View {
 		Button {
@@ -28,7 +30,7 @@ struct RetryButton: View {
 			titleVisibility: .visible
 		) {
 			Button("Try Again") {
-				guard bleManager.getConnectedDevice()?.peripheral.state == .connected else {
+				guard connectedDevice.getConnectedDevice() != nil else {
 					return
 				}
 
@@ -47,7 +49,7 @@ struct RetryButton: View {
 					Logger.data.error("Failed to delete message \(messageID): \(error.localizedDescription)")
 				}
 
-				if !bleManager.sendMessage(
+				if !bleActions.sendMessage(
 					message: payload,
 					toUserNum: userNum,
 					channel: channel,

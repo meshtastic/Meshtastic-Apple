@@ -30,6 +30,7 @@
 		6DA39D8E2A92DC52007E311C /* MeowtasticDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DA39D8D2A92DC52007E311C /* MeowtasticDelegate.swift */; };
 		6DEDA55C2A9592F900321D2E /* MessageEntity+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA55B2A9592F900321D2E /* MessageEntity+Extension.swift */; };
 		B23D3C5F2C944D4B007CEFE2 /* ConnectedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = B23D3C5E2C944D4B007CEFE2 /* ConnectedDevice.swift */; };
+		B23D3C612C946542007CEFE2 /* BLEActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B23D3C602C946542007CEFE2 /* BLEActions.swift */; };
 		B25A0B532C5F9A16004288DC /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B25A0B522C5F9A16004288DC /* GoogleService-Info.plist */; };
 		B25D5CB42C5BC3840007F90F /* AvatarAbstract.swift in Sources */ = {isa = PBXBuildFile; fileRef = B25D5CB32C5BC3840007F90F /* AvatarAbstract.swift */; };
 		B266A74E2C591F5E00DFC723 /* TabTag.swift in Sources */ = {isa = PBXBuildFile; fileRef = B266A74D2C591F5E00DFC723 /* TabTag.swift */; };
@@ -243,6 +244,7 @@
 		6DA39D8D2A92DC52007E311C /* MeowtasticDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeowtasticDelegate.swift; sourceTree = "<group>"; };
 		6DEDA55B2A9592F900321D2E /* MessageEntity+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MessageEntity+Extension.swift"; sourceTree = "<group>"; };
 		B23D3C5E2C944D4B007CEFE2 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
+		B23D3C602C946542007CEFE2 /* BLEActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEActions.swift; sourceTree = "<group>"; };
 		B25A0B522C5F9A16004288DC /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B25D5CB32C5BC3840007F90F /* AvatarAbstract.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarAbstract.swift; sourceTree = "<group>"; };
 		B266A74D2C591F5E00DFC723 /* TabTag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabTag.swift; sourceTree = "<group>"; };
@@ -466,6 +468,7 @@
 				B284A42B2C6F877D00D5122B /* Extensions */,
 				B28DC0E42C7107C4007990B3 /* NodeConfig.swift */,
 				B23D3C5E2C944D4B007CEFE2 /* ConnectedDevice.swift */,
+				B23D3C602C946542007CEFE2 /* BLEActions.swift */,
 			);
 			path = BluetoothLE;
 			sourceTree = "<group>";
@@ -993,6 +996,7 @@
 				DDDB444829F8A9C900EE2349 /* String.swift in Sources */,
 				DDFFA7472B3A7F3C004730DB /* Bundle.swift in Sources */,
 				DD457188293C7E63000C49FB /* SignalStrengthIndicator.swift in Sources */,
+				B23D3C612C946542007CEFE2 /* BLEActions.swift in Sources */,
 				DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */,
 				B266A7592C59258100DFC723 /* RebroadcastModes.swift in Sources */,
 				B266A7652C5927D100DFC723 /* Bandwidths.swift in Sources */,
