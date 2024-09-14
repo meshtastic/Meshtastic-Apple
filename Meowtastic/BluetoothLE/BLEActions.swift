@@ -37,4 +37,15 @@ final class BLEActions: ObservableObject {
 			wantResponse: wantResponse
 		)
 	}
+
+	@discardableResult
+	func sendTraceRouteRequest(
+		destNum: Int64,
+		wantResponse: Bool
+	) -> Bool {
+		bleManager.sendTraceRouteRequest(
+			destNum: destNum,
+			wantResponse: wantResponse
+		)
+	}
 }

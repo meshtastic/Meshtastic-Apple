@@ -5,9 +5,6 @@ import SwiftUI
 struct About: View {
 	private let locale = Locale.current
 
-	@EnvironmentObject
-	private var bleManager: BLEManager
-
 	@ViewBuilder
 	var body: some View {
 		List {

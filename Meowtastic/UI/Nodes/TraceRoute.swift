@@ -18,7 +18,7 @@ struct TraceRoute: View {
 	@Environment(\.managedObjectContext)
 	private var context
 	@EnvironmentObject
-	private var bleManager: BLEManager
+	private var bleActions: BLEActions
 	@State
 	private var isPresentingClearLogConfirm: Bool = false
 	@State
@@ -48,7 +48,7 @@ struct TraceRoute: View {
 				if let routes {
 					List {
 						Button {
-							bleManager.sendTraceRouteRequest(
+							bleActions.sendTraceRouteRequest(
 								destNum: node.user?.num ?? 0,
 								wantResponse: true
 							)

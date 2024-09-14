@@ -461,14 +461,14 @@
 		B25AF8A42C6F6B3200A2BA85 /* BluetoothLE */ = {
 			isa = PBXGroup;
 			children = (
+				B23D3C602C946542007CEFE2 /* BLEActions.swift */,
 				DDAF8C5226EB1DF10058C060 /* BLEManager.swift */,
 				B284A4322C6F8AE400D5122B /* BluetoothUUID.swift */,
+				B23D3C5E2C944D4B007CEFE2 /* ConnectedDevice.swift */,
 				DD23A50E26FD1B4400D9B90C /* Device.swift */,
 				B29C39172C92E6660082A3FC /* DevicesDelegate.swift */,
 				B284A42B2C6F877D00D5122B /* Extensions */,
 				B28DC0E42C7107C4007990B3 /* NodeConfig.swift */,
-				B23D3C5E2C944D4B007CEFE2 /* ConnectedDevice.swift */,
-				B23D3C602C946542007CEFE2 /* BLEActions.swift */,
 			);
 			path = BluetoothLE;
 			sourceTree = "<group>";

@@ -9,8 +9,6 @@ import SwiftUI
 struct AppSettings: View {
 	@Environment(\.managedObjectContext)
 	private var context
-	@EnvironmentObject
-	private var bleManager: BLEManager
 	@State
 	private var isPresentingCoreDataResetConfirm = false
 	@State

@@ -3,21 +3,17 @@ import MapKit
 import SwiftUI
 
 struct SimpleNodeMap: View {
-	@Environment(\.managedObjectContext)
-	var context
-	@EnvironmentObject
-	var bleManager: BLEManager
-
 	private let mapStyle = MapStyle.standard(elevation: .flat)
 
-	@ObservedObject
-	private var node: NodeInfoEntity
+	@Environment(\.managedObjectContext)
+	private var context
 	@Namespace
 	private var mapScope
 	@State
 	private var positions: [PositionEntity] = []
 	@State
 	private var position = MapCameraPosition.automatic
+	private var node: NodeInfoEntity
 
 	@FetchRequest(
 		sortDescriptors: [

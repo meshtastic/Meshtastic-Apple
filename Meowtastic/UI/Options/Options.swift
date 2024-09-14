@@ -6,7 +6,7 @@ struct Options: View {
 	@Environment(\.managedObjectContext)
 	private var context
 	@EnvironmentObject
-	private var bleManager: BLEManager
+	private var connectedDevice: ConnectedDevice
 	@State
 	private var connectedNodeNum: Int = 0
 	@State
@@ -71,11 +71,11 @@ struct Options: View {
 
 				if !nodes.isEmpty {
 					if connectedNodeNum == 0 {
-						connectedNodeNum = Int(bleManager.getConnectedDevice() != nil ? preferredNodeNum : 0)
+						connectedNodeNum = Int(connectedDevice.getConnectedDevice() != nil ? preferredNodeNum : 0)
 					}
 				}
 				else {
-					connectedNodeNum = Int(bleManager.getConnectedDevice() != nil ? preferredNodeNum : 0)
+					connectedNodeNum = Int(connectedDevice.getConnectedDevice() != nil ? preferredNodeNum : 0)
 				}
 			}
 			.navigationTitle("Options")
