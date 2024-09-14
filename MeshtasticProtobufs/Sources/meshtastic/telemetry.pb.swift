@@ -140,6 +140,10 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
   ///
   /// MAX17048 1S lipo battery sensor (voltage, state of charge, time to go)
   case max17048 // = 28
+
+  ///
+  /// Custom I2C sensor implementation based on https://github.com/meshtastic/i2c-sensor
+  case customSensor // = 29
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -177,6 +181,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
     case 26: self = .bmp3Xx
     case 27: self = .icm20948
     case 28: self = .max17048
+    case 29: self = .customSensor
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -212,6 +217,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
     case .bmp3Xx: return 26
     case .icm20948: return 27
     case .max17048: return 28
+    case .customSensor: return 29
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -252,6 +258,7 @@ extension TelemetrySensorType: CaseIterable {
     .bmp3Xx,
     .icm20948,
     .max17048,
+    .customSensor,
   ]
 }
 
@@ -1003,6 +1010,7 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     26: .same(proto: "BMP3XX"),
     27: .same(proto: "ICM20948"),
     28: .same(proto: "MAX17048"),
+    29: .same(proto: "CUSTOM_SENSOR"),
   ]
 }
 

@@ -844,6 +844,7 @@ public struct AdminMessage {
     ///
     /// TODO: REPLACE
     case securityConfig // = 7
+    case sessionkeyConfig // = 8
     case UNRECOGNIZED(Int)
 
     public init() {
@@ -860,6 +861,7 @@ public struct AdminMessage {
       case 5: self = .loraConfig
       case 6: self = .bluetoothConfig
       case 7: self = .securityConfig
+      case 8: self = .sessionkeyConfig
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -874,6 +876,7 @@ public struct AdminMessage {
       case .loraConfig: return 5
       case .bluetoothConfig: return 6
       case .securityConfig: return 7
+      case .sessionkeyConfig: return 8
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -998,6 +1001,7 @@ extension AdminMessage.ConfigType: CaseIterable {
     .loraConfig,
     .bluetoothConfig,
     .securityConfig,
+    .sessionkeyConfig,
   ]
 }
 
@@ -1755,6 +1759,7 @@ extension AdminMessage.ConfigType: SwiftProtobuf._ProtoNameProviding {
     5: .same(proto: "LORA_CONFIG"),
     6: .same(proto: "BLUETOOTH_CONFIG"),
     7: .same(proto: "SECURITY_CONFIG"),
+    8: .same(proto: "SESSIONKEY_CONFIG"),
   ]
 }
 
