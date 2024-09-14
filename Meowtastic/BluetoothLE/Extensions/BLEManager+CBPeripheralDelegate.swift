@@ -613,6 +613,7 @@ extension BLEManager: CBPeripheralDelegate {
 					positionTimer = timer
 				}
 
+				devicesDelegate?.onWantConfigFinished()
 				AnalyticEvents.trackBLEEvent(for: .wantConfigComplete, status: .success)
 
 				return

@@ -18,8 +18,6 @@ final class MeowtasticDelegate: UIResponder, UIApplicationDelegate, UNUserNotifi
 
 		UNUserNotificationCenter.current().delegate = self
 
-		Logger.services.info("🚀 [App] Meshtstic Apple App launched!")
-
 		return true
 	}
 

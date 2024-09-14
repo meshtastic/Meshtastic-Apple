@@ -146,9 +146,7 @@ struct Meowtastic: App {
 	}
 
 	private func scheduleAppRefresh() {
-		let request = BGAppRefreshTaskRequest(identifier: AppConstants.backgroundTaskID)
-		request.earliestBeginDate = Calendar.current.date(byAdding: .minute, value: 10, to: .now)
-
+		let request = BGProcessingTaskRequest(identifier: AppConstants.backgroundTaskID)
 		try? BGTaskScheduler.shared.submit(request)
 
 		Logger.app.debug("Background task scheduled")
@@ -157,9 +155,7 @@ struct Meowtastic: App {
 	private func refreshApp() async {
 		Analytics.logEvent(AnalyticEvents.backgroundUpdate.id, parameters: nil)
 
-		guard !bleManager.isSubscribed else {
-			return
-		}
+		scheduleAppRefresh()
 
 		bleManager.devicesDelegate = self
 		bleManager.startScanning()
@@ -180,5 +176,18 @@ extension Meowtastic: DevicesDelegate {
 
 		bleManager.stopScanning()
 		bleManager.connectTo(peripheral: device.peripheral)
+	}
+
+	func onWantConfigFinished() {
+		// TODO
+		let content = UNMutableNotificationContent()
+		content.title = "Meowtastic"
+		content.subtitle = "Want config finished"
+		content.sound = UNNotificationSound.default
+
+		let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+		let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+
+		UNUserNotificationCenter.current().add(request)
 	}
 }

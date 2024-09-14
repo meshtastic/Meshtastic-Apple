@@ -24,41 +24,39 @@ extension BLEManager {
 		)
 		var messageWithMarkdown = message
 
-		if !matches.isEmpty {
-			for match in matches {
-				guard let range = Range(match.range, in: message) else {
-					continue
-				}
+		for match in matches {
+			guard let range = Range(match.range, in: message) else {
+				continue
+			}
 
-				if match.resultType == .address {
-					let address = message[range]
-					let urlEncodedAddress = address.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
+			if match.resultType == .address {
+				let address = message[range]
+				let urlEncodedAddress = address.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
 
-					messageWithMarkdown = messageWithMarkdown.replacingOccurrences(
-						of: address,
-						with: "[\(address)](http://maps.apple.com/?address=\(urlEncodedAddress ?? ""))"
-					)
-				}
-				else if match.resultType == .phoneNumber {
-					let phone = messageWithMarkdown[range]
+				messageWithMarkdown = messageWithMarkdown.replacingOccurrences(
+					of: address,
+					with: "[\(address)](http://maps.apple.com/?address=\(urlEncodedAddress ?? ""))"
+				)
+			}
+			else if match.resultType == .phoneNumber {
+				let phone = messageWithMarkdown[range]
 
-					messageWithMarkdown = messageWithMarkdown.replacingOccurrences(
-						of: phone,
-						with: "[\(phone)](tel:\(phone))"
-					)
-				}
-				else if match.resultType == .link {
-					let start = match.range.lowerBound
-					let stop = match.range.upperBound
-					let url = message[start ..< stop]
-					let absoluteUrl = match.url?.absoluteString ?? ""
-					let markdownUrl = "[\(url)](\(absoluteUrl))"
+				messageWithMarkdown = messageWithMarkdown.replacingOccurrences(
+					of: phone,
+					with: "[\(phone)](tel:\(phone))"
+				)
+			}
+			else if match.resultType == .link {
+				let start = match.range.lowerBound
+				let stop = match.range.upperBound
+				let url = message[start ..< stop]
+				let absoluteUrl = match.url?.absoluteString ?? ""
+				let markdownUrl = "[\(url)](\(absoluteUrl))"
 
-					messageWithMarkdown = messageWithMarkdown.replacingOccurrences(
-						of: url,
-						with: markdownUrl
-					)
-				}
+				messageWithMarkdown = messageWithMarkdown.replacingOccurrences(
+					of: url,
+					with: markdownUrl
+				)
 			}
 		}
 
