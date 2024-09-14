@@ -24,7 +24,6 @@ struct DeviceConfig: View {
 	@State var buzzerGPIO = 0
 	@State var buttonGPIO = 0
 	@State var serialEnabled = true
-	@State var debugLogEnabled = false
 	@State var rebroadcastMode = 0
 	@State var nodeInfoBroadcastSecs = 10800
 	@State var doubleTapAsButtonPress = false
@@ -87,10 +86,6 @@ struct DeviceConfig: View {
 				Section(header: Text("Debug")) {
 					Toggle(isOn: $serialEnabled) {
 						Label("Serial Console", systemImage: "terminal")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Toggle(isOn: $debugLogEnabled) {
-						Label("Debug Log", systemImage: "ant.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					VStack(alignment: .leading) {
@@ -200,7 +195,6 @@ struct DeviceConfig: View {
 						var dc = Config.DeviceConfig()
 						dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
 						dc.serialEnabled = serialEnabled
-						dc.debugLogEnabled = debugLogEnabled
 						dc.buttonGpio = UInt32(buttonGPIO)
 						dc.buzzerGpio = UInt32(buzzerGPIO)
 						dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
@@ -259,9 +253,6 @@ struct DeviceConfig: View {
 		.onChange(of: serialEnabled) {
 			if $0 != node?.deviceConfig?.serialEnabled { hasChanges = true }
 		}
-		.onChange(of: debugLogEnabled) {
-			if $0 != node?.deviceConfig?.debugLogEnabled { hasChanges = true }
-		}
 		.onChange(of: buttonGPIO) { newButtonGPIO in
 			if newButtonGPIO != node?.deviceConfig?.buttonGpio ?? -1 { hasChanges = true }
 		}
@@ -289,7 +280,6 @@ struct DeviceConfig: View {
 	func setDeviceValues() {
 		self.deviceRole = Int(node?.deviceConfig?.role ?? 0)
 		self.serialEnabled = (node?.deviceConfig?.serialEnabled ?? true)
-		self.debugLogEnabled = node?.deviceConfig?.debugLogEnabled ?? false
 		self.buttonGPIO = Int(node?.deviceConfig?.buttonGpio ?? 0)
 		self.buzzerGPIO = Int(node?.deviceConfig?.buzzerGpio ?? 0)
 		self.rebroadcastMode = Int(node?.deviceConfig?.rebroadcastMode ?? 0)

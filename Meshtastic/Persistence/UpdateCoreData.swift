@@ -181,8 +181,11 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					newUser.role = Int32(newUserMessage.role.rawValue)
 					newUser.hwModel = String(describing: newUserMessage.hwModel).uppercased()
 					newUser.hwModelId = Int32(newUserMessage.hwModel.rawValue)
-					newUser.pkiEncrypted = packet.pkiEncrypted
-					newUser.publicKey = packet.publicKey
+					if !newUserMessage.publicKey.isEmpty {
+						newUser.pkiEncrypted = true
+						newUser.publicKey = newUserMessage.publicKey
+					}
+
 					Task {
 						Api().loadDeviceHardwareData { (hw) in
 							let dh = hw.first(where: { $0.hwModel == newUser.hwModelId })
@@ -209,8 +212,10 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			} else {
 				if packet.from > Constants.minimumNodeNum {
 					let newUser = createUser(num: Int64(packet.from), context: context)
-					newNode.user?.pkiEncrypted = packet.pkiEncrypted
-					newNode.user?.publicKey = packet.publicKey
+					if !packet.publicKey.isEmpty {
+						newNode.user?.pkiEncrypted = true
+						newNode.user?.publicKey = packet.publicKey
+					}
 					newNode.user = newUser
 				}
 			}
@@ -224,6 +229,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			myInfoEntity.rebootCount = 0
 			do {
 				try context.save()
+				Logger.data.info("💾 [NodeInfo] Saved a NodeInfo for node number: \(packet.from.toHex(), privacy: .public)")
 				Logger.data.info("💾 [MyInfoEntity] Saved a new myInfo for node number: \(packet.from.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
@@ -271,10 +277,9 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].user!.role = Int32(nodeInfoMessage.user.role.rawValue)
 					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
 					fetchedNode[0].user!.hwModelId = Int32(nodeInfoMessage.user.hwModel.rawValue)
-					
-					if !packet.publicKey.isEmpty {
-						fetchedNode[0].user!.pkiEncrypted = packet.pkiEncrypted
-						fetchedNode[0].user!.publicKey = packet.publicKey
+					if !nodeInfoMessage.user.publicKey.isEmpty {
+						fetchedNode[0].user!.pkiEncrypted = true
+						fetchedNode[0].user!.publicKey = nodeInfoMessage.user.publicKey
 					}
 					Task {
 						Api().loadDeviceHardwareData { (hw) in
@@ -458,7 +463,6 @@ func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, sessi
 				let newDeviceConfig = DeviceConfigEntity(context: context)
 				newDeviceConfig.role = Int32(config.role.rawValue)
 				newDeviceConfig.serialEnabled = config.serialEnabled
-				newDeviceConfig.debugLogEnabled = config.debugLogEnabled
 				newDeviceConfig.buttonGpio = Int32(config.buttonGpio)
 				newDeviceConfig.buzzerGpio =  Int32(config.buzzerGpio)
 				newDeviceConfig.rebroadcastMode = Int32(config.rebroadcastMode.rawValue)
@@ -471,7 +475,6 @@ func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, sessi
 			} else {
 				fetchedNode[0].deviceConfig?.role = Int32(config.role.rawValue)
 				fetchedNode[0].deviceConfig?.serialEnabled = config.serialEnabled
-				fetchedNode[0].deviceConfig?.debugLogEnabled = config.debugLogEnabled
 				fetchedNode[0].deviceConfig?.buttonGpio = Int32(config.buttonGpio)
 				fetchedNode[0].deviceConfig?.buzzerGpio = Int32(config.buzzerGpio)
 				fetchedNode[0].deviceConfig?.rebroadcastMode = Int32(config.rebroadcastMode.rawValue)
@@ -595,6 +598,7 @@ func upsertLoRaConfigPacket(config: Config.LoRaConfig, nodeNum: Int64, sessionPa
 				newLoRaConfig.channelNum = Int32(config.channelNum)
 				newLoRaConfig.sx126xRxBoostedGain = config.sx126XRxBoostedGain
 				newLoRaConfig.ignoreMqtt = config.ignoreMqtt
+				newLoRaConfig.okToMqtt = config.configOkToMqtt
 				fetchedNode[0].loRaConfig = newLoRaConfig
 			} else {
 				fetchedNode[0].loRaConfig?.regionCode = Int32(config.region.rawValue)
@@ -612,6 +616,7 @@ func upsertLoRaConfigPacket(config: Config.LoRaConfig, nodeNum: Int64, sessionPa
 				fetchedNode[0].loRaConfig?.channelNum = Int32(config.channelNum)
 				fetchedNode[0].loRaConfig?.sx126xRxBoostedGain = config.sx126XRxBoostedGain
 				fetchedNode[0].loRaConfig?.ignoreMqtt = config.ignoreMqtt
+				fetchedNode[0].loRaConfig?.okToMqtt = config.configOkToMqtt
 				fetchedNode[0].loRaConfig?.sx126xRxBoostedGain = config.sx126XRxBoostedGain
 			}
 			if sessionPasskey != nil {
@@ -813,21 +818,23 @@ func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, s
 				let newSecurityConfig = SecurityConfigEntity(context: context)
 				newSecurityConfig.publicKey = config.publicKey
 				newSecurityConfig.privateKey = config.privateKey
-				newSecurityConfig.adminKey = config.adminKey
+				if config.adminKey.count > 0 {
+					newSecurityConfig.adminKey = config.adminKey[0]
+				}
 				newSecurityConfig.isManaged = config.isManaged
 				newSecurityConfig.serialEnabled = config.serialEnabled
 				newSecurityConfig.debugLogApiEnabled = config.debugLogApiEnabled
-				newSecurityConfig.bluetoothLoggingEnabled = config.bluetoothLoggingEnabled
 				newSecurityConfig.adminChannelEnabled = config.adminChannelEnabled
 				fetchedNode[0].securityConfig = newSecurityConfig
 			} else {
 				fetchedNode[0].securityConfig?.publicKey = config.publicKey
 				fetchedNode[0].securityConfig?.privateKey = config.privateKey
-				fetchedNode[0].securityConfig?.adminKey = config.adminKey
+				if config.adminKey.count > 0 {
+					fetchedNode[0].securityConfig?.adminKey = config.adminKey[0]
+				}
 				fetchedNode[0].securityConfig?.isManaged = config.isManaged
 				fetchedNode[0].securityConfig?.serialEnabled = config.serialEnabled
 				fetchedNode[0].securityConfig?.debugLogApiEnabled = config.debugLogApiEnabled
-				fetchedNode[0].securityConfig?.bluetoothLoggingEnabled = config.bluetoothLoggingEnabled
 				fetchedNode[0].securityConfig?.adminChannelEnabled = config.adminChannelEnabled
 			}
 			if sessionPasskey?.count != 0 {
