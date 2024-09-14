@@ -5,13 +5,13 @@ struct ExchangePositionsButton: View {
 	var node: NodeInfoEntity
 
 	@EnvironmentObject
-	private var bleManager: BLEManager
+	private var bleActions: BLEActions
 	@State
 	private var isPresentingPositionSentAlert = false
 
 	var body: some View {
 		Button {
-			isPresentingPositionSentAlert = bleManager.sendPosition(
+			isPresentingPositionSentAlert = bleActions.sendPosition(
 				channel: node.channel,
 				destNum: node.num,
 				wantResponse: true
