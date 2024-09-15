@@ -886,11 +886,12 @@ func textMessageAppPacket(
 			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
 				newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
 				
-				if !(newMessage.fromUser?.publicKey?.isEmpty ?? true) {
-					// We have a key, check if it matches
+				if !(newMessage.fromUser?.publicKey?.isEmpty ?? true) && newMessage.toUser != nil && packet.pkiEncrypted {
+					// We have a key and it is a PKC encrypted DM, check if it matches
 					if newMessage.fromUser?.publicKey != newMessage.publicKey {
 						newMessage.fromUser?.keyMatch = false
 						newMessage.fromUser?.newPublicKey = newMessage.publicKey
+						Logger.data.error("🔑 Key Mismatch origninal key: \(newMessage.fromUser?.publicKey?.base64EncodedString() ?? "No Key") new key: \(newMessage.fromUser?.newPublicKey?.base64EncodedString() ?? "No Key") ")
 					}
 				} else {
 					/// We have no key, set it if it is not empty
