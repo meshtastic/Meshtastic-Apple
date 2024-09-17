@@ -2,7 +2,7 @@ import SwiftUI
 import OSLog
 
 struct TextMessageField: View {
-	static let maxbytes = 228
+	static let maxbytes = 200
 	@EnvironmentObject var bleManager: BLEManager
 
 	let destination: MessageDestination

@@ -891,9 +891,11 @@ func textMessageAppPacket(
 					if newMessage.fromUser?.publicKey != newMessage.publicKey {
 						newMessage.fromUser?.keyMatch = false
 						newMessage.fromUser?.newPublicKey = newMessage.publicKey
-						Logger.data.error("🔑 Key Mismatch origninal key: \(newMessage.fromUser?.publicKey?.base64EncodedString() ?? "No Key") new key: \(newMessage.fromUser?.newPublicKey?.base64EncodedString() ?? "No Key") ")
+						let nodeKey = String(newMessage.fromUser?.publicKey?.base64EncodedString() ?? "No Key").prefix(8)
+						let messageKey = String(newMessage.fromUser?.newPublicKey?.base64EncodedString() ?? "No Key").prefix(8)
+						Logger.data.error("🔑 Key Mismatch origninal key: \(nodeKey, privacy: .public) . . . new key: \(messageKey, privacy: .public) . . .")
 					}
-				} else {
+				} else if packet.pkiEncrypted {
 					/// We have no key, set it if it is not empty
 					if !packet.publicKey.isEmpty {
 						newMessage.fromUser?.pkiEncrypted = true
