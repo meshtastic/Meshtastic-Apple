@@ -97,7 +97,7 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .pkiFailed:
 			return true
 		case .pkiUnknownPubkey:
-			return false
+			return true
 		}
 	}
 	func protoEnumValue() -> Routing.Error {
