@@ -883,13 +883,13 @@ func textMessageAppPacket(
 			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
 				newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
 				if !(newMessage.fromUser?.publicKey?.isEmpty ?? true) && newMessage.toUser != nil && packet.pkiEncrypted {
-					// We have a key and it is a PKC encrypted DM, check if it matches
+					/// We have a key and it is a PKC encrypted DM, check if it matches
 					if newMessage.fromUser?.publicKey != newMessage.publicKey {
 						newMessage.fromUser?.keyMatch = false
 						newMessage.fromUser?.newPublicKey = newMessage.publicKey
 						let nodeKey = String(newMessage.fromUser?.publicKey?.base64EncodedString() ?? "No Key").prefix(8)
 						let messageKey = String(newMessage.publicKey?.base64EncodedString() ?? "No Key").prefix(8)
-						Logger.data.error("🔑 Key Mismatch origninal key: \(nodeKey, privacy: .public) . . . new key: \(messageKey, privacy: .public) . . .")
+						Logger.data.error("🔑 Key mismatch original key: \(nodeKey, privacy: .public) . . . new key: \(messageKey, privacy: .public) . . .")
 					}
 				} else if packet.pkiEncrypted {
 					/// We have no key, set it if it is not empty
@@ -909,9 +909,7 @@ func textMessageAppPacket(
 			if packet.to != Constants.maximumNodeNum && newMessage.fromUser != nil {
 				newMessage.fromUser?.lastMessage = Date()
 			}
-			
 			var messageSaved = false
-			
 			do {
 				try context.save()
 				Logger.data.info("💾 Saved a new message for \(newMessage.messageId)")

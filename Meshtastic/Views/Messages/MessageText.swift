@@ -30,7 +30,7 @@ struct MessageText: View {
 			.background(isCurrentUser ? .accentColor : Color(.gray))
 			.cornerRadius(15)
 			.overlay {
-				if message.pkiEncrypted {
+				if message.pkiEncrypted && message.ackError == 0 && message.realACK {
 					VStack(alignment: .trailing) {
 						Spacer()
 						HStack {
