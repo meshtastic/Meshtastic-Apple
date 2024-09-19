@@ -827,7 +827,7 @@ func textMessageAppPacket(
 		}
 	}
 	let rangeTest = messageText?.contains(rangeTestRegex) ?? false && messageText?.starts(with: "seq ") ?? false
-	
+
 	if !wantRangeTestPackets && rangeTest {
 		return
 	}
@@ -840,16 +840,13 @@ func textMessageAppPacket(
 			}
 		}
 	}
-	
+
 	if messageText?.count ?? 0 > 0 {
 		MeshLogger.log("💬 \("mesh.log.textmessage.received".localized)")
-		
 		let messageUsers = UserEntity.fetchRequest()
 		messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
-		
 		do {
 			let fetchedUsers = try context.fetch(messageUsers)
-			
 			let newMessage = MessageEntity(context: context)
 			newMessage.messageId = Int64(packet.id)
 			if packet.rxTime > 0 {
@@ -863,10 +860,6 @@ func textMessageAppPacket(
 			newMessage.isEmoji = packet.decoded.emoji == 1
 			newMessage.channel = Int32(packet.channel)
 			newMessage.portNum = Int32(packet.decoded.portnum.rawValue)
-			if newMessage.toUser?.pkiEncrypted ?? false {
-				newMessage.pkiEncrypted = true
-				newMessage.publicKey = packet.publicKey
-			}
 			if packet.decoded.portnum == PortNum.detectionSensorApp {
 				if !UserDefaults.enableDetectionNotifications {
 					newMessage.read = true
@@ -882,14 +875,21 @@ func textMessageAppPacket(
 			}
 			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
 				newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
-				if !(newMessage.fromUser?.publicKey?.isEmpty ?? true) && newMessage.toUser != nil && packet.pkiEncrypted {
-					/// We have a key and it is a PKC encrypted DM, check if it matches
-					if newMessage.fromUser?.publicKey != newMessage.publicKey {
-						newMessage.fromUser?.keyMatch = false
-						newMessage.fromUser?.newPublicKey = newMessage.publicKey
-						let nodeKey = String(newMessage.fromUser?.publicKey?.base64EncodedString() ?? "No Key").prefix(8)
-						let messageKey = String(newMessage.publicKey?.base64EncodedString() ?? "No Key").prefix(8)
-						Logger.data.error("🔑 Key mismatch original key: \(nodeKey, privacy: .public) . . . new key: \(messageKey, privacy: .public) . . .")
+				/// Set the public key for the message
+				if newMessage.fromUser?.pkiEncrypted ?? false {
+					newMessage.pkiEncrypted = true
+					newMessage.publicKey = packet.publicKey
+				}
+				/// Check for key mismatch
+				if let nodeKey = newMessage.fromUser?.publicKey {
+					if newMessage.toUser != nil && packet.pkiEncrypted && !packet.publicKey.isEmpty {
+						if nodeKey != newMessage.publicKey {
+							newMessage.fromUser?.keyMatch = false
+							newMessage.fromUser?.newPublicKey = newMessage.publicKey
+							let nodeKey = String(nodeKey.base64EncodedString()).prefix(8)
+							let messageKey = String(newMessage.publicKey?.base64EncodedString() ?? "No Key").prefix(8)
+							Logger.data.error("🔑 Key mismatch original key: \(nodeKey, privacy: .public) . . . new key: \(messageKey, privacy: .public) . . .")
+						}
 					}
 				} else if packet.pkiEncrypted {
 					/// We have no key, set it if it is not empty
