@@ -23,22 +23,22 @@ if [[ -e "${SWIFT_LINT}" ]]; then
     ##### Fix files or exit if no files found for fixing #####
     if [ "$count" -ne 0 ]; then
         echo "Found files to fix! Running swiftLint --fix..."
-        
+
         # Run SwiftLint --fix on each file
         for ((i = 0; i < count; i++)); do
             file_var="SCRIPT_INPUT_FILE_$i"
             file_path=${!file_var}
             echo "Fixing $file_path"
-            $SWIFT_LINT --fix --path "$file_path"
+            $SWIFT_LINT --fix "$file_path"
         done
-        
+
         # Add the fixed files back to staging
         for ((i = 0; i < count; i++)); do
             file_var="SCRIPT_INPUT_FILE_$i"
             file_path=${!file_var}
             git add "$file_path"
         done
-        
+
         echo "swiftLint --fix completed and files re-staged."
 
         # Optionally lint the fixed files
