@@ -72,6 +72,20 @@ private func getColor(signalStrength: LoRaSignalStrength) -> Color {
 }
 
 func getLoRaSignalStrength(snr: Float, rssi: Int32, preset: ModemPresets) -> LoRaSignalStrength {
+	// rssi is 0 when not available
+	if rssi == 0 {
+		if snr > (preset.snrLimit()) {
+			return .good
+		}
+		if snr < (preset.snrLimit() - 7.5) {
+			return .none
+		}
+		if snr <= (preset.snrLimit() - 5.5) {
+			return .bad
+		}
+		return .fair
+	}
+
 	if rssi > -115 && snr > (preset.snrLimit()) {
 		return .good
 	} else if rssi < -126 && snr < (preset.snrLimit() - 7.5) {

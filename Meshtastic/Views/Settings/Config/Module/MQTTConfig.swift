@@ -32,8 +32,7 @@ struct MQTTConfig: View {
 	@State var nearbyTopics = [String]()
 	@State var mapReportingEnabled = false
 	@State var mapPublishIntervalSecs = 3600
-	@State var preciseLocation: Bool = false
-	@State var mapPositionPrecision: Double = 13.0
+	@State var mapPositionPrecision: Double = 14.0
 
 	let locale = Locale.current
 
@@ -105,35 +104,17 @@ struct MQTTConfig: View {
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
-
 						VStack(alignment: .leading) {
-							Toggle(isOn: $preciseLocation) {
-								Label("Precise Location", systemImage: "scope")
+							Label("Approximate Location", systemImage: "location.slash.circle.fill")
+							Slider(value: $mapPositionPrecision, in: 11...14, step: 1) {
+							} minimumValueLabel: {
+								Image(systemName: "minus")
+							} maximumValueLabel: {
+								Image(systemName: "plus")
 							}
-							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							.listRowSeparator(.visible)
-							.onChange(of: preciseLocation) { pl in
-								if pl == false {
-									mapPositionPrecision = 12
-								} else {
-									mapPositionPrecision = 32
-								}
-							}
-						}
-
-						if !preciseLocation {
-							VStack(alignment: .leading) {
-								Label("Approximate Location", systemImage: "location.slash.circle.fill")
-								Slider(value: $mapPositionPrecision, in: 11...16, step: 1) {
-								} minimumValueLabel: {
-									Image(systemName: "minus")
-								} maximumValueLabel: {
-									Image(systemName: "plus")
-								}
-								Text(PositionPrecision(rawValue: Int(mapPositionPrecision))?.description ?? "")
-									.foregroundColor(.gray)
-									.font(.callout)
-							}
+							Text(PositionPrecision(rawValue: Int(mapPositionPrecision))?.description ?? "")
+								.foregroundColor(.gray)
+								.font(.callout)
 						}
 					}
 				}
@@ -429,11 +410,12 @@ struct MQTTConfig: View {
 		self.mqttConnected = bleManager.mqttProxyConnected
 		self.mapReportingEnabled = node?.mqttConfig?.mapReportingEnabled ?? false
 		self.mapPublishIntervalSecs = Int(node?.mqttConfig?.mapPublishIntervalSecs ?? 3600)
-		self.mapPositionPrecision = Double(node?.mqttConfig?.mapPositionPrecision ?? 12)
-		if mapPositionPrecision == 0.0 {
-			self.mapPositionPrecision = 12
+		self.mapPositionPrecision = Double(node?.mqttConfig?.mapPositionPrecision ?? 14)
+		if mapPositionPrecision < 11 || mapPositionPrecision > 14 {
+			self.mapPositionPrecision = 14
+			self.hasChanges = true
+		} else {
+			self.hasChanges = false
 		}
-		self.preciseLocation = mapPositionPrecision == 32
-		self.hasChanges = false
 	}
 }

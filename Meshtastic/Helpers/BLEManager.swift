@@ -3302,7 +3302,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 // MARK: - CB Central Manager implmentation
 extension BLEManager: CBCentralManagerDelegate {
-
+	
 	// MARK: Bluetooth enabled/disabled
 	func centralManagerDidUpdateState(_ central: CBCentralManager) {
 		if central.state == CBManagerState.poweredOn {
@@ -3312,9 +3312,9 @@ extension BLEManager: CBCentralManagerDelegate {
 		} else {
 			isSwitchedOn = false
 		}
-
+		
 		var status = ""
-
+		
 		switch central.state {
 		case .poweredOff:
 			status = "BLE is powered off"
@@ -3333,10 +3333,10 @@ extension BLEManager: CBCentralManagerDelegate {
 		}
 		Logger.services.info("📜 [BLE] Bluetooth status: \(status)")
 	}
-
+	
 	// Called each time a peripheral is discovered
 	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
-
+		
 		if self.automaticallyReconnect && peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" {
 			self.connectTo(peripheral: peripheral)
 			Logger.services.info("✅ [BLE] Reconnecting to prefered peripheral: \(peripheral.name ?? "Unknown", privacy: .public)")
@@ -3344,7 +3344,7 @@ extension BLEManager: CBCentralManagerDelegate {
 		let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String
 		let device = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: name ?? "Unknown", shortName: "?", longName: name ?? "Unknown", firmwareVersion: "Unknown", rssi: RSSI.intValue, lastUpdate: Date(), peripheral: peripheral)
 		let index = peripherals.map { $0.peripheral }.firstIndex(of: peripheral)
-
+		
 		if let peripheralIndex = index {
 			peripherals[peripheralIndex] = device
 		} else {

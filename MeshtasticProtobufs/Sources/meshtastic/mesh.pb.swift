@@ -347,6 +347,19 @@ public enum HardwareModel: SwiftProtobuf.Enum {
   case me25Ls014Y10Td // = 75
 
   ///
+  /// RP2040_FEATHER_RFM95
+  /// Adafruit Feather RP2040 with RFM95 LoRa Radio RFM95 with SX1272, SSD1306 OLED
+  /// https://www.adafruit.com/product/5714
+  /// https://www.adafruit.com/product/326
+  /// https://www.adafruit.com/product/938
+  ///  ^^^ short A0 to switch to I2C address 0x3C
+  case rp2040FeatherRfm95 // = 76
+
+  /// M5 esp32 based MCU modules with enclosure, TFT and LORA Shields. All Variants (Basic, Core, Fire, Core2, Paper) https://m5stack.com/ 
+  case m5StackCorebasic // = 77
+  case m5StackCore2 // = 78
+
+  ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -434,6 +447,9 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case 73: self = .wioE5
     case 74: self = .radiomaster900Bandit
     case 75: self = .me25Ls014Y10Td
+    case 76: self = .rp2040FeatherRfm95
+    case 77: self = .m5StackCorebasic
+    case 78: self = .m5StackCore2
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -516,6 +532,9 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case .wioE5: return 73
     case .radiomaster900Bandit: return 74
     case .me25Ls014Y10Td: return 75
+    case .rp2040FeatherRfm95: return 76
+    case .m5StackCorebasic: return 77
+    case .m5StackCore2: return 78
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -603,6 +622,9 @@ extension HardwareModel: CaseIterable {
     .wioE5,
     .radiomaster900Bandit,
     .me25Ls014Y10Td,
+    .rp2040FeatherRfm95,
+    .m5StackCorebasic,
+    .m5StackCore2,
     .privateHw,
   ]
 }
@@ -1520,9 +1542,22 @@ public struct DataMessage {
   /// a message a heart or poop emoji.
   public var emoji: UInt32 = 0
 
+  ///
+  /// Bitfield for extra flags. First use is to indicate that user approves the packet being uploaded to MQTT.
+  public var bitfield: UInt32 {
+    get {return _bitfield ?? 0}
+    set {_bitfield = newValue}
+  }
+  /// Returns true if `bitfield` has been explicitly set.
+  public var hasBitfield: Bool {return self._bitfield != nil}
+  /// Clears the value of `bitfield`. Subsequent reads from it will return its default value.
+  public mutating func clearBitfield() {self._bitfield = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+
+  fileprivate var _bitfield: UInt32? = nil
 }
 
 ///
@@ -1908,6 +1943,15 @@ public struct MeshPacket {
     case reliable // = 70
 
     ///
+    /// If priority is unset but the packet is a response to a request, we want it to get there relatively quickly.
+    /// Furthermore, responses stop relaying packets directed to a node early.
+    case response // = 80
+
+    ///
+    /// Higher priority for specific message types (portnums) to distinguish between other reliable packets.
+    case high // = 100
+
+    ///
     /// Ack/naks are sent with very high priority to ensure that retransmission
     /// stops as soon as possible
     case ack // = 120
@@ -1928,6 +1972,8 @@ public struct MeshPacket {
       case 10: self = .background
       case 64: self = .default
       case 70: self = .reliable
+      case 80: self = .response
+      case 100: self = .high
       case 120: self = .ack
       case 127: self = .max
       default: self = .UNRECOGNIZED(rawValue)
@@ -1941,6 +1987,8 @@ public struct MeshPacket {
       case .background: return 10
       case .default: return 64
       case .reliable: return 70
+      case .response: return 80
+      case .high: return 100
       case .ack: return 120
       case .max: return 127
       case .UNRECOGNIZED(let i): return i
@@ -2006,6 +2054,8 @@ extension MeshPacket.Priority: CaseIterable {
     .background,
     .default,
     .reliable,
+    .response,
+    .high,
     .ack,
     .max,
   ]
@@ -3241,6 +3291,9 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     73: .same(proto: "WIO_E5"),
     74: .same(proto: "RADIOMASTER_900_BANDIT"),
     75: .same(proto: "ME25LS01_4Y10TD"),
+    76: .same(proto: "RP2040_FEATHER_RFM95"),
+    77: .same(proto: "M5STACK_COREBASIC"),
+    78: .same(proto: "M5STACK_CORE2"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
@@ -3779,6 +3832,7 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     6: .standard(proto: "request_id"),
     7: .standard(proto: "reply_id"),
     8: .same(proto: "emoji"),
+    9: .same(proto: "bitfield"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -3795,12 +3849,17 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       case 6: try { try decoder.decodeSingularFixed32Field(value: &self.requestID) }()
       case 7: try { try decoder.decodeSingularFixed32Field(value: &self.replyID) }()
       case 8: try { try decoder.decodeSingularFixed32Field(value: &self.emoji) }()
+      case 9: try { try decoder.decodeSingularUInt32Field(value: &self._bitfield) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.portnum != .unknownApp {
       try visitor.visitSingularEnumField(value: self.portnum, fieldNumber: 1)
     }
@@ -3825,6 +3884,9 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if self.emoji != 0 {
       try visitor.visitSingularFixed32Field(value: self.emoji, fieldNumber: 8)
     }
+    try { if let v = self._bitfield {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 9)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -3837,6 +3899,7 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if lhs.requestID != rhs.requestID {return false}
     if lhs.replyID != rhs.replyID {return false}
     if lhs.emoji != rhs.emoji {return false}
+    if lhs._bitfield != rhs._bitfield {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -4224,6 +4287,8 @@ extension MeshPacket.Priority: SwiftProtobuf._ProtoNameProviding {
     10: .same(proto: "BACKGROUND"),
     64: .same(proto: "DEFAULT"),
     70: .same(proto: "RELIABLE"),
+    80: .same(proto: "RESPONSE"),
+    100: .same(proto: "HIGH"),
     120: .same(proto: "ACK"),
     127: .same(proto: "MAX"),
   ]

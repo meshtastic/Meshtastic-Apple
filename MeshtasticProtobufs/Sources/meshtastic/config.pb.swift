@@ -93,6 +93,14 @@ public struct Config {
     set {payloadVariant = .security(newValue)}
   }
 
+  public var sessionkey: Config.SessionkeyConfig {
+    get {
+      if case .sessionkey(let v)? = payloadVariant {return v}
+      return Config.SessionkeyConfig()
+    }
+    set {payloadVariant = .sessionkey(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -106,6 +114,7 @@ public struct Config {
     case lora(Config.LoRaConfig)
     case bluetooth(Config.BluetoothConfig)
     case security(Config.SecurityConfig)
+    case sessionkey(Config.SessionkeyConfig)
 
   #if !swift(>=4.1)
     public static func ==(lhs: Config.OneOf_PayloadVariant, rhs: Config.OneOf_PayloadVariant) -> Bool {
@@ -145,6 +154,10 @@ public struct Config {
         guard case .security(let l) = lhs, case .security(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
+      case (.sessionkey, .sessionkey): return {
+        guard case .sessionkey(let l) = lhs, case .sessionkey(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
       default: return false
       }
     }
@@ -166,12 +179,6 @@ public struct Config {
     /// Disabling this will disable the SerialConsole by not initilizing the StreamAPI
     /// Moved to SecurityConfig
     public var serialEnabled: Bool = false
-
-    ///
-    /// By default we turn off logging as soon as an API client connects (to keep shared serial link quiet).
-    /// Set this to true to leave the debug log outputting even when API is active.
-    /// Moved to SecurityConfig
-    public var debugLogEnabled: Bool = false
 
     ///
     /// For boards without a hard wired button, this is the pin number that will be used
@@ -1250,6 +1257,13 @@ public struct Config {
       set {_uniqueStorage()._ignoreMqtt = newValue}
     }
 
+    ///
+    /// Sets the ok_to_mqtt bit on outgoing packets
+    public var configOkToMqtt: Bool {
+      get {return _storage._configOkToMqtt}
+      set {_uniqueStorage()._configOkToMqtt = newValue}
+    }
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public enum RegionCode: SwiftProtobuf.Enum {
@@ -1492,11 +1506,6 @@ public struct Config {
     /// Specified PIN for PairingMode.FixedPin
     public var fixedPin: UInt32 = 0
 
-    ///
-    /// Enables device (serial style logs) over Bluetooth
-    /// Moved to SecurityConfig
-    public var deviceLoggingEnabled: Bool = false
-
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public enum PairingMode: SwiftProtobuf.Enum {
@@ -1559,7 +1568,7 @@ public struct Config {
 
     ///
     /// The public key authorized to send admin messages to this node.
-    public var adminKey: Data = Data()
+    public var adminKey: [Data] = []
 
     ///
     /// If true, device is considered to be "managed" by a mesh administrator via admin messages
@@ -1572,16 +1581,24 @@ public struct Config {
 
     ///
     /// By default we turn off logging as soon as an API client connects (to keep shared serial link quiet).
-    /// Output live debug logging over serial.
+    /// Output live debug logging over serial or bluetooth is set to true.
     public var debugLogApiEnabled: Bool = false
-
-    ///
-    /// Enables device (serial style logs) over Bluetooth
-    public var bluetoothLoggingEnabled: Bool = false
 
     ///
     /// Allow incoming device control over the insecure legacy admin channel.
     public var adminChannelEnabled: Bool = false
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  ///
+  /// Blank config request, strictly for getting the session key
+  public struct SessionkeyConfig {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1784,6 +1801,7 @@ extension Config.LoRaConfig.ModemPreset: @unchecked Sendable {}
 extension Config.BluetoothConfig: @unchecked Sendable {}
 extension Config.BluetoothConfig.PairingMode: @unchecked Sendable {}
 extension Config.SecurityConfig: @unchecked Sendable {}
+extension Config.SessionkeyConfig: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -1801,6 +1819,7 @@ extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
     6: .same(proto: "lora"),
     7: .same(proto: "bluetooth"),
     8: .same(proto: "security"),
+    9: .same(proto: "sessionkey"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1913,6 +1932,19 @@ extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
           self.payloadVariant = .security(v)
         }
       }()
+      case 9: try {
+        var v: Config.SessionkeyConfig?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .sessionkey(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .sessionkey(v)
+        }
+      }()
       default: break
       }
     }
@@ -1956,6 +1988,10 @@ extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
       guard case .security(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
     }()
+    case .sessionkey?: try {
+      guard case .sessionkey(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
+    }()
     case nil: break
     }
     try unknownFields.traverse(visitor: &visitor)
@@ -1973,7 +2009,6 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "role"),
     2: .standard(proto: "serial_enabled"),
-    3: .standard(proto: "debug_log_enabled"),
     4: .standard(proto: "button_gpio"),
     5: .standard(proto: "buzzer_gpio"),
     6: .standard(proto: "rebroadcast_mode"),
@@ -1993,7 +2028,6 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularEnumField(value: &self.role) }()
       case 2: try { try decoder.decodeSingularBoolField(value: &self.serialEnabled) }()
-      case 3: try { try decoder.decodeSingularBoolField(value: &self.debugLogEnabled) }()
       case 4: try { try decoder.decodeSingularUInt32Field(value: &self.buttonGpio) }()
       case 5: try { try decoder.decodeSingularUInt32Field(value: &self.buzzerGpio) }()
       case 6: try { try decoder.decodeSingularEnumField(value: &self.rebroadcastMode) }()
@@ -2014,9 +2048,6 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     }
     if self.serialEnabled != false {
       try visitor.visitSingularBoolField(value: self.serialEnabled, fieldNumber: 2)
-    }
-    if self.debugLogEnabled != false {
-      try visitor.visitSingularBoolField(value: self.debugLogEnabled, fieldNumber: 3)
     }
     if self.buttonGpio != 0 {
       try visitor.visitSingularUInt32Field(value: self.buttonGpio, fieldNumber: 4)
@@ -2051,7 +2082,6 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
   public static func ==(lhs: Config.DeviceConfig, rhs: Config.DeviceConfig) -> Bool {
     if lhs.role != rhs.role {return false}
     if lhs.serialEnabled != rhs.serialEnabled {return false}
-    if lhs.debugLogEnabled != rhs.debugLogEnabled {return false}
     if lhs.buttonGpio != rhs.buttonGpio {return false}
     if lhs.buzzerGpio != rhs.buzzerGpio {return false}
     if lhs.rebroadcastMode != rhs.rebroadcastMode {return false}
@@ -2595,6 +2625,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     15: .standard(proto: "pa_fan_disabled"),
     103: .standard(proto: "ignore_incoming"),
     104: .standard(proto: "ignore_mqtt"),
+    105: .standard(proto: "config_ok_to_mqtt"),
   ]
 
   fileprivate class _StorageClass {
@@ -2615,6 +2646,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     var _paFanDisabled: Bool = false
     var _ignoreIncoming: [UInt32] = []
     var _ignoreMqtt: Bool = false
+    var _configOkToMqtt: Bool = false
 
     #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
@@ -2646,6 +2678,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       _paFanDisabled = source._paFanDisabled
       _ignoreIncoming = source._ignoreIncoming
       _ignoreMqtt = source._ignoreMqtt
+      _configOkToMqtt = source._configOkToMqtt
     }
   }
 
@@ -2681,6 +2714,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         case 15: try { try decoder.decodeSingularBoolField(value: &_storage._paFanDisabled) }()
         case 103: try { try decoder.decodeRepeatedUInt32Field(value: &_storage._ignoreIncoming) }()
         case 104: try { try decoder.decodeSingularBoolField(value: &_storage._ignoreMqtt) }()
+        case 105: try { try decoder.decodeSingularBoolField(value: &_storage._configOkToMqtt) }()
         default: break
         }
       }
@@ -2740,6 +2774,9 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       if _storage._ignoreMqtt != false {
         try visitor.visitSingularBoolField(value: _storage._ignoreMqtt, fieldNumber: 104)
       }
+      if _storage._configOkToMqtt != false {
+        try visitor.visitSingularBoolField(value: _storage._configOkToMqtt, fieldNumber: 105)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2766,6 +2803,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         if _storage._paFanDisabled != rhs_storage._paFanDisabled {return false}
         if _storage._ignoreIncoming != rhs_storage._ignoreIncoming {return false}
         if _storage._ignoreMqtt != rhs_storage._ignoreMqtt {return false}
+        if _storage._configOkToMqtt != rhs_storage._configOkToMqtt {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -2819,7 +2857,6 @@ extension Config.BluetoothConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     1: .same(proto: "enabled"),
     2: .same(proto: "mode"),
     3: .standard(proto: "fixed_pin"),
-    4: .standard(proto: "device_logging_enabled"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2831,7 +2868,6 @@ extension Config.BluetoothConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageI
       case 1: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
       case 2: try { try decoder.decodeSingularEnumField(value: &self.mode) }()
       case 3: try { try decoder.decodeSingularUInt32Field(value: &self.fixedPin) }()
-      case 4: try { try decoder.decodeSingularBoolField(value: &self.deviceLoggingEnabled) }()
       default: break
       }
     }
@@ -2847,9 +2883,6 @@ extension Config.BluetoothConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     if self.fixedPin != 0 {
       try visitor.visitSingularUInt32Field(value: self.fixedPin, fieldNumber: 3)
     }
-    if self.deviceLoggingEnabled != false {
-      try visitor.visitSingularBoolField(value: self.deviceLoggingEnabled, fieldNumber: 4)
-    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2857,7 +2890,6 @@ extension Config.BluetoothConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     if lhs.enabled != rhs.enabled {return false}
     if lhs.mode != rhs.mode {return false}
     if lhs.fixedPin != rhs.fixedPin {return false}
-    if lhs.deviceLoggingEnabled != rhs.deviceLoggingEnabled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2880,7 +2912,6 @@ extension Config.SecurityConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     4: .standard(proto: "is_managed"),
     5: .standard(proto: "serial_enabled"),
     6: .standard(proto: "debug_log_api_enabled"),
-    7: .standard(proto: "bluetooth_logging_enabled"),
     8: .standard(proto: "admin_channel_enabled"),
   ]
 
@@ -2892,11 +2923,10 @@ extension Config.SecurityConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularBytesField(value: &self.publicKey) }()
       case 2: try { try decoder.decodeSingularBytesField(value: &self.privateKey) }()
-      case 3: try { try decoder.decodeSingularBytesField(value: &self.adminKey) }()
+      case 3: try { try decoder.decodeRepeatedBytesField(value: &self.adminKey) }()
       case 4: try { try decoder.decodeSingularBoolField(value: &self.isManaged) }()
       case 5: try { try decoder.decodeSingularBoolField(value: &self.serialEnabled) }()
       case 6: try { try decoder.decodeSingularBoolField(value: &self.debugLogApiEnabled) }()
-      case 7: try { try decoder.decodeSingularBoolField(value: &self.bluetoothLoggingEnabled) }()
       case 8: try { try decoder.decodeSingularBoolField(value: &self.adminChannelEnabled) }()
       default: break
       }
@@ -2911,7 +2941,7 @@ extension Config.SecurityConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
       try visitor.visitSingularBytesField(value: self.privateKey, fieldNumber: 2)
     }
     if !self.adminKey.isEmpty {
-      try visitor.visitSingularBytesField(value: self.adminKey, fieldNumber: 3)
+      try visitor.visitRepeatedBytesField(value: self.adminKey, fieldNumber: 3)
     }
     if self.isManaged != false {
       try visitor.visitSingularBoolField(value: self.isManaged, fieldNumber: 4)
@@ -2921,9 +2951,6 @@ extension Config.SecurityConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     }
     if self.debugLogApiEnabled != false {
       try visitor.visitSingularBoolField(value: self.debugLogApiEnabled, fieldNumber: 6)
-    }
-    if self.bluetoothLoggingEnabled != false {
-      try visitor.visitSingularBoolField(value: self.bluetoothLoggingEnabled, fieldNumber: 7)
     }
     if self.adminChannelEnabled != false {
       try visitor.visitSingularBoolField(value: self.adminChannelEnabled, fieldNumber: 8)
@@ -2938,8 +2965,26 @@ extension Config.SecurityConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if lhs.isManaged != rhs.isManaged {return false}
     if lhs.serialEnabled != rhs.serialEnabled {return false}
     if lhs.debugLogApiEnabled != rhs.debugLogApiEnabled {return false}
-    if lhs.bluetoothLoggingEnabled != rhs.bluetoothLoggingEnabled {return false}
     if lhs.adminChannelEnabled != rhs.adminChannelEnabled {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Config.SessionkeyConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Config.protoMessageName + ".SessionkeyConfig"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let _ = try decoder.nextFieldNumber() {
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Config.SessionkeyConfig, rhs: Config.SessionkeyConfig) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

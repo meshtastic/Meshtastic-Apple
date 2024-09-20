@@ -149,7 +149,7 @@ struct ChannelForm: View {
 								.listRowSeparator(.visible)
 								.onChange(of: preciseLocation) { pl in
 									if pl == false {
-										positionPrecision = 13
+										positionPrecision = 14
 									}
 								}
 							}
@@ -158,7 +158,7 @@ struct ChannelForm: View {
 							VStack(alignment: .leading) {
 								Label("Approximate Location", systemImage: "location.slash.circle.fill")
 
-								Slider(value: $positionPrecision, in: 10...16, step: 1) {
+								Slider(value: $positionPrecision, in: 11...14, step: 1) {
 								} minimumValueLabel: {
 									Image(systemName: "minus")
 								} maximumValueLabel: {
@@ -220,7 +220,7 @@ struct ChannelForm: View {
 					}
 					positionPrecision = 32
 				} else {
-					positionPrecision = 13
+					positionPrecision = 14
 				}
 				hasChanges = true
 			}
@@ -230,7 +230,7 @@ struct ChannelForm: View {
 			.onChange(of: positionsEnabled) { pe in
 				if pe {
 					if positionPrecision == 0 {
-						positionPrecision = 13
+						positionPrecision = 14
 					}
 				} else {
 					positionPrecision = 0
