@@ -33,6 +33,7 @@ struct MeshMap: View {
 	@Namespace var mapScope
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .flat, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .excludingAll, showsTraffic: false)
 	@State var position = MapCameraPosition.automatic
+	@State private var distance = 10000.0
 	@State private var editingSettings = false
 	@State private var editingFilters = false
 	@State var selectedPosition: PositionEntity?
@@ -60,8 +61,19 @@ struct MeshMap: View {
 		NavigationStack {
 			ZStack {
 				MapReader { reader in
-					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
-						MeshMapContent(showUserLocation: $showUserLocation, showTraffic: $showTraffic, showPointsOfInterest: $showPointsOfInterest, selectedMapLayer: $selectedMapLayer, selectedPosition: $selectedPosition, selectedWaypoint: $selectedWaypoint)
+					Map(
+						position: $position,
+						bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity),
+						scope: mapScope
+					) {
+						MeshMapContent(
+							showUserLocation: $showUserLocation,
+							showTraffic: $showTraffic,
+							showPointsOfInterest: $showPointsOfInterest,
+							selectedMapLayer: $selectedMapLayer,
+							selectedPosition: $selectedPosition,
+							selectedWaypoint: $selectedWaypoint
+						)
 					}
 					.mapScope(mapScope)
 					.mapStyle(mapStyle)
@@ -74,6 +86,9 @@ struct MeshMap: View {
 							.mapControlVisibility(.automatic)
 					}
 					.controlSize(.regular)
+					.onMapCameraChange(frequency: MapCameraUpdateFrequency.continuous, { context in
+						distance = context.camera.distance
+					})
 					.onTapGesture(count: 1, perform: { position in
 						newWaypointCoord = reader.convert(position, from: .local) ??  CLLocationCoordinate2D.init()
 					})
@@ -92,6 +107,7 @@ struct MeshMap: View {
 									Logger.services.error("Unable to convert local point to coordinate on map.")
 									return
 								}
+								centerMapAt(coordinate: coordinate)
 
 								newWaypointCoord = coordinate
 								editingWaypoint = WaypointEntity(context: context)
@@ -208,6 +224,20 @@ struct MeshMap: View {
 		}
 		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false
+		})
+	}
+
+	// moves the map to a new coordinate
+	private func centerMapAt(coordinate: CLLocationCoordinate2D) {
+		withAnimation(.easeInOut(duration: 0.2), {
+			position = .camera(
+				MapCamera(
+					centerCoordinate: coordinate, // Set new center
+					distance: distance,           // Preserve current zoom distance
+					heading: 0,      			  // align north
+					pitch: 0                      // set view to top down
+				)
+			)
 		})
 	}
 }
