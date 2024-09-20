@@ -205,7 +205,7 @@ struct MeshMap: View {
 		.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
-		.onAppear {
+		.onFirstAppear {
 			UIApplication.shared.isIdleTimerDisabled = true
 
 			//	let wayPointEntity = getWaypoint(id: Int64(deepLinkManager.waypointId) ?? -1, context: context)
