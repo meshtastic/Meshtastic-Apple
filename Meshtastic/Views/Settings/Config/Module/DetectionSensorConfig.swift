@@ -92,11 +92,11 @@ struct DetectionSensorConfig: View {
 								.autocapitalization(.none)
 								.disableAutocorrection(true)
 								.onChange(of: name, perform: { _ in
-
-									let totalBytes = name.utf8.count
+									var totalBytes = name.utf8.count
 									// Only mess with the value if it is too big
-									if totalBytes > 20 {
+									while totalBytes > 20 {
 										name = String(name.dropLast())
+										totalBytes = name.utf8.count
 									}
 								})
 						}

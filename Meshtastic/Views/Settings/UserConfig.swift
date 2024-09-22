@@ -50,10 +50,11 @@ struct UserConfig: View {
 
 							TextField("Long Name", text: $longName)
 								.onChange(of: longName, perform: { _ in
-									let totalBytes = longName.utf8.count
+									var totalBytes = longName.utf8.count
 									// Only mess with the value if it is too big
-									if totalBytes > (isLicensed ? 6 : 36) {
+									while totalBytes > (isLicensed ? 6 : 36) {
 										longName = String(longName.dropLast())
+										totalBytes = longName.utf8.count
 									}
 								})
 						}
@@ -74,10 +75,11 @@ struct UserConfig: View {
 							TextField("Short Name", text: $shortName)
 								.foregroundColor(.gray)
 								.onChange(of: shortName, perform: { _ in
-									let totalBytes = shortName.utf8.count
+									var totalBytes = shortName.utf8.count
 									// Only mess with the value if it is too big
 									if totalBytes > 4 {
 										shortName = String(shortName.dropLast())
+										totalBytes = shortName.utf8.count
 									}
 								})
 								.foregroundColor(.gray)

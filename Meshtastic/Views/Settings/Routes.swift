@@ -177,11 +177,11 @@ struct Routes: View {
 							)
 							.foregroundColor(Color.gray)
 							.onChange(of: name, perform: { _ in
-								let totalBytes = name.utf8.count
+								var totalBytes = name.utf8.count
 								// Only mess with the value if it is too big
-
-								if totalBytes > 100 {
+								while totalBytes > 100 {
 									name = String(name.dropLast())
+									totalBytes = name.utf8.count
 								}
 							})
 

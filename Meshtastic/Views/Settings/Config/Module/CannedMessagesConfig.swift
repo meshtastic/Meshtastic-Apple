@@ -73,10 +73,11 @@ struct CannedMessagesConfig: View {
 						.disableAutocorrection(true)
 						.onChange(of: messages, perform: { _ in
 
-							let totalBytes = messages.utf8.count
+							var totalBytes = messages.utf8.count
 							// Only mess with the value if it is too big
-							if totalBytes > 198 {
+							while totalBytes > 198 {
 								messages = String(messages.dropLast())
+								totalBytes = messages.utf8.count
 							}
 							hasMessagesChanges = true
 						})

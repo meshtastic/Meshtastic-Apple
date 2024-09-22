@@ -66,10 +66,11 @@ struct WaypointForm: View {
 							)
 							.foregroundColor(Color.gray)
 							.onChange(of: name, perform: { _ in
-								let totalBytes = name.utf8.count
+								var totalBytes = name.utf8.count
 								// Only mess with the value if it is too big
-								if totalBytes > 30 {
+								while totalBytes > 30 {
 									name = String(name.dropLast())
+									totalBytes = name.utf8.count
 								}
 							})
 						}
@@ -83,10 +84,11 @@ struct WaypointForm: View {
 							)
 							.foregroundColor(Color.gray)
 							.onChange(of: description, perform: { _ in
-								let totalBytes = description.utf8.count
+								var totalBytes = description.utf8.count
 								// Only mess with the value if it is too big
-								if totalBytes > 100 {
+								while totalBytes > 100 {
 									description = String(description.dropLast())
+									totalBytes = description.utf8.count
 								}
 							})
 						}
