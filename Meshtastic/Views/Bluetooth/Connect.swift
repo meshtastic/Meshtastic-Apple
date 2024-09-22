@@ -27,6 +27,7 @@ struct Connect: View {
 	@State var invalidFirmwareVersion = false
 	@State var liveActivityStarted = false
 	@State var selectedPeripherialId = ""
+	@State var localStats: TelemetryEntity?
 
 	init () {
 		let notificationCenter = UNUserNotificationCenter.current()
@@ -91,8 +92,6 @@ struct Connect: View {
 										}
 									}
 									VStack {
-										let localStats = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 6")).lastObject as? TelemetryEntity
-									
 										if localStats != nil {
 											Divider()
 											if localStats?.numTotalNodes ?? 0 >= 100 {
@@ -351,6 +350,9 @@ struct Connect: View {
 		.onChange(of: (self.bleManager.invalidVersion)) { _ in
 			invalidFirmwareVersion = self.bleManager.invalidVersion
 		}
+		.onChange(of: [node?.telemetries]) { _ in
+			localStats = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 4")).lastObject as? TelemetryEntity
+		}
 		.onChange(of: (self.bleManager.isSubscribed)) { sub in
 
 			if UserDefaults.preferredPeripheralId.count > 0 && sub {
@@ -376,7 +378,7 @@ struct Connect: View {
 		liveActivityStarted = true
 		// 15 Minutes Local Stats Interval
 		let timerSeconds = 900
-		let localStats = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 6"))
+		let localStats = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 4"))
 		let mostRecent = localStats?.lastObject as? TelemetryEntity
 
 		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName ?? "unknown")
