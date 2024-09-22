@@ -675,7 +675,7 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 
 func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManagedObjectContext) {
 
-	if let telemetryMessage = try? Telemetry(serializedData: packet.decoded.payload) {
+	if let telemetryMessage = try? Telemetry(serializedBytes: packet.decoded.payload) {
 
 		let logString = String.localizedStringWithFormat("mesh.log.telemetry.received %@".localized, String(packet.from))
 		MeshLogger.log("📈 \(logString)")
@@ -729,7 +729,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.numPacketsRxBad = Int32(truncatingIfNeeded: telemetryMessage.localStats.numPacketsRxBad)
 					telemetry.numOnlineNodes = Int32(truncatingIfNeeded: telemetryMessage.localStats.numOnlineNodes)
 					telemetry.numTotalNodes = Int32(truncatingIfNeeded: telemetryMessage.localStats.numTotalNodes)
-					telemetry.metricsType = 6
+					telemetry.metricsType = 4
 					Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.localStats.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.localStats.airUtilTx, privacy: .public) Packets Sent: \(telemetryMessage.localStats.numPacketsTx, privacy: .public) Packets Received: \(telemetryMessage.localStats.numPacketsRx, privacy: .public) Bad Packets Received: \(telemetryMessage.localStats.numPacketsRxBad, privacy: .public) Nodes Online: \(telemetryMessage.localStats.numOnlineNodes, privacy: .public) of \(telemetryMessage.localStats.numTotalNodes, privacy: .public) nodes for Node: \(packet.from.toHex(), privacy: .public)")
 				}
 				telemetry.snr = packet.rxSnr
@@ -748,7 +748,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 			}
 			try context.save()
 
-			Logger.data.info("💾 [TelemetryEntity] Saved for Node: \(packet.from.toHex())")
+			Logger.data.info("💾 [TelemetryEntity] of type \(MetricsTypes(rawValue: Int(telemetry.metricsType))?.name ?? "Unknown Metrics Type") Saved for Node: \(packet.from.toHex())")
 			if telemetry.metricsType == 0 {
 				// Connected Device Metrics
 				// ------------------------
@@ -769,9 +769,9 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 						manager.schedule()
 					}
 				}
-			} else if telemetry.metricsType == 6 {
+			} else if telemetry.metricsType == 4 {
 				// Update our live activity if there is one running, not available on mac iOS >= 16.2
-#if !targetEnvironment(macCatalyst)
+#if canImport(ActivityKit)
 
 				let fifteenMinutesLater = Calendar.current.date(byAdding: .minute, value: (Int(15) ), to: Date())!
 				let date = Date.now...fifteenMinutesLater

@@ -176,3 +176,30 @@ enum Iaq: Int, CaseIterable, Identifiable {
 		return iaq
 	}
 }
+
+
+// Default of 0 is Client
+enum MetricsTypes: Int, CaseIterable, Identifiable {
+
+	case device = 0
+	case environment = 1
+	case power = 2
+	case airQuality = 3
+	case stats = 4
+
+	var id: Int { self.rawValue }
+	var name: String {
+		switch self {
+		case .device:
+			return "Device Metrics"
+		case .environment:
+			return "Environment Metrics"
+		case .power:
+			return "Power Metrics"
+		case .airQuality:
+			return "Air Quality Metrics"
+		case .stats:
+			return "Stats"
+		}
+	}
+}
