@@ -33,8 +33,9 @@ struct TextMessageField: View {
 					.onChange(of: typingMessage, perform: { value in
 						totalBytes = value.utf8.count
 						// Only mess with the value if it is too big
-						if totalBytes > Self.maxbytes {
+						while totalBytes > Self.maxbytes {
 							typingMessage = String(typingMessage.dropLast())
+							totalBytes = typingMessage.utf8.count
 						}
 					})
 					.keyboardType(.default)
