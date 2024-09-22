@@ -46,10 +46,11 @@ struct NetworkConfig: View {
 								.autocapitalization(.none)
 								.disableAutocorrection(true)
 								.onChange(of: wifiSsid, perform: { _ in
-									let totalBytes = wifiSsid.utf8.count
+									var totalBytes = wifiSsid.utf8.count
 									// Only mess with the value if it is too big
-									if totalBytes > 32 {
+									while totalBytes > 32 {
 										wifiSsid = String(wifiSsid.dropLast())
+										totalBytes = wifiSsid.utf8.count
 									}
 									hasChanges = true
 								})
@@ -63,10 +64,11 @@ struct NetworkConfig: View {
 								.autocapitalization(.none)
 								.disableAutocorrection(true)
 								.onChange(of: wifiPsk, perform: { _ in
-									let totalBytes = wifiPsk.utf8.count
+									var totalBytes = wifiPsk.utf8.count
 									// Only mess with the value if it is too big
-									if totalBytes > 63 {
+									while totalBytes > 63 {
 										wifiPsk = String(wifiPsk.dropLast())
+										totalBytes = wifiPsk.utf8.count
 									}
 									hasChanges = true
 								})

@@ -32,11 +32,11 @@ struct RtttlConfig: View {
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
 							.onChange(of: ringtone, perform: { _ in
-
-								let totalBytes = ringtone.utf8.count
+								var totalBytes = ringtone.utf8.count
 								// Only mess with the value if it is too big
-								if totalBytes > 228 {
+								while totalBytes > 228 {
 									ringtone = String(ringtone.dropLast())
+									totalBytes = ringtone.utf8.count
 								}
 							})
 							.foregroundColor(.gray)

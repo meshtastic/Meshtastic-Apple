@@ -141,16 +141,6 @@
     "%@%%" : {
 
     },
-    "%@%% %@%%" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@%% %2$@%%"
-          }
-        }
-      }
-    },
     "%@°F" : {
 
     },
@@ -1428,16 +1418,6 @@
     },
     "Bad" : {
 
-    },
-    "Bad Packets: %d %@%%" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Bad Packets: %1$d %2$@%%"
-          }
-        }
-      }
     },
     "Bandwidth" : {
 
@@ -16086,16 +16066,6 @@
     "Override automatic OLED screen detection." : {
 
     },
-    "Packets: Sent: %d Received: %d" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Packets: Sent: %1$d Received: %2$d"
-          }
-        }
-      }
-    },
     "password" : {
       "localizations" : {
         "de" : {
@@ -22325,9 +22295,6 @@
           }
         }
       }
-    },
-    "Uptime: %@" : {
-
     },
     "Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead." : {
 

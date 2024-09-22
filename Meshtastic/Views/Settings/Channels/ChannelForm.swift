@@ -43,10 +43,11 @@ struct ChannelForm: View {
 						.foregroundColor(Color.gray)
 						.onChange(of: channelName, perform: { _ in
 							channelName = channelName.replacing(" ", with: "")
-							let totalBytes = channelName.utf8.count
+							var totalBytes = channelName.utf8.count
 							// Only mess with the value if it is too big
-							if totalBytes > 11 {
+							while totalBytes > 11 {
 								channelName = String(channelName.dropLast())
+								totalBytes = channelName.utf8.count
 							}
 							hasChanges = true
 						})
