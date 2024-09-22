@@ -38,8 +38,8 @@ struct MessageChannelIntent: AppIntent {
 			throw AppIntentErrors.AppIntentError.message("Failed to encode message content")
 		}
 		
-		if messageData.count > 228 {
-			throw $messageContent.needsValueError("Message content exceeds 228 bytes.")
+		if messageData.count > 200 {
+			throw $messageContent.needsValueError("Message content exceeds 200 bytes.")
 		}
 
 		if(!BLEManager.shared.sendMessage(message: messageContent, toUserNum: 0, channel: Int32(channelNumber), isEmoji: false, replyID: 0)){

@@ -24,6 +24,8 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 	case notAuthorized = 33
 	case pkiFailed = 34
 	case pkiUnknownPubkey = 35
+	case adminBadSessionKey = 36
+	case adminPublicKeyUnauthorized = 37
 
 	var id: Int { self.rawValue }
 	var display: String {
@@ -57,6 +59,10 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 			return "routing.pkifailed".localized
 		case .pkiUnknownPubkey:
 			return "routing.pkiunknownpubkey".localized
+		case .adminBadSessionKey:
+			return "routing.adminbadsessionkey".localized
+		case .adminPublicKeyUnauthorized:
+			return "routing.adminpublickeyunauthorized".localized
 		}
 	}
 	var color: Color {
@@ -97,7 +103,11 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .pkiFailed:
 			return true
 		case .pkiUnknownPubkey:
-			return false
+			return true
+		case .adminBadSessionKey:
+			return true
+		case .adminPublicKeyUnauthorized:
+			return true
 		}
 	}
 	func protoEnumValue() -> Routing.Error {
@@ -132,6 +142,10 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 			return Routing.Error.pkiFailed
 		case .pkiUnknownPubkey:
 			return Routing.Error.pkiUnknownPubkey
+		case .adminBadSessionKey:
+			return Routing.Error.adminBadSessionKey
+		case .adminPublicKeyUnauthorized:
+			return Routing.Error.adminPublicKeyUnauthorized
 		}
 	}
 }

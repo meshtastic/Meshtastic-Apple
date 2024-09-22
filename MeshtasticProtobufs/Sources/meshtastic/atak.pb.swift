@@ -322,6 +322,17 @@ public struct TAKPacket {
     set {payloadVariant = .chat(newValue)}
   }
 
+  ///
+  /// Generic CoT detail XML
+  /// May be compressed / truncated by the sender
+  public var detail: Data {
+    get {
+      if case .detail(let v)? = payloadVariant {return v}
+      return Data()
+    }
+    set {payloadVariant = .detail(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -333,6 +344,10 @@ public struct TAKPacket {
     ///
     /// ATAK GeoChat message
     case chat(GeoChat)
+    ///
+    /// Generic CoT detail XML
+    /// May be compressed / truncated by the sender
+    case detail(Data)
 
   #if !swift(>=4.1)
     public static func ==(lhs: TAKPacket.OneOf_PayloadVariant, rhs: TAKPacket.OneOf_PayloadVariant) -> Bool {
@@ -346,6 +361,10 @@ public struct TAKPacket {
       }()
       case (.chat, .chat): return {
         guard case .chat(let l) = lhs, case .chat(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.detail, .detail): return {
+        guard case .detail(let l) = lhs, case .detail(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -555,6 +574,7 @@ extension TAKPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     4: .same(proto: "status"),
     5: .same(proto: "pli"),
     6: .same(proto: "chat"),
+    7: .same(proto: "detail"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -593,6 +613,14 @@ extension TAKPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
           self.payloadVariant = .chat(v)
         }
       }()
+      case 7: try {
+        var v: Data?
+        try decoder.decodeSingularBytesField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .detail(v)
+        }
+      }()
       default: break
       }
     }
@@ -623,6 +651,10 @@ extension TAKPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     case .chat?: try {
       guard case .chat(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+    }()
+    case .detail?: try {
+      guard case .detail(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularBytesField(value: v, fieldNumber: 7)
     }()
     case nil: break
     }

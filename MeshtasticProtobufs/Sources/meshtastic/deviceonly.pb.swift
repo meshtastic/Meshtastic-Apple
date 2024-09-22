@@ -235,9 +235,13 @@ public struct NodeInfoLite {
   ///
   /// Number of hops away from us this node is (0 if adjacent)
   public var hopsAway: UInt32 {
-    get {return _storage._hopsAway}
+    get {return _storage._hopsAway ?? 0}
     set {_uniqueStorage()._hopsAway = newValue}
   }
+  /// Returns true if `hopsAway` has been explicitly set.
+  public var hasHopsAway: Bool {return _storage._hopsAway != nil}
+  /// Clears the value of `hopsAway`. Subsequent reads from it will return its default value.
+  public mutating func clearHopsAway() {_uniqueStorage()._hopsAway = nil}
 
   ///
   /// True if node is in our favorites list
@@ -620,7 +624,7 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     var _deviceMetrics: DeviceMetrics? = nil
     var _channel: UInt32 = 0
     var _viaMqtt: Bool = false
-    var _hopsAway: UInt32 = 0
+    var _hopsAway: UInt32? = nil
     var _isFavorite: Bool = false
 
     #if swift(>=5.10)
@@ -710,9 +714,9 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       if _storage._viaMqtt != false {
         try visitor.visitSingularBoolField(value: _storage._viaMqtt, fieldNumber: 8)
       }
-      if _storage._hopsAway != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._hopsAway, fieldNumber: 9)
-      }
+      try { if let v = _storage._hopsAway {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 9)
+      } }()
       if _storage._isFavorite != false {
         try visitor.visitSingularBoolField(value: _storage._isFavorite, fieldNumber: 10)
       }

@@ -83,6 +83,39 @@ public struct DeviceProfile {
   /// Clears the value of `moduleConfig`. Subsequent reads from it will return its default value.
   public mutating func clearModuleConfig() {self._moduleConfig = nil}
 
+  ///
+  /// Fixed position data
+  public var fixedPosition: Position {
+    get {return _fixedPosition ?? Position()}
+    set {_fixedPosition = newValue}
+  }
+  /// Returns true if `fixedPosition` has been explicitly set.
+  public var hasFixedPosition: Bool {return self._fixedPosition != nil}
+  /// Clears the value of `fixedPosition`. Subsequent reads from it will return its default value.
+  public mutating func clearFixedPosition() {self._fixedPosition = nil}
+
+  ///
+  /// Ringtone for ExternalNotification
+  public var ringtone: String {
+    get {return _ringtone ?? String()}
+    set {_ringtone = newValue}
+  }
+  /// Returns true if `ringtone` has been explicitly set.
+  public var hasRingtone: Bool {return self._ringtone != nil}
+  /// Clears the value of `ringtone`. Subsequent reads from it will return its default value.
+  public mutating func clearRingtone() {self._ringtone = nil}
+
+  ///
+  /// Predefined messages for CannedMessage
+  public var cannedMessages: String {
+    get {return _cannedMessages ?? String()}
+    set {_cannedMessages = newValue}
+  }
+  /// Returns true if `cannedMessages` has been explicitly set.
+  public var hasCannedMessages: Bool {return self._cannedMessages != nil}
+  /// Clears the value of `cannedMessages`. Subsequent reads from it will return its default value.
+  public mutating func clearCannedMessages() {self._cannedMessages = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -92,6 +125,9 @@ public struct DeviceProfile {
   fileprivate var _channelURL: String? = nil
   fileprivate var _config: LocalConfig? = nil
   fileprivate var _moduleConfig: LocalModuleConfig? = nil
+  fileprivate var _fixedPosition: Position? = nil
+  fileprivate var _ringtone: String? = nil
+  fileprivate var _cannedMessages: String? = nil
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
@@ -110,6 +146,9 @@ extension DeviceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     3: .standard(proto: "channel_url"),
     4: .same(proto: "config"),
     5: .standard(proto: "module_config"),
+    6: .standard(proto: "fixed_position"),
+    7: .same(proto: "ringtone"),
+    8: .standard(proto: "canned_messages"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -123,6 +162,9 @@ extension DeviceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       case 3: try { try decoder.decodeSingularStringField(value: &self._channelURL) }()
       case 4: try { try decoder.decodeSingularMessageField(value: &self._config) }()
       case 5: try { try decoder.decodeSingularMessageField(value: &self._moduleConfig) }()
+      case 6: try { try decoder.decodeSingularMessageField(value: &self._fixedPosition) }()
+      case 7: try { try decoder.decodeSingularStringField(value: &self._ringtone) }()
+      case 8: try { try decoder.decodeSingularStringField(value: &self._cannedMessages) }()
       default: break
       }
     }
@@ -148,6 +190,15 @@ extension DeviceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     try { if let v = self._moduleConfig {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
     } }()
+    try { if let v = self._fixedPosition {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+    } }()
+    try { if let v = self._ringtone {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 7)
+    } }()
+    try { if let v = self._cannedMessages {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 8)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -157,6 +208,9 @@ extension DeviceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if lhs._channelURL != rhs._channelURL {return false}
     if lhs._config != rhs._config {return false}
     if lhs._moduleConfig != rhs._moduleConfig {return false}
+    if lhs._fixedPosition != rhs._fixedPosition {return false}
+    if lhs._ringtone != rhs._ringtone {return false}
+    if lhs._cannedMessages != rhs._cannedMessages {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

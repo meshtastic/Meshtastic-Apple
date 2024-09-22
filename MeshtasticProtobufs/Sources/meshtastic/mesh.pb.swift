@@ -1416,6 +1416,14 @@ public struct Routing {
     ///
     /// The receiving node does not have a Public Key to decode with
     case pkiUnknownPubkey // = 35
+
+    ///
+    /// Admin packet otherwise checks out, but uses a bogus or expired session key
+    case adminBadSessionKey // = 36
+
+    ///
+    /// Admin packet sent using PKC, but not from a public key on the admin key list
+    case adminPublicKeyUnauthorized // = 37
     case UNRECOGNIZED(Int)
 
     public init() {
@@ -1438,6 +1446,8 @@ public struct Routing {
       case 33: self = .notAuthorized
       case 34: self = .pkiFailed
       case 35: self = .pkiUnknownPubkey
+      case 36: self = .adminBadSessionKey
+      case 37: self = .adminPublicKeyUnauthorized
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -1458,6 +1468,8 @@ public struct Routing {
       case .notAuthorized: return 33
       case .pkiFailed: return 34
       case .pkiUnknownPubkey: return 35
+      case .adminBadSessionKey: return 36
+      case .adminPublicKeyUnauthorized: return 37
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -1486,6 +1498,8 @@ extension Routing.Error: CaseIterable {
     .notAuthorized,
     .pkiFailed,
     .pkiUnknownPubkey,
+    .adminBadSessionKey,
+    .adminPublicKeyUnauthorized,
   ]
 }
 
@@ -2167,9 +2181,13 @@ public struct NodeInfo {
   ///
   /// Number of hops away from us this node is (0 if adjacent)
   public var hopsAway: UInt32 {
-    get {return _storage._hopsAway}
+    get {return _storage._hopsAway ?? 0}
     set {_uniqueStorage()._hopsAway = newValue}
   }
+  /// Returns true if `hopsAway` has been explicitly set.
+  public var hasHopsAway: Bool {return _storage._hopsAway != nil}
+  /// Clears the value of `hopsAway`. Subsequent reads from it will return its default value.
+  public mutating func clearHopsAway() {_uniqueStorage()._hopsAway = nil}
 
   ///
   /// True if node is in our favorites list
@@ -2997,6 +3015,10 @@ public struct DeviceMetadata {
   /// Has Remote Hardware enabled
   public var hasRemoteHardware_p: Bool = false
 
+  ///
+  /// Has PKC capabilities
+  public var hasPkc_p: Bool = false
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -3818,6 +3840,8 @@ extension Routing.Error: SwiftProtobuf._ProtoNameProviding {
     33: .same(proto: "NOT_AUTHORIZED"),
     34: .same(proto: "PKI_FAILED"),
     35: .same(proto: "PKI_UNKNOWN_PUBKEY"),
+    36: .same(proto: "ADMIN_BAD_SESSION_KEY"),
+    37: .same(proto: "ADMIN_PUBLIC_KEY_UNAUTHORIZED"),
   ]
 }
 
@@ -4326,7 +4350,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     var _deviceMetrics: DeviceMetrics? = nil
     var _channel: UInt32 = 0
     var _viaMqtt: Bool = false
-    var _hopsAway: UInt32 = 0
+    var _hopsAway: UInt32? = nil
     var _isFavorite: Bool = false
 
     #if swift(>=5.10)
@@ -4416,9 +4440,9 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       if _storage._viaMqtt != false {
         try visitor.visitSingularBoolField(value: _storage._viaMqtt, fieldNumber: 8)
       }
-      if _storage._hopsAway != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._hopsAway, fieldNumber: 9)
-      }
+      try { if let v = _storage._hopsAway {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 9)
+      } }()
       if _storage._isFavorite != false {
         try visitor.visitSingularBoolField(value: _storage._isFavorite, fieldNumber: 10)
       }
@@ -5281,6 +5305,7 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     8: .standard(proto: "position_flags"),
     9: .standard(proto: "hw_model"),
     10: .same(proto: "hasRemoteHardware"),
+    11: .same(proto: "hasPKC"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -5299,6 +5324,7 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       case 8: try { try decoder.decodeSingularUInt32Field(value: &self.positionFlags) }()
       case 9: try { try decoder.decodeSingularEnumField(value: &self.hwModel) }()
       case 10: try { try decoder.decodeSingularBoolField(value: &self.hasRemoteHardware_p) }()
+      case 11: try { try decoder.decodeSingularBoolField(value: &self.hasPkc_p) }()
       default: break
       }
     }
@@ -5335,6 +5361,9 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if self.hasRemoteHardware_p != false {
       try visitor.visitSingularBoolField(value: self.hasRemoteHardware_p, fieldNumber: 10)
     }
+    if self.hasPkc_p != false {
+      try visitor.visitSingularBoolField(value: self.hasPkc_p, fieldNumber: 11)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -5349,6 +5378,7 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if lhs.positionFlags != rhs.positionFlags {return false}
     if lhs.hwModel != rhs.hwModel {return false}
     if lhs.hasRemoteHardware_p != rhs.hasRemoteHardware_p {return false}
+    if lhs.hasPkc_p != rhs.hasPkc_p {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
