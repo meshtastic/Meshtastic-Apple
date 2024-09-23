@@ -30,7 +30,8 @@ struct MessageText: View {
 			.background(isCurrentUser ? .accentColor : Color(.gray))
 			.cornerRadius(15)
 			.overlay {
-				if message.pkiEncrypted && message.ackError == 0 && message.realACK {
+				/// Show the lock if the message is pki encrypted and has a real ack if sent by the current user, or is pki encrypted for incoming messages
+				if message.pkiEncrypted && message.realACK || !isCurrentUser && message.pkiEncrypted {
 					VStack(alignment: .trailing) {
 						Spacer()
 						HStack {
