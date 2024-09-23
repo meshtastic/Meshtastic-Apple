@@ -428,14 +428,11 @@
     </entity>
     <entity name="TraceRouteHopEntity" representedClassName="TraceRouteHopEntity" syncable="YES" codeGenerationType="class">
         <attribute name="altitude" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="destination" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="latitudeI" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="longitudeI" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="num" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="snr" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="time" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="towards" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <relationship name="traceRoute" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TraceRouteEntity" inverseName="hops" inverseEntity="TraceRouteEntity"/>
     </entity>
     <entity name="UserEntity" representedClassName="UserEntity" syncable="YES" codeGenerationType="class">

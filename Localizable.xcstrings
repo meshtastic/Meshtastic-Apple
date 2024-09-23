@@ -16,6 +16,9 @@
     " Whether or not use INPUT_PULLUP mode for GPIO pin. Only applicable if the board uses pull-up resistors on the pin" : {
 
     },
+    "-12dB" : {
+
+    },
     ": %@" : {
 
     },
