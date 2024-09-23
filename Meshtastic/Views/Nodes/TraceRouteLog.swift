@@ -32,7 +32,7 @@ struct TraceRouteLog: View {
 	@State private var hops: Int = 16 /// Max of 16 (2 8 hop routes)
 	/// State for the circle of routes
 	@State var angle: Angle = .zero
-	@State var radius: CGFloat = 230.00
+	@State var radius: CGFloat = 175.00
 	@State var animation: Animation?
 
 	var body: some View {
@@ -52,32 +52,6 @@ struct TraceRouteLog: View {
 				.frame(minHeight: 200, maxHeight: 230)
 				VStack {
 					if selectedRoute != nil {
-						if true {// selectedRoute?.hops?.count ?? 2 > 3 {
-							VStack {
-								Spacer()
-								HStack(spacing: 15) {
-									TraceRoute(radius: radius, rotation: angle) {
-										contents()
-									}
-								}
-								.onAppear {
-									// Set the view rotation animation after the view appeared,
-									// to avoid animating initial rotation
-									DispatchQueue.main.async {
-										animation = .easeInOut(duration: 1.0)
-										withAnimation(.easeInOut(duration: 2.0)) {
-											angle = (angle == .degrees(-90) ? .degrees(-90) : .degrees(-90))
-										}
-									}
-								}
-								.onTapGesture {
-									withAnimation(.easeInOut(duration: 2.0)) {
-										angle = (angle == .degrees(-90) ? .degrees(90) : .degrees(-90))
-									}
-								}
-							}
-							.frame(maxWidth: .infinity, maxHeight: .infinity)
-						}
 						if selectedRoute?.response ?? false && selectedRoute?.hops?.count ?? 0 > 0 {
 							Label {
 								Text("Route: \(selectedRoute?.routeText ?? "unknown".localized)")
@@ -135,9 +109,7 @@ struct TraceRouteLog: View {
 								if selectedRoute?.node?.positions?.count ?? 0 > 0,
 								   selectedRoute?.coordinate != nil,
 								   let mostRecent = selectedRoute?.node?.positions?.lastObject as? PositionEntity {
-									
 									let startPoint = CLLocation(latitude: selectedRoute?.coordinate?.latitude ?? LocationsHandler.DefaultLocation.latitude, longitude: selectedRoute?.coordinate?.longitude ?? LocationsHandler.DefaultLocation.longitude)
-									
 									if startPoint.distance(from: CLLocation(latitude: LocationsHandler.DefaultLocation.latitude, longitude: LocationsHandler.DefaultLocation.longitude)) > 0.0 {
 										let metersAway = selectedRoute?.coordinate?.distance(from: CLLocationCoordinate2D(latitude: mostRecent.latitude ?? LocationsHandler.DefaultLocation.latitude, longitude: mostRecent.longitude ?? LocationsHandler.DefaultLocation.longitude))
 										Label {
@@ -161,6 +133,32 @@ struct TraceRouteLog: View {
 								.font(.title3)
 								Spacer()
 							}
+						}
+						if true {// selectedRoute?.hops?.count ?? 2 > 3 {
+							VStack {
+								Spacer()
+								HStack(spacing: 15) {
+									TraceRoute(radius: radius, rotation: angle) {
+										contents()
+									}
+								}
+								.onAppear {
+									// Set the view rotation animation after the view appeared,
+									// to avoid animating initial rotation
+									DispatchQueue.main.async {
+										animation = .easeInOut(duration: 1.0)
+										withAnimation(.easeInOut(duration: 2.0)) {
+											angle = (angle == .degrees(-90) ? .degrees(-90) : .degrees(-90))
+										}
+									}
+								}
+								.onTapGesture {
+									withAnimation(.easeInOut(duration: 2.0)) {
+										angle = (angle == .degrees(-90) ? .degrees(90) : .degrees(-90))
+									}
+								}
+							}
+							.frame(maxWidth: .infinity, maxHeight: .infinity)
 						}
 					} else {
 						ContentUnavailableView("Select a Trace Route", systemImage: "signpost.right.and.left")
