@@ -22,21 +22,6 @@
     ": %d" : {
 
     },
-    ".dot" : {
-
-    },
-    ".gauge" : {
-
-    },
-    ".gradient" : {
-
-    },
-    ".pill" : {
-
-    },
-    ".text" : {
-
-    },
     "(Re)define PIN_GPS_EN for your board." : {
 
     },
@@ -19138,6 +19123,9 @@
       }
     },
     "Send" : {
+
+    },
+    "Send ${messageContent} to ${channelNumber}" : {
 
     },
     "Send a Group Message" : {
