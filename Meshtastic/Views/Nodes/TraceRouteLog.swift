@@ -56,7 +56,7 @@ struct TraceRouteLog: View {
 							.font(.title2)
 						} else if selectedRoute?.response ?? false {
 							Label {
-								Text("Trace route received directly by \(selectedRoute?.node?.user?.longName ?? "unknown".localized)")
+								Text("Trace route received directly by \(selectedRoute?.node?.user?.longName ?? "unknown".localized) with a SNR of \(String(format: "%.2f", selectedRoute?.node?.snr ?? 0.0)) dB")
 							} icon: {
 								Image(systemName: "signpost.right.and.left")
 									.symbolRenderingMode(.hierarchical)

@@ -21856,8 +21856,15 @@
     "Trace Route Log" : {
 
     },
-    "Trace route received directly by %@" : {
-
+    "Trace route received directly by %@ with a SNR of %@ dB" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Trace route received directly by %1$@ with a SNR of %2$@ dB"
+          }
+        }
+      }
     },
     "Trace Route Sent" : {
 
