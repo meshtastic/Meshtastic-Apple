@@ -825,7 +825,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 				MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED UNHANDLED")
 			case .tracerouteApp:
-				if let routingMessage = try? RouteDiscovery(serializedData: decodedInfo.packet.decoded.payload) {
+				if let routingMessage = try? RouteDiscovery(serializedBytes: decodedInfo.packet.decoded.payload) {
 					let traceRoute = getTraceRoute(id: Int64(decodedInfo.packet.decoded.requestID), context: context)
 					traceRoute?.response = true
 					traceRoute?.route = routingMessage.route
@@ -836,13 +836,45 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					} else {
 						var routeString = "You --> "
 						var hopNodes: [TraceRouteHopEntity] = []
-						for node in routingMessage.route {
+						for (index, node) in routingMessage.route.enumerated() {
 							var hopNode = getNodeInfo(id: Int64(node), context: context)
 							if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
 								hopNode = createNodeInfo(num: Int64(node), context: context)
 							}
 							let traceRouteHop = TraceRouteHopEntity(context: context)
 							traceRouteHop.time = Date()
+							traceRouteHop.snr = Float(routingMessage.snrTowards[index] / 4)
+							if hopNode?.hasPositions ?? false {
+								traceRoute?.hasPositions = true
+								if let mostRecent = hopNode?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
+									traceRouteHop.altitude = mostRecent.altitude
+									traceRouteHop.latitudeI = mostRecent.latitudeI
+									traceRouteHop.longitudeI = mostRecent.longitudeI
+									traceRouteHop.name = hopNode?.user?.longName ?? "unknown".localized
+								} else {
+									traceRoute?.hasPositions = false
+								}
+							} else {
+								traceRoute?.hasPositions = false
+							}
+							traceRouteHop.num = hopNode?.num ?? 0
+							if hopNode != nil {
+								if decodedInfo.packet.rxTime > 0 {
+									hopNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
+								}
+								hopNodes.append(traceRouteHop)
+							}
+							routeString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") \(traceRouteHop.snr > 0 ? hopNode?.snr ?? 0.0 : 0.0)dB --> "
+						}
+						for (index, node) in routingMessage.routeBack.enumerated() {
+							var hopNode = getNodeInfo(id: Int64(node), context: context)
+							if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
+								hopNode = createNodeInfo(num: Int64(node), context: context)
+							}
+							let traceRouteHop = TraceRouteHopEntity(context: context)
+							traceRouteHop.time = Date()
+							traceRouteHop.back = true
+							traceRouteHop.snr = Float(routingMessage.snrBack[index] / 4)
 							if hopNode?.hasPositions ?? false {
 								traceRoute?.hasPositions = true
 								if let mostRecent = hopNode?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
