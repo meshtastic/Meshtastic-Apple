@@ -26,9 +26,16 @@ struct TraceRouteLog: View {
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .realistic, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .all, showsTraffic: true)
 	@State var position = MapCameraPosition.automatic
 	let distanceFormatter = MKDistanceFormatter()
-	let modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
+	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
+	
+	/// Mockup Values
+	let colors: [Color] = [.yellow, .orange, .red, .pink, .purple, .blue, .cyan, .green]
+	let nums: [Int64] = [366311664, 0, 3662955168, 0, 3663982804, 0, 4202719792, 0, 603700594, 0, 836212501, 0, 3663116644, 0, 8362955168]
+	let snr: [Double] = [-115.00, 17.5, 7.0, 8.9, -24.0, 5.5, 6.0, 7.5]
+	@State private var hops: Int = 16 /// Max of 16 (2 8 hop routes)
 	/// State for the circle of routes
 	@State var angle: Angle = .zero
+	//@State var radius: CGFloat = 175.00
 	@State var animation: Animation?
 
 	var body: some View {
@@ -76,7 +83,7 @@ struct TraceRouteLog: View {
 								   .font(idiom == .phone ? .headline : .largeTitle)
 							}
 						}
-						if selectedRoute?.hops?.count ?? 2 > 3 {
+						if true { // selectedRoute?.hops?.count ?? 2 > 3 {
 							HStack(alignment: .center) {
 								GeometryReader { geometry in
 									let size = ((geometry.size.width >= geometry.size.height ? geometry.size.height : geometry.size.width) / 2) - (idiom == .phone ? 50 : 70)
@@ -174,6 +181,24 @@ struct TraceRouteLog: View {
 		})
 	}
 	@ViewBuilder func contents(animation: Animation? = nil) -> some View {
+		ForEach(0..<hops, id: \.self) { idx in
+			TraceRouteComponent(animation: animation) {
+				if idx % 2 == 0 {
+					VStack {
+						let nodeColor = UIColor(hex: UInt32(truncatingIfNeeded: nums[idx%nums.count]))
+						CircleText(text: String(nums[idx%nums.count].toHex().suffix(4)), color: Color(nodeColor), circleSize: idiom == .phone ? 70 : 100)
+							Text("-12dB")
+							.font(idiom == .phone ? .caption : .headline)
+								.foregroundColor(colors[idx%colors.count].opacity(0.7))
+					}
+				} else {
+					Image(systemName: "arrowshape.right.fill")
+						.resizable()
+						.frame(width: idiom == .phone ? 25 : 40, height: idiom == .phone ? 25 : 40)
+						.foregroundColor(colors[idx%colors.count].opacity(0.7))
+				}
+			}
+		}
 		ForEach(selectedRoute?.hops?.array as? [TraceRouteHopEntity] ?? [], id: \.id) { idx in
 			TraceRouteComponent(animation: animation) {
 				let nodeColor = UIColor(hex: UInt32(truncatingIfNeeded: idx.num))
