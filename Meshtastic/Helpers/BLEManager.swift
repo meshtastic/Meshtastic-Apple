@@ -680,12 +680,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 									do {
 										disconnectPeripheral(reconnect: false)
 										try container.restorePersistentStore(from: databasePath)
-										context.refreshAllObjects()
-										let request = MyInfoEntity.fetchRequest()
-										try context.fetch(request)
 										UserDefaults.preferredPeripheralNum = Int(myInfo?.myNodeNum ?? 0)
-										connectTo(peripheral: peripheral)
+										context.refreshAllObjects()
 										Logger.data.notice("🗂️ Restored Core data for /\(UserDefaults.preferredPeripheralNum, privacy: .public)")
+										connectTo(peripheral: peripheral)
 									} catch {
 										Logger.data.error("🗂️ Restore Core data copy error: \(error, privacy: .public)")
 									}
