@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreData
 #if canImport(MapKit)
 import MapKit
 #endif
@@ -77,15 +78,16 @@ struct TraceRouteLog: View {
 								   .font(idiom == .phone ? .headline : .largeTitle)
 							}
 						}
-						if true { // selectedRoute?.hops?.count ?? 2 > 3 {
+						if selectedRoute?.hops?.count ?? 2 > 3 {
 							HStack(alignment: .center) {
 								GeometryReader { geometry in
-									let size = ((geometry.size.width >= geometry.size.height ? geometry.size.height : geometry.size.width) / 2) - (idiom == .phone ? 50 : 70)
+									let size = ((geometry.size.width >= geometry.size.height ? geometry.size.height : geometry.size.width) / 2) - (idiom == .phone ? 45 : 85)
 									Spacer()
-									TraceRoute(radius: size, rotation: angle) {
+									TraceRoute(radius: size < 600 ? size : 600, rotation: angle) {
 										contents()
 									}
-									.padding(.leading)
+									.padding(.leading, idiom == .phone ? 0 : 20)
+									Spacer()
 								}
 								.scaledToFit()
 							}
@@ -178,26 +180,66 @@ struct TraceRouteLog: View {
 	@ViewBuilder func contents(animation: Animation? = nil) -> some View {
 		ForEach(0..<indexes, id: \.self) { idx in
 			TraceRouteComponent(animation: animation) {
-				let hops = selectedRoute?.hops?.array as? [TraceRouteHopEntity] ?? []
+				let hops = selectedRoute?.hops?.array as? [TraceRouteHopEntity] ?? [] // getTraceRouteHops(context: PersistenceController.preview.container.viewContext)//
 				if idx % 2 == 0 {
-					let i = idx % 2
+					let i = idx / 2
 					let snrColor = getSnrColor(snr: hops[i].snr, preset: modemPreset)
 					VStack {
 						let nodeColor = UIColor(hex: UInt32(truncatingIfNeeded: hops[i].num))
-						CircleText(text: String(hops[i].num.toHex().suffix(4)), color: Color(nodeColor), circleSize: idiom == .phone ? 70 : 100)
+						CircleText(text: String(hops[i].num.toHex().suffix(4)), color: Color(nodeColor), circleSize: idiom == .phone ? 70 : 125)
 							Text("\(String(format: "%.2f", hops[i].snr)) dB")
-								.font(idiom == .phone ? .caption : .headline)
+								.font(idiom == .phone ? .caption2 : .headline)
 								.foregroundColor(snrColor)
+								.allowsTightening(true)
+								.fontWeight(.semibold)
 					}
 				} else {
-					let i = (idx - 1) % 2
+					let i = (idx - 1) / 2
 					let snrColor = getSnrColor(snr: hops[i].snr, preset: modemPreset)
 					Image(systemName: "arrowshape.right.fill")
 						.resizable()
-						.frame(width: idiom == .phone ? 25 : 40, height: idiom == .phone ? 25 : 40)
+						.frame(width: idiom == .phone ? 25 : 60, height: idiom == .phone ? 25 : 60)
 						.foregroundColor(snrColor.opacity(0.7))
 				}
 			}
 		}
 	}
+}
+
+func getTraceRouteHops(context: NSManagedObjectContext) -> [TraceRouteHopEntity] {
+	///	static let context = PersistenceController.preview.container.viewContext
+	var array = [TraceRouteHopEntity]()
+	let trh1 = TraceRouteHopEntity(context: context)
+	trh1.num = 366311664
+	trh1.snr = 12.5
+	let trh2 = TraceRouteHopEntity(context: context)
+	trh2.num = 3662955168
+	trh2.snr = -115.00
+	let trh3 = TraceRouteHopEntity(context: context)
+	trh3.num = 3663982804
+	trh3.snr = 17.5
+	let trh4 = TraceRouteHopEntity(context: context)
+	trh4.num = 4202719792
+	trh4.snr = 7.0
+	let trh5 = TraceRouteHopEntity(context: context)
+	trh5.num = 603700594
+	trh5.snr = 8.9
+	let trh6 = TraceRouteHopEntity(context: context)
+	trh6.num = 836212501
+	trh6.snr = -24.0
+	let trh7 = TraceRouteHopEntity(context: context)
+	trh7.num = 3663116644
+	trh7.snr = -6.0
+	let trh8 = TraceRouteHopEntity(context: context)
+	trh8.num = 8362955168
+	trh8.snr = 7.5
+	array.append(trh1)
+	array.append(trh2)
+	array.append(trh3)
+	array.append(trh4)
+	array.append(trh5)
+	array.append(trh6)
+	array.append(trh7)
+	array.append(trh8)
+	return array
 }
