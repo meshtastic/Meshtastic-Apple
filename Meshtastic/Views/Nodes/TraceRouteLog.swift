@@ -26,16 +26,10 @@ struct TraceRouteLog: View {
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .realistic, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .all, showsTraffic: true)
 	@State var position = MapCameraPosition.automatic
 	let distanceFormatter = MKDistanceFormatter()
-	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
-	
-	/// Mockup Values
-	let colors: [Color] = [.yellow, .orange, .red, .pink, .purple, .blue, .cyan, .green]
-	let nums: [Int64] = [366311664, 0, 3662955168, 0, 3663982804, 0, 4202719792, 0, 603700594, 0, 836212501, 0, 3663116644, 0, 8362955168]
-	let snr: [Double] = [-115.00, 17.5, 7.0, 8.9, -24.0, 5.5, 6.0, 7.5]
-	@State private var hops: Int = 16 /// Max of 16 (2 8 hop routes)
 	/// State for the circle of routes
+	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
+	@State private var indexes: Int = 0
 	@State var angle: Angle = .zero
-	//@State var radius: CGFloat = 175.00
 	@State var animation: Animation?
 
 	var body: some View {
@@ -99,6 +93,7 @@ struct TraceRouteLog: View {
 								// Set the view rotation animation after the view appeared,
 								// to avoid animating initial rotation
 								DispatchQueue.main.async {
+									indexes = (selectedRoute?.hops?.array.count ?? 0) * 2
 									animation = .easeInOut(duration: 1.0)
 									withAnimation(.easeInOut(duration: 2.0)) {
 										angle = (angle == .degrees(-90) ? .degrees(-90) : .degrees(-90))
@@ -181,38 +176,27 @@ struct TraceRouteLog: View {
 		})
 	}
 	@ViewBuilder func contents(animation: Animation? = nil) -> some View {
-		ForEach(0..<hops, id: \.self) { idx in
+		ForEach(0..<indexes, id: \.self) { idx in
 			TraceRouteComponent(animation: animation) {
+				let hops = selectedRoute?.hops?.array as? [TraceRouteHopEntity] ?? []
 				if idx % 2 == 0 {
+					let i = idx % 2
+					let snrColor = getSnrColor(snr: hops[i].snr, preset: modemPreset)
 					VStack {
-						let nodeColor = UIColor(hex: UInt32(truncatingIfNeeded: nums[idx%nums.count]))
-						CircleText(text: String(nums[idx%nums.count].toHex().suffix(4)), color: Color(nodeColor), circleSize: idiom == .phone ? 70 : 100)
-							Text("-12dB")
-							.font(idiom == .phone ? .caption : .headline)
-								.foregroundColor(colors[idx%colors.count].opacity(0.7))
+						let nodeColor = UIColor(hex: UInt32(truncatingIfNeeded: hops[i].num))
+						CircleText(text: String(hops[i].num.toHex().suffix(4)), color: Color(nodeColor), circleSize: idiom == .phone ? 70 : 100)
+							Text("\(String(format: "%.2f", hops[i].snr)) dB")
+								.font(idiom == .phone ? .caption : .headline)
+								.foregroundColor(snrColor)
 					}
 				} else {
+					let i = (idx - 1) % 2
+					let snrColor = getSnrColor(snr: hops[i].snr, preset: modemPreset)
 					Image(systemName: "arrowshape.right.fill")
 						.resizable()
 						.frame(width: idiom == .phone ? 25 : 40, height: idiom == .phone ? 25 : 40)
-						.foregroundColor(colors[idx%colors.count].opacity(0.7))
+						.foregroundColor(snrColor.opacity(0.7))
 				}
-			}
-		}
-		ForEach(selectedRoute?.hops?.array as? [TraceRouteHopEntity] ?? [], id: \.id) { idx in
-			TraceRouteComponent(animation: animation) {
-				let nodeColor = UIColor(hex: UInt32(truncatingIfNeeded: idx.num))
-				let snrColor = getSnrColor(snr: idx.snr, preset: modemPreset)
-				VStack {
-					CircleText(text: String(idx.num.toHex().suffix(4)), color: Color(nodeColor), circleSize: idiom == .phone ? 70 : 100)
-						Text("\(String(format: "%.2f", idx.snr)) dB")
-						.font(idiom == .phone ? .caption : .headline)
-						.foregroundColor(snrColor)
-				}
-				Image(systemName: "arrowshape.right.fill")
-					.resizable()
-					.frame(width: idiom == .phone ? 25 : 40, height: idiom == .phone ? 25 : 40)
-					.foregroundColor(snrColor.opacity(0.7))
 			}
 		}
 	}
