@@ -652,6 +652,20 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					retained: decodedInfo.mqttClientProxyMessage.retained
 				)
 				mqttManager.mqttClientProxy?.publish(message)
+			} else if decodedInfo.payloadVariant == FromRadio.OneOf_PayloadVariant.clientNotification(decodedInfo.clientNotification) {
+				let manager = LocalNotificationManager()
+				manager.notifications = [
+					Notification(
+						id: UUID().uuidString,
+						title: "Firmware Notification",
+						subtitle: "\(decodedInfo.clientNotification.level)".capitalized,
+						content: decodedInfo.clientNotification.message,
+						target: "settings",
+						path: "meshtastic:///settings/debugLogs"
+					)
+				]
+				manager.schedule()
+				Logger.data.error("⚠️ Client Notification \((try? decodedInfo.clientNotification.jsonString()) ?? "JSON Decode Failure")")
 			}
 
 			switch decodedInfo.packet.decoded.portnum {
