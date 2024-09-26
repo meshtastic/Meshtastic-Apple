@@ -468,15 +468,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				traceRoute.id = Int64(meshPacket.id)
 				traceRoute.time = Date()
 				traceRoute.node = receivingNode
-				// Grab the most recent postion, within the last hour
-				if connectedNode?.positions?.count ?? 0 > 0, let mostRecent = connectedNode?.positions?.lastObject as? PositionEntity {
-					if mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
-						traceRoute.altitude = mostRecent.altitude
-						traceRoute.latitudeI = mostRecent.latitudeI
-						traceRoute.longitudeI = mostRecent.longitudeI
-						traceRoute.hasPositions = true
-					}
-				}
 				do {
 					try context.save()
 					Logger.data.info("💾 Saved TraceRoute sent to node: \(String(receivingNode?.user?.longName ?? "unknown".localized), privacy: .public)")
@@ -840,21 +831,39 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				if let routingMessage = try? RouteDiscovery(serializedBytes: decodedInfo.packet.decoded.payload) {
 					let traceRoute = getTraceRoute(id: Int64(decodedInfo.packet.decoded.requestID), context: context)
 					traceRoute?.response = true
-					traceRoute?.route = routingMessage.route
 					if routingMessage.route.count == 0 {
 						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.direct %@".localized, String(decodedInfo.packet.from))
 						MeshLogger.log("🪧 \(logString)")
-
 					} else {
-						var routeString = "You --> "
 						var hopNodes: [TraceRouteHopEntity] = []
+						/// Add the connected node to the list of hops
+						var connectedHopNode = getNodeInfo(id: Int64(self.connectedPeripheral.num), context: context)
+						let connectedHop = TraceRouteHopEntity(context: context)
+						connectedHop.name = traceRoute?.node?.user?.longName ?? "unknown".localized
+						connectedHop.num = traceRoute?.num ?? 0
+						connectedHop.time = Date()
+						if connectedHopNode?.hasPositions ?? false {
+							traceRoute?.hasPositions = true
+							if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
+								connectedHop.altitude = mostRecent.altitude
+								connectedHop.latitudeI = mostRecent.latitudeI
+								connectedHop.longitudeI = mostRecent.longitudeI
+								traceRoute?.hasPositions = true
+							} else {
+								traceRoute?.hasPositions = false
+							}
+						} else {
+							traceRoute?.hasPositions = false
+						}
+						hopNodes.append(connectedHop)
+						var routeString = "You --> "
 						for (index, node) in routingMessage.route.enumerated() {
 							var hopNode = getNodeInfo(id: Int64(node), context: context)
 							if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
 								hopNode = createNodeInfo(num: Int64(node), context: context)
 							}
 							let traceRouteHop = TraceRouteHopEntity(context: context)
-							traceRouteHop.time = Date()
+
 							traceRouteHop.snr = Float(routingMessage.snrTowards[index] / 4)
 							if hopNode?.hasPositions ?? false {
 								traceRoute?.hasPositions = true
@@ -876,8 +885,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								}
 								hopNodes.append(traceRouteHop)
 							}
-							routeString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") \(traceRouteHop.snr > 0 ? hopNode?.snr ?? 0.0 : 0.0)dB --> "
+							routeString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") (\(traceRouteHop.snr > 0 ? hopNode?.snr ?? 0.0 : 0.0)dB) --> "
 						}
+						var routeBackString = traceRoute?.node?.user?.longName ?? "unknown".localized
 						for (index, node) in routingMessage.routeBack.enumerated() {
 							var hopNode = getNodeInfo(id: Int64(node), context: context)
 							if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
@@ -907,10 +917,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								}
 								hopNodes.append(traceRouteHop)
 							}
-							routeString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") --> "
+							routeString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") (\(traceRouteHop.snr > 0 ? hopNode?.snr ?? 0.0 : 0.0)dB) --> "
 						}
-						routeString += traceRoute?.node?.user?.longName ?? "unknown".localized
 						traceRoute?.routeText = routeString
+						traceRoute?.routeBackText = routeBackString
 						traceRoute?.hops = NSOrderedSet(array: hopNodes)
 						do {
 							try context.save()
