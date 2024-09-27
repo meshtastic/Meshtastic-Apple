@@ -872,11 +872,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 									traceRouteHop.latitudeI = mostRecent.latitudeI
 									traceRouteHop.longitudeI = mostRecent.longitudeI
 									traceRouteHop.name = hopNode?.user?.longName ?? "unknown".localized
-								} else {
-									traceRoute?.hasPositions = false
+									traceRoute?.hasPositions = true
 								}
-							} else {
-								traceRoute?.hasPositions = false
 							}
 							traceRouteHop.num = hopNode?.num ?? 0
 							if hopNode != nil {
@@ -904,11 +901,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 									traceRouteHop.latitudeI = mostRecent.latitudeI
 									traceRouteHop.longitudeI = mostRecent.longitudeI
 									traceRouteHop.name = hopNode?.user?.longName ?? "unknown".localized
-								} else {
-									traceRoute?.hasPositions = false
+									traceRoute?.hasPositions = true
 								}
-							} else {
-								traceRoute?.hasPositions = false
 							}
 							traceRouteHop.num = hopNode?.num ?? 0
 							if hopNode != nil {
