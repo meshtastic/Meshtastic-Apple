@@ -415,7 +415,6 @@
     <entity name="TraceRouteEntity" representedClassName="TraceRouteEntity" syncable="YES" codeGenerationType="class">
         <attribute name="hasPositions" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="id" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="num" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="response" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="routeBackText" optional="YES" attributeType="String"/>
         <attribute name="routeText" optional="YES" attributeType="String"/>

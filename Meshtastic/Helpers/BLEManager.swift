@@ -837,23 +837,17 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					} else {
 						var hopNodes: [TraceRouteHopEntity] = []
 						/// Add the connected node to the list of hops
-						var connectedHopNode = getNodeInfo(id: Int64(self.connectedPeripheral.num), context: context)
+						let connectedHopNode = getNodeInfo(id: Int64(self.connectedPeripheral.num), context: context)
 						let connectedHop = TraceRouteHopEntity(context: context)
 						connectedHop.name = traceRoute?.node?.user?.longName ?? "unknown".localized
-						connectedHop.num = traceRoute?.num ?? 0
 						connectedHop.time = Date()
 						if connectedHopNode?.hasPositions ?? false {
-							traceRoute?.hasPositions = true
-							if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
+							if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
 								connectedHop.altitude = mostRecent.altitude
 								connectedHop.latitudeI = mostRecent.latitudeI
 								connectedHop.longitudeI = mostRecent.longitudeI
 								traceRoute?.hasPositions = true
-							} else {
-								traceRoute?.hasPositions = false
 							}
-						} else {
-							traceRoute?.hasPositions = false
 						}
 						hopNodes.append(connectedHop)
 						var routeString = "You --> "
@@ -866,8 +860,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 							traceRouteHop.snr = Float(routingMessage.snrTowards[index] / 4)
 							if hopNode?.hasPositions ?? false {
-								traceRoute?.hasPositions = true
-								if let mostRecent = hopNode?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
+								if let mostRecent = hopNode?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
 									traceRouteHop.altitude = mostRecent.altitude
 									traceRouteHop.latitudeI = mostRecent.latitudeI
 									traceRouteHop.longitudeI = mostRecent.longitudeI
@@ -895,8 +888,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							traceRouteHop.back = true
 							traceRouteHop.snr = Float(routingMessage.snrBack[index] / 4)
 							if hopNode?.hasPositions ?? false {
-								traceRoute?.hasPositions = true
-								if let mostRecent = hopNode?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
+								if let mostRecent = hopNode?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
 									traceRouteHop.altitude = mostRecent.altitude
 									traceRouteHop.latitudeI = mostRecent.latitudeI
 									traceRouteHop.longitudeI = mostRecent.longitudeI
@@ -911,7 +903,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								}
 								hopNodes.append(traceRouteHop)
 							}
-							routeString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") (\(traceRouteHop.snr > 0 ? hopNode?.snr ?? 0.0 : 0.0)dB) --> "
+							routeBackString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") (\(traceRouteHop.snr > 0 ? hopNode?.snr ?? 0.0 : 0.0)dB) --> "
 						}
 						traceRoute?.routeText = routeString
 						traceRoute?.routeBackText = routeBackString
@@ -952,7 +944,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				lastConnectionError = ""
 				isSubscribed = true
 				Logger.mesh.info("🤜 [BLE] Want Config Complete. ID:\(decodedInfo.configCompleteID)")
-				sendTime()
+				if sendTime() {
+				}
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again
 
