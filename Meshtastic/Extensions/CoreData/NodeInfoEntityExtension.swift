@@ -23,7 +23,7 @@ extension NodeInfoEntity {
 	}
 
 	var hasPositions: Bool {
-		return positions?.count ?? 0 > 0
+		return self.positions?.count ?? 0 > 0
 	}
 
 	var hasDeviceMetrics: Bool {
