@@ -862,7 +862,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								hopNode = createNodeInfo(num: Int64(node), context: context)
 							}
 							let traceRouteHop = TraceRouteHopEntity(context: context)
-							traceRouteHop.snr = Float(routingMessage.snrTowards[index] / 4)
+							if routingMessage.snrTowards.count >= index + 1 {
+								traceRouteHop.snr = Float(routingMessage.snrTowards[index] / 4)
+							}
 							if let hn = hopNode, hn.hasPositions {
 								if let mostRecent = hn.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
 									traceRouteHop.altitude = mostRecent.altitude
@@ -889,7 +891,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							let traceRouteHop = TraceRouteHopEntity(context: context)
 							traceRouteHop.time = Date()
 							traceRouteHop.back = true
-							traceRouteHop.snr = Float(routingMessage.snrBack[index] / 4)
+							if routingMessage.snrBack.count >= index + 1 {
+								traceRouteHop.snr = Float(routingMessage.snrBack[index] / 4)
+							}
 							if let hn = hopNode, hn.hasPositions {
 								if let mostRecent = hn.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
 									traceRouteHop.altitude = mostRecent.altitude
