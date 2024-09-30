@@ -592,7 +592,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				return
 			}
 			do {
-				let logRecord = try LogRecord(serializedData: characteristic.value!)
+				let logRecord = try LogRecord(serializedBytes: characteristic.value!)
 				var message = logRecord.source.isEmpty ? logRecord.message : "[\(logRecord.source)] \(logRecord.message)"
 				switch logRecord.level {
 				case .debug:
@@ -613,14 +613,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// Ignore fail to parse as LogRecord
 			}
 
-		case LEGACY_LOGRADIO_UUID:
-			if characteristic.value == nil || characteristic.value!.isEmpty {
-				return
-			}
-			if let log = String(data: characteristic.value!, encoding: .utf8) {
-				handleRadioLog(radioLog: log)
-			}
-
 		case FROMRADIO_UUID:
 
 			if characteristic.value == nil || characteristic.value!.isEmpty {
@@ -629,7 +621,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			var decodedInfo = FromRadio()
 
 			do {
-				decodedInfo = try FromRadio(serializedData: characteristic.value!)
+				decodedInfo = try FromRadio(serializedBytes: characteristic.value!)
 
 			} catch {
 				Logger.services.error("💥 \(error.localizedDescription, privacy: .public) \(characteristic.value!, privacy: .public)")
@@ -644,6 +636,21 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				)
 				mqttManager.mqttClientProxy?.publish(message)
 			} else if decodedInfo.payloadVariant == FromRadio.OneOf_PayloadVariant.clientNotification(decodedInfo.clientNotification) {
+				if decodedInfo.clientNotification.hasReplyID {
+					/// Set Sent bool on TraceRouteEntity to false if we got rate limited
+					if decodedInfo.clientNotification.message.starts(with: "TraceRoute") {
+						let traceRoute = getTraceRoute(id: Int64(decodedInfo.clientNotification.replyID), context: context)
+						traceRoute?.sent = false
+						do {
+							try context.save()
+							Logger.data.info("💾 [TraceRouteEntity] Trace Route Rate Limited")
+						} catch {
+							context.rollback()
+							let nsError = error as NSError
+							Logger.data.error("💥 [TraceRouteEntity] Error Updating Core Data: \(nsError, privacy: .public)")
+						}
+					}
+				}
 				let manager = LocalNotificationManager()
 				manager.notifications = [
 					Notification(
@@ -916,7 +923,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 				}
 			case .neighborinfoApp:
-				if let neighborInfo = try? NeighborInfo(serializedData: decodedInfo.packet.decoded.payload) {
+				if let neighborInfo = try? NeighborInfo(serializedBytes: decodedInfo.packet.decoded.payload) {
 					// MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED")
 					MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \(neighborInfo)")
 				}

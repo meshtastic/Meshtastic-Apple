@@ -418,6 +418,7 @@
         <attribute name="response" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="routeBackText" optional="YES" attributeType="String"/>
         <attribute name="routeText" optional="YES" attributeType="String"/>
+        <attribute name="sent" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="snr" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="time" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="hops" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="TraceRouteHopEntity" inverseName="traceRoute" inverseEntity="TraceRouteHopEntity"/>

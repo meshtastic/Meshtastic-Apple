@@ -39,7 +39,8 @@ struct TraceRouteLog: View {
 				VStack {
 					List(node.traceRoutes?.reversed() as? [TraceRouteEntity] ?? [], id: \.self, selection: $selectedRoute) { route in
 						Label {
-							Text("\(route.time?.formatted() ?? "unknown".localized) - \(route.response ? (route.hops?.count == 0 && route.response ? "Direct" : "\(route.hops?.count ?? 0) \(route.hops?.count ?? 0 == 1 ? "Hop": "Hops")") : "No Response")")
+							Text("\(route.time?.formatted() ?? "unknown".localized) - \(route.response ? (route.hops?.count == 0 && route.response ? "Direct" : "\(route.hops?.count ?? 0) \(route.hops?.count ?? 0 == 1 ? "Hop": "Hops")") : (route.sent ? "No Response" : "Not Sent"))")
+								.font(.callout)
 						} icon: {
 							Image(systemName: route.response ? (route.hops?.count == 0 && route.response ? "person.line.dotted.person" : "point.3.connected.trianglepath.dotted") : "person.slash")
 								.symbolRenderingMode(.hierarchical)
@@ -47,7 +48,7 @@ struct TraceRouteLog: View {
 					}
 					.listStyle(.plain)
 				}
-				.frame(minHeight: CGFloat(node.traceRoutes?.count ?? 0 * 40), maxHeight: 150)
+				.frame(minHeight: CGFloat(node.traceRoutes?.count ?? 0 * 40), maxHeight: 250)
 				Divider()
 				ScrollView {
 					if selectedRoute != nil {
@@ -74,16 +75,36 @@ struct TraceRouteLog: View {
 									.symbolRenderingMode(.hierarchical)
 							}
 							.font(.title3)
+						} else if !(selectedRoute?.sent ?? true) {
+								Label {
+									VStack {
+										Text("Trace route to \(selectedRoute?.node?.user?.longName ?? "unknown".localized) was not sent.")
+											.font(idiom == .phone ? .body : .largeTitle)
+											.fontWeight(.semibold)
+										Text("Trace Route was rate limited. You can send a trace route a maximum of once every thirty seconds.")
+											.font(idiom == .phone ? .caption : .body)
+											.foregroundStyle(.secondary)
+											.padding()
+									}
+								} icon: {
+									Image(systemName: "square.and.arrow.up.trianglebadge.exclamationmark")
+										.symbolRenderingMode(.hierarchical)
+								}
 						} else {
-							VStack {
-								   Label {
+							   Label {
+								   VStack {
 									   Text("Trace route sent to \(selectedRoute?.node?.user?.longName ?? "unknown".localized)")
-								   } icon: {
-									   Image(systemName: "signpost.right.and.left")
-										   .symbolRenderingMode(.hierarchical)
+										   .font(idiom == .phone ? .body : .largeTitle)
+										   .fontWeight(.semibold)
+									   Text("A Trace Route was sent, no response has been received.")
+										   .font(idiom == .phone ? .caption : .body)
+										   .foregroundStyle(.secondary)
+										   .padding()
 								   }
-								   .font(idiom == .phone ? .headline : .largeTitle)
-							}
+							   } icon: {
+								   Image(systemName: "signpost.right.and.left")
+									   .symbolRenderingMode(.hierarchical)
+							   }
 						}
 						if selectedRoute?.hops?.count ?? 0 >= 3 {
 							HStack(alignment: .center) {

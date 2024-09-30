@@ -195,6 +195,9 @@
     "256 bit" : {
 
     },
+    "A Trace Route was sent, no response has been received." : {
+
+    },
     "about" : {
       "localizations" : {
         "de" : {
@@ -20156,7 +20159,7 @@
     "Store and forward clients can request history from routers on the network." : {
 
     },
-    "Store and forward router devices must also be in the router or router client device role and requires a ESP32 device with PSRAM." : {
+    "Store and forward router devices require a ESP32 device with PSRAM." : {
 
     },
     "storeforward" : {
@@ -21873,6 +21876,12 @@
 
     },
     "Trace route sent to %@" : {
+
+    },
+    "Trace route to %@ was not sent." : {
+
+    },
+    "Trace Route was rate limited. You can send a trace route a maximum of once every thirty seconds." : {
 
     },
     "Traffic" : {
