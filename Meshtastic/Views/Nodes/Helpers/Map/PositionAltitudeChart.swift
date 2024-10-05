@@ -7,16 +7,13 @@
 
 import SwiftUI
 import Charts
-#if canImport(MapKit)
 import MapKit
-#endif
 
 struct PositionAltitude {
 	let time: Date
 	var altitude: Measurement<UnitLength>
 }
 
-@available(iOS 17.0, macOS 14.0, *)
 struct PositionAltitudeChart: View {
 	@Environment(\.dismiss) private var dismiss
 	@ObservedObject var node: NodeInfoEntity

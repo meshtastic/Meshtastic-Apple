@@ -8,7 +8,6 @@
 import SwiftUI
 import MapKit
 
-@available(iOS 17.0, macOS 14.0, *)
 struct PositionPopover: View {
 
 	@ObservedObject var locationsHandler = LocationsHandler.shared

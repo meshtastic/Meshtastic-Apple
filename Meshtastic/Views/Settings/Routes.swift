@@ -10,7 +10,6 @@ import CoreData
 import MapKit
 import OSLog
 
-@available(iOS 17.0, macOS 14.0, *)
 struct Routes: View {
 
 	@State private var columnVisibility = NavigationSplitViewVisibility.doubleColumn

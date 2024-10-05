@@ -8,10 +8,7 @@ import SwiftUI
 import CoreData
 import CoreImage.CIFilterBuiltins
 import MeshtasticProtobufs
-
-#if canImport(TipKit)
 import TipKit
-#endif
 
 struct QrCodeImage {
 	let context = CIContext()

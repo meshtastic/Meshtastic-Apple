@@ -675,7 +675,7 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 
 func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManagedObjectContext) {
 
-	if let telemetryMessage = try? Telemetry(serializedData: packet.decoded.payload) {
+	if let telemetryMessage = try? Telemetry(serializedBytes: packet.decoded.payload) {
 
 		let logString = String.localizedStringWithFormat("mesh.log.telemetry.received %@".localized, String(packet.from))
 		MeshLogger.log("📈 \(logString)")

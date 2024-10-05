@@ -6,11 +6,9 @@
 //
 
 import SwiftUI
-#if canImport(MapKit)
 import MapKit
-#endif
 
-@available(iOS 17.0, macOS 14.0, *)
+
 struct TraceRouteLog: View {
 	@ObservedObject var locationsHandler = LocationsHandler.shared
 	@Environment(\.managedObjectContext) var context

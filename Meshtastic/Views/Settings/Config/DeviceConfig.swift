@@ -28,6 +28,7 @@ struct DeviceConfig: View {
 	@State var nodeInfoBroadcastSecs = 10800
 	@State var doubleTapAsButtonPress = false
 	@State var ledHeartbeatEnabled = true
+	@State var tripleClickAsAdHocPing = true
 	@State var tzdef = ""
 
 	var body: some View {
@@ -76,6 +77,12 @@ struct DeviceConfig: View {
 						Text("Treat double tap on supported accelerometers as a user button press.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				
+					Toggle(isOn: $tripleClickAsAdHocPing) {
+						Label("Triple Click Ad Hoc Ping", systemImage: "map.pin")
+						Text("Send a position on the primary channel when the user button is triple clicked.")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
 					Toggle(isOn: $ledHeartbeatEnabled) {
 						Label("LED Heartbeat", systemImage: "waveform.path.ecg")
@@ -93,13 +100,13 @@ struct DeviceConfig: View {
 							Label("Time Zone", systemImage: "clock.badge.exclamationmark")
 							TextField("Time Zone", text: $tzdef, axis: .vertical)
 								.foregroundColor(.gray)
-								.onChange(of: tzdef, perform: { _ in
+								.onChange(of: tzdef) {
 									let totalBytes = tzdef.utf8.count
 									// Only mess with the value if it is too big
 									if totalBytes > 63 {
 										tzdef = String(tzdef.dropLast())
 									}
-								})
+								}
 								.foregroundColor(.gray)
 
 						}
@@ -267,6 +274,9 @@ struct DeviceConfig: View {
 		}
 		.onChange(of: doubleTapAsButtonPress) {
 			if $0 != node?.deviceConfig?.doubleTapAsButtonPress { hasChanges = true }
+		}
+		.onChange(of: tripleClickAsAdHocPing) {
+		//	if $0 != node?.deviceConfig?.tripleClickAsAdHocPing { hasChanges = true }
 		}
 		.onChange(of: tzdef) { newTzdef in
 			if newTzdef != node?.deviceConfig?.tzdef { hasChanges = true }

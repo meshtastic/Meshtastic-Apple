@@ -7,9 +7,7 @@
 
 import SwiftUI
 import OSLog
-#if canImport(TipKit)
 import TipKit
-#endif
 
 struct Settings: View {
 	@Environment(\.managedObjectContext) var context

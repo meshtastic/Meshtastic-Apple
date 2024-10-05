@@ -6,9 +6,7 @@
 //
 
 import SwiftUI
-#if canImport(MapKit)
 import MapKit
-#endif
 
 struct ChannelForm: View {
 

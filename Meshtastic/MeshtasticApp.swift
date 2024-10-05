@@ -3,9 +3,7 @@
 import SwiftUI
 import CoreData
 import OSLog
-#if canImport(TipKit)
 import TipKit
-#endif
 
 @available(iOS 17.0, *)
 @main

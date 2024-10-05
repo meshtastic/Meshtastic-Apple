@@ -8,7 +8,6 @@ import MeshtasticProtobufs
 import SwiftUI
 import OSLog
 
-@available(iOS 17.0, macOS 14.0, *)
 struct AmbientLightingConfig: View {
 	@Environment(\.self) var environment
 	@Environment(\.managedObjectContext) var context

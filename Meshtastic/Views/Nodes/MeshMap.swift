@@ -10,11 +10,8 @@ import CoreData
 import CoreLocation
 import Foundation
 import OSLog
-#if canImport(MapKit)
 import MapKit
-#endif
 
-@available(iOS 17.0, macOS 14.0, *)
 struct MeshMap: View {
 
 	@Environment(\.managedObjectContext) var context

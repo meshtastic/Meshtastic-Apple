@@ -11,9 +11,7 @@ import CoreData
 import CoreLocation
 import CoreBluetooth
 import OSLog
-#if canImport(TipKit)
 import TipKit
-#endif
 #if canImport(ActivityKit)
 import ActivityKit
 #endif

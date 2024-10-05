@@ -10,9 +10,7 @@ import MapKit
 import MeshtasticProtobufs
 import OSLog
 import SwiftUI
-#if canImport(TipKit)
 import TipKit
-#endif
 
 func generateChannelKey(size: Int) -> String {
 	var keyData = Data(count: size)

@@ -8,8 +8,6 @@
 import SwiftUI
 import OSLog
 
-/// Needed for TableColumnForEach
-@available(iOS 17.0, macOS 14.0, *)
 struct AppLog: View {
 
 	@State private var logs: [OSLogEntryLog] = []
@@ -216,7 +214,6 @@ struct AppLog: View {
 	}
 }
 
-@available(iOS 17.0, macOS 14.0, *)
 extension AppLog {
 	@MainActor
 	private func searchAppLogs() async -> [OSLogEntryLog] {
