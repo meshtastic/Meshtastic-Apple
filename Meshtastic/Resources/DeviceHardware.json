@@ -392,6 +392,22 @@
 	"displayName": "Heltec Vision Master E290"
   },
   {
+	"hwModel": 69,
+	"hwModelSlug": "HELTEC_MESH_NODE_T114",
+	"platformioTarget": "heltec-mesh-node-t114",
+	"architecture": "nrf52840",
+	"activelySupported": false,
+	"displayName": "Heltec Mesh Node T114"
+  },
+  {
+	"hwModel": 70,
+	"hwModelSlug": "SENSECAP_INDICATOR",
+	"platformioTarget": "seeed-sensecap-indicator",
+	"architecture": "esp32-s3",
+	"activelySupported": true,
+	"displayName": "SenseCAP Indicator"
+  },
+  {
 	"hwModel": 71,
 	"hwModelSlug": "TRACKER_T1000_E",
 	"platformioTarget": "tracker-t1000-e",
