@@ -876,7 +876,7 @@ func textMessageAppPacket(
 			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
 				newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
 				/// Set the public key for the message
-				if newMessage.fromUser?.pkiEncrypted ?? false {
+				if newMessage.fromUser?.pkiEncrypted ?? false && packet.pkiEncrypted {
 					newMessage.pkiEncrypted = true
 					newMessage.publicKey = packet.publicKey
 				}
