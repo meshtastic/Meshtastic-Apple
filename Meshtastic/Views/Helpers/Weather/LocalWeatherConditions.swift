@@ -106,7 +106,7 @@ struct WeatherConditionsCompactWidget: View {
 					.font(.caption)
 			}
 			Text(temperature)
-				.font(temperature.length < 4 ? .system(size: 76) : .system(size: 60) )
+				.font(temperature.length < 4 ? .system(size: 72) : .system(size: 54) )
 		}
 		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120, idealHeight: 130, maxHeight: 140)
 		.padding()

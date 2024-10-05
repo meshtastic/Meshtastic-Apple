@@ -88,47 +88,6 @@ struct Connect: View {
 											}
 										}
 									}
-									VStack {
-										let localStats = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 6")).lastObject as? TelemetryEntity
-									
-										if localStats != nil {
-											Divider()
-											if localStats?.numTotalNodes ?? 0 >= 100 {
-												Text("\(String(format: "Connected: %d nodes online", localStats?.numOnlineNodes ?? 0))")
-													.font(.callout)
-													.fontWeight(.medium)
-													.foregroundStyle(.secondary)
-													.fixedSize()
-											} else {
-												Text("\(String(format: "Connected: %d of %d nodes online", localStats?.numOnlineNodes ?? 0, localStats?.numTotalNodes ?? 0))")
-													.font(.callout)
-													.fontWeight(.medium)
-													.foregroundStyle(.secondary)
-													.fixedSize()
-											}
-											Text("\(String(format: "Ch. Util: %.2f", localStats?.channelUtilization ?? 0))% \(String(format: "Airtime: %.2f", localStats?.airUtilTx ?? 0))%")
-												.font(.caption)
-												.fontWeight(.medium)
-												.foregroundStyle(.secondary)
-											Text("Packets: Sent: \(localStats?.numPacketsTx ?? 0) Received: \(localStats?.numPacketsRx ?? 0)")
-												.font(.caption)
-												.fontWeight(.medium)
-												.foregroundStyle(.secondary)
-											let errorRate = (Double(localStats?.numPacketsRxBad ?? -1) / Double(localStats?.numPacketsRx ?? -1)) * 100
-											Text("Bad Packets: \(localStats?.numPacketsRxBad ?? 0) \(String(format: "Error Rate: %.2f", errorRate))%")
-												.font(.caption)
-												.fontWeight(.medium)
-												.foregroundStyle(.secondary)
-												.fixedSize()
-											let now = Date.now
-											let later = now + TimeInterval(Double(localStats?.numPacketsRxBad ?? 0))
-											let uptime = (now..<later).formatted(.components(style: .narrow))
-											Text("Uptime: \(uptime)")
-												.font(.caption)
-												.fontWeight(.medium)
-												.foregroundStyle(.secondary)
-										}
-									}
 								}
 								.font(.caption)
 								.foregroundColor(Color.gray)
@@ -374,7 +333,7 @@ struct Connect: View {
 		liveActivityStarted = true
 		// 15 Minutes Local Stats Interval
 		let timerSeconds = 900
-		let localStats = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 6"))
+		let localStats = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 4"))
 		let mostRecent = localStats?.lastObject as? TelemetryEntity
 
 		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName ?? "unknown")

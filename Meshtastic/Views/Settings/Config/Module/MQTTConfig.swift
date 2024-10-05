@@ -124,10 +124,11 @@ struct MQTTConfig: View {
 						TextField("Root Topic", text: $root)
 							.foregroundColor(.gray)
 							.onChange(of: root, perform: { _ in
-								let totalBytes = root.utf8.count
+								var totalBytes = root.utf8.count
 								// Only mess with the value if it is too big
-								if totalBytes > 30 {
+								while totalBytes > 30 {
 									root = String(root.dropLast())
+									totalBytes = root.utf8.count
 								}
 							})
 							.foregroundColor(.gray)
@@ -162,10 +163,11 @@ struct MQTTConfig: View {
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
 							.onChange(of: address, perform: { _ in
-								let totalBytes = address.utf8.count
+								var totalBytes = address.utf8.count
 								// Only mess with the value if it is too big
-								if totalBytes > 62 {
+								while totalBytes > 62 {
 									address = String(address.dropLast())
+									totalBytes = address.utf8.count
 								}
 								hasChanges = true
 							})
@@ -180,12 +182,11 @@ struct MQTTConfig: View {
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
 							.onChange(of: username, perform: { _ in
-
-								let totalBytes = username.utf8.count
-
+								var totalBytes = username.utf8.count
 								// Only mess with the value if it is too big
-								if totalBytes > 62 {
+								while totalBytes > 62 {
 									username = String(username.dropLast())
+									totalBytes = username.utf8.count
 								}
 								hasChanges = true
 							})
@@ -200,11 +201,11 @@ struct MQTTConfig: View {
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
 							.onChange(of: password, perform: { _ in
-
-								let totalBytes = password.utf8.count
+								var totalBytes = password.utf8.count
 								// Only mess with the value if it is too big
-								if totalBytes > 62 {
+								while totalBytes > 62 {
 									password = String(password.dropLast())
+									totalBytes = password.utf8.count
 								}
 								hasChanges = true
 							})

@@ -59,7 +59,6 @@ enum MeshMapDistances: Double, CaseIterable, Identifiable {
 	case fifteenHundredMiles = 2414016
 	case twentyFiveHundredMiles = 4023360
 	case fiveThouandMiles = 8046720
-	case tenThousandMiles = 16093440
 	var id: Double { self.rawValue }
 	var description: String {
 		let distanceFormatter = MKDistanceFormatter()

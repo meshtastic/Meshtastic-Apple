@@ -15,6 +15,6 @@ struct TextMessageSize: View {
 
 struct TextMessageSizePreview: PreviewProvider {
 	static var previews: some View {
-		TextMessageSize(maxbytes: 228, totalBytes: 100)
+		TextMessageSize(maxbytes: 200, totalBytes: 100)
 	}
 }

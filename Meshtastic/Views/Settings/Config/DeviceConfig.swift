@@ -100,15 +100,15 @@ struct DeviceConfig: View {
 							Label("Time Zone", systemImage: "clock.badge.exclamationmark")
 							TextField("Time Zone", text: $tzdef, axis: .vertical)
 								.foregroundColor(.gray)
-								.onChange(of: tzdef) {
-									let totalBytes = tzdef.utf8.count
+								.onChange(of: tzdef, perform: { _ in
+									var totalBytes = tzdef.utf8.count
 									// Only mess with the value if it is too big
-									if totalBytes > 63 {
+									while totalBytes > 63 {
 										tzdef = String(tzdef.dropLast())
+										totalBytes = tzdef.utf8.count
 									}
 								}
 								.foregroundColor(.gray)
-
 						}
 						.keyboardType(.default)
 						.disableAutocorrection(true)
