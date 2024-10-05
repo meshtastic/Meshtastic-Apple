@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreData
+import OSLog
 #if canImport(MapKit)
 import MapKit
 #endif
@@ -44,6 +45,18 @@ struct TraceRouteLog: View {
 						} icon: {
 							Image(systemName: route.response ? (route.hops?.count == 0 && route.response ? "person.line.dotted.person" : "point.3.connected.trianglepath.dotted") : "person.slash")
 								.symbolRenderingMode(.hierarchical)
+						}
+						.swipeActions {
+							Button(role: .destructive) {
+								context.delete(route)
+								do {
+									try context.save()
+								} catch let error as NSError {
+									Logger.data.error("\(error.localizedDescription)")
+								}
+							} label: {
+								Label("delete", systemImage: "trash")
+							}
 						}
 					}
 					.listStyle(.plain)
@@ -208,7 +221,7 @@ struct TraceRouteLog: View {
 	@ViewBuilder func contents(animation: Animation? = nil) -> some View {
 		ForEach(0..<indexes, id: \.self) { idx in
 			TraceRouteComponent(animation: animation) {
-				let hops = selectedRoute?.hops?.array as? [TraceRouteHopEntity] ?? [] // getTraceRouteHops(context: PersistenceController.preview.container.viewContext)//
+				let hops = getTraceRouteHops(context: context)// selectedRoute?.hops?.array as? [TraceRouteHopEntity] ?? [] // getTraceRouteHops(context: PersistenceController.preview.container.viewContext)//
 				if idx % 2 == 0 {
 					let i = idx / 2
 					let snrColor = getSnrColor(snr: hops[i].snr, preset: modemPreset)

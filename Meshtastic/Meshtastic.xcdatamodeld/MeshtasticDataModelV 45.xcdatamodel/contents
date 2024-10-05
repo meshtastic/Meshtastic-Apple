@@ -421,7 +421,7 @@
         <attribute name="sent" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="snr" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="time" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
-        <relationship name="hops" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="TraceRouteHopEntity" inverseName="traceRoute" inverseEntity="TraceRouteHopEntity"/>
+        <relationship name="hops" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="TraceRouteHopEntity" inverseName="traceRoute" inverseEntity="TraceRouteHopEntity"/>
         <relationship name="node" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="traceRoutes" inverseEntity="NodeInfoEntity"/>
     </entity>
     <entity name="TraceRouteHopEntity" representedClassName="TraceRouteHopEntity" syncable="YES" codeGenerationType="class">
