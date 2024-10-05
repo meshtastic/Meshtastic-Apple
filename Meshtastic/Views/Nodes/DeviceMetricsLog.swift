@@ -36,32 +36,31 @@ struct DeviceMetricsLog: View {
 						.sorted { $0.time! < $1.time! }
 				if chartData.count > 0 {
 					GroupBox(label: Label("\(deviceMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
-						if #available(iOS 17.0, macOS 14.0, *) {
-							Chart {
-								ForEach(chartData, id: \.self) { point in
-									Plot {
-										LineMark(
-											x: .value("x", point.time!),
-											y: .value("y", point.batteryLevel)
-										)
-									}
-									.accessibilityLabel("Line Series")
-									.accessibilityValue("X: \(point.time!), Y: \(point.batteryLevel)")
-									.foregroundStyle(batteryChartColor)
-									.interpolationMethod(.linear)
-									Plot {
-										PointMark(
-											x: .value("x", point.time!),
-											y: .value("y", point.channelUtilization)
-										)
-										.symbolSize(25)
-									}
-									.accessibilityLabel("Line Series")
-									.accessibilityValue("X: \(point.time!), Y: \(point.channelUtilization)")
-									.foregroundStyle(channelUtilizationChartColor)
-									if let chartSelection {
-										RuleMark(x: .value("Second", chartSelection, unit: .second))
-											.foregroundStyle(.tertiary.opacity(0.5))
+						Chart {
+							ForEach(chartData, id: \.self) { point in
+								Plot {
+									LineMark(
+										x: .value("x", point.time!),
+										y: .value("y", point.batteryLevel)
+									)
+								}
+								.accessibilityLabel("Line Series")
+								.accessibilityValue("X: \(point.time!), Y: \(point.batteryLevel)")
+								.foregroundStyle(batteryChartColor)
+								.interpolationMethod(.linear)
+								Plot {
+									PointMark(
+										x: .value("x", point.time!),
+										y: .value("y", point.channelUtilization)
+									)
+									.symbolSize(25)
+								}
+								.accessibilityLabel("Line Series")
+								.accessibilityValue("X: \(point.time!), Y: \(point.channelUtilization)")
+								.foregroundStyle(channelUtilizationChartColor)
+								if let chartSelection {
+									RuleMark(x: .value("Second", chartSelection, unit: .second))
+										.foregroundStyle(.tertiary.opacity(0.5))
 //												.annotation(
 //													position: .automatic,
 //													overflowResolution: .init(x: .fit, y: .disabled)
@@ -75,91 +74,37 @@ struct DeviceMetricsLog: View {
 //															.foregroundStyle(Color.accentColor.opacity(0.2))
 //													}
 //												}
-									}
-									RuleMark(y: .value("Network Status Orange", 25))
-										.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
-										.foregroundStyle(.orange)
-									RuleMark(y: .value("Network Status Red", 50))
-										.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
-										.foregroundStyle(.red)
-									Plot {
-										PointMark(
-											x: .value("x", point.time!),
-											y: .value("y", point.airUtilTx)
-										)
-										.symbolSize(25)
-									}
-									.accessibilityLabel("Line Series")
-									.accessibilityValue("X: \(point.time!), Y: \(point.airUtilTx)")
-									.foregroundStyle(airtimeChartColor)
 								}
-							}
-							.chartXAxis(content: {
-								AxisMarks(position: .top)
-							})
-							.chartXAxis(.automatic)
-							.chartXSelection(value: $chartSelection)
-							.chartYScale(domain: 0...100)
-							.chartForegroundStyleScale([
-								idiom == .phone ? "Battery" : "Battery Level": batteryChartColor,
-								"Channel Utilization": channelUtilizationChartColor,
-								"Airtime": airtimeChartColor
-							])
-							.chartLegend(position: .automatic, alignment: .bottom)
-						} else {
-							// Fallback on earlier versions
-							Chart {
-								ForEach(chartData, id: \.self) { point in
-									Plot {
-										LineMark(
-											x: .value("x", point.time!),
-											y: .value("y", point.batteryLevel)
-										)
-									}
-									.accessibilityLabel("Line Series")
-									.accessibilityValue("X: \(point.time!), Y: \(point.batteryLevel)")
-									.foregroundStyle(batteryChartColor)
-									.interpolationMethod(.linear)
-									Plot {
-										PointMark(
-											x: .value("x", point.time!),
-											y: .value("y", point.channelUtilization)
-										)
-										.symbolSize(25)
-									}
-									.accessibilityLabel("Line Series")
-									.accessibilityValue("X: \(point.time!), Y: \(point.channelUtilization)")
-									.foregroundStyle(channelUtilizationChartColor)
-									RuleMark(y: .value("Network Status Orange", 25))
-										.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
-										.foregroundStyle(.orange)
-									RuleMark(y: .value("Network Status Red", 50))
-										.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
-										.foregroundStyle(.red)
-									Plot {
-										PointMark(
-											x: .value("x", point.time!),
-											y: .value("y", point.airUtilTx)
-										)
-										.symbolSize(25)
-									}
-									.accessibilityLabel("Line Series")
-									.accessibilityValue("X: \(point.time!), Y: \(point.airUtilTx)")
-									.foregroundStyle(airtimeChartColor)
+								RuleMark(y: .value("Network Status Orange", 25))
+									.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
+									.foregroundStyle(.orange)
+								RuleMark(y: .value("Network Status Red", 50))
+									.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
+									.foregroundStyle(.red)
+								Plot {
+									PointMark(
+										x: .value("x", point.time!),
+										y: .value("y", point.airUtilTx)
+									)
+									.symbolSize(25)
 								}
+								.accessibilityLabel("Line Series")
+								.accessibilityValue("X: \(point.time!), Y: \(point.airUtilTx)")
+								.foregroundStyle(airtimeChartColor)
 							}
-							.chartXAxis(content: {
-								AxisMarks(position: .top)
-							})
-							.chartXAxis(.automatic)
-							.chartYScale(domain: 0...100)
-							.chartForegroundStyleScale([
-								idiom == .phone ? "Battery" : "Battery Level": batteryChartColor,
-								"Channel Utilization": channelUtilizationChartColor,
-								"Airtime": airtimeChartColor
-							])
-							.chartLegend(position: .automatic, alignment: .bottom)
 						}
+						.chartXAxis(content: {
+							AxisMarks(position: .top)
+						})
+						.chartXAxis(.automatic)
+						.chartXSelection(value: $chartSelection)
+						.chartYScale(domain: 0...100)
+						.chartForegroundStyleScale([
+							idiom == .phone ? "Battery" : "Battery Level": batteryChartColor,
+							"Channel Utilization": channelUtilizationChartColor,
+							"Airtime": airtimeChartColor
+						])
+						.chartLegend(position: .automatic, alignment: .bottom)
 					}
 					.frame(minHeight: 240)
 				}
@@ -269,11 +214,7 @@ struct DeviceMetricsLog: View {
 					chartSelection = metrics.time
 				}
 			} else {
-				if #available (iOS 17, *) {
-					ContentUnavailableView("No Device Metrics", systemImage: "slash.circle")
-				} else {
-					Text("No Device Metrics")
-				}
+				ContentUnavailableView("No Device Metrics", systemImage: "slash.circle")
 			}
 		}
 		.navigationTitle("device.metrics.log")

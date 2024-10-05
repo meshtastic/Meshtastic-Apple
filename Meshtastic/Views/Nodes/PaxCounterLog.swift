@@ -196,11 +196,7 @@ struct PaxCounterLog: View {
 					.padding(.trailing)
 				}
 			} else {
-				if #available (iOS 17, *) {
-					ContentUnavailableView("paxcounter.content.unavailable", systemImage: "slash.circle")
-				} else {
-					Text("paxcounter.content.unavailable")
-				}
+				ContentUnavailableView("paxcounter.content.unavailable", systemImage: "slash.circle")
 			}
 		}
 		.navigationTitle("paxcounter.log")

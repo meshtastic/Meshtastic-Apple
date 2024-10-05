@@ -214,20 +214,12 @@ struct PositionPopover: View {
 								.padding(.bottom)
 						}
 						if position.nodePosition?.hasDetectionSensorMetrics ?? false {
-							if #available(iOS 17.0, macOS 14.0, *) {
-								Image(systemName: "sensor.fill")
-									.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
-									.symbolRenderingMode(.hierarchical)
-									.foregroundColor(.accentColor)
-									.font(.largeTitle)
-									.padding(.bottom)
-							} else {
-								Image(systemName: "sensor.fill")
-									.symbolRenderingMode(.hierarchical)
-									.foregroundColor(.accentColor)
-									.font(.largeTitle)
-									.padding(.bottom)
-							}
+							Image(systemName: "sensor.fill")
+								.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+								.symbolRenderingMode(.hierarchical)
+								.foregroundColor(.accentColor)
+								.font(.largeTitle)
+								.padding(.bottom)
 						}
 						BatteryGauge(node: position.nodePosition!)
 					}

@@ -353,52 +353,50 @@ struct MQTTConfig: View {
 	}
 	func setMqttValues() {
 
-		if #available(iOS 17.0, macOS 14.0, *) {
+		nearbyTopics = []
+		let geocoder = CLGeocoder()
+		if LocationsHandler.shared.locationsArray.count > 0 {
+			let region  = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))?.topic
+			defaultTopic = "msh/" + (region ?? "UNSET")
+			geocoder.reverseGeocodeLocation(LocationsHandler.shared.locationsArray.first!, completionHandler: {(placemarks, error) in
+				if let error {
+					Logger.services.error("Failed to reverse geocode location: \(error.localizedDescription)")
+					return
+				}
 
-			nearbyTopics = []
-			let geocoder = CLGeocoder()
-			if LocationsHandler.shared.locationsArray.count > 0 {
-				let region  = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))?.topic
-				defaultTopic = "msh/" + (region ?? "UNSET")
-				geocoder.reverseGeocodeLocation(LocationsHandler.shared.locationsArray.first!, completionHandler: {(placemarks, error) in
-					if let error {
-						Logger.services.error("Failed to reverse geocode location: \(error.localizedDescription)")
-						return
+				if let placemarks = placemarks, let placemark = placemarks.first {
+					let cc = locale.region?.identifier ?? "UNK"
+					/// Country Topic unless you are US
+					if  placemark.isoCountryCode ?? "unknown" != cc {
+						let countryTopic = defaultTopic + "/" + (placemark.isoCountryCode ?? "")
+						if !countryTopic.isEmpty {
+							nearbyTopics.append(countryTopic)
+						}
 					}
-
-					if let placemarks = placemarks, let placemark = placemarks.first {
-						let cc = locale.region?.identifier ?? "UNK"
-						/// Country Topic unless you are US
-						if  placemark.isoCountryCode ?? "unknown" != cc {
-							let countryTopic = defaultTopic + "/" + (placemark.isoCountryCode ?? "")
-							if !countryTopic.isEmpty {
-								nearbyTopics.append(countryTopic)
-							}
-						}
-						let stateTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "")
-						if !stateTopic.isEmpty {
-							nearbyTopics.append(stateTopic)
-						}
-						let countyTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.subAdministrativeArea?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
-						if !countyTopic.isEmpty {
-							nearbyTopics.append(countyTopic)
-						}
-						let cityTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.locality?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
-						if !cityTopic.isEmpty {
-							nearbyTopics.append(cityTopic)
-						}
-						let neightborhoodTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.subLocality?.lowercased()
-							.replacingOccurrences(of: " ", with: "")
-							.replacingOccurrences(of: "'", with: "") ?? "")
-						if !neightborhoodTopic.isEmpty {
-							nearbyTopics.append(neightborhoodTopic)
-						}
-					} else {
-						Logger.services.debug("No Location")
+					let stateTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "")
+					if !stateTopic.isEmpty {
+						nearbyTopics.append(stateTopic)
 					}
-				})
-			}
+					let countyTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.subAdministrativeArea?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
+					if !countyTopic.isEmpty {
+						nearbyTopics.append(countyTopic)
+					}
+					let cityTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.locality?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
+					if !cityTopic.isEmpty {
+						nearbyTopics.append(cityTopic)
+					}
+					let neightborhoodTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.subLocality?.lowercased()
+						.replacingOccurrences(of: " ", with: "")
+						.replacingOccurrences(of: "'", with: "") ?? "")
+					if !neightborhoodTopic.isEmpty {
+						nearbyTopics.append(neightborhoodTopic)
+					}
+				} else {
+					Logger.services.debug("No Location")
+				}
+			})
 		}
+
 		self.enabled = node?.mqttConfig?.enabled ?? false
 		self.proxyToClientEnabled = node?.mqttConfig?.proxyToClientEnabled ?? false
 		self.address = node?.mqttConfig?.address ?? ""

@@ -52,10 +52,8 @@ struct ShareChannels: View {
 
 	var body: some View {
 
-		if #available(iOS 17.0, macOS 14.0, *) {
-			VStack {
-				TipView(ShareChannelsTip(), arrowEdge: .bottom)
-			}
+		VStack {
+			TipView(ShareChannelsTip(), arrowEdge: .bottom)
 		}
 		GeometryReader { bounds in
 			let smallest = min(bounds.size.width, bounds.size.height)

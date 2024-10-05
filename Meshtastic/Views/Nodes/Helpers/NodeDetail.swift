@@ -221,11 +221,7 @@ struct NodeDetail: View {
 					.disabled(!node.hasDeviceMetrics)
 
 					NavigationLink {
-						if #available (iOS 17, macOS 14, *) {
-							NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
-						} else {
-							NodeMapMapkit(node: node)
-						}
+						NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
 					} label: {
 						Label {
 							Text("Node Map")
@@ -260,19 +256,17 @@ struct NodeDetail: View {
 					}
 					.disabled(!node.hasEnvironmentMetrics)
 
-					if #available(iOS 17.0, macOS 14.0, *) {
-						NavigationLink {
-							TraceRouteLog(node: node)
-						} label: {
-							Label {
-								Text("Trace Route Log")
-							} icon: {
-								Image(systemName: "signpost.right.and.left")
-									.symbolRenderingMode(.multicolor)
-							}
+					NavigationLink {
+						TraceRouteLog(node: node)
+					} label: {
+						Label {
+							Text("Trace Route Log")
+						} icon: {
+							Image(systemName: "signpost.right.and.left")
+								.symbolRenderingMode(.multicolor)
 						}
-						.disabled(node.traceRoutes?.count ?? 0 == 0)
 					}
+					.disabled(node.traceRoutes?.count ?? 0 == 0)
 
 					NavigationLink {
 						DetectionSensorLog(node: node)

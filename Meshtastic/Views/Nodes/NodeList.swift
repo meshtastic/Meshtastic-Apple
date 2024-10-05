@@ -274,18 +274,10 @@ struct NodeList: View {
 					)
 				}
 			 } else {
-				 if #available (iOS 17, *) {
-					 ContentUnavailableView("select.node", systemImage: "flipphone")
-				 } else {
-					 Text("select.node")
-				 }
+				ContentUnavailableView("select.node", systemImage: "flipphone")
 			 }
 		} detail: {
-			if #available (iOS 17, *) {
-				ContentUnavailableView("", systemImage: "line.3.horizontal")
-			} else {
-				Text("Select something to view")
-			}
+			ContentUnavailableView("", systemImage: "line.3.horizontal")
 		}
 		.navigationSplitViewStyle(.balanced)
 		.onChange(of: searchText) { _ in

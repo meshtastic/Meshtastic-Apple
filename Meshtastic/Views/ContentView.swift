@@ -4,7 +4,6 @@
 
 import SwiftUI
 
-@available(iOS 17.0, *)
 struct ContentView: View {
 	@ObservedObject
 	var appState: AppState
@@ -39,20 +38,12 @@ struct ContentView: View {
 			}
 			.tag(NavigationState.Tab.nodes)
 
-			if #available(iOS 17.0, macOS 14.0, *), !UserDefaults.mapUseLegacy {
-				MeshMap(router: appState.router)
-					.tabItem {
-						Label("map", systemImage: "map")
-					}
-					.tag(NavigationState.Tab.map)
-			} else {
-				NodeMap(router: appState.router)
-					.tabItem {
-						Label("map", systemImage: "map")
-					}
-					.tag(NavigationState.Tab.map)
-			}
-
+			MeshMap(router: appState.router)
+				.tabItem {
+					Label("map", systemImage: "map")
+				}
+				.tag(NavigationState.Tab.map)
+		
 			Settings(
 				router: appState.router
 			)

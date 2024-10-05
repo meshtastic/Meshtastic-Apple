@@ -47,9 +47,7 @@ struct Connect: View {
 					if bleManager.isSwitchedOn {
 						Section(header: Text("connected.radio").font(.title)) {
 							if let connectedPeripheral = bleManager.connectedPeripheral, connectedPeripheral.peripheral.state == .connected {
-								if #available(iOS 17.0, macOS 14.0, *) {
-									TipView(BluetoothConnectionTip(), arrowEdge: .bottom)
-								}
+								TipView(BluetoothConnectionTip(), arrowEdge: .bottom)
 								VStack(alignment: .leading) {
 									HStack {
 										VStack(alignment: .center) {
@@ -76,12 +74,10 @@ struct Connect: View {
 													.foregroundColor(.green)
 											} else {
 												HStack {
-													if #available(iOS 17.0, macOS 14.0, *) {
-														Image(systemName: "square.stack.3d.down.forward")
-															.symbolRenderingMode(.multicolor)
-															.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
-															.foregroundColor(.orange)
-													}
+													Image(systemName: "square.stack.3d.down.forward")
+														.symbolRenderingMode(.multicolor)
+														.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+														.foregroundColor(.orange)
 													Text("communicating").font(.callout)
 														.foregroundColor(.orange)
 												}

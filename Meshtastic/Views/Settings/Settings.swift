@@ -154,16 +154,14 @@ struct Settings: View {
 
 	var moduleConfigurationSection: some View {
 		Section("module.configuration") {
-			if #available(iOS 17.0, macOS 14.0, *) {
-				NavigationLink(value: SettingsNavigationState.ambientLighting) {
-					Label {
-						Text("ambient.lighting")
-					} icon: {
-						Image(systemName: "light.max")
-					}
+			NavigationLink(value: SettingsNavigationState.ambientLighting) {
+				Label {
+					Text("ambient.lighting")
+				} icon: {
+					Image(systemName: "light.max")
 				}
 			}
-
+			
 			NavigationLink(value: SettingsNavigationState.cannedMessages) {
 				Label {
 					Text("canned.messages")
@@ -321,24 +319,23 @@ struct Settings: View {
 						Image(systemName: "gearshape")
 					}
 				}
-				if #available(iOS 17.0, macOS 14.0, *) {
-					NavigationLink(value: SettingsNavigationState.routes) {
-						Label {
-							Text("routes")
-						} icon: {
-							Image(systemName: "road.lanes.curved.right")
-						}
-					}
-
-					NavigationLink(value: SettingsNavigationState.routeRecorder) {
-						Label {
-							Text("route.recorder")
-						} icon: {
-							Image(systemName: "record.circle")
-								.foregroundColor(.red)
-						}
+				NavigationLink(value: SettingsNavigationState.routes) {
+					Label {
+						Text("routes")
+					} icon: {
+						Image(systemName: "road.lanes.curved.right")
 					}
 				}
+
+				NavigationLink(value: SettingsNavigationState.routeRecorder) {
+					Label {
+						Text("route.recorder")
+					} icon: {
+						Image(systemName: "record.circle")
+							.foregroundColor(.red)
+					}
+				}
+				
 
 				if !(node?.deviceConfig?.isManaged ?? false) {
 					if bleManager.connectedPeripheral != nil {
@@ -403,9 +400,7 @@ struct Settings: View {
 										}
 									}
 								}
-								if #available(iOS 17.0, macOS 14.0, *) {
-									TipView(AdminChannelTip(), arrowEdge: .top)
-								}
+								TipView(AdminChannelTip(), arrowEdge: .top)
 							} else {
 								if bleManager.connectedPeripheral != nil {
 									Text("Connected Node \(node?.user?.longName ?? "unknown".localized)")
@@ -416,9 +411,7 @@ struct Settings: View {
 					radioConfigurationSection
 					deviceConfigurationSection
 					moduleConfigurationSection
-					if #available (iOS 17.0, *) {
-						loggingSection
-					}
+					loggingSection
 #if DEBUG
 					developersSection
 #endif
@@ -433,13 +426,9 @@ struct Settings: View {
 				case .appSettings:
 					AppSettings()
 				case .routes:
-					if #available(iOS 17.0, *) {
-						Routes()
-					}
+					Routes()
 				case .routeRecorder:
-					if #available(iOS 17.0, *) {
-						RouteRecorder()
-					}
+					RouteRecorder()
 				case .lora:
 					LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .channels:
@@ -461,9 +450,7 @@ struct Settings: View {
 				case .power:
 					PowerConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .ambientLighting:
-					if #available(iOS 17.0, macOS 14.0, *) {
-						AmbientLightingConfig(node: node)
-					}
+					AmbientLightingConfig(node: node)
 				case .cannedMessages:
 					CannedMessagesConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .detectionSensor:
@@ -489,9 +476,7 @@ struct Settings: View {
 				case .meshLog:
 					MeshLog()
 				case .debugLogs:
-					if #available(iOS 17.0, macOS 14.0, *) {
-						AppLog()
-					}
+					AppLog()
 				case .appFiles:
 					AppData()
 				case .firmwareUpdates:

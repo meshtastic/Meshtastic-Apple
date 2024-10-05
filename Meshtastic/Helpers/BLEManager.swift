@@ -1202,65 +1202,37 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	@MainActor
 	public func getPositionFromPhoneGPS(destNum: Int64, fixedPosition: Bool) -> Position? {
 		var positionPacket = Position()
-		if #available(iOS 17.0, macOS 14.0, *) {
 
-			guard let lastLocation = LocationsHandler.shared.locationsArray.last else {
-				return nil
-			}
+		guard let lastLocation = LocationsHandler.shared.locationsArray.last else {
+			return nil
+		}
 
-			if lastLocation == CLLocation(latitude: 0, longitude: 0) {
-				return nil
-			}
+		if lastLocation == CLLocation(latitude: 0, longitude: 0) {
+			return nil
+		}
 
-			positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
-			positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
-			let timestamp = lastLocation.timestamp
-			positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
-			positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
-			positionPacket.altitude = Int32(lastLocation.altitude)
-			positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
-			let currentSpeed = lastLocation.speed
-			if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite) {
-				positionPacket.groundSpeed = UInt32(currentSpeed)
-			}
-			let currentHeading = lastLocation.course
-			if (currentHeading > 0  && currentHeading <= 360) && (!currentHeading.isNaN || !currentHeading.isInfinite) {
-				positionPacket.groundTrack = UInt32(currentHeading)
-			}
-			/// Set location source for time
-			if !fixedPosition {
-				/// From GPS treat time as good
-				positionPacket.locationSource = Position.LocSource.locExternal
-			} else {
-				/// From GPS, but time can be old and have drifted
-				positionPacket.locationSource = Position.LocSource.locManual
-			}
-
+		positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
+		positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
+		let timestamp = lastLocation.timestamp
+		positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
+		positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
+		positionPacket.altitude = Int32(lastLocation.altitude)
+		positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
+		let currentSpeed = lastLocation.speed
+		if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite) {
+			positionPacket.groundSpeed = UInt32(currentSpeed)
+		}
+		let currentHeading = lastLocation.course
+		if (currentHeading > 0  && currentHeading <= 360) && (!currentHeading.isNaN || !currentHeading.isInfinite) {
+			positionPacket.groundTrack = UInt32(currentHeading)
+		}
+		/// Set location source for time
+		if !fixedPosition {
+			/// From GPS treat time as good
+			positionPacket.locationSource = Position.LocSource.locExternal
 		} else {
-
-			positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
-			positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
-			let timestamp = LocationHelper.shared.locationManager.location?.timestamp ?? Date()
-			positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
-			positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
-			positionPacket.altitude = Int32(LocationHelper.shared.locationManager.location?.altitude ?? 0)
-			positionPacket.satsInView = UInt32(LocationHelper.satsInView)
-			let currentSpeed = LocationHelper.shared.locationManager.location?.speed ?? 0
-			if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite) {
-				positionPacket.groundSpeed = UInt32(currentSpeed)
-			}
-			let currentHeading  = LocationHelper.shared.locationManager.location?.course ?? 0
-			if (currentHeading > 0  && currentHeading <= 360) && (!currentHeading.isNaN || !currentHeading.isInfinite) {
-				positionPacket.groundTrack = UInt32(currentHeading)
-			}
-			/// Set location source for time
-			if !fixedPosition {
-				/// From GPS treat time as good
-				positionPacket.locationSource = Position.LocSource.locExternal
-			} else {
-				/// From GPS, but time can be old and have drifted
-				positionPacket.locationSource = Position.LocSource.locManual
-			}
+			/// From GPS, but time can be old and have drifted
+			positionPacket.locationSource = Position.LocSource.locManual
 		}
 		return positionPacket
 	}

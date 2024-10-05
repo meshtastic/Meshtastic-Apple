@@ -193,11 +193,7 @@ struct EnvironmentMetricsLog: View {
 				}
 
 			} else {
-				if #available (iOS 17, *) {
-					ContentUnavailableView("No Environment Metrics", systemImage: "slash.circle")
-				} else {
-					Text("No Environment Metrics")
-				}
+				ContentUnavailableView("No Environment Metrics", systemImage: "slash.circle")
 			}
 		}
 

@@ -63,9 +63,7 @@ struct Messages: View {
 					}
 				}
 
-				if #available(iOS 17.0, macOS 14.0, *) {
-					TipView(MessagesTip(), arrowEdge: .top)
-				}
+				TipView(MessagesTip(), arrowEdge: .top)
 			}
 			.navigationTitle("messages")
 			.navigationBarTitleDisplayMode(.large)
