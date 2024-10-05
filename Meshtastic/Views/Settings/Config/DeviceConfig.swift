@@ -100,7 +100,7 @@ struct DeviceConfig: View {
 							Label("Time Zone", systemImage: "clock.badge.exclamationmark")
 							TextField("Time Zone", text: $tzdef, axis: .vertical)
 								.foregroundColor(.gray)
-								.onChange(of: tzdef, perform: { _ in
+								.onChange(of: tzdef) { _ in
 									var totalBytes = tzdef.utf8.count
 									// Only mess with the value if it is too big
 									while totalBytes > 63 {
@@ -114,7 +114,7 @@ struct DeviceConfig: View {
 						.disableAutocorrection(true)
 						Text("Time zone for dates on the device screen and log.")
 							.foregroundColor(.gray)
-							.font(.callout)
+							.font(.callout)				  
 					}
 				}
 				Section(header: Text("GPIO")) {
