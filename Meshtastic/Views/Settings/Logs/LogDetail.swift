@@ -37,11 +37,13 @@ struct LogDetail: View {
 					List {
 						/// Time
 						Label {
-							Text("log.time".localized + ":")
-								.font(idiom == .phone ? .caption : .title)
-								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
-							Text(log.date.formatted(dateFormatStyle))
-								.font(idiom == .phone ? .caption : .title)
+							HStack {
+								Text("log.time".localized + ":")
+									.font(idiom == .phone ? .caption : .title)
+									.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
+								Text(log.date.formatted(dateFormatStyle))
+									.font(idiom == .phone ? .caption : .title)
+							}
 						} icon: {
 							Image(systemName: "timer")
 								.symbolRenderingMode(.hierarchical)
@@ -53,11 +55,13 @@ struct LogDetail: View {
 						.listSectionSeparator(.visible, edges: .bottom)
 						/// Subsystem
 						Label {
-							Text("log.subsystem".localized + ":")
-								.font(idiom == .phone ? .caption : .title)
-								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
-							Text(log.subsystem)
-								.font(idiom == .phone ? .caption : .title)
+							HStack {
+								Text("log.subsystem".localized + ":")
+									.font(idiom == .phone ? .caption : .title)
+									.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
+								Text(log.subsystem)
+									.font(idiom == .phone ? .caption : .title)
+							}
 						} icon: {
 							Image(systemName: "gear")
 								.symbolRenderingMode(.hierarchical)
@@ -68,11 +72,13 @@ struct LogDetail: View {
 						.listRowSeparator(.visible)
 						/// Process
 						Label {
-							Text("log.process".localized + ":")
-								.font(idiom == .phone ? .caption : .title)
-								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
-							Text(log.process)
-								.font(idiom == .phone ? .caption : .title)
+							HStack {
+								Text("log.process".localized + ":")
+									.font(idiom == .phone ? .caption : .title)
+									.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
+								Text(log.process)
+									.font(idiom == .phone ? .caption : .title)
+							}
 						} icon: {
 							Image(systemName: "tag")
 								.symbolRenderingMode(.hierarchical)
@@ -83,12 +89,13 @@ struct LogDetail: View {
 						.listRowSeparator(.visible)
 						/// Level
 						Label {
-							Text("log.level".localized + ":")
-								.font(idiom == .phone ? .caption : .title)
-								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
-							Text(log.level.description)
-								.font(idiom == .phone ? .caption : .title)
-								.foregroundStyle(log.level.color)
+							HStack {
+								Text("log.level".localized + ":")
+									.font(idiom == .phone ? .caption : .title)
+									.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
+								Text(log.level.description)
+									.font(idiom == .phone ? .caption : .title)
+								.foregroundStyle(log.level.color) }
 						} icon: {
 							Image(systemName: "stairs")
 								.symbolRenderingMode(.hierarchical)
@@ -99,11 +106,13 @@ struct LogDetail: View {
 						.listRowSeparator(.visible)
 						/// Category
 						Label {
-							Text("log.category".localized + ":")
-								.font(idiom == .phone ? .caption : .title)
-								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
-							Text(log.category)
-								.font(idiom == .phone ? .caption : .title)
+							HStack {
+								Text("log.category".localized + ":")
+									.font(idiom == .phone ? .caption : .title)
+									.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
+								Text(log.category)
+									.font(idiom == .phone ? .caption : .title)
+							}
 						} icon: {
 							Image(systemName: "square.grid.2x2")
 								.symbolRenderingMode(.hierarchical)

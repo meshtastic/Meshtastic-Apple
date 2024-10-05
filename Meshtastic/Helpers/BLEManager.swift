@@ -468,15 +468,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				traceRoute.id = Int64(meshPacket.id)
 				traceRoute.time = Date()
 				traceRoute.node = receivingNode
-				// Grab the most recent postion, within the last hour
-				if connectedNode?.positions?.count ?? 0 > 0, let mostRecent = connectedNode?.positions?.lastObject as? PositionEntity {
-					if mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
-						traceRoute.altitude = mostRecent.altitude
-						traceRoute.latitudeI = mostRecent.latitudeI
-						traceRoute.longitudeI = mostRecent.longitudeI
-						traceRoute.hasPositions = true
-					}
-				}
 				do {
 					try context.save()
 					Logger.data.info("💾 Saved TraceRoute sent to node: \(String(receivingNode?.user?.longName ?? "unknown".localized), privacy: .public)")
@@ -601,7 +592,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				return
 			}
 			do {
-				let logRecord = try LogRecord(serializedData: characteristic.value!)
+				let logRecord = try LogRecord(serializedBytes: characteristic.value!)
 				var message = logRecord.source.isEmpty ? logRecord.message : "[\(logRecord.source)] \(logRecord.message)"
 				switch logRecord.level {
 				case .debug:
@@ -622,14 +613,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// Ignore fail to parse as LogRecord
 			}
 
-		case LEGACY_LOGRADIO_UUID:
-			if characteristic.value == nil || characteristic.value!.isEmpty {
-				return
-			}
-			if let log = String(data: characteristic.value!, encoding: .utf8) {
-				handleRadioLog(radioLog: log)
-			}
-
 		case FROMRADIO_UUID:
 
 			if characteristic.value == nil || characteristic.value!.isEmpty {
@@ -638,7 +621,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			var decodedInfo = FromRadio()
 
 			do {
-				decodedInfo = try FromRadio(serializedData: characteristic.value!)
+				decodedInfo = try FromRadio(serializedBytes: characteristic.value!)
 
 			} catch {
 				Logger.services.error("💥 \(error.localizedDescription, privacy: .public) \(characteristic.value!, privacy: .public)")
@@ -653,6 +636,21 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				)
 				mqttManager.mqttClientProxy?.publish(message)
 			} else if decodedInfo.payloadVariant == FromRadio.OneOf_PayloadVariant.clientNotification(decodedInfo.clientNotification) {
+				if decodedInfo.clientNotification.hasReplyID {
+					/// Set Sent bool on TraceRouteEntity to false if we got rate limited
+					if decodedInfo.clientNotification.message.starts(with: "TraceRoute") {
+						let traceRoute = getTraceRoute(id: Int64(decodedInfo.clientNotification.replyID), context: context)
+						traceRoute?.sent = false
+						do {
+							try context.save()
+							Logger.data.info("💾 [TraceRouteEntity] Trace Route Rate Limited")
+						} catch {
+							context.rollback()
+							let nsError = error as NSError
+							Logger.data.error("💥 [TraceRouteEntity] Error Updating Core Data: \(nsError, privacy: .public)")
+						}
+					}
+				}
 				let manager = LocalNotificationManager()
 				manager.notifications = [
 					Notification(
@@ -695,8 +693,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 										disconnectPeripheral(reconnect: false)
 										try container.restorePersistentStore(from: databasePath)
 										UserDefaults.preferredPeripheralNum = Int(myInfo?.myNodeNum ?? 0)
-										connectTo(peripheral: peripheral)
+										context.refreshAllObjects()
 										Logger.data.notice("🗂️ Restored Core data for /\(UserDefaults.preferredPeripheralNum, privacy: .public)")
+										connectTo(peripheral: peripheral)
 									} catch {
 										Logger.data.error("🗂️ Restore Core data copy error: \(error, privacy: .public)")
 									}
@@ -836,36 +835,43 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 				MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED UNHANDLED")
 			case .tracerouteApp:
-				if let routingMessage = try? RouteDiscovery(serializedData: decodedInfo.packet.decoded.payload) {
+				if let routingMessage = try? RouteDiscovery(serializedBytes: decodedInfo.packet.decoded.payload) {
 					let traceRoute = getTraceRoute(id: Int64(decodedInfo.packet.decoded.requestID), context: context)
 					traceRoute?.response = true
-					traceRoute?.route = routingMessage.route
 					if routingMessage.route.count == 0 {
-						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.direct %@".localized, String(decodedInfo.packet.from))
+						let snr = routingMessage.snrBack.count > 0 ? routingMessage.snrBack[0] / 4 : 0
+						traceRoute?.snr = Float(snr)
+						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.direct %@".localized, String(snr))
 						MeshLogger.log("🪧 \(logString)")
-
 					} else {
-						var routeString = "You --> "
 						var hopNodes: [TraceRouteHopEntity] = []
-						for node in routingMessage.route {
+						let connectedHop = TraceRouteHopEntity(context: context)
+						connectedHop.name = traceRoute?.node?.user?.longName ?? "unknown".localized
+						connectedHop.time = Date()
+						if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
+							connectedHop.altitude = mostRecent.altitude
+							connectedHop.latitudeI = mostRecent.latitudeI
+							connectedHop.longitudeI = mostRecent.longitudeI
+							traceRoute?.hasPositions = true
+						}
+						hopNodes.append(connectedHop)
+						var routeString = "You --> "
+						for (index, node) in routingMessage.route.enumerated() {
 							var hopNode = getNodeInfo(id: Int64(node), context: context)
 							if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
 								hopNode = createNodeInfo(num: Int64(node), context: context)
 							}
 							let traceRouteHop = TraceRouteHopEntity(context: context)
-							traceRouteHop.time = Date()
-							if hopNode?.hasPositions ?? false {
-								traceRoute?.hasPositions = true
-								if let mostRecent = hopNode?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
+							if routingMessage.snrTowards.count >= index + 1 {
+								traceRouteHop.snr = Float(routingMessage.snrTowards[index] / 4)
+							}
+							if let hn = hopNode, hn.hasPositions {
+								if let mostRecent = hn.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
 									traceRouteHop.altitude = mostRecent.altitude
 									traceRouteHop.latitudeI = mostRecent.latitudeI
 									traceRouteHop.longitudeI = mostRecent.longitudeI
-									traceRouteHop.name = hopNode?.user?.longName ?? "unknown".localized
-								} else {
-									traceRoute?.hasPositions = false
+									traceRoute?.hasPositions = true
 								}
-							} else {
-								traceRoute?.hasPositions = false
 							}
 							traceRouteHop.num = hopNode?.num ?? 0
 							if hopNode != nil {
@@ -874,10 +880,39 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								}
 								hopNodes.append(traceRouteHop)
 							}
-							routeString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") --> "
+							routeString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") (\(traceRouteHop.snr > 0 ? hopNode?.snr ?? 0.0 : 0.0)dB) --> "
 						}
-						routeString += traceRoute?.node?.user?.longName ?? "unknown".localized
+						var routeBackString = traceRoute?.node?.user?.longName ?? "unknown".localized
+						for (index, node) in routingMessage.routeBack.enumerated() {
+							var hopNode = getNodeInfo(id: Int64(node), context: context)
+							if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
+								hopNode = createNodeInfo(num: Int64(node), context: context)
+							}
+							let traceRouteHop = TraceRouteHopEntity(context: context)
+							traceRouteHop.time = Date()
+							traceRouteHop.back = true
+							if routingMessage.snrBack.count >= index + 1 {
+								traceRouteHop.snr = Float(routingMessage.snrBack[index] / 4)
+							}
+							if let hn = hopNode, hn.hasPositions {
+								if let mostRecent = hn.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
+									traceRouteHop.altitude = mostRecent.altitude
+									traceRouteHop.latitudeI = mostRecent.latitudeI
+									traceRouteHop.longitudeI = mostRecent.longitudeI
+									traceRoute?.hasPositions = true
+								}
+							}
+							traceRouteHop.num = hopNode?.num ?? 0
+							if hopNode != nil {
+								if decodedInfo.packet.rxTime > 0 {
+									hopNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
+								}
+								hopNodes.append(traceRouteHop)
+							}
+							routeBackString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") (\(traceRouteHop.snr > 0 ? hopNode?.snr ?? 0.0 : 0.0)dB) --> "
+						}
 						traceRoute?.routeText = routeString
+						traceRoute?.routeBackText = routeBackString
 						traceRoute?.hops = NSOrderedSet(array: hopNodes)
 						do {
 							try context.save()
@@ -892,7 +927,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 				}
 			case .neighborinfoApp:
-				if let neighborInfo = try? NeighborInfo(serializedData: decodedInfo.packet.decoded.payload) {
+				if let neighborInfo = try? NeighborInfo(serializedBytes: decodedInfo.packet.decoded.payload) {
 					// MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED")
 					MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \(neighborInfo)")
 				}
@@ -915,7 +950,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				lastConnectionError = ""
 				isSubscribed = true
 				Logger.mesh.info("🤜 [BLE] Want Config Complete. ID:\(decodedInfo.configCompleteID)")
-				sendTime()
+				if sendTime() {
+				}
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again
 

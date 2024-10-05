@@ -56,7 +56,7 @@ struct StoreForwardConfig: View {
 						}
 						VStack {
 							if isRouter {
-								Text("Store and forward router devices must also be in the router or router client device role and requires a ESP32 device with PSRAM.")
+								Text("Store and forward router devices require a ESP32 device with PSRAM.")
 									.foregroundColor(.gray)
 									.font(.callout)
 							} else {
