@@ -26,8 +26,6 @@ struct NodeMap: View {
 	@State var selectedOverlayServer: MapOverlayServer = UserDefaults.mapOverlayServer
 	@State var mapTilesAboveLabels: Bool = UserDefaults.mapTilesAboveLabels
 	let fromDate: NSDate = Calendar.current.date(byAdding: .month, value: -1, to: Date())! as NSDate
-//	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
-//				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.date(byAdding: .day, value: -7, to: Date())! as NSDate), animation: .none)
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
 				  predicate: NSPredicate(format: "nodePosition != nil", Calendar.current.date(byAdding: .day, value: -7, to: Date())! as NSDate), animation: .none)
 	private var positions: FetchedResults<PositionEntity>
@@ -97,7 +95,7 @@ struct NodeMap: View {
 								}
 							}
 							.pickerStyle(SegmentedPickerStyle())
-							.onChange(of: (selectedMapLayer)) { newMapLayer in
+							.onChange(of: selectedMapLayer) { _, newMapLayer in
 								UserDefaults.mapLayer = newMapLayer
 							}
 							.padding(.top, 5)
@@ -144,10 +142,10 @@ struct NodeMap: View {
 												.font(.footnote)
 										}
 									}
-										   .pickerStyle(DefaultPickerStyle())
-										   .onChange(of: (selectedOverlayServer)) { newSelectedOverlayServer in
-											   UserDefaults.mapOverlayServer = newSelectedOverlayServer
-										   }
+								   .pickerStyle(DefaultPickerStyle())
+								   .onChange(of: (selectedOverlayServer)) { _, newSelectedOverlayServer in
+									   UserDefaults.mapOverlayServer = newSelectedOverlayServer
+								   }
 									Text(LocalizedStringKey(selectedOverlayServer.attribution))
 										.font(.footnote)
 										.foregroundColor(.gray)
@@ -160,7 +158,7 @@ struct NodeMap: View {
 								Text("Enable Offline Maps")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							.onChange(of: enableOfflineMaps) { newEnableOfflineMaps in
+							.onChange(of: enableOfflineMaps) { _, newEnableOfflineMaps in
 								UserDefaults.enableOfflineMaps = newEnableOfflineMaps
 								if !enableOfflineMaps {
 									if self.selectedMapLayer == .offline {
@@ -176,10 +174,10 @@ struct NodeMap: View {
 											Text(tsl.description)
 										}
 									}
-										   .pickerStyle(DefaultPickerStyle())
-										   .onChange(of: (selectedTileServer)) { newSelectedTileServer in
-											   UserDefaults.mapTileServer = newSelectedTileServer
-										   }
+								   .pickerStyle(DefaultPickerStyle())
+								   .onChange(of: (selectedTileServer)) { _, newSelectedTileServer in
+									   UserDefaults.mapTileServer = newSelectedTileServer
+								   }
 									Text("Attribution:")
 										.fontWeight(.semibold)
 										.font(.footnote)

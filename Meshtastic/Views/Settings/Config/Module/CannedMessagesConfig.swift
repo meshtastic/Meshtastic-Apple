@@ -254,7 +254,7 @@ struct CannedMessagesConfig: View {
 					}
 				}
 			}
-			.onChange(of: configPreset) { newPreset in
+			.onChange(of: configPreset) { _, newPreset in
 
 				if newPreset == 1 {
 
