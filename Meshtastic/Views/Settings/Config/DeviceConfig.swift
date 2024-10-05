@@ -23,7 +23,6 @@ struct DeviceConfig: View {
 	@State var deviceRole = 0
 	@State var buzzerGPIO = 0
 	@State var buttonGPIO = 0
-	@State var serialEnabled = true
 	@State var rebroadcastMode = 0
 	@State var nodeInfoBroadcastSecs = 10800
 	@State var doubleTapAsButtonPress = false
@@ -77,7 +76,7 @@ struct DeviceConfig: View {
 						Text("Treat double tap on supported accelerometers as a user button press.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				
+
 					Toggle(isOn: $tripleClickAsAdHocPing) {
 						Label("Triple Click Ad Hoc Ping", systemImage: "map.pin")
 						Text("Send a position on the primary channel when the user button is triple clicked.")
@@ -91,10 +90,6 @@ struct DeviceConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 				Section(header: Text("Debug")) {
-					Toggle(isOn: $serialEnabled) {
-						Label("Serial Console", systemImage: "terminal")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					VStack(alignment: .leading) {
 						HStack {
 							Label("Time Zone", systemImage: "clock.badge.exclamationmark")
@@ -114,7 +109,7 @@ struct DeviceConfig: View {
 						.disableAutocorrection(true)
 						Text("Time zone for dates on the device screen and log.")
 							.foregroundColor(.gray)
-							.font(.callout)				  
+							.font(.callout)
 					}
 				}
 				Section(header: Text("GPIO")) {
@@ -201,12 +196,12 @@ struct DeviceConfig: View {
 					if connectedNode != nil {
 						var dc = Config.DeviceConfig()
 						dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
-						dc.serialEnabled = serialEnabled
 						dc.buttonGpio = UInt32(buttonGPIO)
 						dc.buzzerGpio = UInt32(buzzerGPIO)
 						dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
 						dc.nodeInfoBroadcastSecs = UInt32(nodeInfoBroadcastSecs)
 						dc.doubleTapAsButtonPress = doubleTapAsButtonPress
+						dc.disableTripleClick = !tripleClickAsAdHocPing
 						dc.tzdef = tzdef
 						dc.ledHeartbeatDisabled = !ledHeartbeatEnabled
 						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
@@ -254,20 +249,17 @@ struct DeviceConfig: View {
 				}
 			}
 		}
-		.onChange(of: deviceRole) {
-			if $0 != node?.deviceConfig?.role ?? -1 { hasChanges = true }
+		.onChange(of: deviceRole) { oldRole, newRole in
+			if oldRole != newRole && newRole != node?.deviceConfig?.role ?? -1 { hasChanges = true }
 		}
-		.onChange(of: serialEnabled) {
-			if $0 != node?.deviceConfig?.serialEnabled { hasChanges = true }
+		.onChange(of: buttonGPIO) { oldButtonGPIO, newButtonGPIO in
+			if oldButtonGPIO != newButtonGPIO && newButtonGPIO != node?.deviceConfig?.buttonGpio ?? -1 { hasChanges = true }
 		}
-		.onChange(of: buttonGPIO) { newButtonGPIO in
-			if newButtonGPIO != node?.deviceConfig?.buttonGpio ?? -1 { hasChanges = true }
+		.onChange(of: buzzerGPIO) { oldBuzzerGPIO, newBuzzerGPIO in
+			if oldBuzzerGPIO != newBuzzerGPIO && newBuzzerGPIO != node?.deviceConfig?.buzzerGpio ?? -1 { hasChanges = true }
 		}
-		.onChange(of: buzzerGPIO) { newBuzzerGPIO in
-			if newBuzzerGPIO != node?.deviceConfig?.buttonGpio ?? -1 { hasChanges = true }
-		}
-		.onChange(of: rebroadcastMode) { newRebroadcastMode in
-			if newRebroadcastMode != node?.deviceConfig?.rebroadcastMode ?? -1 { hasChanges = true }
+		.onChange(of: rebroadcastMode) { oldRebroadcastMode, newRebroadcastMode in
+			if oldRebroadcastMode != newRebroadcastMode && newRebroadcastMode != node?.deviceConfig?.rebroadcastMode ?? -1 { hasChanges = true }
 		}
 		.onChange(of: nodeInfoBroadcastSecs) { newNodeInfoBroadcastSecs in
 			if newNodeInfoBroadcastSecs != node?.deviceConfig?.nodeInfoBroadcastSecs ?? -1 { hasChanges = true }
@@ -276,7 +268,7 @@ struct DeviceConfig: View {
 			if $0 != node?.deviceConfig?.doubleTapAsButtonPress { hasChanges = true }
 		}
 		.onChange(of: tripleClickAsAdHocPing) {
-		//	if $0 != node?.deviceConfig?.tripleClickAsAdHocPing { hasChanges = true }
+			if $0 != node?.deviceConfig?.tripleClickAsAdHocPing { hasChanges = true }
 		}
 		.onChange(of: tzdef) { newTzdef in
 			if newTzdef != node?.deviceConfig?.tzdef { hasChanges = true }
@@ -289,7 +281,6 @@ struct DeviceConfig: View {
 	}
 	func setDeviceValues() {
 		self.deviceRole = Int(node?.deviceConfig?.role ?? 0)
-		self.serialEnabled = (node?.deviceConfig?.serialEnabled ?? true)
 		self.buttonGPIO = Int(node?.deviceConfig?.buttonGpio ?? 0)
 		self.buzzerGPIO = Int(node?.deviceConfig?.buzzerGpio ?? 0)
 		self.rebroadcastMode = Int(node?.deviceConfig?.rebroadcastMode ?? 0)
@@ -298,6 +289,7 @@ struct DeviceConfig: View {
 			nodeInfoBroadcastSecs = 3600
 		}
 		self.doubleTapAsButtonPress = node?.deviceConfig?.doubleTapAsButtonPress ?? false
+		self.tripleClickAsAdHocPing = node?.deviceConfig?.tripleClickAsAdHocPing ?? false
 		self.ledHeartbeatEnabled = node?.deviceConfig?.ledHeartbeatEnabled ?? true
 		self.tzdef = node?.deviceConfig?.tzdef ?? ""
 		if self.tzdef.isEmpty {

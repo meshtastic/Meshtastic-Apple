@@ -462,24 +462,24 @@ func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, sessi
 			if fetchedNode[0].deviceConfig == nil {
 				let newDeviceConfig = DeviceConfigEntity(context: context)
 				newDeviceConfig.role = Int32(config.role.rawValue)
-				newDeviceConfig.serialEnabled = config.serialEnabled
 				newDeviceConfig.buttonGpio = Int32(config.buttonGpio)
 				newDeviceConfig.buzzerGpio =  Int32(config.buzzerGpio)
 				newDeviceConfig.rebroadcastMode = Int32(config.rebroadcastMode.rawValue)
 				newDeviceConfig.nodeInfoBroadcastSecs = Int32(truncating: config.nodeInfoBroadcastSecs as NSNumber)
 				newDeviceConfig.doubleTapAsButtonPress = config.doubleTapAsButtonPress
+				newDeviceConfig.tripleClickAsAdHocPing = !config.disableTripleClick
 				newDeviceConfig.ledHeartbeatEnabled = !config.ledHeartbeatDisabled
 				newDeviceConfig.isManaged = config.isManaged
 				newDeviceConfig.tzdef = config.tzdef
 				fetchedNode[0].deviceConfig = newDeviceConfig
 			} else {
 				fetchedNode[0].deviceConfig?.role = Int32(config.role.rawValue)
-				fetchedNode[0].deviceConfig?.serialEnabled = config.serialEnabled
 				fetchedNode[0].deviceConfig?.buttonGpio = Int32(config.buttonGpio)
 				fetchedNode[0].deviceConfig?.buzzerGpio = Int32(config.buzzerGpio)
 				fetchedNode[0].deviceConfig?.rebroadcastMode = Int32(config.rebroadcastMode.rawValue)
 				fetchedNode[0].deviceConfig?.nodeInfoBroadcastSecs = Int32(truncating: config.nodeInfoBroadcastSecs as NSNumber)
 				fetchedNode[0].deviceConfig?.doubleTapAsButtonPress = config.doubleTapAsButtonPress
+				fetchedNode[0].deviceConfig?.tripleClickAsAdHocPing = !config.disableTripleClick
 				fetchedNode[0].deviceConfig?.ledHeartbeatEnabled = !config.ledHeartbeatDisabled
 				fetchedNode[0].deviceConfig?.isManaged = config.isManaged
 				fetchedNode[0].deviceConfig?.tzdef = config.tzdef
