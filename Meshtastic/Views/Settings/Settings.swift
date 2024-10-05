@@ -161,7 +161,7 @@ struct Settings: View {
 					Image(systemName: "light.max")
 				}
 			}
-			
+
 			NavigationLink(value: SettingsNavigationState.cannedMessages) {
 				Label {
 					Text("canned.messages")
@@ -335,7 +335,6 @@ struct Settings: View {
 							.foregroundColor(.red)
 					}
 				}
-				
 
 				if !(node?.deviceConfig?.isManaged ?? false) {
 					if bleManager.connectedPeripheral != nil {
@@ -387,7 +386,7 @@ struct Settings: View {
 									}
 								}
 								.pickerStyle(.navigationLink)
-								.onChange(of: selectedNode) { newValue in
+								.onChange(of: selectedNode) { _, newValue in
 									if selectedNode > 0 {
 										let node = nodes.first(where: { $0.num == newValue })
 										let connectedNode = nodes.first(where: { $0.num == preferredNodeNum })
@@ -483,7 +482,7 @@ struct Settings: View {
 					Firmware(node: node)
 				}
 			}
-			.onChange(of: UserDefaults.preferredPeripheralNum ) { newConnectedNode in
+			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
 				preferredNodeNum = newConnectedNode
 				if nodes.count > 1 {
 					if selectedNode == 0 {

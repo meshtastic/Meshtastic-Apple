@@ -283,7 +283,7 @@ struct RouteRecorder: View {
 				.onDisappear(perform: {
 					UIApplication.shared.isIdleTimerDisabled = false
 				})
-				.onChange(of: locationsHandler.locationsArray.last) { newLoc in
+				.onChange(of: locationsHandler.locationsArray.last) { _, newLoc in
 					if locationsHandler.isRecording {
 						if let loc = newLoc {
 							if recording != nil {

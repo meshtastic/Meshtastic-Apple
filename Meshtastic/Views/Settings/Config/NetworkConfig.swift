@@ -45,7 +45,7 @@ struct NetworkConfig: View {
 								.foregroundColor(.gray)
 								.autocapitalization(.none)
 								.disableAutocorrection(true)
-								.onChange(of: wifiSsid, perform: { _ in
+								.onChange(of: wifiSsid) {
 									var totalBytes = wifiSsid.utf8.count
 									// Only mess with the value if it is too big
 									while totalBytes > 32 {
@@ -53,7 +53,7 @@ struct NetworkConfig: View {
 										totalBytes = wifiSsid.utf8.count
 									}
 									hasChanges = true
-								})
+								}
 								.foregroundColor(.gray)
 						}
 						.keyboardType(.default)
@@ -63,7 +63,7 @@ struct NetworkConfig: View {
 								.foregroundColor(.gray)
 								.autocapitalization(.none)
 								.disableAutocorrection(true)
-								.onChange(of: wifiPsk, perform: { _ in
+								.onChange(of: wifiPsk) {
 									var totalBytes = wifiPsk.utf8.count
 									// Only mess with the value if it is too big
 									while totalBytes > 63 {
@@ -71,7 +71,7 @@ struct NetworkConfig: View {
 										totalBytes = wifiPsk.utf8.count
 									}
 									hasChanges = true
-								})
+								}
 								.foregroundColor(.gray)
 						}
 						.keyboardType(.default)
@@ -154,10 +154,10 @@ struct NetworkConfig: View {
 		.onChange(of: wifiEnabled) {
 			if $0 != node?.networkConfig?.wifiEnabled { hasChanges = true }
 		}
-		.onChange(of: wifiSsid) { newSSID in
+		.onChange(of: wifiSsid) { _, newSSID in
 			if newSSID != node?.networkConfig?.wifiSsid { hasChanges = true }
 		}
-		.onChange(of: wifiPsk) { newPsk in
+		.onChange(of: wifiPsk) { _, newPsk in
 			if newPsk != node?.networkConfig?.wifiPsk { hasChanges = true }
 		}
 		.onChange(of: wifiMode) {

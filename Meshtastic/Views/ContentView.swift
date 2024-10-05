@@ -43,7 +43,7 @@ struct ContentView: View {
 					Label("map", systemImage: "map")
 				}
 				.tag(NavigationState.Tab.map)
-		
+
 			Settings(
 				router: appState.router
 			)

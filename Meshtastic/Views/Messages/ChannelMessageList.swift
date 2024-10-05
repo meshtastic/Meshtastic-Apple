@@ -134,11 +134,11 @@ struct ChannelMessageList: View {
 						scrollView.scrollTo(channel.allPrivateMessages.last?.messageId ?? 0, anchor: .bottom)
 					}
 				}
-				.onChange(of: channel.allPrivateMessages, perform: { _ in
+				.onChange(of: channel.allPrivateMessages) {
 					withAnimation {
 						scrollView.scrollTo(channel.allPrivateMessages.last?.messageId ?? 0, anchor: .bottom)
 					}
-				})
+				}
 			}
 
 			TextMessageField(

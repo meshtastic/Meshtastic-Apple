@@ -54,31 +54,28 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	let LOGRADIO_UUID = CBUUID(string: "0x5a3d6e49-06e6-4423-9944-e9de8cdf9547")
 
 	// MARK: init
-
 	private override init() {
-		   // Default initialization should not be used
-		   fatalError("Use setup(appState:context:) to initialize the singleton")
-	   }
+	   // Default initialization should not be used
+	   fatalError("Use setup(appState:context:) to initialize the singleton")
+	}
 
-	   static func setup(appState: AppState, context: NSManagedObjectContext) {
-		   guard shared == nil else {
-			   print("BLEManager already initialized")
-			   return
-		   }
-		   shared = BLEManager(appState: appState, context: context)
+	static func setup(appState: AppState, context: NSManagedObjectContext) {
+	   guard shared == nil else {
+		   Logger.services.warning("[BLE] BLEManager already initialized")
+		   return
 	   }
+	   shared = BLEManager(appState: appState, context: context)
+	}
 
-	   private init(appState: AppState, context: NSManagedObjectContext) {
-		   self.appState = appState
-		   self.context = context
-		   self.lastConnectionError = ""
-		   self.connectedVersion = "0.0.0"
-		   super.init()
-		   centralManager = CBCentralManager(delegate: self, queue: nil)
-		   mqttManager.delegate = self
-	   }
-   
-
+	private init(appState: AppState, context: NSManagedObjectContext) {
+	   self.appState = appState
+	   self.context = context
+	   self.lastConnectionError = ""
+	   self.connectedVersion = "0.0.0"
+	   super.init()
+	   centralManager = CBCentralManager(delegate: self, queue: nil)
+	   mqttManager.delegate = self
+	}
 
 	// MARK: Scanning for BLE Devices
 	// Scan for nearby BLE devices using the Meshtastic BLE service ID
@@ -464,7 +461,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			do {
 				let fetchedNodes = try context.fetch(nodes)
 				let receivingNode = fetchedNodes.first(where: { $0.num == destNum })
-				let connectedNode = fetchedNodes.first(where: { $0.num == self.connectedPeripheral.num })
 				traceRoute.id = Int64(meshPacket.id)
 				traceRoute.time = Date()
 				traceRoute.node = receivingNode
@@ -1617,7 +1613,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			let decodedString = base64UrlString.base64urlToBase64()
 			if let decodedData = Data(base64Encoded: decodedString) {
 				do {
-					let channelSet: ChannelSet = try ChannelSet(serializedData: decodedData)
+					let channelSet: ChannelSet = try ChannelSet(serializedBytes: decodedData)
 					for cs in channelSet.settings {
 						if addChannels {
 							// We are trying to add a channel so lets get the last index
@@ -1989,10 +1985,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		let messageDescription = "🛟 Saved LoRa Config for \(toUser.longName ?? "unknown".localized)"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
-			upsertLoRaConfigPacket(config: config, nodeNum: toUser.num, sessionPasskey: toUser.userNode?.sessionPasskey,context: context)
+			upsertLoRaConfigPacket(config: config, nodeNum: toUser.num, sessionPasskey: toUser.userNode?.sessionPasskey, context: context)
 			return Int64(meshPacket.id)
 		}
-
 		return 0
 	}
 
@@ -3195,7 +3190,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	}
 
 	func storeAndForwardPacket(packet: MeshPacket, connectedNodeNum: Int64, context: NSManagedObjectContext) {
-		if let storeAndForwardMessage = try? StoreAndForward(serializedData: packet.decoded.payload) {
+		if let storeAndForwardMessage = try? StoreAndForward(serializedBytes: packet.decoded.payload) {
 			// Handle each of the store and forward request / response messages
 			switch storeAndForwardMessage.rr {
 			case .unset:
@@ -3321,7 +3316,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 // MARK: - CB Central Manager implmentation
 extension BLEManager: CBCentralManagerDelegate {
-	
+
 	// MARK: Bluetooth enabled/disabled
 	func centralManagerDidUpdateState(_ central: CBCentralManager) {
 		if central.state == CBManagerState.poweredOn {
@@ -3331,9 +3326,8 @@ extension BLEManager: CBCentralManagerDelegate {
 		} else {
 			isSwitchedOn = false
 		}
-		
+
 		var status = ""
-		
 		switch central.state {
 		case .poweredOff:
 			status = "BLE is powered off"
@@ -3352,10 +3346,9 @@ extension BLEManager: CBCentralManagerDelegate {
 		}
 		Logger.services.info("📜 [BLE] Bluetooth status: \(status)")
 	}
-	
+
 	// Called each time a peripheral is discovered
 	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
-		
 		if self.automaticallyReconnect && peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" {
 			self.connectTo(peripheral: peripheral)
 			Logger.services.info("✅ [BLE] Reconnecting to prefered peripheral: \(peripheral.name ?? "Unknown", privacy: .public)")
@@ -3363,7 +3356,6 @@ extension BLEManager: CBCentralManagerDelegate {
 		let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String
 		let device = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: name ?? "Unknown", shortName: "?", longName: name ?? "Unknown", firmwareVersion: "Unknown", rssi: RSSI.intValue, lastUpdate: Date(), peripheral: peripheral)
 		let index = peripherals.map { $0.peripheral }.firstIndex(of: peripheral)
-		
 		if let peripheralIndex = index {
 			peripherals[peripheralIndex] = device
 		} else {

@@ -118,7 +118,7 @@ struct SecurityConfig: View {
 		.onChange(of: adminChannelEnabled) {
 			if $0 != node?.securityConfig?.adminChannelEnabled { hasChanges = true }
 		}
-		.onChange(of: publicKey) { _ in
+		.onChange(of: publicKey) {
 			let tempKey = Data(base64Encoded: publicKey) ?? Data()
 			if tempKey.count == 32 {
 				hasValidPublicKey = true
@@ -127,7 +127,7 @@ struct SecurityConfig: View {
 			}
 			hasChanges = true
 		}
-		.onChange(of: privateKey) { _ in
+		.onChange(of: privateKey) {
 			let tempKey = Data(base64Encoded: privateKey) ?? Data()
 			if tempKey.count == 32 {
 				hasValidPrivateKey = true
@@ -136,7 +136,7 @@ struct SecurityConfig: View {
 			}
 			hasChanges = true
 		}
-		.onChange(of: adminKey) { key in
+		.onChange(of: adminKey) { _, key in
 			let tempKey = Data(base64Encoded: key) ?? Data()
 			if key.isEmpty {
 				hasValidAdminKey = true

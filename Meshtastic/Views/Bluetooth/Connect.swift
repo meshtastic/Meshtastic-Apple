@@ -301,10 +301,10 @@ struct Connect: View {
 				.presentationDetents([.large])
 				.presentationDragIndicator(.automatic)
 		}
-		.onChange(of: (self.bleManager.invalidVersion)) { _ in
+    	.onChange(of: self.bleManager.invalidVersion) {
 			invalidFirmwareVersion = self.bleManager.invalidVersion
 		}
-		.onChange(of: (self.bleManager.isSubscribed)) { sub in
+		.onChange(of: self.bleManager.isSubscribed) { _, sub in
 
 			if UserDefaults.preferredPeripheralId.count > 0 && sub {
 

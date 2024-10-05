@@ -123,14 +123,14 @@ struct MQTTConfig: View {
 						Label("Root Topic", systemImage: "tree")
 						TextField("Root Topic", text: $root)
 							.foregroundColor(.gray)
-							.onChange(of: root, perform: { _ in
+							.onChange(of: root) {
 								var totalBytes = root.utf8.count
 								// Only mess with the value if it is too big
 								while totalBytes > 30 {
 									root = String(root.dropLast())
 									totalBytes = root.utf8.count
 								}
-							})
+							}
 							.foregroundColor(.gray)
 					}
 					.keyboardType(.asciiCapable)
@@ -162,7 +162,7 @@ struct MQTTConfig: View {
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
-							.onChange(of: address, perform: { _ in
+							.onChange(of: address) {
 								var totalBytes = address.utf8.count
 								// Only mess with the value if it is too big
 								while totalBytes > 62 {
@@ -170,7 +170,7 @@ struct MQTTConfig: View {
 									totalBytes = address.utf8.count
 								}
 								hasChanges = true
-							})
+							}
 							.keyboardType(.default)
 					}
 					.autocorrectionDisabled()
@@ -181,7 +181,7 @@ struct MQTTConfig: View {
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
-							.onChange(of: username, perform: { _ in
+							.onChange(of: username) {
 								var totalBytes = username.utf8.count
 								// Only mess with the value if it is too big
 								while totalBytes > 62 {
@@ -189,7 +189,7 @@ struct MQTTConfig: View {
 									totalBytes = username.utf8.count
 								}
 								hasChanges = true
-							})
+							}
 							.foregroundColor(.gray)
 					}
 					.keyboardType(.default)
@@ -200,7 +200,7 @@ struct MQTTConfig: View {
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
-							.onChange(of: password, perform: { _ in
+							.onChange(of: password) {
 								var totalBytes = password.utf8.count
 								// Only mess with the value if it is too big
 								while totalBytes > 62 {
@@ -208,7 +208,7 @@ struct MQTTConfig: View {
 									totalBytes = password.utf8.count
 								}
 								hasChanges = true
-							})
+							}
 							.foregroundColor(.gray)
 					}
 					.keyboardType(.default)

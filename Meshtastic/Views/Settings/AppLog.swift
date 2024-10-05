@@ -131,25 +131,25 @@ struct AppLog: View {
 				logs.sort(using: sortOrder)
 			}
 		}
-		.onChange(of: searchText) { _ in
+		.onChange(of: searchText) {
 			Task {
 				await logs = searchAppLogs()
 				logs.sort(using: sortOrder)
 			}
 		}
-		.onChange(of: [categories]) { _ in
+		.onChange(of: [categories]) {
 			Task {
 				await logs = searchAppLogs()
 				logs.sort(using: sortOrder)
 			}
 		}
-		.onChange(of: [levels]) { _ in
+		.onChange(of: [levels]) {
 			Task {
 				await logs = searchAppLogs()
 				logs.sort(using: sortOrder)
 			}
 		}
-		.onChange(of: selection) { newSelection in
+		.onChange(of: selection) { _, newSelection in
 			presentingErrorDetails = true
 			let log = logs.first {
 			   $0.id == newSelection

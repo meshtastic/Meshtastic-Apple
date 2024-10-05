@@ -232,13 +232,13 @@ private struct FloatField: View {
 		TextField(title.localized, value: $typingNumber, format: .number)
 			.foregroundColor(.gray)
 			.multilineTextAlignment(.trailing)
-			.onChange(of: typingNumber, perform: { _ in
+			.onChange(of: typingNumber) {
 				if isValid(typingNumber) {
 					number = typingNumber
 				} else {
 					typingNumber = number
 				}
-			})
+			}
 			.keyboardType(.decimalPad)
 			.onAppear {
 				typingNumber = number

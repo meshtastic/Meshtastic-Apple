@@ -67,8 +67,6 @@ struct AppData: View {
 										let container = NSPersistentContainer(name: "Meshtastic")
 										do {
 											try container.restorePersistentStore(from: file.absoluteURL)
-											let request = MyInfoEntity.fetchRequest()
-											try context.fetch(request)
 											UserDefaults.preferredPeripheralId = ""
 											UserDefaults.preferredPeripheralNum = Int(file.pathComponents[(idiom == .phone || idiom == .pad) ? 9 : 10]) ?? 0
 											Logger.data.notice("🗂️ Restored a core data backup to backup/\(UserDefaults.preferredPeripheralNum, privacy: .public)")

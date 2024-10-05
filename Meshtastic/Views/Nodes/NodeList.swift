@@ -280,12 +280,12 @@ struct NodeList: View {
 			ContentUnavailableView("", systemImage: "line.3.horizontal")
 		}
 		.navigationSplitViewStyle(.balanced)
-		.onChange(of: searchText) { _ in
+		.onChange(of: searchText) {
 			Task {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: viaLora) { _ in
+		.onChange(of: viaLora) {
 			if !viaLora && !viaMqtt {
 				viaMqtt = true
 			}
@@ -293,7 +293,7 @@ struct NodeList: View {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: viaMqtt) { _ in
+		.onChange(of: viaMqtt) {
 			if !viaLora && !viaMqtt {
 				viaLora = true
 			}
@@ -301,32 +301,32 @@ struct NodeList: View {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: [boolFilters]) { _ in
+		.onChange(of: [boolFilters]) {
 			Task {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: [deviceRoles]) { _ in
+		.onChange(of: [deviceRoles]) {
 			Task {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: hopsAway) { _ in
+		.onChange(of: hopsAway) {
 			Task {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: maxDistance) { _ in
+		.onChange(of: maxDistance) {
 			Task {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: distanceFilter) { _ in
+		.onChange(of: distanceFilter) {
 			Task {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: router.navigationState) { _ in
+		.onChange(of: router.navigationState) {
 			if let selected = router.navigationState.nodeListSelectedNodeNum {
 				self.selectedNode = getNodeInfo(id: selected, context: context)
 			} else {

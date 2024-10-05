@@ -235,15 +235,15 @@ struct ShareChannels: View {
 			.onAppear {
 				generateChannelSet()
 			}
-			.onChange(of: includeChannel0) { _ in generateChannelSet()	}
-			.onChange(of: includeChannel1) { _ in generateChannelSet()	}
-			.onChange(of: includeChannel2) { _ in generateChannelSet()	}
-			.onChange(of: includeChannel3) { _ in generateChannelSet()	}
-			.onChange(of: includeChannel4) { _ in generateChannelSet()	}
-			.onChange(of: includeChannel5) { _ in generateChannelSet()	}
-			.onChange(of: includeChannel6) { _ in generateChannelSet() }
-			.onChange(of: includeChannel7) { _ in generateChannelSet() }
-			.onChange(of: replaceChannels) { _ in generateChannelSet() }
+			.onChange(of: includeChannel0) { generateChannelSet() }
+			.onChange(of: includeChannel1) { generateChannelSet() }
+			.onChange(of: includeChannel2) { generateChannelSet() }
+			.onChange(of: includeChannel3) { generateChannelSet() }
+			.onChange(of: includeChannel4) { generateChannelSet() }
+			.onChange(of: includeChannel5) { generateChannelSet() }
+			.onChange(of: includeChannel6) { generateChannelSet() }
+			.onChange(of: includeChannel7) { generateChannelSet() }
+			.onChange(of: replaceChannels) { generateChannelSet() }
 		}
 	}
 	func generateChannelSet() {

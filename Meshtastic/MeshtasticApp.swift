@@ -125,7 +125,7 @@ struct MeshtasticAppleApp: App {
 				)
 			}
 		}
-		.onChange(of: scenePhase) { (newScenePhase) in
+		.onChange(of: scenePhase) { (_, newScenePhase) in
 			switch newScenePhase {
 			case .background:
 				Logger.services.info("🎬 [App] Scene is in the background")

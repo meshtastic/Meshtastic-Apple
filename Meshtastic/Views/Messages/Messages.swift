@@ -87,7 +87,7 @@ struct Messages: View {
 			} else if case .directMessages = router.navigationState.messages {
 				Text("Select a conversation")
 			}
-		}.onChange(of: router.navigationState) { _ in
+		}.onChange(of: router.navigationState) {
 			setupNavigationState()
 		}
 	}

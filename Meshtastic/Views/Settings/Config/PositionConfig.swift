@@ -398,7 +398,7 @@ struct PositionConfig: View {
 				}
 			}
 		}
-		.onChange(of: fixedPosition) { newFixed in
+		.onChange(of: fixedPosition) { _, newFixed in
 			if supportedVersion {
 				if let positionConfig = node?.positionConfig {
 					/// Fixed Position is off to start

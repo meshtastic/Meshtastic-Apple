@@ -51,7 +51,7 @@ struct WaypointFormMapKit: View {
 						axis: .vertical
 					)
 					.foregroundColor(Color.gray)
-					.onChange(of: name, perform: { _ in
+					.onChange(of: name) {
 						var totalBytes = name.utf8.count
 						// Only mess with the value if it is too big
 						while totalBytes > 30 {
@@ -61,7 +61,7 @@ struct WaypointFormMapKit: View {
 						if totalBytes > 30 {
 							name = String(name.dropLast())
 						}
-					})
+					}
 				}
 				HStack {
 					Text("Description")

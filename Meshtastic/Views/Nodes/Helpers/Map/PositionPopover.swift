@@ -95,7 +95,6 @@ struct PositionPopover: View {
 					}
 					/// Altitude
 					Label {
-						let formatter = MeasurementFormatter()
 						let distanceInMeters = Measurement(value: Double(position.altitude), unit: UnitLength.meters)
 						let distanceInFeet = distanceInMeters.converted(to: UnitLength.feet)
 						if Locale.current.measurementSystem == .metric {

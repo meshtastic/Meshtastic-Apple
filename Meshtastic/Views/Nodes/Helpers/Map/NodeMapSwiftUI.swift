@@ -80,7 +80,7 @@ struct NodeMapSwiftUI: View {
 					}
 					.sheet(isPresented: $isEditingSettings) {
 						MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap)
-							.onChange(of: (selectedMapLayer)) { newMapLayer in
+							.onChange(of: (selectedMapLayer)) { _, newMapLayer in
 								switch selectedMapLayer {
 								case .standard:
 									UserDefaults.mapLayer = newMapLayer

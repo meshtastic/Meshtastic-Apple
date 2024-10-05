@@ -79,11 +79,11 @@ struct PaxCounterConfig: View {
 				}
 			}
 		}
-		.onChange(of: enabled) {
-			if $0 != node?.paxCounterConfig?.enabled { hasChanges = true }
+		.onChange(of: enabled) { oldEnabled, newEnabled in
+			if oldEnabled != newEnabled && newEnabled != node?.paxCounterConfig?.enabled { hasChanges = true }
 		}
-		.onChange(of: paxcounterUpdateInterval) {
-			if $0 != node?.paxCounterConfig?.updateInterval ?? -1 { hasChanges = true }
+		.onChange(of: paxcounterUpdateInterval) { oldPaxcounterUpdateInterval, newPaxcounterUpdateInterval in
+			if oldPaxcounterUpdateInterval != newPaxcounterUpdateInterval && newPaxcounterUpdateInterval != node?.paxCounterConfig?.updateInterval ?? -1 { hasChanges = true }
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {

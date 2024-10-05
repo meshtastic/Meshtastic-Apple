@@ -36,7 +36,7 @@ struct MapSettingsForm: View {
 					.pickerStyle(SegmentedPickerStyle())
 					.padding(.top, 5)
 					.padding(.bottom, 5)
-					.onChange(of: mapLayer) { newMapLayer in
+					.onChange(of: mapLayer) { _, newMapLayer in
 						UserDefaults.mapLayer = newMapLayer
 					}
 					if meshMap {
@@ -50,7 +50,7 @@ struct MapSettingsForm: View {
 							}
 							.pickerStyle(DefaultPickerStyle())
 						}
-						.onChange(of: meshMapDistance) { newMeshMapDistance in
+						.onChange(of: meshMapDistance) { _, newMeshMapDistance in
 							UserDefaults.meshMapDistance = newMeshMapDistance
 						}
 						Toggle(isOn: $waypoints) {

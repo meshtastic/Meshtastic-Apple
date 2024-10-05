@@ -61,7 +61,6 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 			} else {
 				Logger.services.error("Failed to retrieve channel or messageId from userInfo")
 			}
-			break
 		case "messageNotification.thumbsDownAction":
 			if let channel = userInfo["channel"] as? Int32,
 			   let replyID = userInfo["messageId"] as? Int64 {
@@ -76,7 +75,6 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 			} else {
 				Logger.services.error("Failed to retrieve channel or messageId from userInfo")
 			}
-			break
 		case "messageNotification.replyInputAction":
 			if let userInput = (response as? UNTextInputNotificationResponse)?.userText,
 			   let channel = userInfo["channel"] as? Int32,
@@ -92,7 +90,6 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 			} else {
 				Logger.services.error("Failed to retrieve user input, channel, or messageId from userInfo")
 			}
-			break
 		default:
 			break
 		}

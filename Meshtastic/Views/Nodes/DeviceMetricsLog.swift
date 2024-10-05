@@ -207,7 +207,7 @@ struct DeviceMetricsLog: View {
 					.padding(.bottom)
 					.padding(.trailing)
 				}
-				.onChange(of: selection) { newSelection in
+				.onChange(of: selection) { _, newSelection in
 					guard let metrics = deviceMetrics.first(where: { $0.id == newSelection }) else {
 						return
 					}

@@ -71,8 +71,7 @@ struct CannedMessagesConfig: View {
 						.foregroundColor(.gray)
 						.autocapitalization(.none)
 						.disableAutocorrection(true)
-						.onChange(of: messages, perform: { _ in
-
+						.onChange(of: messages) {
 							var totalBytes = messages.utf8.count
 							// Only mess with the value if it is too big
 							while totalBytes > 198 {
@@ -80,7 +79,7 @@ struct CannedMessagesConfig: View {
 								totalBytes = messages.utf8.count
 							}
 							hasMessagesChanges = true
-						})
+						}
 						.foregroundColor(.gray)
 				}
 				.keyboardType(.default)

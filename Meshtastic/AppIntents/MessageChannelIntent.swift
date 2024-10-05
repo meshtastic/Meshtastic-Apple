@@ -36,7 +36,7 @@ struct MessageChannelIntent: AppIntent {
 		guard let messageData = messageContent.data(using: .utf8) else {
 			throw AppIntentErrors.AppIntentError.message("Failed to encode message content")
 		}
-		
+
 		if messageData.count > 200 {
 			throw $messageContent.needsValueError("Message content exceeds 200 bytes.")
 		}

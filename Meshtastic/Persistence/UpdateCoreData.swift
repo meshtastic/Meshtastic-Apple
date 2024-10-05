@@ -159,12 +159,12 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			if packet.to == Constants.maximumNodeNum || packet.to == UserDefaults.preferredPeripheralNum {
 				newNode.channel = Int32(packet.channel)
 			}
-			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
+			if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
 				newNode.hopsAway = Int32(nodeInfoMessage.hopsAway)
 				newNode.favorite = nodeInfoMessage.isFavorite
 			}
 
-			if let newUserMessage = try? User(serializedData: packet.decoded.payload) {
+			if let newUserMessage = try? User(serializedBytes: packet.decoded.payload) {
 
 				if newUserMessage.id.isEmpty {
 					if packet.from > Constants.minimumNodeNum {
@@ -254,7 +254,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				fetchedNode[0].channel = Int32(packet.channel)
 			}
 
-			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
+			if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
 
 				fetchedNode[0].hopsAway = Int32(nodeInfoMessage.hopsAway)
 				fetchedNode[0].favorite = nodeInfoMessage.isFavorite
@@ -320,7 +320,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 
 	do {
 
-		if let positionMessage = try? Position(serializedData: packet.decoded.payload) {
+		if let positionMessage = try? Position(serializedBytes: packet.decoded.payload) {
 
 			/// Don't save empty position packets from null island or apple park
 			if (positionMessage.longitudeI != 0 && positionMessage.latitudeI != 0) && (positionMessage.latitudeI != 373346000 && positionMessage.longitudeI != -1220090000) {

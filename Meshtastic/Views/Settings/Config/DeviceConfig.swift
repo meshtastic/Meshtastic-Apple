@@ -95,7 +95,7 @@ struct DeviceConfig: View {
 							Label("Time Zone", systemImage: "clock.badge.exclamationmark")
 							TextField("Time Zone", text: $tzdef, axis: .vertical)
 								.foregroundColor(.gray)
-								.onChange(of: tzdef) { _ in
+								.onChange(of: tzdef) {
 									var totalBytes = tzdef.utf8.count
 									// Only mess with the value if it is too big
 									while totalBytes > 63 {
