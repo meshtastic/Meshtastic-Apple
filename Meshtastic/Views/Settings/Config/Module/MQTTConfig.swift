@@ -262,24 +262,20 @@ struct MQTTConfig: View {
 				)
 			}
 		)
-		.onChange(of: enabled) {
-			if $0 != node?.mqttConfig?.enabled { hasChanges = true }
+		.onChange(of: enabled) { _, newEnabled in
+			if newEnabled != node?.mqttConfig?.enabled { hasChanges = true }
 		}
-		.onChange(of: proxyToClientEnabled) { newProxyToClientEnabled in
+		.onChange(of: proxyToClientEnabled) { _, newProxyToClientEnabled in
 			if newProxyToClientEnabled {
 				jsonEnabled = false
 			}
 			if newProxyToClientEnabled != node?.mqttConfig?.proxyToClientEnabled { hasChanges = true }
 		}
-		.onChange(of: address) { newAddress in
-			if node != nil && node?.mqttConfig != nil {
-				if newAddress != node!.mqttConfig!.address { hasChanges = true }
-			}
+		.onChange(of: address) { _, newAddress in
+			if newAddress != node?.mqttConfig?.address ?? "" { hasChanges = true }
 		}
 		.onChange(of: username) { newUsername in
-			if node != nil && node?.mqttConfig != nil {
-				if newUsername != node!.mqttConfig!.username { hasChanges = true }
-			}
+			if newUsername != node?.mqttConfig?.username ?? "" { hasChanges = true }
 		}
 		.onChange(of: password) { newPassword in
 			if node != nil && node?.mqttConfig != nil {
@@ -291,26 +287,26 @@ struct MQTTConfig: View {
 				if newRoot != node!.mqttConfig!.root { hasChanges = true }
 			}
 		}
-		.onChange(of: selectedTopic) { newSelectedTopic in
+		.onChange(of: selectedTopic) { _, newSelectedTopic in
 			root = newSelectedTopic
 		}
-		.onChange(of: encryptionEnabled) {
-			if $0 != node?.mqttConfig?.encryptionEnabled { hasChanges = true }
+		.onChange(of: encryptionEnabled) { _, newEncryptionEnabled in
+			if newEncryptionEnabled != node?.mqttConfig?.encryptionEnabled { hasChanges = true }
 		}
-		.onChange(of: jsonEnabled) { newJsonEnabled in
+		.onChange(of: jsonEnabled) { _, newJsonEnabled in
 			if newJsonEnabled {
 				proxyToClientEnabled = false
 			}
 			if newJsonEnabled != node?.mqttConfig?.jsonEnabled { hasChanges = true }
 		}
-		.onChange(of: tlsEnabled) { newTlsEnabled in
+		.onChange(of: tlsEnabled) { _, newTlsEnabled in
 			if address.lowercased() == "mqtt.meshtastic.org" {
 				tlsEnabled = false
 			} else {
 				if newTlsEnabled != node?.mqttConfig?.tlsEnabled { hasChanges = true }
 			}
 		}
-		.onChange(of: mqttConnected) { newMqttConnected in
+		.onChange(of: mqttConnected) { _, newMqttConnected in
 			if newMqttConnected == false {
 				if bleManager.mqttProxyConnected {
 					bleManager.mqttManager.disconnect()
@@ -321,8 +317,8 @@ struct MQTTConfig: View {
 				}
 			}
 		}
-		.onChange(of: mapReportingEnabled) {
-			if $0 != node?.mqttConfig?.mapReportingEnabled { hasChanges = true }
+		.onChange(of: mapReportingEnabled) { _, newMapReportingEnabled in
+			if newMapReportingEnabled != node?.mqttConfig?.mapReportingEnabled { hasChanges = true }
 		}
 		.onChange(of: mapPublishIntervalSecs) { newMapPublishIntervalSecs in
 			if node != nil && node?.mqttConfig != nil {

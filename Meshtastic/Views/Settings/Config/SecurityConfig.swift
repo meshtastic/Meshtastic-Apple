@@ -106,17 +106,17 @@ struct SecurityConfig: View {
 				name: "\(bleManager.connectedPeripheral?.shortName ?? "?")"
 			)
 		})
-		.onChange(of: isManaged) {
-			if $0 != node?.securityConfig?.isManaged { hasChanges = true }
+		.onChange(of: isManaged) { _, newIsManaged in
+			if newIsManaged != node?.securityConfig?.isManaged { hasChanges = true }
 		}
-		.onChange(of: serialEnabled) {
-			if $0 != node?.securityConfig?.serialEnabled { hasChanges = true }
+		.onChange(of: serialEnabled) { _, newSerialEnabled in
+			if newSerialEnabled != node?.securityConfig?.serialEnabled { hasChanges = true }
 		}
-		.onChange(of: debugLogApiEnabled) {
-			if $0 != node?.securityConfig?.debugLogApiEnabled { hasChanges = true }
+		.onChange(of: debugLogApiEnabled) { _, newDebugLogApiEnabled in
+			if newDebugLogApiEnabled != node?.securityConfig?.debugLogApiEnabled { hasChanges = true }
 		}
-		.onChange(of: adminChannelEnabled) {
-			if $0 != node?.securityConfig?.adminChannelEnabled { hasChanges = true }
+		.onChange(of: adminChannelEnabled) { _, newAdminChannelEnabled in
+			if newAdminChannelEnabled != node?.securityConfig?.adminChannelEnabled { hasChanges = true }
 		}
 		.onChange(of: publicKey) {
 			let tempKey = Data(base64Encoded: publicKey) ?? Data()

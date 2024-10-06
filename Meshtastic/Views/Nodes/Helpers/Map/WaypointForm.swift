@@ -98,7 +98,7 @@ struct WaypointForm: View {
 							EmojiOnlyTextField(text: $icon, placeholder: "Select an emoji")
 								.font(.title)
 								.focused($iconIsFocused)
-								.onChange(of: icon) { value in
+								.onChange(of: icon) { _, value in
 
 									// If you have anything other than emojis in your string make it empty
 									if !value.onlyEmojis() {

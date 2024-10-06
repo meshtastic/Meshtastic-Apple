@@ -283,55 +283,35 @@ struct CannedMessagesConfig: View {
 
 				hasChanges = true
 			}
-			.onChange(of: enabled) {
-				if let val = node?.cannedMessageConfig?.enabled {
-					hasChanges = $0 != val
-				}
+			.onChange(of: enabled) { _, newEnabled in
+				if newEnabled != node?.cannedMessageConfig?.enabled { hasChanges = true }
 			}
-			.onChange(of: sendBell) {
-				if let val = node?.cannedMessageConfig?.sendBell {
-					hasChanges = $0 != val
-				}
+			.onChange(of: sendBell) { _, newSendBell in
+				if newSendBell != node?.cannedMessageConfig?.sendBell { hasChanges = true }
 			}
-			.onChange(of: rotary1Enabled) {
-				if let val = node?.cannedMessageConfig?.rotary1Enabled {
-					hasChanges = $0 != val
-				}
+			.onChange(of: rotary1Enabled) { _, newRotary1Enabled in
+				if newRotary1Enabled != node?.cannedMessageConfig?.rotary1Enabled {	hasChanges = true }
 			}
-			.onChange(of: updown1Enabled) {
-				if let val = node?.cannedMessageConfig?.updown1Enabled {
-					hasChanges = $0 != val
-				}
+			.onChange(of: updown1Enabled) { _, newUpdown1Enabled in
+				if newUpdown1Enabled != node?.cannedMessageConfig?.updown1Enabled {	hasChanges = true }
 			}
-			.onChange(of: inputbrokerPinA) { newPinA in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newPinA != node!.cannedMessageConfig!.inputbrokerPinA { hasChanges = true }
-				}
+			.onChange(of: inputbrokerPinA) { _, newPinA in
+				if newPinA != node?.cannedMessageConfig?.inputbrokerPinA ?? -1 { hasChanges = true }
 			}
-			.onChange(of: inputbrokerPinB) { newPinB in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newPinB != node!.cannedMessageConfig!.inputbrokerPinB { hasChanges = true }
-				}
+			.onChange(of: inputbrokerPinB) { _, newPinB in
+				if newPinB != node?.cannedMessageConfig?.inputbrokerPinB ?? -1 { hasChanges = true }
 			}
-			.onChange(of: inputbrokerPinPress) { newPinPress in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newPinPress != node!.cannedMessageConfig!.inputbrokerPinPress { hasChanges = true }
-				}
+			.onChange(of: inputbrokerPinPress) { _, newPinPress in
+				if newPinPress != node?.cannedMessageConfig?.inputbrokerPinPress ?? -1 { hasChanges = true }
 			}
-			.onChange(of: inputbrokerEventCw) { newKeyA in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newKeyA != node!.cannedMessageConfig!.inputbrokerEventCw { hasChanges = true	}
-				}
+			.onChange(of: inputbrokerEventCw) { _, newKeyA in
+				if newKeyA != node?.cannedMessageConfig?.inputbrokerEventCw ?? -1 { hasChanges = true }
 			}
-			.onChange(of: inputbrokerEventCcw) { newKeyB in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newKeyB != node!.cannedMessageConfig!.inputbrokerEventCcw { hasChanges = true }
-				}
+			.onChange(of: inputbrokerEventCcw) { _, newKeyB in
+				if newKeyB != node?.cannedMessageConfig?.inputbrokerEventCcw ?? -1 { hasChanges = true }
 			}
-			.onChange(of: inputbrokerEventPress) { newKeyPress in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newKeyPress != node!.cannedMessageConfig!.inputbrokerEventPress { hasChanges = true }
-				}
+			.onChange(of: inputbrokerEventPress) { _, newKeyPress in
+				if newKeyPress != node?.cannedMessageConfig?.inputbrokerEventPress ?? -1 { hasChanges = true }
 			}
 		}
 	}

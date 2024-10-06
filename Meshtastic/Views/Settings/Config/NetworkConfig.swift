@@ -151,8 +151,8 @@ struct NetworkConfig: View {
 				}
 			}
 		}
-		.onChange(of: wifiEnabled) {
-			if $0 != node?.networkConfig?.wifiEnabled { hasChanges = true }
+		.onChange(of: wifiEnabled) { _, newEnabled in
+			if newEnabled != node?.networkConfig?.wifiEnabled { hasChanges = true }
 		}
 		.onChange(of: wifiSsid) { _, newSSID in
 			if newSSID != node?.networkConfig?.wifiSsid { hasChanges = true }
@@ -160,11 +160,11 @@ struct NetworkConfig: View {
 		.onChange(of: wifiPsk) { _, newPsk in
 			if newPsk != node?.networkConfig?.wifiPsk { hasChanges = true }
 		}
-		.onChange(of: wifiMode) {
-			if $0 != node?.networkConfig?.wifiMode ?? -1 { hasChanges = true }
+		.onChange(of: wifiMode) { _, newMode in
+			if newMode != node?.networkConfig?.wifiMode ?? -1 { hasChanges = true }
 		}
-		.onChange(of: ethEnabled) {
-			if $0 != node?.networkConfig?.ethEnabled { hasChanges = true }
+		.onChange(of: ethEnabled) { _, newEthEnabled in
+			if newEthEnabled != node?.networkConfig?.ethEnabled { hasChanges = true }
 		}
 	}
 	func setNetworkValues() {

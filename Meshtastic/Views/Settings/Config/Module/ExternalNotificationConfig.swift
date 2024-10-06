@@ -220,80 +220,50 @@ struct ExternalNotificationConfig: View {
 				}
 			}
 		}
-		.onChange(of: enabled) {
-			if let val = node?.externalNotificationConfig?.enabled {
-				hasChanges = $0 != val
-			}
+		.onChange(of: enabled) { _, newEnabled in
+			if newEnabled != node?.externalNotificationConfig?.enabled { hasChanges = true }
 		}
-		.onChange(of: alertBell) {
-			if let val = node?.externalNotificationConfig?.alertBell {
-				hasChanges = $0 != val
-			}
+		.onChange(of: alertBell) { _, newAlertBell in
+			if newAlertBell != node?.externalNotificationConfig?.alertBell { hasChanges = true }
 		}
-		.onChange(of: alertBellBuzzer) {
-			if let val = node?.externalNotificationConfig?.alertBellBuzzer {
-				hasChanges = $0 != val
-			}
+		.onChange(of: alertBellBuzzer) { _, newAlertBellBuzzer in
+			if newAlertBellBuzzer != node?.externalNotificationConfig?.alertBellBuzzer { hasChanges = true }
 		}
-		.onChange(of: alertBellVibra) {
-			if let val = node?.externalNotificationConfig?.alertBellVibra {
-				hasChanges = $0 != val
-			}
+		.onChange(of: alertBellVibra) { _, newAlertBellVibra in
+			if newAlertBellVibra != node?.externalNotificationConfig?.alertBellVibra { hasChanges = true }
 		}
-		.onChange(of: alertMessage) {
-			if let val = node?.externalNotificationConfig?.alertMessage {
-				hasChanges = $0 != val
-			}
+		.onChange(of: alertMessage) { _, newAlertMessage in
+			if newAlertMessage != node?.externalNotificationConfig?.alertMessage { hasChanges = true }
 		}
-		.onChange(of: alertMessageBuzzer) {
-			if let val = node?.externalNotificationConfig?.alertMessageBuzzer {
-				hasChanges = $0 != val
-			}
+		.onChange(of: alertMessageBuzzer) { _, newAlertMessageBuzzer in
+			if newAlertMessageBuzzer != node?.externalNotificationConfig?.alertMessageBuzzer { hasChanges = true }
 		}
-		.onChange(of: alertMessageVibra) {
-			if let val = node?.externalNotificationConfig?.alertMessageVibra {
-				hasChanges = $0 != val
-			}
+		.onChange(of: alertMessageVibra) { _, newAlertMessageVibra in
+			if newAlertMessageVibra != node?.externalNotificationConfig?.alertMessageVibra { hasChanges = true }
 		}
-		.onChange(of: active) {
-			if let val = node?.externalNotificationConfig?.active {
-				hasChanges = $0 != val
-			}
+		.onChange(of: active) { _, newActive in
+			if newActive != node?.externalNotificationConfig?.active { hasChanges = true }
 		}
-		.onChange(of: output) { newOutput in
-			if node != nil && node!.externalNotificationConfig != nil {
-				if newOutput != node!.externalNotificationConfig!.output { hasChanges = true }
-			}
+		.onChange(of: output) { _, newOutput in
+			if newOutput != node?.externalNotificationConfig?.output ?? -1 { hasChanges = true }
 		}
-		.onChange(of: output) { newOutputBuzzer in
-			if node != nil && node!.externalNotificationConfig != nil {
-				if newOutputBuzzer != node!.externalNotificationConfig!.outputBuzzer { hasChanges = true }
-			}
+		.onChange(of: output) { _, newOutputBuzzer in
+			if newOutputBuzzer != node?.externalNotificationConfig?.outputBuzzer ?? -1 { hasChanges = true }
 		}
-		.onChange(of: output) { newOutputVibra in
-			if node != nil && node!.externalNotificationConfig != nil {
-				if newOutputVibra != node!.externalNotificationConfig!.outputVibra { hasChanges = true }
-			}
+		.onChange(of: output) { _, newOutputVibra in
+			if newOutputVibra != node?.externalNotificationConfig?.outputVibra ?? -1 { hasChanges = true }
 		}
-		.onChange(of: outputMilliseconds) { newOutputMs in
-			if node != nil && node!.externalNotificationConfig != nil {
-				if newOutputMs != node!.externalNotificationConfig!.outputMilliseconds { hasChanges = true }
-			}
+		.onChange(of: outputMilliseconds) { _, newOutputMs in
+			if newOutputMs != node?.externalNotificationConfig?.outputMilliseconds ?? -1 { hasChanges = true }
 		}
-		.onChange(of: usePWM) {
-			if let val = node?.externalNotificationConfig?.usePWM {
-				hasChanges = $0 != val
-			}
+		.onChange(of: usePWM) { _, newPWM in
+			if newPWM != node?.externalNotificationConfig?.usePWM { hasChanges = true }
 		}
-		.onChange(of: nagTimeout) { newNagTimeout in
-			if node != nil && node!.externalNotificationConfig != nil {
-				if newNagTimeout != node!.externalNotificationConfig!.nagTimeout { hasChanges = true }
-			}
+		.onChange(of: nagTimeout) { _, newNagTimeout in
+			if newNagTimeout != node?.externalNotificationConfig?.nagTimeout ?? -1 { hasChanges = true }
 		}
-		.onChange(of: useI2SAsBuzzer) {
-			if let val = node?.externalNotificationConfig?.useI2SAsBuzzer {
-				hasChanges = $0 != val
-			}
+		.onChange(of: useI2SAsBuzzer) { _, newUseI2SAsBuzzer in
+			if newUseI2SAsBuzzer != node?.externalNotificationConfig?.useI2SAsBuzzer { hasChanges = true }
 		}
 	}
 	func setExternalNotificationValues() {

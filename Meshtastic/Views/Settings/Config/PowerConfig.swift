@@ -168,11 +168,11 @@ struct PowerConfig: View {
 		.onChange(of: waitBluetoothSecs) { oldWaitBluetoothSecs, newWaitBluetoothSecs in
 			if oldWaitBluetoothSecs != newWaitBluetoothSecs && newWaitBluetoothSecs != node?.powerConfig?.waitBluetoothSecs ?? -1 { hasChanges = true }
 		}
-		.onChange(of: lsSecs) {
-			if $0 != node?.powerConfig?.lsSecs ?? -1 { hasChanges = true }
+		.onChange(of: lsSecs) { _, newLsSecs in
+			if newLsSecs != node?.powerConfig?.lsSecs ?? -1 { hasChanges = true }
 		}
-		.onChange(of: minWakeSecs) {
-			if $0 != node?.powerConfig?.minWakeSecs ?? -1 { hasChanges = true }
+		.onChange(of: minWakeSecs) { _, newMinWakeSecs in
+			if newMinWakeSecs != node?.powerConfig?.minWakeSecs ?? -1 { hasChanges = true }
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {

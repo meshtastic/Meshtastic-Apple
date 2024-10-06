@@ -31,14 +31,14 @@ struct RtttlConfig: View {
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
-							.onChange(of: ringtone, perform: { _ in
+							.onChange(of: ringtone) {
 								var totalBytes = ringtone.utf8.count
 								// Only mess with the value if it is too big
 								while totalBytes > 228 {
 									ringtone = String(ringtone.dropLast())
 									totalBytes = ringtone.utf8.count
 								}
-							})
+							}
 							.foregroundColor(.gray)
 					}
 					.keyboardType(.default)
@@ -93,7 +93,7 @@ struct RtttlConfig: View {
 					}
 				}
 			}
-			.onChange(of: ringtone) { newRingtone in
+			.onChange(of: ringtone) { _, newRingtone in
 				if node != nil && node!.rtttlConfig != nil {
 					if newRingtone != node!.rtttlConfig!.ringtone { hasChanges = true }
 				}

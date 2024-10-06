@@ -261,22 +261,20 @@ struct DeviceConfig: View {
 		.onChange(of: rebroadcastMode) { oldRebroadcastMode, newRebroadcastMode in
 			if oldRebroadcastMode != newRebroadcastMode && newRebroadcastMode != node?.deviceConfig?.rebroadcastMode ?? -1 { hasChanges = true }
 		}
-		.onChange(of: nodeInfoBroadcastSecs) { newNodeInfoBroadcastSecs in
-			if newNodeInfoBroadcastSecs != node?.deviceConfig?.nodeInfoBroadcastSecs ?? -1 { hasChanges = true }
+		.onChange(of: nodeInfoBroadcastSecs) { oldNodeInfoBroadcastSecs, newNodeInfoBroadcastSecs in
+			if oldNodeInfoBroadcastSecs != newNodeInfoBroadcastSecs && newNodeInfoBroadcastSecs != node?.deviceConfig?.nodeInfoBroadcastSecs ?? -1 { hasChanges = true }
 		}
-		.onChange(of: doubleTapAsButtonPress) {
-			if $0 != node?.deviceConfig?.doubleTapAsButtonPress { hasChanges = true }
+		.onChange(of: doubleTapAsButtonPress) { oldDoubleTapAsButtonPress, newDoubleTapAsButtonPress in
+			if oldDoubleTapAsButtonPress != newDoubleTapAsButtonPress && newDoubleTapAsButtonPress != node?.deviceConfig?.doubleTapAsButtonPress ?? false { hasChanges = true }
 		}
-		.onChange(of: tripleClickAsAdHocPing) {
-			if $0 != node?.deviceConfig?.tripleClickAsAdHocPing { hasChanges = true }
+		.onChange(of: tripleClickAsAdHocPing) { oldTripleClickAsAdHocPing, newTripleClickAsAdHocPing in
+			if oldTripleClickAsAdHocPing != newTripleClickAsAdHocPing && newTripleClickAsAdHocPing != node?.deviceConfig?.tripleClickAsAdHocPing ?? false { hasChanges = true }
 		}
-		.onChange(of: tzdef) { newTzdef in
-			if newTzdef != node?.deviceConfig?.tzdef { hasChanges = true }
+		.onChange(of: tzdef) { oldTzdef, newTzdef in
+			if oldTzdef != newTzdef && newTzdef != node?.deviceConfig?.tzdef { hasChanges = true }
 		}
-		.onChange(of: ledHeartbeatEnabled) { newLedHeartbeatEnabled in
-			if node != nil && node?.deviceConfig != nil {
-				if newLedHeartbeatEnabled != node!.deviceConfig!.ledHeartbeatEnabled { hasChanges = true }
-			}
+		.onChange(of: ledHeartbeatEnabled) { oldLedHeartbeatEnabled, newLedHeartbeatEnabled in
+			if oldLedHeartbeatEnabled != newLedHeartbeatEnabled && newLedHeartbeatEnabled != node?.deviceConfig?.ledHeartbeatEnabled ?? false { hasChanges = true }
 		}
 	}
 	func setDeviceValues() {
