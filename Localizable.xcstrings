@@ -2783,6 +2783,9 @@
     "Channel Role" : {
 
     },
+    "Channel URL" : {
+
+    },
     "Channel Utilization %@%% " : {
 
     },
@@ -18851,6 +18854,9 @@
     "Save" : {
 
     },
+    "Save Channel Settings" : {
+
+    },
     "Save User Config to %@?" : {
 
     },
@@ -20400,6 +20406,9 @@
     "Supported I2C Connected sensors will be detected automatically, sensors are BMP280, BME280, BME680, MCP9808, INA219, INA260, LPS22 and SHTC3." : {
 
     },
+    "Takes a Meshtastic channel URL and saves the channel settings." : {
+
+    },
     "tapback" : {
       "localizations" : {
         "de" : {
@@ -21098,6 +21107,9 @@
 
     },
     "The state of the LED (on/off)" : {
+
+    },
+    "The URL for the channel settings" : {
 
     },
     "There has been no response to a request for device metadata over the admin channel for this node." : {
