@@ -48,7 +48,7 @@ struct NodeInfoItem: View {
 						color: Color(UIColor(hex: UInt32(node.num))),
 						circleSize: 75
 					)
-					if node.snr != 0 && !node.viaMqtt {
+					if node.snr != 0 && !node.viaMqtt && node.hopsAway == 0 {
 						Spacer()
 						VStack {
 							let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: modemPreset)
