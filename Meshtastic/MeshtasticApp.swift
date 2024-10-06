@@ -3,11 +3,8 @@
 import SwiftUI
 import CoreData
 import OSLog
-#if canImport(TipKit)
 import TipKit
-#endif
 
-@available(iOS 17.0, *)
 @main
 struct MeshtasticAppleApp: App {
 
@@ -111,26 +108,24 @@ struct MeshtasticAppleApp: App {
 				}
 			})
 			.task {
-				if #available(iOS 17.0, macOS 14.0, *) {
-					#if DEBUG
-					/// Optionally, call `Tips.resetDatastore()` before `Tips.configure()` to reset the state of all tips. This will allow tips to re-appear even after they have been dismissed by the user.
-					/// This is for testing only, and should not be enabled in release builds.
-					try? Tips.resetDatastore()
-					#endif
+				#if DEBUG
+				/// Optionally, call `Tips.resetDatastore()` before `Tips.configure()` to reset the state of all tips. This will allow tips to re-appear even after they have been dismissed by the user.
+				/// This is for testing only, and should not be enabled in release builds.
+				try? Tips.resetDatastore()
+				#endif
 
-					try? Tips.configure(
-						[
-							// Reset which tips have been shown and what parameters have been tracked, useful during testing and for this sample project
-							.datastoreLocation(.applicationDefault),
-							// When should the tips be presented? If you use .immediate, they'll all be presented whenever a screen with a tip appears.
-							// You can adjust this on per tip level as well
-							.displayFrequency(.immediate)
-						]
-					)
-				}
+				try? Tips.configure(
+					[
+						// Reset which tips have been shown and what parameters have been tracked, useful during testing and for this sample project
+						.datastoreLocation(.applicationDefault),
+						// When should the tips be presented? If you use .immediate, they'll all be presented whenever a screen with a tip appears.
+						// You can adjust this on per tip level as well
+						.displayFrequency(.immediate)
+					]
+				)
 			}
 		}
-		.onChange(of: scenePhase) { (newScenePhase) in
+		.onChange(of: scenePhase) { (_, newScenePhase) in
 			switch newScenePhase {
 			case .background:
 				Logger.services.info("🎬 [App] Scene is in the background")

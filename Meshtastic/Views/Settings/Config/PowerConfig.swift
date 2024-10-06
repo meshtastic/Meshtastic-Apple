@@ -148,31 +148,31 @@ struct PowerConfig: View {
 				}
 			}
 		}
-		.onChange(of: isPowerSaving) {
-			if $0 != node?.powerConfig?.isPowerSaving { hasChanges = true }
+		.onChange(of: isPowerSaving) { oldIsPowerSaving, newIsPowerSaving in
+			if oldIsPowerSaving != newIsPowerSaving && newIsPowerSaving != node?.powerConfig?.isPowerSaving { hasChanges = true }
 		}
-		.onChange(of: shutdownOnPowerLoss) { newShutdownOnPowerLoss in
+		.onChange(of: shutdownOnPowerLoss) { _, newShutdownOnPowerLoss in
 			if newShutdownOnPowerLoss {
 				hasChanges = true
 			}
 		}
-		.onChange(of: shutdownAfterSecs) {
-			if $0 != node?.powerConfig?.minWakeSecs ?? -1 { hasChanges = true }
+		.onChange(of: shutdownAfterSecs) { oldShutdownAfterSecs, newShutdownAfterSecs in
+			if oldShutdownAfterSecs != newShutdownAfterSecs && newShutdownAfterSecs != node?.powerConfig?.minWakeSecs ?? -1 { hasChanges = true }
 		}
-		.onChange(of: adcOverride) { _ in
+		.onChange(of: adcOverride) {
 			hasChanges = true
 		}
-		.onChange(of: adcMultiplier) { newAdcMultiplier in
-			if newAdcMultiplier != node?.powerConfig?.adcMultiplierOverride ?? -1 { hasChanges = true }
+		.onChange(of: adcMultiplier) { _, newAdcMultiplier in
+			if  newAdcMultiplier != node?.powerConfig?.adcMultiplierOverride ?? -1 { hasChanges = true }
 		}
-		.onChange(of: waitBluetoothSecs) {
-			if $0 != node?.powerConfig?.waitBluetoothSecs ?? -1 { hasChanges = true }
+		.onChange(of: waitBluetoothSecs) { oldWaitBluetoothSecs, newWaitBluetoothSecs in
+			if oldWaitBluetoothSecs != newWaitBluetoothSecs && newWaitBluetoothSecs != node?.powerConfig?.waitBluetoothSecs ?? -1 { hasChanges = true }
 		}
-		.onChange(of: lsSecs) {
-			if $0 != node?.powerConfig?.lsSecs ?? -1 { hasChanges = true }
+		.onChange(of: lsSecs) { _, newLsSecs in
+			if newLsSecs != node?.powerConfig?.lsSecs ?? -1 { hasChanges = true }
 		}
-		.onChange(of: minWakeSecs) {
-			if $0 != node?.powerConfig?.minWakeSecs ?? -1 { hasChanges = true }
+		.onChange(of: minWakeSecs) { _, newMinWakeSecs in
+			if newMinWakeSecs != node?.powerConfig?.minWakeSecs ?? -1 { hasChanges = true }
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
@@ -232,13 +232,13 @@ private struct FloatField: View {
 		TextField(title.localized, value: $typingNumber, format: .number)
 			.foregroundColor(.gray)
 			.multilineTextAlignment(.trailing)
-			.onChange(of: typingNumber, perform: { _ in
+			.onChange(of: typingNumber) {
 				if isValid(typingNumber) {
 					number = typingNumber
 				} else {
 					typingNumber = number
 				}
-			})
+			}
 			.keyboardType(.decimalPad)
 			.onAppear {
 				typingNumber = number

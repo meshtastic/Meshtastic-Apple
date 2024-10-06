@@ -47,23 +47,14 @@ struct MessageText: View {
 				let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
 				if tapBackDestination.overlaySensorMessage {
 					VStack {
-						if #available(iOS 17.0, macOS 14.0, *) {
-							isDetectionSensorMessage ? Image(systemName: "sensor.fill")
-								.padding()
-								.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-								.foregroundStyle(Color.orange)
-								.symbolRenderingMode(.multicolor)
-								.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
-								.offset(x: 20, y: -20)
-							: nil
-						} else {
-							isDetectionSensorMessage ? Image(systemName: "sensor.fill")
-								.padding()
-								.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-								.foregroundStyle(Color.orange)
-								.offset(x: 20, y: -20)
-							: nil
-						}
+						isDetectionSensorMessage ? Image(systemName: "sensor.fill")
+							.padding()
+							.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+							.foregroundStyle(Color.orange)
+							.symbolRenderingMode(.multicolor)
+							.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+							.offset(x: 20, y: -20)
+						: nil
 					}
 				} else {
 					EmptyView()

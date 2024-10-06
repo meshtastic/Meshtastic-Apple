@@ -65,14 +65,14 @@ struct WaypointForm: View {
 								axis: .vertical
 							)
 							.foregroundColor(Color.gray)
-							.onChange(of: name, perform: { _ in
+							.onChange(of: name) {
 								var totalBytes = name.utf8.count
 								// Only mess with the value if it is too big
 								while totalBytes > 30 {
 									name = String(name.dropLast())
 									totalBytes = name.utf8.count
 								}
-							})
+							}
 						}
 						HStack {
 							Text("Description")
@@ -83,14 +83,14 @@ struct WaypointForm: View {
 								axis: .vertical
 							)
 							.foregroundColor(Color.gray)
-							.onChange(of: description, perform: { _ in
+							.onChange(of: description) {
 								var totalBytes = description.utf8.count
 								// Only mess with the value if it is too big
 								while totalBytes > 100 {
 									description = String(description.dropLast())
 									totalBytes = description.utf8.count
 								}
-							})
+							}
 						}
 						HStack {
 							Text("Icon")
@@ -98,7 +98,7 @@ struct WaypointForm: View {
 							EmojiOnlyTextField(text: $icon, placeholder: "Select an emoji")
 								.font(.title)
 								.focused($iconIsFocused)
-								.onChange(of: icon) { value in
+								.onChange(of: icon) { _, value in
 
 									// If you have anything other than emojis in your string make it empty
 									if !value.onlyEmojis() {

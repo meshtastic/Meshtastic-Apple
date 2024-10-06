@@ -167,35 +167,23 @@ struct StoreForwardConfig: View {
 				}
 			}
 		}
-		.onChange(of: enabled) { newEnabled in
-			if node != nil && node?.storeForwardConfig != nil {
-				if newEnabled != node!.storeForwardConfig!.enabled { hasChanges = true }
-			}
+		.onChange(of: enabled) { oldEnabled, newEnabled in
+			if oldEnabled != newEnabled && newEnabled != node!.storeForwardConfig!.enabled { hasChanges = true }
 		}
-		.onChange(of: isRouter) { newIsRouter in
-			if node != nil && node?.storeForwardConfig != nil {
-				if newIsRouter != node!.storeForwardConfig!.isRouter { hasChanges = true }
-			}
+		.onChange(of: isRouter) { oldIsRouter, newIsRouter in
+			if oldIsRouter != newIsRouter && newIsRouter != node!.storeForwardConfig!.isRouter { hasChanges = true }
 		}
-		.onChange(of: heartbeat) { newHeartbeat in
-			if node != nil && node?.storeForwardConfig != nil {
-				if newHeartbeat != node!.storeForwardConfig!.heartbeat { hasChanges = true }
-			}
+		.onChange(of: heartbeat) { oldHeartbeat, newHeartbeat in
+			if oldHeartbeat != newHeartbeat && newHeartbeat != node?.storeForwardConfig?.heartbeat ?? true { hasChanges = true }
 		}
-		.onChange(of: records) { newRecords in
-			if node != nil && node?.storeForwardConfig != nil {
-				if newRecords != node!.storeForwardConfig!.records { hasChanges = true }
-			}
+		.onChange(of: records) { oldRecords, newRecords in
+			if oldRecords != newRecords && newRecords != node!.storeForwardConfig?.records ?? -1 { hasChanges = true }
 		}
-		.onChange(of: historyReturnMax) { newHistoryReturnMax in
-			if node != nil && node?.storeForwardConfig != nil {
-				if newHistoryReturnMax != node!.storeForwardConfig!.historyReturnMax { hasChanges = true }
-			}
+		.onChange(of: historyReturnMax) { oldHistoryReturnMax, newHistoryReturnMax in
+			if oldHistoryReturnMax != newHistoryReturnMax && newHistoryReturnMax != node!.storeForwardConfig?.historyReturnMax ?? -1 { hasChanges = true }
 		}
-		.onChange(of: historyReturnWindow) { newHistoryReturnWindow in
-			if node != nil && node?.storeForwardConfig != nil {
-				if newHistoryReturnWindow != node!.storeForwardConfig!.historyReturnWindow { hasChanges = true }
-			}
+		.onChange(of: historyReturnWindow) { oldHistoryReturnWindow, newHistoryReturnWindow in
+			if oldHistoryReturnWindow != newHistoryReturnWindow && newHistoryReturnWindow != node!.storeForwardConfig?.historyReturnWindow ?? -1 { hasChanges = true }
 		}
 	}
 	func setStoreAndForwardValues() {

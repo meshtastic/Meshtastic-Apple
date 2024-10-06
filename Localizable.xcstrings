@@ -11482,9 +11482,6 @@
     "Map Tile Data" : {
 
     },
-    "Map Type" : {
-
-    },
     "map.centering" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -18949,9 +18946,6 @@
     "Select a Trace Route" : {
 
     },
-    "Select something to view" : {
-
-    },
     "select.contact" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -19138,6 +19132,9 @@
 
     },
     "Send a message to a certain meshtastic channel" : {
+
+    },
+    "Send a position on the primary channel when the user button is triple clicked." : {
 
     },
     "Send a shutdown to the node you are connected to" : {
@@ -21894,6 +21891,9 @@
 
     },
     "Treat double tap on supported accelerometers as a user button press." : {
+
+    },
+    "Triple Click Ad Hoc Ping" : {
 
     },
     "Try Again" : {

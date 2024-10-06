@@ -45,7 +45,7 @@ struct BluetoothConfig: View {
 						Label("bluetooth.mode.fixedpin", systemImage: "wallet.pass")
 						TextField("bluetooth.mode.fixedpin", text: $fixedPin)
 							.foregroundColor(.gray)
-							.onChange(of: fixedPin, perform: { _ in
+							.onChange(of: fixedPin) {
 								// Don't let the first character be 0 because it will get stripped when saving a UInt32
 								if fixedPin.first == "0" {
 									fixedPin = fixedPin.replacing("0", with: "")
@@ -59,7 +59,7 @@ struct BluetoothConfig: View {
 								} else if fixedPin.utf8.count < pinLength {
 									shortPin = true
 								}
-							})
+							}
 							.foregroundColor(.gray)
 					}
 					.keyboardType(.decimalPad)
@@ -121,14 +121,14 @@ struct BluetoothConfig: View {
 				}
 			}
 		}
-		.onChange(of: enabled) {
-			if $0 != node?.bluetoothConfig?.enabled { hasChanges = true }
+		.onChange(of: enabled) { oldEnabled, newEnabled in
+			if oldEnabled != newEnabled && newEnabled != node?.bluetoothConfig?.enabled { hasChanges = true }
 		}
-		.onChange(of: mode) {
-			if $0 != node?.bluetoothConfig?.mode ?? -1 { hasChanges = true }
+		.onChange(of: mode) { oldNode, newNode in
+			if oldNode != newNode && newNode != node?.bluetoothConfig?.mode ?? -1 { hasChanges = true }
 		}
-		.onChange(of: fixedPin) { newFixedPin in
-			if newFixedPin != String(node?.bluetoothConfig?.fixedPin ?? -1) { hasChanges = true }
+		.onChange(of: fixedPin) { oldFixedPin, newFixedPin in
+			if oldFixedPin != newFixedPin && newFixedPin != String(node?.bluetoothConfig?.fixedPin ?? -1) { hasChanges = true }
 		}
 	}
 	func setBluetoothValues() {

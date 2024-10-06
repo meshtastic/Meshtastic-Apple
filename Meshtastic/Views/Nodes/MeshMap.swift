@@ -10,11 +10,8 @@ import CoreData
 import CoreLocation
 import Foundation
 import OSLog
-#if canImport(MapKit)
 import MapKit
-#endif
 
-@available(iOS 17.0, macOS 14.0, *)
 struct MeshMap: View {
 
 	@Environment(\.managedObjectContext) var context
@@ -142,7 +139,7 @@ struct MeshMap: View {
 				guard case .map = router.navigationState.selectedTab else { return }
 				// TODO: handle deep link for waypoints
 			}
-			.onChange(of: selectedMapLayer) { newMapLayer in
+			.onChange(of: selectedMapLayer) { _, newMapLayer in
 				switch selectedMapLayer {
 				case .standard:
 					UserDefaults.mapLayer = newMapLayer
@@ -186,17 +183,6 @@ struct MeshMap: View {
 					.tint(Color(UIColor.secondarySystemBackground))
 					.foregroundColor(.accentColor)
 					.buttonStyle(.borderedProminent)
-//					Button(action: {
-//						withAnimation {
-//							editingFilters = !editingFilters
-//						}
-//					}) {
-//						Image(systemName: !editingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
-//							.padding(.vertical, 5)
-//					}
-//					.tint(Color(UIColor.secondarySystemBackground))
-//					.foregroundColor(.accentColor)
-//					.buttonStyle(.borderedProminent)
 				}
 				.controlSize(.regular)
 				.padding(5)

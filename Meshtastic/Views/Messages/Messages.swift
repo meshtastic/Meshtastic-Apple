@@ -8,9 +8,7 @@
 import SwiftUI
 import CoreData
 import OSLog
-#if canImport(TipKit)
 import TipKit
-#endif
 
 struct Messages: View {
 
@@ -65,9 +63,7 @@ struct Messages: View {
 					}
 				}
 
-				if #available(iOS 17.0, macOS 14.0, *) {
-					TipView(MessagesTip(), arrowEdge: .top)
-				}
+				TipView(MessagesTip(), arrowEdge: .top)
 			}
 			.navigationTitle("messages")
 			.navigationBarTitleDisplayMode(.large)
@@ -91,7 +87,7 @@ struct Messages: View {
 			} else if case .directMessages = router.navigationState.messages {
 				Text("Select a conversation")
 			}
-		}.onChange(of: router.navigationState) { _ in
+		}.onChange(of: router.navigationState) {
 			setupNavigationState()
 		}
 	}

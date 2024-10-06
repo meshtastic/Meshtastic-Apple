@@ -50,7 +50,6 @@ func generateMessageMarkdown (message: String) -> String {
 
 func localConfig (config: Config, context: NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
 
-	let remote = nodeNum != UserDefaults.preferredPeripheralNum
 	if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
 		upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
@@ -454,11 +453,11 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 
 func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
-	if let adminMessage = try? AdminMessage(serializedData: packet.decoded.payload) {
+	if let adminMessage = try? AdminMessage(serializedBytes: packet.decoded.payload) {
 
 		if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getCannedMessageModuleMessagesResponse(adminMessage.getCannedMessageModuleMessagesResponse) {
 
-			if let cmmc = try? CannedMessageModuleConfig(serializedData: packet.decoded.payload) {
+			if let cmmc = try? CannedMessageModuleConfig(serializedBytes: packet.decoded.payload) {
 
 				if !cmmc.messages.isEmpty {
 
@@ -581,7 +580,7 @@ func paxCounterPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	do {
 		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 
-		if let paxMessage = try? Paxcount(serializedData: packet.decoded.payload) {
+		if let paxMessage = try? Paxcount(serializedBytes: packet.decoded.payload) {
 
 			let newPax = PaxCounterEntity(context: context)
 			newPax.ble = Int32(truncatingIfNeeded: paxMessage.ble)
@@ -611,7 +610,7 @@ func paxCounterPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSManagedObjectContext) {
 
-	if let routingMessage = try? Routing(serializedData: packet.decoded.payload) {
+	if let routingMessage = try? Routing(serializedBytes: packet.decoded.payload) {
 
 		let routingError = RoutingError(rawValue: routingMessage.errorReason.rawValue)
 
@@ -833,7 +832,7 @@ func textMessageAppPacket(
 	}
 	var storeForwardBroadcast = false
 	if storeForward {
-		if let storeAndForwardMessage = try? StoreAndForward(serializedData: packet.decoded.payload) {
+		if let storeAndForwardMessage = try? StoreAndForward(serializedBytes: packet.decoded.payload) {
 			messageText = String(bytes: storeAndForwardMessage.text, encoding: .utf8)
 			if storeAndForwardMessage.rr == .routerTextBroadcast {
 				storeForwardBroadcast = true
@@ -993,7 +992,6 @@ func textMessageAppPacket(
 	}
 }
 
-
 func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.waypoint.received %@".localized, String(packet.from))
@@ -1004,7 +1002,7 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 	do {
 
-		if let waypointMessage = try? Waypoint(serializedData: packet.decoded.payload) {
+		if let waypointMessage = try? Waypoint(serializedBytes: packet.decoded.payload) {
 			let fetchedWaypoint = try context.fetch(fetchWaypointRequest)
 			if fetchedWaypoint.isEmpty {
 				let waypoint = WaypointEntity(context: context)

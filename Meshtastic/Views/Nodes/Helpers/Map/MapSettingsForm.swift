@@ -6,11 +6,8 @@
 //
 
 import SwiftUI
-#if canImport(MapKit)
 import MapKit
-#endif
 
-@available(iOS 17.0, macOS 14.0, *)
 struct MapSettingsForm: View {
 	@Environment(\.dismiss) private var dismiss
 	@State private var currentDetent = PresentationDetent.medium
@@ -39,7 +36,7 @@ struct MapSettingsForm: View {
 					.pickerStyle(SegmentedPickerStyle())
 					.padding(.top, 5)
 					.padding(.bottom, 5)
-					.onChange(of: mapLayer) { newMapLayer in
+					.onChange(of: mapLayer) { _, newMapLayer in
 						UserDefaults.mapLayer = newMapLayer
 					}
 					if meshMap {
@@ -53,7 +50,7 @@ struct MapSettingsForm: View {
 							}
 							.pickerStyle(DefaultPickerStyle())
 						}
-						.onChange(of: meshMapDistance) { newMeshMapDistance in
+						.onChange(of: meshMapDistance) { _, newMeshMapDistance in
 							UserDefaults.meshMapDistance = newMeshMapDistance
 						}
 						Toggle(isOn: $waypoints) {

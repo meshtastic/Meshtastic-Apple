@@ -155,45 +155,29 @@ struct TelemetryConfig: View {
 					}
 				}
 			}
-			.onChange(of: deviceUpdateInterval) { newDeviceInterval in
-				if node != nil && node?.telemetryConfig != nil {
-					if newDeviceInterval != node!.telemetryConfig!.deviceUpdateInterval { hasChanges = true	}
-				}
+			.onChange(of: deviceUpdateInterval) { _, newDeviceInterval in
+				if newDeviceInterval != node?.telemetryConfig?.deviceUpdateInterval ?? -1 { hasChanges = true }
 			}
-			.onChange(of: environmentUpdateInterval) { newEnvInterval in
-				if node != nil && node?.telemetryConfig != nil {
-					if newEnvInterval != node!.telemetryConfig!.environmentUpdateInterval { hasChanges = true	}
-				}
+			.onChange(of: environmentUpdateInterval) { _, newEnvInterval in
+				if newEnvInterval != node?.telemetryConfig?.environmentUpdateInterval ?? -1 { hasChanges = true	}
 			}
-			.onChange(of: environmentMeasurementEnabled) { newEnvEnabled in
-				if node != nil && node?.telemetryConfig != nil {
-					if newEnvEnabled != node!.telemetryConfig!.environmentMeasurementEnabled { hasChanges = true	}
-				}
+			.onChange(of: environmentMeasurementEnabled) { _, newEnvEnabled in
+				if newEnvEnabled != node?.telemetryConfig?.environmentMeasurementEnabled { hasChanges = true }
 			}
-			.onChange(of: environmentScreenEnabled) { newEnvScreenEnabled in
-				if node!.telemetryConfig != nil {
-					if newEnvScreenEnabled != node!.telemetryConfig!.environmentScreenEnabled { hasChanges = true	}
-				}
+			.onChange(of: environmentScreenEnabled) { _, newEnvScreenEnabled in
+				if newEnvScreenEnabled != node?.telemetryConfig?.environmentScreenEnabled { hasChanges = true	}
 			}
-			.onChange(of: environmentDisplayFahrenheit) { newEnvDisplayF in
-				if node != nil && node?.telemetryConfig != nil {
-					if newEnvDisplayF != node!.telemetryConfig!.environmentDisplayFahrenheit { hasChanges = true	}
-				}
+			.onChange(of: environmentDisplayFahrenheit) { _, newEnvDisplayF in
+				if newEnvDisplayF != node?.telemetryConfig?.environmentDisplayFahrenheit { hasChanges = true	}
 			}
-			.onChange(of: powerMeasurementEnabled) { newPowerMeasurementEnabled in
-				if node != nil && node?.telemetryConfig != nil {
-					if newPowerMeasurementEnabled != node!.telemetryConfig!.powerMeasurementEnabled { hasChanges = true	}
-				}
+			.onChange(of: powerMeasurementEnabled) { _, newPowerMeasurementEnabled in
+				if newPowerMeasurementEnabled != node?.telemetryConfig?.powerMeasurementEnabled { hasChanges = true	}
 			}
-			.onChange(of: powerUpdateInterval) { newPowerUpdateInterval in
-				if node != nil && node?.telemetryConfig != nil {
-					if newPowerUpdateInterval != node!.telemetryConfig!.powerUpdateInterval { hasChanges = true	}
-				}
+			.onChange(of: powerUpdateInterval) { _, newPowerUpdateInterval in
+				if newPowerUpdateInterval != node?.telemetryConfig?.powerUpdateInterval ?? -1 { hasChanges = true	}
 			}
-			.onChange(of: powerScreenEnabled) { newPowerScreenEnabled in
-				if node != nil && node?.telemetryConfig != nil {
-					if newPowerScreenEnabled != node!.telemetryConfig!.powerScreenEnabled { hasChanges = true	}
-				}
+			.onChange(of: powerScreenEnabled) { _, newPowerScreenEnabled in
+				if newPowerScreenEnabled != node?.telemetryConfig?.powerScreenEnabled { hasChanges = true	}
 			}
 		}
 	}

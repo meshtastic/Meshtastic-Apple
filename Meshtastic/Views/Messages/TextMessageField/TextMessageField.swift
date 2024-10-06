@@ -30,14 +30,14 @@ struct TextMessageField: View {
 		HStack(alignment: .top) {
 			ZStack {
 				TextField("message", text: $typingMessage, axis: .vertical)
-					.onChange(of: typingMessage, perform: { value in
+					.onChange(of: typingMessage) { _, value in
 						totalBytes = value.utf8.count
 						// Only mess with the value if it is too big
 						while totalBytes > Self.maxbytes {
 							typingMessage = String(typingMessage.dropLast())
 							totalBytes = typingMessage.utf8.count
 						}
-					})
+					}
 					.keyboardType(.default)
 					.toolbar {
 						ToolbarItemGroup(placement: .keyboard) {

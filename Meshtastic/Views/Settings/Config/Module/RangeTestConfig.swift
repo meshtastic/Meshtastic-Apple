@@ -102,14 +102,14 @@ struct RangeTestConfig: View {
 					}
 				}
 			}
-			.onChange(of: enabled) {
-				if $0 != node?.rangeTestConfig?.enabled { hasChanges = true }
+			.onChange(of: enabled) { _, newEnabled in
+				if newEnabled != node?.rangeTestConfig?.enabled { hasChanges = true }
 			}
-			.onChange(of: save) {
-				if $0 != node?.rangeTestConfig?.save { hasChanges = true }
+			.onChange(of: save) { _, newSave in
+				if newSave != node?.rangeTestConfig?.save { hasChanges = true }
 			}
-			.onChange(of: sender) {
-				if $0 != node?.rangeTestConfig?.sender ?? -1 { hasChanges = true }
+			.onChange(of: sender) { _, newSender in
+				if newSender != node?.rangeTestConfig?.sender ?? -1 { hasChanges = true }
 			}
 		}
 	}

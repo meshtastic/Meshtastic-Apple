@@ -166,11 +166,7 @@ struct PositionLog: View {
 				)
 
 			} else {
-				if #available (iOS 17, *) {
-					ContentUnavailableView("No Positions", systemImage: "mappin.slash")
-				} else {
-					Text("No Positions")
-				}
+				ContentUnavailableView("No Positions", systemImage: "mappin.slash")
 			}
 		}
 		.navigationTitle("Position Log \(node.positions?.count ?? 0) Points")

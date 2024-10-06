@@ -122,11 +122,11 @@ struct UserMessageList: View {
 						scrollView.scrollTo(user.messageList.last?.messageId ?? 0, anchor: .bottom)
 					}
 				}
-				.onChange(of: user.messageList, perform: { _ in
+				.onChange(of: user.messageList) {
 					withAnimation {
 						scrollView.scrollTo(user.messageList.last?.messageId ?? 0, anchor: .bottom)
 					}
-				})
+				}
 			}
 
 			TextMessageField(

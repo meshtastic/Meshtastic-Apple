@@ -6,9 +6,7 @@
 //
 
 import SwiftUI
-#if canImport(MapKit)
 import MapKit
-#endif
 
 struct ChannelForm: View {
 
@@ -41,7 +39,7 @@ struct ChannelForm: View {
 						.disableAutocorrection(true)
 						.keyboardType(.alphabet)
 						.foregroundColor(Color.gray)
-						.onChange(of: channelName, perform: { _ in
+						.onChange(of: channelName) {
 							channelName = channelName.replacing(" ", with: "")
 							var totalBytes = channelName.utf8.count
 							// Only mess with the value if it is too big
@@ -50,7 +48,7 @@ struct ChannelForm: View {
 								totalBytes = channelName.utf8.count
 							}
 							hasChanges = true
-						})
+						}
 					}
 					HStack {
 						Picker("Key Size", selection: $channelKeySize) {
@@ -99,7 +97,7 @@ struct ChannelForm: View {
 									, lineWidth: 2.0)
 
 						)
-						.onChange(of: channelKey, perform: { _ in
+						.onChange(of: channelKey) {
 
 							let tempKey = Data(base64Encoded: channelKey) ?? Data()
 							if tempKey.count == channelKeySize || channelKeySize == -1 {
@@ -108,7 +106,7 @@ struct ChannelForm: View {
 								hasValidKey = false
 							}
 							hasChanges = true
-						})
+						}
 						.disabled(channelKeySize <= 0)
 					}
 					HStack {
@@ -148,7 +146,7 @@ struct ChannelForm: View {
 								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 								.disabled(!supportedVersion)
 								.listRowSeparator(.visible)
-								.onChange(of: preciseLocation) { pl in
+								.onChange(of: preciseLocation) { _, pl in
 									if pl == false {
 										positionPrecision = 14
 									}
@@ -186,10 +184,10 @@ struct ChannelForm: View {
 					.listRowSeparator(.visible)
 				}
 			}
-			.onChange(of: channelName) { _ in
+			.onChange(of: channelName) {
 				hasChanges = true
 			}
-			.onChange(of: channelKeySize) { _ in
+			.onChange(of: channelKeySize) {
 				if channelKeySize == -1 {
 					channelKey = "AQ=="
 				} else {
@@ -198,10 +196,10 @@ struct ChannelForm: View {
 				}
 				hasChanges = true
 			}
-			.onChange(of: channelKey) { _ in
+			.onChange(of: channelKey) {
 				hasChanges = true
 			}
-			.onChange(of: channelKeySize) { _ in
+			.onChange(of: channelKeySize) {
 				if channelKeySize == -1 {
 					if channelRole == 0 {
 						preciseLocation = false
@@ -209,10 +207,10 @@ struct ChannelForm: View {
 					channelKey = "AQ=="
 				}
 			}
-			.onChange(of: channelRole) { _ in
+			.onChange(of: channelRole) {
 				hasChanges = true
 			}
-			.onChange(of: preciseLocation) { loc in
+			.onChange(of: preciseLocation) { _, loc in
 				if loc == true {
 					if channelKey == "AQ==" {
 						preciseLocation = false
@@ -225,10 +223,10 @@ struct ChannelForm: View {
 				}
 				hasChanges = true
 			}
-			.onChange(of: positionPrecision) { _ in
+			.onChange(of: positionPrecision) {
 				hasChanges = true
 			}
-			.onChange(of: positionsEnabled) { pe in
+			.onChange(of: positionsEnabled) { _, pe in
 				if pe {
 					if positionPrecision == 0 {
 						positionPrecision = 14
@@ -238,10 +236,10 @@ struct ChannelForm: View {
 				}
 				hasChanges = true
 			}
-			.onChange(of: uplink) { _ in
+			.onChange(of: uplink) {
 				hasChanges = true
 			}
-			.onChange(of: downlink) { _ in
+			.onChange(of: downlink) {
 				hasChanges = true
 			}
 			.onFirstAppear {

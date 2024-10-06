@@ -91,14 +91,14 @@ struct DetectionSensorConfig: View {
 								.foregroundColor(.gray)
 								.autocapitalization(.none)
 								.disableAutocorrection(true)
-								.onChange(of: name, perform: { _ in
+								.onChange(of: name) {
 									var totalBytes = name.utf8.count
 									// Only mess with the value if it is too big
 									while totalBytes > 20 {
 										name = String(name.dropLast())
 										totalBytes = name.utf8.count
 									}
-								})
+								}
 						}
 						.listRowSeparator(.hidden)
 						Text("Friendly name used to format message sent to mesh. Example: A name \"Motion\" would result in a message \"Motion detected\"")
@@ -210,47 +210,31 @@ struct DetectionSensorConfig: View {
 				}
 			}
 		}
-		.onChange(of: enabled) {
-			if let val = node?.detectionSensorConfig?.enabled {
-				hasChanges = $0 != val
-			}
+		.onChange(of: enabled) { _, newEnabled in
+			if newEnabled != node?.detectionSensorConfig?.enabled { hasChanges = true }
 		}
-		.onChange(of: sendBell) {
-			if let val = node?.detectionSensorConfig?.sendBell {
-				hasChanges = $0 != val
-			}
+		.onChange(of: sendBell) { _, newSendBell in
+			if newSendBell != node?.detectionSensorConfig?.sendBell { hasChanges = true }
 		}
-		.onChange(of: detectionTriggeredHigh) { newDetectionTriggeredHigh in
-			if node != nil && node?.detectionSensorConfig != nil {
-				if newDetectionTriggeredHigh != node!.detectionSensorConfig!.detectionTriggeredHigh { hasChanges = true }
-			}
+		.onChange(of: detectionTriggeredHigh) { _, newDetectionTriggeredHigh in
+			if newDetectionTriggeredHigh != node?.detectionSensorConfig?.detectionTriggeredHigh { hasChanges = true }
 		}
-		.onChange(of: usePullup) {
-			if let val = node?.detectionSensorConfig?.usePullup {
-				hasChanges = $0 != val
-			}
+		.onChange(of: usePullup) { _, newUsePullup in
+			if newUsePullup != node?.detectionSensorConfig?.usePullup { hasChanges = true }
 		}
-		.onChange(of: name) { newName in
-			if node != nil && node?.detectionSensorConfig != nil {
-				if newName != node!.detectionSensorConfig!.name { hasChanges = true }
-			}
+		.onChange(of: name) { _, newName in
+			if newName != node?.detectionSensorConfig?.name ?? "" { hasChanges = true }
 		}
-		.onChange(of: monitorPin) { newMonitorPin in
-			if node != nil && node?.detectionSensorConfig != nil {
-				if newMonitorPin != node!.detectionSensorConfig!.monitorPin { hasChanges = true }
-			}
+		.onChange(of: monitorPin) { _, newMonitorPin in
+			if newMonitorPin != node?.detectionSensorConfig?.monitorPin ?? 0 { hasChanges = true }
 		}
-		.onChange(of: minimumBroadcastSecs) { newMinimumBroadcastSecs in
-			if node != nil && node?.detectionSensorConfig != nil {
-				if newMinimumBroadcastSecs != node!.detectionSensorConfig!.minimumBroadcastSecs { hasChanges = true }
-			}
+		.onChange(of: minimumBroadcastSecs) { _, newMinimumBroadcastSecs in
+			if newMinimumBroadcastSecs != node?.detectionSensorConfig?.minimumBroadcastSecs ?? 0 { hasChanges = true }
 		}
-		.onChange(of: stateBroadcastSecs) { newStateBroadcastSecs in
-			if node != nil && node?.detectionSensorConfig != nil {
-				if newStateBroadcastSecs != node!.detectionSensorConfig!.stateBroadcastSecs { hasChanges = true }
-			}
+		.onChange(of: stateBroadcastSecs) { _, newStateBroadcastSecs in
+			if newStateBroadcastSecs != node?.detectionSensorConfig?.stateBroadcastSecs ?? 0 { hasChanges = true }
 		}
-		.onChange(of: detectionNotificationsEnabled) { newDetectionNotificationsEnabled in
+		.onChange(of: detectionNotificationsEnabled) { _, newDetectionNotificationsEnabled in
 			UserDefaults.enableDetectionNotifications = newDetectionNotificationsEnabled
 		}
 	}

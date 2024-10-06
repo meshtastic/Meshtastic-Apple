@@ -8,11 +8,8 @@
 import SwiftUI
 import CoreData
 import OSLog
-#if canImport(MapKit)
 import MapKit
-#endif
 
-@available(iOS 17.0, macOS 14.0, *)
 struct TraceRouteLog: View {
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@ObservedObject var locationsHandler = LocationsHandler.shared

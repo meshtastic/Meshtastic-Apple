@@ -69,6 +69,7 @@
         <attribute name="rebroadcastMode" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="role" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="serialEnabled" optional="YES" attributeType="Boolean" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="tripleClickAsAdHocPing" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="tzdef" optional="YES" attributeType="String"/>
         <relationship name="deviceConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="deviceConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
