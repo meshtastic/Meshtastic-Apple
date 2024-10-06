@@ -1275,9 +1275,6 @@
         }
       }
     },
-    "Attribution:" : {
-
-    },
     "automatic.detection" : {
       "extractionState" : "migrated",
       "localizations" : {
@@ -6820,9 +6817,6 @@
     "Enable Notifications" : {
 
     },
-    "Enable Offline Maps" : {
-
-    },
     "enabled" : {
       "localizations" : {
         "de" : {
@@ -11542,6 +11536,7 @@
       }
     },
     "map.recentering" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -15871,9 +15866,6 @@
         }
       }
     },
-    "Offline Maps" : {
-
-    },
     "OK" : {
 
     },
@@ -16711,9 +16703,6 @@
 
     },
     "PWD" : {
-
-    },
-    "Radar" : {
 
     },
     "radio.configuration" : {
@@ -19856,9 +19845,6 @@
     "Show Alerts" : {
 
     },
-    "Show Node History" : {
-
-    },
     "Show nodes" : {
 
     },
@@ -19868,13 +19854,7 @@
     "Show on the mesh map." : {
 
     },
-    "Show Route Lines" : {
-
-    },
     "Show Waypoints " : {
-
-    },
-    "Show Weather" : {
 
     },
     "Shut Down" : {
@@ -21128,12 +21108,6 @@
 
     },
     "This will send a current position from your phone and enable fixed position." : {
-
-    },
-    "Tile Server" : {
-
-    },
-    "Tiles above Labels" : {
 
     },
     "Time" : {

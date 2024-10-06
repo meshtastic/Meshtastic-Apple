@@ -24,6 +24,7 @@ struct NodeMapSwiftUI: View {
 	@Namespace var mapScope
 	@State var mapStyle: MapStyle = MapStyle.hybrid(elevation: .flat, pointsOfInterest: .all, showsTraffic: true)
 	@State var position = MapCameraPosition.automatic
+	@State var distance = 0.0
 	@State var scene: MKLookAroundScene?
 	@State var isLookingAround = false
 	@State var isShowingAltitude = false
@@ -44,7 +45,7 @@ struct NodeMapSwiftUI: View {
 		if node.hasPositions {
 			ZStack {
 				MapReader { _ in
-					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 3000, maximumDistance: .infinity), scope: mapScope) {
+					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 0, maximumDistance: .infinity), scope: mapScope) {
 						NodeMapContent(node: node)
 					}
 					.mapScope(mapScope)
@@ -103,7 +104,7 @@ struct NodeMapSwiftUI: View {
 						if node.positions?.count ?? 0 > 1 {
 							position = .automatic
 						} else {
-							position = .camera(MapCamera(centerCoordinate: mostRecent!.coordinate, distance: 8000, heading: 0, pitch: 60))
+							position = .camera(MapCamera(centerCoordinate: mostRecent!.coordinate, distance: distance, heading: 0, pitch: 0))
 						}
 						if let mostRecent {
 							Task {
@@ -128,7 +129,7 @@ struct NodeMapSwiftUI: View {
 							position = .automatic
 						} else {
 							if let mrCoord = mostRecent?.coordinate {
-								position = .camera(MapCamera(centerCoordinate: mrCoord, distance: 8000, heading: 0, pitch: 60))
+								position = .camera(MapCamera(centerCoordinate: mrCoord, distance: distance, heading: 0, pitch: 0))
 							}
 						}
 						if self.scene == nil {
