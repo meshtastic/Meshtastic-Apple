@@ -278,14 +278,10 @@ struct MQTTConfig: View {
 			if newUsername != node?.mqttConfig?.username ?? "" { hasChanges = true }
 		}
 		.onChange(of: password) { newPassword in
-			if node != nil && node?.mqttConfig != nil {
-				if newPassword != node!.mqttConfig!.password { hasChanges = true }
-			}
+			if newPassword != node?.mqttConfig?.password ?? "" { hasChanges = true }
 		}
 		.onChange(of: root) { newRoot in
-			if node != nil && node?.mqttConfig != nil {
-				if newRoot != node!.mqttConfig!.root { hasChanges = true }
-			}
+			if newRoot != node?.mqttConfig?.root ?? "" { hasChanges = true }
 		}
 		.onChange(of: selectedTopic) { _, newSelectedTopic in
 			root = newSelectedTopic
@@ -320,10 +316,8 @@ struct MQTTConfig: View {
 		.onChange(of: mapReportingEnabled) { _, newMapReportingEnabled in
 			if newMapReportingEnabled != node?.mqttConfig?.mapReportingEnabled { hasChanges = true }
 		}
-		.onChange(of: mapPublishIntervalSecs) { newMapPublishIntervalSecs in
-			if node != nil && node?.mqttConfig != nil {
-				if newMapPublishIntervalSecs != node!.mqttConfig!.mapPublishIntervalSecs { hasChanges = true }
-			}
+		.onChange(of: mapPublishIntervalSecs) { _, newMapPublishIntervalSecs in
+			if newMapPublishIntervalSecs != node?.mqttConfig?.mapPublishIntervalSecs ?? -1 { hasChanges = true }
 		}
 		.onFirstAppear {
 			// Need to request a MqttModuleConfig from the remote node before allowing changes
