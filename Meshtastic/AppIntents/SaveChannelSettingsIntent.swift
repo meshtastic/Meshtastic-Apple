@@ -42,7 +42,6 @@ struct SaveChannelSettingsIntent: AppIntent {
 
 			// If valid channel settings are extracted, attempt to save them
 			if let channelSettings = channelSettings {
-				print(channelSettings)
 				// Call the BLEManager to save the channel settings
 				let saveResult = BLEManager.shared.saveChannelSet(base64UrlString: channelSettings, addChannels: addChannels)
 				
