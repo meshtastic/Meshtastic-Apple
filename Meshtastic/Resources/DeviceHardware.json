@@ -414,5 +414,13 @@
 	"architecture": "nrf52840",
 	"activelySupported": true,
 	"displayName": "Seeed Card Tracker T1000-E"
+  },
+  {
+	"hwModel": 80,
+	"hwModelSlug": "M5STACK_CORES3",
+	"platformioTarget": "m5stack-cores3",
+	"architecture": "esp32-s3",
+	"activelySupported": true,
+	"displayName": "M5Stack CoreS3"
   }
 ]
