@@ -358,7 +358,9 @@ public enum HardwareModel: SwiftProtobuf.Enum {
   /// M5 esp32 based MCU modules with enclosure, TFT and LORA Shields. All Variants (Basic, Core, Fire, Core2, Paper) https://m5stack.com/ 
   case m5StackCorebasic // = 77
   case m5StackCore2 // = 78
-
+  
+  case m5StackCoreS3 // = 80
+  
   ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
@@ -450,6 +452,7 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case 76: self = .rp2040FeatherRfm95
     case 77: self = .m5StackCorebasic
     case 78: self = .m5StackCore2
+    case 80: self = .m5StackCoreS3
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
