@@ -628,6 +628,7 @@ extension HardwareModel: CaseIterable {
     .rp2040FeatherRfm95,
     .m5StackCorebasic,
     .m5StackCore2,
+    .m5StackCoreS3,
     .privateHw,
   ]
 }
