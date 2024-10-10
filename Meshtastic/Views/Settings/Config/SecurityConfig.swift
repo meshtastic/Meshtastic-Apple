@@ -26,7 +26,11 @@ struct SecurityConfig: View {
 	@State var privateKey = ""
 	@State var hasValidPrivateKey: Bool = false
 	@State var adminKey = ""
+	@State var adminKey2 = ""
+	@State var adminKey3 = ""
 	@State var hasValidAdminKey: Bool = true
+	@State var hasValidAdminKey2: Bool = true
+	@State var hasValidAdminKey3: Bool = true
 	@State var isManaged = false
 	@State var serialEnabled = false
 	@State var debugLogApiEnabled = false
@@ -49,8 +53,7 @@ struct SecurityConfig: View {
 						Text("Sent out to other nodes on the mesh to allow them to compute a shared secret key.")
 							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
-					}
-					VStack(alignment: .leading) {
+						Divider()
 						Label("Private Key", systemImage: "key.fill")
 						SecureInput("Private Key", text: $privateKey, isValid: $hasValidPrivateKey)
 							.background(
@@ -60,11 +63,34 @@ struct SecurityConfig: View {
 						Text("Used to create a shared key with a remote device.")
 							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
-					}
-					VStack(alignment: .leading) {
-						Label("Admin Key", systemImage: "key.viewfinder")
-						SecureInput("Admin Key", text: $adminKey, isValid: $hasValidAdminKey)
-						Text("The public key authorized to send admin messages to this node.")
+						Divider()
+						Label("Primary Admin Key", systemImage: "key.viewfinder")
+						SecureInput("Primary Admin Key", text: $adminKey, isValid: $hasValidAdminKey)
+							.background(
+								RoundedRectangle(cornerRadius: 10.0)
+									.stroke(hasValidAdminKey ? Color.clear : Color.red, lineWidth: 2.0)
+							)
+						Text("The primary public key authorized to send admin messages to this node.")
+							.foregroundStyle(.secondary)
+							.font(idiom == .phone ? .caption : .callout)
+						Divider()
+						Label("Secondary Admin Key", systemImage: "key.viewfinder")
+						SecureInput("Secondary Admin Key", text: $adminKey2, isValid: $hasValidAdminKey2)
+							.background(
+								RoundedRectangle(cornerRadius: 10.0)
+									.stroke(hasValidAdminKey2 ? Color.clear : Color.red, lineWidth: 2.0)
+							)
+						Text("The secondary public key authorized to send admin messages to this node.")
+							.foregroundStyle(.secondary)
+							.font(idiom == .phone ? .caption : .callout)
+						Divider()
+						Label("Tertiary Admin Key", systemImage: "key.viewfinder")
+						SecureInput("Tertiary Admin Key", text: $adminKey2, isValid: $hasValidAdminKey2)
+							.background(
+								RoundedRectangle(cornerRadius: 10.0)
+									.stroke(hasValidAdminKey3 ? Color.clear : Color.red, lineWidth: 2.0)
+							)
+						Text("The tertiarypublic key authorized to send admin messages to this node.")
 							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
 					}
@@ -147,6 +173,28 @@ struct SecurityConfig: View {
 			}
 			hasChanges = true
 		}
+		.onChange(of: adminKey2) { _, key in
+			let tempKey = Data(base64Encoded: key) ?? Data()
+			if key.isEmpty {
+				hasValidAdminKey2 = true
+			} else if tempKey.count == 32 {
+				hasValidAdminKey2 = true
+			} else {
+				hasValidAdminKey2 = false
+			}
+			hasChanges = true
+		}
+		.onChange(of: adminKey3) { _, key in
+			let tempKey = Data(base64Encoded: key) ?? Data()
+			if key.isEmpty {
+				hasValidAdminKey3 = true
+			} else if tempKey.count == 32 {
+				hasValidAdminKey3 = true
+			} else {
+				hasValidAdminKey3 = false
+			}
+			hasChanges = true
+		}
 		.onFirstAppear {
 			// Need to request a DeviceConfig from the remote node before allowing changes
 			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
@@ -186,7 +234,7 @@ struct SecurityConfig: View {
 			var config = Config.SecurityConfig()
 			config.publicKey = Data(base64Encoded: publicKey) ?? Data()
 			config.privateKey = Data(base64Encoded: privateKey) ?? Data()
-			config.adminKey = [Data(base64Encoded: adminKey) ?? Data()]
+			config.adminKey = [Data(base64Encoded: adminKey) ?? Data(), Data(base64Encoded: adminKey2) ?? Data(), Data(base64Encoded: adminKey3) ?? Data()]
 			config.isManaged = isManaged
 			config.serialEnabled = serialEnabled
 			config.debugLogApiEnabled = debugLogApiEnabled
@@ -211,6 +259,8 @@ struct SecurityConfig: View {
 		self.publicKey = node?.securityConfig?.publicKey?.base64EncodedString() ?? ""
 		self.privateKey = node?.securityConfig?.privateKey?.base64EncodedString() ?? ""
 		self.adminKey = node?.securityConfig?.adminKey?.base64EncodedString() ?? ""
+		self.adminKey2 = node?.securityConfig?.adminKey?.base64EncodedString() ?? ""
+		self.adminKey3 = node?.securityConfig?.adminKey?.base64EncodedString() ?? ""
 		self.isManaged = node?.securityConfig?.isManaged ?? false
 		self.serialEnabled = node?.securityConfig?.serialEnabled ?? false
 		self.debugLogApiEnabled = node?.securityConfig?.debugLogApiEnabled ?? false

@@ -122,7 +122,7 @@ struct WidgetsLiveActivity: Widget {
 
 struct WidgetsLiveActivity_Previews: PreviewProvider {
 	static let attributes = MeshActivityAttributes(nodeNum: 123456789, name: "RAK Compact Rotary Handset Gray 8E6G")
-	static let state = MeshActivityAttributes.ContentState(uptimeSeconds: 600, channelUtilization: 1.2, airtime: 3.5, sentPackets: 12587, receivedPackets: 12555, badReceivedPackets: 800, nodesOnline: 99, totalNodes: 100, timerRange: Date.now...Date(timeIntervalSinceNow: 300))
+	static let state = MeshActivityAttributes.ContentState(uptimeSeconds: 600, channelUtilization: 1.2, airtime: 3.5, sentPackets: 12587, receivedPackets: 12555, badReceivedPackets: 800, dupeReceivedPackets: 100 , packetsSentRelay: 250, packetsCanceledRelay: 372, nodesOnline: 99, totalNodes: 100, timerRange: Date.now...Date(timeIntervalSinceNow: 300))
 
     static var previews: some View {
         attributes

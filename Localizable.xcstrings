@@ -470,9 +470,6 @@
     "Admin & Direct Message Keys" : {
 
     },
-    "Admin Key" : {
-
-    },
     "admin.log" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1534,13 +1531,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "尝试连接%@失败，你可能需要在系统设置的蓝牙选项中忽略该电台。"
+            "value" : "尝试连接%d失败，你可能需要在系统设置的蓝牙选项中忽略该电台。"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "嘗試連接%@失敗，你可能需要在系统設定的藍芽選項中忽略該電台。"
+            "value" : "嘗試連接%d失敗，你可能需要在系统設定的藍芽選項中忽略該電台。"
           }
         }
       }
@@ -5199,9 +5196,6 @@
     "Detection sensor messages are received as text messages.  If you enable notifications you will recieve a notification for each detection message received and a corresponding unread message badge." : {
 
     },
-    "Detection trigger High" : {
-
-    },
     "detection.sensor" : {
       "localizations" : {
         "de" : {
@@ -5877,55 +5871,55 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Repeater - Mesh packets will prefer to be routed over this node. This role eliminates unnecessary overhead such as NodeInfo, DeviceTelemetry, and any other mesh packet, resulting in the device not appearing as part of the network.  Please see Rebroadcast Mode for additional settings specific to this role."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Infrastructure node for extending network coverage by relaying messages with minimal overhead. Not visible in Nodes list."
+            "value" : "Infrastructure node on a tower or mountain top only.  Not to be used for roofs or mobile nodes. Relays messages with minimal overhead. Not visible in Nodes list."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Noeud d'infrastructure qui étend la couverture du réseau en relayant les messages avec un minimum de surcharge. Invisible dans la liste des noeuds."
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "מכשיר תשתית להרחבת המש על ידי העברת הודעות עם דאטה נוסף מינימלי."
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Przekaźnik - Pakiety siatki będą preferować trasowanie przez ten węzeł. Ta rola eliminuje niepotrzebny nadmiar, taki jak NodeInfo, DeviceTelemetry i inne pakiety siatki, skutkując tym, że urządzenie nie będzie widoczne jako część sieci. Proszę zobaczyć tryb Rebroadcast dla dodatkowych ustawień specyficznych dla tej roli."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Nó de infraestrutura para ampliar a cobertura da rede transmitindo mensagens com sobrecarga mínima. Não visível na lista de Nós."
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Infrastrukturnod för att utöka nätverkstäckningen genom att vidarebefordra meddelanden med minimal overhead. Syns inte i Noder-listan."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "中继模式 - Mesh 网络数据包将优先通过此节点路由。此模式可消除不必要的开销，如节点信息、设备遥测和任何其他 Mesh 数据包，从而使设备不显示为 Mesh 网络的一部分。有关此角色的其他特定设置，请参阅转播模式。"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "中繼模式 - Mesh 網路數據包將優先通過此中繼點路由。此模式可消除不必要的開銷，如 NodeInfo、DeviceTelemetry 和任何其他 Mesh 數據包，從而使設備不顯示為 Mesh 網路的一部分。有關此角色的其他特定設置，請參閱轉播模式。"
           }
         }
@@ -5936,55 +5930,55 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Router - Mesh Pakete werden bevorzugt über diesen Node gerouted. Dieser Node wird nicht von einer Client App benutzt. WLAN, Bluetooth und Display sind aus."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Infrastructure node for extending network coverage by relaying messages. Visible in Nodes list."
+            "value" : "Infrastructure node on a tower or mountain top only.  Not to be used for roofs or mobile nodes.  Needs exceptional coverage. Visible in Nodes list."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Noeud d'infrastructure qui étend la couverture du réseau en relayant les messages. Visible dans la liste des noeuds."
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "מכשיר תשתית להרחבת המש על ידי העברת הודעות. מופיע ברשימת מכשירים."
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Router - Pakiety siatki będą preferować trasowanie przez ten węzeł. Zakłada, że urządzenie będzie działać samodzielnie, umieszczone w miejscu z przewagą zasięgu. UWAGA: Radia BLE/Wi-Fi i ekran OLED zostaną uśpione."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Nó de infraestrutura para ampliar a cobertura da rede transmitindo mensagens. Visível na lista de Nós."
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Infrastrukturnod för att utöka nätverkstäckningen genom att vidarebefordra meddelanden. Synlig i Noder-listan."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "纯路由模式 -  自动转发 Mesh 网络中其他节点的消息，中继模式下屏幕会熄灭，Wi-Fi 和蓝牙将会进入睡眠模式，App 将无法连接到电台进行收发操作。"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "纯路由模式 - 自動轉發 Mesh 網路中其他中繼點的消息，中繼模式下螢幕會熄滅，Wi-Fi 和藍芽將會進入睡眠模式，App 將無法連接到電台進行收發操作。"
           }
         }
@@ -6002,7 +5996,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Combination of both ROUTER and CLIENT. Not for mobile devices. Deprecated"
+            "value" : "Deprecated role use client."
           }
         },
         "fr" : {
@@ -16684,6 +16678,9 @@
     "Primary" : {
 
     },
+    "Primary Admin Key" : {
+
+    },
     "Primary GPIO" : {
 
     },
@@ -18914,6 +18911,9 @@
     "Secondary" : {
 
     },
+    "Secondary Admin Key" : {
+
+    },
     "Security" : {
 
     },
@@ -21032,6 +21032,9 @@
     "Ten Minutes" : {
 
     },
+    "Tertiary Admin Key" : {
+
+    },
     "The amount of time to wait before we consider your packet as done." : {
 
     },
@@ -21062,7 +21065,7 @@
     "The most recent public key for this node does not match the previously recorded key. You can delete the node and let it exchange keys again, but this also may indicate a more serious security problem. Contact the user through another trusted channel to determine if the key change was due to a factory reset or other intentional action." : {
 
     },
-    "The public key authorized to send admin messages to this node." : {
+    "The primary public key authorized to send admin messages to this node." : {
 
     },
     "The public key does not match the recorded key. You may delete the node and let it exchange keys again, but this may indicate a more serious security problem. Contact the user through another trusted channel, to determine if the key change was due to a factory reset or other intentional action." : {
@@ -21074,7 +21077,13 @@
     "The root topic to use for MQTT." : {
 
     },
+    "The secondary public key authorized to send admin messages to this node." : {
+
+    },
     "The state of the LED (on/off)" : {
+
+    },
+    "The tertiarypublic key authorized to send admin messages to this node." : {
 
     },
     "There has been no response to a request for device metadata over the admin channel for this node." : {
@@ -22606,9 +22615,6 @@
 
     },
     "When using in GPIO mode, keep the output on for this long. " : {
-
-    },
-    "Whether or not the GPIO pin state detection is triggered on HIGH (1) or LOW (0)" : {
 
     },
     "WiFi Options" : {
