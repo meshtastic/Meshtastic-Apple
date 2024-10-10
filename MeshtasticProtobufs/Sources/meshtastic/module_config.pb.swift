@@ -475,13 +475,15 @@ public struct ModuleConfig {
     public var enabled: Bool = false
 
     ///
-    /// Interval in seconds of how often we can send a message to the mesh when a state change is detected
+    /// Interval in seconds of how often we can send a message to the mesh when a
+    /// trigger event is detected
     public var minimumBroadcastSecs: UInt32 = 0
 
     ///
-    /// Interval in seconds of how often we should send a message to the mesh with the current state regardless of changes
-    /// When set to 0, only state changes will be broadcasted
-    /// Works as a sort of status heartbeat for peace of mind
+    /// Interval in seconds of how often we should send a message to the mesh
+    /// with the current state regardless of trigger events When set to 0, only
+    /// trigger events will be broadcasted Works as a sort of status heartbeat
+    /// for peace of mind
     public var stateBroadcastSecs: UInt32 = 0
 
     ///
@@ -500,9 +502,8 @@ public struct ModuleConfig {
     public var monitorPin: UInt32 = 0
 
     ///
-    /// Whether or not the GPIO pin state detection is triggered on HIGH (1)
-    /// Otherwise LOW (0)
-    public var detectionTriggeredHigh: Bool = false
+    /// The type of trigger event to be used
+    public var detectionTriggerType: ModuleConfig.DetectionSensorConfig.TriggerType = .logicLow
 
     ///
     /// Whether or not use INPUT_PULLUP mode for GPIO pin
@@ -510,6 +511,60 @@ public struct ModuleConfig {
     public var usePullup: Bool = false
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public enum TriggerType: SwiftProtobuf.Enum {
+      public typealias RawValue = Int
+
+      /// Event is triggered if pin is low
+      case logicLow // = 0
+
+      /// Event is triggered if pin is high
+      case logicHigh // = 1
+
+      /// Event is triggered when pin goes high to low
+      case fallingEdge // = 2
+
+      /// Event is triggered when pin goes low to high
+      case risingEdge // = 3
+
+      /// Event is triggered on every pin state change, low is considered to be
+      /// "active"
+      case eitherEdgeActiveLow // = 4
+
+      /// Event is triggered on every pin state change, high is considered to be
+      /// "active"
+      case eitherEdgeActiveHigh // = 5
+      case UNRECOGNIZED(Int)
+
+      public init() {
+        self = .logicLow
+      }
+
+      public init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .logicLow
+        case 1: self = .logicHigh
+        case 2: self = .fallingEdge
+        case 3: self = .risingEdge
+        case 4: self = .eitherEdgeActiveLow
+        case 5: self = .eitherEdgeActiveHigh
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      public var rawValue: Int {
+        switch self {
+        case .logicLow: return 0
+        case .logicHigh: return 1
+        case .fallingEdge: return 2
+        case .risingEdge: return 3
+        case .eitherEdgeActiveLow: return 4
+        case .eitherEdgeActiveHigh: return 5
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+    }
 
     public init() {}
   }
@@ -980,19 +1035,31 @@ public struct ModuleConfig {
     public var airQualityInterval: UInt32 = 0
 
     ///
-    /// Interval in seconds of how often we should try to send our
-    /// air quality metrics to the mesh
+    /// Enable/disable Power metrics
     public var powerMeasurementEnabled: Bool = false
 
     ///
     /// Interval in seconds of how often we should try to send our
-    /// air quality metrics to the mesh
+    /// power metrics to the mesh
     public var powerUpdateInterval: UInt32 = 0
 
     ///
-    /// Interval in seconds of how often we should try to send our
-    /// air quality metrics to the mesh
+    /// Enable/Disable the power measurement module on-device display
     public var powerScreenEnabled: Bool = false
+
+    ///
+    /// Preferences for the (Health) Telemetry Module
+    /// Enable/Disable the telemetry measurement module measurement collection
+    public var healthMeasurementEnabled: Bool = false
+
+    ///
+    /// Interval in seconds of how often we should try to send our
+    /// health metrics to the mesh
+    public var healthUpdateInterval: UInt32 = 0
+
+    ///
+    /// Enable/Disable the health telemetry module on-device display
+    public var healthScreenEnabled: Bool = false
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1167,6 +1234,18 @@ public struct ModuleConfig {
 
 #if swift(>=4.2)
 
+extension ModuleConfig.DetectionSensorConfig.TriggerType: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [ModuleConfig.DetectionSensorConfig.TriggerType] = [
+    .logicLow,
+    .logicHigh,
+    .fallingEdge,
+    .risingEdge,
+    .eitherEdgeActiveLow,
+    .eitherEdgeActiveHigh,
+  ]
+}
+
 extension ModuleConfig.AudioConfig.Audio_Baud: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   public static let allCases: [ModuleConfig.AudioConfig.Audio_Baud] = [
@@ -1266,6 +1345,7 @@ extension ModuleConfig.MapReportSettings: @unchecked Sendable {}
 extension ModuleConfig.RemoteHardwareConfig: @unchecked Sendable {}
 extension ModuleConfig.NeighborInfoConfig: @unchecked Sendable {}
 extension ModuleConfig.DetectionSensorConfig: @unchecked Sendable {}
+extension ModuleConfig.DetectionSensorConfig.TriggerType: @unchecked Sendable {}
 extension ModuleConfig.AudioConfig: @unchecked Sendable {}
 extension ModuleConfig.AudioConfig.Audio_Baud: @unchecked Sendable {}
 extension ModuleConfig.PaxcounterConfig: @unchecked Sendable {}
@@ -1787,7 +1867,7 @@ extension ModuleConfig.DetectionSensorConfig: SwiftProtobuf.Message, SwiftProtob
     4: .standard(proto: "send_bell"),
     5: .same(proto: "name"),
     6: .standard(proto: "monitor_pin"),
-    7: .standard(proto: "detection_triggered_high"),
+    7: .standard(proto: "detection_trigger_type"),
     8: .standard(proto: "use_pullup"),
   ]
 
@@ -1803,7 +1883,7 @@ extension ModuleConfig.DetectionSensorConfig: SwiftProtobuf.Message, SwiftProtob
       case 4: try { try decoder.decodeSingularBoolField(value: &self.sendBell) }()
       case 5: try { try decoder.decodeSingularStringField(value: &self.name) }()
       case 6: try { try decoder.decodeSingularUInt32Field(value: &self.monitorPin) }()
-      case 7: try { try decoder.decodeSingularBoolField(value: &self.detectionTriggeredHigh) }()
+      case 7: try { try decoder.decodeSingularEnumField(value: &self.detectionTriggerType) }()
       case 8: try { try decoder.decodeSingularBoolField(value: &self.usePullup) }()
       default: break
       }
@@ -1829,8 +1909,8 @@ extension ModuleConfig.DetectionSensorConfig: SwiftProtobuf.Message, SwiftProtob
     if self.monitorPin != 0 {
       try visitor.visitSingularUInt32Field(value: self.monitorPin, fieldNumber: 6)
     }
-    if self.detectionTriggeredHigh != false {
-      try visitor.visitSingularBoolField(value: self.detectionTriggeredHigh, fieldNumber: 7)
+    if self.detectionTriggerType != .logicLow {
+      try visitor.visitSingularEnumField(value: self.detectionTriggerType, fieldNumber: 7)
     }
     if self.usePullup != false {
       try visitor.visitSingularBoolField(value: self.usePullup, fieldNumber: 8)
@@ -1845,11 +1925,22 @@ extension ModuleConfig.DetectionSensorConfig: SwiftProtobuf.Message, SwiftProtob
     if lhs.sendBell != rhs.sendBell {return false}
     if lhs.name != rhs.name {return false}
     if lhs.monitorPin != rhs.monitorPin {return false}
-    if lhs.detectionTriggeredHigh != rhs.detectionTriggeredHigh {return false}
+    if lhs.detectionTriggerType != rhs.detectionTriggerType {return false}
     if lhs.usePullup != rhs.usePullup {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
+}
+
+extension ModuleConfig.DetectionSensorConfig.TriggerType: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "LOGIC_LOW"),
+    1: .same(proto: "LOGIC_HIGH"),
+    2: .same(proto: "FALLING_EDGE"),
+    3: .same(proto: "RISING_EDGE"),
+    4: .same(proto: "EITHER_EDGE_ACTIVE_LOW"),
+    5: .same(proto: "EITHER_EDGE_ACTIVE_HIGH"),
+  ]
 }
 
 extension ModuleConfig.AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -2326,6 +2417,9 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     8: .standard(proto: "power_measurement_enabled"),
     9: .standard(proto: "power_update_interval"),
     10: .standard(proto: "power_screen_enabled"),
+    11: .standard(proto: "health_measurement_enabled"),
+    12: .standard(proto: "health_update_interval"),
+    13: .standard(proto: "health_screen_enabled"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2344,6 +2438,9 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
       case 8: try { try decoder.decodeSingularBoolField(value: &self.powerMeasurementEnabled) }()
       case 9: try { try decoder.decodeSingularUInt32Field(value: &self.powerUpdateInterval) }()
       case 10: try { try decoder.decodeSingularBoolField(value: &self.powerScreenEnabled) }()
+      case 11: try { try decoder.decodeSingularBoolField(value: &self.healthMeasurementEnabled) }()
+      case 12: try { try decoder.decodeSingularUInt32Field(value: &self.healthUpdateInterval) }()
+      case 13: try { try decoder.decodeSingularBoolField(value: &self.healthScreenEnabled) }()
       default: break
       }
     }
@@ -2380,6 +2477,15 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     if self.powerScreenEnabled != false {
       try visitor.visitSingularBoolField(value: self.powerScreenEnabled, fieldNumber: 10)
     }
+    if self.healthMeasurementEnabled != false {
+      try visitor.visitSingularBoolField(value: self.healthMeasurementEnabled, fieldNumber: 11)
+    }
+    if self.healthUpdateInterval != 0 {
+      try visitor.visitSingularUInt32Field(value: self.healthUpdateInterval, fieldNumber: 12)
+    }
+    if self.healthScreenEnabled != false {
+      try visitor.visitSingularBoolField(value: self.healthScreenEnabled, fieldNumber: 13)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2394,6 +2500,9 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     if lhs.powerMeasurementEnabled != rhs.powerMeasurementEnabled {return false}
     if lhs.powerUpdateInterval != rhs.powerUpdateInterval {return false}
     if lhs.powerScreenEnabled != rhs.powerScreenEnabled {return false}
+    if lhs.healthMeasurementEnabled != rhs.healthMeasurementEnabled {return false}
+    if lhs.healthUpdateInterval != rhs.healthUpdateInterval {return false}
+    if lhs.healthScreenEnabled != rhs.healthScreenEnabled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
