@@ -858,6 +858,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								hopNode = createNodeInfo(num: Int64(node), context: context)
 							}
 							let traceRouteHop = TraceRouteHopEntity(context: context)
+							traceRouteHop.time = Date()
 							if routingMessage.snrTowards.count >= index + 1 {
 								traceRouteHop.snr = Float(routingMessage.snrTowards[index] / 4)
 							}
@@ -910,6 +911,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						traceRoute?.routeText = routeString
 						traceRoute?.routeBackText = routeBackString
 						traceRoute?.hops = NSOrderedSet(array: hopNodes)
+						traceRoute?.time = Date()
 						do {
 							try context.save()
 							Logger.data.info("💾 Saved Trace Route")
