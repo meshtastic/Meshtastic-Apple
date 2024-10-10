@@ -25,9 +25,12 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 	case th = 12
 	case ua433 = 14
 	case ua868 = 15
-	case my_433 = 16
-	case my_919 = 17
-	case sg_923 = 18
+	case my433 = 16
+	case my919 = 17
+	case sg923 = 18
+	case ph433 = 19
+	case ph868 = 20
+	case ph915 = 21
 	case lora24 = 13
 	var topic: String {
 		switch self {
@@ -61,12 +64,18 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			"UA_433"
 		case .ua868:
 			"UA_868"
-		case .my_433:
+		case .my433:
 			"MY_433"
-		case .my_919:
+		case .my919:
 			"MY_919"
-		case .sg_923:
+		case .sg923:
 			"SG_923"
+		case .ph433:
+			"ph_433"
+		case .ph868:
+			"ph_868"
+		case .ph915:
+			"ph_915"
 		case .lora24:
 			"LORA_24"
 		} }
@@ -105,12 +114,18 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return "Ukraine 868mhz"
 		case .lora24:
 			return "2.4 GHZ"
-		case .my_433:
+		case .my433:
 			return "Malaysia 433mhz"
-		case .my_919:
+		case .my919:
 			return "Malaysia 919mhz"
-		case .sg_923:
+		case .sg923:
 			return "Singapore 923mhz"
+		case .ph433:
+			return "Philippines 433mhz"
+		case .ph868:
+			return "Philippines 868mhz"
+		case .ph915:
+			return "Philippines 915mhz"
 		}
 	}
 	var dutyCycle: Int {
@@ -147,11 +162,17 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return 10
 		case .lora24:
 			return 100
-		case .my_433:
+		case .my433:
 			return 100
-		case .my_919:
+		case .my919:
 			return 100
-		case .sg_923:
+		case .sg923:
+			return 100
+		case .ph433:
+			return 100
+		case .ph868:
+			return 100
+		case .ph915:
 			return 100
 		}
 	}
@@ -190,12 +211,18 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return Config.LoRaConfig.RegionCode.ua868
 		case .lora24:
 			return Config.LoRaConfig.RegionCode.lora24
-		case .my_433:
+		case .my433:
 			return Config.LoRaConfig.RegionCode.my433
-		case .my_919:
+		case .my919:
 			return Config.LoRaConfig.RegionCode.my919
-		case .sg_923:
+		case .sg923:
 			return Config.LoRaConfig.RegionCode.sg923
+		case .ph433:
+			return Config.LoRaConfig.RegionCode.ph433
+		case .ph868:
+			return Config.LoRaConfig.RegionCode.ph868
+		case .ph915:
+			return Config.LoRaConfig.RegionCode.ph915
 		}
 	}
 }

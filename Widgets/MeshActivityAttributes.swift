@@ -21,8 +21,13 @@ struct MeshActivityAttributes: ActivityAttributes {
 		var sentPackets: UInt32
 		var receivedPackets: UInt32
 		var badReceivedPackets: UInt32
+		var dupeReceivedPackets: UInt32
+		var packetsSentRelay: UInt32
+		var packetsCanceledRelay: UInt32
 		var nodesOnline: UInt32
 		var totalNodes: UInt32
+
+		public var numTxRelayCanceled: UInt32 = 0
 		var timerRange: ClosedRange<Date>
 	}
 

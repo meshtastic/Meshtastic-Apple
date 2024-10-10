@@ -144,6 +144,14 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
   ///
   /// Custom I2C sensor implementation based on https://github.com/meshtastic/i2c-sensor
   case customSensor // = 29
+
+  ///
+  /// MAX30102 Pulse Oximeter and Heart-Rate Sensor 
+  case max30102 // = 30
+
+  ///
+  /// MLX90614 non-contact IR temperature sensor.
+  case mlx90614 // = 31
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -182,6 +190,8 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
     case 27: self = .icm20948
     case 28: self = .max17048
     case 29: self = .customSensor
+    case 30: self = .max30102
+    case 31: self = .mlx90614
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -218,6 +228,8 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
     case .icm20948: return 27
     case .max17048: return 28
     case .customSensor: return 29
+    case .max30102: return 30
+    case .mlx90614: return 31
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -259,6 +271,8 @@ extension TelemetrySensorType: CaseIterable {
     .icm20948,
     .max17048,
     .customSensor,
+    .max30102,
+    .mlx90614,
   ]
 }
 
@@ -806,7 +820,7 @@ public struct LocalStats {
   public var numPacketsTx: UInt32 = 0
 
   ///
-  /// Number of packets received good
+  /// Number of packets received (both good and bad)
   public var numPacketsRx: UInt32 = 0
 
   ///
@@ -821,9 +835,72 @@ public struct LocalStats {
   /// Number of nodes total
   public var numTotalNodes: UInt32 = 0
 
+  ///
+  /// Number of received packets that were duplicates (due to multiple nodes relaying).
+  /// If this number is high, there are nodes in the mesh relaying packets when it's unnecessary, for example due to the ROUTER/REPEATER role.
+  public var numRxDupe: UInt32 = 0
+
+  ///
+  /// Number of packets we transmitted that were a relay for others (not originating from ourselves).
+  public var numTxRelay: UInt32 = 0
+
+  ///
+  /// Number of times we canceled a packet to be relayed, because someone else did it before us.
+  /// This will always be zero for ROUTERs/REPEATERs. If this number is high, some other node(s) is/are relaying faster than you.
+  public var numTxRelayCanceled: UInt32 = 0
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+}
+
+///
+/// Health telemetry metrics
+public struct HealthMetrics {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Heart rate (beats per minute)
+  public var heartBpm: UInt32 {
+    get {return _heartBpm ?? 0}
+    set {_heartBpm = newValue}
+  }
+  /// Returns true if `heartBpm` has been explicitly set.
+  public var hasHeartBpm: Bool {return self._heartBpm != nil}
+  /// Clears the value of `heartBpm`. Subsequent reads from it will return its default value.
+  public mutating func clearHeartBpm() {self._heartBpm = nil}
+
+  ///
+  /// SpO2 (blood oxygen saturation) level
+  public var spO2: UInt32 {
+    get {return _spO2 ?? 0}
+    set {_spO2 = newValue}
+  }
+  /// Returns true if `spO2` has been explicitly set.
+  public var hasSpO2: Bool {return self._spO2 != nil}
+  /// Clears the value of `spO2`. Subsequent reads from it will return its default value.
+  public mutating func clearSpO2() {self._spO2 = nil}
+
+  ///
+  /// Body temperature in degrees Celsius
+  public var temperature: Float {
+    get {return _temperature ?? 0}
+    set {_temperature = newValue}
+  }
+  /// Returns true if `temperature` has been explicitly set.
+  public var hasTemperature: Bool {return self._temperature != nil}
+  /// Clears the value of `temperature`. Subsequent reads from it will return its default value.
+  public mutating func clearTemperature() {self._temperature = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _heartBpm: UInt32? = nil
+  fileprivate var _spO2: UInt32? = nil
+  fileprivate var _temperature: Float? = nil
 }
 
 ///
@@ -889,6 +966,16 @@ public struct Telemetry {
     set {variant = .localStats(newValue)}
   }
 
+  ///
+  /// Health telemetry metrics
+  public var healthMetrics: HealthMetrics {
+    get {
+      if case .healthMetrics(let v)? = variant {return v}
+      return HealthMetrics()
+    }
+    set {variant = .healthMetrics(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public enum OneOf_Variant: Equatable {
@@ -907,6 +994,9 @@ public struct Telemetry {
     ///
     /// Local device mesh statistics
     case localStats(LocalStats)
+    ///
+    /// Health telemetry metrics
+    case healthMetrics(HealthMetrics)
 
   #if !swift(>=4.1)
     public static func ==(lhs: Telemetry.OneOf_Variant, rhs: Telemetry.OneOf_Variant) -> Bool {
@@ -932,6 +1022,10 @@ public struct Telemetry {
       }()
       case (.localStats, .localStats): return {
         guard case .localStats(let l) = lhs, case .localStats(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.healthMetrics, .healthMetrics): return {
+        guard case .healthMetrics(let l) = lhs, case .healthMetrics(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -970,6 +1064,7 @@ extension EnvironmentMetrics: @unchecked Sendable {}
 extension PowerMetrics: @unchecked Sendable {}
 extension AirQualityMetrics: @unchecked Sendable {}
 extension LocalStats: @unchecked Sendable {}
+extension HealthMetrics: @unchecked Sendable {}
 extension Telemetry: @unchecked Sendable {}
 extension Telemetry.OneOf_Variant: @unchecked Sendable {}
 extension Nau7802Config: @unchecked Sendable {}
@@ -1011,6 +1106,8 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     27: .same(proto: "ICM20948"),
     28: .same(proto: "MAX17048"),
     29: .same(proto: "CUSTOM_SENSOR"),
+    30: .same(proto: "MAX30102"),
+    31: .same(proto: "MLX90614"),
   ]
 }
 
@@ -1457,6 +1554,9 @@ extension LocalStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     6: .standard(proto: "num_packets_rx_bad"),
     7: .standard(proto: "num_online_nodes"),
     8: .standard(proto: "num_total_nodes"),
+    9: .standard(proto: "num_rx_dupe"),
+    10: .standard(proto: "num_tx_relay"),
+    11: .standard(proto: "num_tx_relay_canceled"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1473,6 +1573,9 @@ extension LocalStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       case 6: try { try decoder.decodeSingularUInt32Field(value: &self.numPacketsRxBad) }()
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.numOnlineNodes) }()
       case 8: try { try decoder.decodeSingularUInt32Field(value: &self.numTotalNodes) }()
+      case 9: try { try decoder.decodeSingularUInt32Field(value: &self.numRxDupe) }()
+      case 10: try { try decoder.decodeSingularUInt32Field(value: &self.numTxRelay) }()
+      case 11: try { try decoder.decodeSingularUInt32Field(value: &self.numTxRelayCanceled) }()
       default: break
       }
     }
@@ -1503,6 +1606,15 @@ extension LocalStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     if self.numTotalNodes != 0 {
       try visitor.visitSingularUInt32Field(value: self.numTotalNodes, fieldNumber: 8)
     }
+    if self.numRxDupe != 0 {
+      try visitor.visitSingularUInt32Field(value: self.numRxDupe, fieldNumber: 9)
+    }
+    if self.numTxRelay != 0 {
+      try visitor.visitSingularUInt32Field(value: self.numTxRelay, fieldNumber: 10)
+    }
+    if self.numTxRelayCanceled != 0 {
+      try visitor.visitSingularUInt32Field(value: self.numTxRelayCanceled, fieldNumber: 11)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1515,6 +1627,57 @@ extension LocalStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     if lhs.numPacketsRxBad != rhs.numPacketsRxBad {return false}
     if lhs.numOnlineNodes != rhs.numOnlineNodes {return false}
     if lhs.numTotalNodes != rhs.numTotalNodes {return false}
+    if lhs.numRxDupe != rhs.numRxDupe {return false}
+    if lhs.numTxRelay != rhs.numTxRelay {return false}
+    if lhs.numTxRelayCanceled != rhs.numTxRelayCanceled {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension HealthMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".HealthMetrics"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "heart_bpm"),
+    2: .same(proto: "spO2"),
+    3: .same(proto: "temperature"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self._heartBpm) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self._spO2) }()
+      case 3: try { try decoder.decodeSingularFloatField(value: &self._temperature) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._heartBpm {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._spO2 {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._temperature {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 3)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: HealthMetrics, rhs: HealthMetrics) -> Bool {
+    if lhs._heartBpm != rhs._heartBpm {return false}
+    if lhs._spO2 != rhs._spO2 {return false}
+    if lhs._temperature != rhs._temperature {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1529,6 +1692,7 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     4: .standard(proto: "air_quality_metrics"),
     5: .standard(proto: "power_metrics"),
     6: .standard(proto: "local_stats"),
+    7: .standard(proto: "health_metrics"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1603,6 +1767,19 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
           self.variant = .localStats(v)
         }
       }()
+      case 7: try {
+        var v: HealthMetrics?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .healthMetrics(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .healthMetrics(v)
+        }
+      }()
       default: break
       }
     }
@@ -1636,6 +1813,10 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     case .localStats?: try {
       guard case .localStats(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+    }()
+    case .healthMetrics?: try {
+      guard case .healthMetrics(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
     }()
     case nil: break
     }
