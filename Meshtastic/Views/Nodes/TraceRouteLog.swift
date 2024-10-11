@@ -37,7 +37,7 @@ struct TraceRouteLog: View {
 				VStack {
 					List(node.traceRoutes?.reversed() as? [TraceRouteEntity] ?? [], id: \.self, selection: $selectedRoute) { route in
 						Label {
-							Text("\(route.time?.formatted() ?? "unknown".localized) - \(route.response ? (route.hops?.count == 0 && route.response ? "Direct" : "\(route.hops?.count ?? 0) \(route.hops?.count ?? 0 == 1 ? "Hop": "Hops")") : (route.sent ? "No Response" : "Not Sent"))")
+							Text("\(route.time?.formatted() ?? "unknown".localized) - \(route.response ? (route.hops?.count == 0 && route.response ? "Direct" : "\(route.hopsTowards) \(route.hops?.count ?? 0 == 1 ? "Hop Towards": "Hops Towards")") : (route.sent ? "No Response" : "Not Sent"))")
 								.font(.callout)
 						} icon: {
 							Image(systemName: route.response ? (route.hops?.count == 0 && route.response ? "person.line.dotted.person" : "point.3.connected.trianglepath.dotted") : "person.slash")

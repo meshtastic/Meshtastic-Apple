@@ -156,39 +156,36 @@ struct NodeListItem: View {
 								Image(systemName: "scroll")
 									.symbolRenderingMode(.hierarchical)
 									.font(.callout)
-									.frame(width: 30)
 								Text("Logs:")
 									.foregroundColor(.gray)
-									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption2)
+									.allowsTightening(true)
 								if node.hasDeviceMetrics {
 									Image(systemName: "flipphone")
 										.symbolRenderingMode(.hierarchical)
 										.font(.callout)
-										.frame(width: 30)
 								}
 								if node.hasPositions {
 									Image(systemName: "mappin.and.ellipse")
 										.symbolRenderingMode(.hierarchical)
 										.font(.callout)
-										.frame(width: 30)
+
 								}
 								if node.hasEnvironmentMetrics {
 									Image(systemName: "cloud.sun.rain")
 										.symbolRenderingMode(.hierarchical)
 										.font(.callout)
-										.frame(width: 30)
+
 								}
 								if node.hasDetectionSensorMetrics {
 									Image(systemName: "sensor")
 										.symbolRenderingMode(.hierarchical)
 										.font(.callout)
-										.frame(width: 30)
 								}
 								if node.hasTraceRoutes {
 									Image(systemName: "signpost.right.and.left")
 										.symbolRenderingMode(.hierarchical)
 										.font(.callout)
-										.frame(width: 30)
 								}
 							}
 						}

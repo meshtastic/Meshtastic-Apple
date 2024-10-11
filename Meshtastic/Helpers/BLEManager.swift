@@ -854,8 +854,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							connectedHop.longitudeI = mostRecent.longitudeI
 							traceRoute?.hasPositions = true
 						}
-						hopNodes.append(connectedHop)
 						var routeString = "\(connectedHop.name ?? "???") --> "
+						hopNodes.append(connectedHop)
+						traceRoute?.hopsTowards = Int32(routingMessage.route.count)
 						for (index, node) in routingMessage.route.enumerated() {
 							var hopNode = getNodeInfo(id: Int64(node), context: context)
 							if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
@@ -896,6 +897,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						hopNodes.append(destinationHop)
 						routeString += "\(destinationHop.name ?? "???") (\(destinationHop.num.toHex()))"
 						var routeBackString = "\(traceRoute?.node?.user?.longName ?? "unknown".localized) --> "
+						traceRoute?.hopsBack = Int32(routingMessage.routeBack.count)
 						for (index, node) in routingMessage.routeBack.enumerated() {
 							var hopNode = getNodeInfo(id: Int64(node), context: context)
 							if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
@@ -924,7 +926,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							hopNodes.append(traceRouteHop)
 							routeBackString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") (\(traceRouteHop.snr > 0 ? hopNode?.snr ?? 0.0 : 0.0)dB) --> "
 						}
-						routeBackString += "\(connectedHop.name ?? "???") (\(connectedHop.num.toHex()))"
+						routeBackString += "\(connectedNode.user?.longName ?? "???") (\(connectedNode.num.toHex()))"
 						traceRoute?.routeText = routeString
 						traceRoute?.routeBackText = routeBackString
 						traceRoute?.hops = NSOrderedSet(array: hopNodes)
