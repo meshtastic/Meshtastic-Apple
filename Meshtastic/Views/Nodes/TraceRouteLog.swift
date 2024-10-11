@@ -37,8 +37,8 @@ struct TraceRouteLog: View {
 				VStack {
 					List(node.traceRoutes?.reversed() as? [TraceRouteEntity] ?? [], id: \.self, selection: $selectedRoute) { route in
 						Label {
-							Text("\(route.time?.formatted() ?? "unknown".localized) - \(route.response ? (route.hops?.count == 0 && route.response ? "Direct" : "\(route.hopsTowards) \(route.hops?.count ?? 0 == 1 ? "Hop Towards": "Hops Towards")") : (route.sent ? "No Response" : "Not Sent"))")
-								.font(.callout)
+							Text("\(route.time?.formatted() ?? "unknown".localized) - \(route.response ? (route.hops?.count == 0 && route.response ? "Direct" : "\(route.hopsTowards) \(route.hopsTowards == 1 ? "Hop": "Hops Towards \(route.hopsBack) Hops Back ")") : (route.sent ? "No Response" : "Not Sent"))")
+								.font(.caption)
 						} icon: {
 							Image(systemName: route.response ? (route.hops?.count == 0 && route.response ? "person.line.dotted.person" : "point.3.connected.trianglepath.dotted") : "person.slash")
 								.symbolRenderingMode(.hierarchical)
@@ -62,7 +62,7 @@ struct TraceRouteLog: View {
 				Divider()
 				ScrollView {
 					if selectedRoute != nil {
-						if selectedRoute?.response ?? false && selectedRoute?.hops?.count ?? 0 > 0 {
+						if selectedRoute?.response ?? false && selectedRoute?.hopsTowards ?? 0 > 1 {
 							Label {
 								Text("Route: \(selectedRoute?.routeText ?? "unknown".localized)")
 							} icon: {
