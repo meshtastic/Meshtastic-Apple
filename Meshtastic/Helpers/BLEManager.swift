@@ -840,10 +840,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.direct %@".localized, String(snr))
 						MeshLogger.log("🪧 \(logString)")
 					} else {
+						
+						guard let connectedNode = getNodeInfo(id: Int64(connectedPeripheral.num), context: context) else {
+							return
+						}
 						var hopNodes: [TraceRouteHopEntity] = []
 						let connectedHop = TraceRouteHopEntity(context: context)
-						connectedHop.name = traceRoute?.node?.user?.longName ?? "unknown".localized
 						connectedHop.time = Date()
+						connectedHop.num = connectedPeripheral.num
+						connectedHop.name = connectedNode.user?.longName ?? "???"
 						if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
 							connectedHop.altitude = mostRecent.altitude
 							connectedHop.latitudeI = mostRecent.latitudeI
@@ -851,7 +856,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							traceRoute?.hasPositions = true
 						}
 						hopNodes.append(connectedHop)
-						var routeString = "You --> "
+						var routeString = "\(connectedHop.name ?? "???") --> "
 						for (index, node) in routingMessage.route.enumerated() {
 							var hopNode = getNodeInfo(id: Int64(node), context: context)
 							if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
@@ -879,7 +884,19 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							}
 							routeString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") (\(traceRouteHop.snr > 0 ? hopNode?.snr ?? 0.0 : 0.0)dB) --> "
 						}
-						var routeBackString = traceRoute?.node?.user?.longName ?? "unknown".localized
+						let destinationHop = TraceRouteHopEntity(context: context)
+						destinationHop.name = traceRoute?.node?.user?.longName ?? "unknown".localized
+						destinationHop.time = Date()
+						destinationHop.num = connectedPeripheral.num
+						if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
+							connectedHop.altitude = mostRecent.altitude
+							connectedHop.latitudeI = mostRecent.latitudeI
+							connectedHop.longitudeI = mostRecent.longitudeI
+							traceRoute?.hasPositions = true
+						}
+						hopNodes.append(destinationHop)
+						routeString += "\(destinationHop.name ?? "???") (\(destinationHop.num.toHex()))"
+						var routeBackString = "\(traceRoute?.node?.user?.longName ?? "unknown".localized) --> "
 						for (index, node) in routingMessage.routeBack.enumerated() {
 							var hopNode = getNodeInfo(id: Int64(node), context: context)
 							if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
