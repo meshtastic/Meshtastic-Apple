@@ -28,16 +28,6 @@
     "%@" : {
 
     },
-    "%@ - %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ - %2$@"
-          }
-        }
-      }
-    },
     "%@ - %@ - %@" : {
       "localizations" : {
         "en" : {
@@ -47,6 +37,28 @@
           }
         }
       }
+    },
+    "%@ - %d Hops Towards %d Hops Back" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ - %2$d Hops Towards %3$d Hops Back"
+          }
+        }
+      }
+    },
+    "%@ - 1 Hop" : {
+
+    },
+    "%@ - Direct" : {
+
+    },
+    "%@ - No Response" : {
+
+    },
+    "%@ - Not Sent" : {
+
     },
     "%@ (%@)" : {
       "localizations" : {

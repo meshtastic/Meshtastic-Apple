@@ -37,8 +37,22 @@ struct TraceRouteLog: View {
 				VStack {
 					List(node.traceRoutes?.reversed() as? [TraceRouteEntity] ?? [], id: \.self, selection: $selectedRoute) { route in
 						Label {
-							Text("\(route.time?.formatted() ?? "unknown".localized) - \(route.response ? (route.hops?.count == 0 && route.response ? "Direct" : "\(route.hopsTowards) \(route.hopsTowards == 1 ? "Hop": "Hops Towards \(route.hopsBack) Hops Back ")") : (route.sent ? "No Response" : "Not Sent"))")
-								.font(.caption)
+							if route.response && route.hops?.count == 0 {
+								Text("\(route.time?.formatted() ?? "unknown".localized) - Direct")
+									.font(.caption)
+							} else if route.response && route.hopsTowards == 1 {
+								Text("\(route.time?.formatted() ?? "unknown".localized) - 1 Hop")
+									.font(.caption)
+							} else if route.response {
+								Text("\(route.time?.formatted() ?? "unknown".localized) - \(route.hopsTowards) Hops Towards \(route.hopsBack) Hops Back")
+									.font(.caption)
+							} else if route.sent {
+								Text("\(route.time?.formatted() ?? "unknown".localized) - No Response")
+									.font(.caption)
+							} else {
+								Text("\(route.time?.formatted() ?? "unknown".localized) - Not Sent")
+									.font(.caption)
+							}
 						} icon: {
 							Image(systemName: route.response ? (route.hops?.count == 0 && route.response ? "person.line.dotted.person" : "point.3.connected.trianglepath.dotted") : "person.slash")
 								.symbolRenderingMode(.hierarchical)
