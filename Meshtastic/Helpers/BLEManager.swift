@@ -888,7 +888,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						destinationHop.name = traceRoute?.node?.user?.longName ?? "unknown".localized
 						destinationHop.time = Date()
 						destinationHop.snr = traceRoute?.snr ?? 0.0
-						destinationHop.num = connectedPeripheral.num
+						destinationHop.num = traceRoute?.node?.num ?? 0
 						if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
 							destinationHop.altitude = mostRecent.altitude
 							destinationHop.latitudeI = mostRecent.latitudeI
