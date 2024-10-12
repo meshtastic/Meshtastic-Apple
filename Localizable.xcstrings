@@ -21873,6 +21873,9 @@
     "Treat double tap on supported accelerometers as a user button press." : {
 
     },
+    "TriggerType" : {
+
+    },
     "Triple Click Ad Hoc Ping" : {
 
     },
