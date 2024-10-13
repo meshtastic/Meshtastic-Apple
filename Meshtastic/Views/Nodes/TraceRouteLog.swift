@@ -37,7 +37,7 @@ struct TraceRouteLog: View {
 				VStack {
 					List(node.traceRoutes?.reversed() as? [TraceRouteEntity] ?? [], id: \.self, selection: $selectedRoute) { route in
 						Label {
-							if route.response && route.hops?.count == 0 {
+							if route.response && route.hopsTowards == 0 {
 								Text("\(route.time?.formatted() ?? "unknown".localized) - Direct")
 									.font(.caption)
 							} else if route.response && route.hopsTowards == 1 {
@@ -76,7 +76,16 @@ struct TraceRouteLog: View {
 				Divider()
 				ScrollView {
 					if selectedRoute != nil {
-						if selectedRoute?.response ?? false && selectedRoute?.hopsTowards ?? 0 > 1 {
+						
+						if selectedRoute?.response ?? false && selectedRoute?.hopsTowards ?? 0 == 0 {
+							Label {
+								Text("Trace route received directly by \(selectedRoute?.node?.user?.longName ?? "unknown".localized) with a SNR of \(String(format: "%.2f", selectedRoute?.node?.snr ?? 0.0)) dB")
+							} icon: {
+								Image(systemName: "signpost.right.and.left")
+									.symbolRenderingMode(.hierarchical)
+							}
+							.font(.title3)
+						} else if selectedRoute?.response ?? false && selectedRoute?.hopsTowards ?? 0 > 0 {
 							Label {
 								Text("Route: \(selectedRoute?.routeText ?? "unknown".localized)")
 							} icon: {
@@ -88,14 +97,6 @@ struct TraceRouteLog: View {
 								Text("Route Back: \(selectedRoute?.routeBackText ?? "unknown".localized)")
 							} icon: {
 								Image(systemName: "signpost.left")
-									.symbolRenderingMode(.hierarchical)
-							}
-							.font(.title3)
-						} else if selectedRoute?.response ?? false {
-							Label {
-								Text("Trace route received directly by \(selectedRoute?.node?.user?.longName ?? "unknown".localized) with a SNR of \(String(format: "%.2f", selectedRoute?.node?.snr ?? 0.0)) dB")
-							} icon: {
-								Image(systemName: "signpost.right.and.left")
 									.symbolRenderingMode(.hierarchical)
 							}
 							.font(.title3)

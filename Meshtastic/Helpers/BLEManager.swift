@@ -897,6 +897,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							traceRoute?.hasPositions = true
 						}
 						hopNodes.append(destinationHop)
+						/// Add the destination node to the end of the route towards string and the beginning of teh route back string
 						routeString += "\(traceRoute?.node?.user?.longName ?? "unknown".localized) \((traceRoute?.node?.num ?? 0).toHex()) \(traceRoute?.node?.snr ?? 0 > 0 ? traceRoute?.node?.snr ?? 0 : 0.0)dB)"
 						var routeBackString = "\(traceRoute?.node?.user?.longName ?? "unknown".localized) \((traceRoute?.node?.num ?? 0).toHex()) \(traceRoute?.node?.snr ?? 0 > 0 ? traceRoute?.node?.snr ?? 0 : 0.0)dB) --> "
 						traceRoute?.hopsBack = Int32(routingMessage.routeBack.count)
@@ -927,9 +928,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							}
 							hopNodes.append(traceRouteHop)
 							routeBackString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") (\(traceRouteHop.snr > 0 ? hopNode?.snr ?? 0.0 : 0.0)dB) --> "
-							
-							
-							
 						}
 						routeBackString += "\(connectedNode.user?.longName ?? String(connectedNode.num.toHex())) \(connectedNode.snr > 0 ? connectedNode.snr : 0.0)dB)"
 						traceRoute?.routeText = routeString
