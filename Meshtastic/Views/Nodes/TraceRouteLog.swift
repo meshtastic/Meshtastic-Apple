@@ -225,6 +225,10 @@ struct TraceRouteLog: View {
 					VStack {
 						let nodeColor = UIColor(hex: UInt32(truncatingIfNeeded: hops[i].num))
 						CircleText(text: String(hops[i].num.toHex().suffix(4)), color: Color(nodeColor), circleSize: idiom == .phone ? 70 : 125)
+							Text(String(hops[i].name ?? "Unknown"))
+								.font(idiom == .phone ? .caption2 : .headline)
+								.allowsTightening(true)
+								.fontWeight(.semibold)
 							Text("\(String(format: "%.2f", hops[i].snr)) dB")
 								.font(idiom == .phone ? .caption2 : .headline)
 								.foregroundColor(snrColor)
