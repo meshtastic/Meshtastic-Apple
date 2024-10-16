@@ -57,11 +57,11 @@ struct TraceRoute: Layout {
 			subview.place(at: point, anchor: .center, proposal: .unspecified)
 
 		//	DispatchQueue.main.async {
-				if index % 2 == 0 {
-					subview[Rotation.self]?.wrappedValue = .zero
-				} else {
-					subview[Rotation.self]?.wrappedValue = .radians(angle)
-				}
+		//		if index % 2 == 0 {
+		//			subview[Rotation.self]?.wrappedValue = .zero
+		//		} else {
+		//			subview[Rotation.self]?.wrappedValue = .radians(angle)
+		//		}
 		//	}
 		}
 	}
