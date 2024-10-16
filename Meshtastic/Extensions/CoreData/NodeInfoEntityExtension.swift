@@ -40,7 +40,8 @@ extension NodeInfoEntity {
 	}
 
 	var hasTraceRoutes: Bool {
-		return traceRoutes?.count ?? 0 > 0
+		let routes = traceRoutes?.filter { ($0 as AnyObject).response  }
+		return routes?.count ?? 0 > 0
 	}
 
 	var hasPax: Bool {

@@ -36,7 +36,7 @@ struct DetectionSensorConfig: View {
 	@State var enabled = false
 	@State var sendBell: Bool = false
 	@State var name: String = ""
-	@State var detectionTriggeredHigh: Bool = true
+	@State var triggerType = 0
 	@State var usePullup: Bool = false
 	@State var minimumBroadcastSecs = 0
 	@State var stateBroadcastSecs = 0
@@ -116,11 +116,13 @@ struct DetectionSensorConfig: View {
 						}
 						.pickerStyle(DefaultPickerStyle())
 
-						Toggle(isOn: $detectionTriggeredHigh) {
-							Label("Detection trigger High", systemImage: "dial.high")
-							Text("Whether or not the GPIO pin state detection is triggered on HIGH (1) or LOW (0)")
+						Picker("TriggerType", selection: $triggerType) {
+							ForEach(TriggerTypes.allCases) { tt in
+								Text(tt.name).tag(tt.rawValue)
+							}
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.pickerStyle(DefaultPickerStyle())
+						.listRowSeparator(.hidden)
 
 						Toggle(isOn: $usePullup) {
 							Label("Uses pullup resistor", systemImage: "arrow.up.to.line")
@@ -166,7 +168,7 @@ struct DetectionSensorConfig: View {
 				dsc.sendBell = self.sendBell
 				dsc.name = self.name
 				dsc.monitorPin = UInt32(self.monitorPin)
-				dsc.detectionTriggeredHigh = self.detectionTriggeredHigh
+				dsc.detectionTriggerType = TriggerTypes(rawValue: triggerType)!.protoEnumValue()
 				dsc.usePullup = self.usePullup
 				dsc.minimumBroadcastSecs = UInt32(self.minimumBroadcastSecs)
 				dsc.stateBroadcastSecs = UInt32(self.stateBroadcastSecs)
@@ -216,8 +218,8 @@ struct DetectionSensorConfig: View {
 		.onChange(of: sendBell) { _, newSendBell in
 			if newSendBell != node?.detectionSensorConfig?.sendBell { hasChanges = true }
 		}
-		.onChange(of: detectionTriggeredHigh) { _, newDetectionTriggeredHigh in
-			if newDetectionTriggeredHigh != node?.detectionSensorConfig?.detectionTriggeredHigh { hasChanges = true }
+		.onChange(of: triggerType) { _, newTriggerType in
+			if newTriggerType != node?.detectionSensorConfig?.triggerType ?? 0 { hasChanges = true }
 		}
 		.onChange(of: usePullup) { _, newUsePullup in
 			if newUsePullup != node?.detectionSensorConfig?.usePullup { hasChanges = true }
@@ -244,7 +246,7 @@ struct DetectionSensorConfig: View {
 		self.name = (node?.detectionSensorConfig?.name ?? "")
 		self.monitorPin = Int(node?.detectionSensorConfig?.monitorPin ?? 0)
 		self.usePullup = (node?.detectionSensorConfig?.usePullup ?? false)
-		self.detectionTriggeredHigh = (node?.detectionSensorConfig?.detectionTriggeredHigh ?? true)
+		self.triggerType = Int(node?.detectionSensorConfig?.triggerType ?? 0)
 		self.minimumBroadcastSecs = Int(node?.detectionSensorConfig?.minimumBroadcastSecs ?? 45)
 		self.stateBroadcastSecs = Int(node?.detectionSensorConfig?.stateBroadcastSecs ?? 0)
 

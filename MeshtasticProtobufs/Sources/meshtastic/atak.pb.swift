@@ -324,7 +324,7 @@ public struct TAKPacket {
 
   ///
   /// Generic CoT detail XML
-  /// May be compressed / truncated by the sender
+  /// May be compressed / truncated by the sender (EUD)
   public var detail: Data {
     get {
       if case .detail(let v)? = payloadVariant {return v}
@@ -346,7 +346,7 @@ public struct TAKPacket {
     case chat(GeoChat)
     ///
     /// Generic CoT detail XML
-    /// May be compressed / truncated by the sender
+    /// May be compressed / truncated by the sender (EUD)
     case detail(Data)
 
   #if !swift(>=4.1)

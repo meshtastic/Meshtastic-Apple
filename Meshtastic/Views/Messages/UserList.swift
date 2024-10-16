@@ -302,9 +302,13 @@ struct UserList: View {
 				let loraPredicate = NSPredicate(format: "userNode.viaMqtt == NO")
 				predicates.append(loraPredicate)
 			} else {
-				let mqttPredicate = NSPredicate(format: "userNode.viaMqtt == YES")
+				let mqttPredicate = NSPredicate(format: "userNode.viaMqtt == YES AND userNode.hopsAway == 0")
 				predicates.append(mqttPredicate)
 			}
+		} else {
+			/// Only show mqtt nodes that can be contacted (zero hops) on the default key
+			// let bothPredicate = NSPredicate(format: "userNode.viaMqtt == YES AND userNode.hopsAway == 0 OR userNode.viaMqtt == NO")
+			// predicates.append(bothPredicate)
 		}
 		/// Roles
 		if roleFilter && deviceRoles.count > 0 {

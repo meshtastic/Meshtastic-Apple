@@ -24,7 +24,7 @@ struct NodeMapSwiftUI: View {
 	@Namespace var mapScope
 	@State var mapStyle: MapStyle = MapStyle.hybrid(elevation: .flat, pointsOfInterest: .all, showsTraffic: true)
 	@State var position = MapCameraPosition.automatic
-	@State var distance = 0.0
+	@State var distance = 10000.0
 	@State var scene: MKLookAroundScene?
 	@State var isLookingAround = false
 	@State var isShowingAltitude = false

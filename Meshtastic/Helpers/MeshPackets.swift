@@ -780,6 +780,9 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 																				  sentPackets: UInt32(telemetry.numPacketsTx),
 																				  receivedPackets: UInt32(telemetry.numPacketsRx),
 																				  badReceivedPackets: UInt32(telemetry.numPacketsRxBad),
+																				  dupeReceivedPackets: UInt32(telemetry.numRxDupe),
+																				  packetsSentRelay: UInt32(telemetry.numTxRelay),
+																				  packetsCanceledRelay: UInt32(telemetry.numTxRelayCanceled),
 																				  nodesOnline: UInt32(telemetry.numOnlineNodes),
 																				  totalNodes: UInt32(telemetry.numTotalNodes),
 																				  timerRange: date)
