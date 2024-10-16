@@ -131,7 +131,7 @@ struct TraceRouteLog: View {
 									   .symbolRenderingMode(.hierarchical)
 							   }
 						}
-						if selectedRoute?.hops?.count ?? 0 >= 3 {
+						if false {//selectedRoute?.hops?.count ?? 0 >= 3 {
 							HStack(alignment: .center) {
 								GeometryReader { geometry in
 									let size = ((geometry.size.width >= geometry.size.height ? geometry.size.height : geometry.size.width) / 2) - (idiom == .phone ? 45 : 85)
