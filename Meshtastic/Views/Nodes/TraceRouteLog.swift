@@ -76,7 +76,7 @@ struct TraceRouteLog: View {
 				Divider()
 				ScrollView {
 					if selectedRoute != nil {
-						
+
 						if selectedRoute?.response ?? false && selectedRoute?.hopsTowards ?? 0 == 0 {
 							Label {
 								Text("Trace route received directly by \(selectedRoute?.node?.user?.longName ?? "unknown".localized) with a SNR of \(String(format: "%.2f", selectedRoute?.node?.snr ?? 0.0)) dB")
@@ -131,7 +131,7 @@ struct TraceRouteLog: View {
 									   .symbolRenderingMode(.hierarchical)
 							   }
 						}
-						if false {//selectedRoute?.hops?.count ?? 0 >= 3 {
+						if selectedRoute?.hops?.count ?? 0 >= 3 {
 							HStack(alignment: .center) {
 								GeometryReader { geometry in
 									let size = ((geometry.size.width >= geometry.size.height ? geometry.size.height : geometry.size.width) / 2) - (idiom == .phone ? 45 : 85)
@@ -249,9 +249,9 @@ struct TraceRouteLog: View {
 				} else {
 					let i = (idx - 1) / 2
 					let snrColor = getSnrColor(snr: hops[i].snr, preset: modemPreset)
-					Image(systemName: "arrowshape.right.fill")
+					Image(systemName: "circle.fill")
 						.resizable()
-						.frame(width: idiom == .phone ? 25 : 60, height: idiom == .phone ? 25 : 60)
+						.frame(width: idiom == .phone ? 15 : 30, height: idiom == .phone ? 15 : 30)
 						.foregroundColor(snrColor.opacity(0.7))
 				}
 			}
