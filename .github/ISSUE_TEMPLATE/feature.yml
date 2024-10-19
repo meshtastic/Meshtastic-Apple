@@ -30,6 +30,8 @@ body:
     attributes:
       label: Participation
       options:
+       - label: I am willing to sponsor this feature.
+          required: false
         - label: I am willing to submit a pull request for this issue.
           required: false
   - type: textarea
