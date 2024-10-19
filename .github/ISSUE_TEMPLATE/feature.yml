@@ -29,12 +29,12 @@ body:
   - type: checkboxes
     attributes:
       label: Participation
+      description: (Features without participation go to the backlog.)
       options:
         - label: I am willing to sponsor this feature.
           required: false
         - label: I am willing to submit a pull request for this feature.
           required: false
-          description: (Features without participation go to the backlog.)
   - type: textarea
     attributes:
       label: Additional comments
