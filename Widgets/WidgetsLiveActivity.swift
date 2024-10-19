@@ -20,6 +20,9 @@ struct WidgetsLiveActivity: Widget {
 							 sentPackets: context.state.sentPackets,
 							 receivedPackets: context.state.receivedPackets,
 							 badReceivedPackets: context.state.badReceivedPackets,
+							 dupeReceivedPackets: context.state.dupeReceivedPackets,
+							 packetsSentRelay: context.state.packetsSentRelay,
+							 packetsCanceledRelay: context.state.packetsCanceledRelay,
 							 nodesOnline: context.state.nodesOnline,
 							 totalNodes: context.state.totalNodes,
 							 timerRange: context.state.timerRange)
@@ -28,33 +31,31 @@ struct WidgetsLiveActivity: Widget {
         } dynamicIsland: { context in
             DynamicIsland {
 				DynamicIslandExpandedRegion(.leading) {
-					HStack(alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/) {
-						Spacer()
-						Text("Mesh")
-							.font(.callout)
-							.fontWeight(.medium)
-							.foregroundStyle(.primary)
-							.padding(.bottom, 10)
-							.fixedSize()
-						Spacer()
-					}
 					if context.state.totalNodes >= 100 {
 						Text("100+ online")
-							.font(.caption)
+							.font(.callout)
 							.foregroundStyle(.secondary)
 							.fixedSize()
 					} else {
 						Text("\(context.state.nodesOnline) of \(context.state.totalNodes) online")
-							.font(.caption)
+							.font(.callout)
 							.foregroundStyle(.secondary)
 							.fixedSize()
 					}
 					Text("\(String(format: "Ch. Util: %.2f", context.state.channelUtilization))%")
-						.font(.caption)
+						.font(.caption2)
 						.foregroundStyle(.secondary)
 						.fixedSize()
 					Text("\(String(format: "Airtime: %.2f", context.state.airtime))%")
-						.font(.caption)
+						.font(.caption2)
+						.foregroundStyle(.secondary)
+						.fixedSize()
+					Text("Sent: \(context.state.sentPackets)")
+						.font(.caption2)
+						.foregroundStyle(.secondary)
+						.fixedSize()
+					Text("Received: \(context.state.receivedPackets)")
+						.font(.caption2)
 						.foregroundStyle(.secondary)
 						.fixedSize()
 				}
@@ -63,32 +64,27 @@ struct WidgetsLiveActivity: Widget {
 						.tint(Color("LightIndigo"))
 				}
 				DynamicIslandExpandedRegion(.trailing, priority: 1) {
-					HStack(alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/) {
-						Spacer()
-						Text("Packets")
-							.font(.callout)
-							.fontWeight(.medium)
-							.foregroundStyle(.primary)
-							.padding(.bottom, 10)
-							.fixedSize()
-						Spacer()
-					}
-					Text("Sent: \(context.state.sentPackets)")
-						.font(.caption)
-						.foregroundStyle(.secondary)
-						.fixedSize()
-					Text("Received: \(context.state.receivedPackets)")
-						.font(.caption)
-						.foregroundStyle(.secondary)
-						.fixedSize()
+					Spacer()
 					Text("Bad: \(context.state.badReceivedPackets)")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+						.fixedSize()
+					Text("Dupe: \(context.state.dupeReceivedPackets)")
+					   .font(.caption)
+					   .foregroundStyle(.secondary)
+					   .fixedSize()
+					Text("Relayed: \(context.state.packetsSentRelay)")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+						.fixedSize()
+					Text("Relay Cancel: \(context.state.packetsCanceledRelay)")
 						.font(.caption)
 						.foregroundStyle(.secondary)
 						.fixedSize()
 				}
 				DynamicIslandExpandedRegion(.bottom) {
 					Text("Last Heard: \(Date().formatted())")
-						.font(.caption)
+						.font(.caption2)
 						.fontWeight(.medium)
 						.foregroundStyle(.tint)
 						.fixedSize()
@@ -150,6 +146,9 @@ struct LiveActivityView: View {
 	var sentPackets: UInt32
 	var receivedPackets: UInt32
 	var badReceivedPackets: UInt32
+	var dupeReceivedPackets: UInt32
+	var packetsSentRelay: UInt32
+	var packetsCanceledRelay: UInt32
 	var nodesOnline: UInt32
 	var totalNodes: UInt32
 	var timerRange: ClosedRange<Date>
@@ -164,7 +163,8 @@ struct LiveActivityView: View {
 				.aspectRatio(contentMode: .fit)
 				.frame(minWidth: 25, idealWidth: 45, maxWidth: 55)
 			Spacer()
-			NodeInfoView(isLuminanceReduced: _isLuminanceReduced, nodeName: nodeName, uptimeSeconds: uptimeSeconds, channelUtilization: channelUtilization, airtime: airtime, sentPackets: sentPackets, receivedPackets: receivedPackets, badReceivedPackets: badReceivedPackets, nodesOnline: nodesOnline, totalNodes: totalNodes, timerRange: timerRange)
+			NodeInfoView(isLuminanceReduced: _isLuminanceReduced, nodeName: nodeName, uptimeSeconds: uptimeSeconds, channelUtilization: channelUtilization, airtime: airtime, sentPackets: sentPackets, receivedPackets: receivedPackets, badReceivedPackets: badReceivedPackets,
+				dupeReceivedPackets: dupeReceivedPackets, packetsSentRelay: packetsSentRelay, packetsCanceledRelay: packetsCanceledRelay, nodesOnline: nodesOnline, totalNodes: totalNodes, timerRange: timerRange)
 			Spacer()
 		}
 		.tint(.primary)
@@ -185,6 +185,9 @@ struct NodeInfoView: View {
 	var sentPackets: UInt32
 	var receivedPackets: UInt32
 	var badReceivedPackets: UInt32
+	var dupeReceivedPackets: UInt32
+	var packetsSentRelay: UInt32
+	var packetsCanceledRelay: UInt32
 	var nodesOnline: UInt32
 	var totalNodes: UInt32
 	var timerRange: ClosedRange<Date>
