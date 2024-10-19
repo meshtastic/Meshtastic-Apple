@@ -37,8 +37,22 @@ struct TraceRouteLog: View {
 				VStack {
 					List(node.traceRoutes?.reversed() as? [TraceRouteEntity] ?? [], id: \.self, selection: $selectedRoute) { route in
 						Label {
-							Text("\(route.time?.formatted() ?? "unknown".localized) - \(route.response ? (route.hops?.count == 0 && route.response ? "Direct" : "\(route.hops?.count ?? 0) \(route.hops?.count ?? 0 == 1 ? "Hop": "Hops")") : (route.sent ? "No Response" : "Not Sent"))")
-								.font(.callout)
+							if route.response && route.hopsTowards == 0 {
+								Text("\(route.time?.formatted() ?? "unknown".localized) - Direct")
+									.font(.caption)
+							} else if route.response && route.hopsTowards == 1 {
+								Text("\(route.time?.formatted() ?? "unknown".localized) - 1 Hop")
+									.font(.caption)
+							} else if route.response {
+								Text("\(route.time?.formatted() ?? "unknown".localized) - \(route.hopsTowards) Hops Towards \(route.hopsBack) Hops Back")
+									.font(.caption)
+							} else if route.sent {
+								Text("\(route.time?.formatted() ?? "unknown".localized) - No Response")
+									.font(.caption)
+							} else {
+								Text("\(route.time?.formatted() ?? "unknown".localized) - Not Sent")
+									.font(.caption)
+							}
 						} icon: {
 							Image(systemName: route.response ? (route.hops?.count == 0 && route.response ? "person.line.dotted.person" : "point.3.connected.trianglepath.dotted") : "person.slash")
 								.symbolRenderingMode(.hierarchical)
@@ -62,7 +76,16 @@ struct TraceRouteLog: View {
 				Divider()
 				ScrollView {
 					if selectedRoute != nil {
-						if selectedRoute?.response ?? false && selectedRoute?.hops?.count ?? 0 > 0 {
+						
+						if selectedRoute?.response ?? false && selectedRoute?.hopsTowards ?? 0 == 0 {
+							Label {
+								Text("Trace route received directly by \(selectedRoute?.node?.user?.longName ?? "unknown".localized) with a SNR of \(String(format: "%.2f", selectedRoute?.node?.snr ?? 0.0)) dB")
+							} icon: {
+								Image(systemName: "signpost.right.and.left")
+									.symbolRenderingMode(.hierarchical)
+							}
+							.font(.title3)
+						} else if selectedRoute?.response ?? false && selectedRoute?.hopsTowards ?? 0 > 0 {
 							Label {
 								Text("Route: \(selectedRoute?.routeText ?? "unknown".localized)")
 							} icon: {
@@ -74,14 +97,6 @@ struct TraceRouteLog: View {
 								Text("Route Back: \(selectedRoute?.routeBackText ?? "unknown".localized)")
 							} icon: {
 								Image(systemName: "signpost.left")
-									.symbolRenderingMode(.hierarchical)
-							}
-							.font(.title3)
-						} else if selectedRoute?.response ?? false {
-							Label {
-								Text("Trace route received directly by \(selectedRoute?.node?.user?.longName ?? "unknown".localized) with a SNR of \(String(format: "%.2f", selectedRoute?.node?.snr ?? 0.0)) dB")
-							} icon: {
-								Image(systemName: "signpost.right.and.left")
 									.symbolRenderingMode(.hierarchical)
 							}
 							.font(.title3)
@@ -116,7 +131,7 @@ struct TraceRouteLog: View {
 									   .symbolRenderingMode(.hierarchical)
 							   }
 						}
-						if selectedRoute?.hops?.count ?? 0 >= 3 {
+						if false {//selectedRoute?.hops?.count ?? 0 >= 3 {
 							HStack(alignment: .center) {
 								GeometryReader { geometry in
 									let size = ((geometry.size.width >= geometry.size.height ? geometry.size.height : geometry.size.width) / 2) - (idiom == .phone ? 45 : 85)

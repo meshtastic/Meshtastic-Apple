@@ -989,7 +989,7 @@ func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSenso
 				newConfig.sendBell = config.sendBell
 				newConfig.name = config.name
 				newConfig.monitorPin = Int32(config.monitorPin)
-				newConfig.detectionTriggeredHigh = config.detectionTriggeredHigh
+				newConfig.triggerType = Int32(config.detectionTriggerType.rawValue)
 				newConfig.usePullup = config.usePullup
 				newConfig.minimumBroadcastSecs = Int32(truncatingIfNeeded: config.minimumBroadcastSecs)
 				newConfig.stateBroadcastSecs = Int32(truncatingIfNeeded: config.stateBroadcastSecs)
@@ -1000,7 +1000,7 @@ func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSenso
 				fetchedNode[0].detectionSensorConfig?.name = config.name
 				fetchedNode[0].detectionSensorConfig?.monitorPin = Int32(config.monitorPin)
 				fetchedNode[0].detectionSensorConfig?.usePullup = config.usePullup
-				fetchedNode[0].detectionSensorConfig?.detectionTriggeredHigh = config.detectionTriggeredHigh
+				fetchedNode[0].detectionSensorConfig?.triggerType = Int32(config.detectionTriggerType.rawValue)
 				fetchedNode[0].detectionSensorConfig?.minimumBroadcastSecs = Int32(truncatingIfNeeded: config.minimumBroadcastSecs)
 				fetchedNode[0].detectionSensorConfig?.stateBroadcastSecs = Int32(truncatingIfNeeded: config.stateBroadcastSecs)
 			}
