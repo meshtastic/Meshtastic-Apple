@@ -24,7 +24,7 @@ open Meshtastic.xcworkspace
 
 ### Supported Operating Systems
 
-The last two major operating system versions are supported.
+The last two major operating system versions are supported on iOS, iPadOS and macOS.
 
 ### Code Standards
 
