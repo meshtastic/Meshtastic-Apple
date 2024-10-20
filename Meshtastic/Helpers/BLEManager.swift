@@ -855,6 +855,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							connectedHop.longitudeI = mostRecent.longitudeI
 							traceRoute?.hasPositions = true
 						}
+						/// construct route out string
 						var routeString = "\(connectedNode.user?.longName ?? "???") --> "
 						hopNodes.append(connectedHop)
 						traceRoute?.hopsTowards = Int32(routingMessage.route.count)
@@ -865,6 +866,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							}
 							let traceRouteHop = TraceRouteHopEntity(context: context)
 							traceRouteHop.time = Date()
+							// todo: add note about why we need to have separate logic for the first element
 							if routingMessage.snrTowards.count >= index + 1 {
 								traceRouteHop.snr = Float(routingMessage.snrTowards[index] / 4)
 							}
@@ -899,6 +901,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						hopNodes.append(destinationHop)
 						/// Add the destination node to the end of the route towards string and the beginning of teh route back string
 						routeString += "\(traceRoute?.node?.user?.longName ?? "unknown".localized) \((traceRoute?.node?.num ?? 0).toHex()) \(traceRoute?.node?.snr ?? 0 > 0 ? traceRoute?.node?.snr ?? 0 : 0.0)dB)"
+
+						/// construct route back string
 						var routeBackString = "\(traceRoute?.node?.user?.longName ?? "unknown".localized) \((traceRoute?.node?.num ?? 0).toHex()) \(traceRoute?.node?.snr ?? 0 > 0 ? traceRoute?.node?.snr ?? 0 : 0.0)dB) --> "
 						traceRoute?.hopsBack = Int32(routingMessage.routeBack.count)
 						for (index, node) in routingMessage.routeBack.enumerated() {
@@ -927,9 +931,20 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								}
 							}
 							hopNodes.append(traceRouteHop)
-							routeBackString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") (\(traceRouteHop.snr > 0 ? hopNode?.snr ?? 0.0 : 0.0)dB) --> "
+
+							let hopName = hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))
+							// todo: remove greater than zero check, never use hopNode.snr
+							let hopSnr = traceRouteHop.snr > 0 ? (hopNode?.snr ?? 0.0) : 0.0
+							let hopMqtt = hopNode?.viaMqtt ?? false ? " MQTT" : ""
+							routeBackString += "\(hopName)\(hopMqtt) (\(hopSnr)dB) --> "
 						}
-						routeBackString += "\(connectedNode.user?.longName ?? String(connectedNode.num.toHex())) \(connectedNode.snr > 0 ? connectedNode.snr : 0.0)dB)"
+						// show self in route string
+						let connectedNodeDisplay = connectedNode.user?.longName ?? String(connectedNode.num.toHex())
+						// why are we showing an SNR for connectedNode? It should always be zero since we don't measure signal to ourself
+						// i smell an off by 1 error
+						let finalHopSnr = connectedNode.snr > 0 ? connectedNode.snr : 0.0
+						routeBackString += "\(connectedNodeDisplay) \(finalHopSnr)dB)"
+
 						traceRoute?.routeText = routeString
 						traceRoute?.routeBackText = routeBackString
 						traceRoute?.hops = NSOrderedSet(array: hopNodes)
