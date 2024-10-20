@@ -189,32 +189,49 @@ struct PositionConfig: View {
 				Label("Altitude", systemImage: "arrow.up")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.onChange(of: includeAltitude) { _, newIncludeAltitude in
+				if newIncludeAltitude != PositionFlags(rawValue: self.positionFlags).contains(.Altitude) { hasChanges = true }
+			}
 
 			Toggle(isOn: $includeSatsinview) {
 				Label("Number of satellites", systemImage: "skew")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.onChange(of: includeSatsinview) { _, newIncludeSatsinview in
+				if newIncludeSatsinview != PositionFlags(rawValue: self.positionFlags).contains(.Satsinview) { hasChanges = true }
+			}
 
 			Toggle(isOn: $includeSeqNo) { // 64
 				Label("Sequence number", systemImage: "number")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.onChange(of: includeSeqNo) { _, newIncludeSeqNo in
+				if newIncludeSeqNo != PositionFlags(rawValue: self.positionFlags).contains(.SeqNo) { hasChanges = true }
+			}
 
 			Toggle(isOn: $includeTimestamp) { // 128
 				Label("timestamp", systemImage: "clock")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.onChange(of: includeTimestamp) { _, newIncludeTimestamp in
+				if newIncludeTimestamp != PositionFlags(rawValue: self.positionFlags).contains(.Timestamp) { hasChanges = true }
+			}
 
 			Toggle(isOn: $includeHeading) { // 128
 				Label("Vehicle heading", systemImage: "location.circle")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.onChange(of: includeHeading) { _, newIncludeHeading in
+				if newIncludeHeading != PositionFlags(rawValue: self.positionFlags).contains(.Heading) { hasChanges = true }
+			}
 
 			Toggle(isOn: $includeSpeed) { // 128
-
 				Label("Vehicle speed", systemImage: "speedometer")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.onChange(of: includeSpeed) { _, newIncludeSpeed in
+				if newIncludeSpeed != PositionFlags(rawValue: self.positionFlags).contains(.Speed) { hasChanges = true }
+			}
 		}
 	}
 
@@ -227,22 +244,35 @@ struct PositionConfig: View {
 					Label("Altitude is Mean Sea Level", systemImage: "arrow.up.to.line.compact")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.onChange(of: includeAltitudeMsl) { _, newIncludeAltitudeMsl in
+					if newIncludeAltitudeMsl != PositionFlags(rawValue: self.positionFlags).contains(.AltitudeMsl) { hasChanges = true }
+				}
+
 				Toggle(isOn: $includeGeoidalSeparation) {
 					Label("Altitude Geoidal Separation", systemImage: "globe.americas")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.onChange(of: includeGeoidalSeparation) { _, newIncludeGeoidalSeparation in
+					if newIncludeGeoidalSeparation != PositionFlags(rawValue: self.positionFlags).contains(.GeoidalSeparation) { hasChanges = true }
+				}
 			}
 
 			Toggle(isOn: $includeDop) {
 				Text("Dilution of precision (DOP) PDOP used by default")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.onChange(of: includeDop) { _, newIncludeDop in
+				if newIncludeDop != PositionFlags(rawValue: self.positionFlags).contains(.Dop) { hasChanges = true }
+			}
 
 			if includeDop {
 				Toggle(isOn: $includeHvdop) {
 					Text("If DOP is set, use HDOP / VDOP values instead of PDOP")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.onChange(of: includeHvdop) { _, newIncludeHvdop in
+					if newIncludeHvdop != PositionFlags(rawValue: self.positionFlags).contains(.Hvdop) { hasChanges = true }
+				}
 			}
 		}
 	}
