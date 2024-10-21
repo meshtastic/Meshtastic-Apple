@@ -6,9 +6,9 @@ struct TextMessageSize: View {
 
 	var body: some View {
 		ProgressView("\("bytes".localized): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
-			.frame(width: 130)
-			.padding(5)
-			.font(.subheadline)
+			.frame(width: 120)
+			.font(.caption)
+			.fixedSize()
 			.accentColor(.accentColor)
 	}
 }
