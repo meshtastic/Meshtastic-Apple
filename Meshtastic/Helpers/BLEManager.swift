@@ -835,8 +835,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					let traceRoute = getTraceRoute(id: Int64(decodedInfo.packet.decoded.requestID), context: context)
 					traceRoute?.response = true
 					if routingMessage.route.count == 0 {
-						let snr = routingMessage.snrBack.count > 0 ? routingMessage.snrBack[0] / 4 : 0
-						traceRoute?.snr = Float(snr)
+						let snr = routingMessage.snrBack.count > 0 ? Float(routingMessage.snrBack[0]) / 4 : 0.0
+						traceRoute?.snr = snr
 						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.direct %@".localized, String(snr))
 						MeshLogger.log("🪧 \(logString)")
 					} else {
@@ -848,7 +848,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						connectedHop.time = Date()
 						connectedHop.num = connectedPeripheral.num
 						connectedHop.name = connectedNode.user?.longName ?? "???"
-						connectedHop.snr = Float(routingMessage.snrBack.last ?? 0 / 4)
+						connectedHop.snr = Float(routingMessage.snrBack.last ?? 0) / 4
 						if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
 							connectedHop.altitude = mostRecent.altitude
 							connectedHop.latitudeI = mostRecent.latitudeI
@@ -866,7 +866,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							let traceRouteHop = TraceRouteHopEntity(context: context)
 							traceRouteHop.time = Date()
 							if routingMessage.snrTowards.count >= index + 1 {
-								traceRouteHop.snr = Float(routingMessage.snrTowards[index] / 4)
+								traceRouteHop.snr = Float(routingMessage.snrTowards[index]) / 4
 							}
 							if let hn = hopNode, hn.hasPositions {
 								if let mostRecent = hn.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
@@ -888,7 +888,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						let destinationHop = TraceRouteHopEntity(context: context)
 						destinationHop.name = traceRoute?.node?.user?.longName ?? "unknown".localized
 						destinationHop.time = Date()
-						destinationHop.snr = Float(routingMessage.snrTowards.last ?? 0 / 4)
+						destinationHop.snr = Float(routingMessage.snrTowards.last ?? 0) / 4
 						destinationHop.num = traceRoute?.node?.num ?? 0
 						if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
 							destinationHop.altitude = mostRecent.altitude
@@ -910,7 +910,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							traceRouteHop.time = Date()
 							traceRouteHop.back = true
 							if routingMessage.snrBack.count >= index + 1 {
-								traceRouteHop.snr = Float(routingMessage.snrBack[index] / 4)
+								traceRouteHop.snr = Float(routingMessage.snrBack[index]) / 4
 							}
 							if let hn = hopNode, hn.hasPositions {
 								if let mostRecent = hn.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
