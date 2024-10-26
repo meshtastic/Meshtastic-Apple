@@ -835,7 +835,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					let traceRoute = getTraceRoute(id: Int64(decodedInfo.packet.decoded.requestID), context: context)
 					traceRoute?.response = true
 					if routingMessage.route.count == 0 {
-						let snr = routingMessage.snrBack.count > 0 ? Float(routingMessage.snrBack[0]) / 4 : 0.0
+						// Routing messages snr values are snr * 4 stored as an int
+						// If a traceroute snr value is unknown this field will contain INT8_MIN or -128
+						// After converting to a float here, -32 is our unknown value.
+						let snr = routingMessage.snrBack.count > 0 ? (Float(routingMessage.snrBack[0]) / 4) : -32
 						traceRoute?.snr = snr
 						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.direct %@".localized, String(snr))
 						MeshLogger.log("🪧 \(logString)")
@@ -848,7 +851,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						connectedHop.time = Date()
 						connectedHop.num = connectedPeripheral.num
 						connectedHop.name = connectedNode.user?.longName ?? "???"
-						connectedHop.snr = Float(routingMessage.snrBack.last ?? 0) / 4
+						// If nil, set to unknown, INT8_MIN (-128) then divide by 4
+						connectedHop.snr = Float(routingMessage.snrBack.last ?? -128) / 4
 						if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
 							connectedHop.altitude = mostRecent.altitude
 							connectedHop.latitudeI = mostRecent.latitudeI
@@ -868,8 +872,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							if routingMessage.snrTowards.count >= index + 1 {
 								traceRouteHop.snr = Float(routingMessage.snrTowards[index]) / 4
 							} else {
-								// If no snr in route, try last snr from node
-								traceRouteHop.snr = hopNode?.snr ?? 0
+								// If no snr in route, set unknown
+								traceRouteHop.snr = -32
 							}
 							if let hn = hopNode, hn.hasPositions {
 								if let mostRecent = hn.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
@@ -886,12 +890,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								}
 							}
 							hopNodes.append(traceRouteHop)
-							routeString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") (\(traceRouteHop.snr)dB) --> "
+							routeString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") (\(traceRouteHop.snr != -32 ? String(traceRouteHop.snr) : "unknown ".localized)dB) --> "
 						}
 						let destinationHop = TraceRouteHopEntity(context: context)
 						destinationHop.name = traceRoute?.node?.user?.longName ?? "unknown".localized
 						destinationHop.time = Date()
-						destinationHop.snr = Float(routingMessage.snrTowards.last ?? 0) / 4
+						// If nil, set to unknown, INT8_MIN (-128) then divide by 4
+						destinationHop.snr = Float(routingMessage.snrTowards.last ?? -128) / 4
 						destinationHop.num = traceRoute?.node?.num ?? 0
 						if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
 							destinationHop.altitude = mostRecent.altitude
@@ -901,8 +906,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						}
 						hopNodes.append(destinationHop)
 						/// Add the destination node to the end of the route towards string and the beginning of teh route back string
-						routeString += "\(traceRoute?.node?.user?.longName ?? "unknown".localized) \((traceRoute?.node?.num ?? 0).toHex()) (\(traceRoute?.node?.snr ?? traceRoute?.node?.snr ?? 0.0)dB)"
-						var routeBackString = "\(traceRoute?.node?.user?.longName ?? "unknown".localized) \((traceRoute?.node?.num ?? 0).toHex()) (\(traceRoute?.node?.snr ?? traceRoute?.node?.snr ?? 0.0)dB) --> "
+						routeString += "\(traceRoute?.node?.user?.longName ?? "unknown".localized) \((traceRoute?.node?.num ?? 0).toHex()) (\(destinationHop.snr != -32 ? String(destinationHop.snr) : "unknown ".localized)dB)"
+						var routeBackString = "\(traceRoute?.node?.user?.longName ?? "unknown".localized) \((traceRoute?.node?.num ?? 0).toHex()) --> "
 						traceRoute?.hopsBack = Int32(routingMessage.routeBack.count)
 						for (index, node) in routingMessage.routeBack.enumerated() {
 							var hopNode = getNodeInfo(id: Int64(node), context: context)
@@ -915,8 +920,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							if routingMessage.snrBack.count >= index + 1 {
 								traceRouteHop.snr = Float(routingMessage.snrBack[index]) / 4
 							} else {
-								// If no snr in route, try last snr from node
-								traceRouteHop.snr = hopNode?.snr ?? 0
+								// If no snr in route, set to unknown
+								traceRouteHop.snr = -32
 							}
 							if let hn = hopNode, hn.hasPositions {
 								if let mostRecent = hn.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
@@ -933,9 +938,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								}
 							}
 							hopNodes.append(traceRouteHop)
-							routeBackString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") (\(traceRouteHop.snr)dB) --> "
+							routeBackString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") (\(traceRouteHop.snr != -32 ? String(traceRouteHop.snr) : "unknown ".localized)dB) --> "
 						}
-						routeBackString += "\(connectedNode.user?.longName ?? String(connectedNode.num.toHex()))"
+						// If nil, set to unknown, INT8_MIN (-128) then divide by 4
+						let snrBackLast = Float(routingMessage.snrBack.last ?? -128) / 4
+						routeBackString += "\(connectedNode.user?.longName ?? String(connectedNode.num.toHex())) (\(snrBackLast != -32 ? String(snrBackLast) : "unknown ".localized)dB)"
 						traceRoute?.routeText = routeString
 						traceRoute?.routeBackText = routeBackString
 						traceRoute?.hops = NSOrderedSet(array: hopNodes)
