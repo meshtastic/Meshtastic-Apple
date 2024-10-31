@@ -90,7 +90,7 @@ struct SecurityConfig: View {
 								RoundedRectangle(cornerRadius: 10.0)
 									.stroke(hasValidAdminKey3 ? Color.clear : Color.red, lineWidth: 2.0)
 							)
-						Text("The tertiarypublic key authorized to send admin messages to this node.")
+						Text("The tertiary public key authorized to send admin messages to this node.")
 							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
 					}
