@@ -890,7 +890,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								}
 							}
 							hopNodes.append(traceRouteHop)
-							routeString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") (\(traceRouteHop.snr != -32 ? String(traceRouteHop.snr) : "unknown ".localized)dB) --> "
+
+							let hopName = hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))
+							let mqttLabel = hopNode?.viaMqtt ?? false ? "MQTT " : ""
+							let snrLabel = (traceRouteHop.snr != -32) ? String(traceRouteHop.snr) : "unknown ".localized
+							routeString += "\(hopName) \(mqttLabel)(\(snrLabel)dB) --> "
 						}
 						let destinationHop = TraceRouteHopEntity(context: context)
 						destinationHop.name = traceRoute?.node?.user?.longName ?? "unknown".localized
@@ -905,7 +909,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							traceRoute?.hasPositions = true
 						}
 						hopNodes.append(destinationHop)
-						/// Add the destination node to the end of the route towards string and the beginning of teh route back string
+						/// Add the destination node to the end of the route towards string and the beginning of the route back string
 						routeString += "\(traceRoute?.node?.user?.longName ?? "unknown".localized) \((traceRoute?.node?.num ?? 0).toHex()) (\(destinationHop.snr != -32 ? String(destinationHop.snr) : "unknown ".localized)dB)"
 						traceRoute?.routeText = routeString
 
@@ -942,7 +946,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 									}
 								}
 								hopNodes.append(traceRouteHop)
-								routeBackString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") (\(traceRouteHop.snr != -32 ? String(traceRouteHop.snr) : "unknown ".localized)dB) --> "
+
+								let hopName = hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))
+								let mqttLabel = hopNode?.viaMqtt ?? false ? "MQTT " : ""
+								let snrLabel = (traceRouteHop.snr != -32) ? String(traceRouteHop.snr) : "unknown ".localized
+								routeBackString += "\(hopName) \(mqttLabel)(\(snrLabel)dB) --> "
 							}
 							// If nil, set to unknown, INT8_MIN (-128) then divide by 4
 							let snrBackLast = Float(routingMessage.snrBack.last ?? -128) / 4
