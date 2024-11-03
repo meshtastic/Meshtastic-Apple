@@ -159,12 +159,12 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			if packet.to == Constants.maximumNodeNum || packet.to == UserDefaults.preferredPeripheralNum {
 				newNode.channel = Int32(packet.channel)
 			}
-			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
+			if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
 				newNode.hopsAway = Int32(nodeInfoMessage.hopsAway)
 				newNode.favorite = nodeInfoMessage.isFavorite
 			}
 
-			if let newUserMessage = try? User(serializedData: packet.decoded.payload) {
+			if let newUserMessage = try? User(serializedBytes: packet.decoded.payload) {
 
 				if newUserMessage.id.isEmpty {
 					if packet.from > Constants.minimumNodeNum {
@@ -254,7 +254,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				fetchedNode[0].channel = Int32(packet.channel)
 			}
 
-			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
+			if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
 
 				fetchedNode[0].hopsAway = Int32(nodeInfoMessage.hopsAway)
 				fetchedNode[0].favorite = nodeInfoMessage.isFavorite
@@ -320,7 +320,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 
 	do {
 
-		if let positionMessage = try? Position(serializedData: packet.decoded.payload) {
+		if let positionMessage = try? Position(serializedBytes: packet.decoded.payload) {
 
 			/// Don't save empty position packets from null island or apple park
 			if (positionMessage.longitudeI != 0 && positionMessage.latitudeI != 0) && (positionMessage.latitudeI != 373346000 && positionMessage.longitudeI != -1220090000) {
@@ -462,24 +462,24 @@ func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, sessi
 			if fetchedNode[0].deviceConfig == nil {
 				let newDeviceConfig = DeviceConfigEntity(context: context)
 				newDeviceConfig.role = Int32(config.role.rawValue)
-				newDeviceConfig.serialEnabled = config.serialEnabled
 				newDeviceConfig.buttonGpio = Int32(config.buttonGpio)
 				newDeviceConfig.buzzerGpio =  Int32(config.buzzerGpio)
 				newDeviceConfig.rebroadcastMode = Int32(config.rebroadcastMode.rawValue)
 				newDeviceConfig.nodeInfoBroadcastSecs = Int32(truncating: config.nodeInfoBroadcastSecs as NSNumber)
 				newDeviceConfig.doubleTapAsButtonPress = config.doubleTapAsButtonPress
+				newDeviceConfig.tripleClickAsAdHocPing = !config.disableTripleClick
 				newDeviceConfig.ledHeartbeatEnabled = !config.ledHeartbeatDisabled
 				newDeviceConfig.isManaged = config.isManaged
 				newDeviceConfig.tzdef = config.tzdef
 				fetchedNode[0].deviceConfig = newDeviceConfig
 			} else {
 				fetchedNode[0].deviceConfig?.role = Int32(config.role.rawValue)
-				fetchedNode[0].deviceConfig?.serialEnabled = config.serialEnabled
 				fetchedNode[0].deviceConfig?.buttonGpio = Int32(config.buttonGpio)
 				fetchedNode[0].deviceConfig?.buzzerGpio = Int32(config.buzzerGpio)
 				fetchedNode[0].deviceConfig?.rebroadcastMode = Int32(config.rebroadcastMode.rawValue)
 				fetchedNode[0].deviceConfig?.nodeInfoBroadcastSecs = Int32(truncating: config.nodeInfoBroadcastSecs as NSNumber)
 				fetchedNode[0].deviceConfig?.doubleTapAsButtonPress = config.doubleTapAsButtonPress
+				fetchedNode[0].deviceConfig?.tripleClickAsAdHocPing = !config.disableTripleClick
 				fetchedNode[0].deviceConfig?.ledHeartbeatEnabled = !config.ledHeartbeatDisabled
 				fetchedNode[0].deviceConfig?.isManaged = config.isManaged
 				fetchedNode[0].deviceConfig?.tzdef = config.tzdef
@@ -989,7 +989,7 @@ func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSenso
 				newConfig.sendBell = config.sendBell
 				newConfig.name = config.name
 				newConfig.monitorPin = Int32(config.monitorPin)
-				newConfig.detectionTriggeredHigh = config.detectionTriggeredHigh
+				newConfig.triggerType = Int32(config.detectionTriggerType.rawValue)
 				newConfig.usePullup = config.usePullup
 				newConfig.minimumBroadcastSecs = Int32(truncatingIfNeeded: config.minimumBroadcastSecs)
 				newConfig.stateBroadcastSecs = Int32(truncatingIfNeeded: config.stateBroadcastSecs)
@@ -1000,7 +1000,7 @@ func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSenso
 				fetchedNode[0].detectionSensorConfig?.name = config.name
 				fetchedNode[0].detectionSensorConfig?.monitorPin = Int32(config.monitorPin)
 				fetchedNode[0].detectionSensorConfig?.usePullup = config.usePullup
-				fetchedNode[0].detectionSensorConfig?.detectionTriggeredHigh = config.detectionTriggeredHigh
+				fetchedNode[0].detectionSensorConfig?.triggerType = Int32(config.detectionTriggerType.rawValue)
 				fetchedNode[0].detectionSensorConfig?.minimumBroadcastSecs = Int32(truncatingIfNeeded: config.minimumBroadcastSecs)
 				fetchedNode[0].detectionSensorConfig?.stateBroadcastSecs = Int32(truncatingIfNeeded: config.stateBroadcastSecs)
 			}

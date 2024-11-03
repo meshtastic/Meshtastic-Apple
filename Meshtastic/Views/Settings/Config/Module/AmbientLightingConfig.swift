@@ -8,7 +8,6 @@ import MeshtasticProtobufs
 import SwiftUI
 import OSLog
 
-@available(iOS 17.0, macOS 14.0, *)
 struct AmbientLightingConfig: View {
 	@Environment(\.self) var environment
 	@Environment(\.managedObjectContext) var context
@@ -107,20 +106,14 @@ struct AmbientLightingConfig: View {
 					}
 				}
 			}
-			.onChange(of: ledState) {
-				if let val = node?.ambientLightingConfig?.ledState {
-					hasChanges = $0 != val
-				}
+			.onChange(of: ledState) { _, newLedState in
+				if newLedState != node?.ambientLightingConfig?.ledState { hasChanges = true }
 			}
-			.onChange(of: current) {
-				if let val = node?.ambientLightingConfig?.current {
-					hasChanges = $0 != val
-				}
+			.onChange(of: current) { _, newCurrent in
+				if newCurrent != node?.ambientLightingConfig?.current ?? 10 { hasChanges = true }
 			}
-			.onChange(of: color) { c in
-				if color != c {
-					hasChanges = true
-				}
+			.onChange(of: color) { oldColor, newColor in
+				if oldColor != newColor { hasChanges = true }
 			}
 		}
 	}

@@ -11,9 +11,7 @@ import CoreData
 import CoreLocation
 import CoreBluetooth
 import OSLog
-#if canImport(TipKit)
 import TipKit
-#endif
 #if canImport(ActivityKit)
 import ActivityKit
 #endif
@@ -49,9 +47,7 @@ struct Connect: View {
 					if bleManager.isSwitchedOn {
 						Section(header: Text("connected.radio").font(.title)) {
 							if let connectedPeripheral = bleManager.connectedPeripheral, connectedPeripheral.peripheral.state == .connected {
-								if #available(iOS 17.0, macOS 14.0, *) {
-									TipView(BluetoothConnectionTip(), arrowEdge: .bottom)
-								}
+								TipView(BluetoothConnectionTip(), arrowEdge: .bottom)
 								VStack(alignment: .leading) {
 									HStack {
 										VStack(alignment: .center) {
@@ -78,12 +74,10 @@ struct Connect: View {
 													.foregroundColor(.green)
 											} else {
 												HStack {
-													if #available(iOS 17.0, macOS 14.0, *) {
-														Image(systemName: "square.stack.3d.down.forward")
-															.symbolRenderingMode(.multicolor)
-															.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
-															.foregroundColor(.orange)
-													}
+													Image(systemName: "square.stack.3d.down.forward")
+														.symbolRenderingMode(.multicolor)
+														.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+														.foregroundColor(.orange)
 													Text("communicating").font(.callout)
 														.foregroundColor(.orange)
 												}
@@ -307,10 +301,10 @@ struct Connect: View {
 				.presentationDetents([.large])
 				.presentationDragIndicator(.automatic)
 		}
-		.onChange(of: (self.bleManager.invalidVersion)) { _ in
+    	.onChange(of: self.bleManager.invalidVersion) {
 			invalidFirmwareVersion = self.bleManager.invalidVersion
 		}
-		.onChange(of: (self.bleManager.isSubscribed)) { sub in
+		.onChange(of: self.bleManager.isSubscribed) { _, sub in
 
 			if UserDefaults.preferredPeripheralId.count > 0 && sub {
 
@@ -347,6 +341,9 @@ struct Connect: View {
 																	  sentPackets: UInt32(mostRecent?.numPacketsTx ?? 0),
 																	  receivedPackets: UInt32(mostRecent?.numPacketsRx ?? 0),
 																	  badReceivedPackets: UInt32(mostRecent?.numPacketsRxBad ?? 0),
+																	  dupeReceivedPackets: UInt32(mostRecent?.numRxDupe ?? 0),
+																	  packetsSentRelay: UInt32(mostRecent?.numTxRelay ?? 0),
+																	  packetsCanceledRelay: UInt32(mostRecent?.numTxRelayCanceled ?? 0),
 																	  nodesOnline: UInt32(mostRecent?.numOnlineNodes ?? 0),
 																	  totalNodes: UInt32(mostRecent?.numTotalNodes ?? 0),
 																	  timerRange: Date.now...future)

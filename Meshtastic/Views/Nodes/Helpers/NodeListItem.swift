@@ -101,36 +101,9 @@ struct NodeListItem: View {
 						if node.positions?.count ?? 0 > 0 && connectedNode != node.num {
 							HStack {
 								if let lastPostion = node.positions?.lastObject as? PositionEntity {
-									if #available(iOS 17.0, macOS 14.0, *) {
-										if let currentLocation = LocationsHandler.shared.locationsArray.last {
-											let myCoord = CLLocation(latitude: currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
-											if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
-												let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
-												let metersAway = nodeCoord.distance(from: myCoord)
-												Image(systemName: "lines.measurement.horizontal")
-													.font(.callout)
-													.symbolRenderingMode(.multicolor)
-													.frame(width: 30)
-												DistanceText(meters: metersAway)
-													.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-													.foregroundColor(.gray)
-												let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: nodeCoord)
-												let headingDegrees = Angle.degrees(trueBearing)
-												Image(systemName: "location.north")
-													.font(.callout)
-													.symbolRenderingMode(.multicolor)
-													.clipShape(Circle())
-													.rotationEffect(headingDegrees)
-												let heading = Measurement(value: trueBearing, unit: UnitAngle.degrees)
-												Text("\(heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0)))))")
-													.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-													.foregroundColor(.gray)
-											}
-										}
-									} else {
-
-										let myCoord = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
-										if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationHelper.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationHelper.DefaultLocation.latitude {
+									if let currentLocation = LocationsHandler.shared.locationsArray.last {
+										let myCoord = CLLocation(latitude: currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
+										if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
 											let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
 											let metersAway = nodeCoord.distance(from: myCoord)
 											Image(systemName: "lines.measurement.horizontal")
@@ -139,7 +112,7 @@ struct NodeListItem: View {
 												.frame(width: 30)
 											DistanceText(meters: metersAway)
 												.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-												.foregroundColor(.secondary)
+												.foregroundColor(.gray)
 											let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: nodeCoord)
 											let headingDegrees = Angle.degrees(trueBearing)
 											Image(systemName: "location.north")
@@ -183,41 +156,36 @@ struct NodeListItem: View {
 								Image(systemName: "scroll")
 									.symbolRenderingMode(.hierarchical)
 									.font(.callout)
-									.frame(width: 30)
 								Text("Logs:")
 									.foregroundColor(.gray)
-									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption2)
+									.allowsTightening(true)
 								if node.hasDeviceMetrics {
 									Image(systemName: "flipphone")
 										.symbolRenderingMode(.hierarchical)
 										.font(.callout)
-										.frame(width: 30)
 								}
 								if node.hasPositions {
 									Image(systemName: "mappin.and.ellipse")
 										.symbolRenderingMode(.hierarchical)
 										.font(.callout)
-										.frame(width: 30)
+
 								}
 								if node.hasEnvironmentMetrics {
 									Image(systemName: "cloud.sun.rain")
 										.symbolRenderingMode(.hierarchical)
 										.font(.callout)
-										.frame(width: 30)
+
 								}
 								if node.hasDetectionSensorMetrics {
 									Image(systemName: "sensor")
 										.symbolRenderingMode(.hierarchical)
 										.font(.callout)
-										.frame(width: 30)
 								}
-								if #available(iOS 17.0, macOS 14.0, *) {
-									if node.hasTraceRoutes {
-										Image(systemName: "signpost.right.and.left")
-											.symbolRenderingMode(.hierarchical)
-											.font(.callout)
-											.frame(width: 30)
-									}
+								if node.hasTraceRoutes {
+									Image(systemName: "signpost.right.and.left")
+										.symbolRenderingMode(.hierarchical)
+										.font(.callout)
 								}
 							}
 						}

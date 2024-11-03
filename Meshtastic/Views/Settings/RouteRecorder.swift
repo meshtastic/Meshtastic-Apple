@@ -12,7 +12,6 @@ import CoreLocation
 import CoreMotion
 import OSLog
 
-@available(iOS 17.0, macOS 14.0, *)
 struct RouteRecorder: View {
 
 	@ObservedObject var locationsHandler: LocationsHandler = LocationsHandler.shared
@@ -284,7 +283,7 @@ struct RouteRecorder: View {
 				.onDisappear(perform: {
 					UIApplication.shared.isIdleTimerDisabled = false
 				})
-				.onChange(of: locationsHandler.locationsArray.last) { newLoc in
+				.onChange(of: locationsHandler.locationsArray.last) { _, newLoc in
 					if locationsHandler.isRecording {
 						if let loc = newLoc {
 							if recording != nil {

@@ -123,14 +123,14 @@ struct MQTTConfig: View {
 						Label("Root Topic", systemImage: "tree")
 						TextField("Root Topic", text: $root)
 							.foregroundColor(.gray)
-							.onChange(of: root, perform: { _ in
+							.onChange(of: root) {
 								var totalBytes = root.utf8.count
 								// Only mess with the value if it is too big
 								while totalBytes > 30 {
 									root = String(root.dropLast())
 									totalBytes = root.utf8.count
 								}
-							})
+							}
 							.foregroundColor(.gray)
 					}
 					.keyboardType(.asciiCapable)
@@ -162,7 +162,7 @@ struct MQTTConfig: View {
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
-							.onChange(of: address, perform: { _ in
+							.onChange(of: address) {
 								var totalBytes = address.utf8.count
 								// Only mess with the value if it is too big
 								while totalBytes > 62 {
@@ -170,7 +170,7 @@ struct MQTTConfig: View {
 									totalBytes = address.utf8.count
 								}
 								hasChanges = true
-							})
+							}
 							.keyboardType(.default)
 					}
 					.autocorrectionDisabled()
@@ -181,7 +181,7 @@ struct MQTTConfig: View {
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
-							.onChange(of: username, perform: { _ in
+							.onChange(of: username) {
 								var totalBytes = username.utf8.count
 								// Only mess with the value if it is too big
 								while totalBytes > 62 {
@@ -189,7 +189,7 @@ struct MQTTConfig: View {
 									totalBytes = username.utf8.count
 								}
 								hasChanges = true
-							})
+							}
 							.foregroundColor(.gray)
 					}
 					.keyboardType(.default)
@@ -200,7 +200,7 @@ struct MQTTConfig: View {
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
-							.onChange(of: password, perform: { _ in
+							.onChange(of: password) {
 								var totalBytes = password.utf8.count
 								// Only mess with the value if it is too big
 								while totalBytes > 62 {
@@ -208,7 +208,7 @@ struct MQTTConfig: View {
 									totalBytes = password.utf8.count
 								}
 								hasChanges = true
-							})
+							}
 							.foregroundColor(.gray)
 					}
 					.keyboardType(.default)
@@ -262,55 +262,47 @@ struct MQTTConfig: View {
 				)
 			}
 		)
-		.onChange(of: enabled) {
-			if $0 != node?.mqttConfig?.enabled { hasChanges = true }
+		.onChange(of: enabled) { _, newEnabled in
+			if newEnabled != node?.mqttConfig?.enabled { hasChanges = true }
 		}
-		.onChange(of: proxyToClientEnabled) { newProxyToClientEnabled in
+		.onChange(of: proxyToClientEnabled) { _, newProxyToClientEnabled in
 			if newProxyToClientEnabled {
 				jsonEnabled = false
 			}
 			if newProxyToClientEnabled != node?.mqttConfig?.proxyToClientEnabled { hasChanges = true }
 		}
-		.onChange(of: address) { newAddress in
-			if node != nil && node?.mqttConfig != nil {
-				if newAddress != node!.mqttConfig!.address { hasChanges = true }
-			}
+		.onChange(of: address) { _, newAddress in
+			if newAddress != node?.mqttConfig?.address ?? "" { hasChanges = true }
 		}
 		.onChange(of: username) { newUsername in
-			if node != nil && node?.mqttConfig != nil {
-				if newUsername != node!.mqttConfig!.username { hasChanges = true }
-			}
+			if newUsername != node?.mqttConfig?.username ?? "" { hasChanges = true }
 		}
 		.onChange(of: password) { newPassword in
-			if node != nil && node?.mqttConfig != nil {
-				if newPassword != node!.mqttConfig!.password { hasChanges = true }
-			}
+			if newPassword != node?.mqttConfig?.password ?? "" { hasChanges = true }
 		}
 		.onChange(of: root) { newRoot in
-			if node != nil && node?.mqttConfig != nil {
-				if newRoot != node!.mqttConfig!.root { hasChanges = true }
-			}
+			if newRoot != node?.mqttConfig?.root ?? "" { hasChanges = true }
 		}
-		.onChange(of: selectedTopic) { newSelectedTopic in
+		.onChange(of: selectedTopic) { _, newSelectedTopic in
 			root = newSelectedTopic
 		}
-		.onChange(of: encryptionEnabled) {
-			if $0 != node?.mqttConfig?.encryptionEnabled { hasChanges = true }
+		.onChange(of: encryptionEnabled) { _, newEncryptionEnabled in
+			if newEncryptionEnabled != node?.mqttConfig?.encryptionEnabled { hasChanges = true }
 		}
-		.onChange(of: jsonEnabled) { newJsonEnabled in
+		.onChange(of: jsonEnabled) { _, newJsonEnabled in
 			if newJsonEnabled {
 				proxyToClientEnabled = false
 			}
 			if newJsonEnabled != node?.mqttConfig?.jsonEnabled { hasChanges = true }
 		}
-		.onChange(of: tlsEnabled) { newTlsEnabled in
+		.onChange(of: tlsEnabled) { _, newTlsEnabled in
 			if address.lowercased() == "mqtt.meshtastic.org" {
 				tlsEnabled = false
 			} else {
 				if newTlsEnabled != node?.mqttConfig?.tlsEnabled { hasChanges = true }
 			}
 		}
-		.onChange(of: mqttConnected) { newMqttConnected in
+		.onChange(of: mqttConnected) { _, newMqttConnected in
 			if newMqttConnected == false {
 				if bleManager.mqttProxyConnected {
 					bleManager.mqttManager.disconnect()
@@ -321,13 +313,11 @@ struct MQTTConfig: View {
 				}
 			}
 		}
-		.onChange(of: mapReportingEnabled) {
-			if $0 != node?.mqttConfig?.mapReportingEnabled { hasChanges = true }
+		.onChange(of: mapReportingEnabled) { _, newMapReportingEnabled in
+			if newMapReportingEnabled != node?.mqttConfig?.mapReportingEnabled { hasChanges = true }
 		}
-		.onChange(of: mapPublishIntervalSecs) { newMapPublishIntervalSecs in
-			if node != nil && node?.mqttConfig != nil {
-				if newMapPublishIntervalSecs != node!.mqttConfig!.mapPublishIntervalSecs { hasChanges = true }
-			}
+		.onChange(of: mapPublishIntervalSecs) { _, newMapPublishIntervalSecs in
+			if newMapPublishIntervalSecs != node?.mqttConfig?.mapPublishIntervalSecs ?? -1 { hasChanges = true }
 		}
 		.onFirstAppear {
 			// Need to request a MqttModuleConfig from the remote node before allowing changes
@@ -353,52 +343,50 @@ struct MQTTConfig: View {
 	}
 	func setMqttValues() {
 
-		if #available(iOS 17.0, macOS 14.0, *) {
+		nearbyTopics = []
+		let geocoder = CLGeocoder()
+		if LocationsHandler.shared.locationsArray.count > 0 {
+			let region  = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))?.topic
+			defaultTopic = "msh/" + (region ?? "UNSET")
+			geocoder.reverseGeocodeLocation(LocationsHandler.shared.locationsArray.first!, completionHandler: {(placemarks, error) in
+				if let error {
+					Logger.services.error("Failed to reverse geocode location: \(error.localizedDescription)")
+					return
+				}
 
-			nearbyTopics = []
-			let geocoder = CLGeocoder()
-			if LocationsHandler.shared.locationsArray.count > 0 {
-				let region  = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))?.topic
-				defaultTopic = "msh/" + (region ?? "UNSET")
-				geocoder.reverseGeocodeLocation(LocationsHandler.shared.locationsArray.first!, completionHandler: {(placemarks, error) in
-					if let error {
-						Logger.services.error("Failed to reverse geocode location: \(error.localizedDescription)")
-						return
+				if let placemarks = placemarks, let placemark = placemarks.first {
+					let cc = locale.region?.identifier ?? "UNK"
+					/// Country Topic unless you are US
+					if  placemark.isoCountryCode ?? "unknown" != cc {
+						let countryTopic = defaultTopic + "/" + (placemark.isoCountryCode ?? "")
+						if !countryTopic.isEmpty {
+							nearbyTopics.append(countryTopic)
+						}
 					}
-
-					if let placemarks = placemarks, let placemark = placemarks.first {
-						let cc = locale.region?.identifier ?? "UNK"
-						/// Country Topic unless you are US
-						if  placemark.isoCountryCode ?? "unknown" != cc {
-							let countryTopic = defaultTopic + "/" + (placemark.isoCountryCode ?? "")
-							if !countryTopic.isEmpty {
-								nearbyTopics.append(countryTopic)
-							}
-						}
-						let stateTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "")
-						if !stateTopic.isEmpty {
-							nearbyTopics.append(stateTopic)
-						}
-						let countyTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.subAdministrativeArea?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
-						if !countyTopic.isEmpty {
-							nearbyTopics.append(countyTopic)
-						}
-						let cityTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.locality?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
-						if !cityTopic.isEmpty {
-							nearbyTopics.append(cityTopic)
-						}
-						let neightborhoodTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.subLocality?.lowercased()
-							.replacingOccurrences(of: " ", with: "")
-							.replacingOccurrences(of: "'", with: "") ?? "")
-						if !neightborhoodTopic.isEmpty {
-							nearbyTopics.append(neightborhoodTopic)
-						}
-					} else {
-						Logger.services.debug("No Location")
+					let stateTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "")
+					if !stateTopic.isEmpty {
+						nearbyTopics.append(stateTopic)
 					}
-				})
-			}
+					let countyTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.subAdministrativeArea?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
+					if !countyTopic.isEmpty {
+						nearbyTopics.append(countyTopic)
+					}
+					let cityTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.locality?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
+					if !cityTopic.isEmpty {
+						nearbyTopics.append(cityTopic)
+					}
+					let neightborhoodTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.subLocality?.lowercased()
+						.replacingOccurrences(of: " ", with: "")
+						.replacingOccurrences(of: "'", with: "") ?? "")
+					if !neightborhoodTopic.isEmpty {
+						nearbyTopics.append(neightborhoodTopic)
+					}
+				} else {
+					Logger.services.debug("No Location")
+				}
+			})
 		}
+
 		self.enabled = node?.mqttConfig?.enabled ?? false
 		self.proxyToClientEnabled = node?.mqttConfig?.proxyToClientEnabled ?? false
 		self.address = node?.mqttConfig?.address ?? ""

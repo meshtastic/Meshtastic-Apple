@@ -8,7 +8,6 @@
 import SwiftUI
 import MapKit
 
-@available(iOS 17.0, macOS 14.0, *)
 struct PositionPopover: View {
 
 	@ObservedObject var locationsHandler = LocationsHandler.shared
@@ -96,7 +95,6 @@ struct PositionPopover: View {
 					}
 					/// Altitude
 					Label {
-						let formatter = MeasurementFormatter()
 						let distanceInMeters = Measurement(value: Double(position.altitude), unit: UnitLength.meters)
 						let distanceInFeet = distanceInMeters.converted(to: UnitLength.feet)
 						if Locale.current.measurementSystem == .metric {
@@ -215,20 +213,12 @@ struct PositionPopover: View {
 								.padding(.bottom)
 						}
 						if position.nodePosition?.hasDetectionSensorMetrics ?? false {
-							if #available(iOS 17.0, macOS 14.0, *) {
-								Image(systemName: "sensor.fill")
-									.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
-									.symbolRenderingMode(.hierarchical)
-									.foregroundColor(.accentColor)
-									.font(.largeTitle)
-									.padding(.bottom)
-							} else {
-								Image(systemName: "sensor.fill")
-									.symbolRenderingMode(.hierarchical)
-									.foregroundColor(.accentColor)
-									.font(.largeTitle)
-									.padding(.bottom)
-							}
+							Image(systemName: "sensor.fill")
+								.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+								.symbolRenderingMode(.hierarchical)
+								.foregroundColor(.accentColor)
+								.font(.largeTitle)
+								.padding(.bottom)
 						}
 						BatteryGauge(node: position.nodePosition!)
 					}

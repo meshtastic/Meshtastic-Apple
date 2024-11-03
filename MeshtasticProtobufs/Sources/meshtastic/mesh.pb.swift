@@ -127,6 +127,10 @@ public enum HardwareModel: SwiftProtobuf.Enum {
   case heltecHru3601 // = 23
 
   ///
+  /// Heltec Wireless Bridge
+  case heltecWirelessBridge // = 24
+
+  ///
   /// B&Q Consulting Station Edition G1: https://uniteng.com/wiki/doku.php?id=meshtastic:station
   case stationG1 // = 25
 
@@ -197,7 +201,7 @@ public enum HardwareModel: SwiftProtobuf.Enum {
   case drDev // = 41
 
   ///
-  /// M5 esp32 based MCU modules with enclosure, TFT and LORA Shields. All Variants (Basic, Core, Fire, Core2, Paper) https://m5stack.com/
+  /// M5 esp32 based MCU modules with enclosure, TFT and LORA Shields. All Variants (Basic, Core, Fire, Core2, CoreS3, Paper) https://m5stack.com/
   case m5Stack // = 42
 
   ///
@@ -355,9 +359,26 @@ public enum HardwareModel: SwiftProtobuf.Enum {
   ///  ^^^ short A0 to switch to I2C address 0x3C
   case rp2040FeatherRfm95 // = 76
 
-  /// M5 esp32 based MCU modules with enclosure, TFT and LORA Shields. All Variants (Basic, Core, Fire, Core2, Paper) https://m5stack.com/ 
+  /// M5 esp32 based MCU modules with enclosure, TFT and LORA Shields. All Variants (Basic, Core, Fire, Core2, CoreS3, Paper) https://m5stack.com/ 
   case m5StackCorebasic // = 77
   case m5StackCore2 // = 78
+
+  /// Pico2 with Waveshare Hat, same as Pico 
+  case rpiPico2 // = 79
+
+  /// M5 esp32 based MCU modules with enclosure, TFT and LORA Shields. All Variants (Basic, Core, Fire, Core2, CoreS3, Paper) https://m5stack.com/ 
+  case m5StackCores3 // = 80
+
+  /// Seeed XIAO S3 DK
+  case seeedXiaoS3 // = 81
+
+  ///
+  /// Nordic nRF52840+Semtech SX1262 LoRa BLE Combo Module. nRF52840+SX1262 MS24SF1
+  case ms24Sf1 // = 82
+
+  ///
+  /// Lilygo TLora-C6 with the new ESP32-C6 MCU
+  case tloraC6 // = 83
 
   ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -396,6 +417,7 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case 21: self = .wioWm1110
     case 22: self = .rak2560
     case 23: self = .heltecHru3601
+    case 24: self = .heltecWirelessBridge
     case 25: self = .stationG1
     case 26: self = .rak11310
     case 27: self = .senseloraRp2040
@@ -450,6 +472,11 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case 76: self = .rp2040FeatherRfm95
     case 77: self = .m5StackCorebasic
     case 78: self = .m5StackCore2
+    case 79: self = .rpiPico2
+    case 80: self = .m5StackCores3
+    case 81: self = .seeedXiaoS3
+    case 82: self = .ms24Sf1
+    case 83: self = .tloraC6
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -481,6 +508,7 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case .wioWm1110: return 21
     case .rak2560: return 22
     case .heltecHru3601: return 23
+    case .heltecWirelessBridge: return 24
     case .stationG1: return 25
     case .rak11310: return 26
     case .senseloraRp2040: return 27
@@ -535,6 +563,11 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case .rp2040FeatherRfm95: return 76
     case .m5StackCorebasic: return 77
     case .m5StackCore2: return 78
+    case .rpiPico2: return 79
+    case .m5StackCores3: return 80
+    case .seeedXiaoS3: return 81
+    case .ms24Sf1: return 82
+    case .tloraC6: return 83
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -571,6 +604,7 @@ extension HardwareModel: CaseIterable {
     .wioWm1110,
     .rak2560,
     .heltecHru3601,
+    .heltecWirelessBridge,
     .stationG1,
     .rak11310,
     .senseloraRp2040,
@@ -625,6 +659,11 @@ extension HardwareModel: CaseIterable {
     .rp2040FeatherRfm95,
     .m5StackCorebasic,
     .m5StackCore2,
+    .rpiPico2,
+    .m5StackCores3,
+    .seeedXiaoS3,
+    .ms24Sf1,
+    .tloraC6,
     .privateHw,
   ]
 }
@@ -3262,6 +3301,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     21: .same(proto: "WIO_WM1110"),
     22: .same(proto: "RAK2560"),
     23: .same(proto: "HELTEC_HRU_3601"),
+    24: .same(proto: "HELTEC_WIRELESS_BRIDGE"),
     25: .same(proto: "STATION_G1"),
     26: .same(proto: "RAK11310"),
     27: .same(proto: "SENSELORA_RP2040"),
@@ -3316,6 +3356,11 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     76: .same(proto: "RP2040_FEATHER_RFM95"),
     77: .same(proto: "M5STACK_COREBASIC"),
     78: .same(proto: "M5STACK_CORE2"),
+    79: .same(proto: "RPI_PICO2"),
+    80: .same(proto: "M5STACK_CORES3"),
+    81: .same(proto: "SEEED_XIAO_S3"),
+    82: .same(proto: "MS24SF1"),
+    83: .same(proto: "TLORA_C6"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }

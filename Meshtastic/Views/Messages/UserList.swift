@@ -8,9 +8,7 @@
 import SwiftUI
 import CoreData
 import OSLog
-#if canImport(TipKit)
 import TipKit
-#endif
 
 struct UserList: View {
 
@@ -201,12 +199,12 @@ struct UserList: View {
 			.sheet(isPresented: $showingHelp) {
 				DirectMessagesHelp()
 			}
-			.onChange(of: searchText) { _ in
+			.onChange(of: searchText) {
 				Task {
 					await searchUserList()
 				}
 			}
-			.onChange(of: viaLora) { _ in
+			.onChange(of: viaLora) {
 				if !viaLora && !viaMqtt {
 					viaMqtt = true
 				}
@@ -214,7 +212,7 @@ struct UserList: View {
 					await searchUserList()
 				}
 			}
-			.onChange(of: viaMqtt) { _ in
+			.onChange(of: viaMqtt) {
 				if !viaLora && !viaMqtt {
 					viaLora = true
 				}
@@ -222,27 +220,27 @@ struct UserList: View {
 					await searchUserList()
 				}
 			}
-			.onChange(of: [deviceRoles]) { _ in
+			.onChange(of: [deviceRoles]) {
 				Task {
 					await searchUserList()
 				}
 			}
-			.onChange(of: hopsAway) { _ in
+			.onChange(of: hopsAway) {
 				Task {
 					await searchUserList()
 				}
 			}
-			.onChange(of: [boolFilters]) { _ in
+			.onChange(of: [boolFilters]) {
 				Task {
 					await searchUserList()
 				}
 			}
-			.onChange(of: maxDistance) { _ in
+			.onChange(of: maxDistance) {
 				Task {
 					await searchUserList()
 				}
 			}
-			.onChange(of: isPkiEncrypted) { _ in
+			.onChange(of: isPkiEncrypted) {
 				Task {
 					await searchUserList()
 				}
@@ -304,9 +302,13 @@ struct UserList: View {
 				let loraPredicate = NSPredicate(format: "userNode.viaMqtt == NO")
 				predicates.append(loraPredicate)
 			} else {
-				let mqttPredicate = NSPredicate(format: "userNode.viaMqtt == YES")
+				let mqttPredicate = NSPredicate(format: "userNode.viaMqtt == YES AND userNode.hopsAway == 0")
 				predicates.append(mqttPredicate)
 			}
+		} else {
+			/// Only show mqtt nodes that can be contacted (zero hops) on the default key
+			// let bothPredicate = NSPredicate(format: "userNode.viaMqtt == YES AND userNode.hopsAway == 0 OR userNode.viaMqtt == NO")
+			// predicates.append(bothPredicate)
 		}
 		/// Roles
 		if roleFilter && deviceRoles.count > 0 {

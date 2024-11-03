@@ -259,47 +259,47 @@ struct LoRaConfig: View {
 				}
 			}
 		}
-		.onChange(of: region) { newRegion in
+		.onChange(of: region) { _, newRegion in
 			if newRegion != node?.loRaConfig?.regionCode ?? -1 { hasChanges = true }
 		}
-		.onChange(of: usePreset) {
-			if $0 != node?.loRaConfig?.usePreset { hasChanges = true }
+		.onChange(of: usePreset) { _, newPreset in
+			if newPreset != node?.loRaConfig?.usePreset { hasChanges = true }
 		}
-		.onChange(of: modemPreset) { newModemPreset in
+		.onChange(of: modemPreset) { _, newModemPreset in
 			if newModemPreset != node?.loRaConfig?.modemPreset ?? -1 { hasChanges = true }
 		}
-		.onChange(of: hopLimit) { newHopLimit in
+		.onChange(of: hopLimit) { _, newHopLimit in
 			if newHopLimit != node?.loRaConfig?.hopLimit ?? -1 { hasChanges = true }
 		}
-		.onChange(of: channelNum) { newChannelNum in
+		.onChange(of: channelNum) { _, newChannelNum in
 			if newChannelNum != node?.loRaConfig?.channelNum ?? -1 { hasChanges = true }
 		}
-		.onChange(of: bandwidth) { newBandwidth in
+		.onChange(of: bandwidth) { _, newBandwidth in
 			if newBandwidth != node?.loRaConfig?.bandwidth ?? -1 { hasChanges = true }
 		}
-		.onChange(of: codingRate) { newCodingRate in
+		.onChange(of: codingRate) { _, newCodingRate in
 			if newCodingRate != node?.loRaConfig?.codingRate ?? -1 { hasChanges = true }
 		}
-		.onChange(of: spreadFactor) { newSpreadFactor in
+		.onChange(of: spreadFactor) { _, newSpreadFactor in
 			if newSpreadFactor != node?.loRaConfig?.spreadFactor ?? -1 { hasChanges = true }
 		}
-		.onChange(of: rxBoostedGain) {
-			if $0 != node?.loRaConfig?.sx126xRxBoostedGain { hasChanges = true }
+		.onChange(of: rxBoostedGain) { _, newRxBoostedGain in
+			if newRxBoostedGain != node?.loRaConfig?.sx126xRxBoostedGain { hasChanges = true }
 		}
-		.onChange(of: overrideFrequency) { newOverrideFrequency in
+		.onChange(of: overrideFrequency) { _, newOverrideFrequency in
 			if newOverrideFrequency != node?.loRaConfig?.overrideFrequency { hasChanges = true }
 		}
-		.onChange(of: txPower) { newTxPower in
+		.onChange(of: txPower) { _, newTxPower in
 			if newTxPower != node?.loRaConfig?.txPower ?? -1 { hasChanges = true }
 		}
-		.onChange(of: txEnabled) {
-			if $0 != node?.loRaConfig?.txEnabled { hasChanges = true }
+		.onChange(of: txEnabled) { _, newTxEnabled in
+			if newTxEnabled != node?.loRaConfig?.txEnabled { hasChanges = true }
 		}
-		.onChange(of: ignoreMqtt) {
-			if $0 != node?.loRaConfig?.ignoreMqtt { hasChanges = true }
+		.onChange(of: ignoreMqtt) { _, newIgnoreMqtt in
+			if newIgnoreMqtt != node?.loRaConfig?.ignoreMqtt { hasChanges = true }
 		}
-		.onChange(of: okToMqtt) {
-			if $0 != node?.loRaConfig?.okToMqtt { hasChanges = true }
+		.onChange(of: okToMqtt) { _, newOkToMqtt in
+			if newOkToMqtt != node?.loRaConfig?.okToMqtt { hasChanges = true }
 		}
 	}
 	func setLoRaValues() {

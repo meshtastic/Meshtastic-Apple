@@ -12,7 +12,7 @@ struct SecureInput: View {
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@Binding private var text: String
 	@Binding private var isValid: Bool
-	@State private var isSecure: Bool = true
+	@State var isSecure: Bool = true
 	private var title: String
 
 	init(_ title: String, text: Binding<String>, isValid: Binding<Bool>) {

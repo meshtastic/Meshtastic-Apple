@@ -54,31 +54,28 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	let LOGRADIO_UUID = CBUUID(string: "0x5a3d6e49-06e6-4423-9944-e9de8cdf9547")
 
 	// MARK: init
-
 	private override init() {
-		   // Default initialization should not be used
-		   fatalError("Use setup(appState:context:) to initialize the singleton")
-	   }
+	   // Default initialization should not be used
+	   fatalError("Use setup(appState:context:) to initialize the singleton")
+	}
 
-	   static func setup(appState: AppState, context: NSManagedObjectContext) {
-		   guard shared == nil else {
-			   print("BLEManager already initialized")
-			   return
-		   }
-		   shared = BLEManager(appState: appState, context: context)
+	static func setup(appState: AppState, context: NSManagedObjectContext) {
+	   guard shared == nil else {
+		   Logger.services.warning("[BLE] BLEManager already initialized")
+		   return
 	   }
+	   shared = BLEManager(appState: appState, context: context)
+	}
 
-	   private init(appState: AppState, context: NSManagedObjectContext) {
-		   self.appState = appState
-		   self.context = context
-		   self.lastConnectionError = ""
-		   self.connectedVersion = "0.0.0"
-		   super.init()
-		   centralManager = CBCentralManager(delegate: self, queue: nil)
-		   mqttManager.delegate = self
-	   }
-   
-
+	private init(appState: AppState, context: NSManagedObjectContext) {
+	   self.appState = appState
+	   self.context = context
+	   self.lastConnectionError = ""
+	   self.connectedVersion = "0.0.0"
+	   super.init()
+	   centralManager = CBCentralManager(delegate: self, queue: nil)
+	   mqttManager.delegate = self
+	}
 
 	// MARK: Scanning for BLE Devices
 	// Scan for nearby BLE devices using the Meshtastic BLE service ID
@@ -464,7 +461,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			do {
 				let fetchedNodes = try context.fetch(nodes)
 				let receivingNode = fetchedNodes.first(where: { $0.num == destNum })
-				let connectedNode = fetchedNodes.first(where: { $0.num == self.connectedPeripheral.num })
 				traceRoute.id = Int64(meshPacket.id)
 				traceRoute.time = Date()
 				traceRoute.node = receivingNode
@@ -844,24 +840,31 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.direct %@".localized, String(snr))
 						MeshLogger.log("🪧 \(logString)")
 					} else {
+						guard let connectedNode = getNodeInfo(id: Int64(connectedPeripheral.num), context: context) else {
+							return
+						}
 						var hopNodes: [TraceRouteHopEntity] = []
 						let connectedHop = TraceRouteHopEntity(context: context)
-						connectedHop.name = traceRoute?.node?.user?.longName ?? "unknown".localized
 						connectedHop.time = Date()
+						connectedHop.num = connectedPeripheral.num
+						connectedHop.name = connectedNode.user?.longName ?? "???"
+						connectedHop.snr = Float(routingMessage.snrBack.last ?? 0 / 4)
 						if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
 							connectedHop.altitude = mostRecent.altitude
 							connectedHop.latitudeI = mostRecent.latitudeI
 							connectedHop.longitudeI = mostRecent.longitudeI
 							traceRoute?.hasPositions = true
 						}
+						var routeString = "\(connectedNode.user?.longName ?? "???") --> "
 						hopNodes.append(connectedHop)
-						var routeString = "You --> "
+						traceRoute?.hopsTowards = Int32(routingMessage.route.count)
 						for (index, node) in routingMessage.route.enumerated() {
 							var hopNode = getNodeInfo(id: Int64(node), context: context)
 							if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
 								hopNode = createNodeInfo(num: Int64(node), context: context)
 							}
 							let traceRouteHop = TraceRouteHopEntity(context: context)
+							traceRouteHop.time = Date()
 							if routingMessage.snrTowards.count >= index + 1 {
 								traceRouteHop.snr = Float(routingMessage.snrTowards[index] / 4)
 							}
@@ -878,11 +881,26 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								if decodedInfo.packet.rxTime > 0 {
 									hopNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
 								}
-								hopNodes.append(traceRouteHop)
 							}
+							hopNodes.append(traceRouteHop)
 							routeString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") (\(traceRouteHop.snr > 0 ? hopNode?.snr ?? 0.0 : 0.0)dB) --> "
 						}
-						var routeBackString = traceRoute?.node?.user?.longName ?? "unknown".localized
+						let destinationHop = TraceRouteHopEntity(context: context)
+						destinationHop.name = traceRoute?.node?.user?.longName ?? "unknown".localized
+						destinationHop.time = Date()
+						destinationHop.snr = Float(routingMessage.snrTowards.last ?? 0 / 4)
+						destinationHop.num = traceRoute?.node?.num ?? 0
+						if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
+							destinationHop.altitude = mostRecent.altitude
+							destinationHop.latitudeI = mostRecent.latitudeI
+							destinationHop.longitudeI = mostRecent.longitudeI
+							traceRoute?.hasPositions = true
+						}
+						hopNodes.append(destinationHop)
+						/// Add the destination node to the end of the route towards string and the beginning of teh route back string
+						routeString += "\(traceRoute?.node?.user?.longName ?? "unknown".localized) \((traceRoute?.node?.num ?? 0).toHex()) \(traceRoute?.node?.snr ?? 0 > 0 ? traceRoute?.node?.snr ?? 0 : 0.0)dB)"
+						var routeBackString = "\(traceRoute?.node?.user?.longName ?? "unknown".localized) \((traceRoute?.node?.num ?? 0).toHex()) \(traceRoute?.node?.snr ?? 0 > 0 ? traceRoute?.node?.snr ?? 0 : 0.0)dB) --> "
+						traceRoute?.hopsBack = Int32(routingMessage.routeBack.count)
 						for (index, node) in routingMessage.routeBack.enumerated() {
 							var hopNode = getNodeInfo(id: Int64(node), context: context)
 							if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
@@ -907,20 +925,22 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								if decodedInfo.packet.rxTime > 0 {
 									hopNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
 								}
-								hopNodes.append(traceRouteHop)
 							}
+							hopNodes.append(traceRouteHop)
 							routeBackString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") (\(traceRouteHop.snr > 0 ? hopNode?.snr ?? 0.0 : 0.0)dB) --> "
 						}
+						routeBackString += "\(connectedNode.user?.longName ?? String(connectedNode.num.toHex())) \(connectedNode.snr > 0 ? connectedNode.snr : 0.0)dB)"
 						traceRoute?.routeText = routeString
 						traceRoute?.routeBackText = routeBackString
 						traceRoute?.hops = NSOrderedSet(array: hopNodes)
+						traceRoute?.time = Date()
 						do {
 							try context.save()
 							Logger.data.info("💾 Saved Trace Route")
 						} catch {
 							context.rollback()
 							let nsError = error as NSError
-							Logger.data.error("Error Updating Core Data TraceRouteHOp: \(nsError, privacy: .public)")
+							Logger.data.error("Error Updating Core Data TraceRouteHop: \(nsError, privacy: .public)")
 						}
 						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.route %@".localized, routeString)
 						MeshLogger.log("🪧 \(logString)")
@@ -1202,65 +1222,37 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	@MainActor
 	public func getPositionFromPhoneGPS(destNum: Int64, fixedPosition: Bool) -> Position? {
 		var positionPacket = Position()
-		if #available(iOS 17.0, macOS 14.0, *) {
 
-			guard let lastLocation = LocationsHandler.shared.locationsArray.last else {
-				return nil
-			}
+		guard let lastLocation = LocationsHandler.shared.locationsArray.last else {
+			return nil
+		}
 
-			if lastLocation == CLLocation(latitude: 0, longitude: 0) {
-				return nil
-			}
+		if lastLocation == CLLocation(latitude: 0, longitude: 0) {
+			return nil
+		}
 
-			positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
-			positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
-			let timestamp = lastLocation.timestamp
-			positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
-			positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
-			positionPacket.altitude = Int32(lastLocation.altitude)
-			positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
-			let currentSpeed = lastLocation.speed
-			if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite) {
-				positionPacket.groundSpeed = UInt32(currentSpeed)
-			}
-			let currentHeading = lastLocation.course
-			if (currentHeading > 0  && currentHeading <= 360) && (!currentHeading.isNaN || !currentHeading.isInfinite) {
-				positionPacket.groundTrack = UInt32(currentHeading)
-			}
-			/// Set location source for time
-			if !fixedPosition {
-				/// From GPS treat time as good
-				positionPacket.locationSource = Position.LocSource.locExternal
-			} else {
-				/// From GPS, but time can be old and have drifted
-				positionPacket.locationSource = Position.LocSource.locManual
-			}
-
+		positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
+		positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
+		let timestamp = lastLocation.timestamp
+		positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
+		positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
+		positionPacket.altitude = Int32(lastLocation.altitude)
+		positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
+		let currentSpeed = lastLocation.speed
+		if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite) {
+			positionPacket.groundSpeed = UInt32(currentSpeed)
+		}
+		let currentHeading = lastLocation.course
+		if (currentHeading > 0  && currentHeading <= 360) && (!currentHeading.isNaN || !currentHeading.isInfinite) {
+			positionPacket.groundTrack = UInt32(currentHeading)
+		}
+		/// Set location source for time
+		if !fixedPosition {
+			/// From GPS treat time as good
+			positionPacket.locationSource = Position.LocSource.locExternal
 		} else {
-
-			positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
-			positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
-			let timestamp = LocationHelper.shared.locationManager.location?.timestamp ?? Date()
-			positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
-			positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
-			positionPacket.altitude = Int32(LocationHelper.shared.locationManager.location?.altitude ?? 0)
-			positionPacket.satsInView = UInt32(LocationHelper.satsInView)
-			let currentSpeed = LocationHelper.shared.locationManager.location?.speed ?? 0
-			if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite) {
-				positionPacket.groundSpeed = UInt32(currentSpeed)
-			}
-			let currentHeading  = LocationHelper.shared.locationManager.location?.course ?? 0
-			if (currentHeading > 0  && currentHeading <= 360) && (!currentHeading.isNaN || !currentHeading.isInfinite) {
-				positionPacket.groundTrack = UInt32(currentHeading)
-			}
-			/// Set location source for time
-			if !fixedPosition {
-				/// From GPS treat time as good
-				positionPacket.locationSource = Position.LocSource.locExternal
-			} else {
-				/// From GPS, but time can be old and have drifted
-				positionPacket.locationSource = Position.LocSource.locManual
-			}
+			/// From GPS, but time can be old and have drifted
+			positionPacket.locationSource = Position.LocSource.locManual
 		}
 		return positionPacket
 	}
@@ -1645,7 +1637,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			let decodedString = base64UrlString.base64urlToBase64()
 			if let decodedData = Data(base64Encoded: decodedString) {
 				do {
-					let channelSet: ChannelSet = try ChannelSet(serializedData: decodedData)
+					let channelSet: ChannelSet = try ChannelSet(serializedBytes: decodedData)
 					for cs in channelSet.settings {
 						if addChannels {
 							// We are trying to add a channel so lets get the last index
@@ -2017,10 +2009,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		let messageDescription = "🛟 Saved LoRa Config for \(toUser.longName ?? "unknown".localized)"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
-			upsertLoRaConfigPacket(config: config, nodeNum: toUser.num, sessionPasskey: toUser.userNode?.sessionPasskey,context: context)
+			upsertLoRaConfigPacket(config: config, nodeNum: toUser.num, sessionPasskey: toUser.userNode?.sessionPasskey, context: context)
 			return Int64(meshPacket.id)
 		}
-
 		return 0
 	}
 
@@ -3223,7 +3214,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	}
 
 	func storeAndForwardPacket(packet: MeshPacket, connectedNodeNum: Int64, context: NSManagedObjectContext) {
-		if let storeAndForwardMessage = try? StoreAndForward(serializedData: packet.decoded.payload) {
+		if let storeAndForwardMessage = try? StoreAndForward(serializedBytes: packet.decoded.payload) {
 			// Handle each of the store and forward request / response messages
 			switch storeAndForwardMessage.rr {
 			case .unset:
@@ -3349,7 +3340,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 // MARK: - CB Central Manager implmentation
 extension BLEManager: CBCentralManagerDelegate {
-	
+
 	// MARK: Bluetooth enabled/disabled
 	func centralManagerDidUpdateState(_ central: CBCentralManager) {
 		if central.state == CBManagerState.poweredOn {
@@ -3359,9 +3350,8 @@ extension BLEManager: CBCentralManagerDelegate {
 		} else {
 			isSwitchedOn = false
 		}
-		
+
 		var status = ""
-		
 		switch central.state {
 		case .poweredOff:
 			status = "BLE is powered off"
@@ -3380,10 +3370,9 @@ extension BLEManager: CBCentralManagerDelegate {
 		}
 		Logger.services.info("📜 [BLE] Bluetooth status: \(status)")
 	}
-	
+
 	// Called each time a peripheral is discovered
 	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
-		
 		if self.automaticallyReconnect && peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" {
 			self.connectTo(peripheral: peripheral)
 			Logger.services.info("✅ [BLE] Reconnecting to prefered peripheral: \(peripheral.name ?? "Unknown", privacy: .public)")
@@ -3391,7 +3380,6 @@ extension BLEManager: CBCentralManagerDelegate {
 		let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String
 		let device = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: name ?? "Unknown", shortName: "?", longName: name ?? "Unknown", firmwareVersion: "Unknown", rssi: RSSI.intValue, lastUpdate: Date(), peripheral: peripheral)
 		let index = peripherals.map { $0.peripheral }.firstIndex(of: peripheral)
-		
 		if let peripheralIndex = index {
 			peripherals[peripheralIndex] = device
 		} else {

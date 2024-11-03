@@ -8,10 +8,7 @@ import SwiftUI
 import CoreData
 import CoreImage.CIFilterBuiltins
 import MeshtasticProtobufs
-
-#if canImport(TipKit)
 import TipKit
-#endif
 
 struct QrCodeImage {
 	let context = CIContext()
@@ -55,10 +52,8 @@ struct ShareChannels: View {
 
 	var body: some View {
 
-		if #available(iOS 17.0, macOS 14.0, *) {
-			VStack {
-				TipView(ShareChannelsTip(), arrowEdge: .bottom)
-			}
+		VStack {
+			TipView(ShareChannelsTip(), arrowEdge: .bottom)
 		}
 		GeometryReader { bounds in
 			let smallest = min(bounds.size.width, bounds.size.height)
@@ -240,15 +235,15 @@ struct ShareChannels: View {
 			.onAppear {
 				generateChannelSet()
 			}
-			.onChange(of: includeChannel0) { _ in generateChannelSet()	}
-			.onChange(of: includeChannel1) { _ in generateChannelSet()	}
-			.onChange(of: includeChannel2) { _ in generateChannelSet()	}
-			.onChange(of: includeChannel3) { _ in generateChannelSet()	}
-			.onChange(of: includeChannel4) { _ in generateChannelSet()	}
-			.onChange(of: includeChannel5) { _ in generateChannelSet()	}
-			.onChange(of: includeChannel6) { _ in generateChannelSet() }
-			.onChange(of: includeChannel7) { _ in generateChannelSet() }
-			.onChange(of: replaceChannels) { _ in generateChannelSet() }
+			.onChange(of: includeChannel0) { generateChannelSet() }
+			.onChange(of: includeChannel1) { generateChannelSet() }
+			.onChange(of: includeChannel2) { generateChannelSet() }
+			.onChange(of: includeChannel3) { generateChannelSet() }
+			.onChange(of: includeChannel4) { generateChannelSet() }
+			.onChange(of: includeChannel5) { generateChannelSet() }
+			.onChange(of: includeChannel6) { generateChannelSet() }
+			.onChange(of: includeChannel7) { generateChannelSet() }
+			.onChange(of: replaceChannels) { generateChannelSet() }
 		}
 	}
 	func generateChannelSet() {

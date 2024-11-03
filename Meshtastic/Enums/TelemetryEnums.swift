@@ -177,7 +177,6 @@ enum Iaq: Int, CaseIterable, Identifiable {
 	}
 }
 
-
 // Default of 0 is Client
 enum MetricsTypes: Int, CaseIterable, Identifiable {
 
