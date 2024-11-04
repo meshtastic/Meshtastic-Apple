@@ -5034,7 +5034,7 @@
     "Current: %lld" : {
 
     },
-    "Currently the reccomended way to update ESP32 devices is using the web flasher on a desktop computer from a chrome based browser. It does not work on mobile devices or over BLE." : {
+    "Currently the recommended way to update ESP32 devices is using the web flasher on a desktop computer from a chrome based browser. It does not work on mobile devices or over BLE." : {
 
     },
     "Date" : {
