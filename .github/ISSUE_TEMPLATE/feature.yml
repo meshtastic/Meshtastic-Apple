@@ -31,7 +31,7 @@ body:
       label: Participation
       description: (Features without participation go to the backlog.)
       options:
-        - label: I am willing to sponsor this feature.
+        - label: I am willing to pay to sponsor this feature.
           required: false
         - label: I am willing to submit a pull request for this feature.
           required: false
