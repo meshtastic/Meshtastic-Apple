@@ -150,8 +150,12 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
   case max30102 // = 30
 
   ///
-  /// MLX90614 non-contact IR temperature sensor.
+  /// MLX90614 non-contact IR temperature sensor
   case mlx90614 // = 31
+
+  ///
+  /// SCD40/SCD41 CO2, humidity, temperature sensor
+  case scd4X // = 32
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -192,6 +196,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
     case 29: self = .customSensor
     case 30: self = .max30102
     case 31: self = .mlx90614
+    case 32: self = .scd4X
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -230,6 +235,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
     case .customSensor: return 29
     case .max30102: return 30
     case .mlx90614: return 31
+    case .scd4X: return 32
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -273,6 +279,7 @@ extension TelemetrySensorType: CaseIterable {
     .customSensor,
     .max30102,
     .mlx90614,
+    .scd4X,
   ]
 }
 
@@ -778,6 +785,17 @@ public struct AirQualityMetrics {
   /// Clears the value of `particles100Um`. Subsequent reads from it will return its default value.
   public mutating func clearParticles100Um() {self._particles100Um = nil}
 
+  ///
+  /// 10.0um Particle Count
+  public var co2: UInt32 {
+    get {return _co2 ?? 0}
+    set {_co2 = newValue}
+  }
+  /// Returns true if `co2` has been explicitly set.
+  public var hasCo2: Bool {return self._co2 != nil}
+  /// Clears the value of `co2`. Subsequent reads from it will return its default value.
+  public mutating func clearCo2() {self._co2 = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -794,6 +812,7 @@ public struct AirQualityMetrics {
   fileprivate var _particles25Um: UInt32? = nil
   fileprivate var _particles50Um: UInt32? = nil
   fileprivate var _particles100Um: UInt32? = nil
+  fileprivate var _co2: UInt32? = nil
 }
 
 ///
@@ -1108,6 +1127,7 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     29: .same(proto: "CUSTOM_SENSOR"),
     30: .same(proto: "MAX30102"),
     31: .same(proto: "MLX90614"),
+    32: .same(proto: "SCD4X"),
   ]
 }
 
@@ -1456,6 +1476,7 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     10: .standard(proto: "particles_25um"),
     11: .standard(proto: "particles_50um"),
     12: .standard(proto: "particles_100um"),
+    13: .same(proto: "co2"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1476,6 +1497,7 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       case 10: try { try decoder.decodeSingularUInt32Field(value: &self._particles25Um) }()
       case 11: try { try decoder.decodeSingularUInt32Field(value: &self._particles50Um) }()
       case 12: try { try decoder.decodeSingularUInt32Field(value: &self._particles100Um) }()
+      case 13: try { try decoder.decodeSingularUInt32Field(value: &self._co2) }()
       default: break
       }
     }
@@ -1522,6 +1544,9 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     try { if let v = self._particles100Um {
       try visitor.visitSingularUInt32Field(value: v, fieldNumber: 12)
     } }()
+    try { if let v = self._co2 {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 13)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1538,6 +1563,7 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if lhs._particles25Um != rhs._particles25Um {return false}
     if lhs._particles50Um != rhs._particles50Um {return false}
     if lhs._particles100Um != rhs._particles100Um {return false}
+    if lhs._co2 != rhs._co2 {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -101,6 +101,14 @@ public struct Config {
     set {payloadVariant = .sessionkey(newValue)}
   }
 
+  public var deviceUi: DeviceUIConfig {
+    get {
+      if case .deviceUi(let v)? = payloadVariant {return v}
+      return DeviceUIConfig()
+    }
+    set {payloadVariant = .deviceUi(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -115,6 +123,7 @@ public struct Config {
     case bluetooth(Config.BluetoothConfig)
     case security(Config.SecurityConfig)
     case sessionkey(Config.SessionkeyConfig)
+    case deviceUi(DeviceUIConfig)
 
   #if !swift(>=4.1)
     public static func ==(lhs: Config.OneOf_PayloadVariant, rhs: Config.OneOf_PayloadVariant) -> Bool {
@@ -156,6 +165,10 @@ public struct Config {
       }()
       case (.sessionkey, .sessionkey): return {
         guard case .sessionkey(let l) = lhs, case .sessionkey(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.deviceUi, .deviceUi): return {
+        guard case .deviceUi(let l) = lhs, case .deviceUi(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -359,6 +372,15 @@ public struct Config {
       /// Ignores observed messages from foreign meshes like LOCAL_ONLY,
       /// but takes it step further by also ignoring messages from nodenums not in the node's known list (NodeDB)
       case knownOnly // = 3
+
+      ///
+      /// Only permitted for SENSOR, TRACKER and TAK_TRACKER roles, this will inhibit all rebroadcasts, not unlike CLIENT_MUTE role.
+      case none // = 4
+
+      ///
+      /// Ignores packets from non-standard portnums such as: TAK, RangeTest, PaxCounter, etc.
+      /// Only rebroadcasts packets with standard portnums: NodeInfo, Text, Position, Telemetry, and Routing.
+      case corePortnumsOnly // = 5
       case UNRECOGNIZED(Int)
 
       public init() {
@@ -371,6 +393,8 @@ public struct Config {
         case 1: self = .allSkipDecoding
         case 2: self = .localOnly
         case 3: self = .knownOnly
+        case 4: self = .none
+        case 5: self = .corePortnumsOnly
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -381,6 +405,8 @@ public struct Config {
         case .allSkipDecoding: return 1
         case .localOnly: return 2
         case .knownOnly: return 3
+        case .none: return 4
+        case .corePortnumsOnly: return 5
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1652,6 +1678,8 @@ extension Config.DeviceConfig.RebroadcastMode: CaseIterable {
     .allSkipDecoding,
     .localOnly,
     .knownOnly,
+    .none,
+    .corePortnumsOnly,
   ]
 }
 
@@ -1841,6 +1869,7 @@ extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
     7: .same(proto: "bluetooth"),
     8: .same(proto: "security"),
     9: .same(proto: "sessionkey"),
+    10: .standard(proto: "device_ui"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1966,6 +1995,19 @@ extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
           self.payloadVariant = .sessionkey(v)
         }
       }()
+      case 10: try {
+        var v: DeviceUIConfig?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .deviceUi(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .deviceUi(v)
+        }
+      }()
       default: break
       }
     }
@@ -2012,6 +2054,10 @@ extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
     case .sessionkey?: try {
       guard case .sessionkey(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
+    }()
+    case .deviceUi?: try {
+      guard case .deviceUi(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
     }()
     case nil: break
     }
@@ -2139,6 +2185,8 @@ extension Config.DeviceConfig.RebroadcastMode: SwiftProtobuf._ProtoNameProviding
     1: .same(proto: "ALL_SKIP_DECODING"),
     2: .same(proto: "LOCAL_ONLY"),
     3: .same(proto: "KNOWN_ONLY"),
+    4: .same(proto: "NONE"),
+    5: .same(proto: "CORE_PORTNUMS_ONLY"),
   ]
 }
 

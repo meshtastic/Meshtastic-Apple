@@ -21,61 +21,6 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 }
 
 ///
-/// Font sizes for the device screen
-public enum ScreenFonts: SwiftProtobuf.Enum {
-  public typealias RawValue = Int
-
-  ///
-  /// TODO: REPLACE
-  case fontSmall // = 0
-
-  ///
-  /// TODO: REPLACE
-  case fontMedium // = 1
-
-  ///
-  /// TODO: REPLACE
-  case fontLarge // = 2
-  case UNRECOGNIZED(Int)
-
-  public init() {
-    self = .fontSmall
-  }
-
-  public init?(rawValue: Int) {
-    switch rawValue {
-    case 0: self = .fontSmall
-    case 1: self = .fontMedium
-    case 2: self = .fontLarge
-    default: self = .UNRECOGNIZED(rawValue)
-    }
-  }
-
-  public var rawValue: Int {
-    switch self {
-    case .fontSmall: return 0
-    case .fontMedium: return 1
-    case .fontLarge: return 2
-    case .UNRECOGNIZED(let i): return i
-    }
-  }
-
-}
-
-#if swift(>=4.2)
-
-extension ScreenFonts: CaseIterable {
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [ScreenFonts] = [
-    .fontSmall,
-    .fontMedium,
-    .fontLarge,
-  ]
-}
-
-#endif  // swift(>=4.2)
-
-///
 /// Position with static location information only for NodeDBLite
 public struct PositionLite {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -233,7 +178,7 @@ public struct NodeInfoLite {
   }
 
   ///
-  /// Number of hops away from us this node is (0 if adjacent)
+  /// Number of hops away from us this node is (0 if direct neighbor)
   public var hopsAway: UInt32 {
     get {return _storage._hopsAway ?? 0}
     set {_uniqueStorage()._hopsAway = newValue}
@@ -392,89 +337,17 @@ public struct ChannelFile {
   public init() {}
 }
 
-///
-/// This can be used for customizing the firmware distribution. If populated,
-/// show a secondary bootup screen with custom logo and text for 2.5 seconds.
-public struct OEMStore {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
-
-  ///
-  /// The Logo width in Px
-  public var oemIconWidth: UInt32 = 0
-
-  ///
-  /// The Logo height in Px
-  public var oemIconHeight: UInt32 = 0
-
-  ///
-  /// The Logo in XBM bytechar format
-  public var oemIconBits: Data = Data()
-
-  ///
-  /// Use this font for the OEM text.
-  public var oemFont: ScreenFonts = .fontSmall
-
-  ///
-  /// Use this font for the OEM text.
-  public var oemText: String = String()
-
-  ///
-  /// The default device encryption key, 16 or 32 byte
-  public var oemAesKey: Data = Data()
-
-  ///
-  /// A Preset LocalConfig to apply during factory reset
-  public var oemLocalConfig: LocalConfig {
-    get {return _oemLocalConfig ?? LocalConfig()}
-    set {_oemLocalConfig = newValue}
-  }
-  /// Returns true if `oemLocalConfig` has been explicitly set.
-  public var hasOemLocalConfig: Bool {return self._oemLocalConfig != nil}
-  /// Clears the value of `oemLocalConfig`. Subsequent reads from it will return its default value.
-  public mutating func clearOemLocalConfig() {self._oemLocalConfig = nil}
-
-  ///
-  /// A Preset LocalModuleConfig to apply during factory reset
-  public var oemLocalModuleConfig: LocalModuleConfig {
-    get {return _oemLocalModuleConfig ?? LocalModuleConfig()}
-    set {_oemLocalModuleConfig = newValue}
-  }
-  /// Returns true if `oemLocalModuleConfig` has been explicitly set.
-  public var hasOemLocalModuleConfig: Bool {return self._oemLocalModuleConfig != nil}
-  /// Clears the value of `oemLocalModuleConfig`. Subsequent reads from it will return its default value.
-  public mutating func clearOemLocalModuleConfig() {self._oemLocalModuleConfig = nil}
-
-  public var unknownFields = SwiftProtobuf.UnknownStorage()
-
-  public init() {}
-
-  fileprivate var _oemLocalConfig: LocalConfig? = nil
-  fileprivate var _oemLocalModuleConfig: LocalModuleConfig? = nil
-}
-
 #if swift(>=5.5) && canImport(_Concurrency)
-extension ScreenFonts: @unchecked Sendable {}
 extension PositionLite: @unchecked Sendable {}
 extension UserLite: @unchecked Sendable {}
 extension NodeInfoLite: @unchecked Sendable {}
 extension DeviceState: @unchecked Sendable {}
 extension ChannelFile: @unchecked Sendable {}
-extension OEMStore: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate let _protobuf_package = "meshtastic"
-
-extension ScreenFonts: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "FONT_SMALL"),
-    1: .same(proto: "FONT_MEDIUM"),
-    2: .same(proto: "FONT_LARGE"),
-  ]
-}
 
 extension PositionLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PositionLite"
@@ -929,84 +802,6 @@ extension ChannelFile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   public static func ==(lhs: ChannelFile, rhs: ChannelFile) -> Bool {
     if lhs.channels != rhs.channels {return false}
     if lhs.version != rhs.version {return false}
-    if lhs.unknownFields != rhs.unknownFields {return false}
-    return true
-  }
-}
-
-extension OEMStore: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = _protobuf_package + ".OEMStore"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "oem_icon_width"),
-    2: .standard(proto: "oem_icon_height"),
-    3: .standard(proto: "oem_icon_bits"),
-    4: .standard(proto: "oem_font"),
-    5: .standard(proto: "oem_text"),
-    6: .standard(proto: "oem_aes_key"),
-    7: .standard(proto: "oem_local_config"),
-    8: .standard(proto: "oem_local_module_config"),
-  ]
-
-  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.oemIconWidth) }()
-      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.oemIconHeight) }()
-      case 3: try { try decoder.decodeSingularBytesField(value: &self.oemIconBits) }()
-      case 4: try { try decoder.decodeSingularEnumField(value: &self.oemFont) }()
-      case 5: try { try decoder.decodeSingularStringField(value: &self.oemText) }()
-      case 6: try { try decoder.decodeSingularBytesField(value: &self.oemAesKey) }()
-      case 7: try { try decoder.decodeSingularMessageField(value: &self._oemLocalConfig) }()
-      case 8: try { try decoder.decodeSingularMessageField(value: &self._oemLocalModuleConfig) }()
-      default: break
-      }
-    }
-  }
-
-  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    if self.oemIconWidth != 0 {
-      try visitor.visitSingularUInt32Field(value: self.oemIconWidth, fieldNumber: 1)
-    }
-    if self.oemIconHeight != 0 {
-      try visitor.visitSingularUInt32Field(value: self.oemIconHeight, fieldNumber: 2)
-    }
-    if !self.oemIconBits.isEmpty {
-      try visitor.visitSingularBytesField(value: self.oemIconBits, fieldNumber: 3)
-    }
-    if self.oemFont != .fontSmall {
-      try visitor.visitSingularEnumField(value: self.oemFont, fieldNumber: 4)
-    }
-    if !self.oemText.isEmpty {
-      try visitor.visitSingularStringField(value: self.oemText, fieldNumber: 5)
-    }
-    if !self.oemAesKey.isEmpty {
-      try visitor.visitSingularBytesField(value: self.oemAesKey, fieldNumber: 6)
-    }
-    try { if let v = self._oemLocalConfig {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
-    } }()
-    try { if let v = self._oemLocalModuleConfig {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
-    } }()
-    try unknownFields.traverse(visitor: &visitor)
-  }
-
-  public static func ==(lhs: OEMStore, rhs: OEMStore) -> Bool {
-    if lhs.oemIconWidth != rhs.oemIconWidth {return false}
-    if lhs.oemIconHeight != rhs.oemIconHeight {return false}
-    if lhs.oemIconBits != rhs.oemIconBits {return false}
-    if lhs.oemFont != rhs.oemFont {return false}
-    if lhs.oemText != rhs.oemText {return false}
-    if lhs.oemAesKey != rhs.oemAesKey {return false}
-    if lhs._oemLocalConfig != rhs._oemLocalConfig {return false}
-    if lhs._oemLocalModuleConfig != rhs._oemLocalModuleConfig {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

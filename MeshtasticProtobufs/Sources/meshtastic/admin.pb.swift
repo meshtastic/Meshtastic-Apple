@@ -387,6 +387,36 @@ public struct AdminMessage {
   }
 
   ///
+  /// Tell the node to send the stored ui data.
+  public var getUiConfigRequest: Bool {
+    get {
+      if case .getUiConfigRequest(let v)? = payloadVariant {return v}
+      return false
+    }
+    set {payloadVariant = .getUiConfigRequest(newValue)}
+  }
+
+  ///
+  /// Reply stored device ui data.
+  public var getUiConfigResponse: DeviceUIConfig {
+    get {
+      if case .getUiConfigResponse(let v)? = payloadVariant {return v}
+      return DeviceUIConfig()
+    }
+    set {payloadVariant = .getUiConfigResponse(newValue)}
+  }
+
+  ///
+  /// Tell the node to store UI data persistently.
+  public var storeUiConfig: DeviceUIConfig {
+    get {
+      if case .storeUiConfig(let v)? = payloadVariant {return v}
+      return DeviceUIConfig()
+    }
+    set {payloadVariant = .storeUiConfig(newValue)}
+  }
+
+  ///
   /// Begins an edit transaction for config, module config, owner, and channel settings changes
   /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
   public var beginEditSettings: Bool {
@@ -594,6 +624,15 @@ public struct AdminMessage {
     /// Convenience method to set the time on the node (as Net quality) without any other position data
     case setTimeOnly(UInt32)
     ///
+    /// Tell the node to send the stored ui data.
+    case getUiConfigRequest(Bool)
+    ///
+    /// Reply stored device ui data.
+    case getUiConfigResponse(DeviceUIConfig)
+    ///
+    /// Tell the node to store UI data persistently.
+    case storeUiConfig(DeviceUIConfig)
+    ///
     /// Begins an edit transaction for config, module config, owner, and channel settings changes
     /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
     case beginEditSettings(Bool)
@@ -766,6 +805,18 @@ public struct AdminMessage {
         guard case .setTimeOnly(let l) = lhs, case .setTimeOnly(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
+      case (.getUiConfigRequest, .getUiConfigRequest): return {
+        guard case .getUiConfigRequest(let l) = lhs, case .getUiConfigRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getUiConfigResponse, .getUiConfigResponse): return {
+        guard case .getUiConfigResponse(let l) = lhs, case .getUiConfigResponse(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.storeUiConfig, .storeUiConfig): return {
+        guard case .storeUiConfig(let l) = lhs, case .storeUiConfig(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
       case (.beginEditSettings, .beginEditSettings): return {
         guard case .beginEditSettings(let l) = lhs, case .beginEditSettings(let r) = rhs else { preconditionFailure() }
         return l == r
@@ -845,6 +896,10 @@ public struct AdminMessage {
     /// TODO: REPLACE
     case securityConfig // = 7
     case sessionkeyConfig // = 8
+
+    ///
+    /// device-ui config
+    case deviceuiConfig // = 9
     case UNRECOGNIZED(Int)
 
     public init() {
@@ -862,6 +917,7 @@ public struct AdminMessage {
       case 6: self = .bluetoothConfig
       case 7: self = .securityConfig
       case 8: self = .sessionkeyConfig
+      case 9: self = .deviceuiConfig
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -877,6 +933,7 @@ public struct AdminMessage {
       case .bluetoothConfig: return 6
       case .securityConfig: return 7
       case .sessionkeyConfig: return 8
+      case .deviceuiConfig: return 9
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -1002,6 +1059,7 @@ extension AdminMessage.ConfigType: CaseIterable {
     .bluetoothConfig,
     .securityConfig,
     .sessionkeyConfig,
+    .deviceuiConfig,
   ]
 }
 
@@ -1123,6 +1181,9 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     41: .standard(proto: "set_fixed_position"),
     42: .standard(proto: "remove_fixed_position"),
     43: .standard(proto: "set_time_only"),
+    44: .standard(proto: "get_ui_config_request"),
+    45: .standard(proto: "get_ui_config_response"),
+    46: .standard(proto: "store_ui_config"),
     64: .standard(proto: "begin_edit_settings"),
     65: .standard(proto: "commit_edit_settings"),
     94: .standard(proto: "factory_reset_device"),
@@ -1477,6 +1538,40 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .setTimeOnly(v)
         }
       }()
+      case 44: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .getUiConfigRequest(v)
+        }
+      }()
+      case 45: try {
+        var v: DeviceUIConfig?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .getUiConfigResponse(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .getUiConfigResponse(v)
+        }
+      }()
+      case 46: try {
+        var v: DeviceUIConfig?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .storeUiConfig(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .storeUiConfig(v)
+        }
+      }()
       case 64: try {
         var v: Bool?
         try decoder.decodeSingularBoolField(value: &v)
@@ -1697,6 +1792,18 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       guard case .setTimeOnly(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularFixed32Field(value: v, fieldNumber: 43)
     }()
+    case .getUiConfigRequest?: try {
+      guard case .getUiConfigRequest(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 44)
+    }()
+    case .getUiConfigResponse?: try {
+      guard case .getUiConfigResponse(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 45)
+    }()
+    case .storeUiConfig?: try {
+      guard case .storeUiConfig(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 46)
+    }()
     case .beginEditSettings?: try {
       guard case .beginEditSettings(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 64)
@@ -1760,6 +1867,7 @@ extension AdminMessage.ConfigType: SwiftProtobuf._ProtoNameProviding {
     6: .same(proto: "BLUETOOTH_CONFIG"),
     7: .same(proto: "SECURITY_CONFIG"),
     8: .same(proto: "SESSIONKEY_CONFIG"),
+    9: .same(proto: "DEVICEUI_CONFIG"),
   ]
 }
 
