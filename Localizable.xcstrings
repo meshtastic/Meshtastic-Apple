@@ -55,10 +55,24 @@
 
     },
     "%@ - No Response" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ - Keine Antwort"
+          }
+        }
+      }
     },
     "%@ - Not Sent" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ - Nicht gesendet"
+          }
+        }
+      }
     },
     "%@ (%@)" : {
       "localizations" : {
@@ -91,7 +105,14 @@
       }
     },
     "%@ away" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ entfernt"
+          }
+        }
+      }
     },
     "%@ can be up to %@ bytes long." : {
       "localizations" : {
@@ -154,7 +175,14 @@
 
     },
     "%lld or less hops away" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld oder weniger Hops entfernt"
+          }
+        }
+      }
     },
     "%lld Readings Total" : {
 
@@ -166,10 +194,24 @@
 
     },
     "%llddb Transmit Power" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%llddb Übertragungsleistung"
+          }
+        }
+      }
     },
     "%llddBm Transmit Power" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%llddBm Übertragungsleistung"
+          }
+        }
+      }
     },
     "< 1%" : {
 
@@ -327,7 +369,14 @@
       }
     },
     "Accuracy %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Genauigkeit %@"
+          }
+        }
+      }
     },
     "Ack SNR: %@ dB" : {
 
@@ -339,17 +388,31 @@
 
     },
     "Actions" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktionen"
+          }
+        }
+      }
     },
     "Active" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktiv"
+          }
+        }
+      }
     },
     "activity" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Activity"
+            "value" : "Aktivität"
           }
         },
         "en" : {
@@ -403,7 +466,14 @@
       }
     },
     "Activity" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktivität"
+          }
+        }
+      }
     },
     "Add Channel" : {
 
@@ -412,7 +482,14 @@
 
     },
     "Add to favorites" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zu Favoriten hinzufügen"
+          }
+        }
+      }
     },
     "Additional help" : {
 
@@ -701,7 +778,14 @@
 
     },
     "All" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle"
+          }
+        }
+      }
     },
     "All device and app data will be deleted." : {
 
@@ -716,10 +800,24 @@
 
     },
     "Altitude" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Höhe"
+          }
+        }
+      }
     },
     "Altitude %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Höhe %@"
+          }
+        }
+      }
     },
     "Altitude Geoidal Separation" : {
 
@@ -728,7 +826,14 @@
 
     },
     "Always point north" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Immer nach Norden zeigen"
+          }
+        }
+      }
     },
     "always.on" : {
       "extractionState" : "migrated",
@@ -906,7 +1011,14 @@
       }
     },
     "An open source, off-grid, decentralized, mesh network that runs on affordable, low-power radios." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein quelloffenes, netzunabhängiges, dezentrales Mesh-Netzwerk, das auf kostengünstigen, stromsparenden Funkgeräten läuft."
+          }
+        }
+      }
     },
     "Any missed messages will be delivered again." : {
 
@@ -924,7 +1036,14 @@
 
     },
     "Approximate Location" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ungefährer Standort"
+          }
+        }
+      }
     },
     "appsettings" : {
       "localizations" : {
@@ -990,7 +1109,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New Node Notifications"
+            "value" : "Mitteilungen über neue Knoten"
           }
         },
         "en" : {
@@ -1165,7 +1284,14 @@
 
     },
     "Are you sure you want to factory reset the node?" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bist du sicher dass du den Knoten auf die Werkseinstellungen zurücksetzen willst?"
+          }
+        }
+      }
     },
     "are.you.sure" : {
       "localizations" : {
@@ -1231,7 +1357,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ASCII fähig"
+            "value" : "ASCII-fähig"
           }
         },
         "en" : {
@@ -1414,7 +1540,14 @@
 
     },
     "Bandwidth" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bandbreite"
+          }
+        }
+      }
     },
     "Bar" : {
 
@@ -1560,7 +1693,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ Die App wird automatisch zum präferierten Gerät wiederverbinden, sobald es in Reichweite kommt."
+            "value" : "%@ Die App wird automatisch wieder zum präferierten Gerät verbinden, sobald es in Reichweite kommt."
           }
         },
         "en" : {
@@ -1619,7 +1752,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ Dieser fehler kann üblicherweise behoben werden, in dem man unter Einstellungen > Bluetooth die Verbindung manuell löscht und sich erneut mit dem Gerät verbindet."
+            "value" : "%@ Dieser Fehler kann üblicherweise behoben werden, indem man unter Einstellungen > Bluetooth die Verbindung manuell löscht und sich erneut mit dem Gerät verbindet."
           }
         },
         "en" : {
@@ -1678,7 +1811,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ Bitte versuche es erneut. achte sorgfältig auf die richtige PIN."
+            "value" : "%@ Bitte versuche es erneut. Achte sorgfältig auf die richtige PIN."
           }
         },
         "en" : {
@@ -2391,7 +2524,14 @@
       }
     },
     "Cancel" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abbrechen"
+          }
+        }
+      }
     },
     "canned.messages" : {
       "localizations" : {
@@ -2690,7 +2830,14 @@
 
     },
     "Categories" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kategorien"
+          }
+        }
+      }
     },
     "channel" : {
       "localizations" : {
@@ -2751,7 +2898,14 @@
       }
     },
     "Channel" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanal"
+          }
+        }
+      }
     },
     "Channel 0 Included" : {
 
@@ -3287,7 +3441,14 @@
 
     },
     "Color" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Farbe"
+          }
+        }
+      }
     },
     "communicating" : {
       "localizations" : {
@@ -3714,12 +3875,6 @@
     "config.power.ls.secs" : {
       "extractionState" : "manual",
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Light Sleep Interval"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3767,12 +3922,6 @@
     "config.power.min.wake.secs" : {
       "extractionState" : "manual",
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Minimum Wake Interval"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3822,7 +3971,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Power Saving"
+            "value" : "Stromsparen"
           }
         },
         "en" : {
@@ -3871,12 +4020,6 @@
     },
     "config.power.saving.description" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Will sleep everything as much as possible, for the tracker and sensor role this will also include the lora radio. Don't use this setting if you want to use your device with the phone apps or are using a device without a user button."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3926,7 +4069,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Battery"
+            "value" : "Batterie"
           }
         },
         "en" : {
@@ -3979,7 +4122,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sleep"
+            "value" : "Schlafmodus"
           }
         },
         "en" : {
@@ -4031,7 +4174,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Power"
+            "value" : "Strom"
           }
         },
         "en" : {
@@ -4083,7 +4226,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "After"
+            "value" : "Nach"
           }
         },
         "en" : {
@@ -4135,7 +4278,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Shutdown on Power Loss"
+            "value" : "Herunterfahren bei Stromunterbruch"
           }
         },
         "en" : {
@@ -4187,7 +4330,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Power Config"
+            "value" : "Stromkonfiguration"
           }
         },
         "en" : {
@@ -4240,7 +4383,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bluetooth Off After"
+            "value" : "Bluetooth Aus nach"
           }
         },
         "en" : {
@@ -4293,7 +4436,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "RTTTL Ringtone"
+            "value" : "RTTTL Klingelton"
           }
         },
         "en" : {
@@ -4342,12 +4485,6 @@
     },
     "config.ringtone.description" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ringtone Transfer Language(RTTTL) Ringtone String used by supported buzzers in external notifications."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4394,12 +4531,6 @@
     },
     "config.ringtone.label" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ringtone Transfer Language"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4449,7 +4580,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ringtone Config"
+            "value" : "Klingelton Konfiguration"
           }
         },
         "en" : {
@@ -4501,7 +4632,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nach dem ändern der Einstellungen wird das Gerät neu starten."
+            "value" : "Nach dem Ändern der Einstellungen wird das Gerät neu starten."
           }
         },
         "en" : {
@@ -4561,10 +4692,24 @@
 
     },
     "Configure" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfigurieren"
+          }
+        }
+      }
     },
     "Connect to a Node" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verbunden mit einem Knoten"
+          }
+        }
+      }
     },
     "connected" : {
       "localizations" : {
@@ -4625,7 +4770,14 @@
       }
     },
     "Connected Node %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verbunden mit Knoten %@"
+          }
+        }
+      }
     },
     "connected.radio" : {
       "localizations" : {
@@ -4744,7 +4896,14 @@
       }
     },
     "Connection Attempt %lld of 10" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verbindungsversuch %lld von 10"
+          }
+        }
+      }
     },
     "contacts" : {
       "extractionState" : "manual",
@@ -4871,13 +5030,33 @@
 
     },
     "Convex Hull" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konvexe Hülle"
+          }
+        }
+      }
     },
     "Coordinate" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koordinate"
+          }
+        }
+      }
     },
     "Coordinate %@, %@" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koordinate %1$@, %2$@"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
@@ -4887,7 +5066,14 @@
       }
     },
     "Coordinates:" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koordinaten:"
+          }
+        }
+      }
     },
     "copy" : {
       "localizations" : {
@@ -4948,16 +5134,37 @@
       }
     },
     "Could not find node" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knoten nicht gefunden"
+          }
+        }
+      }
     },
     "Counter Clockwise Rotary Event" : {
 
     },
     "Create Waypoint" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wegpunkt erstellen"
+          }
+        }
+      }
     },
     "Created: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erstellt: %@"
+          }
+        }
+      }
     },
     "current" : {
       "extractionState" : "stale",
@@ -4965,7 +5172,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Current"
+            "value" : "Aktuell"
           }
         },
         "en" : {
@@ -5019,10 +5226,23 @@
       }
     },
     "Current Firmware Version: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktuelle Firmware Version: %@"
+          }
+        }
+      }
     },
     "Current Firmware Version: %@, Latest Firmware Version: %@" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktuelle Firmware Version: %1$@, neuste Firmware Version %2$@"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
@@ -5032,13 +5252,27 @@
       }
     },
     "Current: %lld" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktuell: %lld"
+          }
+        }
+      }
     },
     "Currently the reccomended way to update ESP32 devices is using the web flasher on a desktop computer from a chrome based browser. It does not work on mobile devices or over BLE." : {
 
     },
     "Date" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datum"
+          }
+        }
+      }
     },
     "Debug" : {
 
@@ -5109,7 +5343,14 @@
       }
     },
     "Default" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard"
+          }
+        }
+      }
     },
     "delete" : {
       "localizations" : {
@@ -5185,10 +5426,24 @@
 
     },
     "Delete Node" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knoten löschen"
+          }
+        }
+      }
     },
     "Delete Node?" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knoten löschen?"
+          }
+        }
+      }
     },
     "Description" : {
 
@@ -5396,7 +5651,14 @@
       }
     },
     "Device GPS" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geräte-GPS"
+          }
+        }
+      }
     },
     "Device is managed by a mesh administrator, the user is unable to access any of the device settings." : {
 
@@ -5408,7 +5670,14 @@
 
     },
     "Device Model: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gerätemodell: %@"
+          }
+        }
+      }
     },
     "Device Role" : {
 
@@ -5479,7 +5748,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Device Configuration"
+            "value" : "Gerätekonfiguration"
           }
         },
         "en" : {
@@ -5528,12 +5797,6 @@
     },
     "device.metrics.delete" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete all device metrics?"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5766,7 +6029,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Client Leise - Das selbe wie Client, außer das die Pakete nicht über diesen Node weitergeleitet werden. Nimmt nicht am Mesh-Routing teil."
+            "value" : "Dasselbe wie Client, außer dass die Pakete nicht über diesen Knoten weitergeleitet werden. Nimmt nicht am Mesh-Routing teil."
           }
         },
         "en" : {
@@ -5883,8 +6146,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Repeater - Mesh packets will prefer to be routed over this node. This role eliminates unnecessary overhead such as NodeInfo, DeviceTelemetry, and any other mesh packet, resulting in the device not appearing as part of the network.  Please see Rebroadcast Mode for additional settings specific to this role."
+            "state" : "translated",
+            "value" : "Infrastruktur-Knoten nur auf einem Turm oder einer Bergspitze. Nicht für Dächer oder mobile Knoten verwenden. Übermittelt Nachrichten mit minimalem Mehraufwand. Nicht sichtbar in der Knotenliste."
           }
         },
         "en" : {
@@ -5942,8 +6205,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Router - Mesh Pakete werden bevorzugt über diesen Node gerouted. Dieser Node wird nicht von einer Client App benutzt. WLAN, Bluetooth und Display sind aus."
+            "state" : "translated",
+            "value" : "Router - Mesh Pakete werden bevorzugt über diesen Knoten gerouted. Dieser Knoten wird nicht von einer Client App benutzt. WLAN, Bluetooth und Display sind aus."
           }
         },
         "en" : {
@@ -6001,8 +6264,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Router Client - Mesh Pakete werden bevorzugt über diesen Node gerouted. Der Router Client kann parallel auch von einer Client-App genutzt werden."
+            "state" : "translated",
+            "value" : "Router Client - Mesh Pakete werden bevorzugt über diesen Knoten gerouted. Der Router Client kann parallel auch von einer Client-App genutzt werden."
           }
         },
         "en" : {
@@ -6295,7 +6558,14 @@
 
     },
     "Direct" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direkt"
+          }
+        }
+      }
     },
     "Direct Message Help" : {
 
@@ -6365,7 +6635,14 @@
       }
     },
     "Disabled" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgeschaltet"
+          }
+        }
+      }
     },
     "disconnect" : {
       "localizations" : {
@@ -6430,7 +6707,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dismiss Keyboard"
+            "value" : "Tastatur ausblenden"
           }
         },
         "en" : {
@@ -6552,12 +6829,6 @@
     },
     "display.config" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Display Config"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6668,7 +6939,14 @@
       }
     },
     "Distance" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Distanz"
+          }
+        }
+      }
     },
     "Documentation" : {
 
@@ -6958,28 +7236,63 @@
       }
     },
     "Encrypted" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verschlüsselt"
+          }
+        }
+      }
     },
     "Encryption Enabled" : {
 
     },
     "Enter DFU Mode" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DFÜ-Modus aktivieren"
+          }
+        }
+      }
     },
     "environment" : {
 
     },
     "Environment" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Umgebung"
+          }
+        }
+      }
     },
     "Environment Metrics Log" : {
 
     },
     "Erase all app data?" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle App-Daten löschen?"
+          }
+        }
+      }
     },
     "Erase all device and app data?" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Geräte- und App-Daten löschen?"
+          }
+        }
+      }
     },
     "Error: %@" : {
 
@@ -7180,10 +7493,24 @@
       }
     },
     "Factory Reset" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Werkseinstellungen"
+          }
+        }
+      }
     },
     "Factory reset your device and app? " : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gerät und App auf Werkseinstellungen zurücksetzen?"
+          }
+        }
+      }
     },
     "Failed to encode message content" : {
 
@@ -7195,16 +7522,37 @@
 
     },
     "Favorite" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favorit"
+          }
+        }
+      }
     },
     "Favorites" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favoriten"
+          }
+        }
+      }
     },
     "Favorites and nodes with recent messages show up at the top of the contact list." : {
 
     },
     "Fetch the latest position of a cetain node" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letzte Position eines Knotens holen"
+          }
+        }
+      }
     },
     "Fifteen Minutes" : {
 
@@ -7213,17 +7561,31 @@
 
     },
     "Find a contact" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontakt suchen"
+          }
+        }
+      }
     },
     "Find a node" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einen Knoten finden"
+          }
+        }
+      }
     },
     "finish" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finish"
+            "value" : "Beenden"
           }
         },
         "en" : {
@@ -7277,13 +7639,27 @@
       }
     },
     "Firmware" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Firmware"
+          }
+        }
+      }
     },
     "Firmware update docs" : {
 
     },
     "Firmware Updates" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Firmwareaktualisierungen"
+          }
+        }
+      }
     },
     "firmware.version" : {
       "localizations" : {
@@ -7406,7 +7782,14 @@
 
     },
     "Five Minutes" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fünf Minuten"
+          }
+        }
+      }
     },
     "Fixed Position" : {
 
@@ -7421,13 +7804,34 @@
 
     },
     "For everyone" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für alle"
+          }
+        }
+      }
     },
     "For me" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für mich"
+          }
+        }
+      }
     },
     "Frequency" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frequenz"
+          }
+        }
+      }
     },
     "Frequency Override" : {
 
@@ -7503,12 +7907,6 @@
     "gas.resistance" : {
       "extractionState" : "manual",
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gas Resistance"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7621,7 +8019,14 @@
 
     },
     "Get Node Position" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knotenposition ermitteln"
+          }
+        }
+      }
     },
     "Get NRF DFU from the App Store" : {
 
@@ -8019,6 +8424,12 @@
     "gpsmode.disabled" : {
       "extractionState" : "migrated",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgeschaltet"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8054,6 +8465,12 @@
     "gpsmode.enabled" : {
       "extractionState" : "migrated",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eingeschaltet"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8122,7 +8539,14 @@
       }
     },
     "Group Message" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gruppennachricht"
+          }
+        }
+      }
     },
     "Gusts %@" : {
 
@@ -8264,7 +8688,14 @@
 
     },
     "HIGH" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HOCH"
+          }
+        }
+      }
     },
     "History Return Max" : {
 
@@ -8273,19 +8704,54 @@
 
     },
     "Hops Away" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hops Entfernt"
+          }
+        }
+      }
     },
     "Hops Away %d" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hops Entfernt %d"
+          }
+        }
+      }
     },
     "Hops Away:" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hops Entfernt:"
+          }
+        }
+      }
     },
     "Hops Away: %d" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hops Entfernt: %d"
+          }
+        }
+      }
     },
     "Hour" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stunde"
+          }
+        }
+      }
     },
     "Hourly Duty Cycle" : {
 
@@ -8309,16 +8775,37 @@
 
     },
     "How to update Firmware" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie wird die Firmware aktualisiert"
+          }
+        }
+      }
     },
     "Hum" : {
 
     },
     "Humidity" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luftfeuchtigkeit"
+          }
+        }
+      }
     },
     "HUMIDITY" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LUFTFEUCHTIGKEIT"
+          }
+        }
+      }
     },
     "hybrid" : {
       "extractionState" : "migrated",
@@ -8535,7 +9022,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Incomplete"
+            "value" : "Unvollständig"
           }
         },
         "en" : {
@@ -9069,7 +9556,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eighteen Hours"
+            "value" : "Achtzehn Stunden"
           }
         },
         "en" : {
@@ -9145,7 +9632,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fünfzehn Minutes"
+            "value" : "Fünfzehn Minuten"
           }
         },
         "en" : {
@@ -9263,7 +9750,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Five Hours"
+            "value" : "Fünf Stunden"
           }
         },
         "en" : {
@@ -9322,7 +9809,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fünf Minutes"
+            "value" : "Fünf Minuten"
           }
         },
         "en" : {
@@ -9440,7 +9927,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Forty Eight Hours Hours"
+            "value" : "Achtundvierzig Stunden"
           }
         },
         "en" : {
@@ -9487,7 +9974,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Forty Five Seconds"
+            "value" : "Fündundvierzig Sekunden"
           }
         },
         "en" : {
@@ -9546,7 +10033,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Four Hours"
+            "value" : "Vier Stunden"
           }
         },
         "en" : {
@@ -9605,7 +10092,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Four Seconds"
+            "value" : "Vier Sekunden"
           }
         },
         "en" : {
@@ -9841,7 +10328,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seventy Two Hours"
+            "value" : "Zweiundsiebzig Stunden"
           }
         },
         "en" : {
@@ -9947,7 +10434,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zehn Minutes"
+            "value" : "Zehn Minuten"
           }
         },
         "en" : {
@@ -10065,7 +10552,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dreißig Minutes"
+            "value" : "Dreißig Minuten"
           }
         },
         "en" : {
@@ -10183,7 +10670,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Thirty Six Hours"
+            "value" : "Sechsunddreissig Stunden"
           }
         },
         "en" : {
@@ -10242,7 +10729,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Three Hours"
+            "value" : "Drei Stunden"
           }
         },
         "en" : {
@@ -10301,7 +10788,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Three Seconds"
+            "value" : "Drei Sekunden"
           }
         },
         "en" : {
@@ -10596,7 +11083,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Two Hours"
+            "value" : "Zwei Stunden"
           }
         },
         "en" : {
@@ -10791,13 +11278,27 @@
 
     },
     "Key" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taste"
+          }
+        }
+      }
     },
     "Key Mapping" : {
 
     },
     "Key Size" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tastengröße"
+          }
+        }
+      }
     },
     "keyboard.type" : {
       "extractionState" : "manual",
@@ -10859,10 +11360,24 @@
       }
     },
     "Last heard" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zuletzt gehört"
+          }
+        }
+      }
     },
     "Latitude" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Breitengrad"
+          }
+        }
+      }
     },
     "LED Heartbeat" : {
 
@@ -10886,13 +11401,34 @@
 
     },
     "Location" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standort"
+          }
+        }
+      }
     },
     "Location:" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standrot:"
+          }
+        }
+      }
     },
     "Locked" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesperrt"
+          }
+        }
+      }
     },
     "Log Levels" : {
 
@@ -10902,7 +11438,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Category"
+            "value" : "Kategorie"
           }
         },
         "en" : {
@@ -11006,7 +11542,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Message"
+            "value" : "Nachricht"
           }
         },
         "en" : {
@@ -11059,7 +11595,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Process"
+            "value" : "Prozess"
           }
         },
         "en" : {
@@ -11164,7 +11700,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Time"
+            "value" : "Zeit"
           }
         },
         "en" : {
@@ -11276,16 +11812,37 @@
 
     },
     "Long Name" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Langer Name"
+          }
+        }
+      }
     },
     "Long Name: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Langer Name: %@"
+          }
+        }
+      }
     },
     "Long press to favorite or mute the contact or delete a conversation." : {
 
     },
     "Longitude" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Längengrad"
+          }
+        }
+      }
     },
     "lora" : {
       "localizations" : {
@@ -11468,7 +12025,14 @@
       }
     },
     "Map Options" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kartenoptionen"
+          }
+        }
+      }
     },
     "Map Publish Interval" : {
 
@@ -11482,12 +12046,6 @@
     "map.centering" : {
       "extractionState" : "manual",
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Centering"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11541,12 +12099,6 @@
     "map.recentering" : {
       "extractionState" : "stale",
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatic Re-centering"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11600,12 +12152,6 @@
     "map.tiles.delete" : {
       "extractionState" : "migrated",
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete Cached Map Tiles"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11662,7 +12208,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "kartentyp"
+            "value" : "Kartentyp"
           }
         },
         "en" : {
@@ -11839,7 +12385,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Follow"
+            "value" : "Folgen"
           }
         },
         "en" : {
@@ -11898,7 +12444,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Follow with heading"
+            "value" : "Folgen mit Steuerkurs"
           }
         },
         "en" : {
@@ -11957,7 +12503,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "None"
+            "value" : "Keiner"
           }
         },
         "en" : {
@@ -12018,7 +12564,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mesh Live Activity"
+            "value" : "Mesh Live Aktivität"
           }
         },
         "en" : {
@@ -12132,12 +12678,6 @@
     "mesh.log.ambientlighting.config %@" : {
       "extractionState" : "migrated",
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ambient Lighting module config received: %@"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12250,12 +12790,6 @@
     "mesh.log.cannedmessage.config %@" : {
       "extractionState" : "migrated",
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Canned Message module config received: %@"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12309,12 +12843,6 @@
     "mesh.log.cannedmessages.messages.get %@" : {
       "extractionState" : "migrated",
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Requested Canned Messages Module Messages for node: %@"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12368,12 +12896,6 @@
     "mesh.log.cannedmessages.messages.received %@" : {
       "extractionState" : "migrated",
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Canned Messages Messages Received For: %@"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12424,74 +12946,9 @@
         }
       }
     },
-    "mesh.log.channel.received %d %@" : {
-      "extractionState" : "migrated",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Channel %d received from: %@"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Channel %d received from: %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Canal %d reçu de : %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ערוץ %d התקבל מ-%@"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Odebrano kanał %d od: %@"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Canal %d recebido de: %@"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kanal %d mottagen från: %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Channel %d received from: %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Channel %d received from: %@"
-          }
-        }
-      }
-    },
     "mesh.log.channel.sent %@ %d" : {
       "extractionState" : "migrated",
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sent a Channel for: %@ Channel Index %d"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12545,12 +13002,6 @@
     "mesh.log.detectionsensor.config %@" : {
       "extractionState" : "migrated",
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Detection Sensor module config received: %@"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12607,7 +13058,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Geräte Konfiguration empfangen: %@"
+            "value" : "Gerätekonfiguration empfangen: %@"
           }
         },
         "en" : {
@@ -12666,7 +13117,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Device Metadata received from: %@"
+            "value" : "Device Metadata empfangen von: %@"
           }
         },
         "en" : {
@@ -12840,12 +13291,6 @@
     "mesh.log.externalnotification.config %@" : {
       "extractionState" : "migrated",
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "External Notification module config received: %@"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12902,7 +13347,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "LoRa config received: %@"
+            "value" : "LoRa config empfangen: %@"
           }
         },
         "en" : {
@@ -12961,7 +13406,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sent a LoRa.Config for: %@"
+            "value" : "LoRa.Config gesendet für: %@"
           }
         },
         "en" : {
@@ -13020,7 +13465,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MQTT module config received: %@"
+            "value" : "MQTT Modulkonfiguration empfangen: %@"
           }
         },
         "en" : {
@@ -13079,7 +13524,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MyInfo received: %@"
+            "value" : "MyInfo empfangen: %@"
           }
         },
         "en" : {
@@ -13138,7 +13583,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Netzwerk onfiguration empfangen: %@"
+            "value" : "Netzwerkkonfiguration empfangen: %@"
           }
         },
         "en" : {
@@ -13197,7 +13642,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Node info empfangen für: %@"
+            "value" : "Knoteninformation empfangen für: %@"
           }
         },
         "en" : {
@@ -13332,7 +13777,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Positions Konfiguration empfangen: %@"
+            "value" : "Positionskonfiguration empfangen: %@"
           }
         },
         "en" : {
@@ -13391,7 +13836,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Positionspaket empfangen von Node: %@"
+            "value" : "Position empfangen von Knoten: %@"
           }
         },
         "en" : {
@@ -13532,7 +13977,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "RTTTL Ringtone config received: %@"
+            "value" : "RTTTL Klingeltonkonfiguration empfangen: %@"
           }
         },
         "en" : {
@@ -13709,7 +14154,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sent a Position Packet from the Apple device GPS to node: %@"
+            "value" : "Position von Apple Gerät an Knoten gesendet: %@"
           }
         },
         "en" : {
@@ -13765,12 +14210,6 @@
     "mesh.log.storeforward.config %@" : {
       "extractionState" : "migrated",
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Store & Forward module config received: %@"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14122,7 +14561,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Traceroute Anforderung an node gesendet: %@ wurde direkt empfangen."
+            "value" : "Traceroute Anforderung an Knoten gesendet: %@ wurde direkt empfangen."
           }
         },
         "en" : {
@@ -14240,7 +14679,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sende Traceroute Anforderung zu Mode: %@"
+            "value" : "Sende Traceroute Anforderung zu Knoten: %@"
           }
         },
         "en" : {
@@ -14296,12 +14735,6 @@
     "mesh.log.wantconfig %@" : {
       "extractionState" : "migrated",
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Issuing Want Config to %@"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14358,7 +14791,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Waypoint Packet received from node: %@"
+            "value" : "Wegpunkt von Knoten empfangen: %@"
           }
         },
         "en" : {
@@ -14417,7 +14850,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sent a Waypoint Packet from: %@"
+            "value" : "Wegpunkt gesendet von: %@"
           }
         },
         "en" : {
@@ -14471,7 +14904,14 @@
       }
     },
     "Meshtastic Node %@ has shared channels with you" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meshtastic Knoten %@ hat Kanäle mit dir geteilt"
+          }
+        }
+      }
     },
     "Meshtastic® Copyright Meshtastic LLC" : {
 
@@ -14535,10 +14975,24 @@
       }
     },
     "Message" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nachricht"
+          }
+        }
+      }
     },
     "Message content exceeds 200 bytes." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nachrichteninhalt überschreitet 200 Bytes."
+          }
+        }
+      }
     },
     "Message Status Options" : {
 
@@ -14660,16 +15114,44 @@
       }
     },
     "Messages" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nachrichten"
+          }
+        }
+      }
     },
     "Messages separate with |" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nachrichten getrennt mit |"
+          }
+        }
+      }
     },
     "Minimum Distance" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minimum Distanz"
+          }
+        }
+      }
     },
     "Minimum Interval" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minimum Intervall"
+          }
+        }
+      }
     },
     "Minimum time between detection broadcasts" : {
 
@@ -14917,7 +15399,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MQTT Config"
+            "value" : "MQTT Konfiguration"
           }
         },
         "en" : {
@@ -14976,7 +15458,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Connect to MQTT"
+            "value" : "Verbunden mit MQTT"
           }
         },
         "en" : {
@@ -15035,7 +15517,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Disconnect from MQTT"
+            "value" : "Trennen von MQTT"
           }
         },
         "en" : {
@@ -15211,10 +15693,24 @@
       }
     },
     "Name" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        }
+      }
     },
     "Name must be less than 30 bytes" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name muss kürzer als 30 Bytes sein"
+          }
+        }
+      }
     },
     "Nearby Topics" : {
 
@@ -15342,13 +15838,34 @@
       }
     },
     "Never" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie"
+          }
+        }
+      }
     },
     "Newer firmware is available" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neuere Firmware ist verfügbar"
+          }
+        }
+      }
     },
     "No Connected Node" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein verbundener Knoten"
+          }
+        }
+      }
     },
     "No Device Metrics" : {
 
@@ -15357,7 +15874,14 @@
 
     },
     "No Positions" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Positionen"
+          }
+        }
+      }
     },
     "no.nodes" : {
       "extractionState" : "manual",
@@ -15365,7 +15889,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Keine Meshtastic Nodes gefunden"
+            "value" : "Keine Meshtastic Knoten gefunden"
           }
         },
         "en" : {
@@ -15419,7 +15943,14 @@
       }
     },
     "Node" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knoten"
+          }
+        }
+      }
     },
     "Node Core Data Backup %@/%@ - %@ - %@" : {
       "localizations" : {
@@ -15432,19 +15963,47 @@
       }
     },
     "Node does not have positions" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knoten hat keine Position"
+          }
+        }
+      }
     },
     "Node History" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knoten Historie"
+          }
+        }
+      }
     },
     "Node Info Broadcast Interval" : {
 
     },
     "Node Map" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knotenkarte"
+          }
+        }
+      }
     },
     "Node Number" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knotennummer"
+          }
+        }
+      }
     },
     "nodelist.filter.distance %@" : {
       "extractionState" : "migrated",
@@ -15452,7 +16011,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "up to %@ away"
+            "value" : "bis zu %@ entfernt"
           }
         },
         "en" : {
@@ -15510,7 +16069,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nodes"
+            "value" : "Knoten"
           }
         },
         "en" : {
@@ -15563,7 +16122,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nodes (%@)"
+            "value" : "Knoten (%@)"
           }
         },
         "en" : {
@@ -15678,19 +16237,54 @@
       }
     },
     "Notes" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knoten"
+          }
+        }
+      }
     },
     "Num: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anzahl: %@"
+          }
+        }
+      }
     },
     "Number of hops" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anzahl Hops"
+          }
+        }
+      }
     },
     "Number of records" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anzahl Einträge"
+          }
+        }
+      }
     },
     "Number of satellites" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anzahl Satelliten"
+          }
+        }
+      }
     },
     "numbers.punctuation" : {
       "extractionState" : "manual",
@@ -15870,13 +16464,27 @@
       }
     },
     "OK" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ok"
+          }
+        }
+      }
     },
     "Ok to MQTT" : {
 
     },
     "OLED Type" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OLED Typ"
+          }
+        }
+      }
     },
     "on.boot" : {
       "extractionState" : "migrated",
@@ -15941,16 +16549,44 @@
 
     },
     "One Hour" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine Stunde"
+          }
+        }
+      }
     },
     "One Minute" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine Minute"
+          }
+        }
+      }
     },
     "Online" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Online"
+          }
+        }
+      }
     },
     "Open Settings" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellungen öffnen"
+          }
+        }
+      }
     },
     "Optional fields to include when assembling position messages. the more fields are included, the larger the message will be - leading to longer airtime and a higher risk of packet loss" : {
 
@@ -16017,7 +16653,14 @@
       }
     },
     "Options" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optionen"
+          }
+        }
+      }
     },
     "OS Log Entry Details" : {
 
@@ -16295,7 +16938,14 @@
       }
     },
     "Perform a factory reset on the node you are connected to" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verbundenen Knoten auf Werkseinstellungen zurücksetzen"
+          }
+        }
+      }
     },
     "phone.gps" : {
       "localizations" : {
@@ -16424,7 +17074,14 @@
 
     },
     "PKI based node administration, requires firmware version 2.5+" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PKI-basierte Knotenadministration, benötigt Firmware Version 2.5+"
+          }
+        }
+      }
     },
     "Please connect to a radio to configure settings." : {
 
@@ -16509,7 +17166,14 @@
 
     },
     "Position Sent" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Position gesendet"
+          }
+        }
+      }
     },
     "position.config" : {
       "localizations" : {
@@ -16572,6 +17236,12 @@
     "position.precision %@" : {
       "extractionState" : "migrated",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Innerhalb %@"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16611,10 +17281,24 @@
 
     },
     "Powered" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Angeschaltet"
+          }
+        }
+      }
     },
     "Precise Location" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Genaue Position"
+          }
+        }
+      }
     },
     "preferred.radio" : {
       "extractionState" : "manual",
@@ -16682,7 +17366,14 @@
 
     },
     "PRESSURE" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DRUCK"
+          }
+        }
+      }
     },
     "Primary" : {
 
@@ -16949,7 +17640,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reboot"
+            "value" : "Neustart"
           }
         },
         "en" : {
@@ -17003,14 +17694,21 @@
       }
     },
     "Reboot Node?" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knoten neustarten?"
+          }
+        }
+      }
     },
     "reboot.node" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Node neustarten?"
+            "value" : "Knoten neustarten?"
           }
         },
         "en" : {
@@ -17186,17 +17884,37 @@
       }
     },
     "Recording route" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Route aufzeichnen"
+          }
+        }
+      }
     },
     "Refresh device metadata" : {
 
     },
     "Region" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Region"
+          }
+        }
+      }
     },
     "relativetimeofday.afternoon" : {
       "extractionState" : "migrated",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nachmittag"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17214,6 +17932,12 @@
     "relativetimeofday.evening" : {
       "extractionState" : "migrated",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abend"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17231,6 +17955,12 @@
     "relativetimeofday.midday" : {
       "extractionState" : "migrated",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mittag"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17248,6 +17978,12 @@
     "relativetimeofday.morning" : {
       "extractionState" : "migrated",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Morgen"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17265,6 +18001,12 @@
     "relativetimeofday.nighttime" : {
       "extractionState" : "migrated",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nacht"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17292,10 +18034,24 @@
 
     },
     "Remove" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entfernen"
+          }
+        }
+      }
     },
     "Remove from favorites" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Von Favoriten entfernen"
+          }
+        }
+      }
     },
     "Replace Channels" : {
 
@@ -17368,26 +18124,61 @@
 
     },
     "Reset App Settings" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-Einstellungen zurücksetzen"
+          }
+        }
+      }
     },
     "Reset NodeDB" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knotendatenbank zurücksetzen"
+          }
+        }
+      }
     },
     "Restart" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neustarten"
+          }
+        }
+      }
     },
     "Restart to the node you are connected to" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verbundenen Knoten neustarten"
+          }
+        }
+      }
     },
     "restore" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederherstellen"
+          }
+        }
+      }
     },
     "resume" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Resume"
+            "value" : "Fortsetzen"
           }
         },
         "en" : {
@@ -17441,14 +18232,21 @@
       }
     },
     "Review the app" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App bewerten"
+          }
+        }
+      }
     },
     "ringtone" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ringtone"
+            "value" : "Klingelton"
           }
         },
         "en" : {
@@ -17507,7 +18305,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ringtone Config"
+            "value" : "Klingelton Konfiguration"
           }
         },
         "en" : {
@@ -17561,13 +18359,34 @@
       }
     },
     "Role" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rolle"
+          }
+        }
+      }
     },
     "Role: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rolle: %@"
+          }
+        }
+      }
     },
     "Roles" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rollen"
+          }
+        }
+      }
     },
     "Root Topic" : {
 
@@ -17585,7 +18404,14 @@
 
     },
     "Route: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Route: %@"
+          }
+        }
+      }
     },
     "route.recorder" : {
       "localizations" : {
@@ -17656,7 +18482,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Routes"
+            "value" : "Routen"
           }
         },
         "en" : {
@@ -17712,6 +18538,12 @@
     "routes.activitytype.biking" : {
       "extractionState" : "migrated",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biken"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17729,6 +18561,12 @@
     "routes.activitytype.driving" : {
       "extractionState" : "migrated",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fahren"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17746,6 +18584,12 @@
     "routes.activitytype.filename.biking" : {
       "extractionState" : "migrated",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "biken"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17763,6 +18607,12 @@
     "routes.activitytype.filename.driving" : {
       "extractionState" : "migrated",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "fahren"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17780,6 +18630,12 @@
     "routes.activitytype.filename.hiking" : {
       "extractionState" : "migrated",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "wandern"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17814,6 +18670,12 @@
     "routes.activitytype.filename.skiing" : {
       "extractionState" : "migrated",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "skitour"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17831,6 +18693,12 @@
     "routes.activitytype.filename.walking" : {
       "extractionState" : "migrated",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "gehen"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17848,6 +18716,12 @@
     "routes.activitytype.hiking" : {
       "extractionState" : "migrated",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wandern"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17882,6 +18756,12 @@
     "routes.activitytype.skiing" : {
       "extractionState" : "migrated",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skifahren"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17899,6 +18779,12 @@
     "routes.activitytype.walking" : {
       "extractionState" : "migrated",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gehen"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18273,7 +19159,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kein Interface"
+            "value" : "Keine Schnittstelle"
           }
         },
         "en" : {
@@ -18506,6 +19392,12 @@
     "routing.pkifailed" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verschlüsseltes Senden fehlgeschlagen"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18517,6 +19409,12 @@
     "routing.pkiunknownpubkey" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unbekannter öffentlicher Schlüssel"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18774,13 +19672,34 @@
       }
     },
     "Sats" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Satelliten"
+          }
+        }
+      }
     },
     "Sats Estimate %lld" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Satelliten Schätzung %lld"
+          }
+        }
+      }
     },
     "Sats in view: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Satelliten in Sicht: %@"
+          }
+        }
+      }
     },
     "save" : {
       "localizations" : {
@@ -18841,10 +19760,24 @@
       }
     },
     "Save" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speichern"
+          }
+        }
+      }
     },
     "Save User Config to %@?" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benutzerkonfiguration nach %@ speichern?"
+          }
+        }
+      }
     },
     "save.config %@" : {
       "extractionState" : "migrated",
@@ -18852,7 +19785,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save Config for %@"
+            "value" : "Speichere Konfiguration für %@"
           }
         },
         "en" : {
@@ -18912,7 +19845,14 @@
 
     },
     "Search" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suchen"
+          }
+        }
+      }
     },
     "Second" : {
 
@@ -18924,16 +19864,37 @@
 
     },
     "Security" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sicherheit"
+          }
+        }
+      }
     },
     "Security Config" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sicherheitskonfiguration"
+          }
+        }
+      }
     },
     "Security Config Settings require a firmware version 2.5+" : {
 
     },
     "Select a channel" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanal wählen"
+          }
+        }
+      }
     },
     "Select a conversation" : {
 
@@ -19067,7 +20028,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Node auswählen"
+            "value" : "Knoten auswählen"
           }
         },
         "en" : {
@@ -19121,13 +20082,34 @@
       }
     },
     "Send" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senden"
+          }
+        }
+      }
     },
     "Send ${messageContent} to ${channelNumber}" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sende ${messageContent} an ${channelNumber}"
+          }
+        }
+      }
     },
     "Send a Group Message" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gruppennachricht senden"
+          }
+        }
+      }
     },
     "Send a message to a certain meshtastic channel" : {
 
@@ -19136,16 +20118,37 @@
 
     },
     "Send a shutdown to the node you are connected to" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herunterfahren an verbundenen Knoten senden"
+          }
+        }
+      }
     },
     "Send a Waypoint" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wegpunkt senden"
+          }
+        }
+      }
     },
     "Send ASCII bell with alert message. Useful for triggering external notification on bell." : {
 
     },
     "Send Bell" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sende Glocke"
+          }
+        }
+      }
     },
     "Send Reboot OTA" : {
 
@@ -19166,10 +20169,24 @@
 
     },
     "Sequence number" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sequenznummer"
+          }
+        }
+      }
     },
     "Sequence: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sequenz: %@"
+          }
+        }
+      }
     },
     "serial" : {
       "localizations" : {
@@ -19535,7 +20552,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Text Nachricht"
+            "value" : "Textnachricht"
           }
         },
         "en" : {
@@ -19589,10 +20606,24 @@
       }
     },
     "Server" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server"
+          }
+        }
+      }
     },
     "Server Address" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serveradresse"
+          }
+        }
+      }
     },
     "Set" : {
 
@@ -19720,7 +20751,14 @@
       }
     },
     "Share QR Code & Link" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QR Code & Link teilen"
+          }
+        }
+      }
     },
     "share.channels" : {
       "localizations" : {
@@ -19840,40 +20878,124 @@
       }
     },
     "Shared Key" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemeinsamer Schlüssel"
+          }
+        }
+      }
     },
     "Short Name" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kurzname"
+          }
+        }
+      }
     },
     "Short Name: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kurzname: %@"
+          }
+        }
+      }
     },
     "Show alerts" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeige Alarme"
+          }
+        }
+      }
     },
     "Show Alerts" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeige Alarme"
+          }
+        }
+      }
     },
     "Show nodes" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeige Knoten"
+          }
+        }
+      }
     },
     "Show on device screen" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeige auf dem Gerätebildschirm"
+          }
+        }
+      }
     },
     "Show on the mesh map." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeige auf der Netzwerkkarte."
+          }
+        }
+      }
     },
     "Show Waypoints " : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeige Wegpunkte"
+          }
+        }
+      }
     },
     "Shut Down" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herunterfahren"
+          }
+        }
+      }
     },
     "Shut Down Node?" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knoten herunterfahren?"
+          }
+        }
+      }
     },
     "Shutdown Node?" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knoten herunterfahren?"
+          }
+        }
+      }
     },
     "Signal %@" : {
 
@@ -19894,13 +21016,34 @@
 
     },
     "Speed" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geschwindigkeit"
+          }
+        }
+      }
     },
     "Speed %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geschwindigkeit %@"
+          }
+        }
+      }
     },
     "Speed: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geschwindigkeit: %@"
+          }
+        }
+      }
     },
     "Spread Factor" : {
 
@@ -20269,7 +21412,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Send Heartbeat"
+            "value" : "Herzschlag senden"
           }
         },
         "en" : {
@@ -20327,7 +21470,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Subscribed to mesh"
+            "value" : "Verbunden mit dem Mesh"
           }
         },
         "en" : {
@@ -20381,7 +21524,14 @@
       }
     },
     "Supported" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unterstützt"
+          }
+        }
+      }
     },
     "Supported I2C Connected sensors will be detected automatically, sensors are BMP280, BME280, BME680, MCP9808, INA219, INA260, LPS22 and SHTC3." : {
 
@@ -20391,7 +21541,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tapback Response"
+            "value" : "Tapback Antwort"
           }
         },
         "en" : {
@@ -20568,7 +21718,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gehört"
+            "value" : "Herz"
           }
         },
         "en" : {
@@ -20863,7 +22013,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wave"
+            "value" : "Welle"
           }
         },
         "en" : {
@@ -21033,13 +22183,34 @@
       }
     },
     "Temp" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temp"
+          }
+        }
+      }
     },
     "Temperature" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temperatur"
+          }
+        }
+      }
     },
     "Ten Minutes" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zehn Minuten"
+          }
+        }
+      }
     },
     "Tertiary Admin Key" : {
 
@@ -21051,7 +22222,14 @@
 
     },
     "The dew point is %@ right now." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Taupunkt ist gerade %@"
+          }
+        }
+      }
     },
     "The fastest that position updates will be sent if the minimum distance has been satisfied" : {
 
@@ -21092,7 +22270,7 @@
     "The state of the LED (on/off)" : {
 
     },
-    "The tertiarypublic key authorized to send admin messages to this node." : {
+    "The tertiary public key authorized to send admin messages to this node." : {
 
     },
     "There has been no response to a request for device metadata over the admin channel for this node." : {
@@ -21102,7 +22280,14 @@
 
     },
     "Thirty Minutes" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dreißig Minuten"
+          }
+        }
+      }
     },
     "This conversation will be deleted." : {
 
@@ -21120,7 +22305,14 @@
 
     },
     "This message was likely not delivered." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Nachricht wurde höchstwahrscheinlich nicht übermittelt."
+          }
+        }
+      }
     },
     "This will disable fixed position and remove the currently set position." : {
 
@@ -21129,16 +22321,44 @@
 
     },
     "Time" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeit"
+          }
+        }
+      }
     },
     "Time Stamp" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeitstempel"
+          }
+        }
+      }
     },
     "Time Zone" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeitzone"
+          }
+        }
+      }
     },
     "Time zone for dates on the device screen and log." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeitzone für Daten auf dem Gerätebildschirm und Log."
+          }
+        }
+      }
     },
     "timeout" : {
       "localizations" : {
@@ -21203,7 +22423,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Timestamp"
+            "value" : "Zeitstempel"
           }
         },
         "en" : {
@@ -21380,7 +22600,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Admin channel detected: Select a node from the drop down to manage connected or remote devices."
+            "value" : "Admin Kanal erkannt: Wähle einen Knoten vom Dropdown aus um verbundene oder entfernte Geräte zu verwalten."
           }
         },
         "en" : {
@@ -21438,7 +22658,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Admin Channel"
+            "value" : "Admin Kanal"
           }
         },
         "en" : {
@@ -21496,7 +22716,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Most data on your mesh is sent over the primary channel. You can set up secondary channels to create additional messaging groups secured by their own key. [Channel config tips](https://meshtastic.org/docs/configuration/radio/channels/)"
+            "value" : "Die meisten Daten in deinem Mesh werden über den primären Kanal gesendet. Du kannst sekundäre Kanäle einrichten, um zusätzliche Nachrichtengruppen zu erstellen, die durch ihren eigenen Schlüssel gesichert sind. [Tipps zur Kanalkonfiguration](https://meshtastic.org/docs/configuration/radio/channels/)"
           }
         },
         "en" : {
@@ -21554,7 +22774,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Manage Channels"
+            "value" : "Kanäle verwalten"
           }
         },
         "en" : {
@@ -21670,7 +22890,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sharing Meshtastic Channels"
+            "value" : "Meshtastic Kanäle teilen"
           }
         },
         "en" : {
@@ -21728,7 +22948,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You can send and receive channel (group chats) and direct messages.  From any message you can long press to see available actions like copy, reply, tapback and delete as well as delivery details."
+            "value" : "Du kannst Kanalnachrichten (Gruppenchats) und Direktnachrichten senden und empfangen. Bei jeder Nachricht kannst du lange drücken, um verfügbare Aktionen wie Kopieren, Antworten, Tapback und Löschen sowie Zustelldetails anzuzeigen."
           }
         },
         "en" : {
@@ -21786,7 +23006,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Messages"
+            "value" : "Nachrichten"
           }
         },
         "en" : {
@@ -21843,7 +23063,14 @@
 
     },
     "Total" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total"
+          }
+        }
+      }
     },
     "Trace Route" : {
 
@@ -21874,7 +23101,14 @@
 
     },
     "Traffic" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verkehr"
+          }
+        }
+      }
     },
     "Transmit data (txd) GPIO pin" : {
 
@@ -21892,7 +23126,14 @@
 
     },
     "Try Again" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erneut versuchen"
+          }
+        }
+      }
     },
     "twitter" : {
       "extractionState" : "manual",
@@ -22150,7 +23391,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Update Your Firmware"
+            "value" : "Firmware aktualisieren"
           }
         },
         "en" : {
@@ -22208,7 +23449,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Update intervall"
+            "value" : "Aktualisierungsintervall"
           }
         },
         "en" : {
@@ -22265,7 +23506,14 @@
 
     },
     "Updated: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualisiert: %@"
+          }
+        }
+      }
     },
     "Uplink Enabled" : {
 
@@ -22446,10 +23694,24 @@
 
     },
     "Vehicle heading" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fahrzeugsteuerkurs"
+          }
+        }
+      }
     },
     "Vehicle speed" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fahrzeuggeschwindigkeit"
+          }
+        }
+      }
     },
     "Version %@ includes breaking changes to devices and the client apps. Only nodes version %@ and above are supported." : {
       "localizations" : {
@@ -22466,6 +23728,12 @@
     },
     "Version: %@ (%@) " : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version: %1$@ (%2$@) "
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
@@ -22475,10 +23743,24 @@
       }
     },
     "Via Lora" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Via Lora"
+          }
+        }
+      }
     },
     "Via Mqtt" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Via Mqtt"
+          }
+        }
+      }
     },
     "voltage" : {
       "localizations" : {
@@ -22539,7 +23821,14 @@
       }
     },
     "Volts %@ " : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volt %@"
+          }
+        }
+      }
     },
     "waiting" : {
       "localizations" : {
@@ -22606,10 +23895,24 @@
 
     },
     "Waypoint Options" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wegpunktoptionen"
+          }
+        }
+      }
     },
     "Weather Conditions" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wetterverhältnisse"
+          }
+        }
+      }
     },
     "Web Flasher" : {
 
@@ -22618,10 +23921,24 @@
 
     },
     "What does the lock mean?" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Was bedeutet das Schloß?"
+          }
+        }
+      }
     },
     "What is Meshtastic?" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Was ist Meshtastic?"
+          }
+        }
+      }
     },
     "What licensed operator mode does:\n* Sets the node name to your call sign \n* Broadcasts node info every 10 minutes \n* Overrides frequency, dutycycle and tx power \n* Disables encryption" : {
 
@@ -22630,16 +23947,44 @@
 
     },
     "WiFi Options" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WiFi Optionen"
+          }
+        }
+      }
     },
     "WIND" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WIND"
+          }
+        }
+      }
     },
     "Wind Direction" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Windrichtung"
+          }
+        }
+      }
     },
     "Wind Speed" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Windgeschwindigkeit"
+          }
+        }
+      }
     },
     "x" : {
 
@@ -22678,7 +24023,14 @@
 
     },
     "Yesterday" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestern"
+          }
+        }
+      }
     },
     "You can also update your Meshtastic device over bluetooth using the Nordic DFU app." : {
 
@@ -22687,7 +24039,14 @@
 
     },
     "Your Firmware is up to date" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deine Firmware ist aktuell"
+          }
+        }
+      }
     },
     "Your MQTT Server must support TLS. Not available via the public mqtt server." : {
 
