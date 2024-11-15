@@ -5,7 +5,10 @@
 	"platformioTarget": "tlora-v2",
 	"architecture": "esp32",
 	"activelySupported": false,
-	"displayName": "LILYGO T-LoRa V2"
+	"displayName": "LILYGO T-LoRa V2",
+	"tags": [
+	  "LilyGo"
+	]
   },
   {
 	"hwModel": 2,
@@ -13,7 +16,10 @@
 	"platformioTarget": "tlora-v1",
 	"architecture": "esp32",
 	"activelySupported": false,
-	"displayName": "LILYGO T-LoRa V1"
+	"displayName": "LILYGO T-LoRa V1",
+	"tags": [
+	  "LilyGo"
+	]
   },
   {
 	"hwModel": 3,
@@ -21,7 +27,14 @@
 	"platformioTarget": "tlora-v2-1-1_6",
 	"architecture": "esp32",
 	"activelySupported": true,
-	"displayName": "LILYGO T-LoRa V2.1-1.6"
+	"supportLevel": 1,
+	"displayName": "LILYGO T-LoRa V2.1-1.6",
+	"tags": [
+	  "LilyGo"
+	],
+	"images": [
+	  "tlora-v2-1-1_6.svg"
+	]
   },
   {
 	"hwModel": 4,
@@ -29,7 +42,14 @@
 	"platformioTarget": "tbeam",
 	"architecture": "esp32",
 	"activelySupported": true,
-	"displayName": "LILYGO T-Beam"
+	"supportLevel": 1,
+	"displayName": "LILYGO T-Beam",
+	"tags": [
+	  "LilyGo"
+	],
+	"images": [
+	  "tbeam.svg"
+	]
   },
   {
 	"hwModel": 5,
@@ -37,7 +57,10 @@
 	"platformioTarget": "heltec-v2_0",
 	"architecture": "esp32",
 	"activelySupported": false,
-	"displayName": "Heltec V2.0"
+	"displayName": "Heltec V2.0",
+	"tags": [
+	  "Heltec"
+	]
   },
   {
 	"hwModel": 6,
@@ -45,15 +68,25 @@
 	"platformioTarget": "tbeam0_7",
 	"architecture": "esp32",
 	"activelySupported": false,
-	"displayName": "LILYGO T-Beam V0.7"
+	"displayName": "LILYGO T-Beam V0.7",
+	"tags": [
+	  "LilyGo"
+	]
   },
   {
 	"hwModel": 7,
 	"hwModelSlug": "T_ECHO",
 	"platformioTarget": "t-echo",
 	"architecture": "nrf52840",
+	"supportLevel": 1,
 	"activelySupported": true,
-	"displayName": "LILYGO T-Echo"
+	"displayName": "LILYGO T-Echo",
+	"tags": [
+	  "LilyGo"
+	],
+	"images": [
+	  "t-echo.svg"
+	]
   },
   {
 	"hwModel": 8,
@@ -61,7 +94,10 @@
 	"platformioTarget": "tlora-v1_3",
 	"architecture": "esp32",
 	"activelySupported": false,
-	"displayName": "LILYGO T-LoRa V1.1-1.3"
+	"displayName": "LILYGO T-LoRa V1.1-1.3",
+	"tags": [
+	  "LilyGo"
+	]
   },
   {
 	"hwModel": 9,
@@ -69,7 +105,15 @@
 	"platformioTarget": "rak4631",
 	"architecture": "nrf52840",
 	"activelySupported": true,
-	"displayName": "RAK WisBlock 4631"
+	"supportLevel": 1,
+	"displayName": "RAK WisBlock 4631",
+	"tags": [
+	  "RAK"
+	],
+	"images": [
+	  "rak4631.svg",
+	  "rak4631_case.svg"
+	]
   },
   {
 	"hwModel": 10,
@@ -77,7 +121,10 @@
 	"platformioTarget": "heltec-v2_1",
 	"architecture": "esp32",
 	"activelySupported": false,
-	"displayName": "Heltec V2.1"
+	"displayName": "Heltec V2.1",
+	"tags": [
+	  "Heltec"
+	]
   },
   {
 	"hwModel": 11,
@@ -85,7 +132,10 @@
 	"platformioTarget": "heltec-v1",
 	"architecture": "esp32",
 	"activelySupported": false,
-	"displayName": "Heltec V1"
+	"displayName": "Heltec V1",
+	"tags": [
+	  "Heltec"
+	]
   },
   {
 	"hwModel": 12,
@@ -93,7 +143,14 @@
 	"platformioTarget": "tbeam-s3-core",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
-	"displayName": "LILYGO T-Beam S3 Core"
+	"supportLevel": 1,
+	"displayName": "LILYGO T-Beam Supreme",
+	"tags": [
+	  "LilyGo"
+	],
+	"images": [
+	  "tbeam-s3-core.svg"
+	]
   },
   {
 	"hwModel": 13,
@@ -101,7 +158,10 @@
 	"platformioTarget": "rak11200",
 	"architecture": "esp32",
 	"activelySupported": false,
-	"displayName": "RAK WisBlock 11200"
+	"displayName": "RAK WisBlock 11200",
+	"tags": [
+	  "RAK"
+	]
   },
   {
 	"hwModel": 14,
@@ -109,7 +169,11 @@
 	"platformioTarget": "nano-g1",
 	"architecture": "esp32",
 	"activelySupported": true,
-	"displayName": "Nano G1"
+	"supportLevel": 3,
+	"displayName": "Nano G1",
+	"tags": [
+	  "B&Q"
+	]
   },
   {
 	"hwModel": 15,
@@ -117,7 +181,15 @@
 	"platformioTarget": "tlora-v2-1-1_8",
 	"architecture": "esp32",
 	"activelySupported": true,
-	"displayName": "LILYGO T-LoRa V2.1-1.8"
+	"supportLevel": 2,
+	"displayName": "LILYGO T-LoRa V2.1-1.8",
+	"tags": [
+	  "LilyGo",
+	  "2.4G LoRA"
+	],
+	"images": [
+	  "tlora-v2-1-1_8.svg"
+	]
   },
   {
 	"hwModel": 16,
@@ -125,7 +197,14 @@
 	"platformioTarget": "tlora-t3s3-v1",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
-	"displayName": "LILYGO T-LoRa T3-S3"
+	"displayName": "LILYGO T-LoRa T3-S3",
+	"supportLevel": 1,
+	"tags": [
+	  "LilyGo"
+	],
+	"images": [
+	  "tlora-t3s3-v1.svg"
+	]
   },
   {
 	"hwModel": 16,
@@ -133,7 +212,14 @@
 	"platformioTarget": "tlora-t3s3-epaper",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
-	"displayName": "LILYGO T-LoRa T3-S3 E-Paper"
+	"supportLevel": 1,
+	"displayName": "LILYGO T-LoRa T3-S3 E-Ink",
+	"tags": [
+	  "LilyGo"
+	],
+	"images": [
+	  "tlora-t3s3-epaper.svg"
+	]
   },
   {
 	"hwModel": 17,
@@ -141,7 +227,11 @@
 	"platformioTarget": "nano-g1-explorer",
 	"architecture": "esp32",
 	"activelySupported": true,
-	"displayName": "Nano G1 Explorer"
+	"supportLevel": 3,
+	"displayName": "Nano G1 Explorer",
+	"tags": [
+	  "B&Q"
+	]
   },
   {
 	"hwModel": 18,
@@ -149,7 +239,11 @@
 	"platformioTarget": "nano-g2-ultra",
 	"architecture": "nrf52840",
 	"activelySupported": true,
-	"displayName": "Nano G2 Ultra"
+	"supportLevel": 2,
+	"displayName": "Nano G2 Ultra",
+	"tags": [
+	  "B&Q"
+	]
   },
   {
 	"hwModel": 21,
@@ -157,7 +251,14 @@
 	"platformioTarget": "wio-tracker-wm1110",
 	"architecture": "nrf52840",
 	"activelySupported": true,
-	"displayName": "Seeed Wio WM1110 Tracker"
+	"supportLevel": 1,
+	"displayName": "Seeed Wio WM1110 Tracker",
+	"tags": [
+	  "Seeed"
+	],
+	"images": [
+	  "wio-tracker-wm1110.svg"
+	]
   },
   {
 	"hwModel": 25,
@@ -165,7 +266,11 @@
 	"platformioTarget": "station-g1",
 	"architecture": "esp32",
 	"activelySupported": true,
-	"displayName": "Station G1"
+	"supportLevel": 3,
+	"displayName": "Station G1",
+	"tags": [
+	  "B&Q"
+	]
   },
   {
 	"hwModel": 26,
@@ -173,7 +278,11 @@
 	"platformioTarget": "rak11310",
 	"architecture": "rp2040",
 	"activelySupported": true,
-	"displayName": "RAK WisBlock 11310"
+	"supportLevel": 2,
+	"displayName": "RAK WisBlock 11310",
+	"tags": [
+	  "RAK"
+	]
   },
   {
 	"hwModel": 29,
@@ -181,7 +290,11 @@
 	"platformioTarget": "canaryone",
 	"architecture": "nrf52840",
 	"activelySupported": true,
-	"displayName": "Canary One"
+	"supportLevel": 3,
+	"displayName": "Canary One",
+	"tags": [
+	  "Canary"
+	]
   },
   {
 	"hwModel": 30,
@@ -189,7 +302,11 @@
 	"platformioTarget": "rp2040-lora",
 	"architecture": "rp2040",
 	"activelySupported": true,
-	"displayName": "RP2040 LoRa"
+	"supportLevel": 2,
+	"displayName": "RP2040 LoRa",
+	"tags": [
+	  "Waveshare"
+	]
   },
   {
 	"hwModel": 31,
@@ -197,7 +314,11 @@
 	"platformioTarget": "station-g2",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
-	"displayName": "Station G2"
+	"supportLevel": 2,
+	"displayName": "Station G2",
+	"tags": [
+	  "B&Q"
+	]
   },
   {
 	"hwModel": 39,
@@ -205,7 +326,11 @@
 	"platformioTarget": "meshtastic-diy-v1",
 	"architecture": "esp32",
 	"activelySupported": true,
-	"displayName": "DIY V1"
+	"supportLevel": 3,
+	"displayName": "DIY V1",
+	"tags": [
+	  "DIY"
+	]
   },
   {
 	"hwModel": 39,
@@ -213,15 +338,22 @@
 	"platformioTarget": "hydra",
 	"architecture": "esp32",
 	"activelySupported": true,
-	"displayName": "Hydra"
+	"supportLevel": 3,
+	"displayName": "Hydra",
+	"tags": [
+	  "DIY"
+	]
   },
   {
 	"hwModel": 41,
 	"hwModelSlug": "DR_DEV",
 	"platformioTarget": "meshtastic-dr-dev",
 	"architecture": "esp32",
-	"activelySupported": true,
-	"displayName": "DR-DEV"
+	"activelySupported": false,
+	"displayName": "DR-DEV",
+	"tags": [
+	  "DIY"
+	]
   },
   {
 	"hwModel": 42,
@@ -229,7 +361,11 @@
 	"platformioTarget": "m5stack-core",
 	"architecture": "esp32",
 	"activelySupported": true,
-	"displayName": "M5 Stack"
+	"supportLevel": 3,
+	"displayName": "M5 Stack",
+	"tags": [
+	  "M5Stack"
+	]
   },
   {
 	"hwModel": 43,
@@ -237,7 +373,15 @@
 	"platformioTarget": "heltec-v3",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
-	"displayName": "Heltec V3"
+	"supportLevel": 1,
+	"displayName": "Heltec V3",
+	"tags": [
+	  "Heltec"
+	],
+	"images": [
+	  "heltec-v3.svg",
+	  "heltec-v3-case.svg"
+	]
   },
   {
 	"hwModel": 44,
@@ -245,7 +389,14 @@
 	"platformioTarget": "heltec-wsl-v3",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
-	"displayName": "Heltec Wireless Stick Lite V3"
+	"supportLevel": 1,
+	"displayName": "Heltec Wireless Stick Lite V3",
+	"tags": [
+	  "Heltec"
+	],
+	"images": [
+	  "heltec-wsl-v3.svg"
+	]
   },
   {
 	"hwModel": 47,
@@ -253,7 +404,12 @@
 	"platformioTarget": "pico",
 	"architecture": "rp2040",
 	"activelySupported": true,
-	"displayName": "Raspberry Pi Pico"
+	"supportLevel": 3,
+	"displayName": "Raspberry Pi Pico",
+	"tags": [
+	  "Raspberry Pi",
+	  "DIY"
+	]
   },
   {
 	"hwModel": 47,
@@ -261,7 +417,12 @@
 	"platformioTarget": "picow",
 	"architecture": "rp2040",
 	"activelySupported": true,
-	"displayName": "Raspberry Pi Pico W"
+	"supportLevel": 3,
+	"displayName": "Raspberry Pi Pico W",
+	"tags": [
+	  "Raspberry Pi",
+	  "DIY"
+	]
   },
   {
 	"hwModel": 48,
@@ -269,7 +430,14 @@
 	"platformioTarget": "heltec-wireless-tracker",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
-	"displayName": "Heltec Wireless Tracker V1.1"
+	"supportLevel": 1,
+	"displayName": "Heltec Wireless Tracker V1.1",
+	"tags": [
+	  "Heltec"
+	],
+	"images": [
+	  "heltec-wireless-tracker.svg"
+	]
   },
   {
 	"hwModel": 58,
@@ -277,7 +445,11 @@
 	"platformioTarget": "heltec-wireless-tracker-V1-0",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
-	"displayName": "Heltec Wireless Tracker V1.0"
+	"supportLevel": 3,
+	"displayName": "Heltec Wireless Tracker V1.0",
+	"images": [
+	  "heltec-wireless-tracker.svg"
+	]
   },
   {
 	"hwModel": 49,
@@ -285,7 +457,14 @@
 	"platformioTarget": "heltec-wireless-paper",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
-	"displayName": "Heltec Wireless Paper"
+	"supportLevel": 1,
+	"displayName": "Heltec Wireless Paper",
+	"tags": [
+	  "Heltec"
+	],
+	"images": [
+	  "heltec-wireless-paper.svg"
+	]
   },
   {
 	"hwModel": 50,
@@ -293,7 +472,14 @@
 	"platformioTarget": "t-deck",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
-	"displayName": "LILYGO T-Deck"
+	"supportLevel": 1,
+	"displayName": "LILYGO T-Deck",
+	"tags": [
+	  "LilyGo"
+	],
+	"images": [
+	  "t-deck.svg"
+	]
   },
   {
 	"hwModel": 51,
@@ -301,7 +487,14 @@
 	"platformioTarget": "t-watch-s3",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
-	"displayName": "LILYGO T-Watch S3"
+	"supportLevel": 1,
+	"displayName": "LILYGO T-Watch S3",
+	"tags": [
+	  "LilyGo"
+	],
+	"images": [
+	  "t-watch-s3.svg"
+	]
   },
   {
 	"hwModel": 52,
@@ -309,6 +502,7 @@
 	"platformioTarget": "picomputer-s3",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
+	"supportLevel": 3,
 	"displayName": "Pi Computer S3"
   },
   {
@@ -316,8 +510,15 @@
 	"hwModelSlug": "HELTEC_HT62",
 	"platformioTarget": "heltec-ht62-esp32c3-sx1262",
 	"architecture": "esp32-c3",
+	"supportLevel": 1,
 	"activelySupported": true,
-	"displayName": "Heltec HT62"
+	"displayName": "Heltec HT62",
+	"tags": [
+	  "Heltec"
+	],
+	"images": [
+	  "heltec-ht62-esp32c3-sx1262.svg"
+	]
   },
   {
 	"hwModel": 57,
@@ -325,7 +526,14 @@
 	"platformioTarget": "heltec-wireless-paper-v1_0",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
-	"displayName": "Heltec Wireless Paper V1.0"
+	"supportLevel": 3,
+	"tags": [
+	  "Heltec"
+	],
+	"displayName": "Heltec Wireless Paper V1.0",
+	"images": [
+	  "heltec-wireless-paper-v1_0.svg"
+	]
   },
   {
 	"hwModel": 59,
@@ -333,6 +541,7 @@
 	"platformioTarget": "unphone",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
+	"supportLevel": 3,
 	"displayName": "unPhone"
   },
   {
@@ -341,6 +550,7 @@
 	"platformioTarget": "tracksenger",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
+	"supportLevel": 3,
 	"displayName": "TrackSenger (small TFT)"
   },
   {
@@ -349,6 +559,7 @@
 	"platformioTarget": "tracksenger-lcd",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
+	"supportLevel": 3,
 	"displayName": "TrackSenger (big TFT)"
   },
   {
@@ -357,6 +568,7 @@
 	"platformioTarget": "tracksenger-oled",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
+	"supportLevel": 3,
 	"displayName": "TrackSenger (big OLED)"
   },
   {
@@ -365,7 +577,11 @@
 	"platformioTarget": "CDEBYTE_EoRa-S3",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
-	"displayName": "EBYTE EoRa-S3"
+	"supportLevel": 3,
+	"displayName": "EBYTE EoRa-S3",
+	"tags": [
+	  "EByte"
+	]
   },
   {
 	"hwModel": 64,
@@ -373,7 +589,11 @@
 	"platformioTarget": "radiomaster_900_bandit_nano",
 	"architecture": "esp32",
 	"activelySupported": true,
-	"displayName": "RadioMaster 900 Bandit Nano"
+	"supportLevel": 2,
+	"displayName": "RadioMaster 900 Bandit Nano",
+	"tags": [
+	  "RadioMaster"
+	]
   },
   {
 	"hwModel": 66,
@@ -381,7 +601,14 @@
 	"platformioTarget": "heltec-vision-master-t190",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
-	"displayName": "Heltec Vision Master T190"
+	"supportLevel": 1,
+	"displayName": "Heltec Vision Master T190",
+	"tags": [
+	  "Heltec"
+	],
+	"images": [
+	  "heltec-vision-master-t190.svg"
+	]
   },
   {
 	"hwModel": 67,
@@ -389,7 +616,14 @@
 	"platformioTarget": "heltec-vision-master-e213",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
-	"displayName": "Heltec Vision Master E213"
+	"supportLevel": 1,
+	"displayName": "Heltec Vision Master E213",
+	"tags": [
+	  "Heltec"
+	],
+	"images": [
+	  "heltec-vision-master-e213.svg"
+	]
   },
   {
 	"hwModel": 68,
@@ -397,15 +631,30 @@
 	"platformioTarget": "heltec-vision-master-e290",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
-	"displayName": "Heltec Vision Master E290"
+	"supportLevel": 1,
+	"displayName": "Heltec Vision Master E290",
+	"tags": [
+	  "Heltec"
+	],
+	"images": [
+	  "heltec-vision-master-e290.svg"
+	]
   },
   {
 	"hwModel": 69,
 	"hwModelSlug": "HELTEC_MESH_NODE_T114",
 	"platformioTarget": "heltec-mesh-node-t114",
 	"architecture": "nrf52840",
-	"activelySupported": false,
-	"displayName": "Heltec Mesh Node T114"
+	"activelySupported": true,
+	"supportLevel": 1,
+	"displayName": "Heltec Mesh Node T114",
+	"tags": [
+	  "Heltec"
+	],
+	"images": [
+	  "heltec-mesh-node-t114.svg",
+	  "heltec-mesh-node-t114-case.svg"
+	]
   },
   {
 	"hwModel": 70,
@@ -413,7 +662,14 @@
 	"platformioTarget": "seeed-sensecap-indicator",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
-	"displayName": "SenseCAP Indicator"
+	"supportLevel": 1,
+	"displayName": "Seeed SenseCAP Indicator",
+	"tags": [
+	  "Seeed"
+	],
+	"images": [
+	  "seeed-sensecap-indicator.svg"
+	]
   },
   {
 	"hwModel": 71,
@@ -421,7 +677,14 @@
 	"platformioTarget": "tracker-t1000-e",
 	"architecture": "nrf52840",
 	"activelySupported": true,
-	"displayName": "Seeed Card Tracker T1000-E"
+	"supportLevel": 1,
+	"displayName": "Seeed Card Tracker T1000-E",
+	"tags": [
+	  "Seeed"
+	],
+	"images": [
+	  "tracker-t1000-e.svg"
+	]
   },
   {
 	"hwModel": 72,
@@ -429,6 +692,13 @@
 	"platformioTarget": "seeed-xiao-s3",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
-	"displayName": "Seeed XIAO S3"
+	"supportLevel": 1,
+	"displayName": "Seeed Xiao ESP32-S3",
+	"tags": [
+	  "Seeed"
+	],
+	"images": [
+	  "seeed-xiao-s3.svg"
+	]
   }
 ]

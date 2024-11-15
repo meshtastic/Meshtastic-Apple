@@ -831,6 +831,11 @@ func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, s
 				fetchedNode[0].securityConfig?.privateKey = config.privateKey
 				if config.adminKey.count > 0 {
 					fetchedNode[0].securityConfig?.adminKey = config.adminKey[0]
+					if config.adminKey.count > 1 {
+						fetchedNode[0].securityConfig?.adminKey = config.adminKey[1]
+					} else if config.adminKey.count > 2 {
+						fetchedNode[0].securityConfig?.adminKey = config.adminKey[2]
+					}
 				}
 				fetchedNode[0].securityConfig?.isManaged = config.isManaged
 				fetchedNode[0].securityConfig?.serialEnabled = config.serialEnabled

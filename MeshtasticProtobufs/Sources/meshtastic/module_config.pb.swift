@@ -455,8 +455,13 @@ public struct ModuleConfig {
 
     ///
     /// Interval in seconds of how often we should try to send our
-    /// Neighbor Info to the mesh
+    /// Neighbor Info (minimum is 14400, i.e., 4 hours)
     public var updateInterval: UInt32 = 0
+
+    ///
+    /// Whether in addition to sending it to MQTT and the PhoneAPI, our NeighborInfo should be transmitted over LoRa.
+    /// Note that this is not available on a channel with default key and name.
+    public var transmitOverLora: Bool = false
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1825,6 +1830,7 @@ extension ModuleConfig.NeighborInfoConfig: SwiftProtobuf.Message, SwiftProtobuf.
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "enabled"),
     2: .standard(proto: "update_interval"),
+    3: .standard(proto: "transmit_over_lora"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1835,6 +1841,7 @@ extension ModuleConfig.NeighborInfoConfig: SwiftProtobuf.Message, SwiftProtobuf.
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
       case 2: try { try decoder.decodeSingularUInt32Field(value: &self.updateInterval) }()
+      case 3: try { try decoder.decodeSingularBoolField(value: &self.transmitOverLora) }()
       default: break
       }
     }
@@ -1847,12 +1854,16 @@ extension ModuleConfig.NeighborInfoConfig: SwiftProtobuf.Message, SwiftProtobuf.
     if self.updateInterval != 0 {
       try visitor.visitSingularUInt32Field(value: self.updateInterval, fieldNumber: 2)
     }
+    if self.transmitOverLora != false {
+      try visitor.visitSingularBoolField(value: self.transmitOverLora, fieldNumber: 3)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: ModuleConfig.NeighborInfoConfig, rhs: ModuleConfig.NeighborInfoConfig) -> Bool {
     if lhs.enabled != rhs.enabled {return false}
     if lhs.updateInterval != rhs.updateInterval {return false}
+    if lhs.transmitOverLora != rhs.transmitOverLora {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
