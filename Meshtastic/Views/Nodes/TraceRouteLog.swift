@@ -72,14 +72,13 @@ struct TraceRouteLog: View {
 					}
 					.listStyle(.plain)
 				}
-				.frame(minHeight: CGFloat(node.traceRoutes?.count ?? 0 * 40), maxHeight: 250)
+				.frame(minHeight: CGFloat((node.traceRoutes?.count ?? 0) * 40), maxHeight: 250)
 				Divider()
 				ScrollView {
 					if selectedRoute != nil {
-						
 						if selectedRoute?.response ?? false && selectedRoute?.hopsTowards ?? 0 == 0 {
 							Label {
-								Text("Trace route received directly by \(selectedRoute?.node?.user?.longName ?? "unknown".localized) with a SNR of \(String(format: "%.2f", selectedRoute?.node?.snr ?? 0.0)) dB")
+								Text("Trace route received directly by \(selectedRoute?.node?.user?.longName ?? "unknown".localized) with a SNR of \(String(format: "%.2f", selectedRoute?.snr ?? 0.0)) dB")
 							} icon: {
 								Image(systemName: "signpost.right.and.left")
 									.symbolRenderingMode(.hierarchical)
@@ -131,7 +130,7 @@ struct TraceRouteLog: View {
 									   .symbolRenderingMode(.hierarchical)
 							   }
 						}
-						if false {//selectedRoute?.hops?.count ?? 0 >= 3 {
+						if false {// selectedRoute?.hops?.count ?? 0 >= 3 {
 							HStack(alignment: .center) {
 								GeometryReader { geometry in
 									let size = ((geometry.size.width >= geometry.size.height ? geometry.size.height : geometry.size.width) / 2) - (idiom == .phone ? 45 : 85)
