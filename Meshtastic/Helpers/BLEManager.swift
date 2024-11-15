@@ -876,6 +876,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 									traceRoute?.hasPositions = true
 								}
 							}
+							traceRouteHop.name = hopNode?.user?.longName ?? "Unknown"
 							traceRouteHop.num = hopNode?.num ?? 0
 							if hopNode != nil {
 								if decodedInfo.packet.rxTime > 0 {
@@ -920,6 +921,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 									traceRoute?.hasPositions = true
 								}
 							}
+							traceRouteHop.name = hopNode?.user?.longName ?? "Unknown"
 							traceRouteHop.num = hopNode?.num ?? 0
 							if hopNode != nil {
 								if decodedInfo.packet.rxTime > 0 {
