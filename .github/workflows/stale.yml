@@ -18,5 +18,5 @@ jobs:
       - name: Stale PR+Issues
         uses: actions/stale@v9.0.0
         with:
-          exempt-issue-labels: 'has sponsor,needs sponsor,help wanted,backlog' 
-          exempt-pr-labels: 
+          exempt-issue-labels: 'has sponsor,needs sponsor,help wanted,backlog,security issue' 
+          exempt-pr-labels: 'has sponsor,needs sponsor,help wanted,backlog,security issue'
