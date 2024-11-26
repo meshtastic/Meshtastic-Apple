@@ -417,6 +417,26 @@ public struct AdminMessage {
   }
 
   ///
+  /// Set specified node-num to be ignored on the NodeDB on the device
+  public var setIgnoredNode: UInt32 {
+    get {
+      if case .setIgnoredNode(let v)? = payloadVariant {return v}
+      return 0
+    }
+    set {payloadVariant = .setIgnoredNode(newValue)}
+  }
+
+  ///
+  /// Set specified node-num to be un-ignored on the NodeDB on the device
+  public var removeIgnoredNode: UInt32 {
+    get {
+      if case .removeIgnoredNode(let v)? = payloadVariant {return v}
+      return 0
+    }
+    set {payloadVariant = .removeIgnoredNode(newValue)}
+  }
+
+  ///
   /// Begins an edit transaction for config, module config, owner, and channel settings changes
   /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
   public var beginEditSettings: Bool {
@@ -633,6 +653,12 @@ public struct AdminMessage {
     /// Tell the node to store UI data persistently.
     case storeUiConfig(DeviceUIConfig)
     ///
+    /// Set specified node-num to be ignored on the NodeDB on the device
+    case setIgnoredNode(UInt32)
+    ///
+    /// Set specified node-num to be un-ignored on the NodeDB on the device
+    case removeIgnoredNode(UInt32)
+    ///
     /// Begins an edit transaction for config, module config, owner, and channel settings changes
     /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
     case beginEditSettings(Bool)
@@ -815,6 +841,14 @@ public struct AdminMessage {
       }()
       case (.storeUiConfig, .storeUiConfig): return {
         guard case .storeUiConfig(let l) = lhs, case .storeUiConfig(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setIgnoredNode, .setIgnoredNode): return {
+        guard case .setIgnoredNode(let l) = lhs, case .setIgnoredNode(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.removeIgnoredNode, .removeIgnoredNode): return {
+        guard case .removeIgnoredNode(let l) = lhs, case .removeIgnoredNode(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       case (.beginEditSettings, .beginEditSettings): return {
@@ -1184,6 +1218,8 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     44: .standard(proto: "get_ui_config_request"),
     45: .standard(proto: "get_ui_config_response"),
     46: .standard(proto: "store_ui_config"),
+    47: .standard(proto: "set_ignored_node"),
+    48: .standard(proto: "remove_ignored_node"),
     64: .standard(proto: "begin_edit_settings"),
     65: .standard(proto: "commit_edit_settings"),
     94: .standard(proto: "factory_reset_device"),
@@ -1572,6 +1608,22 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .storeUiConfig(v)
         }
       }()
+      case 47: try {
+        var v: UInt32?
+        try decoder.decodeSingularUInt32Field(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .setIgnoredNode(v)
+        }
+      }()
+      case 48: try {
+        var v: UInt32?
+        try decoder.decodeSingularUInt32Field(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .removeIgnoredNode(v)
+        }
+      }()
       case 64: try {
         var v: Bool?
         try decoder.decodeSingularBoolField(value: &v)
@@ -1803,6 +1855,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .storeUiConfig?: try {
       guard case .storeUiConfig(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 46)
+    }()
+    case .setIgnoredNode?: try {
+      guard case .setIgnoredNode(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 47)
+    }()
+    case .removeIgnoredNode?: try {
+      guard case .removeIgnoredNode(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 48)
     }()
     case .beginEditSettings?: try {
       guard case .beginEditSettings(let v)? = self.payloadVariant else { preconditionFailure() }
