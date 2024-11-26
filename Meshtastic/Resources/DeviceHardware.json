@@ -86,7 +86,8 @@
 	],
 	"images": [
 	  "t-echo.svg"
-	]
+	],
+	"requiresDfu": true
   },
   {
 	"hwModel": 8,
@@ -113,7 +114,8 @@
 	"images": [
 	  "rak4631.svg",
 	  "rak4631_case.svg"
-	]
+	],
+	"requiresDfu": true
   },
   {
 	"hwModel": 10,
@@ -150,7 +152,8 @@
 	],
 	"images": [
 	  "tbeam-s3-core.svg"
-	]
+	],
+	"requiresDfu": true
   },
   {
 	"hwModel": 13,
@@ -204,7 +207,8 @@
 	],
 	"images": [
 	  "tlora-t3s3-v1.svg"
-	]
+	],
+	"requiresDfu": true
   },
   {
 	"hwModel": 16,
@@ -219,7 +223,8 @@
 	],
 	"images": [
 	  "tlora-t3s3-epaper.svg"
-	]
+	],
+	"requiresDfu": true
   },
   {
 	"hwModel": 17,
@@ -243,6 +248,10 @@
 	"displayName": "Nano G2 Ultra",
 	"tags": [
 	  "B&Q"
+	],
+	"requiresDfu": true,
+	"images": [
+	  "nano-g2-ultra.svg"
 	]
   },
   {
@@ -258,7 +267,8 @@
 	],
 	"images": [
 	  "wio-tracker-wm1110.svg"
-	]
+	],
+	"requiresDfu": true
   },
   {
 	"hwModel": 25,
@@ -282,7 +292,11 @@
 	"displayName": "RAK WisBlock 11310",
 	"tags": [
 	  "RAK"
-	]
+	],
+	"images": [
+	  "rak4631.svg"
+	],
+	"requiresDfu": true
   },
   {
 	"hwModel": 29,
@@ -294,7 +308,8 @@
 	"displayName": "Canary One",
 	"tags": [
 	  "Canary"
-	]
+	],
+	"requiresDfu": true
   },
   {
 	"hwModel": 30,
@@ -306,7 +321,8 @@
 	"displayName": "RP2040 LoRa",
 	"tags": [
 	  "Waveshare"
-	]
+	],
+	"requiresDfu": true
   },
   {
 	"hwModel": 31,
@@ -318,6 +334,10 @@
 	"displayName": "Station G2",
 	"tags": [
 	  "B&Q"
+	],
+	"requiresDfu": true,
+	"images": [
+	  "station-g2.svg"
 	]
   },
   {
@@ -409,7 +429,8 @@
 	"tags": [
 	  "Raspberry Pi",
 	  "DIY"
-	]
+	],
+	"requiresDfu": true
   },
   {
 	"hwModel": 47,
@@ -422,7 +443,8 @@
 	"tags": [
 	  "Raspberry Pi",
 	  "DIY"
-	]
+	],
+	"requiresDfu": true
   },
   {
 	"hwModel": 48,
@@ -437,19 +459,21 @@
 	],
 	"images": [
 	  "heltec-wireless-tracker.svg"
-	]
+	],
+	"requiresDfu": true
   },
   {
 	"hwModel": 58,
 	"hwModelSlug": "HELTEC_WIRELESS_TRACKER_V1_0",
 	"platformioTarget": "heltec-wireless-tracker-V1-0",
 	"architecture": "esp32-s3",
-	"activelySupported": true,
+	"activelySupported": false,
 	"supportLevel": 3,
 	"displayName": "Heltec Wireless Tracker V1.0",
 	"images": [
 	  "heltec-wireless-tracker.svg"
-	]
+	],
+	"requiresDfu": true
   },
   {
 	"hwModel": 49,
@@ -479,7 +503,8 @@
 	],
 	"images": [
 	  "t-deck.svg"
-	]
+	],
+	"requiresDfu": true
   },
   {
 	"hwModel": 51,
@@ -525,7 +550,7 @@
 	"hwModelSlug": "HELTEC_WIRELESS_PAPER_V1_0",
 	"platformioTarget": "heltec-wireless-paper-v1_0",
 	"architecture": "esp32-s3",
-	"activelySupported": true,
+	"activelySupported": false,
 	"supportLevel": 3,
 	"tags": [
 	  "Heltec"
@@ -542,7 +567,8 @@
 	"architecture": "esp32-s3",
 	"activelySupported": true,
 	"supportLevel": 3,
-	"displayName": "unPhone"
+	"displayName": "unPhone",
+	"requiresDfu": true
   },
   {
 	"hwModel": 48,
@@ -551,7 +577,8 @@
 	"architecture": "esp32-s3",
 	"activelySupported": true,
 	"supportLevel": 3,
-	"displayName": "TrackSenger (small TFT)"
+	"displayName": "TrackSenger (small TFT)",
+	"requiresDfu": true
   },
   {
 	"hwModel": 48,
@@ -560,7 +587,8 @@
 	"architecture": "esp32-s3",
 	"activelySupported": true,
 	"supportLevel": 3,
-	"displayName": "TrackSenger (big TFT)"
+	"displayName": "TrackSenger (big TFT)",
+	"requiresDfu": true
   },
   {
 	"hwModel": 48,
@@ -581,7 +609,8 @@
 	"displayName": "EBYTE EoRa-S3",
 	"tags": [
 	  "EByte"
-	]
+	],
+	"requiresDfu": true
   },
   {
 	"hwModel": 64,
@@ -608,7 +637,8 @@
 	],
 	"images": [
 	  "heltec-vision-master-t190.svg"
-	]
+	],
+	"requiresDfu": true
   },
   {
 	"hwModel": 67,
@@ -623,7 +653,8 @@
 	],
 	"images": [
 	  "heltec-vision-master-e213.svg"
-	]
+	],
+	"requiresDfu": true
   },
   {
 	"hwModel": 68,
@@ -638,7 +669,8 @@
 	],
 	"images": [
 	  "heltec-vision-master-e290.svg"
-	]
+	],
+	"requiresDfu": true
   },
   {
 	"hwModel": 69,
@@ -654,7 +686,8 @@
 	"images": [
 	  "heltec-mesh-node-t114.svg",
 	  "heltec-mesh-node-t114-case.svg"
-	]
+	],
+	"requiresDfu": true
   },
   {
 	"hwModel": 70,
@@ -684,7 +717,8 @@
 	],
 	"images": [
 	  "tracker-t1000-e.svg"
-	]
+	],
+	"requiresDfu": true
   },
   {
 	"hwModel": 72,
@@ -699,6 +733,23 @@
 	],
 	"images": [
 	  "seeed-xiao-s3.svg"
-	]
+	],
+	"requiresDfu": true
+  },
+  {
+	"hwModel": 84,
+	"hwModelSlug": "WISMESH_TAP",
+	"platformioTarget": "rak_wismeshtap",
+	"architecture": "nrf52840",
+	"activelySupported": false,
+	"supportLevel": 1,
+	"displayName": "RAK WisMesh Tap",
+	"tags": [
+	  "RAK"
+	],
+	"images": [
+	  "rak-wismeshtap.svg"
+	],
+	"requiresDfu": true
   }
 ]
