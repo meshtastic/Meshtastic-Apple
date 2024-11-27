@@ -38,18 +38,25 @@
         }
       }
     },
-    "%@ - %d Hops Towards %d Hops Back" : {
+    "%@ - %@ Towards  %@ Back" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ - %2$d Hops Towards %3$d Hops Back"
+            "value" : "%1$@ - %2$@ Towards  %3$@ Back"
           }
         }
       }
     },
-    "%@ - 1 Hop" : {
-
+    "%@ - %d %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ - %2$d %3$@"
+          }
+        }
+      }
     },
     "%@ - Direct" : {
 
