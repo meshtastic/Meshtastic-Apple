@@ -166,7 +166,6 @@ struct DisplayConfig: View {
 		.onFirstAppear {
 			// Need to request a DisplayConfig from the remote node before allowing changes
 			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-				Logger.mesh.info("empty display config")
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let connectedNode {
 					if node.num != connectedNode.num {
@@ -174,10 +173,12 @@ struct DisplayConfig: View {
 							/// 2.5 Administration with session passkey
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.displayConfig == nil {
+								Logger.mesh.info("⚙️ Empty or expired display config requesting via PKI admin")
 								_ = bleManager.requestDisplayConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 							}
 						} else {
 							/// Legacy Administration
+							Logger.mesh.info("☠️ Using insecure legacy admin, empty display config")
 							_ = bleManager.requestDisplayConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 						}
 					}

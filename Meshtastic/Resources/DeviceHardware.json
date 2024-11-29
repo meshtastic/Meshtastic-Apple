@@ -26,7 +26,7 @@
 	"hwModelSlug": "TLORA_V2_1_1P6",
 	"platformioTarget": "tlora-v2-1-1_6",
 	"architecture": "esp32",
-	"activelySupported": true,
+	"activelySupported": false,
 	"supportLevel": 1,
 	"displayName": "LILYGO T-LoRa V2.1-1.6",
 	"tags": [
@@ -41,7 +41,7 @@
 	"hwModelSlug": "TBEAM",
 	"platformioTarget": "tbeam",
 	"architecture": "esp32",
-	"activelySupported": true,
+	"activelySupported": false,
 	"supportLevel": 1,
 	"displayName": "LILYGO T-Beam",
 	"tags": [
@@ -79,7 +79,7 @@
 	"platformioTarget": "t-echo",
 	"architecture": "nrf52840",
 	"supportLevel": 1,
-	"activelySupported": true,
+	"activelySupported": false,
 	"displayName": "LILYGO T-Echo",
 	"tags": [
 	  "LilyGo"
@@ -392,7 +392,7 @@
 	"hwModelSlug": "HELTEC_V3",
 	"platformioTarget": "heltec-v3",
 	"architecture": "esp32-s3",
-	"activelySupported": true,
+	"activelySupported": false,
 	"supportLevel": 1,
 	"displayName": "Heltec V3",
 	"tags": [
@@ -408,7 +408,7 @@
 	"hwModelSlug": "HELTEC_WSL_V3",
 	"platformioTarget": "heltec-wsl-v3",
 	"architecture": "esp32-s3",
-	"activelySupported": true,
+	"activelySupported": false,
 	"supportLevel": 1,
 	"displayName": "Heltec Wireless Stick Lite V3",
 	"tags": [
@@ -451,7 +451,7 @@
 	"hwModelSlug": "HELTEC_WIRELESS_TRACKER",
 	"platformioTarget": "heltec-wireless-tracker",
 	"architecture": "esp32-s3",
-	"activelySupported": true,
+	"activelySupported": false,
 	"supportLevel": 1,
 	"displayName": "Heltec Wireless Tracker V1.1",
 	"tags": [
@@ -480,7 +480,7 @@
 	"hwModelSlug": "HELTEC_WIRELESS_PAPER",
 	"platformioTarget": "heltec-wireless-paper",
 	"architecture": "esp32-s3",
-	"activelySupported": true,
+	"activelySupported": false,
 	"supportLevel": 1,
 	"displayName": "Heltec Wireless Paper",
 	"tags": [
@@ -495,7 +495,7 @@
 	"hwModelSlug": "T_DECK",
 	"platformioTarget": "t-deck",
 	"architecture": "esp32-s3",
-	"activelySupported": true,
+	"activelySupported": false,
 	"supportLevel": 1,
 	"displayName": "LILYGO T-Deck",
 	"tags": [
@@ -511,7 +511,7 @@
 	"hwModelSlug": "T_WATCH_S3",
 	"platformioTarget": "t-watch-s3",
 	"architecture": "esp32-s3",
-	"activelySupported": true,
+	"activelySupported": false,
 	"supportLevel": 1,
 	"displayName": "LILYGO T-Watch S3",
 	"tags": [
@@ -536,7 +536,7 @@
 	"platformioTarget": "heltec-ht62-esp32c3-sx1262",
 	"architecture": "esp32-c3",
 	"supportLevel": 1,
-	"activelySupported": true,
+	"activelySupported": false,
 	"displayName": "Heltec HT62",
 	"tags": [
 	  "Heltec"
@@ -575,7 +575,7 @@
 	"hwModelSlug": "HELTEC_WIRELESS_TRACKER",
 	"platformioTarget": "tracksenger",
 	"architecture": "esp32-s3",
-	"activelySupported": true,
+	"activelySupported": false,
 	"supportLevel": 3,
 	"displayName": "TrackSenger (small TFT)",
 	"requiresDfu": true
@@ -585,7 +585,7 @@
 	"hwModelSlug": "HELTEC_WIRELESS_TRACKER",
 	"platformioTarget": "tracksenger-lcd",
 	"architecture": "esp32-s3",
-	"activelySupported": true,
+	"activelySupported": false,
 	"supportLevel": 3,
 	"displayName": "TrackSenger (big TFT)",
 	"requiresDfu": true
@@ -595,7 +595,7 @@
 	"hwModelSlug": "HELTEC_WIRELESS_TRACKER",
 	"platformioTarget": "tracksenger-oled",
 	"architecture": "esp32-s3",
-	"activelySupported": true,
+	"activelySupported": false,
 	"supportLevel": 3,
 	"displayName": "TrackSenger (big OLED)"
   },
@@ -629,7 +629,7 @@
 	"hwModelSlug": "HELTEC_VISION_MASTER_T190",
 	"platformioTarget": "heltec-vision-master-t190",
 	"architecture": "esp32-s3",
-	"activelySupported": true,
+	"activelySupported": false,
 	"supportLevel": 1,
 	"displayName": "Heltec Vision Master T190",
 	"tags": [
@@ -645,7 +645,7 @@
 	"hwModelSlug": "HELTEC_VISION_MASTER_E213",
 	"platformioTarget": "heltec-vision-master-e213",
 	"architecture": "esp32-s3",
-	"activelySupported": true,
+	"activelySupported": false,
 	"supportLevel": 1,
 	"displayName": "Heltec Vision Master E213",
 	"tags": [
@@ -661,7 +661,7 @@
 	"hwModelSlug": "HELTEC_VISION_MASTER_E290",
 	"platformioTarget": "heltec-vision-master-e290",
 	"architecture": "esp32-s3",
-	"activelySupported": true,
+	"activelySupported": false,
 	"supportLevel": 1,
 	"displayName": "Heltec Vision Master E290",
 	"tags": [
@@ -677,7 +677,7 @@
 	"hwModelSlug": "HELTEC_MESH_NODE_T114",
 	"platformioTarget": "heltec-mesh-node-t114",
 	"architecture": "nrf52840",
-	"activelySupported": true,
+	"activelySupported": false,
 	"supportLevel": 1,
 	"displayName": "Heltec Mesh Node T114",
 	"tags": [
