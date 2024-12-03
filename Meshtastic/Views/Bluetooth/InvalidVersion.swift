@@ -37,11 +37,11 @@ struct InvalidVersion: View {
 			Divider()
 				.padding(.top)
 			VStack {
-				Text("Insecure legacy firmware version")
+				Text("🦕 End of life Version 🦖 ☄️")
 					.font(.title3)
 					.foregroundColor(.orange)
 					.padding(.bottom)
-				Text("Version \(minimumVersion) contains substantial security vulnerabilities, you should upgrade to a newer version immediatly. Only nodes version \(minimumVersion) and above are supported.")
+				Text("Version \(minimumVersion) includes breaking changes to devices and the client apps. Only nodes version \(minimumVersion) and above are supported.")
 					.font(.callout)
 					.padding([.leading, .trailing, .bottom])
 				Link("Version 1.2 End of life (EOL) Info", destination: URL(string: "https://meshtastic.org/docs/1.2-End-of-life/")!)
