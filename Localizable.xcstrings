@@ -19132,10 +19132,19 @@
     "Send ${messageContent} to ${channelNumber}" : {
 
     },
+    "Send ${messageContent} to ${nodeNumber}" : {
+
+    },
+    "Send a Direct Message" : {
+
+    },
     "Send a Group Message" : {
 
     },
     "Send a message to a certain meshtastic channel" : {
+
+    },
+    "Send a message to a certain meshtastic node" : {
 
     },
     "Send a position on the primary channel when the user button is triple clicked." : {
@@ -19157,6 +19166,9 @@
 
     },
     "Sender Interval" : {
+
+    },
+    "Sensor" : {
 
     },
     "Sensor Metrics" : {
@@ -21101,12 +21113,11 @@
     "The state of the LED (on/off)" : {
 
     },
-    "The URL for the channel settings" : {
-    
-    },
     "The tertiary public key authorized to send admin messages to this node." : {
-    
+
     },
+    "The URL for the channel settings" : {
+
     },
     "There has been no response to a request for device metadata over the admin channel for this node." : {
 
@@ -21884,6 +21895,9 @@
 
     },
     "Trace Route was rate limited. You can send a trace route a maximum of once every thirty seconds." : {
+
+    },
+    "Tracker" : {
 
     },
     "Traffic" : {
