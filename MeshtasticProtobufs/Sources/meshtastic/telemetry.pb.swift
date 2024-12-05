@@ -156,6 +156,10 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
   ///
   /// SCD40/SCD41 CO2, humidity, temperature sensor
   case scd4X // = 32
+
+  ///
+  /// ClimateGuard RadSens, radiation, Geiger-Muller Tube
+  case radsens // = 33
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -197,6 +201,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
     case 30: self = .max30102
     case 31: self = .mlx90614
     case 32: self = .scd4X
+    case 33: self = .radsens
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -236,6 +241,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
     case .max30102: return 30
     case .mlx90614: return 31
     case .scd4X: return 32
+    case .radsens: return 33
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -280,6 +286,7 @@ extension TelemetrySensorType: CaseIterable {
     .max30102,
     .mlx90614,
     .scd4X,
+    .radsens,
   ]
 }
 
@@ -553,6 +560,17 @@ public struct EnvironmentMetrics {
   public var hasWindLull: Bool {return _storage._windLull != nil}
   /// Clears the value of `windLull`. Subsequent reads from it will return its default value.
   public mutating func clearWindLull() {_uniqueStorage()._windLull = nil}
+
+  ///
+  /// Radiation in µR/h
+  public var radiation: Float {
+    get {return _storage._radiation ?? 0}
+    set {_uniqueStorage()._radiation = newValue}
+  }
+  /// Returns true if `radiation` has been explicitly set.
+  public var hasRadiation: Bool {return _storage._radiation != nil}
+  /// Clears the value of `radiation`. Subsequent reads from it will return its default value.
+  public mutating func clearRadiation() {_uniqueStorage()._radiation = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1128,6 +1146,7 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     30: .same(proto: "MAX30102"),
     31: .same(proto: "MLX90614"),
     32: .same(proto: "SCD4X"),
+    33: .same(proto: "RADSENS"),
   ]
 }
 
@@ -1211,6 +1230,7 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     15: .same(proto: "weight"),
     16: .standard(proto: "wind_gust"),
     17: .standard(proto: "wind_lull"),
+    18: .same(proto: "radiation"),
   ]
 
   fileprivate class _StorageClass {
@@ -1231,6 +1251,7 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     var _weight: Float? = nil
     var _windGust: Float? = nil
     var _windLull: Float? = nil
+    var _radiation: Float? = nil
 
     #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
@@ -1262,6 +1283,7 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       _weight = source._weight
       _windGust = source._windGust
       _windLull = source._windLull
+      _radiation = source._radiation
     }
   }
 
@@ -1297,6 +1319,7 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
         case 15: try { try decoder.decodeSingularFloatField(value: &_storage._weight) }()
         case 16: try { try decoder.decodeSingularFloatField(value: &_storage._windGust) }()
         case 17: try { try decoder.decodeSingularFloatField(value: &_storage._windLull) }()
+        case 18: try { try decoder.decodeSingularFloatField(value: &_storage._radiation) }()
         default: break
         }
       }
@@ -1360,6 +1383,9 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       try { if let v = _storage._windLull {
         try visitor.visitSingularFloatField(value: v, fieldNumber: 17)
       } }()
+      try { if let v = _storage._radiation {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 18)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1386,6 +1412,7 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
         if _storage._weight != rhs_storage._weight {return false}
         if _storage._windGust != rhs_storage._windGust {return false}
         if _storage._windLull != rhs_storage._windLull {return false}
+        if _storage._radiation != rhs_storage._radiation {return false}
         return true
       }
       if !storagesAreEqual {return false}

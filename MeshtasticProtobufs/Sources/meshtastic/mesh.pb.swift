@@ -381,6 +381,11 @@ public enum HardwareModel: SwiftProtobuf.Enum {
   case tloraC6 // = 83
 
   ///
+  /// WisMesh Tap
+  /// RAK-4631 w/ TFT in injection modled case
+  case wismeshTap // = 84
+
+  ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -477,6 +482,7 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case 81: self = .seeedXiaoS3
     case 82: self = .ms24Sf1
     case 83: self = .tloraC6
+    case 84: self = .wismeshTap
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -568,6 +574,7 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case .seeedXiaoS3: return 81
     case .ms24Sf1: return 82
     case .tloraC6: return 83
+    case .wismeshTap: return 84
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -664,6 +671,7 @@ extension HardwareModel: CaseIterable {
     .seeedXiaoS3,
     .ms24Sf1,
     .tloraC6,
+    .wismeshTap,
     .privateHw,
   ]
 }
@@ -684,7 +692,7 @@ public enum Constants: SwiftProtobuf.Enum {
   /// From mesh.options
   /// note: this payload length is ONLY the bytes that are sent inside of the Data protobuf (excluding protobuf overhead). The 16 byte header is
   /// outside of this envelope
-  case dataPayloadLen // = 237
+  case dataPayloadLen // = 233
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -694,7 +702,7 @@ public enum Constants: SwiftProtobuf.Enum {
   public init?(rawValue: Int) {
     switch rawValue {
     case 0: self = .zero
-    case 237: self = .dataPayloadLen
+    case 233: self = .dataPayloadLen
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -702,7 +710,7 @@ public enum Constants: SwiftProtobuf.Enum {
   public var rawValue: Int {
     switch self {
     case .zero: return 0
-    case .dataPayloadLen: return 237
+    case .dataPayloadLen: return 233
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -2055,6 +2063,22 @@ public struct MeshPacket {
     set {_uniqueStorage()._pkiEncrypted = newValue}
   }
 
+  ///
+  /// Last byte of the node number of the node that should be used as the next hop in routing. 
+  /// Set by the firmware internally, clients are not supposed to set this.
+  public var nextHop: UInt32 {
+    get {return _storage._nextHop}
+    set {_uniqueStorage()._nextHop = newValue}
+  }
+
+  ///
+  /// Last byte of the node number of the node that will relay/relayed this packet.
+  /// Set by the firmware internally, clients are not supposed to set this.
+  public var relayNode: UInt32 {
+    get {return _storage._relayNode}
+    set {_uniqueStorage()._relayNode = newValue}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public enum OneOf_PayloadVariant: Equatable {
@@ -2368,6 +2392,14 @@ public struct NodeInfo {
   public var isFavorite: Bool {
     get {return _storage._isFavorite}
     set {_uniqueStorage()._isFavorite = newValue}
+  }
+
+  ///
+  /// True if node is in our ignored list
+  /// Persists between NodeDB internal clean ups
+  public var isIgnored: Bool {
+    get {return _storage._isIgnored}
+    set {_uniqueStorage()._isIgnored = newValue}
   }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -3526,6 +3558,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     81: .same(proto: "SEEED_XIAO_S3"),
     82: .same(proto: "MS24SF1"),
     83: .same(proto: "TLORA_C6"),
+    84: .same(proto: "WISMESH_TAP"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
@@ -3533,7 +3566,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
 extension Constants: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "ZERO"),
-    237: .same(proto: "DATA_PAYLOAD_LEN"),
+    233: .same(proto: "DATA_PAYLOAD_LEN"),
   ]
 }
 
@@ -4328,6 +4361,8 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     15: .standard(proto: "hop_start"),
     16: .standard(proto: "public_key"),
     17: .standard(proto: "pki_encrypted"),
+    18: .standard(proto: "next_hop"),
+    19: .standard(proto: "relay_node"),
   ]
 
   fileprivate class _StorageClass {
@@ -4347,6 +4382,8 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     var _hopStart: UInt32 = 0
     var _publicKey: Data = Data()
     var _pkiEncrypted: Bool = false
+    var _nextHop: UInt32 = 0
+    var _relayNode: UInt32 = 0
 
     #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
@@ -4377,6 +4414,8 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       _hopStart = source._hopStart
       _publicKey = source._publicKey
       _pkiEncrypted = source._pkiEncrypted
+      _nextHop = source._nextHop
+      _relayNode = source._relayNode
     }
   }
 
@@ -4431,6 +4470,8 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         case 15: try { try decoder.decodeSingularUInt32Field(value: &_storage._hopStart) }()
         case 16: try { try decoder.decodeSingularBytesField(value: &_storage._publicKey) }()
         case 17: try { try decoder.decodeSingularBoolField(value: &_storage._pkiEncrypted) }()
+        case 18: try { try decoder.decodeSingularUInt32Field(value: &_storage._nextHop) }()
+        case 19: try { try decoder.decodeSingularUInt32Field(value: &_storage._relayNode) }()
         default: break
         }
       }
@@ -4499,6 +4540,12 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       if _storage._pkiEncrypted != false {
         try visitor.visitSingularBoolField(value: _storage._pkiEncrypted, fieldNumber: 17)
       }
+      if _storage._nextHop != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._nextHop, fieldNumber: 18)
+      }
+      if _storage._relayNode != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._relayNode, fieldNumber: 19)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -4524,6 +4571,8 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         if _storage._hopStart != rhs_storage._hopStart {return false}
         if _storage._publicKey != rhs_storage._publicKey {return false}
         if _storage._pkiEncrypted != rhs_storage._pkiEncrypted {return false}
+        if _storage._nextHop != rhs_storage._nextHop {return false}
+        if _storage._relayNode != rhs_storage._relayNode {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -4568,6 +4617,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     8: .standard(proto: "via_mqtt"),
     9: .standard(proto: "hops_away"),
     10: .standard(proto: "is_favorite"),
+    11: .standard(proto: "is_ignored"),
   ]
 
   fileprivate class _StorageClass {
@@ -4581,6 +4631,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     var _viaMqtt: Bool = false
     var _hopsAway: UInt32? = nil
     var _isFavorite: Bool = false
+    var _isIgnored: Bool = false
 
     #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
@@ -4605,6 +4656,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       _viaMqtt = source._viaMqtt
       _hopsAway = source._hopsAway
       _isFavorite = source._isFavorite
+      _isIgnored = source._isIgnored
     }
   }
 
@@ -4633,6 +4685,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         case 8: try { try decoder.decodeSingularBoolField(value: &_storage._viaMqtt) }()
         case 9: try { try decoder.decodeSingularUInt32Field(value: &_storage._hopsAway) }()
         case 10: try { try decoder.decodeSingularBoolField(value: &_storage._isFavorite) }()
+        case 11: try { try decoder.decodeSingularBoolField(value: &_storage._isIgnored) }()
         default: break
         }
       }
@@ -4675,6 +4728,9 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       if _storage._isFavorite != false {
         try visitor.visitSingularBoolField(value: _storage._isFavorite, fieldNumber: 10)
       }
+      if _storage._isIgnored != false {
+        try visitor.visitSingularBoolField(value: _storage._isIgnored, fieldNumber: 11)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -4694,6 +4750,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         if _storage._viaMqtt != rhs_storage._viaMqtt {return false}
         if _storage._hopsAway != rhs_storage._hopsAway {return false}
         if _storage._isFavorite != rhs_storage._isFavorite {return false}
+        if _storage._isIgnored != rhs_storage._isIgnored {return false}
         return true
       }
       if !storagesAreEqual {return false}

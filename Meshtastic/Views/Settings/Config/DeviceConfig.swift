@@ -78,7 +78,7 @@ struct DeviceConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
 					Toggle(isOn: $tripleClickAsAdHocPing) {
-						Label("Triple Click Ad Hoc Ping", systemImage: "map.pin")
+						Label("Triple Click Ad Hoc Ping", systemImage: "mappin")
 						Text("Send a position on the primary channel when the user button is triple clicked.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -229,7 +229,6 @@ struct DeviceConfig: View {
 		.onFirstAppear {
 			// Need to request a DeviceConfig from the remote node before allowing changes
 			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-				Logger.mesh.info("empty device config")
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let connectedNode {
 					if node.num != connectedNode.num {
@@ -237,11 +236,13 @@ struct DeviceConfig: View {
 							/// 2.5 Administration with session passkey
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.deviceConfig == nil {
+								Logger.mesh.info("⚙️ Empty or expired device config requesting via PKI admin")
 								_ = bleManager.requestDeviceConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 							}
 						} else {
 							if node.deviceConfig == nil {
 								/// Legacy Administration
+								Logger.mesh.info("☠️ Using insecure legacy admin, empty device config")
 								_ = bleManager.requestDeviceConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 							}
 						}

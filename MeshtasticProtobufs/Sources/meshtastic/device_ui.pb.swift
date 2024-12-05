@@ -135,6 +135,10 @@ public enum Language: SwiftProtobuf.Enum {
   case greek // = 13
 
   ///
+  /// Norwegian
+  case norwegian // = 14
+
+  ///
   /// Simplified Chinese (experimental)
   case simplifiedChinese // = 30
 
@@ -163,6 +167,7 @@ public enum Language: SwiftProtobuf.Enum {
     case 11: self = .russian
     case 12: self = .dutch
     case 13: self = .greek
+    case 14: self = .norwegian
     case 30: self = .simplifiedChinese
     case 31: self = .traditionalChinese
     default: self = .UNRECOGNIZED(rawValue)
@@ -185,6 +190,7 @@ public enum Language: SwiftProtobuf.Enum {
     case .russian: return 11
     case .dutch: return 12
     case .greek: return 13
+    case .norwegian: return 14
     case .simplifiedChinese: return 30
     case .traditionalChinese: return 31
     case .UNRECOGNIZED(let i): return i
@@ -212,6 +218,7 @@ extension Language: CaseIterable {
     .russian,
     .dutch,
     .greek,
+    .norwegian,
     .simplifiedChinese,
     .traditionalChinese,
   ]
@@ -314,6 +321,13 @@ public struct DeviceUIConfig {
   public var hasNodeHighlight: Bool {return _storage._nodeHighlight != nil}
   /// Clears the value of `nodeHighlight`. Subsequent reads from it will return its default value.
   public mutating func clearNodeHighlight() {_uniqueStorage()._nodeHighlight = nil}
+
+  ///
+  /// 8 integers for screen calibration data
+  public var calibrationData: Data {
+    get {return _storage._calibrationData}
+    set {_uniqueStorage()._calibrationData = newValue}
+  }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -422,6 +436,7 @@ extension Language: SwiftProtobuf._ProtoNameProviding {
     11: .same(proto: "RUSSIAN"),
     12: .same(proto: "DUTCH"),
     13: .same(proto: "GREEK"),
+    14: .same(proto: "NORWEGIAN"),
     30: .same(proto: "SIMPLIFIED_CHINESE"),
     31: .same(proto: "TRADITIONAL_CHINESE"),
   ]
@@ -443,6 +458,7 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     11: .same(proto: "language"),
     12: .standard(proto: "node_filter"),
     13: .standard(proto: "node_highlight"),
+    14: .standard(proto: "calibration_data"),
   ]
 
   fileprivate class _StorageClass {
@@ -459,6 +475,7 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     var _language: Language = .english
     var _nodeFilter: NodeFilter? = nil
     var _nodeHighlight: NodeHighlight? = nil
+    var _calibrationData: Data = Data()
 
     #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
@@ -486,6 +503,7 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       _language = source._language
       _nodeFilter = source._nodeFilter
       _nodeHighlight = source._nodeHighlight
+      _calibrationData = source._calibrationData
     }
   }
 
@@ -517,6 +535,7 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
         case 11: try { try decoder.decodeSingularEnumField(value: &_storage._language) }()
         case 12: try { try decoder.decodeSingularMessageField(value: &_storage._nodeFilter) }()
         case 13: try { try decoder.decodeSingularMessageField(value: &_storage._nodeHighlight) }()
+        case 14: try { try decoder.decodeSingularBytesField(value: &_storage._calibrationData) }()
         default: break
         }
       }
@@ -568,6 +587,9 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       try { if let v = _storage._nodeHighlight {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
       } }()
+      if !_storage._calibrationData.isEmpty {
+        try visitor.visitSingularBytesField(value: _storage._calibrationData, fieldNumber: 14)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -590,6 +612,7 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
         if _storage._language != rhs_storage._language {return false}
         if _storage._nodeFilter != rhs_storage._nodeFilter {return false}
         if _storage._nodeHighlight != rhs_storage._nodeHighlight {return false}
+        if _storage._calibrationData != rhs_storage._calibrationData {return false}
         return true
       }
       if !storagesAreEqual {return false}

@@ -88,7 +88,6 @@ struct AmbientLightingConfig: View {
 			.onFirstAppear {
 				// Need to request a Ambient Lighting Config from the remote node before allowing changes
 				if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-					Logger.mesh.info("empty ambient lighting config")
 					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 					if let connectedNode {
 						if node.num != connectedNode.num {
@@ -96,10 +95,12 @@ struct AmbientLightingConfig: View {
 								/// 2.5 Administration with session passkey
 								let expiration = node.sessionExpiration ?? Date()
 								if expiration < Date() || node.ambientLightingConfig == nil {
+									Logger.mesh.info("⚙️ Empty or expired ambient lighting module config requesting via PKI admin")
 									_ = bleManager.requestAmbientLightingConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 								}
 							} else {
 								/// Legacy Administration
+								Logger.mesh.info("☠️ Using insecure legacy admin, empty ambient lighting module config")
 								_ = bleManager.requestAmbientLightingConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 							}
 						}
