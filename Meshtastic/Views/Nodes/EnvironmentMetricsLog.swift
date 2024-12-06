@@ -15,6 +15,7 @@ struct EnvironmentMetricsLog: View {
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
 	@State var exportString = ""
+	@State var stops: [Gradient.Stop] = []
 	@ObservedObject var node: NodeInfoEntity
 
 	var body: some View {
@@ -25,6 +26,9 @@ struct EnvironmentMetricsLog: View {
 				let chartData = environmentMetrics
 					.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
 					.sorted { $0.time! < $1.time! }
+				// Add padding above and below min/max value
+				let chartLowTemp = ((chartData.min { a, b in a.temperature < b.temperature})?.temperature.localeTemperature() ?? 0.0) - 5
+				let chartHighTemp = ((chartData.max { a, b in a.temperature < b.temperature})?.temperature.localeTemperature() ?? 100.0) + 5
 				let locale = NSLocale.current as NSLocale
 				let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
 				let format: UnitTemperature = localeUnit as? String ?? "Celsius" == "Fahrenheit" ? .fahrenheit : .celsius
@@ -40,10 +44,7 @@ struct EnvironmentMetricsLog: View {
 									)
 									.interpolationMethod(.cardinal)
 									.foregroundStyle(
-										.linearGradient(
-											colors: [.blue, .yellow, .orange, .red, .red],
-											startPoint: .bottom, endPoint: .top
-										)
+										.linearGradient(stops: stops, startPoint: .bottom, endPoint: .top)
 										.opacity(0.6)
 									)
 									.alignsMarkStylesWithPlotArea()
@@ -54,10 +55,7 @@ struct EnvironmentMetricsLog: View {
 									)
 									.interpolationMethod(.cardinal)
 									.foregroundStyle(
-										.linearGradient(
-											colors: [.blue, .yellow, .orange, .red, .red],
-											startPoint: .bottom, endPoint: .top
-										)
+										.linearGradient(stops: stops, startPoint: .bottom, endPoint: .top)
 									)
 									.lineStyle(StrokeStyle(lineWidth: 4))
 									.alignsMarkStylesWithPlotArea()
@@ -66,11 +64,14 @@ struct EnvironmentMetricsLog: View {
 							.chartXAxis(content: {
 								AxisMarks(position: .top)
 							})
-							.chartYScale(domain: format == .celsius ? -20...55 : 0...125)
+							.chartYScale(domain: chartLowTemp...chartHighTemp).clipped()
 							.chartForegroundStyleScale([
 								"Temperature": .clear
 							])
 							.chartLegend(position: .automatic, alignment: .bottom)
+							.onAppear(perform: {
+								stops = generateStops(minTemp: chartLowTemp, maxTemp: chartHighTemp, tempUnit: format)
+							})
 						}
 					}
 					let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
@@ -219,4 +220,31 @@ struct EnvironmentMetricsLog: View {
 			}
 		)
 	}
+}
+
+// Set up gradient stops relative to the scale of the temperature chart
+func generateStops(minTemp: Double, maxTemp: Double, tempUnit: UnitTemperature) -> [Gradient.Stop] {
+	var gradientStops = [Gradient.Stop]()
+
+	let stopTargets: [(Double, Color)] = [
+		((tempUnit == .celsius ? 0 : 32), .blue),
+		((tempUnit == .celsius ? 20 : 68), .yellow),
+		((tempUnit == .celsius ? 30 : 86), .orange),
+		((tempUnit == .celsius ? 55 : 125), .red)
+		]
+	for (stopValue, color) in stopTargets {
+		let stopLocation = transform(stopValue, from: minTemp...maxTemp, to: 0...1)
+		gradientStops.append(Gradient.Stop(color: color, location: stopLocation))
+	}
+	return gradientStops
+}
+
+// Map inputRange to outputRange
+func transform<T: FloatingPoint>(_ input: T, from inputRange: ClosedRange<T>, to outputRange: ClosedRange<T>) -> T {
+	// need to determine what that value would be in (to.low, to.high)
+	// difference in output range / difference in input range = slope
+	let slope = (outputRange.upperBound - outputRange.lowerBound) / (inputRange.upperBound - inputRange.lowerBound)
+	// slope * normalized input + output lower
+	let output = slope * (input - inputRange.lowerBound) + outputRange.lowerBound
+	return output
 }
