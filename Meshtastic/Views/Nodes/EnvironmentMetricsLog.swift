@@ -17,6 +17,9 @@ struct EnvironmentMetricsLog: View {
 	@State var exportString = ""
 	@ObservedObject var node: NodeInfoEntity
 
+	@StateObject var columnConfiguration = MetricsColumnConfiguration.environmentDefaults
+	@State var isEditingColumnConfiguration = false
+
 	var body: some View {
 		VStack {
 			if node.hasEnvironmentMetrics {
@@ -31,42 +34,15 @@ struct EnvironmentMetricsLog: View {
 				VStack {
 					if chartData.count > 0 {
 						GroupBox(label: Label("\(environmentMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
-							Chart {
+							Chart(columnConfiguration.activeChartColumns, id: \.columnName) { series in
 								ForEach(chartData, id: \.time) { dataPoint in
-									AreaMark(
-										x: .value("Time", dataPoint.time!),
-										y: .value("Temperature", dataPoint.temperature.localeTemperature()),
-										stacking: .unstacked
-									)
-									.interpolationMethod(.cardinal)
-									.foregroundStyle(
-										.linearGradient(
-											colors: [.blue, .yellow, .orange, .red, .red],
-											startPoint: .bottom, endPoint: .top
-										)
-										.opacity(0.6)
-									)
-									.alignsMarkStylesWithPlotArea()
-									.accessibilityHidden(true)
-									LineMark(
-										x: .value("Time", dataPoint.time!),
-										y: .value("Temperature", dataPoint.temperature.localeTemperature())
-									)
-									.interpolationMethod(.cardinal)
-									.foregroundStyle(
-										.linearGradient(
-											colors: [.blue, .yellow, .orange, .red, .red],
-											startPoint: .bottom, endPoint: .top
-										)
-									)
-									.lineStyle(StrokeStyle(lineWidth: 4))
-									.alignsMarkStylesWithPlotArea()
+									series.chartBody(dataPoint)
 								}
 							}
 							.chartXAxis(content: {
 								AxisMarks(position: .top)
 							})
-							.chartYScale(domain: format == .celsius ? -20...55 : 0...125)
+							// .chartYScale(domain: format == .celsius ? -20...55 : 0...125)
 							.chartForegroundStyleScale([
 								"Temperature": .clear
 							])
@@ -108,46 +84,19 @@ struct EnvironmentMetricsLog: View {
 						}
 					} else {
 						ScrollView {
-							let columns = [
-								GridItem(.flexible(minimum: 30, maximum: 50), spacing: 0.1),
-								GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
-								GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
-								GridItem(.flexible(minimum: 30, maximum: 70), spacing: 0.1),
-								GridItem(spacing: 0)
-							]
-							LazyVGrid(columns: columns, alignment: .leading, spacing: 1, pinnedViews: [.sectionHeaders]) {
-
+							LazyVGrid(columns: columnConfiguration.gridItems, alignment: .leading, spacing: 1, pinnedViews: [.sectionHeaders]) {
 								GridRow {
-									Text("Temp")
-										.font(.caption)
-										.fontWeight(.bold)
-									Text("Hum")
-										.font(.caption)
-										.fontWeight(.bold)
-									Text("Bar")
-										.font(.caption)
-										.fontWeight(.bold)
-									Text("IAQ")
-										.font(.caption)
-										.fontWeight(.bold)
-									Text("timestamp")
-										.font(.caption)
-										.fontWeight(.bold)
+									ForEach(columnConfiguration.activeTableColumns) { col in
+										Text(col.abbreviatedColumnName)
+											.font(.caption)
+											.fontWeight(.bold)
+									}
 								}
 								ForEach(environmentMetrics, id: \.self) { em  in
-
 									GridRow {
-
-										Text(em.temperature.formattedTemperature())
-											.font(.caption)
-										Text("\(String(format: "%.0f", em.relativeHumidity))%")
-											.font(.caption)
-										Text("\(String(format: "%.1f", em.barometricPressure))")
-											.font(.caption)
-										IndoorAirQuality(iaq: Int(em.iaq), displayMode: .dot)
-											.font(.caption)
-										Text(em.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
-											.font(.caption)
+										ForEach(columnConfiguration.activeTableColumns) { col in
+											col.tableBody(em)
+										}
 									}
 								}
 							}
@@ -157,7 +106,18 @@ struct EnvironmentMetricsLog: View {
 					}
 				}
 				HStack {
-
+					Button {
+						self.isEditingColumnConfiguration = true
+					} label: {
+						Label("Config", systemImage: "gearshape")
+					}					.buttonStyle(.bordered)
+					.buttonBorderShape(.capsule)
+					.controlSize(.large)
+					.padding(.bottom)
+					.padding(.leading)
+					.sheet(isPresented: self.$isEditingColumnConfiguration) {
+						MetricsColumnDetail(metricsColumnConfiguration: self.columnConfiguration)
+					}
 					Button(role: .destructive) {
 						isPresentingClearLogConfirm = true
 					} label: {

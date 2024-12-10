@@ -3242,6 +3242,9 @@
     "Channels being added from the QR code did not save. When adding channels the names must be unique." : {
 
     },
+    "Chart" : {
+
+    },
     "CHG" : {
 
     },
@@ -3507,6 +3510,9 @@
           }
         }
       }
+    },
+    "Config" : {
+
     },
     "config.module.paxcounter.enabled.description" : {
       "localizations" : {
@@ -15133,6 +15139,9 @@
         }
       }
     },
+    "Metric" : {
+
+    },
     "Minimum Distance" : {
       "localizations" : {
         "de" : {
@@ -21534,6 +21543,9 @@
       }
     },
     "Supported I2C Connected sensors will be detected automatically, sensors are BMP280, BME280, BME680, MCP9808, INA219, INA260, LPS22 and SHTC3." : {
+
+    },
+    "Table" : {
 
     },
     "tapback" : {
