@@ -876,6 +876,9 @@ func textMessageAppPacket(
 			if fetchedUsers.first(where: { $0.num == packet.to }) != nil && packet.to != Constants.maximumNodeNum {
 				if !storeForwardBroadcast {
 					newMessage.toUser = fetchedUsers.first(where: { $0.num == packet.to })
+				} else {
+					/// Make a new to user if they are unknown
+					newMessage.toUser = createUser(num: Int64(truncatingIfNeeded: packet.to), context: context)
 				}
 			}
 			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
@@ -903,11 +906,14 @@ func textMessageAppPacket(
 						newMessage.fromUser?.publicKey = packet.publicKey
 					}
 				}
-				if packet.rxTime > 0 {
-					newMessage.fromUser?.userNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
-				} else {
-					newMessage.fromUser?.userNode?.lastHeard = Date()
-				}
+			} else {
+				/// Make a new from user if they are unknown
+				newMessage.fromUser = createUser(num: Int64(truncatingIfNeeded: packet.to), context: context)
+			}
+			if packet.rxTime > 0 {
+				newMessage.fromUser?.userNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+			} else {
+				newMessage.fromUser?.userNode?.lastHeard = Date()
 			}
 			newMessage.messagePayload = messageText
 			newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: messageText!)
