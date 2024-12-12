@@ -294,7 +294,7 @@
 	  "RAK"
 	],
 	"images": [
-	  "rak4631.svg"
+	  "rak11310.svg"
 	],
 	"requiresDfu": true
   },
@@ -350,6 +350,9 @@
 	"displayName": "DIY V1",
 	"tags": [
 	  "DIY"
+	],
+	"images": [
+	  "diy.svg"
 	]
   },
   {
@@ -427,10 +430,13 @@
 	"supportLevel": 3,
 	"displayName": "Raspberry Pi Pico",
 	"tags": [
-	  "Raspberry Pi",
+	  "RPi",
 	  "DIY"
 	],
-	"requiresDfu": true
+	"requiresDfu": true,
+	"images": [
+	  "pico.svg"
+	]
   },
   {
 	"hwModel": 47,
@@ -441,10 +447,13 @@
 	"supportLevel": 3,
 	"displayName": "Raspberry Pi Pico W",
 	"tags": [
-	  "Raspberry Pi",
+	  "RPi",
 	  "DIY"
 	],
-	"requiresDfu": true
+	"requiresDfu": true,
+	"images": [
+	  "rpipicow.svg"
+	]
   },
   {
 	"hwModel": 48,

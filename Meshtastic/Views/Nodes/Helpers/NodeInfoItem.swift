@@ -12,61 +12,58 @@ import MapKit
 struct NodeInfoItem: View {
 
 	@ObservedObject var node: NodeInfoEntity
-
-	var modemPreset: ModemPresets = ModemPresets(
-		rawValue: UserDefaults.modemPreset
-	) ?? ModemPresets.longFast
+	var supported: Bool
 
 	var body: some View {
+		if let user = node.user {
 		ViewThatFits(in: .horizontal) {
-			VStack {
-				if let user = node.user {
-					HStack(alignment: .center) {
-						if user.hwModel != "UNSET" {
-							Image(user.hardwareImage ?? "UNSET")
-								.resizable()
-								.aspectRatio(contentMode: .fit)
-								.frame(width: 65, height: 65)
-								.cornerRadius(5)
-							Text(String(node.user?.hwDisplayName ?? (node.user?.hwModel ?? "unset".localized)))
+			HStack {
+				Spacer()
+					VStack(alignment: .center) {
+						Spacer()
+						Image(systemName: supported ? "checkmark.seal.fill" : "x.circle")
+							.resizable()
+							.aspectRatio(contentMode: .fill)      // << here !!
+							.frame(width: 75, height: 75)
+								.foregroundStyle(supported ? .green : .red)
+						Text( supported ? "Supported" : "Unsupported")
+								.foregroundStyle(.gray)
 								.font(.callout)
-						} else {
-							Image(systemName: "person.crop.circle.badge.questionmark")
-								.resizable()
-								.aspectRatio(contentMode: .fit)
-								.frame(width: 65, height: 65)
-								.cornerRadius(5)
-							Text(String("incomplete".localized))
-								.font(.callout)
+					}
+					Spacer()
+					VStack(alignment: .center) {
+						HStack {
+							if user.hwModel != "UNSET" {
+								Image(user.hardwareImage ?? "UNSET")
+									.resizable()
+									.aspectRatio(contentMode: .fit)
+									.frame(maxHeight: 150)
+									.cornerRadius(5)
+							} else {
+								Image(systemName: "person.crop.circle.badge.questionmark")
+									.resizable()
+									.aspectRatio(contentMode: .fit)
+									.frame(width: 65, height: 65)
+									.cornerRadius(5)
+							}
 						}
 					}
+					Spacer()
 				}
-				HStack(alignment: .center) {
-					Spacer()
-					CircleText(
-						text: node.user?.shortName ?? "?",
-						color: Color(UIColor(hex: UInt32(node.num))),
-						circleSize: 75
-					)
-					if node.snr != 0 && !node.viaMqtt && node.hopsAway == 0 {
-						Spacer()
-						VStack {
-							let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: modemPreset)
-							LoRaSignalStrengthIndicator(signalStrength: signalStrength)
-							Text("Signal \(signalStrength.description)").font(.footnote)
-							Text("SNR \(String(format: "%.2f", node.snr))dB")
-								.foregroundColor(getSnrColor(snr: node.snr, preset: modemPreset))
-								.font(.caption)
-							Text("RSSI \(node.rssi)dB")
-								.foregroundColor(getRssiColor(rssi: node.rssi))
-								.font(.caption)
-						}
-					}
-					if node.telemetries?.count ?? 0 > 0 {
-						Spacer()
-						BatteryGauge(node: node)
-					}
-					Spacer()
+			}
+			.listRowSeparator(.hidden)
+			HStack {
+				Label {
+					Text("Model")
+				} icon: {
+					Image(systemName: "flipphone")
+						.symbolRenderingMode(.hierarchical)
+				}
+				Spacer()
+				if user.hwModel != "UNSET" {
+					Text(String(node.user?.hwDisplayName ?? (node.user?.hwModel ?? "unset".localized)))
+				} else {
+					Text(String("incomplete".localized))
 				}
 			}
 		}

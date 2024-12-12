@@ -185,7 +185,7 @@ struct Firmware: View {
 			}
 			.padding()
 			.padding(.bottom, 5)
-			.onAppear {
+			.onFirstAppear {
 				Api().loadDeviceHardwareData { (hw) in
 					for device in hw {
 						let currentHardware = node?.user?.hwModel ?? "UNSET"

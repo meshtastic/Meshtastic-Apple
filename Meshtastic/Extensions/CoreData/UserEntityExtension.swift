@@ -37,6 +37,8 @@ extension UserEntity {
 	var hardwareImage: String? {
 		guard let hwModel else { return nil }
 		switch hwModel {
+		/// SVG Images for Vendors who are project backers
+		/// Heltec
 		case "HELTECV3":
 			return "HELTECV3"
 		case "HELTECWIRELESSPAPER", "HELTECWIRELESSPAPERV10":
@@ -45,18 +47,23 @@ extension UserEntity {
 			return "HELTECWIRELESSTRACKER"
 		case "HELTECWSLV3":
 			return "HELTECWSLV3"
+		/// LilyGO
+		case "TBEAM", "TBEAM_V0P7":
+			return "TBEAM"
+		case "TLORAT3S3V1":
+			return "TLORAT3S3V1"
+		case "TLORAC6":
+			return "TLORAC6"
+		/// B&O Consulting
 		case "NANOG1", "NANOG1EXPLORER":
 			return "NANOG1"
 		case "NANOG2ULTRA":
 			return "NANOG2ULTRA"
-		case "RAK4631":
-			return "RAK4631"
-		case "RAK11200":
-			return "RAK11200"
+		case "STATIONG2":
+			return "STATIONG2"
 		case "SOLAR_NODE":
 			return "SOLAR_NODE"
-		case "STATIONG1":
-			return "STATIONG1"
+
 		case "UNPHONE":
 			return "UNPHONE"
 		default:

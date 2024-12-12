@@ -16,12 +16,16 @@ struct NodeDetail: View {
 		formatter.unitsStyle = .full
 		return formatter
 	}()
+	var modemPreset: ModemPresets = ModemPresets(
+		rawValue: UserDefaults.modemPreset
+	) ?? ModemPresets.longFast
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
 	@State private var dateFormatRelative: Bool = true
+	@State private var currentDevice: DeviceHardware?
 
 	// The node the device is currently connected to
 	var connectedNode: NodeInfoEntity?
@@ -41,9 +45,37 @@ struct NodeDetail: View {
 				)
 
 				Section("Hardware") {
-					NodeInfoItem(node: node)
+					NodeInfoItem(node: node, supported: currentDevice?.activelySupported ?? false)
 				}
 				Section("Node") {
+					HStack(alignment: .center) {
+						Spacer()
+						CircleText(
+							text: node.user?.shortName ?? "?",
+							color: Color(UIColor(hex: UInt32(node.num))),
+							circleSize: 75
+						)
+						if node.snr != 0 && !node.viaMqtt && node.hopsAway == 0 {
+							Spacer()
+							VStack {
+								let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: modemPreset)
+								LoRaSignalStrengthIndicator(signalStrength: signalStrength)
+								Text("Signal \(signalStrength.description)").font(.footnote)
+								Text("SNR \(String(format: "%.2f", node.snr))dB")
+									.foregroundColor(getSnrColor(snr: node.snr, preset: modemPreset))
+									.font(.caption)
+								Text("RSSI \(node.rssi)dB")
+									.foregroundColor(getRssiColor(rssi: node.rssi))
+									.font(.caption)
+							}
+						}
+						if node.telemetries?.count ?? 0 > 0 {
+							Spacer()
+							BatteryGauge(node: node)
+						}
+						Spacer()
+					}
+					.listRowSeparator(.hidden)
 					if let user = node.user {
 						if !user.keyMatch {
 							Label {
@@ -406,6 +438,17 @@ struct NodeDetail: View {
 				}
 			}
 			.listStyle(.insetGrouped)
+			.onFirstAppear {
+				Api().loadDeviceHardwareData { (hw) in
+					for device in hw {
+						let currentHardware = node.user?.hwModel ?? "UNSET"
+						let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "")
+						if deviceString == currentHardware {
+							currentDevice = device
+						}
+					}
+				}
+			}
 		}
 	}
 }
