@@ -15,7 +15,12 @@ struct EnvironmentMetricsLog: View {
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
 	@State var exportString = ""
-	@State var stops: [Gradient.Stop] = []
+	@State private var stops: [Gradient.Stop] = []
+	@State private var chartMin: Double = 0
+	@State private var chartMax: Double = 0
+	@State private var chartDefaultMin: Double = 0
+	@State private var chartDefaultMax: Double = 0
+	@State private var chartZoomed = false
 	@ObservedObject var node: NodeInfoEntity
 
 	var body: some View {
@@ -26,12 +31,12 @@ struct EnvironmentMetricsLog: View {
 				let chartData = environmentMetrics
 					.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
 					.sorted { $0.time! < $1.time! }
-				// Add padding above and below min/max value
-				let chartLowTemp = ((chartData.min { a, b in a.temperature < b.temperature})?.temperature.localeTemperature() ?? 0.0) - 5
-				let chartHighTemp = ((chartData.max { a, b in a.temperature < b.temperature})?.temperature.localeTemperature() ?? 100.0) + 5
 				let locale = NSLocale.current as NSLocale
 				let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
 				let format: UnitTemperature = localeUnit as? String ?? "Celsius" == "Fahrenheit" ? .fahrenheit : .celsius
+				var chartLowTemp: Double = (chartData.min { a, b in a.temperature < b.temperature})?.temperature.localeTemperature() ?? chartDefaultMin
+				var chartHighTemp: Double = (chartData.max { a, b in a.temperature < b.temperature})?.temperature.localeTemperature() ?? chartDefaultMax
+
 				VStack {
 					if chartData.count > 0 {
 						GroupBox(label: Label("\(environmentMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
@@ -39,10 +44,10 @@ struct EnvironmentMetricsLog: View {
 								ForEach(chartData, id: \.time) { dataPoint in
 									AreaMark(
 										x: .value("Time", dataPoint.time!),
-										y: .value("Temperature", dataPoint.temperature.localeTemperature()),
-										stacking: .unstacked
+										yStart: .value("Temperature", dataPoint.temperature.localeTemperature()),
+										yEnd: .value("Minimum Temperature", chartLowTemp)
 									)
-									.interpolationMethod(.cardinal)
+									.interpolationMethod(.catmullRom)
 									.foregroundStyle(
 										.linearGradient(stops: stops, startPoint: .bottom, endPoint: .top)
 										.opacity(0.6)
@@ -53,7 +58,7 @@ struct EnvironmentMetricsLog: View {
 										x: .value("Time", dataPoint.time!),
 										y: .value("Temperature", dataPoint.temperature.localeTemperature())
 									)
-									.interpolationMethod(.cardinal)
+									.interpolationMethod(.catmullRom)
 									.foregroundStyle(
 										.linearGradient(stops: stops, startPoint: .bottom, endPoint: .top)
 									)
@@ -64,14 +69,32 @@ struct EnvironmentMetricsLog: View {
 							.chartXAxis(content: {
 								AxisMarks(position: .top)
 							})
-							.chartYScale(domain: chartLowTemp...chartHighTemp).clipped()
+							.chartYScale(domain: (chartMin...chartMax)).clipped()
 							.chartForegroundStyleScale([
 								"Temperature": .clear
 							])
 							.chartLegend(position: .automatic, alignment: .bottom)
-							.onAppear(perform: {
-								stops = generateStops(minTemp: chartLowTemp, maxTemp: chartHighTemp, tempUnit: format)
+							.onTapGesture(count: 2, perform: {
+								// Toggle Zoom on double tap
+								updateChartRange(chartLowTemp: chartLowTemp, chartHighTemp: chartHighTemp, toggleZoom: true)
 							})
+							.onAppear(perform: {
+								// set defaults based on C/F setting
+								chartDefaultMin = (format == .celsius ? 0 : 32)
+								chartDefaultMax = (format == .celsius ? 55 : 125)
+								updateChartRange(chartLowTemp: chartLowTemp, chartHighTemp: chartHighTemp, toggleZoom: false)
+								stops = generateStops(minTemp: chartMin, maxTemp: chartMax, tempUnit: format)
+							})
+							.onChange(of: node) {
+								// Check for changed low/high range
+								chartLowTemp = (chartData.min { a, b in a.temperature < b.temperature})?.temperature.localeTemperature() ?? chartDefaultMin
+								chartHighTemp = (chartData.max { a, b in a.temperature < b.temperature})?.temperature.localeTemperature() ?? chartDefaultMax
+								updateChartRange(chartLowTemp: chartLowTemp, chartHighTemp: chartHighTemp, toggleZoom: false)
+								stops = generateStops(minTemp: chartMin, maxTemp: chartMax, tempUnit: format)
+							}
+							.onChange(of: [chartMin, chartMax]) {
+								stops = generateStops(minTemp: chartMin, maxTemp: chartMax, tempUnit: format)
+							}
 						}
 					}
 					let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
@@ -219,6 +242,24 @@ struct EnvironmentMetricsLog: View {
 				}
 			}
 		)
+	}
+
+	// Set and optionally adjust the chart min/max
+	func updateChartRange(chartLowTemp: Double, chartHighTemp: Double, toggleZoom: Bool) {
+		if toggleZoom {
+			chartZoomed.toggle()
+		}
+		if chartZoomed {
+			// Use the low and high temp for the bounds
+			chartMin = chartLowTemp - Double(5.0)
+			chartMax = chartHighTemp + Double(5.0)
+		} else {
+			// Use the default low and high bounds, adjust if the high or low land outside the
+			// default min/max
+			chartMin = (chartLowTemp < chartDefaultMin ? chartLowTemp : chartDefaultMin) - Double(5.0)
+			chartMax = (chartHighTemp > chartDefaultMax ? chartHighTemp : chartDefaultMax) + Double(5.0)
+		}
+		return
 	}
 }
 
