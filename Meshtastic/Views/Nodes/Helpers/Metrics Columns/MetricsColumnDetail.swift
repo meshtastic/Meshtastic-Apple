@@ -8,41 +8,43 @@
 import SwiftUI
 
 struct MetricsColumnDetail: View {
-	@ObservedObject var metricsColumnConfiguration: MetricsColumnConfiguration
+	@ObservedObject var columnList: MetricsColumnList
+	@ObservedObject var seriesList: MetricsSeriesList
+
 	@State private var currentDetent = PresentationDetent.medium
 
 	var body: some View {
 		List {
 			Section("Chart") {
-				ForEach(metricsColumnConfiguration.columns.filter({$0.availability.contains(.chart)}), id:\.self) { column in
+				ForEach(seriesList) { series in
 					HStack {
-						Text(column.columnName)
+						Text(series.name)
 						Spacer()
-						if column.showInChart {
+						if series.visible {
 							Image(systemName: "checkmark")
 								.foregroundColor(.blue)
 						}
-					}.contentShape(Rectangle()) // Ensures the entire row is tappable
+					}.contentShape(Rectangle())  // Ensures the entire row is tappable
 						.onTapGesture {
-					  metricsColumnConfiguration.objectWillChange.send()
-					  column.showInChart.toggle()
-					}
+							seriesList.objectWillChange.send()
+							series.visible.toggle()
+						}
 				}
 			}
 			Section("Table") {
-				ForEach(metricsColumnConfiguration.columns.filter({$0.availability.contains(.table)}), id:\.self) { column in
+				ForEach(columnList.columns) { column in
 					HStack {
-						Text(column.columnName)
+						Text(column.name)
 						Spacer()
-						if column.showInTable {
+						if column.visible {
 							Image(systemName: "checkmark")
 								.foregroundColor(.blue)
 						}
-					}.contentShape(Rectangle()) // Ensures the entire row is tappable
+					}.contentShape(Rectangle())  // Ensures the entire row is tappable
 						.onTapGesture {
-					  metricsColumnConfiguration.objectWillChange.send()
-					  column.showInTable.toggle()
-					}
+							columnList.objectWillChange.send()
+							column.visible.toggle()
+						}
 				}
 			}
 		}
@@ -50,5 +52,6 @@ struct MetricsColumnDetail: View {
 		.presentationContentInteraction(.scrolls)
 		.presentationDragIndicator(.visible)
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
+		.interactiveDismissDisabled(false)
 	}
 }

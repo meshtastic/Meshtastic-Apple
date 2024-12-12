@@ -17,7 +17,9 @@ struct EnvironmentMetricsLog: View {
 	@State var exportString = ""
 	@ObservedObject var node: NodeInfoEntity
 
-	@StateObject var columnConfiguration = MetricsColumnConfiguration.environmentDefaults
+	@StateObject var columnList = MetricsColumnList.environmentDefaultColumns
+	@StateObject var seriesList = MetricsSeriesList.environmentDefaultChartSeries
+
 	@State var isEditingColumnConfiguration = false
 
 	var body: some View {
@@ -28,24 +30,18 @@ struct EnvironmentMetricsLog: View {
 				let chartData = environmentMetrics
 					.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
 					.sorted { $0.time! < $1.time! }
-				let locale = NSLocale.current as NSLocale
-				let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
-				let format: UnitTemperature = localeUnit as? String ?? "Celsius" == "Fahrenheit" ? .fahrenheit : .celsius
 				VStack {
 					if chartData.count > 0 {
 						GroupBox(label: Label("\(environmentMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
-							Chart(columnConfiguration.activeChartColumns, id: \.columnName) { series in
+							Chart(seriesList.visible) { series in
 								ForEach(chartData, id: \.time) { dataPoint in
-									series.chartBody(dataPoint)
+									series.body(dataPoint)
 								}
 							}
 							.chartXAxis(content: {
 								AxisMarks(position: .top)
 							})
 							// .chartYScale(domain: format == .celsius ? -20...55 : 0...125)
-							.chartForegroundStyleScale([
-								"Temperature": .clear
-							])
 							.chartLegend(position: .automatic, alignment: .bottom)
 						}
 					}
@@ -84,18 +80,18 @@ struct EnvironmentMetricsLog: View {
 						}
 					} else {
 						ScrollView {
-							LazyVGrid(columns: columnConfiguration.gridItems, alignment: .leading, spacing: 1, pinnedViews: [.sectionHeaders]) {
+							LazyVGrid(columns: columnList.gridItems, alignment: .leading, spacing: 1, pinnedViews: [.sectionHeaders]) {
 								GridRow {
-									ForEach(columnConfiguration.activeTableColumns) { col in
-										Text(col.abbreviatedColumnName)
+									ForEach(columnList.visible) { col in
+										Text(col.abbreviatedName)
 											.font(.caption)
 											.fontWeight(.bold)
 									}
 								}
 								ForEach(environmentMetrics, id: \.self) { em  in
 									GridRow {
-										ForEach(columnConfiguration.activeTableColumns) { col in
-											col.tableBody(em)
+										ForEach(columnList.visible) { col in
+											col.body(em)
 										}
 									}
 								}
@@ -116,7 +112,7 @@ struct EnvironmentMetricsLog: View {
 					.padding(.bottom)
 					.padding(.leading)
 					.sheet(isPresented: self.$isEditingColumnConfiguration) {
-						MetricsColumnDetail(metricsColumnConfiguration: self.columnConfiguration)
+						MetricsColumnDetail(columnList: columnList, seriesList: seriesList)
 					}
 					Button(role: .destructive) {
 						isPresentingClearLogConfirm = true
