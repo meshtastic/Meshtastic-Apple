@@ -85,7 +85,7 @@ struct SecurityConfig: View {
 							.font(idiom == .phone ? .caption : .callout)
 						Divider()
 						Label("Tertiary Admin Key", systemImage: "key.viewfinder")
-						SecureInput("Tertiary Admin Key", text: $adminKey3, isValid: $hasValidAdminKey2)
+						SecureInput("Tertiary Admin Key", text: $adminKey3, isValid: $hasValidAdminKey3)
 							.background(
 								RoundedRectangle(cornerRadius: 10.0)
 									.stroke(hasValidAdminKey3 ? Color.clear : Color.red, lineWidth: 2.0)
@@ -198,8 +198,6 @@ struct SecurityConfig: View {
 		.onFirstAppear {
 			// Need to request a DeviceConfig from the remote node before allowing changes
 			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-		
-				
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let connectedNode {
 					if node.num != connectedNode.num {
