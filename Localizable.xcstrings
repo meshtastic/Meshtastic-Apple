@@ -133,9 +133,6 @@
     "%@ dB" : {
 
     },
-    "%@ hPa" : {
-
-    },
     "%@, %@" : {
       "localizations" : {
         "en" : {
@@ -6955,6 +6952,9 @@
       }
     },
     "Documentation" : {
+
+    },
+    "Done" : {
 
     },
     "Double Tap as Button" : {

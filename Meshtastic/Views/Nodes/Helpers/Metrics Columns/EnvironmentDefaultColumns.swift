@@ -21,7 +21,6 @@ extension MetricsColumnList {
 				minWidth: 25, maxWidth: 40,
 				tableBody: { _, temp in
 					Text(temp.formattedTemperature())
-						.font(.caption)
 				}),
 
 			// Relative Humidity Series Configuration
@@ -32,7 +31,6 @@ extension MetricsColumnList {
 				minWidth: 25, maxWidth: 40,
 				tableBody: { _, humidity in
 					Text("\(String(format: "%.0f", humidity))%")
-						.font(.caption)
 				}),
 
 			// Barometric Pressure Series Configuration
@@ -42,8 +40,11 @@ extension MetricsColumnList {
 				abbreviatedName: "Bar",
 				minWidth: 30, maxWidth: 50,
 				tableBody: { _, pressure in
-					Text("\(String(format: "%.1f", pressure))")
-						.font(.caption)
+					if (UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
+						Text("\(String(format: "%.1f hPa", pressure))")
+					} else {
+						Text("\(String(format: "%.1f", pressure))")
+					}
 				}),
 
 			// Indoor Air Quality Series Configuration
@@ -54,7 +55,6 @@ extension MetricsColumnList {
 				minWidth: 25, maxWidth: 50,
 				tableBody: { _, iaq in
 					IndoorAirQuality(iaq: Int(iaq), displayMode: .dot)
-						.font(.caption)
 				}),
 
 			// Wind Direction Series Configuration
@@ -70,9 +70,14 @@ extension MetricsColumnList {
 						let wind = Double(wind)
 						Image(systemName: "location.north")
 							.imageScale(.small)
+							.scaleEffect(0.9, anchor: .center)
 							.rotationEffect(.degrees(wind))
-						Text(abbreviatedCardinalValue(from: wind))
-							.font(.caption)
+							.foregroundStyle(.blue)
+						if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+							Text(cardinalValue(from: wind))
+						} else {
+							Text(abbreviatedCardinalValue(from: wind))
+						}
 					}
 				}),
 
@@ -93,7 +98,6 @@ extension MetricsColumnList {
 								numberFormatStyle: .number.precision(
 									.fractionLength(0))))
 					)
-					.font(.caption)
 				}),
 
 			// Timestamp Series Configuration -- for use in table only
@@ -113,7 +117,6 @@ extension MetricsColumnList {
 						time?.formattedDate(format: dateFormatString)
 							?? "unknown.age".localized
 					)
-					.font(.caption)
 				})
 		])
 	}

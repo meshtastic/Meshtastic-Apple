@@ -49,36 +49,32 @@ struct EnvironmentMetricsLog: View {
 							.chartLegend(position: .automatic, alignment: .bottom)
 						}
 					}
-					let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
-					let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
+
+					// Dynamic table column using SwiftUI Table requires TableColumnForEach which requires the target
+					// to be bumped to 17.4 -- Until that happens, the existing non-configurable table is used.
 					if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 						// Add a table for mac and ipad
 						Table(environmentMetrics) {
 							TableColumn("Temperature") { em in
-								Text(em.temperature.formattedTemperature())
+								columnList.column(forAttribute: "temperature")?.body(em)
 							}
 							TableColumn("Humidity") { em in
-								Text("\(String(format: "%.0f", em.relativeHumidity))%")
+								columnList.column(forAttribute: "relativeHumidity")?.body(em)
 							}
 							TableColumn("Barometric Pressure") { em in
-								Text("\(String(format: "%.1f", em.barometricPressure)) hPa")
+								columnList.column(forAttribute: "barometricPressure")?.body(em)
 							}
 							TableColumn("Indoor Air Quality") { em in
-								HStack {
-									Text("IAQ")
-									IndoorAirQuality(iaq: Int(em.iaq), displayMode: IaqDisplayMode.dot )
-								}
+								columnList.column(forAttribute: "iaq")?.body(em)
 							}
 							TableColumn("Wind Speed") { em in
-								let windSpeed = Measurement(value: Double(em.windSpeed), unit: UnitSpeed.kilometersPerHour)
-								Text(windSpeed.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))))
+								columnList.column(forAttribute: "windSpeed")?.body(em)
 							}
 							TableColumn("Wind Direction") { em in
-								let direction = cardinalValue(from: Double(em.windDirection))
-								Text(direction)
+								columnList.column(forAttribute: "windDirection")?.body(em)
 							}
 							TableColumn("timestamp") { em in
-								Text(em.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+								columnList.column(forAttribute: "time")?.body(em)
 							}
 							.width(min: 180)
 						}
@@ -96,6 +92,7 @@ struct EnvironmentMetricsLog: View {
 									GridRow {
 										ForEach(columnList.visible) { col in
 											col.body(em)
+												.font(.caption)
 										}
 									}
 								}
