@@ -37,24 +37,38 @@ extension UserEntity {
 	var hardwareImage: String? {
 		guard let hwModel else { return nil }
 		switch hwModel {
-		/// SVG Images for Vendors who are project backers
+		/// SVG Images for Vendors who are signed project backers
 		/// Heltec
-		case "HELTECV3":
-			return "HELTECV3"
-		case "HELTECWIRELESSPAPER", "HELTECWIRELESSPAPERV10":
-			return "HELTECWIRELESSPAPER"
-		case "HELTECWIRELESSTRACKER", "HELTECWIRELESSTRACKERV10":
-			return "HELTECWIRELESSTRACKER"
-		case "HELTECWSLV3":
-			return "HELTECWSLV3"
+//		case "HELTECV3":
+//			return "HELTECV3"
+//		case "HELTECWIRELESSPAPER", "HELTECWIRELESSPAPERV10":
+//			return "HELTECWIRELESSPAPER"
+//		case "HELTECWIRELESSTRACKER", "HELTECWIRELESSTRACKERV10":
+//			return "HELTECWIRELESSTRACKER"
+//		case "HELTECWSLV3":
+//			return "HELTECWSLV3"
 		/// LilyGO
+		case "TDECK":
+			return "TDECK"
+		case "TECHO":
+			return "TECHO"
+		case "TWATCHS3":
+			return "TWATCHS3"
+		case "LILYGOTBEAMS3CORE":
+			return "LILYGOTBEAMS3CORE"
 		case "TBEAM", "TBEAM_V0P7":
 			return "TBEAM"
-		case "TLORAT3S3V1":
-			return "TLORAT3S3V1"
 		case "TLORAC6":
 			return "TLORAC6"
-		/// B&O Consulting
+		case "TLORAT3S3EPAPER":
+			return "TLORAT3S3EPAPER"
+		case "TLORAT3S3V1":
+			return "TLORAT3S3V1"
+		case "TLORAV2116":
+			return "TLORAV2116"
+		case "TLORAV2118":
+			return "TLORAV2118"
+		/// B&Q Consulting
 		case "NANOG1", "NANOG1EXPLORER":
 			return "NANOG1"
 		case "NANOG2ULTRA":
@@ -63,9 +77,6 @@ extension UserEntity {
 			return "STATIONG2"
 		case "SOLAR_NODE":
 			return "SOLAR_NODE"
-
-		case "UNPHONE":
-			return "UNPHONE"
 		default:
 			return "UNSET"
 		}

@@ -25,7 +25,6 @@ struct NodeDetail: View {
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
 	@State private var dateFormatRelative: Bool = true
-	@State private var currentDevice: DeviceHardware?
 
 	// The node the device is currently connected to
 	var connectedNode: NodeInfoEntity?
@@ -45,7 +44,7 @@ struct NodeDetail: View {
 				)
 
 				Section("Hardware") {
-					NodeInfoItem(node: node, supported: currentDevice?.activelySupported ?? false)
+					NodeInfoItem(node: node)
 				}
 				Section("Node") {
 					HStack(alignment: .center) {
@@ -438,17 +437,6 @@ struct NodeDetail: View {
 				}
 			}
 			.listStyle(.insetGrouped)
-			.onFirstAppear {
-				Api().loadDeviceHardwareData { (hw) in
-					for device in hw {
-						let currentHardware = node.user?.hwModel ?? "UNSET"
-						let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "")
-						if deviceString == currentHardware {
-							currentDevice = device
-						}
-					}
-				}
-			}
 		}
 	}
 }

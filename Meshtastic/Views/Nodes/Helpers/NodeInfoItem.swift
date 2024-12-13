@@ -12,28 +12,31 @@ import MapKit
 struct NodeInfoItem: View {
 
 	@ObservedObject var node: NodeInfoEntity
-	var supported: Bool
+	@State private var currentDevice: DeviceHardware?
 
 	var body: some View {
 		if let user = node.user {
 		ViewThatFits(in: .horizontal) {
 			HStack {
 				Spacer()
-					VStack(alignment: .center) {
-						Spacer()
-						Image(systemName: supported ? "checkmark.seal.fill" : "x.circle")
-							.resizable()
-							.aspectRatio(contentMode: .fill)      // << here !!
-							.frame(width: 75, height: 75)
-								.foregroundStyle(supported ? .green : .red)
-						Text( supported ? "Supported" : "Unsupported")
+					if user.hwModel != "UNSET" {
+						VStack(alignment: .center) {
+							Spacer()
+							Image(systemName: currentDevice?.activelySupported ?? false ? "checkmark.seal.fill" : "x.circle")
+								.resizable()
+								.aspectRatio(contentMode: .fill)
+								.frame(width: 75, height: 75)
+								.foregroundStyle(currentDevice?.activelySupported ?? false ? .green : .red)
+							Text( currentDevice?.activelySupported ?? false ? "Supported" : "Unsupported")
 								.foregroundStyle(.gray)
 								.font(.callout)
+						}
+						Spacer()
 					}
-					Spacer()
 					VStack(alignment: .center) {
 						HStack {
-							if user.hwModel != "UNSET" {
+							if user.hardwareImage != "UNSET" {
+								Spacer()
 								Image(user.hardwareImage ?? "UNSET")
 									.resizable()
 									.aspectRatio(contentMode: .fit)
@@ -49,6 +52,18 @@ struct NodeInfoItem: View {
 						}
 					}
 					Spacer()
+				}
+				.onAppear {
+					Api().loadDeviceHardwareData { (hw) in
+						for device in hw {
+							let currentHardware = node.user?.hwModel ?? "UNSET"
+							let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "")
+							print(deviceString + " == " + currentHardware)
+							if deviceString == currentHardware {
+								currentDevice = device
+							}
+						}
+					}
 				}
 			}
 			.listRowSeparator(.hidden)

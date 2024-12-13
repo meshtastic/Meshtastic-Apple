@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "tbeam-s3-core.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
