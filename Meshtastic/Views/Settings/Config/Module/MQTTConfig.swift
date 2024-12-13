@@ -347,8 +347,8 @@ struct MQTTConfig: View {
 		nearbyTopics = []
 		let geocoder = CLGeocoder()
 		if LocationsHandler.shared.locationsArray.count > 0 {
-			let region  = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))?.topic
-			defaultTopic = "msh/" + (region ?? "UNSET")
+			let region  = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))
+			defaultTopic = "msh/" + (region?.topic ?? "UNSET")
 			geocoder.reverseGeocodeLocation(LocationsHandler.shared.locationsArray.first!, completionHandler: {(placemarks, error) in
 				if let error {
 					Logger.services.error("Failed to reverse geocode location: \(error.localizedDescription)")
@@ -357,8 +357,8 @@ struct MQTTConfig: View {
 
 				if let placemarks = placemarks, let placemark = placemarks.first {
 					let cc = locale.region?.identifier ?? "UNK"
-					/// Country Topic unless you are US
-					if  placemark.isoCountryCode ?? "unknown" != cc {
+					/// Country Topic unless your region is a country
+					if !(region?.isCountry ?? false) {
 						let countryTopic = defaultTopic + "/" + (placemark.isoCountryCode ?? "")
 						if !countryTopic.isEmpty {
 							nearbyTopics.append(countryTopic)
