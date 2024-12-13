@@ -36,7 +36,6 @@ struct NodeInfoItem: View {
 					VStack(alignment: .center) {
 						HStack {
 							if user.hardwareImage != "UNSET" {
-								Spacer()
 								Image(user.hardwareImage ?? "UNSET")
 									.resizable()
 									.aspectRatio(contentMode: .fit)
@@ -46,7 +45,7 @@ struct NodeInfoItem: View {
 								Image(systemName: "person.crop.circle.badge.questionmark")
 									.resizable()
 									.aspectRatio(contentMode: .fit)
-									.frame(width: 65, height: 65)
+									.frame(width: 75, height: 75)
 									.cornerRadius(5)
 							}
 						}
@@ -58,7 +57,6 @@ struct NodeInfoItem: View {
 						for device in hw {
 							let currentHardware = node.user?.hwModel ?? "UNSET"
 							let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "")
-							print(deviceString + " == " + currentHardware)
 							if deviceString == currentHardware {
 								currentDevice = device
 							}
