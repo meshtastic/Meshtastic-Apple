@@ -75,15 +75,32 @@ extension UserEntity {
 			return "TLORAV2116"
 		case "TLORAV2118":
 			return "TLORAV2118"
+		/// Seeed Studio
+		case "SENSECAPINDICATOR":
+			return "SENSECAPINDICATOR"
+		case "TRACKERT1000E":
+			return "TRACKERT1000E"
+		case "SEEEDXIAOS3":
+			return "SEEEDXIAOS3"
+		case "WIOWM1110":
+			return "WIOWM1110"
+		/// RAK Wireless
+		case "RAK4631":
+			return "UNSET"
+		case "RAK11310":
+			return "UNSET"
+		case "WISMESHTAP":
+			return "UNSET"
 		/// B&Q Consulting
 		case "NANOG1", "NANOG1EXPLORER":
-			return "NANOG1"
+			return "UNSET"
 		case "NANOG2ULTRA":
-			return "NANOG2ULTRA"
+			return "UNSET"
 		case "STATIONG2":
-			return "STATIONG2"
-		case "SOLAR_NODE":
-			return "SOLAR_NODE"
+			return "UNSET"
+		/// DIY Devices
+		case "RPIPICO":
+			return "RPIPICO"
 		default:
 			return "UNSET"
 		}
