@@ -33,20 +33,27 @@ extension UserEntity {
 		let unreadMessages = messageList.filter { ($0 as AnyObject).read == false }
 		return unreadMessages.count
 	}
-
+	/// SVG Images for Vendors who are signed project backers
 	var hardwareImage: String? {
 		guard let hwModel else { return nil }
 		switch hwModel {
-		/// SVG Images for Vendors who are signed project backers
 		/// Heltec
-//		case "HELTECV3":
-//			return "HELTECV3"
-//		case "HELTECWIRELESSPAPER", "HELTECWIRELESSPAPERV10":
-//			return "HELTECWIRELESSPAPER"
-//		case "HELTECWIRELESSTRACKER", "HELTECWIRELESSTRACKERV10":
-//			return "HELTECWIRELESSTRACKER"
-//		case "HELTECWSLV3":
-//			return "HELTECWSLV3"
+		case "HELTECHT62":
+			return "HELTECHT62"
+		case "HELTECMESHNODET114":
+			return "HELTECMESHNODET114"
+		case "HELTECV3":
+			return "HELTECV3"
+		case "HELTECVISIONMASTERE213":
+			return "HELTECVISIONMASTERE213"
+		case "HELTECVISIONMASTERE290":
+			return "HELTECVISIONMASTERE290"
+		case "HELTECWIRELESSPAPER", "HELTECWIRELESSPAPERV10":
+			return "HELTECWIRELESSPAPER"
+		case "HELTECWIRELESSTRACKER", "HELTECWIRELESSTRACKERV10":
+			return "HELTECWIRELESSTRACKER"
+		case "HELTECWSLV3":
+			return "HELTECWSLV3"
 		/// LilyGO
 		case "TDECK":
 			return "TDECK"
