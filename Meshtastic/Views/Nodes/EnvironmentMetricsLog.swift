@@ -30,18 +30,22 @@ struct EnvironmentMetricsLog: View {
 				let chartData = environmentMetrics
 					.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
 					.sorted { $0.time! < $1.time! }
+				let chartRange = applyMargins(seriesList.chartRange(forData: chartData))
 				VStack {
 					if chartData.count > 0 {
 						GroupBox(label: Label("\(environmentMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
 							Chart(seriesList.visible) { series in
 								ForEach(chartData, id: \.time) { dataPoint in
-									series.body(dataPoint)
+									series.body(dataPoint, inChartRange: chartRange)
 								}
 							}
 							.chartXAxis(content: {
 								AxisMarks(position: .top)
 							})
-							// .chartYScale(domain: format == .celsius ? -20...55 : 0...125)
+							.chartYScale(domain: chartRange)
+							.chartForegroundStyleScale { (seriesName: String) -> AnyShapeStyle in
+								return seriesList.foregroundStyle(forAbbreviatedName: seriesName, chartRange: chartRange) ?? AnyShapeStyle(Color.clear)
+							}
 							.chartLegend(position: .automatic, alignment: .bottom)
 						}
 					}
@@ -174,5 +178,14 @@ struct EnvironmentMetricsLog: View {
 				}
 			}
 		)
+	}
+
+	// Helper.  Adds a little buffer to the Y axis range, but keeps Y=0
+	func applyMargins<T>(_ range: ClosedRange<T>) -> ClosedRange<T> where T: BinaryFloatingPoint {
+		let span = range.upperBound - range.lowerBound
+		let margin = span * 0.1
+		let lower = range.lowerBound == 0.0 ? 0.0  : range.lowerBound - margin
+		let upper = range.upperBound + margin
+		return lower...upper
 	}
 }

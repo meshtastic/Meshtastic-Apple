@@ -18,6 +18,9 @@ struct MetricsColumnDetail: View {
 			Section("Chart") {
 				ForEach(seriesList) { series in
 					HStack {
+						Circle()
+							.fill(series.foregroundStyle(0.0...100.0) ?? AnyShapeStyle(.clear))
+							.frame(width: 20.0, height: 20.0)
 						Text(series.name)
 						Spacer()
 						if series.visible {
@@ -26,8 +29,7 @@ struct MetricsColumnDetail: View {
 						}
 					}.contentShape(Rectangle())  // Ensures the entire row is tappable
 						.onTapGesture {
-							seriesList.objectWillChange.send()
-							series.visible.toggle()
+							seriesList.toggleVisibity(for: series)
 						}
 				}
 			}
@@ -43,7 +45,7 @@ struct MetricsColumnDetail: View {
 					}.contentShape(Rectangle())  // Ensures the entire row is tappable
 						.onTapGesture {
 							columnList.objectWillChange.send()
-							column.visible.toggle()
+							columnList.toggleVisibity(for: column)
 						}
 				}
 			}

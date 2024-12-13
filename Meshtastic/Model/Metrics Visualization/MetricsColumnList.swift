@@ -17,7 +17,7 @@ class MetricsColumnList: ObservableObject, RandomAccessCollection, RangeReplacea
 	var visible: [MetricsTableColumn] {
 		return columns.filter { $0.visible }
 	}
-	
+
 	func toggleVisibity(for column: MetricsTableColumn) {
 		if columns.contains(column) {
 			self.objectWillChange.send()
@@ -47,15 +47,15 @@ class MetricsColumnList: ObservableObject, RandomAccessCollection, RangeReplacea
 	typealias Index = Int
 	typealias Element = MetricsTableColumn
 	typealias SubSequence = ArraySlice<Element>
-	
+
 	required init() { columns = [] }
 	required init<S: Sequence>(_ columns: S) where S.Element == Element {
 		self.columns = Array(columns)
 	}
-		
+
 	var startIndex: Int { columns.startIndex }
 	var endIndex: Int { columns.endIndex }
-	
+
 	subscript(position: Int) -> Element {
 		get { columns[position] }
 		set {
@@ -65,28 +65,28 @@ class MetricsColumnList: ObservableObject, RandomAccessCollection, RangeReplacea
 	}
 	subscript(bounds: Range<Int>) -> ArraySlice<Element> { columns[bounds] }
 	func index(after i: Int) -> Int { columns.index(after: i) }
-	
+
 	func replaceSubrange<C: Collection>(_ subrange: Range<Int>, with newElements: C) where C.Element == Element {
 		objectWillChange.send()
 		columns.replaceSubrange(subrange, with: newElements)
 	}
-	
+
 	func append(_ newElement: Element) {
 		columns.append(newElement)
 		objectWillChange.send()
 	}
-		
+	
 	func remove(at index: Int) -> Element {
 		objectWillChange.send()
 		let removedElement = columns.remove(at: index)
 		return removedElement
 	}
-		
+	
 	func removeAll() {
 		objectWillChange.send()
 		columns.removeAll()
 	}
-		
+	
 	func insert(_ newElement: Element, at index: Int) {
 		objectWillChange.send()
 		columns.insert(newElement, at: index)

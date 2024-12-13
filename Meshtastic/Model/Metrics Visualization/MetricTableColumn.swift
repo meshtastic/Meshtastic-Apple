@@ -13,15 +13,27 @@ import SwiftUI
 // Given a keypath, this class holds information about how to render the attrbute in
 // the table.  MetricsTableColumn objects are collected in a MetricsColumnList
 class MetricsTableColumn: ObservableObject {
+	// CoreData Attribute Name on TelemetryEntity
+	let attribute: String
 
-	let attribute: String  // CoreData Attribute Name on TelemetryEntity
-	let name: String  // Heading for wider tables
-	let abbreviatedName: String  // Heading for space-constrained tables
-	let minWidth: CGFloat?  // Minimum grid width for this column
-	let maxWidth: CGFloat?  // Maximum grid width for this column
-	let spacing: CGFloat  // Recommended spacing, may be overridden
-	var visible: Bool  // Should this column appear in the table
-	let tableBodyClosure: (MetricsTableColumn, TelemetryEntity) -> AnyView?  // Closure to render the view
+	// Heading for wider tables
+	let name: String
+
+	// Heading for space-constrained tables
+	let abbreviatedName: String
+
+	// Minimum/maximum grid width for this column
+	let minWidth: CGFloat?
+	let maxWidth: CGFloat?
+
+	// Recommended spacing, may be overridden
+	let spacing: CGFloat
+	// Should this column appear in the table
+
+	var visible: Bool
+
+	// Closure to render the table cell
+	let tableBodyClosure: (MetricsTableColumn, TelemetryEntity) -> AnyView?
 
 	// Main initializer
 	init<Value, TableContent: View>(
