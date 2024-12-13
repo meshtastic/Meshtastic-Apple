@@ -772,7 +772,8 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					}
 				}
 			} else if telemetry.metricsType == 4 {
-				// Update our live activity if there is one running, not available on mac iOS >= 16.2
+				// Update our live activity if there is one running, not available on mac
+#if !targetEnvironment(macCatalyst)
 #if canImport(ActivityKit)
 
 				let fifteenMinutesLater = Calendar.current.date(byAdding: .minute, value: (Int(15) ), to: Date())!
@@ -801,6 +802,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 							Logger.services.debug("Updated live activity.")
 						}
 					}
+#endif
 #endif
 			}
 		} catch {

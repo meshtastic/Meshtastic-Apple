@@ -4,7 +4,7 @@
 //
 //  Created by Garth Vander Houwen on 3/1/23.
 //
-
+#if !targetEnvironment(macCatalyst)
 #if canImport(ActivityKit)
 
 import ActivityKit
@@ -35,4 +35,5 @@ struct MeshActivityAttributes: ActivityAttributes {
 	var nodeNum: Int
 	var name: String
 }
+#endif
 #endif
