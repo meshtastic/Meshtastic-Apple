@@ -93,11 +93,11 @@ extension UserEntity {
 			return "UNSET"
 		/// B&Q Consulting
 		case "NANOG1", "NANOG1EXPLORER":
-			return "UNSET"
+			return "NANOG1"
 		case "NANOG2ULTRA":
-			return "UNSET"
+			return "NANOG2ULTRA"
 		case "STATIONG2":
-			return "UNSET"
+			return "STATIONG2"
 		/// DIY Devices
 		case "RPIPICO":
 			return "RPIPICO"
