@@ -69,16 +69,6 @@ class MetricsChartSeries: ObservableObject {
 		}
 	}
 
-//	// Return the maximum value for this series attribute given the data
-//	func max(forData: [TelemetryEntity]) -> Float? {
-//		return forData.compactMap { self.valueClosure($0) }.max()
-//	}
-//
-//	// Return the minimum value for this series attribute given the data
-//	func min(forData: [TelemetryEntity]) -> Float? {
-//		return forData.compactMap { self.valueClosure($0) }.min()
-//	}
-//
 	// Return the value for this series attribute given a full row of telemetry data
 	func valueFor(_ te: TelemetryEntity) -> Float? {
 		return self.valueClosure(te)?.floatValue
