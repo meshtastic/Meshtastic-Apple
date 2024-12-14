@@ -61,7 +61,6 @@ struct PaxCounterConfig: View {
 		.onFirstAppear {
 			// Need to request a PaxCounterModuleConfig from the remote node before allowing changes
 			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-				Logger.mesh.info("empty pax counter module config")
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let connectedNode {
 					if node.num != connectedNode.num {
@@ -69,10 +68,12 @@ struct PaxCounterConfig: View {
 							/// 2.5 Administration with session passkey
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.paxCounterConfig == nil {
+								Logger.mesh.info("⚙️ Empty or expired pax counter module config requesting via PKI admin")
 								_ = bleManager.requestPaxCounterModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 							}
 						} else {
 							/// Legacy Administration
+							Logger.mesh.info("☠️ Using insecure legacy admin, empty pax counter module config")
 							_ = bleManager.requestPaxCounterModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 						}
 					}

@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "tlora-t3s3-epaper.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

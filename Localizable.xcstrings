@@ -9017,7 +9017,7 @@
       }
     },
     "incomplete" : {
-      "extractionState" : "migrated",
+      "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -15216,6 +15216,9 @@
           }
         }
       }
+    },
+    "Model" : {
+
     },
     "module.configuration" : {
       "localizations" : {
@@ -23713,18 +23716,15 @@
         }
       }
     },
-    "Version %@ includes breaking changes to devices and the client apps. Only nodes version %@ and above are supported." : {
+    "Version %@ includes substantial network optimizations and extensive changes to devices and client apps. Only nodes version %@ and above are supported." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Version %1$@ includes breaking changes to devices and the client apps. Only nodes version %2$@ and above are supported."
+            "value" : "Version %1$@ includes substantial network optimizations and extensive changes to devices and client apps. Only nodes version %2$@ and above are supported."
           }
         }
       }
-    },
-    "Version 1.2 End of life (EOL) Info" : {
-
     },
     "Version: %@ (%@) " : {
       "localizations" : {

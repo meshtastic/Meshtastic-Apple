@@ -41,11 +41,9 @@ struct InvalidVersion: View {
 					.font(.title3)
 					.foregroundColor(.orange)
 					.padding(.bottom)
-				Text("Version \(minimumVersion) includes breaking changes to devices and the client apps. Only nodes version \(minimumVersion) and above are supported.")
+				Text("Version \(minimumVersion) includes substantial network optimizations and extensive changes to devices and client apps. Only nodes version \(minimumVersion) and above are supported.")
 					.font(.callout)
 					.padding([.leading, .trailing, .bottom])
-				Link("Version 1.2 End of life (EOL) Info", destination: URL(string: "https://meshtastic.org/docs/1.2-End-of-life/")!)
-					.font(.callout)
 
 				#if targetEnvironment(macCatalyst)
 					Button {

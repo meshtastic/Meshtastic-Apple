@@ -772,7 +772,8 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					}
 				}
 			} else if telemetry.metricsType == 4 {
-				// Update our live activity if there is one running, not available on mac iOS >= 16.2
+				// Update our live activity if there is one running, not available on mac
+#if !targetEnvironment(macCatalyst)
 #if canImport(ActivityKit)
 
 				let fifteenMinutesLater = Calendar.current.date(byAdding: .minute, value: (Int(15) ), to: Date())!
@@ -801,6 +802,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 							Logger.services.debug("Updated live activity.")
 						}
 					}
+#endif
 #endif
 			}
 		} catch {
@@ -876,6 +878,9 @@ func textMessageAppPacket(
 			if fetchedUsers.first(where: { $0.num == packet.to }) != nil && packet.to != Constants.maximumNodeNum {
 				if !storeForwardBroadcast {
 					newMessage.toUser = fetchedUsers.first(where: { $0.num == packet.to })
+				} else {
+					/// Make a new to user if they are unknown
+					newMessage.toUser = createUser(num: Int64(truncatingIfNeeded: packet.to), context: context)
 				}
 			}
 			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
@@ -903,11 +908,14 @@ func textMessageAppPacket(
 						newMessage.fromUser?.publicKey = packet.publicKey
 					}
 				}
-				if packet.rxTime > 0 {
-					newMessage.fromUser?.userNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
-				} else {
-					newMessage.fromUser?.userNode?.lastHeard = Date()
-				}
+			} else {
+				/// Make a new from user if they are unknown
+				newMessage.fromUser = createUser(num: Int64(truncatingIfNeeded: packet.to), context: context)
+			}
+			if packet.rxTime > 0 {
+				newMessage.fromUser?.userNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+			} else {
+				newMessage.fromUser?.userNode?.lastHeard = Date()
 			}
 			newMessage.messagePayload = messageText
 			newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: messageText!)
