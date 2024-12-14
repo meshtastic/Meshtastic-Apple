@@ -132,6 +132,11 @@ struct NodeList: View {
 				} label: {
 					Label("Exchange Positions", systemImage: "arrow.triangle.2.circlepath")
 				}
+				IgnoreNodeButton(
+					bleManager: bleManager,
+					context: context,
+					node: node
+				)
 				Button(role: .destructive) {
 					deleteNodeId = node.num
 					isPresentingDeleteNodeAlert = true
