@@ -35,9 +35,9 @@ struct IgnoreNodeButton: View {
 			}
 		} label: {
 			Label {
-				Text(node.favorite ? "Remove from ignored" : "Ignore Node")
+				Text(node.ignored ? "Remove from ignored" : "Ignore Node")
 			} icon: {
-				Image(systemName: node.favorite ? "minus.circle.fill" : "minus.circle")
+				Image(systemName: node.ignored ? "minus.circle.fill" : "minus.circle")
 					.symbolRenderingMode(.multicolor)
 			}
 		}

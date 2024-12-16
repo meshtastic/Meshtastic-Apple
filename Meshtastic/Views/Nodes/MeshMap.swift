@@ -46,6 +46,7 @@ struct MeshMap: View {
 	@State private var isOnline = false
 	@State private var isPkiEncrypted = false
 	@State private var isFavorite = false
+	@State private var isIgnored = false
 	@State private var isEnvironment = false
 	@State private var distanceFilter = false
 	@State private var maxDistance: Double = 800000
@@ -161,6 +162,7 @@ struct MeshMap: View {
 					isOnline: $isOnline,
 					isPkiEncrypted: $isPkiEncrypted,
 					isFavorite: $isFavorite,
+					isIgnored: $isIgnored,
 					isEnvironment: $isEnvironment,
 					distanceFilter: $distanceFilter,
 					maximumDistance: $maxDistance,
