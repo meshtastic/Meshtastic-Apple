@@ -465,3 +465,28 @@ func cardinalValue(from heading: Double) -> String {
 		return ""
 	}
 }
+
+func abbreviatedCardinalValue(from heading: Double) -> String {
+	switch heading {
+	case 0 ..< 22.5:
+		return "N"
+	case 22.5 ..< 67.5:
+		return "NE"
+	case 67.5 ..< 112.5:
+		return "E"
+	case 112.5 ..< 157.5:
+		return "E"
+	case 157.5 ..< 202.5:
+		return "S"
+	case 202.5 ..< 247.5:
+		return "SW"
+	case 247.5 ..< 292.5:
+		return "W"
+	case 292.5 ..< 337.5:
+		return "NW"
+	case 337.5 ... 360.0:
+		return "N"
+	default:
+		return ""
+	}
+}
