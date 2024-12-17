@@ -270,6 +270,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			newNode.num = Int64(nodeInfo.num)
 			newNode.channel = Int32(nodeInfo.channel)
 			newNode.favorite = nodeInfo.isFavorite
+			newNode.ignored = nodeInfo.isIgnored
 			newNode.hopsAway = Int32(nodeInfo.hopsAway)
 
 			if nodeInfo.hasDeviceMetrics {
@@ -358,6 +359,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			fetchedNode[0].snr = nodeInfo.snr
 			fetchedNode[0].channel = Int32(nodeInfo.channel)
 			fetchedNode[0].favorite = nodeInfo.isFavorite
+			fetchedNode[0].ignored = nodeInfo.isIgnored
 			fetchedNode[0].hopsAway = Int32(nodeInfo.hopsAway)
 
 			if nodeInfo.hasUser {
