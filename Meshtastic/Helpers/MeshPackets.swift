@@ -912,7 +912,7 @@ func textMessageAppPacket(
 				}
 			} else {
 				/// Make a new from user if they are unknown
-				newMessage.fromUser = createUser(num: Int64(truncatingIfNeeded: packet.to), context: context)
+				newMessage.fromUser = createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
 			}
 			if packet.rxTime > 0 {
 				newMessage.fromUser?.userNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
