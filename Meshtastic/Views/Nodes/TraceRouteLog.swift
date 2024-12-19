@@ -37,25 +37,21 @@ struct TraceRouteLog: View {
 				VStack {
 					List(node.traceRoutes?.reversed() as? [TraceRouteEntity] ?? [], id: \.self, selection: $selectedRoute) { route in
 						Label {
-							if route.response && route.hopsTowards == 0 && route.hopsBack == 0 {
-								Text("\(route.time?.formatted() ?? "unknown".localized) - Direct")
-									.font(.caption)
-							} else if route.response && route.hopsTowards == route.hopsBack {
-								let hopLabel = route.hopsTowards == 1 ? "Hop" : "Hops"
-								Text("\(route.time?.formatted() ?? "unknown".localized) - \(route.hopsTowards) \(hopLabel)")
+							let routeTime = route.time?.formatted() ?? "unknown".localized
+							if route.response && route.hopsTowards == route.hopsBack {
+								let hopString = String(localized: "\(route.hopsTowards) Hops")
+								Text("\(routeTime) - \(hopString)")
 									.font(.caption)
 							} else if route.response {
-								let hopTowardsLabel = route.hopsTowards == 1 ? "Hop" : "Hops"
-								let hopBackLabel = route.hopsBack == 1 ? "Hop" : "Hops"
-								let hopTowardsString = (route.hopsTowards == 0) ? "Direct" : "\(route.hopsTowards) \(hopTowardsLabel)"
-								let hopBackString = (route.hopsBack == 0) ? "Direct" : "\(route.hopsBack) \(hopBackLabel)"
-								Text("\(route.time?.formatted() ?? "unknown".localized) - \(hopTowardsString) Towards  \(hopBackString) Back")
+								let hopTowardsString = String(localized: "\(route.hopsTowards) Hops")
+								let hopBackString = String(localized: "\(route.hopsBack) Hops")
+								Text("\(routeTime) - \(hopTowardsString) Towards  \(hopBackString) Back")
 									.font(.caption)
 							} else if route.sent {
-								Text("\(route.time?.formatted() ?? "unknown".localized) - No Response")
+								Text("\(routeTime) - No Response")
 									.font(.caption)
 							} else {
-								Text("\(route.time?.formatted() ?? "unknown".localized) - Not Sent")
+								Text("\(routeTime) - Not Sent")
 									.font(.caption)
 							}
 						} icon: {
