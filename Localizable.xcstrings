@@ -127,6 +127,7 @@
       }
     },
     "%@ - 1 Hop" : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
@@ -137,6 +138,7 @@
       }
     },
     "%@ - Direct" : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
@@ -6851,6 +6853,7 @@
       }
     },
     "Currently the reccomended way to update ESP32 devices is using the web flasher on a desktop computer from a chrome based browser. It does not work on mobile devices or over BLE." : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
@@ -6859,6 +6862,9 @@
           }
         }
       }
+    },
+    "Currently the recommended way to update ESP32 devices is using the web flasher on a desktop computer from a chrome based browser. It does not work on mobile devices or over BLE." : {
+
     },
     "Date" : {
       "localizations" : {

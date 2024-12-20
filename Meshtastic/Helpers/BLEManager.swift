@@ -663,15 +663,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			}
 
 			switch decodedInfo.packet.decoded.portnum {
-
+				
 				// Handle Any local only packets we get over BLE
 			case .unknownApp:
 				var nowKnown = false
-
+				
 				// MyInfo from initial connection
 				if decodedInfo.myInfo.isInitialized && decodedInfo.myInfo.myNodeNum > 0 {
 					let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, peripheralId: self.connectedPeripheral.id, context: context)
-
+					
 					if myInfo != nil {
 						UserDefaults.preferredPeripheralNum = Int(myInfo?.myNodeNum ?? 0)
 						connectedPeripheral.num = myInfo?.myNodeNum ?? 0
@@ -890,7 +890,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								}
 							}
 							hopNodes.append(traceRouteHop)
-
+							
 							let hopName = hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))
 							let mqttLabel = hopNode?.viaMqtt ?? false ? "MQTT " : ""
 							let snrLabel = (traceRouteHop.snr != -32) ? String(traceRouteHop.snr) : "unknown ".localized
@@ -912,7 +912,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						/// Add the destination node to the end of the route towards string and the beginning of the route back string
 						routeString += "\(traceRoute?.node?.user?.longName ?? "unknown".localized) \((traceRoute?.node?.num ?? 0).toHex()) (\(destinationHop.snr != -32 ? String(destinationHop.snr) : "unknown ".localized)dB)"
 						traceRoute?.routeText = routeString
-
+						
 						traceRoute?.hopsBack = Int32(routingMessage.routeBack.count)
 						// Only if hopStart is set and there is an SNR entry
 						if decodedInfo.packet.hopStart > 0 && routingMessage.snrBack.count > 0 {
@@ -946,7 +946,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 									}
 								}
 								hopNodes.append(traceRouteHop)
-
+								
 								let hopName = hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))
 								let mqttLabel = hopNode?.viaMqtt ?? false ? "MQTT " : ""
 								let snrLabel = (traceRouteHop.snr != -32) ? String(traceRouteHop.snr) : "unknown ".localized
@@ -988,6 +988,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				MeshLogger.log("🕸️ MESH PACKET received for ATAK Plugin App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .powerstressApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Power Stress App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+			case .alertApp:
+				MeshLogger.log("🕸️ MESH PACKET received for Alert App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			}
 
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
