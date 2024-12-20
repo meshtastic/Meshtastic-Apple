@@ -33,48 +33,79 @@ extension UserEntity {
 		let unreadMessages = messageList.filter { ($0 as AnyObject).read == false }
 		return unreadMessages.count
 	}
-
+	/// SVG Images for Vendors who are signed project backers
 	var hardwareImage: String? {
 		guard let hwModel else { return nil }
 		switch hwModel {
-		case "HELTECV1", "HELTECV3", "HELTECV20", "HELTECV21":
+		/// Heltec
+		case "HELTECHT62":
+			return "HELTECHT62"
+		case "HELTECMESHNODET114":
+			return "HELTECMESHNODET114"
+		case "HELTECV3":
 			return "HELTECV3"
+		case "HELTECVISIONMASTERE213":
+			return "HELTECVISIONMASTERE213"
+		case "HELTECVISIONMASTERE290":
+			return "HELTECVISIONMASTERE290"
 		case "HELTECWIRELESSPAPER", "HELTECWIRELESSPAPERV10":
 			return "HELTECWIRELESSPAPER"
 		case "HELTECWIRELESSTRACKER", "HELTECWIRELESSTRACKERV10":
 			return "HELTECWIRELESSTRACKER"
 		case "HELTECWSLV3":
 			return "HELTECWSLV3"
-		case "LILYGOTBEAMSCORE":
+		/// LilyGO
+		case "TDECK":
+			return "TDECK"
+		case "TECHO":
+			return "TECHO"
+		case "TWATCHS3":
+			return "TWATCHS3"
+		case "LILYGOTBEAMS3CORE":
 			return "LILYGOTBEAMS3CORE"
+		case "TBEAM", "TBEAM_V0P7":
+			return "TBEAM"
+		case "TLORAC6":
+			return "TLORAC6"
+		case "TLORAT3S3EPAPER":
+			return "TLORAT3S3EPAPER"
+		case "TLORAT3S3V1":
+			return "TLORAT3S3V1"
+		case "TLORAV2116":
+			return "TLORAV2116"
+		case "TLORAV2118":
+			return "TLORAV2118"
+		/// Seeed Studio
+		case "SENSECAPINDICATOR":
+			return "UNSET"
+		case "TRACKERT1000E":
+			return "UNSET"
+		case "SEEEDXIAOS3":
+			return "UNSET"
+		case "WIOWM1110":
+			return "UNSET"
+		/// RAK Wireless
+		case "RAK4631":
+			return "UNSET"
+		case "RAK11310":
+			return "UNSET"
+		case "WISMESHTAP":
+			return "UNSET"
+		/// B&Q Consulting
 		case "NANOG1", "NANOG1EXPLORER":
 			return "NANOG1"
 		case "NANOG2ULTRA":
 			return "NANOG2ULTRA"
-		case "RAK4631":
-			return "RAK4631"
-		case "RAK11200":
-			return "RAK11200"
-		case "SOLAR_NODE":
-			return "SOLAR_NODE"
-		case "STATIONG1":
-			return "STATIONG1"
-		case "ТВЕАМ", "TBEAMVOP7":
-			return "ТВЕАМ"
-		case "TECHO":
-			return "TECHO"
-		case "TLORAV1", "TLORAV11P3":
-			return "TLORAV1"
-		case "TLORAV2", "TLORAT3S3", "TLORAV211P6", "TLORAV211P8":
-			return "TLORABOARD"
-		case "UNPHONE":
-			return "UNPHONE"
+		case "STATIONG2":
+			return "STATIONG2"
+		/// DIY Devices
+		case "RPIPICO":
+			return "RPIPICO"
 		default:
 			return "UNSET"
 		}
 	}
 }
-
 public func createUser(num: Int64, context: NSManagedObjectContext) -> UserEntity {
 	let newUser = UserEntity(context: context)
 	newUser.num = Int64(num)

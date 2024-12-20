@@ -16,6 +16,9 @@ struct NodeDetail: View {
 		formatter.unitsStyle = .full
 		return formatter
 	}()
+	var modemPreset: ModemPresets = ModemPresets(
+		rawValue: UserDefaults.modemPreset
+	) ?? ModemPresets.longFast
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -44,6 +47,34 @@ struct NodeDetail: View {
 					NodeInfoItem(node: node)
 				}
 				Section("Node") {
+					HStack(alignment: .center) {
+						Spacer()
+						CircleText(
+							text: node.user?.shortName ?? "?",
+							color: Color(UIColor(hex: UInt32(node.num))),
+							circleSize: 75
+						)
+						if node.snr != 0 && !node.viaMqtt && node.hopsAway == 0 {
+							Spacer()
+							VStack {
+								let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: modemPreset)
+								LoRaSignalStrengthIndicator(signalStrength: signalStrength)
+								Text("Signal \(signalStrength.description)").font(.footnote)
+								Text("SNR \(String(format: "%.2f", node.snr))dB")
+									.foregroundColor(getSnrColor(snr: node.snr, preset: modemPreset))
+									.font(.caption)
+								Text("RSSI \(node.rssi)dB")
+									.foregroundColor(getRssiColor(rssi: node.rssi))
+									.font(.caption)
+							}
+						}
+						if node.telemetries?.count ?? 0 > 0 {
+							Spacer()
+							BatteryGauge(node: node)
+						}
+						Spacer()
+					}
+					.listRowSeparator(.hidden)
 					if let user = node.user {
 						if !user.keyMatch {
 							Label {

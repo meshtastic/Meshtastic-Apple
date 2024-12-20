@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "heltec-ht62-esp32c3-sx1262.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

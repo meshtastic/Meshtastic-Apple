@@ -73,7 +73,6 @@ struct TraceRouteLog: View {
 					}
 					.listStyle(.plain)
 				}
-				.frame(minHeight: CGFloat((node.traceRoutes?.count ?? 0) * 40), maxHeight: 250)
 				Divider()
 				ScrollView {
 					if selectedRoute != nil {

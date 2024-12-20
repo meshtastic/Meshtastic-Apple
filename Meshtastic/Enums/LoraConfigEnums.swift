@@ -176,6 +176,54 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return 100
 		}
 	}
+	var isCountry: Bool {
+		switch self {
+		case .unset:
+			return false
+		case .us:
+			return true
+		case .eu433:
+			return false
+		case .eu868:
+			return false
+		case .cn:
+			return true
+		case .jp:
+			return true
+		case .anz:
+			return false
+		case .kr:
+			return true
+		case .tw:
+			return true
+		case .ru:
+			return true
+		case .in:
+			return true
+		case .nz865:
+			return true
+		case .th:
+			return true
+		case .ua433:
+			return true
+		case .ua868:
+			return true
+		case .lora24:
+			return false
+		case .my433:
+			return true
+		case .my919:
+			return true
+		case .sg923:
+			return true
+		case .ph433:
+			return true
+		case .ph868:
+			return true
+		case .ph915:
+			return true
+		}
+	}
 	func protoEnumValue() -> Config.LoRaConfig.RegionCode {
 
 		switch self {

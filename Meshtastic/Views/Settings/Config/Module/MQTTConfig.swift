@@ -322,7 +322,6 @@ struct MQTTConfig: View {
 		.onFirstAppear {
 			// Need to request a MqttModuleConfig from the remote node before allowing changes
 			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-				Logger.mesh.info("empty mqtt module config")
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let connectedNode {
 					if node.num != connectedNode.num {
@@ -330,10 +329,12 @@ struct MQTTConfig: View {
 							/// 2.5 Administration with session passkey
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.mqttConfig == nil {
+								Logger.mesh.info("⚙️ Empty or expired mqtt module config requesting via PKI admin")
 								_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 							}
 						} else {
 							/// Legacy Administration
+							Logger.mesh.info("☠️ Using insecure legacy admin, empty mqtt module config")
 							_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 						}
 					}
@@ -346,8 +347,8 @@ struct MQTTConfig: View {
 		nearbyTopics = []
 		let geocoder = CLGeocoder()
 		if LocationsHandler.shared.locationsArray.count > 0 {
-			let region  = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))?.topic
-			defaultTopic = "msh/" + (region ?? "UNSET")
+			let region  = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))
+			defaultTopic = "msh/" + (region?.topic ?? "UNSET")
 			geocoder.reverseGeocodeLocation(LocationsHandler.shared.locationsArray.first!, completionHandler: {(placemarks, error) in
 				if let error {
 					Logger.services.error("Failed to reverse geocode location: \(error.localizedDescription)")
@@ -356,8 +357,8 @@ struct MQTTConfig: View {
 
 				if let placemarks = placemarks, let placemark = placemarks.first {
 					let cc = locale.region?.identifier ?? "UNK"
-					/// Country Topic unless you are US
-					if  placemark.isoCountryCode ?? "unknown" != cc {
+					/// Country Topic unless your region is a country
+					if !(region?.isCountry ?? false) {
 						let countryTopic = defaultTopic + "/" + (placemark.isoCountryCode ?? "")
 						if !countryTopic.isEmpty {
 							nearbyTopics.append(countryTopic)
