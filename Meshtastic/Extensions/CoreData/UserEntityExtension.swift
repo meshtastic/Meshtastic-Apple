@@ -77,20 +77,20 @@ extension UserEntity {
 			return "TLORAV2118"
 		/// Seeed Studio
 		case "SENSECAPINDICATOR":
-			return "UNSET"
+			return "SENSECAPINDICATOR"
 		case "TRACKERT1000E":
-			return "UNSET"
+			return "TRACKERT1000E"
 		case "SEEEDXIAOS3":
-			return "UNSET"
+			return "SEEEDXIAOS3"
 		case "WIOWM1110":
-			return "UNSET"
+			return "WIOWM1110"
 		/// RAK Wireless
 		case "RAK4631":
-			return "UNSET"
+			return "RAK4631"
 		case "RAK11310":
-			return "UNSET"
+			return "RAK11310"
 		case "WISMESHTAP":
-			return "UNSET"
+			return "WISMESHTAP"
 		/// B&Q Consulting
 		case "NANOG1", "NANOG1EXPLORER":
 			return "NANOG1"
