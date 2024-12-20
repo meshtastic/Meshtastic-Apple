@@ -37,20 +37,21 @@ struct TraceRouteLog: View {
 				VStack {
 					List(node.traceRoutes?.reversed() as? [TraceRouteEntity] ?? [], id: \.self, selection: $selectedRoute) { route in
 						Label {
-							if route.response && route.hopsTowards == 0 {
-								Text("\(route.time?.formatted() ?? "unknown".localized) - Direct")
-									.font(.caption)
-							} else if route.response && route.hopsTowards == 1 {
-								Text("\(route.time?.formatted() ?? "unknown".localized) - 1 Hop")
+							let routeTime = route.time?.formatted() ?? "unknown".localized
+							if route.response && route.hopsTowards == route.hopsBack {
+								let hopString = String(localized: "\(route.hopsTowards) Hops")
+								Text("\(routeTime) - \(hopString)")
 									.font(.caption)
 							} else if route.response {
-								Text("\(route.time?.formatted() ?? "unknown".localized) - \(route.hopsTowards) Hops Towards \(route.hopsBack) Hops Back")
+								let hopTowardsString = String(localized: "\(route.hopsTowards) Hops")
+								let hopBackString = String(localized: "\(route.hopsBack) Hops")
+								Text("\(routeTime) - \(hopTowardsString) Towards  \(hopBackString) Back")
 									.font(.caption)
 							} else if route.sent {
-								Text("\(route.time?.formatted() ?? "unknown".localized) - No Response")
+								Text("\(routeTime) - No Response")
 									.font(.caption)
 							} else {
-								Text("\(route.time?.formatted() ?? "unknown".localized) - Not Sent")
+								Text("\(routeTime) - Not Sent")
 									.font(.caption)
 							}
 						} icon: {
