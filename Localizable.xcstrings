@@ -84,6 +84,16 @@
         }
       }
     },
+    "%@ - %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ - %2$@"
+          }
+        }
+      }
+    },
     "%@ - %@ - %@" : {
       "localizations" : {
         "en" : {
@@ -100,12 +110,12 @@
         }
       }
     },
-    "%@ - %d Hops Towards %d Hops Back" : {
+    "%@ - %@ Towards  %@ Back" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ - %2$d Hops Towards %3$d Hops Back"
+            "value" : "%1$@ - %2$@ Towards  %3$@ Back"
           }
         },
         "sr" : {
@@ -346,6 +356,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%d"
+          }
+        }
+      }
+    },
+    "%d Hops" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%d Hop"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "%d Hops"
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Direct"
+                }
+              }
+            }
           }
         }
       }
