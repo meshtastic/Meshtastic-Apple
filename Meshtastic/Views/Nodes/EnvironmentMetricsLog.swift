@@ -103,13 +103,18 @@ struct EnvironmentMetricsLog: View {
 					}
 				}
 				HStack {
+					let isPadOrCatalyst = UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac
+					let buttonSize: ControlSize =  isPadOrCatalyst ? .large : .small
+					let imageScale: Image.Scale = isPadOrCatalyst ? .medium : .small
 					Button {
 						self.isEditingColumnConfiguration = true
 					} label: {
 						Label("Config", systemImage: "gearshape")
-					}					.buttonStyle(.bordered)
+							.imageScale(imageScale)
+					}
+					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
-					.controlSize(.large)
+					.controlSize(buttonSize)
 					.padding(.bottom)
 					.padding(.leading)
 					.sheet(isPresented: self.$isEditingColumnConfiguration) {
@@ -119,12 +124,12 @@ struct EnvironmentMetricsLog: View {
 						isPresentingClearLogConfirm = true
 					} label: {
 						Label("clear.log", systemImage: "trash.fill")
+							.imageScale(imageScale)
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
-					.controlSize(.large)
+					.controlSize(buttonSize)
 					.padding(.bottom)
-					.padding(.leading)
 					.confirmationDialog(
 						"are.you.sure",
 						isPresented: $isPresentingClearLogConfirm,
@@ -141,10 +146,11 @@ struct EnvironmentMetricsLog: View {
 						isExporting = true
 					} label: {
 						Label("save", systemImage: "square.and.arrow.down")
+							.imageScale(imageScale)
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
-					.controlSize(.large)
+					.controlSize(buttonSize)
 					.padding(.bottom)
 					.padding(.trailing)
 				}
