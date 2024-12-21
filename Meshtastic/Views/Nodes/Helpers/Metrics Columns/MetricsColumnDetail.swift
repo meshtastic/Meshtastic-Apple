@@ -16,8 +16,8 @@ struct MetricsColumnDetail: View {
 	@Environment(\.dismiss) private var dismiss
 
 	var body: some View {
-		ZStack {
-			List {
+		NavigationStack {
+			Form {
 				Section("Chart") {
 					ForEach(seriesList) { series in
 						HStack {
@@ -57,25 +57,23 @@ struct MetricsColumnDetail: View {
 					}
 				}
 			}
-
-			// More friendly to tap a button to dismiss on these devices
-			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-				Spacer()
-				Button {
-					self.dismiss()
-				} label: {
-					Text("Done")
-				}
-				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding([.leading, .trailing, .bottom])
+			.listStyle(.insetGrouped)
+#if targetEnvironment(macCatalyst)
+			Spacer()
+			Button {
+				dismiss()
+			} label: {
+				Label("close", systemImage: "xmark")
 			}
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding(.bottom)
+#endif
 		}
 		.presentationDetents([.medium, .large], selection: $currentDetent)
 		.presentationContentInteraction(.scrolls)
-		.presentationDragIndicator(
-			!(UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) ? .visible : .hidden)
+		.presentationDragIndicator(.visible)
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 		.interactiveDismissDisabled(false)
 	}
