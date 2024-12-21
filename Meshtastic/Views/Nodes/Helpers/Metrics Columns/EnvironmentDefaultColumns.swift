@@ -18,7 +18,7 @@ extension MetricsColumnList {
 				keyPath: \.temperature,
 				name: "Temperature",
 				abbreviatedName: "Temp",
-				minWidth: 25, maxWidth: 40,
+				minWidth: 30, maxWidth: 45,
 				tableBody: { _, temp in
 					Text(temp.formattedTemperature())
 				}),
@@ -28,7 +28,7 @@ extension MetricsColumnList {
 				keyPath: \.relativeHumidity,
 				name: "Relative Humidity",
 				abbreviatedName: "Hum",
-				minWidth: 25, maxWidth: 40,
+				minWidth: 30, maxWidth: 45,
 				tableBody: { _, humidity in
 					Text("\(String(format: "%.0f", humidity))%")
 				}),
@@ -52,7 +52,7 @@ extension MetricsColumnList {
 				keyPath: \.iaq,
 				name: "Indoor Air Quality",
 				abbreviatedName: "IAQ",
-				minWidth: 25, maxWidth: 50,
+				minWidth: 30, maxWidth: 50,
 				tableBody: { _, iaq in
 					IndoorAirQuality(iaq: Int(iaq), displayMode: .dot)
 				}),
@@ -86,7 +86,7 @@ extension MetricsColumnList {
 				keyPath: \.windSpeed,
 				name: "Wind Speed",
 				abbreviatedName: "Wind",
-				minWidth: 30, maxWidth: 40,
+				minWidth: 30, maxWidth: 60,
 				visible: false,
 				tableBody: { _, speed in
 					let windSpeed = Measurement(
