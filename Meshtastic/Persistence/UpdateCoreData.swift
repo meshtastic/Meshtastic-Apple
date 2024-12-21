@@ -199,9 +199,9 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 						manager.notifications = [
 							Notification(
 								id: (UUID().uuidString),
-								title: "New Node",
+								title: "New Node".localized,
 								subtitle: "\(newUser.longName ?? "unknown".localized)",
-								content: "New Node has been discovered",
+								content: "New Node has been discovered".localized,
 								target: "nodes",
 								path: "meshtastic:///nodes?nodenum=\(newUser.num)"
 							)
@@ -832,9 +832,9 @@ func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, s
 				if config.adminKey.count > 0 {
 					fetchedNode[0].securityConfig?.adminKey = config.adminKey[0]
 					if config.adminKey.count > 1 {
-						fetchedNode[0].securityConfig?.adminKey = config.adminKey[1]
+						fetchedNode[0].securityConfig?.adminKey2 = config.adminKey[1]
 					} else if config.adminKey.count > 2 {
-						fetchedNode[0].securityConfig?.adminKey = config.adminKey[2]
+						fetchedNode[0].securityConfig?.adminKey3 = config.adminKey[2]
 					}
 				}
 				fetchedNode[0].securityConfig?.isManaged = config.isManaged

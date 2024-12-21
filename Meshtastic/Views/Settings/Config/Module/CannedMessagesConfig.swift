@@ -236,7 +236,6 @@ struct CannedMessagesConfig: View {
 			.onFirstAppear {
 				// Need to request a CannedMessagesModuleConfig from the remote node before allowing changes
 				if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-					Logger.mesh.info("empty canned message config")
 					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 					if let connectedNode {
 						if node.num != connectedNode.num {
@@ -244,10 +243,12 @@ struct CannedMessagesConfig: View {
 								/// 2.5 Administration with session passkey
 								let expiration = node.sessionExpiration ?? Date()
 								if expiration < Date() || node.cannedMessageConfig == nil {
+									Logger.mesh.info("⚙️ Empty or expired canned messages module config requesting via PKI admin")
 									_ = bleManager.requestCannedMessagesModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 								}
 							} else {
 								/// Legacy Administration
+								Logger.mesh.info("☠️ Using insecure legacy admin, empty canned messages module config")
 								_ = bleManager.requestCannedMessagesModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 							}
 						}

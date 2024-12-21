@@ -148,7 +148,7 @@ struct Firmware: View {
 					VStack(alignment: .leading) {
 						Text("ESP32 Device Firmware Update")
 							.font(.title3)
-						Text("Currently the reccomended way to update ESP32 devices is using the web flasher on a desktop computer from a chrome based browser. It does not work on mobile devices or over BLE.")
+						Text("Currently the recommended way to update ESP32 devices is using the web flasher on a desktop computer from a chrome based browser. It does not work on mobile devices or over BLE.")
 							.font(.caption)
 						Link("Web Flasher", destination: URL(string: "https://flash.meshtastic.org")!)
 							.font(.callout)
@@ -185,7 +185,7 @@ struct Firmware: View {
 			}
 			.padding()
 			.padding(.bottom, 5)
-			.onAppear {
+			.onFirstAppear {
 				Api().loadDeviceHardwareData { (hw) in
 					for device in hw {
 						let currentHardware = node?.user?.hwModel ?? "UNSET"

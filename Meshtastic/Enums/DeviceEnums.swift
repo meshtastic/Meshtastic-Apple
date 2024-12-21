@@ -27,27 +27,27 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 	var name: String {
 		switch self {
 		case .client:
-			return "Client"
+			return "device.role.name.client".localized
 		case .clientMute:
-			return "Client Mute"
+			return "device.role.name.clientMute".localized
 		case .router:
-			return "Router"
+			return "device.role.name.router".localized
 		case .routerClient:
-			return "Router & Client"
+			return "device.role.name.routerClient".localized
 		case .repeater:
-			return "Repeater"
+			return "device.role.name.repeater".localized
 		case .tracker:
-			return "Tracker"
+			return "device.role.name.tracker".localized
 		case .sensor:
-			return "Sensor"
+			return "device.role.name.sensor".localized
 		case .tak:
-			return "TAK"
+			return "device.role.name.tak".localized
 		case .takTracker:
-			return "TAK Tracker"
+			return "device.role.name.takTracker".localized
 		case .clientHidden:
-			return "Client Hidden"
+			return "device.role.name.clientHidden".localized
 		case .lostAndFound:
-			return "Lost and Found"
+			return "device.role.name.lostAndFound".localized
 		}
 
 	}

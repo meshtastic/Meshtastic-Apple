@@ -26,6 +26,7 @@ struct NodeList: View {
 	@State private var isOnline = false
 	@State private var isPkiEncrypted = false
 	@State private var isFavorite = false
+	@State private var isIgnored = false
 	@State private var isEnvironment = false
 	@State private var distanceFilter = false
 	@State private var maxDistance: Double = 800000
@@ -40,6 +41,7 @@ struct NodeList: View {
 
 	var boolFilters: [Bool] {[
 		isFavorite,
+		isIgnored,
 		isOnline,
 		isPkiEncrypted,
 		isEnvironment,
@@ -53,6 +55,7 @@ struct NodeList: View {
 
 	@FetchRequest(
 		sortDescriptors: [
+			NSSortDescriptor(key: "ignored", ascending: true),
 			NSSortDescriptor(key: "favorite", ascending: false),
 			NSSortDescriptor(key: "lastHeard", ascending: false),
 			NSSortDescriptor(key: "user.longName", ascending: true)
@@ -132,6 +135,11 @@ struct NodeList: View {
 				} label: {
 					Label("Exchange Positions", systemImage: "arrow.triangle.2.circlepath")
 				}
+				IgnoreNodeButton(
+					bleManager: bleManager,
+					context: context,
+					node: node
+				)
 				Button(role: .destructive) {
 					deleteNodeId = node.num
 					isPresentingDeleteNodeAlert = true
@@ -164,6 +172,7 @@ struct NodeList: View {
 					isOnline: $isOnline,
 					isPkiEncrypted: $isPkiEncrypted,
 					isFavorite: $isFavorite,
+					isIgnored: $isIgnored,
 					isEnvironment: $isEnvironment,
 					distanceFilter: $distanceFilter,
 					maximumDistance: $maxDistance,
@@ -391,6 +400,14 @@ struct NodeList: View {
 		if isFavorite {
 			let isFavoritePredicate = NSPredicate(format: "favorite == YES")
 			predicates.append(isFavoritePredicate)
+		}
+		/// Ignored
+		if isIgnored {
+			let isIgnoredPredicate = NSPredicate(format: "ignored == YES")
+			predicates.append(isIgnoredPredicate)
+		} else if !isIgnored {
+			let isIgnoredPredicate = NSPredicate(format: "ignored == NO")
+			predicates.append(isIgnoredPredicate)
 		}
 		/// Environment
 		if isEnvironment {
