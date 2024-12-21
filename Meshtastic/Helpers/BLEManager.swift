@@ -242,14 +242,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			if errorCode == 6 { // CBError.Code.connectionTimeout The connection has timed out unexpectedly.
 				// Happens when device is manually reset / powered off
 				lastConnectionError = "🚨" + String.localizedStringWithFormat("ble.errorcode.6 %@".localized, e.localizedDescription)
-				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown", privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(e.localizedDescription, privacy: .public)")
+				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized, privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(e.localizedDescription, privacy: .public)")
 			} else if errorCode == 7 { // CBError.Code.peripheralDisconnected The specified device has disconnected from us.
 				// Seems to be what is received when a tbeam sleeps, immediately recconnecting does not work.
 				if UserDefaults.preferredPeripheralId == peripheral.identifier.uuidString {
 					manager.notifications = [
 						Notification(
 							id: (peripheral.identifier.uuidString),
-							title: "Radio Disconnected",
+							title: "Radio Disconnected".localized,
 							subtitle: "\(peripheral.name ?? "unknown".localized)",
 							content: e.localizedDescription,
 							target: "bluetooth",
@@ -258,18 +258,18 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					]
 					manager.schedule()
 				}
-				lastConnectionError = "🚨 \(e.localizedDescription)"
-				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown", privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(e.localizedDescription, privacy: .public)")
+				lastConnectionError = "🚨 \("The specified device has disconnected from us".localized)"
+				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized, privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(e.localizedDescription, privacy: .public)")
 			} else if errorCode == 14 { // Peer removed pairing information
 				// Forgetting and reconnecting seems to be necessary so we need to show the user an error telling them to do that
 				lastConnectionError = "🚨 " + String.localizedStringWithFormat("ble.errorcode.14 %@".localized, e.localizedDescription)
-				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode, privacy: .public) Error: \(self.lastConnectionError, privacy: .public)")
+				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized) Error Code: \(errorCode, privacy: .public) Error: \(self.lastConnectionError, privacy: .public)")
 			} else {
 				if UserDefaults.preferredPeripheralId == peripheral.identifier.uuidString {
 					manager.notifications = [
 						Notification(
 							id: (peripheral.identifier.uuidString),
-							title: "Radio Disconnected",
+							title: "Radio Disconnected".localized,
 							subtitle: "\(peripheral.name ?? "unknown".localized)",
 							content: e.localizedDescription,
 							target: "bluetooth",
@@ -279,12 +279,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					manager.schedule()
 				}
 				lastConnectionError = "🚨 \(e.localizedDescription)"
-				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown", privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(e.localizedDescription, privacy: .public)")
+				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized, privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(e.localizedDescription, privacy: .public)")
 			}
 		} else {
 			// Disconnected without error which indicates user intent to disconnect
 			// Happens when swiping to disconnect
-			Logger.services.info("ℹ️ [BLE] Disconnected: \(peripheral.name ?? "Unknown", privacy: .public): User Initiated Disconnect")
+			Logger.services.info("ℹ️ [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized, privacy: .public): \(String(describing: "User Initiated Disconnect".localized))")
 		}
 		// Start a scan so the disconnected peripheral is moved to the peripherals[] if it is awake
 		self.startScanning()
@@ -663,15 +663,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			}
 
 			switch decodedInfo.packet.decoded.portnum {
-				
+
 				// Handle Any local only packets we get over BLE
 			case .unknownApp:
 				var nowKnown = false
-				
+
 				// MyInfo from initial connection
 				if decodedInfo.myInfo.isInitialized && decodedInfo.myInfo.myNodeNum > 0 {
 					let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, peripheralId: self.connectedPeripheral.id, context: context)
-					
+
 					if myInfo != nil {
 						UserDefaults.preferredPeripheralNum = Int(myInfo?.myNodeNum ?? 0)
 						connectedPeripheral.num = myInfo?.myNodeNum ?? 0
@@ -890,7 +890,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								}
 							}
 							hopNodes.append(traceRouteHop)
-							
+
 							let hopName = hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))
 							let mqttLabel = hopNode?.viaMqtt ?? false ? "MQTT " : ""
 							let snrLabel = (traceRouteHop.snr != -32) ? String(traceRouteHop.snr) : "unknown ".localized
@@ -912,7 +912,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						/// Add the destination node to the end of the route towards string and the beginning of the route back string
 						routeString += "\(traceRoute?.node?.user?.longName ?? "unknown".localized) \((traceRoute?.node?.num ?? 0).toHex()) (\(destinationHop.snr != -32 ? String(destinationHop.snr) : "unknown ".localized)dB)"
 						traceRoute?.routeText = routeString
-						
+
 						traceRoute?.hopsBack = Int32(routingMessage.routeBack.count)
 						// Only if hopStart is set and there is an SNR entry
 						if decodedInfo.packet.hopStart > 0 && routingMessage.snrBack.count > 0 {
@@ -946,7 +946,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 									}
 								}
 								hopNodes.append(traceRouteHop)
-								
+
 								let hopName = hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))
 								let mqttLabel = hopNode?.viaMqtt ?? false ? "MQTT " : ""
 								let snrLabel = (traceRouteHop.snr != -32) ? String(traceRouteHop.snr) : "unknown ".localized
@@ -1954,7 +1954,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		return false
 	}
-	
+
 	public func saveLicensedUser(ham: HamParameters, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 		var adminPacket = AdminMessage()
 		adminPacket.setHamMode = ham

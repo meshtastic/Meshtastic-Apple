@@ -199,9 +199,9 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 						manager.notifications = [
 							Notification(
 								id: (UUID().uuidString),
-								title: "New Node",
+								title: "New Node".localized,
 								subtitle: "\(newUser.longName ?? "unknown".localized)",
-								content: "New Node has been discovered",
+								content: "New Node has been discovered".localized,
 								target: "nodes",
 								path: "meshtastic:///nodes?nodenum=\(newUser.num)"
 							)
