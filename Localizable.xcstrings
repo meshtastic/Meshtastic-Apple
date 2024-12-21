@@ -2390,6 +2390,7 @@
       }
     },
     "Bad" : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {

@@ -10,7 +10,7 @@ struct IgnoreNodeButton: View {
 	var node: NodeInfoEntity
 
 	var body: some View {
-		Button {
+		Button(role: .destructive) {
 			guard let connectedNodeNum = bleManager.connectedPeripheral?.num else { return }
 			let success = if node.ignored {
 				bleManager.removeIgnoredNode(

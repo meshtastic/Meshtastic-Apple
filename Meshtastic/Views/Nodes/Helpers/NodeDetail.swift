@@ -357,6 +357,11 @@ struct NodeDetail: View {
 									node: node
 								)
 							}
+							IgnoreNodeButton(
+								bleManager: bleManager,
+								context: context,
+								node: node
+							)
 							DeleteNodeButton(
 								bleManager: bleManager,
 								context: context,
