@@ -4518,6 +4518,9 @@
         }
       }
     },
+    "Chart" : {
+
+    },
     "CHG" : {
       "localizations" : {
         "sr" : {
@@ -4869,6 +4872,9 @@
           }
         }
       }
+    },
+    "Config" : {
+
     },
     "config.module.paxcounter.enabled.description" : {
       "localizations" : {
@@ -9245,6 +9251,9 @@
           }
         }
       }
+    },
+    "Done" : {
+
     },
     "Double Tap as Button" : {
       "localizations" : {
@@ -19349,6 +19358,9 @@
         }
       }
     },
+    "Metric" : {
+
+    },
     "Minimum Distance" : {
       "localizations" : {
         "de" : {
@@ -26504,6 +26516,9 @@
         }
       }
     },
+    "Series" : {
+
+    },
     "Server" : {
       "localizations" : {
         "de" : {
@@ -27718,6 +27733,9 @@
           }
         }
       }
+    },
+    "Table" : {
+
     },
     "tapback" : {
       "localizations" : {
