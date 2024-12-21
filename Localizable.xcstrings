@@ -91,6 +91,12 @@
             "state" : "new",
             "value" : "%1$@ - %2$@"
           }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ - %2$@"
+          }
         }
       }
     },
@@ -121,7 +127,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ - %2$d Одлазних скокова %3$d Долазних скокова"
+            "value" : "%1$@ - %2$@ Одлазних скокова %3$@ Долазних скокова"
           }
         }
       }
@@ -383,6 +389,36 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "Direct"
+                }
+              }
+            }
+          }
+        },
+        "sr" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%d скокова"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%d скок"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%d скокова"
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Директно"
                 }
               }
             }
@@ -2578,6 +2614,23 @@
         }
       }
     },
+    "ble.errorcode.6" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The connection has timed out unexpectedly."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Веза је неочекивано истекла."
+          }
+        }
+      }
+    },
     "ble.errorcode.6 %@" : {
       "extractionState" : "migrated",
       "localizations" : {
@@ -2639,6 +2692,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ 如果在首選電台的旁邊，App 將會自動重連。"
+          }
+        }
+      }
+    },
+    "ble.errorcode.14" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peer removed pairing information."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Радио уређај је уклонио информације о упаривању."
           }
         }
       }
@@ -6864,7 +6934,14 @@
       }
     },
     "Currently the recommended way to update ESP32 devices is using the web flasher on a desktop computer from a chrome based browser. It does not work on mobile devices or over BLE." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тренутно препоручени начин за ажурирање ЕСП32 уређаја је коришћење веб флешера на десктоп рачунару из прегледача заснованог на хрому. Не ради на мобилним уређајима или преко BLE-а."
+          }
+        }
+      }
     },
     "Date" : {
       "localizations" : {
@@ -6989,6 +7066,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Подразумевано"
+          }
+        }
+      }
+    },
+    "default.128x64.screen.layout" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default 128x64 screen layout"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подразумевани изглед екрана 128x64"
           }
         }
       }
@@ -7999,6 +8093,193 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "遺失物模式 - 用於自動頻繁地向網狀網路發送一條包含設備當前位置的短信：\"I'm lost! Position: lat / long\""
+          }
+        }
+      }
+    },
+    "device.role.name.client" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Клијент"
+          }
+        }
+      }
+    },
+    "device.role.name.clientHidden" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client Hidden"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скривени клијент"
+          }
+        }
+      }
+    },
+    "device.role.name.clientMute" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client Mute"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Клијент мутиран"
+          }
+        }
+      }
+    },
+    "device.role.name.lostAndFound" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lost and Found"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изгубљено и нађено"
+          }
+        }
+      }
+    },
+    "device.role.name.repeater" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeater"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поновљач"
+          }
+        }
+      }
+    },
+    "device.role.name.router" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Router"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Рутер"
+          }
+        }
+      }
+    },
+    "device.role.name.routerClient" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Router & Client"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Рутер и клијент"
+          }
+        }
+      }
+    },
+    "device.role.name.sensor" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensor"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сензор"
+          }
+        }
+      }
+    },
+    "device.role.name.tak" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TAK"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TAK"
+          }
+        }
+      }
+    },
+    "device.role.name.takTracker" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TAK Tracker"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ТАК Трекер"
+          }
+        }
+      }
+    },
+    "device.role.name.tracker" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tracker"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Трекер"
           }
         }
       }
@@ -10300,7 +10581,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Превладавање фреквенције"
+            "value" : "Измена фреквенције"
           }
         }
       }
@@ -11245,7 +11526,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Наслов"
+            "value" : "Смер"
           }
         }
       }
@@ -11255,7 +11536,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Наслов: %@"
+            "value" : "Смер: %@"
           }
         }
       }
@@ -11405,7 +11686,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Закриј алертове"
+            "value" : "Сакриј упозорења"
           }
         }
       }
@@ -14481,20 +14762,19 @@
         }
       }
     },
-    "interval.tyeight.hours" : {
-      "comment" : "What should this even represent?",
+    "inverted.top.bar.for.2.color.display" : {
       "extractionState" : "manual",
       "localizations" : {
-        "zh-Hans" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "四十八小时小时"
+            "value" : "Inverted top bar for 2 Color display"
           }
         },
-        "zh-Hant-TW" : {
+        "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "四十八小时小時"
+            "value" : "Обрнута горња трака за екран у 2 боје"
           }
         }
       }
@@ -15406,6 +15686,74 @@
         }
       }
     },
+    "lora.signal.strength.bad" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bad"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Лош"
+          }
+        }
+      }
+    },
+    "lora.signal.strength.fair" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fair"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Прихватљив"
+          }
+        }
+      }
+    },
+    "lora.signal.strength.good" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Good"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добар"
+          }
+        }
+      }
+    },
+    "lora.signal.strength.none" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Без"
+          }
+        }
+      }
+    },
     "LOW" : {
       "localizations" : {
         "sr" : {
@@ -15473,7 +15821,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Мапа меш мреже"
+            "value" : "Мапа меша"
           }
         },
         "zh-Hans" : {
@@ -19877,6 +20225,28 @@
         }
       }
     },
+    "New Node" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нови чвор"
+          }
+        }
+      }
+    },
+    "New Node has been discovered" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Откривен је нови чвор"
+          }
+        }
+      }
+    },
     "Newer firmware is available" : {
       "localizations" : {
         "de" : {
@@ -20830,6 +21200,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Отвори подешавања"
+          }
+        }
+      }
+    },
+    "optimized.for.2.color.displays" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optimized for 2 color displays"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оптимизовано за двобојне дисплеје"
           }
         }
       }
@@ -22053,6 +22440,17 @@
         }
       }
     },
+    "Radio Disconnected" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Радио веза је прекинута"
+          }
+        }
+      }
+    },
     "radio.configuration" : {
       "localizations" : {
         "de" : {
@@ -22521,7 +22919,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Примљен Ack"
+            "value" : "Примљен ACK"
           }
         },
         "zh-Hans" : {
@@ -22585,7 +22983,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Прималац Ack"
+            "value" : "Прималац ACK"
           }
         },
         "zh-Hans" : {
@@ -23910,7 +24308,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Признато"
+            "value" : "Потврђено"
           }
         },
         "zh-Hans" : {
@@ -24723,7 +25121,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Појачано појачање пријемника"
+            "value" : "Појачање пријемника"
           }
         }
       }
@@ -25680,7 +26078,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Серијска"
+            "value" : "Серијска веза"
           }
         },
         "zh-Hans" : {
@@ -25764,7 +26162,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Серијска конфигурација"
+            "value" : "Подешавања серијске везе"
           }
         },
         "zh-Hans" : {
@@ -26227,7 +26625,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Подешава максималан број скокова, подразумевано је 3. Повећање броја скокова такође повећава загушење и треба га користити опрезно. Поруке емитоване са 0 скокова неће добити потврде пријема (ACK)."
+            "value" : "Подешава максималан број скокова. Подразумевано је 3, а повећање броја одобрених скокова такође повећава загушење и треба га користити опрезно. Поруке емитоване са 0 скокова неће добити потврде пријема (ACK)."
           }
         }
       }
@@ -27758,7 +28156,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Палац горе"
+            "value" : "Палац доле"
           }
         },
         "zh-Hans" : {
@@ -27888,7 +28286,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Талас"
+            "value" : "Махање"
           }
         },
         "zh-Hans" : {
@@ -27901,6 +28299,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "招手"
+          }
+        }
+      }
+    },
+    "telementry.hazardous" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hazardous"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Опасно"
+          }
+        }
+      }
+    },
+    "telementry.unhealthy" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unhealthy"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нездраво"
+          }
+        }
+      }
+    },
+    "telementry.veryUnhealthy" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Very Unhealthy"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Веома нездраво"
           }
         }
       }
@@ -28033,6 +28482,57 @@
         }
       }
     },
+    "telemetry.good" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Good"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добро"
+          }
+        }
+      }
+    },
+    "telemetry.moderate" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moderate"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Умерено"
+          }
+        }
+      }
+    },
+    "telemetry.sensitive" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unhealthy for Sensitive Groups"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нездраво за осетљиве групе"
+          }
+        }
+      }
+    },
     "Temp" : {
       "localizations" : {
         "de" : {
@@ -28087,6 +28587,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Терцијарни административни кључ"
+          }
+        }
+      }
+    },
+    "tft.full.color.displays" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TFT Full Color Displays"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TFT екрани у пуној боји"
           }
         }
       }
@@ -28243,6 +28760,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Секундарни јавни кључ овлашћен за слање административних порука овом чвору."
+          }
+        }
+      }
+    },
+    "The specified device has disconnected from us" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Наведени уређај је прекинуо везу са нама"
           }
         }
       }
@@ -28564,7 +29092,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Време и формат"
+            "value" : "Временска ознака"
           }
         },
         "zh-Hans" : {
@@ -28582,7 +29110,14 @@
       }
     },
     "Timing & Format" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Време и формат"
+          }
+        }
+      }
     },
     "tip.bluetooth.connect.message" : {
       "localizations" : {
@@ -29230,6 +29765,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "TLS укључен"
+          }
+        }
+      }
+    },
+    "Topic: %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тема: %@"
           }
         }
       }
@@ -30063,6 +30609,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ИД корисника"
+          }
+        }
+      }
+    },
+    "User Initiated Disconnect" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Корисник је покренуо прекид везе"
           }
         }
       }
