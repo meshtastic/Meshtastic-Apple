@@ -9,7 +9,7 @@ struct TapbackResponses: View {
 
 	@ViewBuilder
 	var body: some View {
-		let tapbacks = message.value(forKey: "tapbacks") as? [MessageEntity] ?? []
+		let tapbacks = message.tapbacks
 		if !tapbacks.isEmpty {
 			VStack(alignment: .trailing) {
 				HStack {

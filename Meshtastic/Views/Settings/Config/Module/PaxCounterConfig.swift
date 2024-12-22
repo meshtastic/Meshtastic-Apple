@@ -7,6 +7,7 @@
 
 import MeshtasticProtobufs
 import SwiftUI
+import OSLog
 
 struct PaxCounterConfig: View {
 	@Environment(\.managedObjectContext) private var context
@@ -57,25 +58,33 @@ struct PaxCounterConfig: View {
 				name: "\(bleManager.connectedPeripheral?.shortName ?? "?")"
 			)
 		})
-		.onAppear {
-			setPaxValues()
-			// Need to request a PAX Counter module config from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.paxCounterConfig == nil {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestPaxCounterModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+		.onFirstAppear {
+			// Need to request a PaxCounterModuleConfig from the remote node before allowing changes
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let connectedNode {
+					if node.num != connectedNode.num {
+						if UserDefaults.enableAdministration && node.num != connectedNode.num {
+							/// 2.5 Administration with session passkey
+							let expiration = node.sessionExpiration ?? Date()
+							if expiration < Date() || node.paxCounterConfig == nil {
+								Logger.mesh.info("⚙️ Empty or expired pax counter module config requesting via PKI admin")
+								_ = bleManager.requestPaxCounterModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						} else {
+							/// Legacy Administration
+							Logger.mesh.info("☠️ Using insecure legacy admin, empty pax counter module config")
+							_ = bleManager.requestPaxCounterModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					}
 				}
 			}
 		}
-		.onChange(of: enabled) {
-			if let val = node?.paxCounterConfig?.enabled {
-				hasChanges = $0 != val
-			}
+		.onChange(of: enabled) { oldEnabled, newEnabled in
+			if oldEnabled != newEnabled && newEnabled != node?.paxCounterConfig?.enabled { hasChanges = true }
 		}
-		.onChange(of: paxcounterUpdateInterval) {
-			if let val = node?.paxCounterConfig?.updateInterval {
-				hasChanges = $0 != val
-			}
+		.onChange(of: paxcounterUpdateInterval) { oldPaxcounterUpdateInterval, newPaxcounterUpdateInterval in
+			if oldPaxcounterUpdateInterval != newPaxcounterUpdateInterval && newPaxcounterUpdateInterval != node?.paxCounterConfig?.updateInterval ?? -1 { hasChanges = true }
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {

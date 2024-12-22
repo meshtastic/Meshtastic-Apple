@@ -125,60 +125,60 @@ struct TelemetryConfig: View {
 				}
 			}
 			.navigationTitle("telemetry.config")
-			.navigationBarItems(trailing:
-				ZStack {
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-			})
-			.onAppear {
-				setTelemetryValues()
+			.navigationBarItems(
+				trailing: ZStack {
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: bleManager.connectedPeripheral?.shortName ?? "?"
+					)
+				}
+			)
+			.onFirstAppear {
 				// Need to request a TelemetryModuleConfig from the remote node before allowing changes
-				if bleManager.connectedPeripheral != nil && node?.telemetryConfig == nil {
-					Logger.mesh.info("empty telemetry module config")
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if node != nil && connectedNode != nil {
-						_ = bleManager.requestTelemetryModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+					if let connectedNode {
+						if node.num != connectedNode.num {
+							if UserDefaults.enableAdministration && node.num != connectedNode.num {
+								/// 2.5 Administration with session passkey
+								let expiration = node.sessionExpiration ?? Date()
+								if expiration < Date() || node.telemetryConfig == nil {
+									Logger.mesh.info("⚙️ Empty or expired telemetry module config requesting via PKI admin")
+									_ = bleManager.requestTelemetryModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								}
+							} else {
+								/// Legacy Administration
+								Logger.mesh.info("☠️ Using insecure legacy admin, empty telemetry module config")
+								_ = bleManager.requestTelemetryModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						}
 					}
 				}
 			}
-			.onChange(of: deviceUpdateInterval) { newDeviceInterval in
-				if node != nil && node?.telemetryConfig != nil {
-					if newDeviceInterval != node!.telemetryConfig!.deviceUpdateInterval { hasChanges = true	}
-				}
+			.onChange(of: deviceUpdateInterval) { _, newDeviceInterval in
+				if newDeviceInterval != node?.telemetryConfig?.deviceUpdateInterval ?? -1 { hasChanges = true }
 			}
-			.onChange(of: environmentUpdateInterval) { newEnvInterval in
-				if node != nil && node?.telemetryConfig != nil {
-					if newEnvInterval != node!.telemetryConfig!.environmentUpdateInterval { hasChanges = true	}
-				}
+			.onChange(of: environmentUpdateInterval) { _, newEnvInterval in
+				if newEnvInterval != node?.telemetryConfig?.environmentUpdateInterval ?? -1 { hasChanges = true	}
 			}
-			.onChange(of: environmentMeasurementEnabled) { newEnvEnabled in
-				if node != nil && node?.telemetryConfig != nil {
-					if newEnvEnabled != node!.telemetryConfig!.environmentMeasurementEnabled { hasChanges = true	}
-				}
+			.onChange(of: environmentMeasurementEnabled) { _, newEnvEnabled in
+				if newEnvEnabled != node?.telemetryConfig?.environmentMeasurementEnabled { hasChanges = true }
 			}
-			.onChange(of: environmentScreenEnabled) { newEnvScreenEnabled in
-				if node!.telemetryConfig != nil {
-					if newEnvScreenEnabled != node!.telemetryConfig!.environmentScreenEnabled { hasChanges = true	}
-				}
+			.onChange(of: environmentScreenEnabled) { _, newEnvScreenEnabled in
+				if newEnvScreenEnabled != node?.telemetryConfig?.environmentScreenEnabled { hasChanges = true	}
 			}
-			.onChange(of: environmentDisplayFahrenheit) { newEnvDisplayF in
-				if node != nil && node?.telemetryConfig != nil {
-					if newEnvDisplayF != node!.telemetryConfig!.environmentDisplayFahrenheit { hasChanges = true	}
-				}
+			.onChange(of: environmentDisplayFahrenheit) { _, newEnvDisplayF in
+				if newEnvDisplayF != node?.telemetryConfig?.environmentDisplayFahrenheit { hasChanges = true	}
 			}
-			.onChange(of: powerMeasurementEnabled) { newPowerMeasurementEnabled in
-				if node != nil && node?.telemetryConfig != nil {
-					if newPowerMeasurementEnabled != node!.telemetryConfig!.powerMeasurementEnabled { hasChanges = true	}
-				}
+			.onChange(of: powerMeasurementEnabled) { _, newPowerMeasurementEnabled in
+				if newPowerMeasurementEnabled != node?.telemetryConfig?.powerMeasurementEnabled { hasChanges = true	}
 			}
-			.onChange(of: powerUpdateInterval) { newPowerUpdateInterval in
-				if node != nil && node?.telemetryConfig != nil {
-					if newPowerUpdateInterval != node!.telemetryConfig!.powerUpdateInterval { hasChanges = true	}
-				}
+			.onChange(of: powerUpdateInterval) { _, newPowerUpdateInterval in
+				if newPowerUpdateInterval != node?.telemetryConfig?.powerUpdateInterval ?? -1 { hasChanges = true	}
 			}
-			.onChange(of: powerScreenEnabled) { newPowerScreenEnabled in
-				if node != nil && node?.telemetryConfig != nil {
-					if newPowerScreenEnabled != node!.telemetryConfig!.powerScreenEnabled { hasChanges = true	}
-				}
+			.onChange(of: powerScreenEnabled) { _, newPowerScreenEnabled in
+				if newPowerScreenEnabled != node?.telemetryConfig?.powerScreenEnabled { hasChanges = true	}
 			}
 		}
 	}

@@ -93,6 +93,14 @@ struct EnvironmentMetricsLog: View {
 									IndoorAirQuality(iaq: Int(em.iaq), displayMode: IaqDisplayMode.dot )
 								}
 							}
+							TableColumn("Wind Speed") { em in
+								let windSpeed = Measurement(value: Double(em.windSpeed), unit: UnitSpeed.kilometersPerHour)
+								Text(windSpeed.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))))
+							}
+							TableColumn("Wind Direction") { em in
+								let direction = cardinalValue(from: Double(em.windDirection))
+								Text(direction)
+							}
 							TableColumn("timestamp") { em in
 								Text(em.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 							}
@@ -185,11 +193,7 @@ struct EnvironmentMetricsLog: View {
 				}
 
 			} else {
-				if #available (iOS 17, *) {
-					ContentUnavailableView("No Environment Metrics", systemImage: "slash.circle")
-				} else {
-					Text("No Environment Metrics")
-				}
+				ContentUnavailableView("No Environment Metrics", systemImage: "slash.circle")
 			}
 		}
 

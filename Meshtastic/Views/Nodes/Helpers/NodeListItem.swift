@@ -21,17 +21,32 @@ struct NodeListItem: View {
 			LazyVStack(alignment: .leading) {
 				HStack {
 					VStack(alignment: .leading) {
-
 						CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 70)
 							.padding(.trailing, 5)
-						BatteryLevelCompact(node: node, font: .caption, iconFont: .callout, color: .accentColor)
-							.padding(.trailing, 5)
+						if node.latestDeviceMetrics != nil {
+							BatteryCompact(batteryLevel: node.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
+								.padding(.trailing, 5)
+						}
 					}
 					VStack(alignment: .leading) {
 						HStack {
+							if node.user?.pkiEncrypted ?? false {
+								if !(node.user?.keyMatch ?? false) {
+									/// Public Key on the User and the Public Key on the Last Message don't match
+									Image(systemName: "key.slash")
+										.foregroundColor(.red)
+								} else {
+									Image(systemName: "lock.fill")
+										.foregroundColor(.green)
+								}
+							} else {
+								Image(systemName: "lock.open.fill")
+									.foregroundColor(.yellow)
+							}
 							Text(node.user?.longName ?? "unknown".localized)
-								.fontWeight(.medium)
 								.font(.headline)
+								.fontWeight(.regular)
+								.allowsTightening(true)
 							if node.favorite {
 								Spacer()
 								Image(systemName: "star.fill")
@@ -86,25 +101,9 @@ struct NodeListItem: View {
 						if node.positions?.count ?? 0 > 0 && connectedNode != node.num {
 							HStack {
 								if let lastPostion = node.positions?.lastObject as? PositionEntity {
-									if #available(iOS 17.0, macOS 14.0, *) {
-										if let currentLocation = LocationsHandler.shared.locationsArray.last {
-											let myCoord = CLLocation(latitude: currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
-											if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
-												let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
-												let metersAway = nodeCoord.distance(from: myCoord)
-												Image(systemName: "lines.measurement.horizontal")
-													.font(.callout)
-													.symbolRenderingMode(.multicolor)
-													.frame(width: 30)
-												DistanceText(meters: metersAway)
-													.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-													.foregroundColor(.gray)
-											}
-										}
-									} else {
-
-										let myCoord = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
-										if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationHelper.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationHelper.DefaultLocation.latitude {
+									if let currentLocation = LocationsHandler.shared.locationsArray.last {
+										let myCoord = CLLocation(latitude: currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
+										if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
 											let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
 											let metersAway = nodeCoord.distance(from: myCoord)
 											Image(systemName: "lines.measurement.horizontal")
@@ -113,7 +112,18 @@ struct NodeListItem: View {
 												.frame(width: 30)
 											DistanceText(meters: metersAway)
 												.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-												.foregroundColor(.secondary)
+												.foregroundColor(.gray)
+											let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: nodeCoord)
+											let headingDegrees = Angle.degrees(trueBearing)
+											Image(systemName: "location.north")
+												.font(.callout)
+												.symbolRenderingMode(.multicolor)
+												.clipShape(Circle())
+												.rotationEffect(headingDegrees)
+											let heading = Measurement(value: trueBearing, unit: UnitAngle.degrees)
+											Text("\(heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0)))))")
+												.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+												.foregroundColor(.gray)
 										}
 									}
 								}
@@ -124,7 +134,6 @@ struct NodeListItem: View {
 								HStack {
 									Image(systemName: "\(node.channel).circle.fill")
 										.font(.title2)
-										.symbolRenderingMode(.multicolor)
 										.frame(width: 30)
 									Text("Channel")
 										.foregroundColor(.secondary)
@@ -147,41 +156,36 @@ struct NodeListItem: View {
 								Image(systemName: "scroll")
 									.symbolRenderingMode(.hierarchical)
 									.font(.callout)
-									.frame(width: 30)
 								Text("Logs:")
 									.foregroundColor(.gray)
-									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption2)
+									.allowsTightening(true)
 								if node.hasDeviceMetrics {
 									Image(systemName: "flipphone")
 										.symbolRenderingMode(.hierarchical)
 										.font(.callout)
-										.frame(width: 30)
 								}
 								if node.hasPositions {
 									Image(systemName: "mappin.and.ellipse")
 										.symbolRenderingMode(.hierarchical)
 										.font(.callout)
-										.frame(width: 30)
+
 								}
 								if node.hasEnvironmentMetrics {
-									Image(systemName: "cloud.sun.rain.fill")
+									Image(systemName: "cloud.sun.rain")
 										.symbolRenderingMode(.hierarchical)
 										.font(.callout)
-										.frame(width: 30)
+
 								}
 								if node.hasDetectionSensorMetrics {
 									Image(systemName: "sensor")
 										.symbolRenderingMode(.hierarchical)
 										.font(.callout)
-										.frame(width: 30)
 								}
-								if #available(iOS 17.0, macOS 14.0, *) {
-									if node.hasTraceRoutes {
-										Image(systemName: "signpost.right.and.left")
-											.symbolRenderingMode(.hierarchical)
-											.font(.callout)
-											.frame(width: 30)
-									}
+								if node.hasTraceRoutes {
+									Image(systemName: "signpost.right.and.left")
+										.symbolRenderingMode(.hierarchical)
+										.font(.callout)
 								}
 							}
 						}
@@ -195,7 +199,6 @@ struct NodeListItem: View {
 									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 								Image(systemName: "\(node.hopsAway).square")
 									.font(.title2)
-									.symbolRenderingMode(.multicolor)
 							}
 						} else {
 							if node.snr != 0 && !node.viaMqtt {

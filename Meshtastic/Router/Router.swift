@@ -12,17 +12,15 @@ class Router: ObservableObject {
 	private var cancellables: Set<AnyCancellable> = []
 
 	init(
-		navigationState: NavigationState = .bluetooth
+		navigationState: NavigationState = NavigationState(
+			selectedTab: .bluetooth
+		)
 	) {
 		self.navigationState = navigationState
 
 		$navigationState.sink { destination in
 			Logger.services.info("🛣 Routed to \(String(describing: destination), privacy: .public)")
 		}.store(in: &cancellables)
-	}
-
-	func route(to destination: NavigationState) {
-		navigationState = destination
 	}
 
 	func route(url: URL) {
@@ -38,7 +36,7 @@ class Router: ObservableObject {
 		if components.path == "/messages" {
 			routeMessages(components)
 		} else if components.path == "/bluetooth" {
-			route(to: .bluetooth)
+			navigationState.selectedTab = .bluetooth
 		} else if components.path == "/nodes" {
 			routeNodes(components)
 		} else if components.path == "/map" {
@@ -75,7 +73,8 @@ class Router: ObservableObject {
 		} else {
 			nil
 		}
-		route(to: .messages(state))
+		navigationState.selectedTab = .messages
+		navigationState.messages = state
 	}
 
 	private func routeNodes(_ components: URLComponents) {
@@ -83,7 +82,9 @@ class Router: ObservableObject {
 			.first(where: { $0.name == "nodenum" })?
 			.value
 			.flatMap(Int64.init)
-		route(to: .nodes(selectedNodeNum: nodeId))
+
+		navigationState.selectedTab = .nodes
+		navigationState.nodeListSelectedNodeNum = nodeId
 	}
 
 	private func routeMap(_ components: URLComponents) {
@@ -95,12 +96,14 @@ class Router: ObservableObject {
 			.first(where: { $0.name == "waypointId" })?
 			.value
 			.flatMap(Int64.init)
-		if let nodeId {
-			route(to: .map(.selectedNode(nodeId)))
+
+		navigationState.selectedTab = .map
+		navigationState.map = if let nodeId {
+			.selectedNode(nodeId)
 		} else if let waypointId {
-			route(to: .map(.waypoint(waypointId)))
+			.waypoint(waypointId)
 		} else {
-			route(to: .map())
+			nil
 		}
 	}
 
@@ -112,6 +115,7 @@ class Router: ObservableObject {
 			.flatMap(String.init)
 			.flatMap(SettingsNavigationState.init(rawValue:))
 
-		route(to: .settings(settingFromPath))
+		navigationState.selectedTab = .settings
+		navigationState.settings = settingFromPath
 	}
 }

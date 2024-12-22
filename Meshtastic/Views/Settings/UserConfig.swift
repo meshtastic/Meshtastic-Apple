@@ -49,13 +49,14 @@ struct UserConfig: View {
 							Label(isLicensed ? "Call Sign" : "Long Name", systemImage: "person.crop.rectangle.fill")
 
 							TextField("Long Name", text: $longName)
-								.onChange(of: longName, perform: { _ in
-									let totalBytes = longName.utf8.count
+								.onChange(of: longName) {
+									var totalBytes = longName.utf8.count
 									// Only mess with the value if it is too big
-									if totalBytes > (isLicensed ? 6 : 36) {
+									while totalBytes > (isLicensed ? 6 : 36) {
 										longName = String(longName.dropLast())
+										totalBytes = longName.utf8.count
 									}
-								})
+								}
 						}
 						.keyboardType(.default)
 						.disableAutocorrection(true)
@@ -73,13 +74,14 @@ struct UserConfig: View {
 							Label("Short Name", systemImage: "circlebadge.fill")
 							TextField("Short Name", text: $shortName)
 								.foregroundColor(.gray)
-								.onChange(of: shortName, perform: { _ in
-									let totalBytes = shortName.utf8.count
+								.onChange(of: shortName) {
+									var totalBytes = shortName.utf8.count
 									// Only mess with the value if it is too big
 									if totalBytes > 4 {
 										shortName = String(shortName.dropLast())
+										totalBytes = shortName.utf8.count
 									}
-								})
+								}
 								.foregroundColor(.gray)
 						}
 						.keyboardType(.default)
@@ -195,17 +197,17 @@ struct UserConfig: View {
 			self.overrideFrequency = node?.loRaConfig?.overrideFrequency ?? 0.00
 			self.hasChanges = false
 		}
-		.onChange(of: shortName) { newShort in
+		.onChange(of: shortName) { _, newShort in
 			if node != nil && node!.user != nil {
 				if newShort != node?.user!.shortName { hasChanges = true }
 			}
 		}
-		.onChange(of: longName) { newLong in
+		.onChange(of: longName) { _, newLong in
 			if node != nil && node!.user != nil {
 				if newLong != node?.user!.longName { hasChanges = true }
 			}
 		}
-		.onChange(of: isLicensed) { newIsLicensed in
+		.onChange(of: isLicensed) { _, newIsLicensed in
 			if node != nil && node!.user != nil {
 				if newIsLicensed != node?.user!.isLicensed {
 					hasChanges = true
@@ -217,10 +219,10 @@ struct UserConfig: View {
 				}
 			}
 		}
-		.onChange(of: overrideFrequency) { _ in
+		.onChange(of: overrideFrequency) {
 			 hasChanges = true
 		}
-		.onChange(of: txPower) { _ in
+		.onChange(of: txPower) {
 			hasChanges = true
 		}
 	}

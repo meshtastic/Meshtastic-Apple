@@ -5,6 +5,9 @@ import OSLog
 class LocalNotificationManager {
 
     var notifications = [Notification]()
+	let thumbsUpAction = UNNotificationAction(identifier: "messageNotification.thumbsUpAction", title: "👍 \(Tapbacks.thumbsUp.description)", options: [])
+	let thumbsDownAction = UNNotificationAction(identifier: "messageNotification.thumbsDownAction", title: "👎  \(Tapbacks.thumbsDown.description)", options: [])
+	let replyInputAction =  UNTextInputNotificationAction(identifier: "messageNotification.replyInputAction", title: "reply".localized, options: [])
 
     // Step 1 Request Permissions for notifications
     private func requestAuthorization() {
@@ -31,6 +34,15 @@ class LocalNotificationManager {
 
     // This function iterates over the Notification objects in the notifications array and schedules them for delivery in the future
     private func scheduleNotifications() {
+		let messageNotificationCategory = UNNotificationCategory(
+				 identifier: "messageNotificationCategory",
+				 actions: [thumbsUpAction, thumbsDownAction, replyInputAction],
+				 intentIdentifiers: [],
+				 options: .customDismissAction
+				)
+
+				UNUserNotificationCenter.current().setNotificationCategories([messageNotificationCategory])
+
         for notification in notifications {
             let content = UNMutableNotificationContent()
             content.subtitle = notification.subtitle
@@ -44,6 +56,16 @@ class LocalNotificationManager {
 			}
 			if notification.path != nil {
 				content.userInfo["path"] = notification.path
+			}
+			if notification.messageId != nil {
+				content.categoryIdentifier = "messageNotificationCategory"
+				content.userInfo["messageId"] = notification.messageId
+			}
+			if notification.channel != nil {
+				content.userInfo["channel"] = notification.channel
+			}
+			if notification.userNum != nil {
+				content.userInfo["userNum"] = notification.userNum
 			}
 
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
@@ -76,4 +98,7 @@ struct Notification {
     var content: String
 	var target: String?
 	var path: String?
+	var messageId: Int64?
+	var channel: Int32?
+	var userNum: Int64?
 }

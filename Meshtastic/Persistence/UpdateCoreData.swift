@@ -148,6 +148,9 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			if packet.rxTime > 0 {
 				newNode.firstHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 				newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+			} else {
+				newNode.firstHeard = Date()
+				newNode.lastHeard = Date()
 			}
 			newNode.snr = packet.rxSnr
 			newNode.rssi = packet.rxRssi
@@ -156,12 +159,12 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			if packet.to == Constants.maximumNodeNum || packet.to == UserDefaults.preferredPeripheralNum {
 				newNode.channel = Int32(packet.channel)
 			}
-			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
+			if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
 				newNode.hopsAway = Int32(nodeInfoMessage.hopsAway)
 				newNode.favorite = nodeInfoMessage.isFavorite
 			}
 
-			if let newUserMessage = try? User(serializedData: packet.decoded.payload) {
+			if let newUserMessage = try? User(serializedBytes: packet.decoded.payload) {
 
 				if newUserMessage.id.isEmpty {
 					if packet.from > Constants.minimumNodeNum {
@@ -177,6 +180,18 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					newUser.shortName = newUserMessage.shortName
 					newUser.role = Int32(newUserMessage.role.rawValue)
 					newUser.hwModel = String(describing: newUserMessage.hwModel).uppercased()
+					newUser.hwModelId = Int32(newUserMessage.hwModel.rawValue)
+					if !newUserMessage.publicKey.isEmpty {
+						newUser.pkiEncrypted = true
+						newUser.publicKey = newUserMessage.publicKey
+					}
+
+					Task {
+						Api().loadDeviceHardwareData { (hw) in
+							let dh = hw.first(where: { $0.hwModel == newUser.hwModelId })
+							newUser.hwDisplayName = dh?.displayName
+						}
+					}
 					newNode.user = newUser
 
 					if UserDefaults.newNodeNotifications {
@@ -184,9 +199,9 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 						manager.notifications = [
 							Notification(
 								id: (UUID().uuidString),
-								title: "New Node",
+								title: "New Node".localized,
 								subtitle: "\(newUser.longName ?? "unknown".localized)",
-								content: "New Node has been discovered",
+								content: "New Node has been discovered".localized,
 								target: "nodes",
 								path: "meshtastic:///nodes?nodenum=\(newUser.num)"
 							)
@@ -197,6 +212,10 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			} else {
 				if packet.from > Constants.minimumNodeNum {
 					let newUser = createUser(num: Int64(packet.from), context: context)
+					if !packet.publicKey.isEmpty {
+						newNode.user?.pkiEncrypted = true
+						newNode.user?.publicKey = packet.publicKey
+					}
 					newNode.user = newUser
 				}
 			}
@@ -210,6 +229,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			myInfoEntity.rebootCount = 0
 			do {
 				try context.save()
+				Logger.data.info("💾 [NodeInfo] Saved a NodeInfo for node number: \(packet.from.toHex(), privacy: .public)")
 				Logger.data.info("💾 [MyInfoEntity] Saved a new myInfo for node number: \(packet.from.toHex(), privacy: .public)")
 			} catch {
 				context.rollback()
@@ -224,9 +244,8 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			fetchedNode[0].num = Int64(packet.from)
 			if packet.rxTime > 0 {
 				fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
-				if fetchedNode[0].firstHeard == nil {
-					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
-				}
+			} else {
+				fetchedNode[0].lastHeard = Date()
 			}
 			fetchedNode[0].snr = packet.rxSnr
 			fetchedNode[0].rssi = packet.rxRssi
@@ -235,7 +254,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				fetchedNode[0].channel = Int32(packet.channel)
 			}
 
-			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
+			if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
 
 				fetchedNode[0].hopsAway = Int32(nodeInfoMessage.hopsAway)
 				fetchedNode[0].favorite = nodeInfoMessage.isFavorite
@@ -257,6 +276,17 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].user!.shortName = nodeInfoMessage.user.shortName
 					fetchedNode[0].user!.role = Int32(nodeInfoMessage.user.role.rawValue)
 					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
+					fetchedNode[0].user!.hwModelId = Int32(nodeInfoMessage.user.hwModel.rawValue)
+					if !nodeInfoMessage.user.publicKey.isEmpty {
+						fetchedNode[0].user!.pkiEncrypted = true
+						fetchedNode[0].user!.publicKey = nodeInfoMessage.user.publicKey
+					}
+					Task {
+						Api().loadDeviceHardwareData { (hw) in
+							let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user?.hwModelId ?? 0 })
+							fetchedNode[0].user!.hwDisplayName = dh?.displayName
+						}
+					}
 				}
 			} else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 				fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
@@ -290,7 +320,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 
 	do {
 
-		if let positionMessage = try? Position(serializedData: packet.decoded.payload) {
+		if let positionMessage = try? Position(serializedBytes: packet.decoded.payload) {
 
 			/// Don't save empty position packets from null island or apple park
 			if (positionMessage.longitudeI != 0 && positionMessage.latitudeI != 0) && (positionMessage.latitudeI != 373346000 && positionMessage.longitudeI != -1220090000) {
@@ -347,6 +377,8 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 						fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
 					} else if packet.rxTime > 0 {
 						fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+					} else {
+						fetchedNode[0].lastHeard = Date()
 					}
 					fetchedNode[0].snr = packet.rxSnr
 					fetchedNode[0].rssi = packet.rxRssi
@@ -364,12 +396,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					}
 				}
 			} else {
-
-				if (try? NodeInfo(serializedData: packet.decoded.payload)) != nil {
-					upsertNodeInfoPacket(packet: packet, context: context)
-				} else {
-					Logger.data.error("💥 Empty POSITION_APP Packet: \((try? packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
-				}
+				Logger.data.error("💥 Empty POSITION_APP Packet: \((try? packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			}
 		}
 	} catch {
@@ -377,7 +404,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 	}
 }
 
-func upsertBluetoothConfigPacket(config: Config.BluetoothConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertBluetoothConfigPacket(config: Config.BluetoothConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.bluetooth.config %@".localized, String(nodeNum))
 	MeshLogger.log("📶 \(logString)")
@@ -394,13 +421,15 @@ func upsertBluetoothConfigPacket(config: Config.BluetoothConfig, nodeNum: Int64,
 				newBluetoothConfig.enabled = config.enabled
 				newBluetoothConfig.mode = Int32(config.mode.rawValue)
 				newBluetoothConfig.fixedPin = Int32(config.fixedPin)
-				newBluetoothConfig.deviceLoggingEnabled = config.deviceLoggingEnabled
 				fetchedNode[0].bluetoothConfig = newBluetoothConfig
 			} else {
 				fetchedNode[0].bluetoothConfig?.enabled = config.enabled
 				fetchedNode[0].bluetoothConfig?.mode = Int32(config.mode.rawValue)
 				fetchedNode[0].bluetoothConfig?.fixedPin = Int32(config.fixedPin)
-				fetchedNode[0].bluetoothConfig?.deviceLoggingEnabled = config.deviceLoggingEnabled
+			}
+			if sessionPasskey != nil {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -419,7 +448,7 @@ func upsertBluetoothConfigPacket(config: Config.BluetoothConfig, nodeNum: Int64,
 	}
 }
 
-func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.device.config %@".localized, String(nodeNum))
 	MeshLogger.log("📟 \(logString)")
@@ -433,29 +462,31 @@ func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, conte
 			if fetchedNode[0].deviceConfig == nil {
 				let newDeviceConfig = DeviceConfigEntity(context: context)
 				newDeviceConfig.role = Int32(config.role.rawValue)
-				newDeviceConfig.serialEnabled = config.serialEnabled
-				newDeviceConfig.debugLogEnabled = config.debugLogEnabled
 				newDeviceConfig.buttonGpio = Int32(config.buttonGpio)
 				newDeviceConfig.buzzerGpio =  Int32(config.buzzerGpio)
 				newDeviceConfig.rebroadcastMode = Int32(config.rebroadcastMode.rawValue)
 				newDeviceConfig.nodeInfoBroadcastSecs = Int32(truncating: config.nodeInfoBroadcastSecs as NSNumber)
 				newDeviceConfig.doubleTapAsButtonPress = config.doubleTapAsButtonPress
+				newDeviceConfig.tripleClickAsAdHocPing = !config.disableTripleClick
 				newDeviceConfig.ledHeartbeatEnabled = !config.ledHeartbeatDisabled
 				newDeviceConfig.isManaged = config.isManaged
 				newDeviceConfig.tzdef = config.tzdef
 				fetchedNode[0].deviceConfig = newDeviceConfig
 			} else {
 				fetchedNode[0].deviceConfig?.role = Int32(config.role.rawValue)
-				fetchedNode[0].deviceConfig?.serialEnabled = config.serialEnabled
-				fetchedNode[0].deviceConfig?.debugLogEnabled = config.debugLogEnabled
 				fetchedNode[0].deviceConfig?.buttonGpio = Int32(config.buttonGpio)
 				fetchedNode[0].deviceConfig?.buzzerGpio = Int32(config.buzzerGpio)
 				fetchedNode[0].deviceConfig?.rebroadcastMode = Int32(config.rebroadcastMode.rawValue)
 				fetchedNode[0].deviceConfig?.nodeInfoBroadcastSecs = Int32(truncating: config.nodeInfoBroadcastSecs as NSNumber)
 				fetchedNode[0].deviceConfig?.doubleTapAsButtonPress = config.doubleTapAsButtonPress
+				fetchedNode[0].deviceConfig?.tripleClickAsAdHocPing = !config.disableTripleClick
 				fetchedNode[0].deviceConfig?.ledHeartbeatEnabled = !config.ledHeartbeatDisabled
 				fetchedNode[0].deviceConfig?.isManaged = config.isManaged
 				fetchedNode[0].deviceConfig?.tzdef = config.tzdef
+			}
+			if sessionPasskey != nil {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -472,7 +503,7 @@ func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, conte
 	}
 }
 
-func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.display.config %@".localized, nodeNum.toHex())
 	MeshLogger.log("🖥️ \(logString)")
@@ -498,7 +529,6 @@ func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, con
 				newDisplayConfig.units = Int32(config.units.rawValue)
 				newDisplayConfig.headingBold = config.headingBold
 				fetchedNode[0].displayConfig = newDisplayConfig
-
 			} else {
 
 				fetchedNode[0].displayConfig?.gpsFormat = Int32(config.gpsFormat.rawValue)
@@ -511,7 +541,10 @@ func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, con
 				fetchedNode[0].displayConfig?.units = Int32(config.units.rawValue)
 				fetchedNode[0].displayConfig?.headingBold = config.headingBold
 			}
-
+			if sessionPasskey != nil {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+			}
 			do {
 
 				try context.save()
@@ -536,7 +569,7 @@ func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, con
 	}
 }
 
-func upsertLoRaConfigPacket(config: Config.LoRaConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertLoRaConfigPacket(config: Config.LoRaConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.lora.config %@".localized, nodeNum.toHex())
 	MeshLogger.log("📻 \(logString)")
@@ -565,6 +598,7 @@ func upsertLoRaConfigPacket(config: Config.LoRaConfig, nodeNum: Int64, context: 
 				newLoRaConfig.channelNum = Int32(config.channelNum)
 				newLoRaConfig.sx126xRxBoostedGain = config.sx126XRxBoostedGain
 				newLoRaConfig.ignoreMqtt = config.ignoreMqtt
+				newLoRaConfig.okToMqtt = config.configOkToMqtt
 				fetchedNode[0].loRaConfig = newLoRaConfig
 			} else {
 				fetchedNode[0].loRaConfig?.regionCode = Int32(config.region.rawValue)
@@ -582,7 +616,12 @@ func upsertLoRaConfigPacket(config: Config.LoRaConfig, nodeNum: Int64, context: 
 				fetchedNode[0].loRaConfig?.channelNum = Int32(config.channelNum)
 				fetchedNode[0].loRaConfig?.sx126xRxBoostedGain = config.sx126XRxBoostedGain
 				fetchedNode[0].loRaConfig?.ignoreMqtt = config.ignoreMqtt
+				fetchedNode[0].loRaConfig?.okToMqtt = config.configOkToMqtt
 				fetchedNode[0].loRaConfig?.sx126xRxBoostedGain = config.sx126XRxBoostedGain
+			}
+			if sessionPasskey != nil {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -601,7 +640,7 @@ func upsertLoRaConfigPacket(config: Config.LoRaConfig, nodeNum: Int64, context: 
 	}
 }
 
-func upsertNetworkConfigPacket(config: Config.NetworkConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertNetworkConfigPacket(config: Config.NetworkConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.network.config %@".localized, String(nodeNum))
 	MeshLogger.log("🌐 \(logString)")
@@ -626,7 +665,10 @@ func upsertNetworkConfigPacket(config: Config.NetworkConfig, nodeNum: Int64, con
 				fetchedNode[0].networkConfig?.wifiSsid = config.wifiSsid
 				fetchedNode[0].networkConfig?.wifiPsk = config.wifiPsk
 			}
-
+			if sessionPasskey != nil {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+			}
 			do {
 				try context.save()
 				Logger.data.info("💾 [NetworkConfigEntity] Updated Network Config for node: \(nodeNum.toHex(), privacy: .public)")
@@ -645,7 +687,7 @@ func upsertNetworkConfigPacket(config: Config.NetworkConfig, nodeNum: Int64, con
 	}
 }
 
-func upsertPositionConfigPacket(config: Config.PositionConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertPositionConfigPacket(config: Config.PositionConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.position.config %@".localized, String(nodeNum))
 	MeshLogger.log("🗺️ \(logString)")
@@ -688,6 +730,10 @@ func upsertPositionConfigPacket(config: Config.PositionConfig, nodeNum: Int64, c
 				fetchedNode[0].positionConfig?.gpsUpdateInterval = Int32(config.gpsUpdateInterval)
 				fetchedNode[0].positionConfig?.positionFlags = Int32(config.positionFlags)
 			}
+			if sessionPasskey != nil {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+			}
 			do {
 				try context.save()
 				Logger.data.info("💾 [PositionConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
@@ -705,7 +751,7 @@ func upsertPositionConfigPacket(config: Config.PositionConfig, nodeNum: Int64, c
 	}
 }
 
-func upsertPowerConfigPacket(config: Config.PowerConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertPowerConfigPacket(config: Config.PowerConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 	let logString = String.localizedStringWithFormat("mesh.log.power.config %@".localized, String(nodeNum))
 	MeshLogger.log("🗺️ \(logString)")
 
@@ -735,6 +781,10 @@ func upsertPowerConfigPacket(config: Config.PowerConfig, nodeNum: Int64, context
 				fetchedNode[0].powerConfig?.onBatteryShutdownAfterSecs = Int32(truncatingIfNeeded: config.onBatteryShutdownAfterSecs)
 				fetchedNode[0].powerConfig?.waitBluetoothSecs = Int32(truncatingIfNeeded: config.waitBluetoothSecs)
 			}
+			if sessionPasskey != nil {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+			}
 			do {
 				try context.save()
 				Logger.data.info("💾 [PowerConfigEntity] Updated Power Config for node: \(nodeNum.toHex(), privacy: .public)")
@@ -752,7 +802,69 @@ func upsertPowerConfigPacket(config: Config.PowerConfig, nodeNum: Int64, context
 	}
 }
 
-func upsertAmbientLightingModuleConfigPacket(config: ModuleConfig.AmbientLightingConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
+
+	let logString = String.localizedStringWithFormat("mesh.log.security.config %@".localized, String(nodeNum))
+	MeshLogger.log("🛡️ \(logString)")
+
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+
+	do {
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
+		// Found a node, save Security Config
+		if !fetchedNode.isEmpty {
+			if fetchedNode[0].securityConfig == nil {
+				let newSecurityConfig = SecurityConfigEntity(context: context)
+				newSecurityConfig.publicKey = config.publicKey
+				newSecurityConfig.privateKey = config.privateKey
+				if config.adminKey.count > 0 {
+					newSecurityConfig.adminKey = config.adminKey[0]
+				}
+				newSecurityConfig.isManaged = config.isManaged
+				newSecurityConfig.serialEnabled = config.serialEnabled
+				newSecurityConfig.debugLogApiEnabled = config.debugLogApiEnabled
+				newSecurityConfig.adminChannelEnabled = config.adminChannelEnabled
+				fetchedNode[0].securityConfig = newSecurityConfig
+			} else {
+				fetchedNode[0].securityConfig?.publicKey = config.publicKey
+				fetchedNode[0].securityConfig?.privateKey = config.privateKey
+				if config.adminKey.count > 0 {
+					fetchedNode[0].securityConfig?.adminKey = config.adminKey[0]
+					if config.adminKey.count > 1 {
+						fetchedNode[0].securityConfig?.adminKey2 = config.adminKey[1]
+					} else if config.adminKey.count > 2 {
+						fetchedNode[0].securityConfig?.adminKey3 = config.adminKey[2]
+					}
+				}
+				fetchedNode[0].securityConfig?.isManaged = config.isManaged
+				fetchedNode[0].securityConfig?.serialEnabled = config.serialEnabled
+				fetchedNode[0].securityConfig?.debugLogApiEnabled = config.debugLogApiEnabled
+				fetchedNode[0].securityConfig?.adminChannelEnabled = config.adminChannelEnabled
+			}
+			if sessionPasskey?.count != 0 {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+			}
+			do {
+				try context.save()
+				Logger.data.info("💾 [SecurityConfigEntity] Updated Security Config for node: \(nodeNum.toHex(), privacy: .public)")
+
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				Logger.data.error("💥 [SecurityConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
+			}
+		} else {
+			Logger.data.error("💥 [SecurityConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Security Config")
+		}
+	} catch {
+		let nsError = error as NSError
+		Logger.data.error("💥 [SecurityConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
+	}
+}
+
+func upsertAmbientLightingModuleConfigPacket(config: ModuleConfig.AmbientLightingConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.ambientlighting.config %@".localized, String(nodeNum))
 	MeshLogger.log("🏮 \(logString)")
@@ -766,16 +878,13 @@ func upsertAmbientLightingModuleConfigPacket(config: ModuleConfig.AmbientLightin
 		if !fetchedNode.isEmpty {
 
 			if fetchedNode[0].cannedMessageConfig == nil {
-
 				let newAmbientLightingConfig = AmbientLightingConfigEntity(context: context)
-
 				newAmbientLightingConfig.ledState = config.ledState
 				newAmbientLightingConfig.current = Int32(config.current)
 				newAmbientLightingConfig.red = Int32(config.red)
 				newAmbientLightingConfig.green = Int32(config.green)
 				newAmbientLightingConfig.blue = Int32(config.blue)
 				fetchedNode[0].ambientLightingConfig = newAmbientLightingConfig
-
 			} else {
 
 				if fetchedNode[0].ambientLightingConfig == nil {
@@ -787,7 +896,10 @@ func upsertAmbientLightingModuleConfigPacket(config: ModuleConfig.AmbientLightin
 				fetchedNode[0].ambientLightingConfig?.green = Int32(config.green)
 				fetchedNode[0].ambientLightingConfig?.blue = Int32(config.blue)
 			}
-
+			if sessionPasskey != nil {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+			}
 			do {
 				try context.save()
 				Logger.data.info("💾 [AmbientLightingConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
@@ -805,7 +917,7 @@ func upsertAmbientLightingModuleConfigPacket(config: ModuleConfig.AmbientLightin
 	}
 }
 
-func upsertCannedMessagesModuleConfigPacket(config: ModuleConfig.CannedMessageConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertCannedMessagesModuleConfigPacket(config: ModuleConfig.CannedMessageConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.cannedmessage.config %@".localized, String(nodeNum))
 	MeshLogger.log("🥫 \(logString)")
@@ -819,9 +931,7 @@ func upsertCannedMessagesModuleConfigPacket(config: ModuleConfig.CannedMessageCo
 		if !fetchedNode.isEmpty {
 
 			if fetchedNode[0].cannedMessageConfig == nil {
-
 				let newCannedMessageConfig = CannedMessageConfigEntity(context: context)
-
 				newCannedMessageConfig.enabled = config.enabled
 				newCannedMessageConfig.sendBell = config.sendBell
 				newCannedMessageConfig.rotary1Enabled = config.rotary1Enabled
@@ -832,11 +942,8 @@ func upsertCannedMessagesModuleConfigPacket(config: ModuleConfig.CannedMessageCo
 				newCannedMessageConfig.inputbrokerEventCw = Int32(config.inputbrokerEventCw.rawValue)
 				newCannedMessageConfig.inputbrokerEventCcw = Int32(config.inputbrokerEventCcw.rawValue)
 				newCannedMessageConfig.inputbrokerEventPress = Int32(config.inputbrokerEventPress.rawValue)
-
 				fetchedNode[0].cannedMessageConfig = newCannedMessageConfig
-
 			} else {
-
 				fetchedNode[0].cannedMessageConfig?.enabled = config.enabled
 				fetchedNode[0].cannedMessageConfig?.sendBell = config.sendBell
 				fetchedNode[0].cannedMessageConfig?.rotary1Enabled = config.rotary1Enabled
@@ -848,7 +955,10 @@ func upsertCannedMessagesModuleConfigPacket(config: ModuleConfig.CannedMessageCo
 				fetchedNode[0].cannedMessageConfig?.inputbrokerEventCcw = Int32(config.inputbrokerEventCcw.rawValue)
 				fetchedNode[0].cannedMessageConfig?.inputbrokerEventPress = Int32(config.inputbrokerEventPress.rawValue)
 			}
-
+			if sessionPasskey != nil {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+			}
 			do {
 				try context.save()
 				Logger.data.info("💾 [CannedMessageConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
@@ -866,7 +976,7 @@ func upsertCannedMessagesModuleConfigPacket(config: ModuleConfig.CannedMessageCo
 	}
 }
 
-func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSensorConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSensorConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.detectionsensor.config %@".localized, String(nodeNum))
 	MeshLogger.log("🕵️ \(logString)")
@@ -878,32 +988,31 @@ func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSenso
 		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save Detection Sensor Config
 		if !fetchedNode.isEmpty {
-
 			if fetchedNode[0].detectionSensorConfig == nil {
-
 				let newConfig = DetectionSensorConfigEntity(context: context)
 				newConfig.enabled = config.enabled
 				newConfig.sendBell = config.sendBell
 				newConfig.name = config.name
-
 				newConfig.monitorPin = Int32(config.monitorPin)
-				newConfig.detectionTriggeredHigh = config.detectionTriggeredHigh
+				newConfig.triggerType = Int32(config.detectionTriggerType.rawValue)
 				newConfig.usePullup = config.usePullup
 				newConfig.minimumBroadcastSecs = Int32(truncatingIfNeeded: config.minimumBroadcastSecs)
 				newConfig.stateBroadcastSecs = Int32(truncatingIfNeeded: config.stateBroadcastSecs)
 				fetchedNode[0].detectionSensorConfig = newConfig
-
 			} else {
 				fetchedNode[0].detectionSensorConfig?.enabled = config.enabled
 				fetchedNode[0].detectionSensorConfig?.sendBell = config.sendBell
 				fetchedNode[0].detectionSensorConfig?.name = config.name
 				fetchedNode[0].detectionSensorConfig?.monitorPin = Int32(config.monitorPin)
 				fetchedNode[0].detectionSensorConfig?.usePullup = config.usePullup
-				fetchedNode[0].detectionSensorConfig?.detectionTriggeredHigh = config.detectionTriggeredHigh
+				fetchedNode[0].detectionSensorConfig?.triggerType = Int32(config.detectionTriggerType.rawValue)
 				fetchedNode[0].detectionSensorConfig?.minimumBroadcastSecs = Int32(truncatingIfNeeded: config.minimumBroadcastSecs)
 				fetchedNode[0].detectionSensorConfig?.stateBroadcastSecs = Int32(truncatingIfNeeded: config.stateBroadcastSecs)
 			}
-
+			if sessionPasskey != nil {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+			}
 			do {
 				try context.save()
 				Logger.data.info("💾 [DetectionSensorConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
@@ -924,7 +1033,7 @@ func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSenso
 	}
 }
 
-func upsertExternalNotificationModuleConfigPacket(config: ModuleConfig.ExternalNotificationConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertExternalNotificationModuleConfigPacket(config: ModuleConfig.ExternalNotificationConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.externalnotification.config %@".localized, String(nodeNum))
 	MeshLogger.log("📣 \(logString)")
@@ -955,7 +1064,6 @@ func upsertExternalNotificationModuleConfigPacket(config: ModuleConfig.ExternalN
 				newExternalNotificationConfig.nagTimeout = Int32(config.nagTimeout)
 				newExternalNotificationConfig.useI2SAsBuzzer = config.useI2SAsBuzzer
 				fetchedNode[0].externalNotificationConfig = newExternalNotificationConfig
-
 			} else {
 				fetchedNode[0].externalNotificationConfig?.enabled = config.enabled
 				fetchedNode[0].externalNotificationConfig?.usePWM = config.usePwm
@@ -973,7 +1081,10 @@ func upsertExternalNotificationModuleConfigPacket(config: ModuleConfig.ExternalN
 				fetchedNode[0].externalNotificationConfig?.nagTimeout = Int32(config.nagTimeout)
 				fetchedNode[0].externalNotificationConfig?.useI2SAsBuzzer = config.useI2SAsBuzzer
 			}
-
+			if sessionPasskey != nil {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+			}
 			do {
 				try context.save()
 				Logger.data.info("💾 [ExternalNotificationConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
@@ -991,7 +1102,7 @@ func upsertExternalNotificationModuleConfigPacket(config: ModuleConfig.ExternalN
 	}
 }
 
-func upsertPaxCounterModuleConfigPacket(config: ModuleConfig.PaxcounterConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertPaxCounterModuleConfigPacket(config: ModuleConfig.PaxcounterConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.paxcounter.config %@".localized, String(nodeNum))
 	MeshLogger.log("🧑‍🤝‍🧑 \(logString)")
@@ -1003,19 +1114,19 @@ func upsertPaxCounterModuleConfigPacket(config: ModuleConfig.PaxcounterConfig, n
 		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save PAX Counter Config
 		if !fetchedNode.isEmpty {
-
 			if fetchedNode[0].paxCounterConfig == nil {
 				let newPaxCounterConfig = PaxCounterConfigEntity(context: context)
 				newPaxCounterConfig.enabled = config.enabled
 				newPaxCounterConfig.updateInterval = Int32(config.paxcounterUpdateInterval)
-
 				fetchedNode[0].paxCounterConfig = newPaxCounterConfig
-
 			} else {
 				fetchedNode[0].paxCounterConfig?.enabled = config.enabled
 				fetchedNode[0].paxCounterConfig?.updateInterval = Int32(config.paxcounterUpdateInterval)
 			}
-
+			if sessionPasskey != nil {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+			}
 			do {
 				try context.save()
 				Logger.data.info("💾 [PaxCounterConfigEntity] Updated for node number: \(nodeNum.toHex(), privacy: .public)")
@@ -1033,7 +1144,7 @@ func upsertPaxCounterModuleConfigPacket(config: ModuleConfig.PaxcounterConfig, n
 	}
 }
 
-func upsertRtttlConfigPacket(ringtone: String, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertRtttlConfigPacket(ringtone: String, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.ringtone.config %@".localized, String(nodeNum))
 	MeshLogger.log("⛰️ \(logString)")
@@ -1052,6 +1163,10 @@ func upsertRtttlConfigPacket(ringtone: String, nodeNum: Int64, context: NSManage
 			} else {
 				fetchedNode[0].rtttlConfig?.ringtone = ringtone
 			}
+			if sessionPasskey != nil {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+			}
 			do {
 				try context.save()
 				Logger.data.info("💾 [RtttlConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
@@ -1069,7 +1184,7 @@ func upsertRtttlConfigPacket(ringtone: String, nodeNum: Int64, context: NSManage
 	}
 }
 
-func upsertMqttModuleConfigPacket(config: ModuleConfig.MQTTConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertMqttModuleConfigPacket(config: ModuleConfig.MQTTConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.mqtt.config %@".localized, String(nodeNum))
 	MeshLogger.log("🌉 \(logString)")
@@ -1081,7 +1196,6 @@ func upsertMqttModuleConfigPacket(config: ModuleConfig.MQTTConfig, nodeNum: Int6
 		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save MQTT Config
 		if !fetchedNode.isEmpty {
-
 			if fetchedNode[0].mqttConfig == nil {
 				let newMQTTConfig = MQTTConfigEntity(context: context)
 				newMQTTConfig.enabled = config.enabled
@@ -1111,6 +1225,10 @@ func upsertMqttModuleConfigPacket(config: ModuleConfig.MQTTConfig, nodeNum: Int6
 				fetchedNode[0].mqttConfig?.mapPositionPrecision = Int32(config.mapReportSettings.positionPrecision)
 				fetchedNode[0].mqttConfig?.mapPublishIntervalSecs = Int32(config.mapReportSettings.publishIntervalSecs)
 			}
+			if sessionPasskey != nil {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+			}
 			do {
 				try context.save()
 				Logger.data.info("💾 [MQTTConfigEntity] Updated for node number: \(nodeNum.toHex(), privacy: .public)")
@@ -1128,7 +1246,7 @@ func upsertMqttModuleConfigPacket(config: ModuleConfig.MQTTConfig, nodeNum: Int6
 	}
 }
 
-func upsertRangeTestModuleConfigPacket(config: ModuleConfig.RangeTestConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertRangeTestModuleConfigPacket(config: ModuleConfig.RangeTestConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.rangetest.config %@".localized, String(nodeNum))
 	MeshLogger.log("⛰️ \(logString)")
@@ -1151,6 +1269,10 @@ func upsertRangeTestModuleConfigPacket(config: ModuleConfig.RangeTestConfig, nod
 				fetchedNode[0].rangeTestConfig?.enabled = config.enabled
 				fetchedNode[0].rangeTestConfig?.save = config.save
 			}
+			if sessionPasskey != nil {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+			}
 			do {
 				try context.save()
 				Logger.data.info("💾 [RangeTestConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
@@ -1168,7 +1290,7 @@ func upsertRangeTestModuleConfigPacket(config: ModuleConfig.RangeTestConfig, nod
 	}
 }
 
-func upsertSerialModuleConfigPacket(config: ModuleConfig.SerialConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertSerialModuleConfigPacket(config: ModuleConfig.SerialConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.serial.config %@".localized, String(nodeNum))
 	MeshLogger.log("🤖 \(logString)")
@@ -1180,9 +1302,7 @@ func upsertSerialModuleConfigPacket(config: ModuleConfig.SerialConfig, nodeNum: 
 		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save Device Config
 		if !fetchedNode.isEmpty {
-
 			if fetchedNode[0].serialConfig == nil {
-
 				let newSerialConfig = SerialConfigEntity(context: context)
 				newSerialConfig.enabled = config.enabled
 				newSerialConfig.echo = config.echo
@@ -1192,7 +1312,6 @@ func upsertSerialModuleConfigPacket(config: ModuleConfig.SerialConfig, nodeNum: 
 				newSerialConfig.timeout = Int32(config.timeout)
 				newSerialConfig.mode = Int32(config.mode.rawValue)
 				fetchedNode[0].serialConfig = newSerialConfig
-
 			} else {
 				fetchedNode[0].serialConfig?.enabled = config.enabled
 				fetchedNode[0].serialConfig?.echo = config.echo
@@ -1202,7 +1321,10 @@ func upsertSerialModuleConfigPacket(config: ModuleConfig.SerialConfig, nodeNum: 
 				fetchedNode[0].serialConfig?.timeout = Int32(config.timeout)
 				fetchedNode[0].serialConfig?.mode = Int32(config.mode.rawValue)
 			}
-
+			if sessionPasskey != nil {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+			}
 			do {
 				try context.save()
 				Logger.data.info("💾 [SerialConfigEntity]Updated Serial Module Config for node: \(nodeNum.toHex(), privacy: .public)")
@@ -1223,7 +1345,7 @@ func upsertSerialModuleConfigPacket(config: ModuleConfig.SerialConfig, nodeNum: 
 	}
 }
 
-func upsertStoreForwardModuleConfigPacket(config: ModuleConfig.StoreForwardConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertStoreForwardModuleConfigPacket(config: ModuleConfig.StoreForwardConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.storeforward.config %@".localized, String(nodeNum))
 	MeshLogger.log("📬 \(logString)")
@@ -1235,9 +1357,7 @@ func upsertStoreForwardModuleConfigPacket(config: ModuleConfig.StoreForwardConfi
 		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save Store & Forward Sensor Config
 		if !fetchedNode.isEmpty {
-
 			if fetchedNode[0].storeForwardConfig == nil {
-
 				let newConfig = StoreForwardConfigEntity(context: context)
 				newConfig.enabled = config.enabled
 				newConfig.heartbeat = config.heartbeat
@@ -1245,13 +1365,16 @@ func upsertStoreForwardModuleConfigPacket(config: ModuleConfig.StoreForwardConfi
 				newConfig.historyReturnMax = Int32(config.historyReturnMax)
 				newConfig.historyReturnWindow = Int32(config.historyReturnWindow)
 				fetchedNode[0].storeForwardConfig = newConfig
-
 			} else {
 				fetchedNode[0].storeForwardConfig?.enabled = config.enabled
 				fetchedNode[0].storeForwardConfig?.heartbeat = config.heartbeat
 				fetchedNode[0].storeForwardConfig?.records = Int32(config.records)
 				fetchedNode[0].storeForwardConfig?.historyReturnMax = Int32(config.historyReturnMax)
 				fetchedNode[0].storeForwardConfig?.historyReturnWindow = Int32(config.historyReturnWindow)
+			}
+			if sessionPasskey != nil {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -1270,21 +1393,18 @@ func upsertStoreForwardModuleConfigPacket(config: ModuleConfig.StoreForwardConfi
 	}
 }
 
-func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.telemetry.config %@".localized, String(nodeNum))
 	MeshLogger.log("📈 \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
-
 	do {
 		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 		// Found a node, save Telemetry Config
 		if !fetchedNode.isEmpty {
-
 			if fetchedNode[0].telemetryConfig == nil {
-
 				let newTelemetryConfig = TelemetryConfigEntity(context: context)
 				newTelemetryConfig.deviceUpdateInterval = Int32(config.deviceUpdateInterval)
 				newTelemetryConfig.environmentUpdateInterval = Int32(config.environmentUpdateInterval)
@@ -1295,7 +1415,6 @@ func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nod
 				newTelemetryConfig.powerUpdateInterval = Int32(config.powerUpdateInterval)
 				newTelemetryConfig.powerScreenEnabled = config.powerScreenEnabled
 				fetchedNode[0].telemetryConfig = newTelemetryConfig
-
 			} else {
 				fetchedNode[0].telemetryConfig?.deviceUpdateInterval = Int32(config.deviceUpdateInterval)
 				fetchedNode[0].telemetryConfig?.environmentUpdateInterval = Int32(config.environmentUpdateInterval)
@@ -1306,7 +1425,10 @@ func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nod
 				fetchedNode[0].telemetryConfig?.powerUpdateInterval = Int32(config.powerUpdateInterval)
 				fetchedNode[0].telemetryConfig?.powerScreenEnabled = config.powerScreenEnabled
 			}
-
+			if sessionPasskey != nil {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+			}
 			do {
 				try context.save()
 				Logger.data.info("💾 [TelemetryConfigEntity] Updated Telemetry Module Config for node: \(nodeNum.toHex(), privacy: .public)")

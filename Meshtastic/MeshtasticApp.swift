@@ -3,11 +3,8 @@
 import SwiftUI
 import CoreData
 import OSLog
-#if canImport(TipKit)
 import TipKit
-#endif
 
-@available(iOS 17.0, *)
 @main
 struct MeshtasticAppleApp: App {
 
@@ -17,8 +14,8 @@ struct MeshtasticAppleApp: App {
 	@ObservedObject
 	var appState: AppState
 
-	@ObservedObject
-	private var bleManager: BLEManager
+//	@ObservedObject
+//	private var bleManager: BLEManager
 
 	private let persistenceController: PersistenceController
 
@@ -35,10 +32,8 @@ struct MeshtasticAppleApp: App {
 		)
 		self._appState = ObservedObject(wrappedValue: appState)
 
-		self.bleManager = BLEManager(
-			appState: appState,
-			context: persistenceController.container.viewContext
-		)
+		// Initialize the BLEManager singleton with the necessary dependencies
+		BLEManager.setup(appState: appState, context: persistenceController.container.viewContext)
 		self.persistenceController = persistenceController
 
 		// Wire up router
@@ -53,9 +48,9 @@ struct MeshtasticAppleApp: App {
 			)
 			.environment(\.managedObjectContext, persistenceController.container.viewContext)
 			.environmentObject(appState)
-			.environmentObject(bleManager)
+			.environmentObject(BLEManager.shared)
 			.sheet(isPresented: $saveChannels) {
-				SaveChannelQRCode(channelSetLink: channelSettings ?? "Empty Channel URL", addChannels: addChannels, bleManager: bleManager)
+				SaveChannelQRCode(channelSetLink: channelSettings ?? "Empty Channel URL", addChannels: addChannels, bleManager: BLEManager.shared)
 					.presentationDetents([.large])
 					.presentationDragIndicator(.visible)
 			}
@@ -93,7 +88,7 @@ struct MeshtasticAppleApp: App {
 				if url.absoluteString.lowercased().contains("meshtastic.org/e/#") {
 					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
 						self.addChannels = Bool(self.incomingUrl?["add"] ?? "false") ?? false
-						if ((self.incomingUrl?.absoluteString.lowercased().contains("?")) != nil) {
+						if self.incomingUrl?.absoluteString.lowercased().contains("?") != nil {
 							guard let cs = components.last!.components(separatedBy: "?").first else {
 								return
 							}
@@ -110,71 +105,27 @@ struct MeshtasticAppleApp: App {
 					Logger.mesh.debug("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link")")
 				} else if url.absoluteString.lowercased().contains("meshtastic:///") {
 					appState.router.route(url: url)
-				} else {
-					saveChannels = false
-					Logger.mesh.debug("User wants to import a MBTILES offline map file: \(self.incomingUrl?.absoluteString ?? "No Tiles link")")
-				}
-
-				/// Only do the map tiles stuff if it is enabled
-				if UserDefaults.enableOfflineMapsMBTiles {
-					/// we are expecting a .mbtiles map file that contains raster data
-					/// save it to the documents directory, and name it offline_map.mbtiles
-					let fileManager = FileManager.default
-					let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-					let destination = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false)
-
-					if !self.saveChannels {
-
-						// tell the system we want the file please
-						guard url.startAccessingSecurityScopedResource() else {
-							return
-						}
-
-						// do we need to delete an old one?
-						if fileManager.fileExists(atPath: destination.path) {
-							Logger.mesh.info("Found an old map file.  Deleting it")
-							try? fileManager.removeItem(atPath: destination.path)
-						}
-
-						do {
-							try fileManager.copyItem(at: url, to: destination)
-						} catch {
-							Logger.mesh.error("Copy MB Tile file failed. Error: \(error.localizedDescription)")
-						}
-
-						if fileManager.fileExists(atPath: destination.path) {
-							Logger.mesh.info("Saved the map file")
-
-							// need to tell the map view that it needs to update and try loading the new overlay
-							UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "lastUpdatedLocalMapFile")
-
-						} else {
-							Logger.mesh.error("Didn't save the map file")
-						}
-					}
 				}
 			})
 			.task {
-				if #available(iOS 17.0, macOS 14.0, *) {
-					#if DEBUG
-					/// Optionally, call `Tips.resetDatastore()` before `Tips.configure()` to reset the state of all tips. This will allow tips to re-appear even after they have been dismissed by the user.
-					/// This is for testing only, and should not be enabled in release builds.
-					try? Tips.resetDatastore()
-					#endif
+				#if DEBUG
+				/// Optionally, call `Tips.resetDatastore()` before `Tips.configure()` to reset the state of all tips. This will allow tips to re-appear even after they have been dismissed by the user.
+				/// This is for testing only, and should not be enabled in release builds.
+				try? Tips.resetDatastore()
+				#endif
 
-					try? Tips.configure(
-						[
-							// Reset which tips have been shown and what parameters have been tracked, useful during testing and for this sample project
-							.datastoreLocation(.applicationDefault),
-							// When should the tips be presented? If you use .immediate, they'll all be presented whenever a screen with a tip appears.
-							// You can adjust this on per tip level as well
-							.displayFrequency(.immediate)
-						]
-					)
-				}
+				try? Tips.configure(
+					[
+						// Reset which tips have been shown and what parameters have been tracked, useful during testing and for this sample project
+						.datastoreLocation(.applicationDefault),
+						// When should the tips be presented? If you use .immediate, they'll all be presented whenever a screen with a tip appears.
+						// You can adjust this on per tip level as well
+						.displayFrequency(.immediate)
+					]
+				)
 			}
 		}
-		.onChange(of: scenePhase) { (newScenePhase) in
+		.onChange(of: scenePhase) { (_, newScenePhase) in
 			switch newScenePhase {
 			case .background:
 				Logger.services.info("🎬 [App] Scene is in the background")

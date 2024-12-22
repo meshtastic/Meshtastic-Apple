@@ -8,9 +8,7 @@
 import SwiftUI
 import CoreData
 import OSLog
-#if canImport(TipKit)
 import TipKit
-#endif
 
 struct UserList: View {
 
@@ -20,24 +18,38 @@ struct UserList: View {
 	@State private var viaLora = true
 	@State private var viaMqtt = true
 	@State private var isOnline = false
+	@State private var isPkiEncrypted = false
 	@State private var isFavorite = false
+	@State private var isIgnored = false
 	@State private var isEnvironment = false
 	@State private var distanceFilter = false
 	@State private var maxDistance: Double = 800000
 	@State private var hopsAway: Double = -1.0
 	@State private var roleFilter = false
 	@State private var deviceRoles: Set<Int> = []
-	@State var isEditingFilters = false
+	@State private var editingFilters = false
+	@State private var showingHelp = false
+	@State private var showingTrustConfirm: Bool = false
+
+	var boolFilters: [Bool] {[
+		isFavorite,
+		isOnline,
+		isEnvironment,
+		distanceFilter,
+		roleFilter
+	]}
 
 	@FetchRequest(
 		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false),
 						  NSSortDescriptor(key: "userNode.favorite", ascending: false),
+						  NSSortDescriptor(key: "pkiEncrypted", ascending: false),
+						  NSSortDescriptor(key: "userNode.lastHeard", ascending: false),
 						  NSSortDescriptor(key: "longName", ascending: true)],
 		predicate: NSPredicate(
-		  format: "NOT (userNode.viaMqtt == YES AND userNode.hopsAway > 0)"
+		  format: "userNode.ignored == false && longName != '' AND NOT (userNode.viaMqtt == YES AND userNode.hopsAway > 0)"
 		), animation: .default
 	)
-	private var users: FetchedResults<UserEntity>
+	var users: FetchedResults<UserEntity>
 
 	@Binding var node: NodeInfoEntity?
 	@Binding var userSelection: UserEntity?
@@ -49,9 +61,6 @@ struct UserList: View {
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 		VStack {
 			List(selection: $userSelection) {
-				if #available(iOS 17.0, macOS 14.0, *) {
-					TipView(ContactsTip(), arrowEdge: .bottom)
-				}
 				ForEach(users) { (user: UserEntity) in
 					let mostRecent = user.messageList.last
 					let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
@@ -71,8 +80,22 @@ struct UserList: View {
 
 							VStack(alignment: .leading) {
 								HStack {
+									if user.pkiEncrypted {
+										if !user.keyMatch {
+											/// Public Key on the User and the Public Key on the Last Message don't match
+											Image(systemName: "key.slash")
+												.foregroundColor(.red)
+										} else {
+											Image(systemName: "lock.fill")
+												.foregroundColor(.green)
+										}
+									} else {
+										Image(systemName: "lock.open.fill")
+											.foregroundColor(.yellow)
+									}
 									Text(user.longName ?? "unknown".localized)
 										.font(.headline)
+										.allowsTightening(true)
 									Spacer()
 									if user.userNode?.favorite ?? false {
 										Image(systemName: "star.fill")
@@ -171,75 +194,104 @@ struct UserList: View {
 				}
 			}
 			.listStyle(.plain)
-			.navigationTitle(String.localizedStringWithFormat("contacts %@".localized, String(users.count == 0 ? 0 : users.count - 1)))
-			.sheet(isPresented: $isEditingFilters) {
-				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isFavorite: $isFavorite, isEnvironment: $isEnvironment, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
+			.navigationTitle(String.localizedStringWithFormat("contacts %@".localized, String(users.count == 0 ? 0 : users.count)))
+			.sheet(isPresented: $editingFilters) {
+				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isPkiEncrypted: $isPkiEncrypted, isFavorite: $isFavorite, isIgnored: $isIgnored, isEnvironment: $isEnvironment, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
 			}
-			.onChange(of: searchText) { _ in
-				searchUserList()
+			.sheet(isPresented: $showingHelp) {
+				DirectMessagesHelp()
 			}
-			.onChange(of: viaLora) { _ in
+			.onChange(of: searchText) {
+				Task {
+					await searchUserList()
+				}
+			}
+			.onChange(of: viaLora) {
 				if !viaLora && !viaMqtt {
 					viaMqtt = true
 				}
-				searchUserList()
+				Task {
+					await searchUserList()
+				}
 			}
-			.onChange(of: viaMqtt) { _ in
+			.onChange(of: viaMqtt) {
 				if !viaLora && !viaMqtt {
 					viaLora = true
 				}
-				searchUserList()
+				Task {
+					await searchUserList()
+				}
 			}
-			.onChange(of: [deviceRoles]) { _ in
-				searchUserList()
+			.onChange(of: [deviceRoles]) {
+				Task {
+					await searchUserList()
+				}
 			}
-			.onChange(of: hopsAway) { _ in
-				searchUserList()
+			.onChange(of: hopsAway) {
+				Task {
+					await searchUserList()
+				}
 			}
-			.onChange(of: isOnline) { _ in
-				searchUserList()
+			.onChange(of: [boolFilters]) {
+				Task {
+					await searchUserList()
+				}
 			}
-			.onChange(of: isFavorite) { _ in
-				searchUserList()
+			.onChange(of: maxDistance) {
+				Task {
+					await searchUserList()
+				}
 			}
-			.onChange(of: maxDistance) { _ in
-				searchUserList()
-			}
-			.onChange(of: distanceFilter) { _ in
-				searchUserList()
+			.onChange(of: isPkiEncrypted) {
+				Task {
+					await searchUserList()
+				}
 			}
 			.onAppear {
-				searchUserList()
+				Task {
+					await searchUserList()
+				}
 			}
-			.safeAreaInset(edge: .bottom, alignment: .trailing) {
+			.safeAreaInset(edge: .bottom, alignment: .leading) {
 				HStack {
 					Button(action: {
 						withAnimation {
-							isEditingFilters = !isEditingFilters
+							showingHelp = !showingHelp
 						}
 					}) {
-						Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+						Image(systemName: !editingFilters ? "questionmark.circle" : "questionmark.circle.fill")
 							.padding(.vertical, 5)
 					}
 					.tint(Color(UIColor.secondarySystemBackground))
 					.foregroundColor(.accentColor)
 					.buttonStyle(.borderedProminent)
-
+					Spacer()
+					Button(action: {
+						withAnimation {
+							editingFilters = !editingFilters
+						}
+					}) {
+						Image(systemName: !editingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+							.padding(.vertical, 5)
+					}
+					.tint(Color(UIColor.secondarySystemBackground))
+					.foregroundColor(.accentColor)
+					.buttonStyle(.borderedProminent)
 				}
 				.controlSize(.regular)
 				.padding(5)
 			}
+			.padding(.bottom, 5)
 			.padding(.bottom, 5)
 			.searchable(text: $searchText, placement: users.count > 10 ? .navigationBarDrawer(displayMode: .always) : .automatic, prompt: "Find a contact")
 				.disableAutocorrection(true)
 				.scrollDismissesKeyboard(.immediately)
 		}
 	}
-
-	private func searchUserList() {
+	private func searchUserList() async {
 
 		/// Case Insensitive Search Text Predicates
-		let searchPredicates = ["userId", "numString", "hwModel", "longName", "shortName"].map { property in
+		let searchPredicates = ["userId", "numString", "hwModel", "hwDisplayName", "longName", "shortName"].map { property in
 			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
 		}
 		/// Create a compound predicate using each text search preicate as an OR
@@ -279,8 +331,13 @@ struct UserList: View {
 		}
 		/// Online
 		if isOnline {
-			let isOnlinePredicate = NSPredicate(format: "userNode.lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -15, to: Date())! as NSDate)
+			let isOnlinePredicate = NSPredicate(format: "userNode.lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -120, to: Date())! as NSDate)
 			predicates.append(isOnlinePredicate)
+		}
+		/// Encrypted
+		if isPkiEncrypted {
+			let isPkiEncryptedPredicate = NSPredicate(format: "pkiEncrypted == YES")
+			predicates.append(isPkiEncryptedPredicate)
 		}
 		/// Favorites
 		if isFavorite {

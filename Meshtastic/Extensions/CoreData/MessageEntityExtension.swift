@@ -14,11 +14,21 @@ import SwiftUI
 
 extension MessageEntity {
 	var timestamp: Date {
-		let time = messageTimestamp <= 0 ? receivedTimestamp : messageTimestamp
+		let time = messageTimestamp
 		return Date(timeIntervalSince1970: TimeInterval(time))
 	}
 
 	var canRetry: Bool {
-		return ackError == 9 || ackError == 5 || ackError == 3
+		let re = RoutingError(rawValue: Int(ackError))
+		return re?.canRetry ?? false
+	}
+
+	var tapbacks: [MessageEntity] {
+		let context = PersistenceController.shared.container.viewContext
+		let fetchRequest = MessageEntity.fetchRequest()
+		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
+		fetchRequest.predicate = NSPredicate(format: "replyID == %lld AND isEmoji == true", self.messageId)
+
+		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
 	}
 }

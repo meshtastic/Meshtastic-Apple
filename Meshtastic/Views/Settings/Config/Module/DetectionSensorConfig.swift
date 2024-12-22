@@ -36,7 +36,7 @@ struct DetectionSensorConfig: View {
 	@State var enabled = false
 	@State var sendBell: Bool = false
 	@State var name: String = ""
-	@State var detectionTriggeredHigh: Bool = true
+	@State var triggerType = 0
 	@State var usePullup: Bool = false
 	@State var minimumBroadcastSecs = 0
 	@State var stateBroadcastSecs = 0
@@ -91,14 +91,14 @@ struct DetectionSensorConfig: View {
 								.foregroundColor(.gray)
 								.autocapitalization(.none)
 								.disableAutocorrection(true)
-								.onChange(of: name, perform: { _ in
-
-									let totalBytes = name.utf8.count
+								.onChange(of: name) {
+									var totalBytes = name.utf8.count
 									// Only mess with the value if it is too big
-									if totalBytes > 20 {
+									while totalBytes > 20 {
 										name = String(name.dropLast())
+										totalBytes = name.utf8.count
 									}
-								})
+								}
 						}
 						.listRowSeparator(.hidden)
 						Text("Friendly name used to format message sent to mesh. Example: A name \"Motion\" would result in a message \"Motion detected\"")
@@ -116,11 +116,13 @@ struct DetectionSensorConfig: View {
 						}
 						.pickerStyle(DefaultPickerStyle())
 
-						Toggle(isOn: $detectionTriggeredHigh) {
-							Label("Detection trigger High", systemImage: "dial.high")
-							Text("Whether or not the GPIO pin state detection is triggered on HIGH (1) or LOW (0)")
+						Picker("TriggerType", selection: $triggerType) {
+							ForEach(TriggerTypes.allCases) { tt in
+								Text(tt.name).tag(tt.rawValue)
+							}
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.pickerStyle(DefaultPickerStyle())
+						.listRowSeparator(.hidden)
 
 						Toggle(isOn: $usePullup) {
 							Label("Uses pullup resistor", systemImage: "arrow.up.to.line")
@@ -166,7 +168,7 @@ struct DetectionSensorConfig: View {
 				dsc.sendBell = self.sendBell
 				dsc.name = self.name
 				dsc.monitorPin = UInt32(self.monitorPin)
-				dsc.detectionTriggeredHigh = self.detectionTriggeredHigh
+				dsc.detectionTriggerType = TriggerTypes(rawValue: triggerType)!.protoEnumValue()
 				dsc.usePullup = self.usePullup
 				dsc.minimumBroadcastSecs = UInt32(self.minimumBroadcastSecs)
 				dsc.stateBroadcastSecs = UInt32(self.stateBroadcastSecs)
@@ -180,62 +182,62 @@ struct DetectionSensorConfig: View {
 			}
 		}
 		.navigationTitle("detection.sensor.config")
-		.navigationBarItems(trailing:
-			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
-		.onAppear {
-			setDetectionSensorValues()
-			// Need to request a Detection Sensor Module Config from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.detectionSensorConfig == nil {
-				Logger.mesh.info("empty detection sensor module config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestDetectionSensorModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
+		.onFirstAppear {
+			// Need to request a DetectionSensorModuleConfig from the remote node before allowing changes
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let connectedNode {
+					if node.num != connectedNode.num {
+						if UserDefaults.enableAdministration && node.num != connectedNode.num {
+							/// 2.5 Administration with session passkey
+							let expiration = node.sessionExpiration ?? Date()
+							if expiration < Date() || node.detectionSensorConfig == nil {
+								Logger.mesh.info("⚙️ Empty or expired detection sensor module config requesting via PKI admin")
+								_ = bleManager.requestDetectionSensorModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						} else {
+							/// Legacy Administration
+							Logger.mesh.info("☠️ Using insecure legacy admin, empty detection sensor module config")
+							_ = bleManager.requestDetectionSensorModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					}
 				}
 			}
 		}
-		.onChange(of: enabled) { newEnabled in
-			if node != nil && node?.detectionSensorConfig != nil {
-				if newEnabled != node!.detectionSensorConfig!.enabled { hasChanges = true }
-			}
+		.onChange(of: enabled) { _, newEnabled in
+			if newEnabled != node?.detectionSensorConfig?.enabled { hasChanges = true }
 		}
-		.onChange(of: sendBell) { newSendBell in
-			if node != nil && node?.detectionSensorConfig != nil {
-				if newSendBell != node!.detectionSensorConfig!.sendBell { hasChanges = true }
-			}
+		.onChange(of: sendBell) { _, newSendBell in
+			if newSendBell != node?.detectionSensorConfig?.sendBell { hasChanges = true }
 		}
-		.onChange(of: detectionTriggeredHigh) { newDetectionTriggeredHigh in
-			if node != nil && node?.detectionSensorConfig != nil {
-				if newDetectionTriggeredHigh != node!.detectionSensorConfig!.detectionTriggeredHigh { hasChanges = true }
-			}
+		.onChange(of: triggerType) { _, newTriggerType in
+			if newTriggerType != node?.detectionSensorConfig?.triggerType ?? 0 { hasChanges = true }
 		}
-		.onChange(of: usePullup) { newUsePullup in
-			if node != nil && node?.detectionSensorConfig != nil {
-				if newUsePullup != node!.detectionSensorConfig!.usePullup { hasChanges = true }
-			}
+		.onChange(of: usePullup) { _, newUsePullup in
+			if newUsePullup != node?.detectionSensorConfig?.usePullup { hasChanges = true }
 		}
-		.onChange(of: name) { newName in
-			if node != nil && node?.detectionSensorConfig != nil {
-				if newName != node!.detectionSensorConfig!.name { hasChanges = true }
-			}
+		.onChange(of: name) { _, newName in
+			if newName != node?.detectionSensorConfig?.name ?? "" { hasChanges = true }
 		}
-		.onChange(of: monitorPin) { newMonitorPin in
-			if node != nil && node?.detectionSensorConfig != nil {
-				if newMonitorPin != node!.detectionSensorConfig!.monitorPin { hasChanges = true }
-			}
+		.onChange(of: monitorPin) { _, newMonitorPin in
+			if newMonitorPin != node?.detectionSensorConfig?.monitorPin ?? 0 { hasChanges = true }
 		}
-		.onChange(of: minimumBroadcastSecs) { newMinimumBroadcastSecs in
-			if node != nil && node?.detectionSensorConfig != nil {
-				if newMinimumBroadcastSecs != node!.detectionSensorConfig!.minimumBroadcastSecs { hasChanges = true }
-			}
+		.onChange(of: minimumBroadcastSecs) { _, newMinimumBroadcastSecs in
+			if newMinimumBroadcastSecs != node?.detectionSensorConfig?.minimumBroadcastSecs ?? 0 { hasChanges = true }
 		}
-		.onChange(of: stateBroadcastSecs) { newStateBroadcastSecs in
-			if node != nil && node?.detectionSensorConfig != nil {
-				if newStateBroadcastSecs != node!.detectionSensorConfig!.stateBroadcastSecs { hasChanges = true }
-			}
+		.onChange(of: stateBroadcastSecs) { _, newStateBroadcastSecs in
+			if newStateBroadcastSecs != node?.detectionSensorConfig?.stateBroadcastSecs ?? 0 { hasChanges = true }
 		}
-		.onChange(of: detectionNotificationsEnabled) { newDetectionNotificationsEnabled in
+		.onChange(of: detectionNotificationsEnabled) { _, newDetectionNotificationsEnabled in
 			UserDefaults.enableDetectionNotifications = newDetectionNotificationsEnabled
 		}
 	}
@@ -245,7 +247,7 @@ struct DetectionSensorConfig: View {
 		self.name = (node?.detectionSensorConfig?.name ?? "")
 		self.monitorPin = Int(node?.detectionSensorConfig?.monitorPin ?? 0)
 		self.usePullup = (node?.detectionSensorConfig?.usePullup ?? false)
-		self.detectionTriggeredHigh = (node?.detectionSensorConfig?.detectionTriggeredHigh ?? true)
+		self.triggerType = Int(node?.detectionSensorConfig?.triggerType ?? 0)
 		self.minimumBroadcastSecs = Int(node?.detectionSensorConfig?.minimumBroadcastSecs ?? 45)
 		self.stateBroadcastSecs = Int(node?.detectionSensorConfig?.stateBroadcastSecs ?? 0)
 

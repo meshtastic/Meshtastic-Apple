@@ -29,7 +29,7 @@ public func getStoreAndForwardMessageIds(seconds: Int, context: NSManagedObjectC
 	let fetchMessagesRequest = MessageEntity.fetchRequest()
 	let timeRange = Calendar.current.date(byAdding: .minute, value: time, to: Date())
 	let milleseconds = Int32(timeRange?.timeIntervalSince1970 ?? 0)
-	fetchMessagesRequest.predicate =  NSPredicate(format: "receivedTimestamp >= %d", milleseconds)
+	fetchMessagesRequest.predicate =  NSPredicate(format: "messageTimestamp >= %d", milleseconds)
 
 	do {
 		let fetchedMessages = try context.fetch(fetchMessagesRequest)

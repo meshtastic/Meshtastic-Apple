@@ -72,35 +72,45 @@ struct RangeTestConfig: View {
 				}
 			}
 			.navigationTitle("range.test.config")
-			.navigationBarItems(trailing:
-				ZStack {
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-			})
-			.onAppear {
-				setRangeTestValues()
-				// Need to request a RangeTestModule Config from the remote node before allowing changes
-				if bleManager.connectedPeripheral != nil && node?.rangeTestConfig == nil {
-					Logger.mesh.debug("empty range test module config")
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if node != nil && connectedNode != nil {
-						_ = bleManager.requestRangeTestModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+			.navigationBarItems(
+				trailing: ZStack {
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: bleManager.connectedPeripheral?.shortName ?? "?"
+					)
+				}
+			)
+			.onFirstAppear {
+				// Need to request a RangeTestModuleConfig from the remote node before allowing changes
+				if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+					if let connectedNode {
+						if node.num != connectedNode.num {
+							if UserDefaults.enableAdministration && node.num != connectedNode.num {
+								/// 2.5 Administration with session passkey
+								let expiration = node.sessionExpiration ?? Date()
+								if expiration < Date() || node.rangeTestConfig == nil {
+									Logger.mesh.info("⚙️ Empty or expired range test module config requesting via PKI admin")
+									_ = bleManager.requestRangeTestModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								}
+							} else {
+								/// Legacy Administration
+								Logger.mesh.info("☠️ Using insecure legacy admin, empty range test module config")
+								_ = bleManager.requestRangeTestModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						}
 					}
 				}
 			}
-			.onChange(of: enabled) { newEnabled in
-				if node != nil && node!.rangeTestConfig != nil {
-					if newEnabled != node!.rangeTestConfig!.enabled { hasChanges = true }
-				}
+			.onChange(of: enabled) { _, newEnabled in
+				if newEnabled != node?.rangeTestConfig?.enabled { hasChanges = true }
 			}
-			.onChange(of: save) { newSave in
-				if node != nil && node!.rangeTestConfig != nil {
-					if newSave != node!.rangeTestConfig!.save { hasChanges = true }
-				}
+			.onChange(of: save) { _, newSave in
+				if newSave != node?.rangeTestConfig?.save { hasChanges = true }
 			}
-			.onChange(of: sender) { newSender in
-				if node != nil && node!.rangeTestConfig != nil {
-					if newSender != node!.rangeTestConfig!.sender { hasChanges = true }
-				}
+			.onChange(of: sender) { _, newSender in
+				if newSender != node?.rangeTestConfig?.sender ?? -1 { hasChanges = true }
 			}
 		}
 	}
