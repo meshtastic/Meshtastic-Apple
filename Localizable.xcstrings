@@ -297,6 +297,7 @@
       }
     },
     "%@ hPa" : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
@@ -9252,9 +9253,6 @@
           }
         }
       }
-    },
-    "Done" : {
-
     },
     "Double Tap as Button" : {
       "localizations" : {
@@ -29835,8 +29833,8 @@
         }
       }
     },
-
     "Trace route received directly by %@ with a SNR of %@ dB" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

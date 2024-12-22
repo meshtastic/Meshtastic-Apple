@@ -22,7 +22,7 @@ struct GPSStatus: View {
 		let altitiude = Measurement(value: newLocation.altitude, unit: UnitLength.meters)
 		let speed = Measurement(value: newLocation.speed, unit: UnitSpeed.kilometersPerHour)
 		let speedAccuracy = Measurement(value: newLocation.speedAccuracy, unit: UnitSpeed.metersPerSecond)
-		let courseAccuracy = Measurement(value: newLocation.courseAccuracy, unit: UnitAngle.degrees)
+		let courseAccuracy = Measurement(value: newLocation.courseAccuracy, unit: UnitAngle.degrees).reciprocal()
 
 			Label("Coordinate \(String(format: "%.5f", newLocation.coordinate.latitude)), \(String(format: "%.5f", newLocation.coordinate.longitude))", systemImage: "mappin")
 				.font(largeFont)
@@ -45,7 +45,7 @@ struct GPSStatus: View {
 			HStack {
 				let degrees = Angle.degrees(newLocation.course)
 				Label {
-					let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees)
+					let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees).reciprocal()
 					Text("Heading: \(heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0)))))")
 				} icon: {
 					Image(systemName: "location.north")

@@ -120,7 +120,7 @@ struct NodeListItem: View {
 												.symbolRenderingMode(.multicolor)
 												.clipShape(Circle())
 												.rotationEffect(headingDegrees)
-											let heading = Measurement(value: trueBearing, unit: UnitAngle.degrees)
+											let heading = Measurement(value: trueBearing, unit: UnitAngle.degrees).reciprocal()
 											Text("\(heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0)))))")
 												.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 												.foregroundColor(.gray)

@@ -52,7 +52,7 @@ struct PositionLog: View {
 						}
 						TableColumn("Heading") { position in
 							let degrees = Angle.degrees(Double(position.heading))
-							let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees)
+							let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees).reciprocal()
 							Text(heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0)))))
 						}
 						TableColumn("SNR") { position in
