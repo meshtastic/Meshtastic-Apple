@@ -324,7 +324,8 @@ struct Connect: View {
 			}
 		}
 	}
-	#if canImport(ActivityKit)
+#if !targetEnvironment(macCatalyst)
+#if canImport(ActivityKit)
 	func startNodeActivity() {
 		liveActivityStarted = true
 		// 15 Minutes Local Stats Interval
@@ -367,8 +368,8 @@ struct Connect: View {
 			}
 		}
 	}
-	#endif
-
+#endif
+#endif
 	func didDismissSheet() {
 		bleManager.disconnectPeripheral(reconnect: false)
 	}

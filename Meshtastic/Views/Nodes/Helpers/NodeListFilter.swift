@@ -17,6 +17,7 @@ struct NodeListFilter: View {
 	@Binding var isOnline: Bool
 	@Binding var isPkiEncrypted: Bool
 	@Binding var isFavorite: Bool
+	@Binding var isIgnored: Bool
 	@Binding var isEnvironment: Bool
 	@Binding var distanceFilter: Bool
 	@Binding var maximumDistance: Double
@@ -85,6 +86,18 @@ struct NodeListFilter: View {
 						} icon: {
 
 							Image(systemName: "star.fill")
+								.symbolRenderingMode(.multicolor)
+						}
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.listRowSeparator(.visible)
+					Toggle(isOn: $isIgnored) {
+
+						Label {
+							Text("Ignored")
+						} icon: {
+
+							Image(systemName: "minus.circle.fill")
 								.symbolRenderingMode(.multicolor)
 						}
 					}

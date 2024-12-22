@@ -6,7 +6,7 @@ SwiftUI client applications for iOS, iPadOS and macOS.
 
 ## Getting Started
 
-This project is currently using **Xcode 15.4**. 
+This project always uses the latest release version of XCode.
 
 1. Clone the repo.
 2. Set up git hooks to automatically lint the project when you commit changes.

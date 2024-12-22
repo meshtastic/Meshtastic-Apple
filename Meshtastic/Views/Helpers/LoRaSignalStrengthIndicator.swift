@@ -47,13 +47,13 @@ enum LoRaSignalStrength: Int {
 	var description: String {
 		switch self {
 		case .none:
-			return "None"
+			return "lora.signal.strength.none".localized
 		case .bad:
-			return "Bad"
+			return "lora.signal.strength.bad".localized
 		case .fair:
-			return "Fair"
+			return "lora.signal.strength.fair".localized
 		case .good:
-			return "Good"
+			return "lora.signal.strength.good".localized
 		}
 	}
 }
