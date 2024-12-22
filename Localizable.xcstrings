@@ -18675,7 +18675,7 @@
       }
     },
     "mesh.log.traceroute.received.direct %@" : {
-      "extractionState" : "migrated",
+      "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -29817,6 +29817,7 @@
         }
       }
     },
+
     "Trace route received directly by %@ with a SNR of %@ dB" : {
       "localizations" : {
         "en" : {
