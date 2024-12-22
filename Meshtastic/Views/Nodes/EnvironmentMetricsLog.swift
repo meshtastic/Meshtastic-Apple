@@ -109,7 +109,7 @@ struct EnvironmentMetricsLog: View {
 					Button {
 						self.isEditingColumnConfiguration = true
 					} label: {
-						Label("Config", systemImage: "gearshape")
+						Label("Config", systemImage: "tablecells")
 							.imageScale(imageScale)
 					}
 					.buttonStyle(.bordered)
