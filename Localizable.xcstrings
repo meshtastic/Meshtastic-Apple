@@ -297,6 +297,7 @@
       }
     },
     "%@ hPa" : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
@@ -2390,6 +2391,7 @@
       }
     },
     "Bad" : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
@@ -4518,6 +4520,9 @@
         }
       }
     },
+    "Chart" : {
+
+    },
     "CHG" : {
       "localizations" : {
         "sr" : {
@@ -4869,6 +4874,9 @@
           }
         }
       }
+    },
+    "Config" : {
+
     },
     "config.module.paxcounter.enabled.description" : {
       "localizations" : {
@@ -18674,7 +18682,7 @@
       }
     },
     "mesh.log.traceroute.received.direct %@" : {
-      "extractionState" : "migrated",
+      "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -19348,6 +19356,9 @@
           }
         }
       }
+    },
+    "Metric" : {
+
     },
     "Minimum Distance" : {
       "localizations" : {
@@ -26504,6 +26515,9 @@
         }
       }
     },
+    "Series" : {
+
+    },
     "Server" : {
       "localizations" : {
         "de" : {
@@ -27718,6 +27732,9 @@
           }
         }
       }
+    },
+    "Table" : {
+
     },
     "tapback" : {
       "localizations" : {
@@ -29817,6 +29834,7 @@
       }
     },
     "Trace route received directly by %@ with a SNR of %@ dB" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

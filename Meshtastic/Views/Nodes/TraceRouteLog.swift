@@ -55,7 +55,7 @@ struct TraceRouteLog: View {
 									.font(.caption)
 							}
 						} icon: {
-							Image(systemName: route.response ? (route.hops?.count == 0 && route.response ? "person.line.dotted.person" : "point.3.connected.trianglepath.dotted") : "person.slash")
+							Image(systemName: route.response ? (route.hopsTowards == 0 && route.response ? "person.line.dotted.person" : "point.3.connected.trianglepath.dotted") : "person.slash")
 								.symbolRenderingMode(.hierarchical)
 						}
 						.swipeActions {
@@ -76,15 +76,7 @@ struct TraceRouteLog: View {
 				Divider()
 				ScrollView {
 					if selectedRoute != nil {
-						if selectedRoute?.response ?? false && selectedRoute?.hopsTowards ?? 0 == 0 {
-							Label {
-								Text("Trace route received directly by \(selectedRoute?.node?.user?.longName ?? "unknown".localized) with a SNR of \(String(format: "%.2f", selectedRoute?.snr ?? 0.0)) dB")
-							} icon: {
-								Image(systemName: "signpost.right.and.left")
-									.symbolRenderingMode(.hierarchical)
-							}
-							.font(.title3)
-						} else if selectedRoute?.response ?? false && selectedRoute?.hopsTowards ?? 0 > 0 {
+						if selectedRoute?.response ?? false && selectedRoute?.hopsTowards ?? 0 >= 0 {
 							Label {
 								Text("Route: \(selectedRoute?.routeText ?? "unknown".localized)")
 							} icon: {

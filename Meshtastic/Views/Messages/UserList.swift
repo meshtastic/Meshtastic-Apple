@@ -45,8 +45,9 @@ struct UserList: View {
 						  NSSortDescriptor(key: "pkiEncrypted", ascending: false),
 						  NSSortDescriptor(key: "userNode.lastHeard", ascending: false),
 						  NSSortDescriptor(key: "longName", ascending: true)],
-		predicate: NSPredicate(format: "userNode.ignored == false && longName != ''"),
-		animation: .default
+		predicate: NSPredicate(
+		  format: "userNode.ignored == false && longName != '' AND NOT (userNode.viaMqtt == YES AND userNode.hopsAway > 0)"
+		), animation: .default
 	)
 	var users: FetchedResults<UserEntity>
 
@@ -297,7 +298,7 @@ struct UserList: View {
 		let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
 		/// Create an array of predicates to hold our AND predicates
 		var predicates: [NSPredicate] = []
-		/// Mqtt
+		/// Mqtt and lora
 		if !(viaLora && viaMqtt) {
 			if viaLora {
 				let loraPredicate = NSPredicate(format: "userNode.viaMqtt == NO")
@@ -307,9 +308,8 @@ struct UserList: View {
 				predicates.append(mqttPredicate)
 			}
 		} else {
-			/// Only show mqtt nodes that can be contacted (zero hops) on the default key
-			// let bothPredicate = NSPredicate(format: "userNode.viaMqtt == YES AND userNode.hopsAway == 0 OR userNode.viaMqtt == NO")
-			// predicates.append(bothPredicate)
+			let mqttPredicate = NSPredicate(format: "NOT (userNode.viaMqtt == YES AND userNode.hopsAway > 0)")
+			predicates.append(mqttPredicate)
 		}
 		/// Roles
 		if roleFilter && deviceRoles.count > 0 {
