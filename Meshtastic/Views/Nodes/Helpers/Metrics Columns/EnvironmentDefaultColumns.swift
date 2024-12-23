@@ -46,7 +46,37 @@ extension MetricsColumnList {
 						Text("\(String(format: "%.1f", pressure))")
 					}
 				}),
-
+		
+			// Distance sensor, often used for water level
+			MetricsTableColumn(
+				keyPath: \.distance,
+				name: "Distance",
+				abbreviatedName: "Dist",
+				minWidth: 30, maxWidth: 50,
+				visible: false,
+				tableBody: { _, distance in
+					if (UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
+						Text("\(String(format: "%.1f mm", distance))")
+					} else {
+						Text("\(String(format: "%.1f", distance))")
+					}
+				}),
+			
+			// Gas Resistance
+			MetricsTableColumn(
+				keyPath: \.gasResistance,
+				name: "Gas Resistance",
+				abbreviatedName: "Gas Res",
+				minWidth: 30, maxWidth: 50,
+				visible: false,
+				tableBody: { _, resistance in
+					if (UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
+						Text("\(String(format: "%.1f MΩ", resistance))")
+					} else {
+						Text("\(String(format: "%.1f", resistance))")
+					}
+				}),
+		
 			// Indoor Air Quality Series Configuration
 			MetricsTableColumn(
 				keyPath: \.iaq,
@@ -55,6 +85,63 @@ extension MetricsColumnList {
 				minWidth: 30, maxWidth: 50,
 				tableBody: { _, iaq in
 					IndoorAirQuality(iaq: Int(iaq), displayMode: .dot)
+				}),
+
+			// Various Lux
+			MetricsTableColumn(
+				keyPath: \.lux,
+				name: "Lux",
+				abbreviatedName: "Lux",
+				minWidth: 30, maxWidth: 50,
+				visible: false,
+				tableBody: { _, lux in
+					Text("\(String(format: "%.1f", lux))")
+				}),
+			
+			MetricsTableColumn(
+				keyPath: \.whiteLux,
+				name: "White Lux",
+				abbreviatedName: "White",
+				minWidth: 30, maxWidth: 50,
+				visible: false,
+				tableBody: { _, lux in
+					Text("\(String(format: "%.1f", lux))")
+				}),
+	
+			MetricsTableColumn(
+				keyPath: \.uvLux,
+				name: "UV Lux",
+				abbreviatedName: "UV",
+				minWidth: 30, maxWidth: 50,
+				visible: false,
+				tableBody: { _, lux in
+					Text("\(String(format: "%.1f", lux))")
+				}),
+		
+			MetricsTableColumn(
+				keyPath: \.irLux,
+				name: "IR Lux",
+				abbreviatedName: "IR",
+				minWidth: 30, maxWidth: 50,
+				visible: false,
+				tableBody: { _, lux in
+					Text("\(String(format: "%.1f", lux))")
+				}),
+
+			// Radiation
+			MetricsTableColumn(
+				keyPath: \.radiation,
+				name: "Radiation",
+				abbreviatedName: "☢️",
+				minWidth: 30, maxWidth: 50,
+				visible: false,
+				tableBody: { _, radiation in
+					if (UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
+						Text("\(String(format: "%.1f µR/h", radiation))")
+					} else {
+						Text("\(String(format: "%.1f", radiation))")
+					}
+
 				}),
 
 			// Wind Direction Series Configuration

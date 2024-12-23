@@ -270,6 +270,7 @@
 		231B3F202D087A4C0069A07D /* MetricTableColumn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricTableColumn.swift; sourceTree = "<group>"; };
 		231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentDefaultColumns.swift; sourceTree = "<group>"; };
 		231B3F262D0885240069A07D /* MetricsColumnDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsColumnDetail.swift; sourceTree = "<group>"; };
+		237013332D1A0D4F007DBE7F /* MeshtasticDataModelV 48.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 48.xcdatamodel"; sourceTree = "<group>"; };
 		2373AE122D0A216C0086C749 /* MetricsChartSeries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsChartSeries.swift; sourceTree = "<group>"; };
 		2373AE142D0A24930086C749 /* MetricsSeriesList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsSeriesList.swift; sourceTree = "<group>"; };
 		2373AE162D0A26620086C749 /* EnviornmentDefaultSeries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnviornmentDefaultSeries.swift; sourceTree = "<group>"; };
@@ -1965,6 +1966,7 @@
 		DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				237013332D1A0D4F007DBE7F /* MeshtasticDataModelV 48.xcdatamodel */,
 				DDDFE7402D0D4A070044463C /* MeshtasticDataModelV 47.xcdatamodel */,
 				DD0BE30C2CB785D8000BA445 /* MeshtasticDataModelV 46.xcdatamodel */,
 				DD6D5A342CA13BA600ED3032 /* MeshtasticDataModelV 45.xcdatamodel */,
@@ -2013,7 +2015,7 @@
 				DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
 				DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
 			);
-			currentVersion = DDDFE7402D0D4A070044463C /* MeshtasticDataModelV 47.xcdatamodel */;
+			currentVersion = 237013332D1A0D4F007DBE7F /* MeshtasticDataModelV 48.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";

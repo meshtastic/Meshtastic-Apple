@@ -710,15 +710,20 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.current = telemetryMessage.environmentMetrics.current
 					telemetry.iaq = Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.iaq)
 					telemetry.gasResistance = telemetryMessage.environmentMetrics.gasResistance
+					telemetry.irLux = telemetryMessage.environmentMetrics.irLux
+					telemetry.lux = telemetryMessage.environmentMetrics.lux
 					telemetry.relativeHumidity = telemetryMessage.environmentMetrics.relativeHumidity
 					telemetry.temperature = telemetryMessage.environmentMetrics.temperature
 					telemetry.current = telemetryMessage.environmentMetrics.current
+					telemetry.distance = telemetryMessage.environmentMetrics.distance
+					telemetry.uvLux = telemetryMessage.environmentMetrics.uvLux
 					telemetry.voltage = telemetryMessage.environmentMetrics.voltage
 					telemetry.weight = telemetryMessage.environmentMetrics.weight
 					telemetry.windSpeed = telemetryMessage.environmentMetrics.windSpeed
 					telemetry.windGust = telemetryMessage.environmentMetrics.windGust
 					telemetry.windLull = telemetryMessage.environmentMetrics.windLull
 					telemetry.windDirection = Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.windDirection)
+					telemetry.radiation = telemetryMessage.environmentMetrics.radiation
 					telemetry.metricsType = 1
 				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) {
 					// Local Stats for Live activity

@@ -97,6 +97,52 @@ extension MetricsSeriesList {
 
 				}),
 
+			// Barometric Pressure Series Configuration
+			MetricsChartSeries(
+				keyPath: \.distance,
+				name: "Distance",
+				abbreviatedName: "Dist",
+				visible: false,
+				foregroundStyle: { _ in
+					.linearGradient(
+						colors: [Color(UIColor.cyan.darker(componentDelta: 0.3)), .cyan],
+						startPoint: .bottom, endPoint: .top
+					)
+				},
+				chartBody: { series, _, time, distance in
+					LineMark(
+						x: .value("Time", time),
+						y: .value(series.abbreviatedName, distance)
+					)
+					.interpolationMethod(.catmullRom)
+					.foregroundStyle(by: .value("Series", series.abbreviatedName))
+					.lineStyle(StrokeStyle(lineWidth: 4))
+					.alignsMarkStylesWithPlotArea()
+				}),
+			
+			// Gas Resistance
+			MetricsChartSeries(
+				keyPath: \.gasResistance,
+				name: "Gas Resistance",
+				abbreviatedName: "Gas Res",
+				visible: false,
+				foregroundStyle: { _ in
+					.linearGradient(
+						colors: [Color(UIColor.brown.darker(componentDelta: 0.3)), .brown],
+						startPoint: .bottom, endPoint: .top
+					)
+				},
+				chartBody: { series, _, time, resistance in
+					LineMark(
+						x: .value("Time", time),
+						y: .value(series.abbreviatedName, resistance)
+					)
+					.interpolationMethod(.catmullRom)
+					.foregroundStyle(by: .value("Series", series.abbreviatedName))
+					.lineStyle(StrokeStyle(lineWidth: 4))
+					.alignsMarkStylesWithPlotArea()
+				}),
+			
 			// Indoor Air Quality Series Configuration
 			MetricsChartSeries(
 				keyPath: \.iaq,
@@ -122,6 +168,98 @@ extension MetricsSeriesList {
 					.alignsMarkStylesWithPlotArea()
 				}),
 
+			// Lux
+			MetricsChartSeries(
+				keyPath: \.lux,
+				name: "Lux",
+				abbreviatedName: "Lux",
+				visible: false,
+				foregroundStyle: { _ in
+					.linearGradient(
+						colors: [Color(UIColor.blue.lighter(componentDelta: 0.3)), .blue],
+						startPoint: .bottom, endPoint: .top
+					)
+				},
+				chartBody: { series, _, time, lux in
+					LineMark(
+						x: .value("Time", time),
+						y: .value(series.abbreviatedName, lux)
+					)
+					.interpolationMethod(.catmullRom)
+					.foregroundStyle(by: .value("Series", series.abbreviatedName))
+					.lineStyle(StrokeStyle(lineWidth: 4))
+					.alignsMarkStylesWithPlotArea()
+				}),
+			
+			// White Lux
+			MetricsChartSeries(
+				keyPath: \.whiteLux,
+				name: "White Lux",
+				abbreviatedName: "White",
+				visible: false,
+				foregroundStyle: { _ in
+					.linearGradient(
+						colors: [Color(UIColor.blue.lighter(componentDelta: 0.5)), Color(UIColor.blue.lighter(componentDelta: 0.2))],
+						startPoint: .bottom, endPoint: .top
+					)
+				},
+				chartBody: { series, _, time, lux in
+					LineMark(
+						x: .value("Time", time),
+						y: .value(series.abbreviatedName, lux)
+					)
+					.interpolationMethod(.catmullRom)
+					.foregroundStyle(by: .value("Series", series.abbreviatedName))
+					.lineStyle(StrokeStyle(lineWidth: 4))
+					.alignsMarkStylesWithPlotArea()
+				}),
+			
+			// UV Lux
+			MetricsChartSeries(
+				keyPath: \.uvLux,
+				name: "UV Lux",
+				abbreviatedName: "UV",
+				visible: false,
+				foregroundStyle: { _ in
+					.linearGradient(
+						colors: [Color(UIColor.systemIndigo.lighter(componentDelta: 0.5)), Color(UIColor.systemIndigo.lighter(componentDelta: 0.2))],
+						startPoint: .bottom, endPoint: .top
+					)
+				},
+				chartBody: { series, _, time, lux in
+					LineMark(
+						x: .value("Time", time),
+						y: .value(series.abbreviatedName, lux)
+					)
+					.interpolationMethod(.catmullRom)
+					.foregroundStyle(by: .value("Series", series.abbreviatedName))
+					.lineStyle(StrokeStyle(lineWidth: 4))
+					.alignsMarkStylesWithPlotArea()
+				}),
+			
+			// IR Lux
+			MetricsChartSeries(
+				keyPath: \.irLux,
+				name: "IR Lux",
+				abbreviatedName: "IR",
+				visible: false,
+				foregroundStyle: { _ in
+					.linearGradient(
+						colors: [Color(UIColor.red.darker(componentDelta: 0.5)), .red],
+						startPoint: .bottom, endPoint: .top
+					)
+				},
+				chartBody: { series, _, time, lux in
+					LineMark(
+						x: .value("Time", time),
+						y: .value(series.abbreviatedName, lux)
+					)
+					.interpolationMethod(.catmullRom)
+					.foregroundStyle(by: .value("Series", series.abbreviatedName))
+					.lineStyle(StrokeStyle(lineWidth: 4))
+					.alignsMarkStylesWithPlotArea()
+				}),
+			
 			// Combined Wind Speed and Direction Series Configuration -- For use in Chart only
 			MetricsChartSeries(
 				keyPath: \.windSpeedAndDirection,
@@ -155,7 +293,30 @@ extension MetricsSeriesList {
 							.rotationEffect(
 								.degrees(Double(wsad.windDirection)))
 					}.foregroundStyle(.yellow)
-				})
+				}),
+			
+			// Radiation
+			MetricsChartSeries(
+				keyPath: \.radiation,
+				name: "Radiation",
+				abbreviatedName: "☢️",
+				visible: false,
+				foregroundStyle: { _ in
+					.linearGradient(
+						colors: [Color(UIColor.orange.darker(componentDelta: 0.5)), .orange],
+						startPoint: .bottom, endPoint: .top
+					)
+				},
+				chartBody: { series, _, time, radiation in
+					LineMark(
+						x: .value("Time", time),
+						y: .value(series.abbreviatedName, radiation)
+					)
+					.interpolationMethod(.catmullRom)
+					.foregroundStyle(by: .value("Series", series.abbreviatedName))
+					.lineStyle(StrokeStyle(lineWidth: 4))
+					.alignsMarkStylesWithPlotArea()
+				}),
 		])
 	}
 }
