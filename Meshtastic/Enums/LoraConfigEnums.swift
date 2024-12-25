@@ -79,8 +79,8 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 		case .lora24:
 			"LORA_24"
 		} }
-		var id: Int { self.rawValue }
-		var description: String {
+	var id: Int { self.rawValue }
+	var description: String {
 		switch self {
 		case .unset:
 			return "please.set.a.region".localized
@@ -289,7 +289,7 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 
 	var id: Int { self.rawValue }
 	var description: String {
-    switch self {
+    		switch self {
 		case .longFast:
 			return "long.range.fast".localized
 		case .longSlow:
