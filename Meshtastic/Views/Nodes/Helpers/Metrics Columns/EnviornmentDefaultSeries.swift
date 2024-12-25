@@ -97,7 +97,7 @@ extension MetricsSeriesList {
 
 				}),
 
-			// Barometric Pressure Series Configuration
+			// Distance sensor, often used for water level
 			MetricsChartSeries(
 				keyPath: \.distance,
 				name: "Distance",
@@ -120,28 +120,30 @@ extension MetricsSeriesList {
 					.alignsMarkStylesWithPlotArea()
 				}),
 			
-			// Gas Resistance
-			MetricsChartSeries(
-				keyPath: \.gasResistance,
-				name: "Gas Resistance",
-				abbreviatedName: "Gas Res",
-				visible: false,
-				foregroundStyle: { _ in
-					.linearGradient(
-						colors: [Color(UIColor.brown.darker(componentDelta: 0.3)), .brown],
-						startPoint: .bottom, endPoint: .top
-					)
-				},
-				chartBody: { series, _, time, resistance in
-					LineMark(
-						x: .value("Time", time),
-						y: .value(series.abbreviatedName, resistance)
-					)
-					.interpolationMethod(.catmullRom)
-					.foregroundStyle(by: .value("Series", series.abbreviatedName))
-					.lineStyle(StrokeStyle(lineWidth: 4))
-					.alignsMarkStylesWithPlotArea()
-				}),
+			
+//			// Gas Resistance - This is a raw sensor value used for IAQ.
+//			// Commented out as better represented in the IAQ value.
+//			MetricsChartSeries(
+//				keyPath: \.gasResistance,
+//				name: "Gas Resistance",
+//				abbreviatedName: "Gas Res",
+//				visible: false,
+//				foregroundStyle: { _ in
+//					.linearGradient(
+//						colors: [Color(UIColor.brown.darker(componentDelta: 0.3)), .brown],
+//						startPoint: .bottom, endPoint: .top
+//					)
+//				},
+//				chartBody: { series, _, time, resistance in
+//					LineMark(
+//						x: .value("Time", time),
+//						y: .value(series.abbreviatedName, resistance)
+//					)
+//					.interpolationMethod(.catmullRom)
+//					.foregroundStyle(by: .value("Series", series.abbreviatedName))
+//					.lineStyle(StrokeStyle(lineWidth: 4))
+//					.alignsMarkStylesWithPlotArea()
+//				}),
 			
 			// Indoor Air Quality Series Configuration
 			MetricsChartSeries(

@@ -62,30 +62,31 @@ extension MetricsColumnList {
 					}
 				}),
 			
-			// Gas Resistance
-			MetricsTableColumn(
-				keyPath: \.gasResistance,
-				name: "Gas Resistance",
-				abbreviatedName: "Gas Res",
-				minWidth: 30, maxWidth: 50,
-				visible: false,
-				tableBody: { _, resistance in
-					if (UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
-						Text("\(String(format: "%.1f MΩ", resistance))")
-					} else {
-						Text("\(String(format: "%.1f", resistance))")
-					}
-				}),
-		
-			// Indoor Air Quality Series Configuration
-			MetricsTableColumn(
-				keyPath: \.iaq,
-				name: "Indoor Air Quality",
-				abbreviatedName: "IAQ",
-				minWidth: 30, maxWidth: 50,
-				tableBody: { _, iaq in
-					IndoorAirQuality(iaq: Int(iaq), displayMode: .dot)
-				}),
+//			// Gas Resistance - This is a raw sensor value used for IAQ.
+//			// Commented out as better represented in the IAQ value.
+//			MetricsTableColumn(
+//				keyPath: \.gasResistance,
+//				name: "Gas Resistance",
+//				abbreviatedName: "Gas Res",
+//				minWidth: 30, maxWidth: 50,
+//				visible: false,
+//				tableBody: { _, resistance in
+//					if (UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
+//						Text("\(String(format: "%.1f MΩ", resistance))")
+//					} else {
+//						Text("\(String(format: "%.1f", resistance))")
+//					}
+//				}),
+//		
+//			// Indoor Air Quality Series Configuration
+//			MetricsTableColumn(
+//				keyPath: \.iaq,
+//				name: "Indoor Air Quality",
+//				abbreviatedName: "IAQ",
+//				minWidth: 30, maxWidth: 50,
+//				tableBody: { _, iaq in
+//					IndoorAirQuality(iaq: Int(iaq), displayMode: .dot)
+//				}),
 
 			// Various Lux
 			MetricsTableColumn(
