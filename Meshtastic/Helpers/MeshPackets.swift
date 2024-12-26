@@ -719,6 +719,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.uvLux = telemetryMessage.environmentMetrics.hasUvLux ? telemetryMessage.environmentMetrics.uvLux : nil
 					telemetry.voltage = telemetryMessage.environmentMetrics.hasVoltage ? telemetryMessage.environmentMetrics.voltage : nil
 					telemetry.weight = telemetryMessage.environmentMetrics.hasWeight ? telemetryMessage.environmentMetrics.weight : nil
+					telemetry.whiteLux = telemetryMessage.environmentMetrics.hasWhiteLux ? telemetryMessage.environmentMetrics.whiteLux : nil
 					telemetry.windSpeed = telemetryMessage.environmentMetrics.hasWindSpeed ? telemetryMessage.environmentMetrics.windSpeed : nil
 					telemetry.windGust = telemetryMessage.environmentMetrics.hasWindGust ? telemetryMessage.environmentMetrics.windGust : nil
 					telemetry.windLull = telemetryMessage.environmentMetrics.hasWindLull ? telemetryMessage.environmentMetrics.windLull : nil
