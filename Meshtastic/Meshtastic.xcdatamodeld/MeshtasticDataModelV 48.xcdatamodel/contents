@@ -232,6 +232,8 @@
         <attribute name="sessionExpiration" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="sessionPasskey" optional="YES" attributeType="Binary"/>
         <attribute name="snr" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="telemetryColumns" optional="YES" attributeType="Transformable" customClassName="[String]"/>
+        <attribute name="telemetrySeries" optional="YES" attributeType="Transformable" customClassName="[String]"/>
         <attribute name="viaMqtt" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <relationship name="ambientLightingConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="AmbientLightingConfigEntity" inverseName="ambientLightingConfigNode" inverseEntity="AmbientLightingConfigEntity"/>
         <relationship name="bluetoothConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="BluetoothConfigEntity" inverseName="bluetoothConfigNode" inverseEntity="BluetoothConfigEntity"/>

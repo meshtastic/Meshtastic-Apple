@@ -10,7 +10,14 @@ import SwiftUI
 struct MetricsColumnDetail: View {
 	@ObservedObject var columnList: MetricsColumnList
 	@ObservedObject var seriesList: MetricsSeriesList
-
+	let node: NodeInfoEntity
+	
+	init(columnList: MetricsColumnList, seriesList: MetricsSeriesList, forNode node: NodeInfoEntity) {
+		self.columnList = columnList
+		self.seriesList = seriesList
+		self.node = node
+	}
+	
 	@State private var currentDetent = PresentationDetent.medium
 
 	@Environment(\.dismiss) private var dismiss

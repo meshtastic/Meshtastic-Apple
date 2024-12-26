@@ -15,6 +15,7 @@ extension MetricsSeriesList {
 		MetricsSeriesList([
 			// Temperature Series Configuration
 			MetricsChartSeries(
+				id: "temperature",
 				keyPath: \.temperature,
 				name: "Temperature",
 				abbreviatedName: "Temp",
@@ -54,6 +55,7 @@ extension MetricsSeriesList {
 
 			// Relative Humidity Series Configuration
 			MetricsChartSeries(
+				id: "relativeHumidity",
 				keyPath: \.relativeHumidity,
 				name: "Relative Humidity",
 				abbreviatedName: "Hum",
@@ -77,6 +79,7 @@ extension MetricsSeriesList {
 
 			// Barometric Pressure Series Configuration
 			MetricsChartSeries(
+				id: "barometricPressure",
 				keyPath: \.barometricPressure,
 				name: "Barometric Pressure",
 				abbreviatedName: "Bar",
@@ -101,6 +104,7 @@ extension MetricsSeriesList {
 
 			// Distance sensor, often used for water level
 			MetricsChartSeries(
+				id: "distance",
 				keyPath: \.distance,
 				name: "Distance",
 				abbreviatedName: "Dist",
@@ -126,6 +130,7 @@ extension MetricsSeriesList {
 //			// Gas Resistance - This is a raw sensor value used for IAQ.
 //			// Commented out as better represented in the IAQ value.
 //			MetricsChartSeries(
+//              id: "gasResistance"
 //				keyPath: \.gasResistance,
 //				name: "Gas Resistance",
 //				abbreviatedName: "Gas Res",
@@ -149,6 +154,7 @@ extension MetricsSeriesList {
 			
 			// Indoor Air Quality Series Configuration
 			MetricsChartSeries(
+				id: "iaq",
 				keyPath: \.iaq,
 				name: "Indoor Air Quality",
 				abbreviatedName: "IAQ",
@@ -174,6 +180,7 @@ extension MetricsSeriesList {
 
 			// Lux
 			MetricsChartSeries(
+				id: "lux",
 				keyPath: \.lux,
 				name: "Lux",
 				abbreviatedName: "Lux",
@@ -197,6 +204,7 @@ extension MetricsSeriesList {
 			
 			// White Lux
 			MetricsChartSeries(
+				id: "whiteLux",
 				keyPath: \.whiteLux,
 				name: "White Lux",
 				abbreviatedName: "White",
@@ -220,6 +228,7 @@ extension MetricsSeriesList {
 			
 			// UV Lux
 			MetricsChartSeries(
+				id: "uvLux",
 				keyPath: \.uvLux,
 				name: "UV Lux",
 				abbreviatedName: "UV",
@@ -243,6 +252,7 @@ extension MetricsSeriesList {
 			
 			// IR Lux
 			MetricsChartSeries(
+				id: "irLux",
 				keyPath: \.irLux,
 				name: "IR Lux",
 				abbreviatedName: "IR",
@@ -266,6 +276,7 @@ extension MetricsSeriesList {
 			
 			// Combined Wind Speed and Direction Series Configuration -- For use in Chart only
 			MetricsChartSeries(
+				id: "windSpeedAndDirection",
 				keyPath: \.windSpeedAndDirection,
 				name: "Wind Speed/Direction",
 				abbreviatedName: "Speed/Dir",
@@ -301,6 +312,7 @@ extension MetricsSeriesList {
 			
 			// Radiation
 			MetricsChartSeries(
+				id: "radiation",
 				keyPath: \.radiation,
 				name: "Radiation",
 				abbreviatedName: "☢️",

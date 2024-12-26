@@ -15,6 +15,7 @@ extension MetricsColumnList {
 		MetricsColumnList(columns: [
 			// Temperature Series Configuration
 			MetricsTableColumn(
+				id: "temperature",
 				keyPath: \.temperature,
 				name: "Temperature",
 				abbreviatedName: "Temp",
@@ -25,6 +26,7 @@ extension MetricsColumnList {
 
 			// Relative Humidity Series Configuration
 			MetricsTableColumn(
+				id: "relativeHumidity",
 				keyPath: \.relativeHumidity,
 				name: "Relative Humidity",
 				abbreviatedName: "Hum",
@@ -35,6 +37,7 @@ extension MetricsColumnList {
 
 			// Barometric Pressure Series Configuration
 			MetricsTableColumn(
+				id: "barometricPressure",
 				keyPath: \.barometricPressure,
 				name: "Barometric Pressure",
 				abbreviatedName: "Bar",
@@ -49,6 +52,7 @@ extension MetricsColumnList {
 		
 			// Distance sensor, often used for water level
 			MetricsTableColumn(
+				id: "distance",
 				keyPath: \.distance,
 				name: "Distance",
 				abbreviatedName: "Dist",
@@ -65,6 +69,7 @@ extension MetricsColumnList {
 //			// Gas Resistance - This is a raw sensor value used for IAQ.
 //			// Commented out as better represented in the IAQ value.
 //			MetricsTableColumn(
+//				id: "gasResistance",
 //				keyPath: \.gasResistance,
 //				name: "Gas Resistance",
 //				abbreviatedName: "Gas Res",
@@ -90,6 +95,7 @@ extension MetricsColumnList {
 
 			// Various Lux
 			MetricsTableColumn(
+				id: "lux",
 				keyPath: \.lux,
 				name: "Lux",
 				abbreviatedName: "Lux",
@@ -100,6 +106,7 @@ extension MetricsColumnList {
 				}),
 			
 			MetricsTableColumn(
+				id: "whiteLux",
 				keyPath: \.whiteLux,
 				name: "White Lux",
 				abbreviatedName: "White",
@@ -110,6 +117,7 @@ extension MetricsColumnList {
 				}),
 	
 			MetricsTableColumn(
+				id: "uvLux",
 				keyPath: \.uvLux,
 				name: "UV Lux",
 				abbreviatedName: "UV",
@@ -120,6 +128,7 @@ extension MetricsColumnList {
 				}),
 		
 			MetricsTableColumn(
+				id: "irLux",
 				keyPath: \.irLux,
 				name: "IR Lux",
 				abbreviatedName: "IR",
@@ -131,6 +140,7 @@ extension MetricsColumnList {
 
 			// Radiation
 			MetricsTableColumn(
+				id: "radiation",
 				keyPath: \.radiation,
 				name: "Radiation",
 				abbreviatedName: "☢️",
@@ -147,6 +157,7 @@ extension MetricsColumnList {
 
 			// Wind Direction Series Configuration
 			MetricsTableColumn(
+				id: "windDirection",
 				keyPath: \.windDirection,
 				name: "Wind Direction",
 				abbreviatedName: "Dir",
@@ -171,6 +182,7 @@ extension MetricsColumnList {
 
 			// Wind Speed Series Configuration
 			MetricsTableColumn(
+				id: "windSpeed",
 				keyPath: \.windSpeed,
 				name: "Wind Speed",
 				abbreviatedName: "Wind",
@@ -190,6 +202,7 @@ extension MetricsColumnList {
 
 			// Timestamp Series Configuration -- for use in table only
 			MetricsTableColumn(
+				id: "time",
 				keyPath: \.time,
 				name: "Timestamp",
 				abbreviatedName: "Time",

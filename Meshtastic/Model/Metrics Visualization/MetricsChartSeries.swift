@@ -14,8 +14,9 @@ import SwiftUI
 // the chart.  MetricsChartSeries objects are collected in a MetricsSeriesList
 class MetricsChartSeries: ObservableObject {
 
-	// CoreData Attribute Name on TelemetryEntity
-	let attribute: String
+	// Uniquely identify this column for presistance and iteration
+	// Recommend using CoreData Attribute Name on TelemetryEntity
+	let id: String
 
 	// Heading for areas that have the room
 	let name: String
@@ -42,6 +43,7 @@ class MetricsChartSeries: ObservableObject {
 	
 	// Main initializer
 	init<Value, ChartBody: ChartContent, ForegroundStyle: ShapeStyle>(
+		id: String,
 		keyPath: KeyPath<TelemetryEntity, Value>,
 		name: String,
 		abbreviatedName: String,
@@ -54,7 +56,7 @@ class MetricsChartSeries: ObservableObject {
 	) where Value: Plottable & Comparable {
 
 		// This works because TelemetryEntity is an NSManagedObject and derrived from NSObject
-		self.attribute = NSExpression(forKeyPath: keyPath).keyPath
+		self.id = id
 		self.name = name
 		self.abbreviatedName = abbreviatedName
 		self.initialYAxisRange = initialYAxisRange
@@ -89,14 +91,13 @@ class MetricsChartSeries: ObservableObject {
 }
 
 extension MetricsChartSeries: Identifiable, Hashable {
-	var id: String { self.attribute }
 
 	static func == (lhs: MetricsChartSeries, rhs: MetricsChartSeries) -> Bool {
-		lhs.attribute == rhs.attribute
+		lhs.id == rhs.id
 	}
 
 	func hash(into hasher: inout Hasher) {
-		hasher.combine(attribute)
+		hasher.combine(id)
 	}
 }
 

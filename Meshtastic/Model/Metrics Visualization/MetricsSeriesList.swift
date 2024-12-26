@@ -95,7 +95,7 @@ class MetricsSeriesList: ObservableObject, RandomAccessCollection, RangeReplacea
 			if let minimumSpan = aSeries.minumumYAxisSpan,
 			   let currentRange = range[aSeries] {
 				let currentSpan = currentRange.upperBound - currentRange.lowerBound
-				Logger.data.info("Updated \(aSeries.attribute) to \(range[aSeries] ?? 0...0) span=\(currentSpan)")
+				Logger.data.info("Updated \(aSeries.id) to \(range[aSeries] ?? 0...0) span=\(currentSpan)")
 				if currentSpan < minimumSpan {
 					// Calculate the center of the range
 					let centerOfRange = currentRange.lowerBound + (currentSpan / 2)
@@ -119,6 +119,19 @@ class MetricsSeriesList: ObservableObject, RandomAccessCollection, RangeReplacea
 		return globalLower...globalUpper
 	}
 
+	func applyDefaults(forNode node: NodeInfoEntity) {
+		if let seriesList = node.telemetrySeries {
+			for aSeries in self {
+				aSeries.visible = seriesList.contains(aSeries.id)
+			}
+		}
+	}
+	
+	func saveDefaults(forNode node: NodeInfoEntity) {
+		let series = self.visible.map( { $0.id } )
+		node.telemetrySeries = series
+	}
+	
 	// Collection conformance
 	typealias Index = Int
 	typealias Element = MetricsChartSeries
