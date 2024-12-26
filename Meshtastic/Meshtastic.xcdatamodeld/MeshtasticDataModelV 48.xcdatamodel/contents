@@ -390,7 +390,7 @@
         <attribute name="powerUpdateInterval" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="telemetryConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="telemetryConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
-    <entity name="TelemetryEntity" representedClassName="TelemetryEntity" syncable="YES" codeGenerationType="class">
+    <entity name="TelemetryEntity" representedClassName="TelemetryEntity" syncable="YES">
         <attribute name="airUtilTx" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="barometricPressure" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="batteryLevel" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>

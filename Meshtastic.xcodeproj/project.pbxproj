@@ -11,6 +11,9 @@
 		231B3F222D087A4C0069A07D /* MetricsColumnList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F1F2D087A4C0069A07D /* MetricsColumnList.swift */; };
 		231B3F252D087C3C0069A07D /* EnvironmentDefaultColumns.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */; };
 		231B3F272D0885240069A07D /* MetricsColumnDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F262D0885240069A07D /* MetricsColumnDetail.swift */; };
+		235FFC3A2D1D8CF0003C95E5 /* TelemetryEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 235FFC392D1D8CF0003C95E5 /* TelemetryEntity+CoreDataProperties.swift */; };
+		235FFC3B2D1D8CF0003C95E5 /* TelemetryEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 235FFC382D1D8CF0003C95E5 /* TelemetryEntity+CoreDataClass.swift */; };
+		235FFC3D2D1D8DC9003C95E5 /* ManagedAttributePropertyWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 235FFC3C2D1D8DC8003C95E5 /* ManagedAttributePropertyWrapper.swift */; };
 		2373AE132D0A216C0086C749 /* MetricsChartSeries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE122D0A216C0086C749 /* MetricsChartSeries.swift */; };
 		2373AE152D0A24930086C749 /* MetricsSeriesList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE142D0A24930086C749 /* MetricsSeriesList.swift */; };
 		2373AE172D0A26620086C749 /* EnviornmentDefaultSeries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE162D0A26620086C749 /* EnviornmentDefaultSeries.swift */; };
@@ -270,6 +273,9 @@
 		231B3F202D087A4C0069A07D /* MetricTableColumn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricTableColumn.swift; sourceTree = "<group>"; };
 		231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentDefaultColumns.swift; sourceTree = "<group>"; };
 		231B3F262D0885240069A07D /* MetricsColumnDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsColumnDetail.swift; sourceTree = "<group>"; };
+		235FFC382D1D8CF0003C95E5 /* TelemetryEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TelemetryEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		235FFC392D1D8CF0003C95E5 /* TelemetryEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TelemetryEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		235FFC3C2D1D8DC8003C95E5 /* ManagedAttributePropertyWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedAttributePropertyWrapper.swift; sourceTree = "<group>"; };
 		237013332D1A0D4F007DBE7F /* MeshtasticDataModelV 48.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 48.xcdatamodel"; sourceTree = "<group>"; };
 		2373AE122D0A216C0086C749 /* MetricsChartSeries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsChartSeries.swift; sourceTree = "<group>"; };
 		2373AE142D0A24930086C749 /* MetricsSeriesList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsSeriesList.swift; sourceTree = "<group>"; };
@@ -591,6 +597,15 @@
 			path = "Metrics Columns";
 			sourceTree = "<group>";
 		};
+		235FFC372D1D8CCF003C95E5 /* Core Data */ = {
+			isa = PBXGroup;
+			children = (
+				235FFC382D1D8CF0003C95E5 /* TelemetryEntity+CoreDataClass.swift */,
+				235FFC392D1D8CF0003C95E5 /* TelemetryEntity+CoreDataProperties.swift */,
+			);
+			path = "Core Data";
+			sourceTree = "<group>";
+		};
 		251926882C3BAF2E00249DF5 /* Actions */ = {
 			isa = PBXGroup;
 			children = (
@@ -672,6 +687,7 @@
 		DD007BB12AA59B9A00F5FA12 /* CoreData */ = {
 			isa = PBXGroup;
 			children = (
+				235FFC3C2D1D8DC8003C95E5 /* ManagedAttributePropertyWrapper.swift */,
 				DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */,
 				6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */,
 				DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */,
@@ -971,6 +987,7 @@
 		DDC2E18826CE24EE0042C5E4 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				235FFC372D1D8CCF003C95E5 /* Core Data */,
 				231B3F1E2D0879BC0069A07D /* Metrics Visualization */,
 				DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */,
 			);
@@ -1389,6 +1406,8 @@
 				DDDB445429F8AD1600EE2349 /* Data.swift in Sources */,
 				DDDB26462AACC0B7003AFCB7 /* NodeInfoItem.swift in Sources */,
 				DD2AD8A8296D2DF9001FF0E7 /* MapViewSwiftUI.swift in Sources */,
+				235FFC3A2D1D8CF0003C95E5 /* TelemetryEntity+CoreDataProperties.swift in Sources */,
+				235FFC3B2D1D8CF0003C95E5 /* TelemetryEntity+CoreDataClass.swift in Sources */,
 				DDE5B4042B2279A700FCDD05 /* TraceRouteLog.swift in Sources */,
 				DD6193792863875F00E59241 /* SerialConfig.swift in Sources */,
 				DDDB263F2AABEE20003AFCB7 /* NodeList.swift in Sources */,
@@ -1439,6 +1458,7 @@
 				6DA39D8E2A92DC52007E311C /* MeshtasticAppDelegate.swift in Sources */,
 				D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */,
 				D93068D32B8129510066FBC8 /* MessageContextMenuItems.swift in Sources */,
+				235FFC3D2D1D8DC9003C95E5 /* ManagedAttributePropertyWrapper.swift in Sources */,
 				DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */,
 				DD964FC42974767D007C176F /* MapViewFitExtension.swift in Sources */,
 				BCE2D3C72C7B0D0A008E6199 /* ShortcutsProvider.swift in Sources */,

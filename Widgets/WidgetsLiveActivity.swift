@@ -42,11 +42,11 @@ struct WidgetsLiveActivity: Widget {
 							.foregroundStyle(.secondary)
 							.fixedSize()
 					}
-					Text("\(String(format: "Ch. Util: %.2f", context.state.channelUtilization))%")
+					Text("\(context.state.channelUtilization.map { String(format: "Ch. Util: %.2f", $0) } ?? "--")%")
 						.font(.caption2)
 						.foregroundStyle(.secondary)
 						.fixedSize()
-					Text("\(String(format: "Airtime: %.2f", context.state.airtime))%")
+					Text("\(context.state.airtime.map { String(format: "Airtime: %.2f", $0) } ?? "--")%")
 						.font(.caption2)
 						.foregroundStyle(.secondary)
 						.fixedSize()
@@ -118,7 +118,7 @@ struct WidgetsLiveActivity: Widget {
 
 struct WidgetsLiveActivity_Previews: PreviewProvider {
 	static let attributes = MeshActivityAttributes(nodeNum: 123456789, name: "RAK Compact Rotary Handset Gray 8E6G")
-	static let state = MeshActivityAttributes.ContentState(uptimeSeconds: 600, channelUtilization: 1.2, airtime: 3.5, sentPackets: 12587, receivedPackets: 12555, badReceivedPackets: 800, dupeReceivedPackets: 100 , packetsSentRelay: 250, packetsCanceledRelay: 372, nodesOnline: 99, totalNodes: 100, timerRange: Date.now...Date(timeIntervalSinceNow: 300))
+	static let state = MeshActivityAttributes.ContentState(uptimeSeconds: 600, channelUtilization: 1.2, airtime: 3.5, sentPackets: 12587, receivedPackets: 12555, badReceivedPackets: 800, dupeReceivedPackets: 100, packetsSentRelay: 250, packetsCanceledRelay: 372, nodesOnline: 99, totalNodes: 100, timerRange: Date.now...Date(timeIntervalSinceNow: 300))
 
     static var previews: some View {
         attributes
@@ -141,8 +141,8 @@ struct LiveActivityView: View {
 
 	var nodeName: String
 	var uptimeSeconds: UInt32
-	var channelUtilization: Float
-	var airtime: Float
+	var channelUtilization: Float?
+	var airtime: Float?
 	var sentPackets: UInt32
 	var receivedPackets: UInt32
 	var badReceivedPackets: UInt32
@@ -180,8 +180,8 @@ struct NodeInfoView: View {
 
 	var nodeName: String
 	var uptimeSeconds: UInt32
-	var channelUtilization: Float
-	var airtime: Float
+	var channelUtilization: Float?
+	var airtime: Float?
 	var sentPackets: UInt32
 	var receivedPackets: UInt32
 	var badReceivedPackets: UInt32
@@ -199,7 +199,7 @@ struct NodeInfoView: View {
 				.font(nodeName.count > 14 ? .callout : .title3)
 				.fontWeight(.semibold)
 				.foregroundStyle(.tint)
-			Text("\(String(format: "Ch. Util: %.2f", channelUtilization))% \(String(format: "Airtime: %.2f", airtime))%")
+			Text("\(channelUtilization.map { String(format: "Ch. Util: %.2f", $0 ) } ?? "--")% \(airtime.map { String(format: "Airtime: %.2f", $0) } ?? "--")%")
 				.font(.caption)
 				.fontWeight(.medium)
 				.foregroundStyle(.secondary)

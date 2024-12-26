@@ -126,12 +126,12 @@ class MetricsSeriesList: ObservableObject, RandomAccessCollection, RangeReplacea
 			}
 		}
 	}
-	
+
 	func saveDefaults(forNode node: NodeInfoEntity) {
 		let series = self.visible.map( { $0.id } )
 		node.telemetrySeries = series
 	}
-	
+
 	// Collection conformance
 	typealias Index = Int
 	typealias Element = MetricsChartSeries

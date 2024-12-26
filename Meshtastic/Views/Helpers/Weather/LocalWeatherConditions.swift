@@ -116,7 +116,7 @@ struct WeatherConditionsCompactWidget: View {
 
 struct HumidityCompactWidget: View {
 	let humidity: Int
-	let dewPoint: String
+	let dewPoint: String?
 	var body: some View {
 		VStack(alignment: .leading) {
 			HStack(spacing: 5.0) {
@@ -129,11 +129,13 @@ struct HumidityCompactWidget: View {
 			Text("\(humidity)%")
 				.font(.largeTitle)
 				.padding(.bottom, 5)
-			Text("The dew point is \(dewPoint) right now.")
-				.lineLimit(3)
-				.allowsTightening(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
-				.fixedSize(horizontal: false, vertical: true)
-				.font(.caption2)
+			if let dewPoint {
+				Text("The dew point is \(dewPoint) right now.")
+					.lineLimit(3)
+					.allowsTightening(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
+					.fixedSize(horizontal: false, vertical: true)
+					.font(.caption2)
+			}
 		}
 		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120, idealHeight: 130, maxHeight: 140)
 		.padding()
@@ -168,18 +170,72 @@ struct PressureCompactWidget: View {
 
 struct WindCompactWidget: View {
 	let speed: String
-	let gust: String
-	let direction: String
+	let gust: String?
+	let direction: String?
 	var body: some View {
 		VStack(alignment: .leading) {
 			Label { Text("WIND") } icon: { Image(systemName: "wind").foregroundColor(.accentColor) }
-			Text("\(direction)")
-				.font(gust.isEmpty ? .callout : .caption)
-				.padding(.bottom, 10)
+			if let direction {
+				Text("\(direction)")
+					.font((gust ?? "").isEmpty ? .callout : .caption)
+					.padding(.bottom, 10)
+			}
 			Text(speed)
-				.font(gust.isEmpty ? .system(size: 45) : .system(size: 35))
-			if !gust.isEmpty {
+				.font((gust ?? "").isEmpty ? .system(size: 45) : .system(size: 35))
+			if let gust, !gust.isEmpty {
 				Text("Gusts \(gust)")
+			}
+		}
+		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120, idealHeight: 130, maxHeight: 140)
+		.padding()
+		.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+	}
+}
+
+struct RadiationCompactWidget: View {
+	let radiation: String
+	let unit: String
+
+	var body: some View {
+		VStack(alignment: .leading) {
+			HStack(alignment: .firstTextBaseline) {
+				Text("☢")
+					.font(.system(size: 30, design: .monospaced))
+					.foregroundColor(.accentColor)
+				Text("RADIATION")
+					.font(.callout)
+			}
+			HStack {
+				Text("\(radiation)")
+					.font(radiation.length < 4 ? .system(size: 54) : .system(size: 38) )
+				Text(unit)
+					.font(.system(size: 14))
+			}
+		}
+		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120, idealHeight: 130, maxHeight: 140)
+		.padding()
+		.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+	}
+}
+
+struct DistanceCompactWidget: View {
+	let distance: String
+	let unit: String
+
+	var body: some View {
+		VStack(alignment: .leading) {
+			HStack(alignment: .firstTextBaseline) {
+				Image(systemName: "ruler")
+					.imageScale(.small)
+					.foregroundColor(.accentColor)
+				Text("DISTANCE")
+					.font(.callout)
+			}
+			HStack {
+				Text("\(distance)")
+					.font(distance.length < 4 ? .system(size: 62) : .system(size: 46) )
+				Text(unit)
+					.font(.system(size: 14))
 			}
 		}
 		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120, idealHeight: 130, maxHeight: 140)

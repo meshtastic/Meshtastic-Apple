@@ -21,7 +21,9 @@ extension MetricsColumnList {
 				abbreviatedName: "Temp",
 				minWidth: 30, maxWidth: 45,
 				tableBody: { _, temp in
-					Text(temp.formattedTemperature())
+					temp.map {
+						Text($0.formattedTemperature())
+					} ?? Text("--")
 				}),
 
 			// Relative Humidity Series Configuration
@@ -32,7 +34,9 @@ extension MetricsColumnList {
 				abbreviatedName: "Hum",
 				minWidth: 30, maxWidth: 45,
 				tableBody: { _, humidity in
-					Text("\(String(format: "%.0f", humidity))%")
+					humidity.map {
+						Text("\(String(format: "%.0f", $0))%")
+					} ?? Text("--")
 				}),
 
 			// Barometric Pressure Series Configuration
@@ -43,11 +47,13 @@ extension MetricsColumnList {
 				abbreviatedName: "Bar",
 				minWidth: 30, maxWidth: 50,
 				tableBody: { _, pressure in
-					if (UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
-						Text("\(String(format: "%.1f hPa", pressure))")
-					} else {
-						Text("\(String(format: "%.1f", pressure))")
-					}
+					pressure.map {
+						if (UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
+							Text("\(String(format: "%.1f hPa", $0))")
+						} else {
+							Text("\(String(format: "%.1f", $0))")
+						}
+					} ?? Text("--")
 				}),
 		
 			// Distance sensor, often used for water level
@@ -59,11 +65,13 @@ extension MetricsColumnList {
 				minWidth: 30, maxWidth: 50,
 				visible: false,
 				tableBody: { _, distance in
-					if (UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
-						Text("\(String(format: "%.1f mm", distance))")
-					} else {
-						Text("\(String(format: "%.1f", distance))")
-					}
+					distance.map {
+						if (UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
+							Text("\(String(format: "%.1f mm", $0))")
+						} else {
+							Text("\(String(format: "%.1f", $0))")
+						}
+					} ?? Text("--")
 				}),
 			
 //			// Gas Resistance - This is a raw sensor value used for IAQ.
@@ -102,7 +110,9 @@ extension MetricsColumnList {
 				minWidth: 30, maxWidth: 50,
 				visible: false,
 				tableBody: { _, lux in
-					Text("\(String(format: "%.1f", lux))")
+					lux.map {
+						Text("\(String(format: "%.1f", $0))")
+					} ?? Text("--")
 				}),
 			
 			MetricsTableColumn(
@@ -113,7 +123,9 @@ extension MetricsColumnList {
 				minWidth: 30, maxWidth: 50,
 				visible: false,
 				tableBody: { _, lux in
-					Text("\(String(format: "%.1f", lux))")
+					lux.map {
+						Text("\(String(format: "%.1f", $0))")
+					} ?? Text("--")
 				}),
 	
 			MetricsTableColumn(
@@ -124,7 +136,9 @@ extension MetricsColumnList {
 				minWidth: 30, maxWidth: 50,
 				visible: false,
 				tableBody: { _, lux in
-					Text("\(String(format: "%.1f", lux))")
+					lux.map {
+						Text("\(String(format: "%.1f", $0))")
+					} ?? Text("--")
 				}),
 		
 			MetricsTableColumn(
@@ -135,7 +149,9 @@ extension MetricsColumnList {
 				minWidth: 30, maxWidth: 50,
 				visible: false,
 				tableBody: { _, lux in
-					Text("\(String(format: "%.1f", lux))")
+					lux.map {
+						Text("\(String(format: "%.1f", $0))")
+					} ?? Text("--")
 				}),
 
 			// Radiation
@@ -147,12 +163,13 @@ extension MetricsColumnList {
 				minWidth: 30, maxWidth: 50,
 				visible: false,
 				tableBody: { _, radiation in
-					if (UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
-						Text("\(String(format: "%.1f µR/h", radiation))")
-					} else {
-						Text("\(String(format: "%.1f", radiation))")
-					}
-
+					radiation.map {
+						if (UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
+							Text("\(String(format: "%.1f µR/h", $0))")
+						} else {
+							Text("\(String(format: "%.1f", $0))")
+						}
+					} ?? Text("--")
 				}),
 
 			// Wind Direction Series Configuration
@@ -164,19 +181,23 @@ extension MetricsColumnList {
 				minWidth: 30, maxWidth: 40,
 				visible: false,
 				tableBody: { _, wind in
-					HStack(spacing: 1.0) {
-						// debug data: let wind = Double.random(in: 0..<360.0)
-						let wind = Double(wind)
-						Image(systemName: "location.north")
-							.imageScale(.small)
-							.scaleEffect(0.9, anchor: .center)
-							.rotationEffect(.degrees(wind))
-							.foregroundStyle(.blue)
-						if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-							Text(cardinalValue(from: wind))
-						} else {
-							Text(abbreviatedCardinalValue(from: wind))
+					if let wind {
+						HStack(spacing: 1.0) {
+							// debug data: let wind = Double.random(in: 0..<360.0)
+							let wind = Double(wind)
+							Image(systemName: "location.north")
+								.imageScale(.small)
+								.scaleEffect(0.9, anchor: .center)
+								.rotationEffect(.degrees(wind))
+								.foregroundStyle(.blue)
+							if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+								Text(cardinalValue(from: wind))
+							} else {
+								Text(abbreviatedCardinalValue(from: wind))
+							}
 						}
+					} else {
+						Text("--")
 					}
 				}),
 
@@ -189,15 +210,17 @@ extension MetricsColumnList {
 				minWidth: 30, maxWidth: 60,
 				visible: false,
 				tableBody: { _, speed in
-					let windSpeed = Measurement(
-						value: Double(speed), unit: UnitSpeed.kilometersPerHour)
-					Text(
-						windSpeed.formatted(
-							.measurement(
-								width: .abbreviated,
-								numberFormatStyle: .number.precision(
-									.fractionLength(0))))
-					)
+					speed.map {
+						let windSpeed = Measurement(
+							value: Double($0), unit: UnitSpeed.kilometersPerHour)
+						return Text(
+							windSpeed.formatted(
+								.measurement(
+									width: .abbreviated,
+									numberFormatStyle: .number.precision(
+										.fractionLength(0))))
+						)
+					} ?? Text("--")
 				}),
 
 			// Timestamp Series Configuration -- for use in table only

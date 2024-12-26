@@ -20,7 +20,7 @@ extension MetricsSeriesList {
 				name: "Temperature",
 				abbreviatedName: "Temp",
 				minumumYAxisSpan: 50.0,
-				conversion: { Float($0.localeTemperature()) },
+				conversion: { t in t.map { Float($0.localeTemperature()) } },
 				foregroundStyle: { chartRange in
 					let locale = NSLocale.current as NSLocale
 					let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
@@ -31,26 +31,28 @@ extension MetricsSeriesList {
 					return LinearGradient(stops: stops, startPoint: .bottom, endPoint: .top)
 				},
 				chartBody: { series, chartRange, time, temperature in
-					AreaMark(
-						x: .value("Time", time),
-						yStart: .value(series.abbreviatedName, chartRange?.lowerBound.doubleValue ?? 0.0),
-						yEnd: .value(
-							series.abbreviatedName, temperature.localeTemperature())
-					)
-					.interpolationMethod(.catmullRom)
-					.foregroundStyle(by: .value("Series", series.abbreviatedName))
-					.alignsMarkStylesWithPlotArea()
-					.accessibilityHidden(true)
-					.opacity(0.6)
-					LineMark(
-						x: .value("Time", time),
-						y: .value(
-							series.abbreviatedName, temperature.localeTemperature())
-					)
-					.interpolationMethod(.catmullRom)
-					.foregroundStyle(by: .value("Series", series.abbreviatedName))
-					.lineStyle(StrokeStyle(lineWidth: 4))
-					.alignsMarkStylesWithPlotArea()
+					if let temperature {
+						AreaMark(
+							x: .value("Time", time),
+							yStart: .value(series.abbreviatedName, chartRange?.lowerBound.doubleValue ?? 0.0),
+							yEnd: .value(
+								series.abbreviatedName, temperature.localeTemperature())
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.alignsMarkStylesWithPlotArea()
+						.accessibilityHidden(true)
+						.opacity(0.6)
+						LineMark(
+							x: .value("Time", time),
+							y: .value(
+								series.abbreviatedName, temperature.localeTemperature())
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
 				}),
 
 			// Relative Humidity Series Configuration
@@ -67,14 +69,16 @@ extension MetricsSeriesList {
 						)
 				},
 				chartBody: { series, _, time, humidity in
-					LineMark(
-						x: .value("Time", time),
-						y: .value(series.abbreviatedName, humidity)
-					)
-					.interpolationMethod(.catmullRom)
-					.foregroundStyle(by: .value("Series", series.abbreviatedName))
-					.lineStyle(StrokeStyle(lineWidth: 4))
-					.alignsMarkStylesWithPlotArea()
+					if let humidity {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, humidity)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
 				}),
 
 			// Barometric Pressure Series Configuration
@@ -91,15 +95,16 @@ extension MetricsSeriesList {
 					)
 				},
 				chartBody: { series, _, time, pressure in
-					LineMark(
-						x: .value("Time", time),
-						y: .value(series.abbreviatedName, pressure)
-					)
-					.interpolationMethod(.catmullRom)
-					.foregroundStyle(by: .value("Series", series.abbreviatedName))
-					.lineStyle(StrokeStyle(lineWidth: 4))
-					.alignsMarkStylesWithPlotArea()
-
+					if let pressure {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, pressure)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
 				}),
 
 			// Distance sensor, often used for water level
@@ -116,14 +121,16 @@ extension MetricsSeriesList {
 					)
 				},
 				chartBody: { series, _, time, distance in
-					LineMark(
-						x: .value("Time", time),
-						y: .value(series.abbreviatedName, distance)
-					)
-					.interpolationMethod(.catmullRom)
-					.foregroundStyle(by: .value("Series", series.abbreviatedName))
-					.lineStyle(StrokeStyle(lineWidth: 4))
-					.alignsMarkStylesWithPlotArea()
+					if let distance {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, distance)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
 				}),
 			
 			
@@ -151,7 +158,7 @@ extension MetricsSeriesList {
 //					.lineStyle(StrokeStyle(lineWidth: 4))
 //					.alignsMarkStylesWithPlotArea()
 //				}),
-			
+
 			// Indoor Air Quality Series Configuration
 			MetricsChartSeries(
 				id: "iaq",
@@ -161,21 +168,23 @@ extension MetricsSeriesList {
 				visible: false,
 				foregroundStyle: { _ in .gray },
 				chartBody: { series, _, time, iaq in
-					let iaqEnum = Iaq.getIaq(for: Int(iaq))
-					PointMark(
-						x: .value("Time", time),
-						y: .value(series.abbreviatedName, Float(iaq))
-					)
-					.symbol(Circle())
-					.foregroundStyle(iaqEnum.color)
-					LineMark(
-						x: .value("Time", time),
-						y: .value(series.abbreviatedName, Float(iaq))
-					)
-					.interpolationMethod(.catmullRom)
-					.foregroundStyle(by: .value("Series", series.abbreviatedName))
-					.lineStyle(StrokeStyle(lineWidth: 4))
-					.alignsMarkStylesWithPlotArea()
+					if let iaq {
+						let iaqEnum = Iaq.getIaq(for: Int(iaq))
+						PointMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, Float(iaq))
+						)
+						.symbol(Circle())
+						.foregroundStyle(iaqEnum.color)
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, Float(iaq))
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
 				}),
 
 			// Lux
@@ -192,14 +201,16 @@ extension MetricsSeriesList {
 					)
 				},
 				chartBody: { series, _, time, lux in
-					LineMark(
-						x: .value("Time", time),
-						y: .value(series.abbreviatedName, lux)
-					)
-					.interpolationMethod(.catmullRom)
-					.foregroundStyle(by: .value("Series", series.abbreviatedName))
-					.lineStyle(StrokeStyle(lineWidth: 4))
-					.alignsMarkStylesWithPlotArea()
+					if let lux {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, lux)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
 				}),
 			
 			// White Lux
@@ -216,14 +227,16 @@ extension MetricsSeriesList {
 					)
 				},
 				chartBody: { series, _, time, lux in
-					LineMark(
-						x: .value("Time", time),
-						y: .value(series.abbreviatedName, lux)
-					)
-					.interpolationMethod(.catmullRom)
-					.foregroundStyle(by: .value("Series", series.abbreviatedName))
-					.lineStyle(StrokeStyle(lineWidth: 4))
-					.alignsMarkStylesWithPlotArea()
+					if let lux {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, lux)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
 				}),
 			
 			// UV Lux
@@ -240,14 +253,16 @@ extension MetricsSeriesList {
 					)
 				},
 				chartBody: { series, _, time, lux in
-					LineMark(
-						x: .value("Time", time),
-						y: .value(series.abbreviatedName, lux)
-					)
-					.interpolationMethod(.catmullRom)
-					.foregroundStyle(by: .value("Series", series.abbreviatedName))
-					.lineStyle(StrokeStyle(lineWidth: 4))
-					.alignsMarkStylesWithPlotArea()
+					if let lux {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, lux)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
 				}),
 			
 			// IR Lux
@@ -264,14 +279,16 @@ extension MetricsSeriesList {
 					)
 				},
 				chartBody: { series, _, time, lux in
-					LineMark(
-						x: .value("Time", time),
-						y: .value(series.abbreviatedName, lux)
-					)
-					.interpolationMethod(.catmullRom)
-					.foregroundStyle(by: .value("Series", series.abbreviatedName))
-					.lineStyle(StrokeStyle(lineWidth: 4))
-					.alignsMarkStylesWithPlotArea()
+					if let lux {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, lux)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
 				}),
 			
 			// Combined Wind Speed and Direction Series Configuration -- For use in Chart only
@@ -288,26 +305,30 @@ extension MetricsSeriesList {
 					)
 				},
 				chartBody: { series, _, time, wsad in
-					// debug data: var wsad = WindSpeedAndDirection(windSpeed:Float.random(in:0...25), windDirection: Int32.random(in:0..<3)*90 )
-					LineMark(
-						x: .value("Time", time),
-						y: .value(series.abbreviatedName, wsad.windSpeed)
-					)
-					.interpolationMethod(.catmullRom)
-					.foregroundStyle(by: .value("Series", series.abbreviatedName))
-					.lineStyle(StrokeStyle(lineWidth: 4))
-					.alignsMarkStylesWithPlotArea()
-					PointMark(
-						x: .value("Time", time),
-						y: .value(series.abbreviatedName, wsad.windSpeed)
-					)
-					.symbol {
-						Image(systemName: "location.north.circle.fill")
-							.symbolRenderingMode(.palette)
-							.foregroundStyle(Color.white, Color(UIColor.yellow.darker(componentDelta: 0.3)))
-							.rotationEffect(
-								.degrees(Double(wsad.windDirection)))
-					}.foregroundStyle(.yellow)
+					if let wsad {
+						// debug data: var wsad = WindSpeedAndDirection(windSpeed:Float.random(in:0...25), windDirection: Int32.random(in:0..<3)*90 )
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, wsad.windSpeed)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+						PointMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, wsad.windSpeed)
+						)
+						.symbol {
+							if let wd = wsad.windDirection {
+								Image(systemName: "location.north.circle.fill")
+									.symbolRenderingMode(.palette)
+									.foregroundStyle(Color.white, Color(UIColor.yellow.darker(componentDelta: 0.3)))
+									.rotationEffect(
+										.degrees(Double(wd)))
+							}
+						}.foregroundStyle(.yellow)
+					}
 				}),
 			
 			// Radiation
@@ -324,14 +345,16 @@ extension MetricsSeriesList {
 					)
 				},
 				chartBody: { series, _, time, radiation in
-					LineMark(
-						x: .value("Time", time),
-						y: .value(series.abbreviatedName, radiation)
-					)
-					.interpolationMethod(.catmullRom)
-					.foregroundStyle(by: .value("Series", series.abbreviatedName))
-					.lineStyle(StrokeStyle(lineWidth: 4))
-					.alignsMarkStylesWithPlotArea()
+					if let radiation {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, radiation)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
 				}),
 		])
 	}
@@ -342,8 +365,9 @@ extension MetricsSeriesList {
 @objc class WindSpeedAndDirection: NSObject, Plottable, Comparable {
 
 	let windSpeed: Float
-	let windDirection: Int32
-	init(windSpeed: Float, windDirection: Int32) {
+	let windDirection: Int32?
+	
+	init(windSpeed: Float, windDirection: Int32?) {
 		self.windSpeed = windSpeed
 		self.windDirection = windDirection
 	}
@@ -358,9 +382,11 @@ extension MetricsSeriesList {
 }
 
 @objc extension TelemetryEntity {
-	var windSpeedAndDirection: WindSpeedAndDirection {
+	var windSpeedAndDirection: WindSpeedAndDirection? {
+		guard let windSpeed = self.windSpeed else { return nil }
+		
 		return WindSpeedAndDirection(
-			windSpeed: self.windSpeed, windDirection: self.windDirection)
+			windSpeed: windSpeed, windDirection: self.windDirection)
 	}
 }
 

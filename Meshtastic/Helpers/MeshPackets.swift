@@ -697,33 +697,33 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 				/// Currently only Device Metrics and Environment Telemetry are supported in the app
 				if telemetryMessage.variant == Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) {
 					// Device Metrics
-					telemetry.airUtilTx = telemetryMessage.deviceMetrics.airUtilTx
-					telemetry.channelUtilization = telemetryMessage.deviceMetrics.channelUtilization
-					telemetry.batteryLevel = Int32(telemetryMessage.deviceMetrics.batteryLevel)
-					telemetry.voltage = telemetryMessage.deviceMetrics.voltage
-					telemetry.uptimeSeconds = Int32(telemetryMessage.deviceMetrics.uptimeSeconds)
+					telemetry.airUtilTx = telemetryMessage.deviceMetrics.hasAirUtilTx ? telemetryMessage.deviceMetrics.airUtilTx : nil
+					telemetry.channelUtilization = telemetryMessage.deviceMetrics.hasChannelUtilization ? telemetryMessage.deviceMetrics.channelUtilization : nil
+					telemetry.batteryLevel = telemetryMessage.deviceMetrics.hasBatteryLevel ? Int32(telemetryMessage.deviceMetrics.batteryLevel) : nil
+					telemetry.voltage = telemetryMessage.deviceMetrics.hasVoltage ? telemetryMessage.deviceMetrics.voltage : nil
+					telemetry.uptimeSeconds = telemetryMessage.deviceMetrics.hasUptimeSeconds ? Int32(telemetryMessage.deviceMetrics.uptimeSeconds) : nil
 					telemetry.metricsType = 0
 					Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.deviceMetrics.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.deviceMetrics.airUtilTx, privacy: .public) for Node: \(packet.from.toHex(), privacy: .public)")
 				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) {
 					// Environment Metrics
-					telemetry.barometricPressure = telemetryMessage.environmentMetrics.barometricPressure
-					telemetry.current = telemetryMessage.environmentMetrics.current
-					telemetry.iaq = Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.iaq)
-					telemetry.gasResistance = telemetryMessage.environmentMetrics.gasResistance
-					telemetry.irLux = telemetryMessage.environmentMetrics.irLux
-					telemetry.lux = telemetryMessage.environmentMetrics.lux
-					telemetry.relativeHumidity = telemetryMessage.environmentMetrics.relativeHumidity
-					telemetry.temperature = telemetryMessage.environmentMetrics.temperature
-					telemetry.current = telemetryMessage.environmentMetrics.current
-					telemetry.distance = telemetryMessage.environmentMetrics.distance
-					telemetry.uvLux = telemetryMessage.environmentMetrics.uvLux
-					telemetry.voltage = telemetryMessage.environmentMetrics.voltage
-					telemetry.weight = telemetryMessage.environmentMetrics.weight
-					telemetry.windSpeed = telemetryMessage.environmentMetrics.windSpeed
-					telemetry.windGust = telemetryMessage.environmentMetrics.windGust
-					telemetry.windLull = telemetryMessage.environmentMetrics.windLull
-					telemetry.windDirection = Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.windDirection)
-					telemetry.radiation = telemetryMessage.environmentMetrics.radiation
+					telemetry.barometricPressure = telemetryMessage.environmentMetrics.hasBarometricPressure ? telemetryMessage.environmentMetrics.barometricPressure : nil
+					telemetry.current = telemetryMessage.environmentMetrics.hasCurrent ? telemetryMessage.environmentMetrics.current : nil
+					telemetry.iaq = telemetryMessage.environmentMetrics.hasIaq ? Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.iaq) : nil
+					telemetry.gasResistance = telemetryMessage.environmentMetrics.hasGasResistance ? telemetryMessage.environmentMetrics.gasResistance : nil
+					telemetry.irLux = telemetryMessage.environmentMetrics.hasIrLux ? telemetryMessage.environmentMetrics.irLux : nil
+					telemetry.lux = telemetryMessage.environmentMetrics.hasLux ? telemetryMessage.environmentMetrics.lux : nil
+					telemetry.relativeHumidity = telemetryMessage.environmentMetrics.hasRelativeHumidity ? telemetryMessage.environmentMetrics.relativeHumidity : nil
+					telemetry.temperature = telemetryMessage.environmentMetrics.hasTemperature ? telemetryMessage.environmentMetrics.temperature : nil
+					telemetry.current = telemetryMessage.environmentMetrics.hasCurrent ? telemetryMessage.environmentMetrics.current : nil
+					telemetry.distance = telemetryMessage.environmentMetrics.hasDistance ? telemetryMessage.environmentMetrics.distance : nil
+					telemetry.uvLux = telemetryMessage.environmentMetrics.hasUvLux ? telemetryMessage.environmentMetrics.uvLux : nil
+					telemetry.voltage = telemetryMessage.environmentMetrics.hasVoltage ? telemetryMessage.environmentMetrics.voltage : nil
+					telemetry.weight = telemetryMessage.environmentMetrics.hasWeight ? telemetryMessage.environmentMetrics.weight : nil
+					telemetry.windSpeed = telemetryMessage.environmentMetrics.hasWindSpeed ? telemetryMessage.environmentMetrics.windSpeed : nil
+					telemetry.windGust = telemetryMessage.environmentMetrics.hasWindGust ? telemetryMessage.environmentMetrics.windGust : nil
+					telemetry.windLull = telemetryMessage.environmentMetrics.hasWindLull ? telemetryMessage.environmentMetrics.windLull : nil
+					telemetry.windDirection = telemetryMessage.environmentMetrics.hasWindDirection ? Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.windDirection) : nil
+					telemetry.radiation = telemetryMessage.environmentMetrics.hasRadiation ? telemetryMessage.environmentMetrics.radiation : nil
 					telemetry.metricsType = 1
 				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) {
 					// Local Stats for Live activity
@@ -763,7 +763,8 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 				// ------------------------
 				// Low Battery notification
 				if connectedNode == Int64(packet.from) {
-					if UserDefaults.lowBatteryNotifications && telemetry.batteryLevel > 0 && telemetry.batteryLevel < 4 {
+					let batteryLevel = telemetry.batteryLevel ?? 0
+					if UserDefaults.lowBatteryNotifications && batteryLevel > 0 && batteryLevel < 4 {
 						let manager = LocalNotificationManager()
 						manager.notifications = [
 							Notification(
@@ -785,7 +786,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 
 				let fifteenMinutesLater = Calendar.current.date(byAdding: .minute, value: (Int(15) ), to: Date())!
 				let date = Date.now...fifteenMinutesLater
-				let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(uptimeSeconds: UInt32(telemetry.uptimeSeconds),
+				let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(uptimeSeconds: telemetry.uptimeSeconds.map { UInt32($0) },
 																				  channelUtilization: telemetry.channelUtilization,
 																				  airtime: telemetry.airUtilTx,
 																				  sentPackets: UInt32(telemetry.numPacketsTx),

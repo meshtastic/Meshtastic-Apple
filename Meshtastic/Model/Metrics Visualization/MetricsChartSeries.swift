@@ -40,7 +40,7 @@ class MetricsChartSeries: ObservableObject {
 
 	let initialYAxisRange: ClosedRange<Float>?
 	let minumumYAxisSpan: Float?
-	
+
 	// Main initializer
 	init<Value, ChartBody: ChartContent, ForegroundStyle: ShapeStyle>(
 		id: String,
@@ -53,7 +53,7 @@ class MetricsChartSeries: ObservableObject {
 		visible: Bool = true,
 		foregroundStyle: @escaping ((ClosedRange<Float>?) -> ForegroundStyle?) = { _ in nil },
 		@ChartContentBuilder chartBody: @escaping (MetricsChartSeries, ClosedRange<Float>?, Date, Value) -> ChartBody?
-	) where Value: Plottable & Comparable {
+	) {
 
 		// This works because TelemetryEntity is an NSManagedObject and derrived from NSObject
 		self.id = id
@@ -72,9 +72,15 @@ class MetricsChartSeries: ObservableObject {
 		}
 		self.valueClosure = { te in
 			if let conversion {
-				return conversion(te[keyPath: keyPath]).floatValue
+				if let value = conversion(te[keyPath: keyPath]) as? (any Plottable) {
+					return value.floatValue ?? 0.0
+				}
+			} else {
+				if let value = te[keyPath: keyPath] as? (any Plottable) {
+					return value.floatValue
+				}
 			}
-			return te[keyPath: keyPath].floatValue
+			return nil
 		}
 	}
 
