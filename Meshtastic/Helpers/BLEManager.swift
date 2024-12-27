@@ -757,7 +757,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 				// Log any other unknownApp calls
 				if !nowKnown { MeshLogger.log("🕸️ MESH PACKET received for Unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")") }
-			case .textMessageApp, .detectionSensorApp:
+			case .textMessageApp, .detectionSensorApp, .alertApp:
+				// TODO: Critical alert for alertApp payloads
 				textMessageAppPacket(
 					packet: decodedInfo.packet,
 					wantRangeTestPackets: wantRangeTestPackets,
