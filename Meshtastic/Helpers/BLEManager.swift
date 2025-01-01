@@ -757,7 +757,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 				// Log any other unknownApp calls
 				if !nowKnown { MeshLogger.log("🕸️ MESH PACKET received for Unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")") }
-			case .textMessageApp, .detectionSensorApp, .alertApp:
+			case .textMessageApp, .detectionSensorApp:
 				// TODO: Critical alert for alertApp payloads
 				textMessageAppPacket(
 					packet: decodedInfo.packet,
@@ -766,6 +766,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					context: context,
 					appState: appState
 				)
+			case .alertApp:
+				MeshLogger.log("🕸️ MESH PACKET received for Alert App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .remoteHardwareApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .positionApp:
@@ -979,8 +981,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				MeshLogger.log("🕸️ MESH PACKET received for ATAK Plugin App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .powerstressApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Power Stress App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-			case .alertApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Alert App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			}
 
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
