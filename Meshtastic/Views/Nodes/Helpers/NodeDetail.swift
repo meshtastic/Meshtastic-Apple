@@ -243,6 +243,9 @@ struct NodeDetail: View {
 									if let radiation = node.latestEnvironmentMetrics?.radiation {
 										RadiationCompactWidget(radiation: String(format: "%.1f", radiation), unit: "µR/h")
 									}
+									if let weight = node.latestEnvironmentMetrics?.weight {
+										WeightCompactWidget(weight: String(format: "%.1f", weight), unit: "kg")
+									}
 								}
 								.padding(node.latestEnvironmentMetrics?.iaq ?? -1 > 0 ? .bottom : .vertical)
 							}

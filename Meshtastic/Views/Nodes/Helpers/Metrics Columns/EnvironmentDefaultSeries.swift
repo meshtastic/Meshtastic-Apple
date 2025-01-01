@@ -356,6 +356,32 @@ extension MetricsSeriesList {
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
+			
+			// Radiation
+			MetricsChartSeries(
+				id: "weight",
+				keyPath: \.weight,
+				name: "Weight",
+				abbreviatedName: "kg",
+				visible: false,
+				foregroundStyle: { _ in
+					.linearGradient(
+						colors: [Color(UIColor.brown.darker(componentDelta: 0.5)), .brown],
+						startPoint: .bottom, endPoint: .top
+					)
+				},
+				chartBody: { series, _, time, radiation in
+					if let radiation {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, radiation)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
+				})
 		])
 	}
 }

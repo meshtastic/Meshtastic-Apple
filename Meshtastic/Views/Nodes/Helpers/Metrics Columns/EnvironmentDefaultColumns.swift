@@ -222,7 +222,29 @@ extension MetricsColumnList {
 						)
 					} ?? Text("--")
 				}),
-
+			
+			//Weight
+			MetricsTableColumn(
+				id: "weight",
+				keyPath: \.weight,
+				name: "Weight",
+				abbreviatedName: "kg",
+				minWidth: 30, maxWidth: 60,
+				visible: false,
+				tableBody: { _, weight in
+					weight.map {
+						let weight = Measurement(
+							value: Double($0), unit: UnitMass.kilograms)
+						return Text(
+							weight.formatted(
+								.measurement(
+									width: .abbreviated,
+									numberFormatStyle: .number.precision(
+										.fractionLength(0))))
+						)
+					} ?? Text("--")
+				}),
+			
 			// Timestamp Series Configuration -- for use in table only
 			MetricsTableColumn(
 				id: "time",
