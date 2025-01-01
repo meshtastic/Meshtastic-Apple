@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import SwiftUI
 import CocoaMQTT
 import OSLog
 
@@ -47,10 +46,9 @@ class MqttClientProxyManager {
 			var username = node.mqttConfig?.username
 			var password = node.mqttConfig?.password
 			if host == defaultServerAddress {
-				@Environment(\.publicMqttUsername) var publicMqttUsername
-				@Environment(\.publicMqttPsk) var publicMqttPsk
-				username = publicMqttUsername
-				password = publicMqttPsk
+
+				username = ProcessInfo.processInfo.environment["publicMqttUsername"]
+				password = ProcessInfo.processInfo.environment["publicMqttPsk"]
 				useSsl = false
 			}
 			let root = node.mqttConfig?.root?.count ?? 0 > 0 ? node.mqttConfig?.root : "msh"
