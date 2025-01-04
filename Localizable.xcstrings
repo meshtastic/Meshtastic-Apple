@@ -14812,7 +14812,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Taste"
+            "value" : "Schlüssel"
           }
         },
         "sr" : {
@@ -14838,7 +14838,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tastengröße"
+            "value" : "Schlüsselgröße"
           }
         },
         "sr" : {
