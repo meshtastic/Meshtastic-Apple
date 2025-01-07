@@ -2024,6 +2024,15 @@ public struct MeshPacket: @unchecked Sendable {
     set {_uniqueStorage()._relayNode = newValue}
   }
 
+  ///
+  /// *Never* sent over the radio links.
+  /// Timestamp after which this packet may be sent.
+  /// Set by the firmware internally, clients are not supposed to set this.
+  public var txAfter: UInt32 {
+    get {return _storage._txAfter}
+    set {_uniqueStorage()._txAfter = newValue}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public enum OneOf_PayloadVariant: Equatable, @unchecked Sendable {
@@ -4111,6 +4120,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     17: .standard(proto: "pki_encrypted"),
     18: .standard(proto: "next_hop"),
     19: .standard(proto: "relay_node"),
+    20: .standard(proto: "tx_after"),
   ]
 
   fileprivate class _StorageClass {
@@ -4132,6 +4142,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     var _pkiEncrypted: Bool = false
     var _nextHop: UInt32 = 0
     var _relayNode: UInt32 = 0
+    var _txAfter: UInt32 = 0
 
     #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
@@ -4164,6 +4175,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       _pkiEncrypted = source._pkiEncrypted
       _nextHop = source._nextHop
       _relayNode = source._relayNode
+      _txAfter = source._txAfter
     }
   }
 
@@ -4220,6 +4232,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         case 17: try { try decoder.decodeSingularBoolField(value: &_storage._pkiEncrypted) }()
         case 18: try { try decoder.decodeSingularUInt32Field(value: &_storage._nextHop) }()
         case 19: try { try decoder.decodeSingularUInt32Field(value: &_storage._relayNode) }()
+        case 20: try { try decoder.decodeSingularUInt32Field(value: &_storage._txAfter) }()
         default: break
         }
       }
@@ -4294,6 +4307,9 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       if _storage._relayNode != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._relayNode, fieldNumber: 19)
       }
+      if _storage._txAfter != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._txAfter, fieldNumber: 20)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -4321,6 +4337,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         if _storage._pkiEncrypted != rhs_storage._pkiEncrypted {return false}
         if _storage._nextHop != rhs_storage._nextHop {return false}
         if _storage._relayNode != rhs_storage._relayNode {return false}
+        if _storage._txAfter != rhs_storage._txAfter {return false}
         return true
       }
       if !storagesAreEqual {return false}
