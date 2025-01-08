@@ -8224,6 +8224,17 @@
         }
       }
     },
+    "device.role.name.routerlate" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Router Late"
+          }
+        }
+      }
+    },
     "device.role.name.sensor" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -8483,6 +8494,17 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "路由客户端模式 - 優先轉發 Mesh 網路中其他中繼點的消息，App 也可以連接到電台進行收發操作。"
+          }
+        }
+      }
+    },
+    "device.role.routerlate" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Infrastructure node that always rebroadcasts packets once but only after all other modes, ensuring additional coverage for local clusters. Visible in Nodes list."
           }
         }
       }
