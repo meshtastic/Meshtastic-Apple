@@ -820,6 +820,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 func textMessageAppPacket(
 	packet: MeshPacket,
 	wantRangeTestPackets: Bool,
+	critical: Bool = false,
 	connectedNode: Int64,
 	storeForward: Bool = false,
 	context: NSManagedObjectContext,

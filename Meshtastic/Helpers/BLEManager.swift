@@ -758,7 +758,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// Log any other unknownApp calls
 				if !nowKnown { MeshLogger.log("🕸️ MESH PACKET received for Unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")") }
 			case .textMessageApp, .detectionSensorApp:
-				// TODO: Critical alert for alertApp payloads
 				textMessageAppPacket(
 					packet: decodedInfo.packet,
 					wantRangeTestPackets: wantRangeTestPackets,
@@ -767,7 +766,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					appState: appState
 				)
 			case .alertApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Alert App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				textMessageAppPacket(
+					packet: decodedInfo.packet,
+					wantRangeTestPackets: wantRangeTestPackets,
+					critical: true,
+					connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0),
+					context: context,
+					appState: appState
+				)
 			case .remoteHardwareApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .positionApp:
