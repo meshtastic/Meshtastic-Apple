@@ -912,10 +912,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					/// Add the destination node to the end of the route towards string and the beginning of the route back string
 					routeString += "\(traceRoute?.node?.user?.longName ?? "unknown".localized) \((traceRoute?.node?.num ?? 0).toHex()) (\(destinationHop.snr != -32 ? String(destinationHop.snr) : "unknown ".localized)dB)"
 					traceRoute?.routeText = routeString
-
-					traceRoute?.hopsBack = Int32(routingMessage.routeBack.count)
+					// Default to -1 only fill in if routeBack is valid below
+					traceRoute?.hopsBack = -1
 					// Only if hopStart is set and there is an SNR entry
 					if decodedInfo.packet.hopStart > 0 && routingMessage.snrBack.count > 0 {
+						traceRoute?.hopsBack = Int32(routingMessage.routeBack.count)
 						var routeBackString = "\(traceRoute?.node?.user?.longName ?? "unknown".localized) \((traceRoute?.node?.num ?? 0).toHex()) --> "
 						for (index, node) in routingMessage.routeBack.enumerated() {
 							var hopNode = getNodeInfo(id: Int64(node), context: context)
@@ -956,19 +957,19 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						let snrBackLast = Float(routingMessage.snrBack.last ?? -128) / 4
 						routeBackString += "\(connectedNode.user?.longName ?? String(connectedNode.num.toHex())) (\(snrBackLast != -32 ? String(snrBackLast) : "unknown ".localized)dB)"
 						traceRoute?.routeBackText = routeBackString
-						traceRoute?.hops = NSOrderedSet(array: hopNodes)
-						traceRoute?.time = Date()
-						do {
-							try context.save()
-							Logger.data.info("💾 Saved Trace Route")
-						} catch {
-							context.rollback()
-							let nsError = error as NSError
-							Logger.data.error("Error Updating Core Data TraceRouteHop: \(nsError, privacy: .public)")
-						}
-						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.route %@".localized, routeString)
-						MeshLogger.log("🪧 \(logString)")
 					}
+					traceRoute?.hops = NSOrderedSet(array: hopNodes)
+					traceRoute?.time = Date()
+					do {
+						try context.save()
+						Logger.data.info("💾 Saved Trace Route")
+					} catch {
+						context.rollback()
+						let nsError = error as NSError
+						Logger.data.error("Error Updating Core Data TraceRouteHop: \(nsError, privacy: .public)")
+					}
+					let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.route %@".localized, routeString)
+					MeshLogger.log("🪧 \(logString)")
 				}
 			case .neighborinfoApp:
 				if let neighborInfo = try? NeighborInfo(serializedBytes: decodedInfo.packet.decoded.payload) {
