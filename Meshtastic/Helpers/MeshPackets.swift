@@ -111,6 +111,7 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 			myInfoEntity.peripheralId = peripheralId
 			myInfoEntity.myNodeNum = Int64(myInfo.myNodeNum)
 			myInfoEntity.rebootCount = Int32(myInfo.rebootCount)
+			myInfoEntity.deviceId = myInfo.deviceID
 			do {
 				try context.save()
 				Logger.data.info("💾 Saved a new myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
