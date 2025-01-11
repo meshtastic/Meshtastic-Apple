@@ -132,28 +132,6 @@
         }
       }
     },
-    "%@ - 1 Hop" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ - 1 Скок"
-          }
-        }
-      }
-    },
-    "%@ - Direct" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ - Директно"
-          }
-        }
-      }
-    },
     "%@ - No Response" : {
       "localizations" : {
         "de" : {
@@ -292,17 +270,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ dB"
-          }
-        }
-      }
-    },
-    "%@ hPa" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ hPa"
           }
         }
       }
@@ -571,6 +538,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "1 hop away"
+          }
+        }
+      }
+    },
+    "2.4ghz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2.4 GHz"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2.4 GHz"
           }
         }
       }
@@ -2231,6 +2215,23 @@
         }
       }
     },
+    "australia.new.zealand" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Australia / New Zealand"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Аустралија / Нови Зеланд"
+          }
+        }
+      }
+    },
     "automatic.detection" : {
       "extractionState" : "migrated",
       "localizations" : {
@@ -2386,17 +2387,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Резервна база података"
-          }
-        }
-      }
-    },
-    "Bad" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Лош"
           }
         }
       }
@@ -4521,14 +4511,38 @@
       }
     },
     "Chart" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Графукон"
+          }
+        }
+      }
     },
     "CHG" : {
       "localizations" : {
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "CHG"
+            "value" : "ПУЊ"
+          }
+        }
+      }
+    },
+    "china" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "China"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кина"
           }
         }
       }
@@ -4876,7 +4890,14 @@
       }
     },
     "Config" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Конфигурација"
+          }
+        }
+      }
     },
     "config.module.paxcounter.enabled.description" : {
       "localizations" : {
@@ -6811,71 +6832,6 @@
         }
       }
     },
-    "current" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aktuell"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Current"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actuel"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "נוכחי"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bieżący"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Atual"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aktuell"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Тренутни"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "当前"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "目前"
-          }
-        }
-      }
-    },
     "Current Firmware Version: %@" : {
       "localizations" : {
         "de" : {
@@ -6926,17 +6882,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Тренутно: %lld"
-          }
-        }
-      }
-    },
-    "Currently the reccomended way to update ESP32 devices is using the web flasher on a desktop computer from a chrome based browser. It does not work on mobile devices or over BLE." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Тренутно препоручени начин за ажурирање ЕСП32 уређаја је коришћење веб флешера на десктоп рачунару из прегледача заснованог на хрому. Не ради на мобилним уређајима или преко BLE-а."
           }
         }
       }
@@ -9853,6 +9798,40 @@
         }
       }
     },
+    "european.union.433mhz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "European Union 433MHz"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Европска унија 433MHz"
+          }
+        }
+      }
+    },
+    "european.union.868mhz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "European Union 868MHz"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Европска унија 868MHz"
+          }
+        }
+      }
+    },
     "Exchange Positions" : {
       "localizations" : {
         "sr" : {
@@ -12358,6 +12337,23 @@
         }
       }
     },
+    "india" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "India"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Индија"
+          }
+        }
+      }
+    },
     "Indoor Air Quality" : {
       "localizations" : {
         "sr" : {
@@ -14809,6 +14805,23 @@
         }
       }
     },
+    "japan" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Japan"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Јапан"
+          }
+        }
+      }
+    },
     "JSON Enabled" : {
       "localizations" : {
         "sr" : {
@@ -14932,6 +14945,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "鍵盤類型"
+          }
+        }
+      }
+    },
+    "korea" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Korea"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кореја"
           }
         }
       }
@@ -15572,6 +15602,57 @@
         }
       }
     },
+    "long.range.fast" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Long Range - Fast"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дугачки домет - Брзо"
+          }
+        }
+      }
+    },
+    "long.range.moderate" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Long Range - Moderate"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дугачки домет - Умерено"
+          }
+        }
+      }
+    },
+    "long.range.slow" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Long Range - Slow"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дугачки домет - Споро"
+          }
+        }
+      }
+    },
     "Longitude" : {
       "localizations" : {
         "de" : {
@@ -15794,6 +15875,40 @@
         }
       }
     },
+    "malaysia.433mhz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Malaysia 433MHz"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Малезија 433MHz"
+          }
+        }
+      }
+    },
+    "malaysia.919mhz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Malaysia 919MHz"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Малезија 919MHz"
+          }
+        }
+      }
+    },
     "Managed Device" : {
       "localizations" : {
         "sr" : {
@@ -15969,65 +16084,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "置中"
-          }
-        }
-      }
-    },
-    "map.recentering" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatic Re-centering"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Recentrage automatique"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מרכז מפה אוטומטית"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatyczne Wyśrodkowywanie"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Re-centralização Automática"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatisk Centrering"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Аутоматско поновно центрирање"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "自动重新居中"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "自動重新居中"
           }
         }
       }
@@ -16477,6 +16533,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無"
+          }
+        }
+      }
+    },
+    "medium.range.fast" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medium Range - Fast"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Средњи домет - Брзо"
+          }
+        }
+      }
+    },
+    "medium.range.slow" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medium Range - Slow"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Средњи домет - Споро"
           }
         }
       }
@@ -19380,7 +19470,14 @@
       }
     },
     "Metric" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Метрика"
+          }
+        }
+      }
     },
     "Minimum Distance" : {
       "localizations" : {
@@ -20276,6 +20373,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Откривен је нови чвор"
+          }
+        }
+      }
+    },
+    "new.zealand.865mhz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Zealand 865MHz"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нови зеланд 865MHz"
           }
         }
       }
@@ -21756,6 +21870,57 @@
         }
       }
     },
+    "philippines.433mhz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Philippines 433MHz"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Филипини 433MHz"
+          }
+        }
+      }
+    },
+    "philippines.868mhz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Philippines 868MHz"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Филипини 868MHz"
+          }
+        }
+      }
+    },
+    "philippines.915mhz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Philippines 915MHz"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Филипини 915MHz"
+          }
+        }
+      }
+    },
     "phone.gps" : {
       "localizations" : {
         "de" : {
@@ -21937,6 +22102,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Молимо вас да се повежете на радио да бисте конфигурисали подешавања."
+          }
+        }
+      }
+    },
+    "please.set.a.region" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please set a region"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Молимо изаберите регион"
           }
         }
       }
@@ -25149,6 +25331,23 @@
         }
       }
     },
+    "russia" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Russia"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Русија"
+          }
+        }
+      }
+    },
     "RX Boosted Gain" : {
       "localizations" : {
         "sr" : {
@@ -25713,71 +25912,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選擇聯絡人"
-          }
-        }
-      }
-    },
-    "select.menu.item" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wähle einen Menüeintrag aus"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select an item from the menu"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sélectioner un item du menu"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "בחר מהתפריט"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wybierz element z menu"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seleciona um opção do menu"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Välj ett alternativ från menyn"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Изабери ставку из менија"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "从菜单选择一个选项"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "從菜單選擇項目"
           }
         }
       }
@@ -26538,7 +26672,14 @@
       }
     },
     "Series" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Серије"
+          }
+        }
+      }
     },
     "Server" : {
       "localizations" : {
@@ -26923,6 +27064,57 @@
         }
       }
     },
+    "short.range.fast" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Short Range - Fast"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кратки домет - Брзо"
+          }
+        }
+      }
+    },
+    "short.range.slow" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Short Range - Slow"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кратки домет - Споро"
+          }
+        }
+      }
+    },
+    "short.range.turbo" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Short Range - Turbo"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кратки домет - Турбо"
+          }
+        }
+      }
+    },
     "Show alerts" : {
       "localizations" : {
         "de" : {
@@ -27073,6 +27265,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сигнал %@"
+          }
+        }
+      }
+    },
+    "singapore.923mhz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Singapore 923MHz"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сингапур 923MHz"
           }
         }
       }
@@ -27756,7 +27965,31 @@
       }
     },
     "Table" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Табела"
+          }
+        }
+      }
+    },
+    "taiwan" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taiwan"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тајван"
+          }
+        }
+      }
     },
     "tapback" : {
       "localizations" : {
@@ -28643,6 +28876,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "TFT екрани у пуној боји"
+          }
+        }
+      }
+    },
+    "thailand" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thailand"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тајланд"
           }
         }
       }
@@ -29855,23 +30105,6 @@
         }
       }
     },
-    "Trace route received directly by %@ with a SNR of %@ dB" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Trace route received directly by %1$@ with a SNR of %2$@ dB"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Захтев за праћење руте комуникације директно примљен од %1$@ са SNR од %2$@ dB."
-          }
-        }
-      }
-    },
     "Trace Route Sent" : {
       "localizations" : {
         "sr" : {
@@ -30069,12 +30302,63 @@
         }
       }
     },
+    "ukraine.433mhz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ukraine 433MHz"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Украјина 433MHz"
+          }
+        }
+      }
+    },
+    "ukraine.868mhz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ukraine 868MHz"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Украјина 868MHz"
+          }
+        }
+      }
+    },
     "Un-Favorite" : {
       "localizations" : {
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Уклони са фаворита"
+          }
+        }
+      }
+    },
+    "united.states" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "United States"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сједињене Америчке државе"
           }
         }
       }
@@ -30815,6 +31099,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Верзија: %1$@ (%2$@) "
+          }
+        }
+      }
+    },
+    "very.long.range.slow" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Very Long Range - Slow"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Веома дугачки домет - Споро"
           }
         }
       }
