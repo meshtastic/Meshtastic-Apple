@@ -13,8 +13,9 @@ import SwiftUI
 // Given a keypath, this class holds information about how to render the attrbute in
 // the table.  MetricsTableColumn objects are collected in a MetricsColumnList
 class MetricsTableColumn: ObservableObject {
-	// CoreData Attribute Name on TelemetryEntity
-	let attribute: String
+	// Uniquely identify this column for presistance and iteration
+	// Recommend using CoreData Attribute Name on TelemetryEntity
+	let id: String
 
 	// Heading for wider tables
 	let name: String
@@ -37,6 +38,7 @@ class MetricsTableColumn: ObservableObject {
 
 	// Main initializer
 	init<Value, TableContent: View>(
+		id: String,
 		keyPath: KeyPath<TelemetryEntity, Value>,
 		name: String,
 		abbreviatedName: String,
@@ -47,7 +49,7 @@ class MetricsTableColumn: ObservableObject {
 		@ViewBuilder tableBody: @escaping (MetricsTableColumn, Value) -> TableContent?
 	) {
 		// This works because TelemetryEntity is an NSManagedObject and derrived from NSObject
-		self.attribute = NSExpression(forKeyPath: keyPath).keyPath
+		self.id = id
 		self.name = name
 		self.abbreviatedName = abbreviatedName
 		self.minWidth = minWidth
@@ -72,13 +74,12 @@ class MetricsTableColumn: ObservableObject {
 }
 
 extension MetricsTableColumn: Identifiable, Hashable {
-	var id: String { self.attribute }
 
 	static func == (lhs: MetricsTableColumn, rhs: MetricsTableColumn) -> Bool {
-		lhs.attribute == rhs.attribute
+		lhs.id == rhs.id
 	}
 
 	func hash(into hasher: inout Hasher) {
-		hasher.combine(attribute)
+		hasher.combine(id)
 	}
 }

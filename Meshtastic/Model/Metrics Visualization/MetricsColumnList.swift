@@ -43,10 +43,23 @@ class MetricsColumnList: ObservableObject, RandomAccessCollection, RangeReplacea
 		return returnValues
 	}
 
-	func column(forAttribute attribute: String) -> MetricsTableColumn? {
-		return columns.first(where: { $0.attribute == attribute})
+	func column(withId id: String) -> MetricsTableColumn? {
+		return columns.first(where: { $0.id == id})
 	}
 
+	func applyDefaults(forNode node: NodeInfoEntity) {
+		if let columnList = node.telemetryColumns {
+			for aColumn in self {
+				aColumn.visible = columnList.contains(aColumn.id)
+			}
+		}
+	}
+	
+	func saveDefaults(forNode node: NodeInfoEntity) {
+		let columns = self.visible.map( { $0.id } )
+		node.telemetryColumns = columns
+	}
+	
 	// Collection conformance
 	typealias Index = Int
 	typealias Element = MetricsTableColumn

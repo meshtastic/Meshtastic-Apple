@@ -17,8 +17,24 @@ struct EnvironmentMetricsLog: View {
 	@State var exportString = ""
 	@ObservedObject var node: NodeInfoEntity
 
-	@StateObject var columnList = MetricsColumnList.environmentDefaultColumns
-	@StateObject var seriesList = MetricsSeriesList.environmentDefaultChartSeries
+	@StateObject var columnList: MetricsColumnList
+	@StateObject var seriesList: MetricsSeriesList
+
+	init(node: NodeInfoEntity) {
+		self.node = node
+
+		// Load the hard-coded column definitons and then apply the
+		// user's node-level visible column prefrences
+		let defaultColumns = MetricsColumnList.environmentDefaultColumns
+		defaultColumns.applyDefaults(forNode: node)
+		self._columnList = StateObject(wrappedValue: defaultColumns)
+
+		// Load the hard-coded series definitons and then apply the
+		// user's node-level visible series prefrences
+		let defaultSeries = MetricsSeriesList.environmentDefaultChartSeries
+		defaultSeries.applyDefaults(forNode: node)
+		self._seriesList = StateObject(wrappedValue: defaultSeries)
+	}
 
 	@State var isEditingColumnConfiguration = false
 
@@ -56,25 +72,25 @@ struct EnvironmentMetricsLog: View {
 						// Add a table for mac and ipad
 						Table(environmentMetrics) {
 							TableColumn("Temperature") { em in
-								columnList.column(forAttribute: "temperature")?.body(em)
+								columnList.column(withId: "temperature")?.body(em)
 							}
 							TableColumn("Humidity") { em in
-								columnList.column(forAttribute: "relativeHumidity")?.body(em)
+								columnList.column(withId: "relativeHumidity")?.body(em)
 							}
 							TableColumn("Barometric Pressure") { em in
-								columnList.column(forAttribute: "barometricPressure")?.body(em)
+								columnList.column(withId: "barometricPressure")?.body(em)
 							}
 							TableColumn("Indoor Air Quality") { em in
-								columnList.column(forAttribute: "iaq")?.body(em)
+								columnList.column(withId: "iaq")?.body(em)
 							}
 							TableColumn("Wind Speed") { em in
-								columnList.column(forAttribute: "windSpeed")?.body(em)
+								columnList.column(withId: "windSpeed")?.body(em)
 							}
 							TableColumn("Wind Direction") { em in
-								columnList.column(forAttribute: "windDirection")?.body(em)
+								columnList.column(withId: "windDirection")?.body(em)
 							}
 							TableColumn("timestamp") { em in
-								columnList.column(forAttribute: "time")?.body(em)
+								columnList.column(withId: "time")?.body(em)
 							}
 							.width(min: 180)
 						}
@@ -117,8 +133,8 @@ struct EnvironmentMetricsLog: View {
 					.controlSize(buttonSize)
 					.padding(.bottom)
 					.padding(.leading)
-					.sheet(isPresented: self.$isEditingColumnConfiguration) {
-						MetricsColumnDetail(columnList: columnList, seriesList: seriesList)
+					.sheet(isPresented: self.$isEditingColumnConfiguration, onDismiss: didDismissConfigSheet) {
+						MetricsColumnDetail(columnList: columnList, seriesList: seriesList, forNode: node)
 					}
 					Button(role: .destructive) {
 						isPresentingClearLogConfirm = true
@@ -181,6 +197,17 @@ struct EnvironmentMetricsLog: View {
 				}
 			}
 		)
+	}
+
+	func didDismissConfigSheet() {
+		do {
+			self.seriesList.saveDefaults(forNode: node)
+			self.columnList.saveDefaults(forNode: node)
+			try context.save()
+		} catch {
+			let nsError = error as NSError
+			Logger.data.error("🚫 Error deleting saving node preferences from core data: \(nsError)")
+		}
 	}
 
 	// Helper.  Adds a little buffer to the Y axis range, but keeps Y=0

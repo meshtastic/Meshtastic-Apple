@@ -44,6 +44,9 @@
         }
       }
     },
+    "--" : {
+
+    },
     ": %@" : {
       "localizations" : {
         "sr" : {
@@ -63,6 +66,9 @@
           }
         }
       }
+    },
+    "?" : {
+
     },
     "(Re)define PIN_GPS_EN for your board." : {
       "localizations" : {
@@ -544,6 +550,9 @@
           }
         }
       }
+    },
+    "☢" : {
+
     },
     "🦕 End of life Version 🦖 ☄️" : {
       "localizations" : {
@@ -1338,7 +1347,11 @@
         }
       }
     },
+    "Airtime %@" : {
+
+    },
     "Airtime %@%%" : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
@@ -4177,7 +4190,14 @@
         }
       }
     },
+    "Channel Utilization --" : {
+
+    },
+    "Channel Utilization %@" : {
+
+    },
     "Channel Utilization %@%% " : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
@@ -9243,6 +9263,9 @@
           }
         }
       }
+    },
+    "DISTANCE" : {
+
     },
     "Documentation" : {
       "localizations" : {
@@ -22451,6 +22474,9 @@
         }
       }
     },
+    "RADIATION" : {
+
+    },
     "Radio Disconnected" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -31044,6 +31070,9 @@
           }
         }
       }
+    },
+    "WEIGHT" : {
+
     },
     "What does the lock mean?" : {
       "localizations" : {

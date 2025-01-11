@@ -17,32 +17,48 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 		csvString = "\("battery.level".localized), \("voltage".localized), \("channel.utilization".localized), \("airtime".localized), \("uptime".localized), \("timestamp".localized)"
 		for dm in telemetry where dm.metricsType == 0 {
 				csvString += "\n"
-				csvString += String(dm.batteryLevel)
+				csvString += dm.batteryLevel.map { String($0) } ?? ""
 				csvString += ", "
-				csvString += String(dm.voltage)
+				csvString += dm.voltage.map { String($0) } ?? ""
 				csvString += ", "
-				csvString += String(dm.channelUtilization)
+				csvString += dm.channelUtilization.map { String($0) } ?? ""
 				csvString += ", "
-				csvString += String(dm.airUtilTx)
+				csvString += dm.airUtilTx.map { String($0) } ?? ""
 				csvString += ", "
-				csvString += String(dm.uptimeSeconds)
+				csvString += dm.uptimeSeconds.map { String($0) } ?? ""
 				csvString += ", "
 				csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
 		}
 	} else if metricsType == 1 {
 		// Create Environment Telemetry Header
-		csvString = "Temperature, Relative Humidity, Barometric Pressure, Indoor Air Quality, Gas Resistance, \("timestamp".localized)"
+		csvString = "Temperature, Relative Humidity, Barometric Pressure, Indoor Air Quality, Gas Resistance, Wind Direction, Wind Speed, Distance, Lux, White Lux, UV Lux, IR Lux, Radiation, \("timestamp".localized)"
 		for dm in telemetry where dm.metricsType == 1 {
 			csvString += "\n"
-			csvString += String(dm.temperature.localeTemperature())
+			csvString += dm.temperature.map { String($0.localeTemperature()) } ?? ""
 			csvString += ", "
-			csvString += String(dm.relativeHumidity)
+			csvString += dm.relativeHumidity.map { String($0) } ?? ""
 			csvString += ", "
-			csvString += String(dm.barometricPressure)
+			csvString += dm.barometricPressure.map { String($0) } ?? ""
 			csvString += ", "
-			csvString += String(dm.iaq)
+			csvString += dm.iaq.map { String($0) } ?? ""
 			csvString += ", "
-			csvString += String(dm.gasResistance)
+			csvString += dm.gasResistance.map { String($0) } ?? ""
+			csvString += ", "
+			csvString += dm.windDirection.map { String($0) } ?? ""
+			csvString += ", "
+			csvString += dm.windSpeed.map { String($0) } ?? ""
+			csvString += ", "
+			csvString += dm.distance.map { String($0) } ?? ""
+			csvString += ", "
+			csvString += dm.lux.map { String($0) } ?? ""
+			csvString += ", "
+			csvString += dm.whiteLux.map { String($0) } ?? ""
+			csvString += ", "
+			csvString += dm.uvLux.map { String($0) } ?? ""
+			csvString += ", "
+			csvString += dm.irLux.map { String($0) } ?? ""
+			csvString += ", "
+			csvString += dm.radiation.map { String($0) } ?? ""
 			csvString += ", "
 			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
 		}

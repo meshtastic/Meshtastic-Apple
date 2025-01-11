@@ -38,26 +38,30 @@ struct DeviceMetricsLog: View {
 					GroupBox(label: Label("\(deviceMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
 						Chart {
 							ForEach(chartData, id: \.self) { point in
-								Plot {
-									LineMark(
-										x: .value("x", point.time!),
-										y: .value("y", point.batteryLevel)
-									)
+								if let batteryLevel = point.batteryLevel {
+									Plot {
+										LineMark(
+											x: .value("x", point.time!),
+											y: .value("y", batteryLevel)
+										)
+									}
+									.accessibilityLabel("Line Series")
+									.accessibilityValue("X: \(point.time!), Y: \(batteryLevel)")
+									.foregroundStyle(batteryChartColor)
+									.interpolationMethod(.linear)
 								}
-								.accessibilityLabel("Line Series")
-								.accessibilityValue("X: \(point.time!), Y: \(point.batteryLevel)")
-								.foregroundStyle(batteryChartColor)
-								.interpolationMethod(.linear)
-								Plot {
-									PointMark(
-										x: .value("x", point.time!),
-										y: .value("y", point.channelUtilization)
-									)
-									.symbolSize(25)
+								if let channelUtilization = point.channelUtilization {
+									Plot {
+										PointMark(
+											x: .value("x", point.time!),
+											y: .value("y", channelUtilization)
+										)
+										.symbolSize(25)
+									}
+									.accessibilityLabel("Line Series")
+									.accessibilityValue("X: \(point.time!), Y: \(channelUtilization)")
+									.foregroundStyle(channelUtilizationChartColor)
 								}
-								.accessibilityLabel("Line Series")
-								.accessibilityValue("X: \(point.time!), Y: \(point.channelUtilization)")
-								.foregroundStyle(channelUtilizationChartColor)
 								if let chartSelection {
 									RuleMark(x: .value("Second", chartSelection, unit: .second))
 										.foregroundStyle(.tertiary.opacity(0.5))
@@ -81,16 +85,18 @@ struct DeviceMetricsLog: View {
 								RuleMark(y: .value("Network Status Red", 50))
 									.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
 									.foregroundStyle(.red)
-								Plot {
-									PointMark(
-										x: .value("x", point.time!),
-										y: .value("y", point.airUtilTx)
-									)
-									.symbolSize(25)
+								if let airUtilTx = point.airUtilTx {
+									Plot {
+										PointMark(
+											x: .value("x", point.time!),
+											y: .value("y", airUtilTx)
+										)
+										.symbolSize(25)
+									}
+									.accessibilityLabel("Line Series")
+									.accessibilityValue("X: \(point.time!), Y: \(airUtilTx)")
+									.foregroundStyle(airtimeChartColor)
 								}
-								.accessibilityLabel("Line Series")
-								.accessibilityValue("X: \(point.time!), Y: \(point.airUtilTx)")
-								.foregroundStyle(airtimeChartColor)
 							}
 						}
 						.chartXAxis(content: {
@@ -122,14 +128,19 @@ struct DeviceMetricsLog: View {
 								Image(systemName: "bolt")
 									.font(.caption)
 									.symbolRenderingMode(.multicolor)
-								Text("Volts \(String(format: "%.2f", dm.voltage)) ")
+								Text("Volts \(dm.voltage.map { String(format: "%.2f", $0) } ?? "--") ")
 									.font(.caption2)
 								BatteryCompact(batteryLevel: dm.batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
 							}
 							HStack {
-								Text("Channel Utilization \(String(format: "%.2f", dm.channelUtilization))% ")
-									.foregroundColor(dm.channelUtilization < 25 ? .green : (dm.channelUtilization > 50 ? .red : .orange))
-								Text("Airtime \(String(format: "%.2f", dm.airUtilTx))%")
+								if let channelUtilization = dm.channelUtilization {
+									Text("Channel Utilization \(String(format: "%.2f%%", channelUtilization))")
+										.foregroundColor(channelUtilization < 25 ? .green : (channelUtilization > 50 ? .red : .orange))
+								} else {
+									Text("Channel Utilization --")
+										.foregroundColor(.gray)
+								}
+								Text("Airtime \(dm.airUtilTx.map { String(format: "%.2f%%", $0) } ?? "--")")
 									.foregroundColor(.secondary)
 								Spacer()
 							}
@@ -141,27 +152,33 @@ struct DeviceMetricsLog: View {
 					/// Multi Column table for ipads and mac
 					Table(deviceMetrics, selection: $selection, sortOrder: $sortOrder) {
 						TableColumn("battery.level") { dm in
-							if dm.batteryLevel > 100 {
+							if (dm.batteryLevel ?? 0) > 100 {
 								Text("Powered")
 							} else {
-								Text("\(String(dm.batteryLevel))%")
+								dm.batteryLevel.map { Text("\(String($0))%") } ?? Text("--")
 							}
 						}
 						TableColumn("voltage") { dm in
-							Text("\(String(format: "%.2f", dm.voltage))")
+							dm.voltage.map { Text("\(String(format: "%.2f", $0))") } ?? Text("--")
 						}
 						TableColumn("channel.utilization") { dm in
-							Text("\(String(format: "%.2f", dm.channelUtilization))%")
-								.foregroundColor(dm.channelUtilization < 25 ? .green : (dm.channelUtilization > 50 ? .red : .orange))
+							dm.channelUtilization.map { channelUtilization in
+								Text("\(String(format: "%.2f", channelUtilization))%")
+									.foregroundColor(channelUtilization < 25 ? .green : (channelUtilization > 50 ? .red : .orange))
+							} ?? Text("--")
 						}
 						TableColumn("airtime") { dm in
-							Text("\(String(format: "%.2f", dm.airUtilTx))%")
+							dm.airUtilTx.map { Text("\(String(format: "%.2f", $0))%") } ?? Text("--")
 						}
 						TableColumn("uptime") { dm in
 							let now = Date.now
-							let later = now + TimeInterval(dm.uptimeSeconds)
-							let components = (now..<later).formatted(.components(style: .narrow))
-							Text(components)
+							if let uptimeSeconds = dm.uptimeSeconds {
+								let later = now + TimeInterval(uptimeSeconds)
+								let components = (now..<later).formatted(.components(style: .narrow))
+								Text(components)
+							} else {
+								Text("--")
+							}
 						}
 						.width(min: 100)
 						TableColumn("timestamp") { dm in
