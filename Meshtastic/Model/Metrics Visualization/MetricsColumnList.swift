@@ -79,18 +79,18 @@ class MetricsColumnList: ObservableObject, RandomAccessCollection, RangeReplacea
 		columns.append(newElement)
 		objectWillChange.send()
 	}
-	
+
 	func remove(at index: Int) -> Element {
 		objectWillChange.send()
 		let removedElement = columns.remove(at: index)
 		return removedElement
 	}
-	
+
 	func removeAll() {
 		objectWillChange.send()
 		columns.removeAll()
 	}
-	
+
 	func insert(_ newElement: Element, at index: Int) {
 		objectWillChange.send()
 		columns.insert(newElement, at: index)

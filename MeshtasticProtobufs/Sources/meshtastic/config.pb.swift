@@ -263,6 +263,14 @@ public struct Config: Sendable {
       ///    and automatic TAK PLI (position location information) broadcasts.
       ///    Uses position module configuration to determine TAK PLI broadcast interval.
       case takTracker // = 10
+
+      ///
+      /// Description: Will always rebroadcast packets, but will do so after all other modes.
+      /// Technical Details: Used for router nodes that are intended to provide additional coverage
+      ///    in areas not already covered by other routers, or to bridge around problematic terrain,
+      ///    but should not be given priority over other routers in order to avoid unnecessaraily
+      ///    consuming hops.
+      case routerLate // = 11
       case UNRECOGNIZED(Int)
 
       public init() {
@@ -282,6 +290,7 @@ public struct Config: Sendable {
         case 8: self = .clientHidden
         case 9: self = .lostAndFound
         case 10: self = .takTracker
+        case 11: self = .routerLate
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -299,6 +308,7 @@ public struct Config: Sendable {
         case .clientHidden: return 8
         case .lostAndFound: return 9
         case .takTracker: return 10
+        case .routerLate: return 11
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -316,6 +326,7 @@ public struct Config: Sendable {
         .clientHidden,
         .lostAndFound,
         .takTracker,
+        .routerLate,
       ]
 
     }
@@ -741,6 +752,10 @@ public struct Config: Sendable {
     /// rsyslog Server and Port
     public var rsyslogServer: String = String()
 
+    ///
+    /// Flags for enabling/disabling network protocols
+    public var enabledProtocols: UInt32 = 0
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public enum AddressMode: SwiftProtobuf.Enum, Swift.CaseIterable {
@@ -779,6 +794,48 @@ public struct Config: Sendable {
       public static let allCases: [Config.NetworkConfig.AddressMode] = [
         .dhcp,
         .static,
+      ]
+
+    }
+
+    ///
+    /// Available flags auxiliary network protocols
+    public enum ProtocolFlags: SwiftProtobuf.Enum, Swift.CaseIterable {
+      public typealias RawValue = Int
+
+      ///
+      /// Do not broadcast packets over any network protocol
+      case noBroadcast // = 0
+
+      ///
+      /// Enable broadcasting packets via UDP over the local network
+      case udpBroadcast // = 1
+      case UNRECOGNIZED(Int)
+
+      public init() {
+        self = .noBroadcast
+      }
+
+      public init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .noBroadcast
+        case 1: self = .udpBroadcast
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      public var rawValue: Int {
+        switch self {
+        case .noBroadcast: return 0
+        case .udpBroadcast: return 1
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+      // The compiler won't synthesize support with the UNRECOGNIZED case.
+      public static let allCases: [Config.NetworkConfig.ProtocolFlags] = [
+        .noBroadcast,
+        .udpBroadcast,
       ]
 
     }
@@ -2081,6 +2138,7 @@ extension Config.DeviceConfig.Role: SwiftProtobuf._ProtoNameProviding {
     8: .same(proto: "CLIENT_HIDDEN"),
     9: .same(proto: "LOST_AND_FOUND"),
     10: .same(proto: "TAK_TRACKER"),
+    11: .same(proto: "ROUTER_LATE"),
   ]
 }
 
@@ -2314,6 +2372,7 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     7: .standard(proto: "address_mode"),
     8: .standard(proto: "ipv4_config"),
     9: .standard(proto: "rsyslog_server"),
+    10: .standard(proto: "enabled_protocols"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2330,6 +2389,7 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       case 7: try { try decoder.decodeSingularEnumField(value: &self.addressMode) }()
       case 8: try { try decoder.decodeSingularMessageField(value: &self._ipv4Config) }()
       case 9: try { try decoder.decodeSingularStringField(value: &self.rsyslogServer) }()
+      case 10: try { try decoder.decodeSingularUInt32Field(value: &self.enabledProtocols) }()
       default: break
       }
     }
@@ -2364,6 +2424,9 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if !self.rsyslogServer.isEmpty {
       try visitor.visitSingularStringField(value: self.rsyslogServer, fieldNumber: 9)
     }
+    if self.enabledProtocols != 0 {
+      try visitor.visitSingularUInt32Field(value: self.enabledProtocols, fieldNumber: 10)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2376,6 +2439,7 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if lhs.addressMode != rhs.addressMode {return false}
     if lhs._ipv4Config != rhs._ipv4Config {return false}
     if lhs.rsyslogServer != rhs.rsyslogServer {return false}
+    if lhs.enabledProtocols != rhs.enabledProtocols {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2385,6 +2449,13 @@ extension Config.NetworkConfig.AddressMode: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "DHCP"),
     1: .same(proto: "STATIC"),
+  ]
+}
+
+extension Config.NetworkConfig.ProtocolFlags: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "NO_BROADCAST"),
+    1: .same(proto: "UDP_BROADCAST"),
   ]
 }
 

@@ -44,7 +44,7 @@ struct TraceRouteLog: View {
 									.font(.caption)
 							} else if route.response {
 								let hopTowardsString = String(localized: "\(route.hopsTowards) Hops")
-								let hopBackString = String(localized: "\(route.hopsBack) Hops")
+								let hopBackString = route.hopsBack >= 0 ? String(localized: "\(route.hopsBack) Hops") : String(localized: "unknown")
 								Text("\(routeTime) - \(hopTowardsString) Towards  \(hopBackString) Back")
 									.font(.caption)
 							} else if route.sent {

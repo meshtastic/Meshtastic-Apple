@@ -71,10 +71,10 @@ extension UserEntity {
 			return "TLORAT3S3EPAPER"
 		case "TLORAT3S3V1":
 			return "TLORAT3S3V1"
-		case "TLORAV2116":
-			return "TLORAV2116"
-		case "TLORAV2118":
-			return "TLORAV2118"
+		case "TLORAV211P6":
+			return "TLORAV211P6"
+		case "TLORAV211P8":
+			return "TLORAV211P8"
 		/// Seeed Studio
 		case "SENSECAPINDICATOR":
 			return "SENSECAPINDICATOR"

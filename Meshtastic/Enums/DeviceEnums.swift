@@ -22,6 +22,7 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 	case repeater = 4
 	case router = 2
 	case routerClient = 3
+	case routerLate = 11
 
 	var id: Int { self.rawValue }
 	var name: String {
@@ -48,6 +49,8 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "device.role.name.clientHidden".localized
 		case .lostAndFound:
 			return "device.role.name.lostAndFound".localized
+		case .routerLate:
+			return "device.role.name.routerlate".localized
 		}
 
 	}
@@ -75,6 +78,8 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "device.role.clienthidden".localized
 		case .lostAndFound:
 			return "device.role.lostandfound".localized
+		case .routerLate:
+			return "device.role.routerlate".localized
 		}
 	}
 
@@ -84,7 +89,7 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "apps.iphone"
 		case .clientMute:
 			return "speaker.slash"
-		case .router, .routerClient:
+		case .router, .routerClient, .routerLate:
 			return "wifi.router"
 		case .repeater:
 			return "repeat"
@@ -127,6 +132,8 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return Config.DeviceConfig.Role.clientHidden
 		case .lostAndFound:
 			return Config.DeviceConfig.Role.lostAndFound
+		case .routerLate:
+			return Config.DeviceConfig.Role.routerLate
 		}
 	}
 }
