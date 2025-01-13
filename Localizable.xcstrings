@@ -874,6 +874,12 @@
             "state" : "translated",
             "value" : "Прецизност %@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "準確度 %@"
+          }
         }
       }
     },
@@ -12993,7 +12999,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "標題"
+            "value" : "方位"
           }
         }
       }
@@ -13009,7 +13015,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "標題: %@"
+            "value" : "方位: %@"
           }
         }
       }
@@ -35506,7 +35512,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "您的路徑檔案必須包含緯度和經度欄位及其標題。\n"
+            "value" : "您的路徑檔案必須包含緯度和經度欄位及其方位。\n"
           }
         }
       }
