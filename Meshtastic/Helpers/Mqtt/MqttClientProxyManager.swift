@@ -26,7 +26,7 @@ class MqttClientProxyManager {
 	var debugLog = false
 	func connectFromConfigSettings(node: NodeInfoEntity) {
 		let defaultServerAddress = "mqtt.meshtastic.org"
-		var useSsl = node.mqttConfig?.tlsEnabled == false
+		var useSsl = node.mqttConfig?.tlsEnabled == true
 		var defaultServerPort = useSsl ? 8883 : 1883
 		var host = node.mqttConfig?.address
 		if host == nil || host!.isEmpty {
