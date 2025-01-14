@@ -2985,7 +2985,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "嘗試連接%d失敗，你可能需要在系统設定的藍芽選項中忽略該電台。"
+            "value" : "嘗試連接%d失敗，你可能需要在系统設定的藍芽選項中忽略該裝置。"
           }
         }
       }
@@ -3073,7 +3073,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ 如果在首選電台的旁邊，App 將會自動重連。"
+            "value" : "%@ 如果在首選裝置的旁邊，App 將會自動重連。"
           }
         }
       }
@@ -3161,7 +3161,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ 這個錯誤通常無法自動修復，你需要在系統設定的藍芽選項中忽略該電台並重新配對。"
+            "value" : "%@ 這個錯誤通常無法自動修復，你需要在系統設定的藍芽選項中忽略該裝置並重新配對。"
           }
         }
       }
@@ -5484,7 +5484,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "與電台進行通訊中..."
+            "value" : "與裝置進行通訊中..."
           }
         }
       }
@@ -6815,7 +6815,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "電台將會在設定儲存後重啟。"
+            "value" : "裝置將會在設定儲存後重啟。"
           }
         }
       }
@@ -7041,7 +7041,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已連接的電台"
+            "value" : "已連接的裝置"
           }
         }
       }
@@ -7306,6 +7306,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Конвексна љуштура"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "橡皮筋包圍法"
           }
         }
       }
@@ -8499,7 +8505,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "電台設定"
+            "value" : "裝置設定"
           }
         }
       }
@@ -8615,7 +8621,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "刪除所有電台指標？?"
+            "value" : "刪除所有裝置測量？?"
           }
         }
       }
@@ -8679,7 +8685,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "電台指標紀錄檔"
+            "value" : "裝置量測日誌"
           }
         }
       }
@@ -11804,7 +11810,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "檢測到不支援的韌體版本，無法連接到電台。"
+            "value" : "檢測到不支援的韌體版本，無法連接到裝置。"
           }
         }
       }
@@ -23026,7 +23032,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "未連接到電台"
+            "value" : "未連接到裝置"
           }
         }
       }
@@ -24361,7 +24367,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "電台通過手機獲得定位的時間間隔，但是向 Mesh 網路中更新定位的時間間隔由電台控制。"
+            "value" : "裝置通過手機獲得定位的時間間隔，但是向 Mesh 網路中更新定位的時間間隔由裝置控制。"
           }
         }
       }
@@ -24966,7 +24972,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "首選電台"
+            "value" : "首選裝置"
           }
         }
       }
@@ -25239,7 +25245,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "電台設定"
+            "value" : "裝置設定"
           }
         }
       }
@@ -33008,7 +33014,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "顯示目前通過藍芽連接的 Lora 電台的信息。您可以向左滑動斷開電台，長按查看統計訊息或開始即時活動。"
+            "value" : "顯示目前通過藍芽連接的 Lora 裝置的信息。您可以向左滑動斷開裝置，長按查看統計訊息或開始即時活動。"
           }
         }
       }
@@ -33072,7 +33078,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "連接到 LoRa 電台"
+            "value" : "連接到 LoRa 裝置"
           }
         }
       }
