@@ -19764,7 +19764,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "收到中繼點訊息: %@"
+            "value" : "收到節點訊息: %@"
           }
         }
       }
@@ -19988,7 +19988,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "從中繼點接收到定位封包: %@"
+            "value" : "從節點接收到定位封包: %@"
           }
         }
       }
@@ -20348,7 +20348,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "傳送iOS裝置的GPS定位封包到中繼點上: %@"
+            "value" : "傳送iOS裝置的GPS定位封包到節點上: %@"
           }
         }
       }
@@ -22616,7 +22616,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "未找到 Meshtastic 中繼點"
+            "value" : "未找到 Meshtastic 節點"
           }
         }
       }
@@ -22887,7 +22887,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "中繼點"
+            "value" : "節點"
           }
         }
       }
@@ -22952,7 +22952,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "中繼點 (%@)"
+            "value" : "節點 (%@)"
           }
         }
       }
@@ -33398,7 +33398,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在 Meshtastic 網路中最多有 8 個頻道。第一個頻道是主頻道，大多數活動都發生在這裡，也是必需的。如果您不共享主頻道，您的第一個共享頻道就會成為其他網路的主頻道。它會在其主頻道和您的輔助頻道上對話。名稱為 admin 的頻道可遠端控制中繼點。其他頻道用於私人群组，每個群組都有自己的密鑰。"
+            "value" : "在 Meshtastic 網路中最多有 8 個頻道。第一個頻道是主頻道，大多數活動都發生在這裡，也是必需的。如果您不共享主頻道，您的第一個共享頻道就會成為其他網路的主頻道。它會在其主頻道和您的輔助頻道上對話。名稱為 admin 的頻道可遠端控制節點。其他頻道用於私人群组，每個群組都有自己的密鑰。"
           }
         }
       }
