@@ -1679,7 +1679,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "允許傳入裝置透過不安全的傳統管理通道進行控制。"
+            "value" : "允許傳入裝置透過不安全的舊版管理通道進行控制。"
           }
         }
       }
@@ -11457,7 +11457,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "找到聯絡人"
+            "value" : "尋找聯絡人"
           }
         }
       }
@@ -11479,7 +11479,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "找到節點"
+            "value" : "尋找節點"
           }
         }
       }
@@ -16752,6 +16752,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Стари начин администрације"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "舊版管理功能"
           }
         }
       }
@@ -24958,7 +24964,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "基本"
+            "value" : "主要"
           }
         }
       }
@@ -24974,7 +24980,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "基本管理權限Key"
+            "value" : "主要管理權限Key"
           }
         }
       }
@@ -24990,7 +24996,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "基本GPIO"
+            "value" : "主要GPIO"
           }
         }
       }
@@ -25947,7 +25953,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "遠端管理員：%@"
+            "value" : "舊版遠端管理員：%@"
           }
         }
       }
@@ -33186,7 +33192,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "現在 Mesh 上的資料會通過主通道發送。您可以設定輔助通道來建立由自己的金鑰保護的其他訊息組 [頻道設定提示](https://meshtastic.org/docs/configuration/radio/channels/)"
+            "value" : "您網狀網路上的大部分資料都是透過主要頻道傳送。您可以設定次要頻道，以建立額外的訊息群組，並由它們自己的金鑰保護。[Channel config tips](https://meshtastic.org/docs/configuration/tips/)"
           }
         }
       }
@@ -33506,7 +33512,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "消息"
+            "value" : "訊息"
           }
         }
       }
@@ -33674,6 +33680,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Саобраћај"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "交通"
           }
         }
       }
