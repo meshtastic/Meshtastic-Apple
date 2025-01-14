@@ -8958,6 +8958,12 @@
             "state" : "translated",
             "value" : "Клијент"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client"
+          }
         }
       }
     },
@@ -8974,6 +8980,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Скривени клијент"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client Hidden"
           }
         }
       }
@@ -8992,6 +9004,12 @@
             "state" : "translated",
             "value" : "Клијент мутиран"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client Mute"
+          }
         }
       }
     },
@@ -9008,6 +9026,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Изгубљено и нађено"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lost and Found"
           }
         }
       }
@@ -9026,6 +9050,12 @@
             "state" : "translated",
             "value" : "Поновљач"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeater"
+          }
         }
       }
     },
@@ -9042,6 +9072,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Рутер"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Router"
           }
         }
       }
@@ -9060,6 +9096,12 @@
             "state" : "translated",
             "value" : "Рутер и клијент"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Router & Client"
+          }
         }
       }
     },
@@ -9067,6 +9109,12 @@
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Router Late"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Router Late"
@@ -9088,6 +9136,12 @@
             "state" : "translated",
             "value" : "Сензор"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensor"
+          }
         }
       }
     },
@@ -9101,6 +9155,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TAK"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "TAK"
@@ -9122,6 +9182,12 @@
             "state" : "translated",
             "value" : "ТАК Трекер"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TAK Tracker"
+          }
         }
       }
     },
@@ -9138,6 +9204,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Трекер"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tracker"
           }
         }
       }
