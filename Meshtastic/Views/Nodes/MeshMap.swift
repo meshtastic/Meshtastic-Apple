@@ -10,11 +10,8 @@ import CoreData
 import CoreLocation
 import Foundation
 import OSLog
-#if canImport(MapKit)
 import MapKit
-#endif
 
-@available(iOS 17.0, macOS 14.0, *)
 struct MeshMap: View {
 
 	@Environment(\.managedObjectContext) var context
@@ -33,22 +30,48 @@ struct MeshMap: View {
 	@Namespace var mapScope
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .flat, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .excludingAll, showsTraffic: false)
 	@State var position = MapCameraPosition.automatic
-	@State var isEditingSettings = false
+	@State private var distance = 10000.0
+	@State private var editingSettings = false
+	@State private var editingFilters = false
 	@State var selectedPosition: PositionEntity?
 	@State var editingWaypoint: WaypointEntity?
 	@State var selectedWaypoint: WaypointEntity?
 	@State var selectedWaypointId: String?
 	@State var newWaypointCoord: CLLocationCoordinate2D?
 	@State var isMeshMap = true
+	/// Filter
+	@State private var searchText = ""
+	@State private var viaLora = true
+	@State private var viaMqtt = true
+	@State private var isOnline = false
+	@State private var isPkiEncrypted = false
+	@State private var isFavorite = false
+	@State private var isIgnored = false
+	@State private var isEnvironment = false
+	@State private var distanceFilter = false
+	@State private var maxDistance: Double = 800000
+	@State private var hopsAway: Double = -1.0
+	@State private var roleFilter = false
+	@State private var deviceRoles: Set<Int> = []
 
 	var body: some View {
 
 		NavigationStack {
 			ZStack {
 				MapReader { reader in
-					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
-						MeshMapContent(showUserLocation: $showUserLocation, showTraffic: $showTraffic, showPointsOfInterest: $showPointsOfInterest, selectedMapLayer: $selectedMapLayer, selectedPosition: $selectedPosition, selectedWaypoint: $selectedWaypoint)
-
+					Map(
+						position: $position,
+						bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity),
+						scope: mapScope
+					) {
+						MeshMapContent(
+							showUserLocation: $showUserLocation,
+							showTraffic: $showTraffic,
+							showPointsOfInterest: $showPointsOfInterest,
+							selectedMapLayer: $selectedMapLayer,
+							selectedPosition: $selectedPosition,
+							selectedWaypoint: $selectedWaypoint
+						)
 					}
 					.mapScope(mapScope)
 					.mapStyle(mapStyle)
@@ -61,6 +84,9 @@ struct MeshMap: View {
 							.mapControlVisibility(.automatic)
 					}
 					.controlSize(.regular)
+					.onMapCameraChange(frequency: MapCameraUpdateFrequency.continuous, { context in
+						distance = context.camera.distance
+					})
 					.onTapGesture(count: 1, perform: { position in
 						newWaypointCoord = reader.convert(position, from: .local) ??  CLLocationCoordinate2D.init()
 					})
@@ -79,6 +105,7 @@ struct MeshMap: View {
 									Logger.services.error("Unable to convert local point to coordinate on map.")
 									return
 								}
+								centerMapAt(coordinate: coordinate)
 
 								newWaypointCoord = coordinate
 								editingWaypoint = WaypointEntity(context: context)
@@ -106,14 +133,14 @@ struct MeshMap: View {
 				WaypointForm(waypoint: selection, editMode: true)
 					.padding()
 			}
-			.sheet(isPresented: $isEditingSettings) {
+			.sheet(isPresented: $editingSettings) {
 				MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap)
 			}
 			.onChange(of: router.navigationState) {
-				guard case .map(let selectedNodeNum) = router.navigationState else { return }
-				//TODO: handle deep link for waypoints
+				guard case .map = router.navigationState.selectedTab else { return }
+				// TODO: handle deep link for waypoints
 			}
-			.onChange(of: (selectedMapLayer)) { newMapLayer in
+			.onChange(of: selectedMapLayer) { _, newMapLayer in
 				switch selectedMapLayer {
 				case .standard:
 					UserDefaults.mapLayer = newMapLayer
@@ -128,14 +155,31 @@ struct MeshMap: View {
 					return
 				}
 			}
+			.sheet(isPresented: $editingFilters) {
+				NodeListFilter(
+					viaLora: $viaLora,
+					viaMqtt: $viaMqtt,
+					isOnline: $isOnline,
+					isPkiEncrypted: $isPkiEncrypted,
+					isFavorite: $isFavorite,
+					isIgnored: $isIgnored,
+					isEnvironment: $isEnvironment,
+					distanceFilter: $distanceFilter,
+					maximumDistance: $maxDistance,
+					hopsAway: $hopsAway,
+					roleFilter: $roleFilter,
+					deviceRoles: $deviceRoles
+				)
+			}
 			.safeAreaInset(edge: .bottom, alignment: .trailing) {
 				HStack {
+					Spacer()
 					Button(action: {
 						withAnimation {
-							isEditingSettings = !isEditingSettings
+							editingSettings = !editingSettings
 						}
 					}) {
-						Image(systemName: isEditingSettings ? "info.circle.fill" : "info.circle")
+						Image(systemName: editingSettings ? "info.circle.fill" : "info.circle")
 							.padding(.vertical, 5)
 					}
 					.tint(Color(UIColor.secondarySystemBackground))
@@ -149,7 +193,7 @@ struct MeshMap: View {
 		.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
-		.onAppear {
+		.onFirstAppear {
 			UIApplication.shared.isIdleTimerDisabled = true
 
 			//	let wayPointEntity = getWaypoint(id: Int64(deepLinkManager.waypointId) ?? -1, context: context)
@@ -168,6 +212,20 @@ struct MeshMap: View {
 		}
 		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false
+		})
+	}
+
+	// moves the map to a new coordinate
+	private func centerMapAt(coordinate: CLLocationCoordinate2D) {
+		withAnimation(.easeInOut(duration: 0.2), {
+			position = .camera(
+				MapCamera(
+					centerCoordinate: coordinate, // Set new center
+					distance: distance,           // Preserve current zoom distance
+					heading: 0,      			  // align north
+					pitch: 0                      // set view to top down
+				)
+			)
 		})
 	}
 }

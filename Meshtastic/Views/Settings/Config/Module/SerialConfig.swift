@@ -127,78 +127,60 @@ struct SerialConfig: View {
 				}
 			}
 			.navigationTitle("serial.config")
-			.navigationBarItems(trailing:
-
-				ZStack {
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-			})
-			.onAppear {
-				setSerialValues()
+			.navigationBarItems(
+				trailing: ZStack {
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: bleManager.connectedPeripheral?.shortName ?? "?"
+					)
+				}
+			)
+			.onFirstAppear {
 				// Need to request a SerialModuleConfig from the remote node before allowing changes
-				if bleManager.connectedPeripheral != nil && node?.serialConfig == nil {
-					Logger.mesh.debug("empty serial module config")
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if node != nil && connectedNode != nil {
-						_ = bleManager.requestSerialModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+					if let connectedNode {
+						if node.num != connectedNode.num {
+							if UserDefaults.enableAdministration && node.num != connectedNode.num {
+								/// 2.5 Administration with session passkey
+								let expiration = node.sessionExpiration ?? Date()
+								if expiration < Date() || node.serialConfig == nil {
+									Logger.mesh.info("⚙️ Empty or expired serial module config requesting via PKI admin")
+									_ = bleManager.requestSerialModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								}
+							} else {
+								/// Legacy Administration
+								Logger.mesh.info("☠️ Using insecure legacy admin, empty serial module config")
+								_ = bleManager.requestSerialModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						}
 					}
 				}
-
 			}
-			.onChange(of: enabled) { newEnabled in
-
-				if node != nil && node!.serialConfig != nil {
-
-					if newEnabled != node!.serialConfig!.enabled { hasChanges = true	}
-				}
+			.onChange(of: enabled) { oldEnabled, newEnabled in
+				if oldEnabled != newEnabled && newEnabled != node?.serialConfig?.enabled ?? false { hasChanges = true }
 			}
-			.onChange(of: echo) { newEcho in
-
-				if node != nil && node!.serialConfig != nil {
-
-					if newEcho != node!.serialConfig!.echo { hasChanges = true	}
-				}
+			.onChange(of: echo) { oldEcho, newEcho in
+				if oldEcho != newEcho && newEcho != node?.serialConfig?.echo ?? false { hasChanges = true }
 			}
-			.onChange(of: rxd) { newRxd in
-
-				if node != nil && node!.serialConfig != nil {
-
-					if newRxd != node!.serialConfig!.rxd { hasChanges = true	}
-				}
+			.onChange(of: rxd) { oldRxd, newRxd in
+				if oldRxd != newRxd && newRxd != node?.serialConfig?.rxd ?? -1 { hasChanges = true }
 			}
-			.onChange(of: txd) { newTxd in
-
-				if node != nil && node!.serialConfig != nil {
-
-					if newTxd != node!.serialConfig!.txd { hasChanges = true	}
-				}
+			.onChange(of: txd) { oldTxd, newTxd in
+				if oldTxd != newTxd && newTxd != node?.serialConfig?.txd ?? -1 { hasChanges = true }
 			}
-			.onChange(of: baudRate) { newBaud in
-
-				if node != nil && node!.serialConfig != nil {
-
-					if newBaud != node!.serialConfig!.baudRate { hasChanges = true	}
-				}
+			.onChange(of: baudRate) { oldBaud, newBaud in
+				if oldBaud != newBaud && newBaud != node?.serialConfig?.baudRate ?? -1 { hasChanges = true }
 			}
-			.onChange(of: timeout) { newTimeout in
-
-				if node != nil && node!.serialConfig != nil {
-
-					if newTimeout != node!.serialConfig!.timeout { hasChanges = true	}
-				}
+			.onChange(of: timeout) { oldTimeout, newTimeout in
+				if oldTimeout != newTimeout && newTimeout != node?.serialConfig?.timeout ?? -1 { hasChanges = true }
 			}
-			.onChange(of: overrideConsoleSerialPort) { newOverrideConsoleSerialPort in
-
-				if node != nil && node!.serialConfig != nil {
-
-					if newOverrideConsoleSerialPort != node!.serialConfig!.overrideConsoleSerialPort { hasChanges = true	}
-				}
+			.onChange(of: overrideConsoleSerialPort) { oldOverrideConsoleSerialPort, newOverrideConsoleSerialPort in
+				if oldOverrideConsoleSerialPort != newOverrideConsoleSerialPort && newOverrideConsoleSerialPort != node?.serialConfig?.overrideConsoleSerialPort ?? false { hasChanges = true }
 			}
-			.onChange(of: mode) { newMode in
-
-				if node != nil && node!.serialConfig != nil {
-
-					if newMode != node!.serialConfig!.mode { hasChanges = true	}
-				}
+			.onChange(of: mode) { oldMode, newMode in
+				if oldMode != newMode && newMode != node?.serialConfig?.mode ?? -1 { hasChanges = true }
 			}
 		}
 	}

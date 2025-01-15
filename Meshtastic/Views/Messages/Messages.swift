@@ -8,9 +8,7 @@
 import SwiftUI
 import CoreData
 import OSLog
-#if canImport(TipKit)
 import TipKit
-#endif
 
 struct Messages: View {
 
@@ -26,21 +24,6 @@ struct Messages: View {
 	@Binding
 	var unreadDirectMessages: Int
 
-	// Aliases the navigation state for the NavigationSplitView sidebar selection
-	private var messagesSelection: Binding<MessagesNavigationState?> {
-		Binding(
-			get: {
-				guard case .messages(let state) = router.navigationState else {
-					return nil
-				}
-				return state
-			},
-			set: { newValue in
-				router.navigationState = .messages(newValue)
-			}
-		)
-	}
-
 	@State var node: NodeInfoEntity?
 	@State private var userSelection: UserEntity? // Nothing selected by default.
 	@State private var channelSelection: ChannelEntity? // Nothing selected by default.
@@ -49,7 +32,7 @@ struct Messages: View {
 
 	var body: some View {
 		NavigationSplitView(columnVisibility: $columnVisibility) {
-			List(selection: messagesSelection) {
+			List(selection: $router.navigationState.messages) {
 				NavigationLink(value: MessagesNavigationState.channels()) {
 					Label {
 						Text("channels")
@@ -80,19 +63,18 @@ struct Messages: View {
 					}
 				}
 
-				if #available(iOS 17.0, macOS 14.0, *) {
-					TipView(MessagesTip(), arrowEdge: .top)
-				}
+				TipView(MessagesTip(), arrowEdge: .top)
 			}
 			.navigationTitle("messages")
 			.navigationBarTitleDisplayMode(.large)
 			.navigationBarItems(leading: MeshtasticLogo())
 		} content: {
-			if case .messages(.channels) = router.navigationState {
+			switch router.navigationState.messages {
+			case .channels(let channelId, let messageId):
 				ChannelList(node: $node, channelSelection: $channelSelection)
-			} else if case .messages(.directMessages) = router.navigationState {
+			case .directMessages(let userNum, let messageId):
 				UserList(node: $node, userSelection: $userSelection)
-			} else if case .messages(nil) = router.navigationState {
+			case nil:
 				Text("Select a conversation type")
 			}
 		} detail: {
@@ -100,12 +82,12 @@ struct Messages: View {
 				ChannelMessageList(myInfo: myInfo, channel: channelSelection)
 			} else if let userSelection {
 				UserMessageList(user: userSelection)
-			} else if case .messages(.channels) = router.navigationState {
+			} else if case .channels = router.navigationState.messages {
 				Text("Select a channel")
-			} else if case .messages(.directMessages) = router.navigationState {
+			} else if case .directMessages = router.navigationState.messages {
 				Text("Select a conversation")
 			}
-		}.onChange(of: router.navigationState) { _ in
+		}.onChange(of: router.navigationState) {
 			setupNavigationState()
 		}
 	}
@@ -116,11 +98,7 @@ struct Messages: View {
 			node = getNodeInfo(id: nodeId, context: context)
 		}
 
-		guard case .messages(let state) = router.navigationState else {
-			return
-		}
-
-		guard let state else {
+		guard let state = router.navigationState.messages else {
 			channelSelection = nil
 			userSelection = nil
 			return

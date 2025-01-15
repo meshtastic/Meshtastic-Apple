@@ -71,15 +71,15 @@ struct CannedMessagesConfig: View {
 						.foregroundColor(.gray)
 						.autocapitalization(.none)
 						.disableAutocorrection(true)
-						.onChange(of: messages, perform: { _ in
-
-							let totalBytes = messages.utf8.count
+						.onChange(of: messages) {
+							var totalBytes = messages.utf8.count
 							// Only mess with the value if it is too big
-							if totalBytes > 198 {
+							while totalBytes > 198 {
 								messages = String(messages.dropLast())
+								totalBytes = messages.utf8.count
 							}
 							hasMessagesChanges = true
-						})
+						}
 						.foregroundColor(.gray)
 				}
 				.keyboardType(.default)
@@ -224,22 +224,38 @@ struct CannedMessagesConfig: View {
 				}
 			}
 			.navigationTitle("canned.messages.config")
-			.navigationBarItems(trailing:
-				ZStack {
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-			})
-			.onAppear {
-				setCannedMessagesValues()
+			.navigationBarItems(
+				trailing: ZStack {
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: bleManager.connectedPeripheral?.shortName ?? "?"
+					)
+				}
+			)
+			.onFirstAppear {
 				// Need to request a CannedMessagesModuleConfig from the remote node before allowing changes
-				if bleManager.connectedPeripheral != nil && node?.cannedMessageConfig == nil {
-					Logger.mesh.info("empty canned messages module config")
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if node != nil && connectedNode != nil {
-						_ = bleManager.requestCannedMessagesModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+					if let connectedNode {
+						if node.num != connectedNode.num {
+							if UserDefaults.enableAdministration && node.num != connectedNode.num {
+								/// 2.5 Administration with session passkey
+								let expiration = node.sessionExpiration ?? Date()
+								if expiration < Date() || node.cannedMessageConfig == nil {
+									Logger.mesh.info("⚙️ Empty or expired canned messages module config requesting via PKI admin")
+									_ = bleManager.requestCannedMessagesModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								}
+							} else {
+								/// Legacy Administration
+								Logger.mesh.info("☠️ Using insecure legacy admin, empty canned messages module config")
+								_ = bleManager.requestCannedMessagesModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						}
 					}
 				}
 			}
-			.onChange(of: configPreset) { newPreset in
+			.onChange(of: configPreset) { _, newPreset in
 
 				if newPreset == 1 {
 
@@ -268,55 +284,35 @@ struct CannedMessagesConfig: View {
 
 				hasChanges = true
 			}
-			.onChange(of: enabled) { newEnabled in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newEnabled != node!.cannedMessageConfig!.enabled { hasChanges = true }
-				}
+			.onChange(of: enabled) { _, newEnabled in
+				if newEnabled != node?.cannedMessageConfig?.enabled { hasChanges = true }
 			}
-			.onChange(of: sendBell) { newBell in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newBell != node!.cannedMessageConfig!.sendBell { hasChanges = true }
-				}
+			.onChange(of: sendBell) { _, newSendBell in
+				if newSendBell != node?.cannedMessageConfig?.sendBell { hasChanges = true }
 			}
-			.onChange(of: rotary1Enabled) { newRot1 in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newRot1 != node!.cannedMessageConfig!.rotary1Enabled { hasChanges = true	}
-				}
+			.onChange(of: rotary1Enabled) { _, newRotary1Enabled in
+				if newRotary1Enabled != node?.cannedMessageConfig?.rotary1Enabled {	hasChanges = true }
 			}
-			.onChange(of: updown1Enabled) { newUpDown in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newUpDown != node!.cannedMessageConfig!.updown1Enabled { hasChanges = true }
-				}
+			.onChange(of: updown1Enabled) { _, newUpdown1Enabled in
+				if newUpdown1Enabled != node?.cannedMessageConfig?.updown1Enabled {	hasChanges = true }
 			}
-			.onChange(of: inputbrokerPinA) { newPinA in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newPinA != node!.cannedMessageConfig!.inputbrokerPinA { hasChanges = true }
-				}
+			.onChange(of: inputbrokerPinA) { _, newPinA in
+				if newPinA != node?.cannedMessageConfig?.inputbrokerPinA ?? -1 { hasChanges = true }
 			}
-			.onChange(of: inputbrokerPinB) { newPinB in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newPinB != node!.cannedMessageConfig!.inputbrokerPinB { hasChanges = true }
-				}
+			.onChange(of: inputbrokerPinB) { _, newPinB in
+				if newPinB != node?.cannedMessageConfig?.inputbrokerPinB ?? -1 { hasChanges = true }
 			}
-			.onChange(of: inputbrokerPinPress) { newPinPress in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newPinPress != node!.cannedMessageConfig!.inputbrokerPinPress { hasChanges = true }
-				}
+			.onChange(of: inputbrokerPinPress) { _, newPinPress in
+				if newPinPress != node?.cannedMessageConfig?.inputbrokerPinPress ?? -1 { hasChanges = true }
 			}
-			.onChange(of: inputbrokerEventCw) { newKeyA in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newKeyA != node!.cannedMessageConfig!.inputbrokerEventCw { hasChanges = true	}
-				}
+			.onChange(of: inputbrokerEventCw) { _, newKeyA in
+				if newKeyA != node?.cannedMessageConfig?.inputbrokerEventCw ?? -1 { hasChanges = true }
 			}
-			.onChange(of: inputbrokerEventCcw) { newKeyB in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newKeyB != node!.cannedMessageConfig!.inputbrokerEventCcw { hasChanges = true }
-				}
+			.onChange(of: inputbrokerEventCcw) { _, newKeyB in
+				if newKeyB != node?.cannedMessageConfig?.inputbrokerEventCcw ?? -1 { hasChanges = true }
 			}
-			.onChange(of: inputbrokerEventPress) { newKeyPress in
-				if node != nil && node!.cannedMessageConfig != nil {
-					if newKeyPress != node!.cannedMessageConfig!.inputbrokerEventPress { hasChanges = true }
-				}
+			.onChange(of: inputbrokerEventPress) { _, newKeyPress in
+				if newKeyPress != node?.cannedMessageConfig?.inputbrokerEventPress ?? -1 { hasChanges = true }
 			}
 		}
 	}

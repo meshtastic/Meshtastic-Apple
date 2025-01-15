@@ -4,7 +4,6 @@
 
 import SwiftUI
 
-@available(iOS 17.0, *)
 struct ContentView: View {
 	@ObservedObject
 	var appState: AppState
@@ -20,14 +19,7 @@ struct ContentView: View {
 	var isShowingOnboardingFlow: Bool = false
 
 	var body: some View {
-		TabView(selection: Binding(
-			get: {
-				appState.router.navigationState.tab
-			},
-			set: { newValue in
-				appState.router.navigationState.tab = newValue
-			}
-		)) {
+		TabView(selection: $appState.router.navigationState.selectedTab) {
 			Messages(
 				router: appState.router,
 				unreadChannelMessages: $appState.unreadChannelMessages,
@@ -53,19 +45,11 @@ struct ContentView: View {
 			}
 			.tag(NavigationState.Tab.nodes)
 
-			if #available(iOS 17.0, macOS 14.0, *), !UserDefaults.mapUseLegacy {
-				MeshMap(router: appState.router)
-					.tabItem {
-						Label("map", systemImage: "map")
-					}
-					.tag(NavigationState.Tab.map)
-			} else {
-				NodeMap(router: appState.router)
-					.tabItem {
-						Label("map", systemImage: "map")
-					}
-					.tag(NavigationState.Tab.map)
-			}
+			MeshMap(router: appState.router)
+				.tabItem {
+					Label("map", systemImage: "map")
+				}
+				.tag(NavigationState.Tab.map)
 
 			Settings(
 				router: appState.router

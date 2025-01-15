@@ -45,14 +45,15 @@ struct NetworkConfig: View {
 								.foregroundColor(.gray)
 								.autocapitalization(.none)
 								.disableAutocorrection(true)
-								.onChange(of: wifiSsid, perform: { _ in
-									let totalBytes = wifiSsid.utf8.count
+								.onChange(of: wifiSsid) {
+									var totalBytes = wifiSsid.utf8.count
 									// Only mess with the value if it is too big
-									if totalBytes > 32 {
+									while totalBytes > 32 {
 										wifiSsid = String(wifiSsid.dropLast())
+										totalBytes = wifiSsid.utf8.count
 									}
 									hasChanges = true
-								})
+								}
 								.foregroundColor(.gray)
 						}
 						.keyboardType(.default)
@@ -62,14 +63,15 @@ struct NetworkConfig: View {
 								.foregroundColor(.gray)
 								.autocapitalization(.none)
 								.disableAutocorrection(true)
-								.onChange(of: wifiPsk, perform: { _ in
-									let totalBytes = wifiPsk.utf8.count
+								.onChange(of: wifiPsk) {
+									var totalBytes = wifiPsk.utf8.count
 									// Only mess with the value if it is too big
-									if totalBytes > 63 {
+									while totalBytes > 63 {
 										wifiPsk = String(wifiPsk.dropLast())
+										totalBytes = wifiPsk.utf8.count
 									}
 									hasChanges = true
-								})
+								}
 								.foregroundColor(.gray)
 						}
 						.keyboardType(.default)
@@ -109,12 +111,16 @@ struct NetworkConfig: View {
 			}
 		}
 		.navigationTitle("network.config")
-		.navigationBarItems(trailing:
-			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
 		.onAppear {
-			setNetworkValues()
 			// Need to request a NetworkConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.networkConfig == nil {
 				Logger.mesh.info("empty network config")
@@ -124,30 +130,42 @@ struct NetworkConfig: View {
 				}
 			}
 		}
-		.onChange(of: wifiEnabled) { newEnabled in
-			if node != nil && node!.networkConfig != nil {
-				if newEnabled != node!.networkConfig!.wifiEnabled { hasChanges = true }
+		.onFirstAppear {
+			// Need to request a NetworkConfig from the remote node before allowing changes
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let connectedNode {
+					if node.num != connectedNode.num {
+						if UserDefaults.enableAdministration {
+							/// 2.5 Administration with session passkey
+							let expiration = node.sessionExpiration ?? Date()
+							if expiration < Date() || node.networkConfig == nil {
+								Logger.mesh.info("⚙️ Empty or expired network config requesting via PKI admin")
+								_ = bleManager.requestNetworkConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						} else {
+							/// Legacy Administration
+							Logger.mesh.info("☠️ Using insecure legacy admin, empty network config")
+							_ = bleManager.requestNetworkConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					}
+				}
 			}
 		}
-		.onChange(of: wifiSsid) { newSSID in
-			if node != nil && node!.networkConfig != nil {
-				if newSSID != node!.networkConfig!.wifiSsid { hasChanges = true }
-			}
+		.onChange(of: wifiEnabled) { _, newEnabled in
+			if newEnabled != node?.networkConfig?.wifiEnabled { hasChanges = true }
 		}
-		.onChange(of: wifiPsk) { newPsk in
-			if node != nil && node!.networkConfig != nil {
-				if newPsk != node!.networkConfig!.wifiPsk { hasChanges = true }
-			}
+		.onChange(of: wifiSsid) { _, newSSID in
+			if newSSID != node?.networkConfig?.wifiSsid { hasChanges = true }
 		}
-		.onChange(of: wifiMode) { newMode in
-			if node != nil && node!.networkConfig != nil {
-				if newMode != node!.networkConfig!.wifiMode { hasChanges = true }
-			}
+		.onChange(of: wifiPsk) { _, newPsk in
+			if newPsk != node?.networkConfig?.wifiPsk { hasChanges = true }
 		}
-		.onChange(of: ethEnabled) { newEthEnabled in
-			if node != nil && node!.networkConfig != nil {
-				if newEthEnabled != node!.networkConfig!.ethEnabled { hasChanges = true }
-			}
+		.onChange(of: wifiMode) { _, newMode in
+			if newMode != node?.networkConfig?.wifiMode ?? -1 { hasChanges = true }
+		}
+		.onChange(of: ethEnabled) { _, newEthEnabled in
+			if newEthEnabled != node?.networkConfig?.ethEnabled { hasChanges = true }
 		}
 	}
 	func setNetworkValues() {

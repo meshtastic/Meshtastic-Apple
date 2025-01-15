@@ -46,6 +46,7 @@ enum SettingsNavigationState: String {
 	case paxCounter
 	case ringtone
 	case serial
+	case security
 	case storeAndForward
 	case telemetry
 	case meshLog
@@ -54,17 +55,7 @@ enum SettingsNavigationState: String {
 	case firmwareUpdates
 }
 
-enum NavigationState: Hashable {
-	case messages(MessagesNavigationState? = nil)
-	case bluetooth
-	case nodes(selectedNodeNum: Int64? = nil)
-	case map(MapNavigationState? = nil)
-	case settings(SettingsNavigationState? = nil)
-}
-
-// MARK: Tab Bar
-
-extension NavigationState {
+struct NavigationState: Hashable {
 	enum Tab: String, Hashable {
 		case messages
 		case bluetooth
@@ -73,34 +64,9 @@ extension NavigationState {
 		case settings
 	}
 
-	var tab: Tab {
-		get {
-			switch self {
-			case .messages:
-				.messages
-			case .bluetooth:
-				.bluetooth
-			case .nodes:
-				.nodes
-			case .map:
-				.map
-			case .settings:
-				.settings
-			}
-		}
-		set {
-			self = switch newValue {
-			case .messages:
-				.messages()
-			case .bluetooth:
-				.bluetooth
-			case .nodes:
-				.nodes()
-			case .map:
-				.map()
-			case .settings:
-				.settings()
-			}
-		}
-	}
+	var selectedTab: Tab = .bluetooth
+	var messages: MessagesNavigationState?
+	var nodeListSelectedNodeNum: Int64?
+	var map: MapNavigationState?
+	var settings: SettingsNavigationState?
 }

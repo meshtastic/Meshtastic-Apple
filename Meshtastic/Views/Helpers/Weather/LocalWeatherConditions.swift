@@ -95,13 +95,21 @@ struct WeatherConditionsCompactWidget: View {
 	let description: String
 	var body: some View {
 		VStack(alignment: .leading) {
-			Label { Text(description) } icon: { Image(systemName: symbolName).symbolRenderingMode(.multicolor) }
-				.font(.caption)
+			HStack(spacing: 5.0) {
+				Image(systemName: symbolName)
+					.foregroundColor(.accentColor)
+					.font(.callout)
+				Text(description)
+					.lineLimit(2)
+					.allowsTightening(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
+					.fixedSize(horizontal: false, vertical: true)
+					.font(.caption)
+			}
 			Text(temperature)
-				.font(temperature.length < 4 ? .system(size: 90) : .system(size: 60) )
+				.font(temperature.length < 4 ? .system(size: 72) : .system(size: 54) )
 		}
-		.frame(maxWidth: .infinity)
-		.frame(height: 175)
+		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120, idealHeight: 130, maxHeight: 140)
+		.padding()
 		.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 	}
 }
@@ -111,19 +119,24 @@ struct HumidityCompactWidget: View {
 	let dewPoint: String
 	var body: some View {
 		VStack(alignment: .leading) {
-			Label { Text("HUMIDITY") } icon: { Image(systemName: "humidity").symbolRenderingMode(.multicolor) }
-				.font(.caption)
+			HStack(spacing: 5.0) {
+				Image(systemName: "humidity")
+					.foregroundColor(.accentColor)
+					.font(.callout)
+				Text("HUMIDITY")
+					.font(.caption)
+			}
 			Text("\(humidity)%")
 				.font(.largeTitle)
-				.padding(.bottom)
+				.padding(.bottom, 5)
 			Text("The dew point is \(dewPoint) right now.")
 				.lineLimit(3)
+				.allowsTightening(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
 				.fixedSize(horizontal: false, vertical: true)
-				.font(.caption)
+				.font(.caption2)
 		}
-		.padding(.horizontal)
-		.frame(maxWidth: .infinity)
-		.frame(height: 175)
+		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120, idealHeight: 130, maxHeight: 140)
+		.padding()
 		.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 	}
 }
@@ -134,17 +147,21 @@ struct PressureCompactWidget: View {
 	let low: Bool
 	var body: some View {
 		VStack(alignment: .leading) {
-			Label { Text("PRESSURE") } icon: { Image(systemName: "gauge").symbolRenderingMode(.multicolor) }
-				.font(.caption2)
+			HStack(spacing: 5.0) {
+				Image(systemName: "gauge")
+					.foregroundColor(.accentColor)
+					.font(.callout)
+				Text("PRESSURE")
+					.font(.caption)
+			}
 			Text(pressure)
 				.font(pressure.length < 7 ? .system(size: 35) : .system(size: 30) )
 			Text(low ? "LOW" : "HIGH")
-				.padding(.bottom)
+				.padding(.bottom, 10)
 			Text(unit)
 		}
-		.padding(.horizontal)
-		.frame(maxWidth: .infinity)
-		.frame(height: 175)
+		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120, idealHeight: 130, maxHeight: 140)
+		.padding()
 		.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 	}
 }
@@ -156,17 +173,17 @@ struct WindCompactWidget: View {
 	var body: some View {
 		VStack(alignment: .leading) {
 			Label { Text("WIND") } icon: { Image(systemName: "wind").foregroundColor(.accentColor) }
-				.font(.caption)
 			Text("\(direction)")
-				.font(.caption)
+				.font(gust.isEmpty ? .callout : .caption)
 				.padding(.bottom, 10)
 			Text(speed)
-				.font(.system(size: 35))
-			Text("Gusts \(gust)")
+				.font(gust.isEmpty ? .system(size: 45) : .system(size: 35))
+			if !gust.isEmpty {
+				Text("Gusts \(gust)")
+			}
 		}
-		.padding(.horizontal)
-		.frame(maxWidth: .infinity)
-		.frame(height: 175)
+		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120, idealHeight: 130, maxHeight: 140)
+		.padding()
 		.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 	}
 }

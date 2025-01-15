@@ -24,7 +24,7 @@ struct MQTTConfig: View {
 	@State var password = ""
 	@State var encryptionEnabled = true
 	@State var jsonEnabled = false
-	@State var tlsEnabled = true
+	@State var tlsEnabled = false
 	@State var root = "msh"
 	@State var selectedTopic = ""
 	@State var mqttConnected: Bool = false
@@ -32,8 +32,7 @@ struct MQTTConfig: View {
 	@State var nearbyTopics = [String]()
 	@State var mapReportingEnabled = false
 	@State var mapPublishIntervalSecs = 3600
-	@State var preciseLocation: Bool = false
-	@State var mapPositionPrecision: Double = 13.0
+	@State var mapPositionPrecision: Double = 14.0
 
 	let locale = Locale.current
 
@@ -105,35 +104,17 @@ struct MQTTConfig: View {
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
-
 						VStack(alignment: .leading) {
-							Toggle(isOn: $preciseLocation) {
-								Label("Precise Location", systemImage: "scope")
+							Label("Approximate Location", systemImage: "location.slash.circle.fill")
+							Slider(value: $mapPositionPrecision, in: 11...14, step: 1) {
+							} minimumValueLabel: {
+								Image(systemName: "minus")
+							} maximumValueLabel: {
+								Image(systemName: "plus")
 							}
-							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							.listRowSeparator(.visible)
-							.onChange(of: preciseLocation) { pl in
-								if pl == false {
-									mapPositionPrecision = 12
-								} else {
-									mapPositionPrecision = 32
-								}
-							}
-						}
-
-						if !preciseLocation {
-							VStack(alignment: .leading) {
-								Label("Approximate Location", systemImage: "location.slash.circle.fill")
-								Slider(value: $mapPositionPrecision, in: 11...16, step: 1) {
-								} minimumValueLabel: {
-									Image(systemName: "minus")
-								} maximumValueLabel: {
-									Image(systemName: "plus")
-								}
-								Text(PositionPrecision(rawValue: Int(mapPositionPrecision))?.description ?? "")
-									.foregroundColor(.gray)
-									.font(.callout)
-							}
+							Text(PositionPrecision(rawValue: Int(mapPositionPrecision))?.description ?? "")
+								.foregroundColor(.gray)
+								.font(.callout)
 						}
 					}
 				}
@@ -142,13 +123,14 @@ struct MQTTConfig: View {
 						Label("Root Topic", systemImage: "tree")
 						TextField("Root Topic", text: $root)
 							.foregroundColor(.gray)
-							.onChange(of: root, perform: { _ in
-								let totalBytes = root.utf8.count
+							.onChange(of: root) {
+								var totalBytes = root.utf8.count
 								// Only mess with the value if it is too big
-								if totalBytes > 30 {
+								while totalBytes > 30 {
 									root = String(root.dropLast())
+									totalBytes = root.utf8.count
 								}
-							})
+							}
 							.foregroundColor(.gray)
 					}
 					.keyboardType(.asciiCapable)
@@ -180,63 +162,64 @@ struct MQTTConfig: View {
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
-							.onChange(of: address, perform: { _ in
-								let totalBytes = address.utf8.count
+							.onChange(of: address) {
+								var totalBytes = address.utf8.count
 								// Only mess with the value if it is too big
-								if totalBytes > 62 {
+								while totalBytes > 62 {
 									address = String(address.dropLast())
+									totalBytes = address.utf8.count
 								}
 								hasChanges = true
-							})
+							}
 							.keyboardType(.default)
 					}
 					.autocorrectionDisabled()
-
-					HStack {
-						Label("mqtt.username", systemImage: "person.text.rectangle")
-						TextField("mqtt.username", text: $username)
-							.foregroundColor(.gray)
-							.autocapitalization(.none)
-							.disableAutocorrection(true)
-							.onChange(of: username, perform: { _ in
-
-								let totalBytes = username.utf8.count
-
-								// Only mess with the value if it is too big
-								if totalBytes > 62 {
-									username = String(username.dropLast())
+					if !proxyToClientEnabled && address != "mqtt.meshtastic.org" {
+						HStack {
+							Label("mqtt.username", systemImage: "person.text.rectangle")
+							TextField("mqtt.username", text: $username)
+								.foregroundColor(.gray)
+								.autocapitalization(.none)
+								.disableAutocorrection(true)
+								.onChange(of: username) {
+									var totalBytes = username.utf8.count
+									// Only mess with the value if it is too big
+									while totalBytes > 62 {
+										username = String(username.dropLast())
+										totalBytes = username.utf8.count
+									}
+									hasChanges = true
 								}
-								hasChanges = true
-							})
-							.foregroundColor(.gray)
-					}
-					.keyboardType(.default)
-					.scrollDismissesKeyboard(.interactively)
-					HStack {
-						Label("password", systemImage: "wallet.pass")
-						TextField("password", text: $password)
-							.foregroundColor(.gray)
-							.autocapitalization(.none)
-							.disableAutocorrection(true)
-							.onChange(of: password, perform: { _ in
-
-								let totalBytes = password.utf8.count
-								// Only mess with the value if it is too big
-								if totalBytes > 62 {
-									password = String(password.dropLast())
+								.foregroundColor(.gray)
+						}
+						.keyboardType(.default)
+						.scrollDismissesKeyboard(.interactively)
+						HStack {
+							Label("password", systemImage: "wallet.pass")
+							TextField("password", text: $password)
+								.foregroundColor(.gray)
+								.autocapitalization(.none)
+								.disableAutocorrection(true)
+								.onChange(of: password) {
+									var totalBytes = password.utf8.count
+									// Only mess with the value if it is too big
+									while totalBytes > 62 {
+										password = String(password.dropLast())
+										totalBytes = password.utf8.count
+									}
+									hasChanges = true
 								}
-								hasChanges = true
-							})
-							.foregroundColor(.gray)
+								.foregroundColor(.gray)
+						}
+						.keyboardType(.default)
+						.scrollDismissesKeyboard(.interactively)
+						.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
+						Toggle(isOn: $tlsEnabled) {
+							Label("TLS Enabled", systemImage: "checkmark.shield.fill")
+							Text("Your MQTT Server must support TLS. Not available via the public mqtt server.")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-					.keyboardType(.default)
-					.scrollDismissesKeyboard(.interactively)
-					.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
-					Toggle(isOn: $tlsEnabled) {
-						Label("TLS Enabled", systemImage: "checkmark.shield.fill")
-						Text("Your MQTT Server must support TLS.")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 				Text("For all Mqtt functionality other than the map report you must also set uplink and downlink for each channel you want to bridge over Mqtt.")
 					.font(.callout)
@@ -271,68 +254,56 @@ struct MQTTConfig: View {
 			}
 		}
 		.navigationTitle("mqtt.config")
-		.navigationBarItems(trailing:
-			ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", mqttProxyConnected: bleManager.mqttProxyConnected)
-		})
-		.onChange(of: address) { newAddress in
-			if node != nil && node?.mqttConfig != nil {
-				if newAddress != node!.mqttConfig!.address { hasChanges = true }
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
 			}
+		)
+		.onChange(of: enabled) { _, newEnabled in
+			if newEnabled != node?.mqttConfig?.enabled { hasChanges = true }
 		}
-		.onChange(of: username) { newUsername in
-			if node != nil && node?.mqttConfig != nil {
-				if newUsername != node!.mqttConfig!.username { hasChanges = true }
-			}
-		}
-		.onChange(of: password) { newPassword in
-			if node != nil && node?.mqttConfig != nil {
-				if newPassword != node!.mqttConfig!.password { hasChanges = true }
-			}
-		}
-		.onChange(of: root) { newRoot in
-			if node != nil && node?.mqttConfig != nil {
-				if newRoot != node!.mqttConfig!.root { hasChanges = true }
-			}
-		}
-		.onChange(of: selectedTopic) { newSelectedTopic in
-			root = newSelectedTopic
-		}
-		.onChange(of: enabled) { newEnabled in
-			if node != nil && node?.mqttConfig != nil {
-				if newEnabled != node!.mqttConfig!.enabled { hasChanges = true }
-			}
-		}
-		.onChange(of: proxyToClientEnabled) { newProxyToClientEnabled in
+		.onChange(of: proxyToClientEnabled) { _, newProxyToClientEnabled in
 			if newProxyToClientEnabled {
 				jsonEnabled = false
 			}
-			if node != nil && node?.mqttConfig != nil {
-				if newProxyToClientEnabled != node!.mqttConfig!.proxyToClientEnabled { hasChanges = true }
-				if newProxyToClientEnabled {
-					jsonEnabled = false
-				}
-			}
+			if newProxyToClientEnabled != node?.mqttConfig?.proxyToClientEnabled { hasChanges = true }
 		}
-		.onChange(of: encryptionEnabled) { newEncryptionEnabled in
-			if node != nil && node?.mqttConfig != nil {
-				if newEncryptionEnabled != node!.mqttConfig!.encryptionEnabled { hasChanges = true }
-			}
+		.onChange(of: address) { _, newAddress in
+			if newAddress != node?.mqttConfig?.address ?? "" { hasChanges = true }
 		}
-		.onChange(of: jsonEnabled) { newJsonEnabled in
+		.onChange(of: username) { newUsername in
+			if newUsername != node?.mqttConfig?.username ?? "" { hasChanges = true }
+		}
+		.onChange(of: password) { newPassword in
+			if newPassword != node?.mqttConfig?.password ?? "" { hasChanges = true }
+		}
+		.onChange(of: root) { newRoot in
+			if newRoot != node?.mqttConfig?.root ?? "" { hasChanges = true }
+		}
+		.onChange(of: selectedTopic) { _, newSelectedTopic in
+			root = newSelectedTopic
+		}
+		.onChange(of: encryptionEnabled) { _, newEncryptionEnabled in
+			if newEncryptionEnabled != node?.mqttConfig?.encryptionEnabled { hasChanges = true }
+		}
+		.onChange(of: jsonEnabled) { _, newJsonEnabled in
 			if newJsonEnabled {
 				proxyToClientEnabled = false
 			}
-			if node != nil && node?.mqttConfig != nil {
-				if newJsonEnabled != node!.mqttConfig!.jsonEnabled { hasChanges = true }
+			if newJsonEnabled != node?.mqttConfig?.jsonEnabled { hasChanges = true }
+		}
+		.onChange(of: tlsEnabled) { _, newTlsEnabled in
+			if address.lowercased() == "mqtt.meshtastic.org" {
+				tlsEnabled = false
+			} else {
+				if newTlsEnabled != node?.mqttConfig?.tlsEnabled { hasChanges = true }
 			}
 		}
-		.onChange(of: tlsEnabled) { newTlsEnabled in
-			if node != nil && node?.mqttConfig != nil {
-				if newTlsEnabled != node!.mqttConfig!.tlsEnabled { hasChanges = true }
-			}
-		}
-		.onChange(of: mqttConnected) { newMqttConnected in
+		.onChange(of: mqttConnected) { _, newMqttConnected in
 			if newMqttConnected == false {
 				if bleManager.mqttProxyConnected {
 					bleManager.mqttManager.disconnect()
@@ -343,79 +314,81 @@ struct MQTTConfig: View {
 				}
 			}
 		}
-		.onChange(of: mapReportingEnabled) { newMapReportingEnabled in
-			if node != nil && node?.mqttConfig != nil {
-				if newMapReportingEnabled != node!.mqttConfig!.mapReportingEnabled { hasChanges = true }
-			}
+		.onChange(of: mapReportingEnabled) { _, newMapReportingEnabled in
+			if newMapReportingEnabled != node?.mqttConfig?.mapReportingEnabled { hasChanges = true }
 		}
-		.onChange(of: preciseLocation) { _ in
-			hasChanges = true
+		.onChange(of: mapPublishIntervalSecs) { _, newMapPublishIntervalSecs in
+			if newMapPublishIntervalSecs != node?.mqttConfig?.mapPublishIntervalSecs ?? -1 { hasChanges = true }
 		}
-		.onChange(of: mapPublishIntervalSecs) { newMapPublishIntervalSecs in
-			if node != nil && node?.mqttConfig != nil {
-				if newMapPublishIntervalSecs != node!.mqttConfig!.mapPublishIntervalSecs { hasChanges = true }
-			}
-		}
-		.onAppear {
-			setMqttValues()
-			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.mqttConfig == nil {
-				Logger.mesh.info("empty mqtt module config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+		.onFirstAppear {
+			// Need to request a MqttModuleConfig from the remote node before allowing changes
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let connectedNode {
+					if node.num != connectedNode.num {
+						if UserDefaults.enableAdministration && node.num != connectedNode.num {
+							/// 2.5 Administration with session passkey
+							let expiration = node.sessionExpiration ?? Date()
+							if expiration < Date() || node.mqttConfig == nil {
+								Logger.mesh.info("⚙️ Empty or expired mqtt module config requesting via PKI admin")
+								_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						} else {
+							/// Legacy Administration
+							Logger.mesh.info("☠️ Using insecure legacy admin, empty mqtt module config")
+							_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					}
 				}
 			}
 		}
 	}
 	func setMqttValues() {
 
-		if #available(iOS 17.0, macOS 14.0, *) {
+		nearbyTopics = []
+		let geocoder = CLGeocoder()
+		if LocationsHandler.shared.locationsArray.count > 0 {
+			let region  = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))
+			defaultTopic = "msh/" + (region?.topic ?? "UNSET")
+			geocoder.reverseGeocodeLocation(LocationsHandler.shared.locationsArray.first!, completionHandler: {(placemarks, error) in
+				if let error {
+					Logger.services.error("Failed to reverse geocode location: \(error.localizedDescription)")
+					return
+				}
 
-			nearbyTopics = []
-			let geocoder = CLGeocoder()
-			if LocationsHandler.shared.locationsArray.count > 0 {
-				let region  = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))?.topic
-				defaultTopic = "msh/" + (region ?? "UNSET")
-				geocoder.reverseGeocodeLocation(LocationsHandler.shared.locationsArray.first!, completionHandler: {(placemarks, error) in
-					if let error {
-						Logger.services.error("Failed to reverse geocode location: \(error.localizedDescription)")
-						return
+				if let placemarks = placemarks, let placemark = placemarks.first {
+					let cc = locale.region?.identifier ?? "UNK"
+					/// Country Topic unless your region is a country
+					if !(region?.isCountry ?? false) {
+						let countryTopic = defaultTopic + "/" + (placemark.isoCountryCode ?? "")
+						if !countryTopic.isEmpty {
+							nearbyTopics.append(countryTopic)
+						}
 					}
-
-					if let placemarks = placemarks, let placemark = placemarks.first {
-						let cc = locale.region?.identifier ?? "UNK"
-						/// Country Topic unless you are US
-						if  placemark.isoCountryCode ?? "unknown" != cc {
-							let countryTopic = defaultTopic + "/" + (placemark.isoCountryCode ?? "")
-							if !countryTopic.isEmpty {
-								nearbyTopics.append(countryTopic)
-							}
-						}
-						let stateTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "")
-						if !stateTopic.isEmpty {
-							nearbyTopics.append(stateTopic)
-						}
-						let countyTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.subAdministrativeArea?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
-						if !countyTopic.isEmpty {
-							nearbyTopics.append(countyTopic)
-						}
-						let cityTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.locality?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
-						if !cityTopic.isEmpty {
-							nearbyTopics.append(cityTopic)
-						}
-						let neightborhoodTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.subLocality?.lowercased()
-							.replacingOccurrences(of: " ", with: "")
-							.replacingOccurrences(of: "'", with: "") ?? "")
-						if !neightborhoodTopic.isEmpty {
-							nearbyTopics.append(neightborhoodTopic)
-						}
-					} else {
-						Logger.services.debug("No Location")
+					let stateTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "")
+					if !stateTopic.isEmpty {
+						nearbyTopics.append(stateTopic)
 					}
-				})
-			}
+					let countyTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.subAdministrativeArea?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
+					if !countyTopic.isEmpty {
+						nearbyTopics.append(countyTopic)
+					}
+					let cityTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.locality?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
+					if !cityTopic.isEmpty {
+						nearbyTopics.append(cityTopic)
+					}
+					let neightborhoodTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.subLocality?.lowercased()
+						.replacingOccurrences(of: " ", with: "")
+						.replacingOccurrences(of: "'", with: "") ?? "")
+					if !neightborhoodTopic.isEmpty {
+						nearbyTopics.append(neightborhoodTopic)
+					}
+				} else {
+					Logger.services.debug("No Location")
+				}
+			})
 		}
+
 		self.enabled = node?.mqttConfig?.enabled ?? false
 		self.proxyToClientEnabled = node?.mqttConfig?.proxyToClientEnabled ?? false
 		self.address = node?.mqttConfig?.address ?? ""
@@ -428,11 +401,12 @@ struct MQTTConfig: View {
 		self.mqttConnected = bleManager.mqttProxyConnected
 		self.mapReportingEnabled = node?.mqttConfig?.mapReportingEnabled ?? false
 		self.mapPublishIntervalSecs = Int(node?.mqttConfig?.mapPublishIntervalSecs ?? 3600)
-		self.mapPositionPrecision = Double(node?.mqttConfig?.mapPositionPrecision ?? 12)
-		if mapPositionPrecision == 0.0 {
-			self.mapPositionPrecision = 12
+		self.mapPositionPrecision = Double(node?.mqttConfig?.mapPositionPrecision ?? 14)
+		if mapPositionPrecision < 11 || mapPositionPrecision > 14 {
+			self.mapPositionPrecision = 14
+			self.hasChanges = true
+		} else {
+			self.hasChanges = false
 		}
-		self.preciseLocation = mapPositionPrecision == 32
-		self.hasChanges = false
 	}
 }

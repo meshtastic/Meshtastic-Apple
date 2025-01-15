@@ -49,7 +49,7 @@ func generateMessageMarkdown (message: String) -> String {
 }
 
 func localConfig (config: Config, context: NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
-	// We don't care about any of the Power settings, config is available for everything else
+
 	if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
 		upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
@@ -64,6 +64,8 @@ func localConfig (config: Config, context: NSManagedObjectContext, nodeNum: Int6
 		upsertPositionConfigPacket(config: config.position, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.power(config.power) {
 		upsertPowerConfigPacket(config: config.power, nodeNum: nodeNum, context: context)
+	} else if config.payloadVariant == Config.OneOf_PayloadVariant.security(config.security) {
+		upsertSecurityConfigPacket(config: config.security, nodeNum: nodeNum, context: context)
 	}
 }
 
@@ -109,6 +111,7 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 			myInfoEntity.peripheralId = peripheralId
 			myInfoEntity.myNodeNum = Int64(myInfo.myNodeNum)
 			myInfoEntity.rebootCount = Int32(myInfo.rebootCount)
+			myInfoEntity.deviceId = myInfo.deviceID
 			do {
 				try context.save()
 				Logger.data.info("💾 Saved a new myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
@@ -196,7 +199,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 	}
 }
 
-func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NSManagedObjectContext) {
+func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	if metadata.isInitialized {
 		let logString = String.localizedStringWithFormat("mesh.log.device.metadata.received %@".localized, fromNum.toHex())
@@ -229,6 +232,10 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 					let newNode = createNodeInfo(num: Int64(fromNum), context: context)
 					newNode.metadata = newMetadata
 				}
+			}
+			if sessionPasskey?.count != 0 {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 			}
 			do {
 				try context.save()
@@ -264,6 +271,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			newNode.num = Int64(nodeInfo.num)
 			newNode.channel = Int32(nodeInfo.channel)
 			newNode.favorite = nodeInfo.isFavorite
+			newNode.ignored = nodeInfo.isIgnored
 			newNode.hopsAway = Int32(nodeInfo.hopsAway)
 
 			if nodeInfo.hasDeviceMetrics {
@@ -276,6 +284,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				newTelemetries.append(telemetry)
 				newNode.telemetries? = NSOrderedSet(array: newTelemetries)
 			}
+
 			newNode.firstHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
 			newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
 			newNode.snr = nodeInfo.snr
@@ -287,8 +296,19 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				newUser.longName = nodeInfo.user.longName
 				newUser.shortName = nodeInfo.user.shortName
 				newUser.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
+				newUser.hwModelId = Int32(nodeInfo.user.hwModel.rawValue)
+				Task {
+					Api().loadDeviceHardwareData { (hw) in
+						let dh = hw.first(where: { $0.hwModel == newUser.hwModelId })
+						newUser.hwDisplayName = dh?.displayName
+					}
+				}
 				newUser.isLicensed = nodeInfo.user.isLicensed
 				newUser.role = Int32(nodeInfo.user.role.rawValue)
+				if !nodeInfo.user.publicKey.isEmpty {
+					newUser.pkiEncrypted = true
+					newUser.publicKey = nodeInfo.user.publicKey
+				}
 				newNode.user = newUser
 			} else if nodeInfo.num > Constants.minimumNodeNum {
 				let newUser = createUser(num: Int64(nodeInfo.num), context: context)
@@ -340,11 +360,17 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			fetchedNode[0].snr = nodeInfo.snr
 			fetchedNode[0].channel = Int32(nodeInfo.channel)
 			fetchedNode[0].favorite = nodeInfo.isFavorite
+			fetchedNode[0].ignored = nodeInfo.isIgnored
 			fetchedNode[0].hopsAway = Int32(nodeInfo.hopsAway)
 
 			if nodeInfo.hasUser {
 				if fetchedNode[0].user == nil {
 					fetchedNode[0].user = UserEntity(context: context)
+				}
+				// Set the public key for a user if it is empty, don't update
+				if fetchedNode[0].user?.publicKey == nil && !nodeInfo.user.publicKey.isEmpty {
+					fetchedNode[0].user?.pkiEncrypted = true
+					fetchedNode[0].user?.publicKey = nodeInfo.user.publicKey
 				}
 				fetchedNode[0].user!.userId = nodeInfo.user.id
 				fetchedNode[0].user!.num = Int64(nodeInfo.num)
@@ -354,6 +380,13 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				fetchedNode[0].user!.isLicensed = nodeInfo.user.isLicensed
 				fetchedNode[0].user!.role = Int32(nodeInfo.user.role.rawValue)
 				fetchedNode[0].user!.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
+				fetchedNode[0].user!.hwModelId = Int32(nodeInfo.user.hwModel.rawValue)
+				Task {
+					Api().loadDeviceHardwareData { (hw) in
+						let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user!.hwModelId })
+						fetchedNode[0].user!.hwDisplayName = dh?.displayName
+					}
+				}
 			} else {
 				if fetchedNode[0].user == nil && nodeInfo.num > Constants.minimumNodeNum {
 
@@ -423,11 +456,11 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 
 func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
-	if let adminMessage = try? AdminMessage(serializedData: packet.decoded.payload) {
+	if let adminMessage = try? AdminMessage(serializedBytes: packet.decoded.payload) {
 
 		if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getCannedMessageModuleMessagesResponse(adminMessage.getCannedMessageModuleMessagesResponse) {
 
-			if let cmmc = try? CannedMessageModuleConfig(serializedData: packet.decoded.payload) {
+			if let cmmc = try? CannedMessageModuleConfig(serializedBytes: packet.decoded.payload) {
 
 				if !cmmc.messages.isEmpty {
 
@@ -462,23 +495,25 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getChannelResponse(adminMessage.getChannelResponse) {
 			channelPacket(channel: adminMessage.getChannelResponse, fromNum: Int64(packet.from), context: context)
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getDeviceMetadataResponse(adminMessage.getDeviceMetadataResponse) {
-			deviceMetadataPacket(metadata: adminMessage.getDeviceMetadataResponse, fromNum: Int64(packet.from), context: context)
+			deviceMetadataPacket(metadata: adminMessage.getDeviceMetadataResponse, fromNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getConfigResponse(adminMessage.getConfigResponse) {
 			let config = adminMessage.getConfigResponse
 			if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
-				upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: Int64(packet.from), context: context)
+				upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
-				upsertDeviceConfigPacket(config: config.device, nodeNum: Int64(packet.from), context: context)
+				upsertDeviceConfigPacket(config: config.device, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
-				upsertDisplayConfigPacket(config: config.display, nodeNum: Int64(packet.from), context: context)
+				upsertDisplayConfigPacket(config: config.display, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
-				upsertLoRaConfigPacket(config: config.lora, nodeNum: Int64(packet.from), context: context)
+				upsertLoRaConfigPacket(config: config.lora, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
-				upsertNetworkConfigPacket(config: config.network, nodeNum: Int64(packet.from), context: context)
+				upsertNetworkConfigPacket(config: config.network, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
-				upsertPositionConfigPacket(config: config.position, nodeNum: Int64(packet.from), context: context)
+				upsertPositionConfigPacket(config: config.position, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.power(config.power) {
-				upsertPowerConfigPacket(config: config.power, nodeNum: Int64(packet.from), context: context)
+				upsertPowerConfigPacket(config: config.power, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
+			} else if config.payloadVariant == Config.OneOf_PayloadVariant.security(config.security) {
+				upsertSecurityConfigPacket(config: config.security, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
 			}
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getModuleConfigResponse(adminMessage.getModuleConfigResponse) {
 			let moduleConfig = adminMessage.getModuleConfigResponse
@@ -548,7 +583,7 @@ func paxCounterPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	do {
 		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
 
-		if let paxMessage = try? Paxcount(serializedData: packet.decoded.payload) {
+		if let paxMessage = try? Paxcount(serializedBytes: packet.decoded.payload) {
 
 			let newPax = PaxCounterEntity(context: context)
 			newPax.ble = Int32(truncatingIfNeeded: paxMessage.ble)
@@ -578,7 +613,7 @@ func paxCounterPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSManagedObjectContext) {
 
-	if let routingMessage = try? Routing(serializedData: packet.decoded.payload) {
+	if let routingMessage = try? Routing(serializedBytes: packet.decoded.payload) {
 
 		let routingError = RoutingError(rawValue: routingMessage.errorReason.rawValue)
 
@@ -600,13 +635,16 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 					}
 				}
 				fetchedMessage[0].ackError = Int32(routingMessage.errorReason.rawValue)
-
 				if routingMessage.errorReason == Routing.Error.none {
 
 					fetchedMessage[0].receivedACK = true
 				}
 				fetchedMessage[0].ackSNR = packet.rxSnr
-				fetchedMessage[0].ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
+				if packet.rxTime > 0 {
+					fetchedMessage[0].ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
+				} else {
+					fetchedMessage[0].ackTimestamp = Int32(Date().timeIntervalSince1970)
+				}
 
 				if fetchedMessage[0].toUser != nil {
 					fetchedMessage[0].toUser!.objectWillChange.send()
@@ -639,16 +677,12 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 
 func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManagedObjectContext) {
 
-	if let telemetryMessage = try? Telemetry(serializedData: packet.decoded.payload) {
+	if let telemetryMessage = try? Telemetry(serializedBytes: packet.decoded.payload) {
 
-		// Only log telemetry from the mesh not the connected device
-		if connectedNode != Int64(packet.from) {
-			let logString = String.localizedStringWithFormat("mesh.log.telemetry.received %@".localized, String(packet.from))
-			MeshLogger.log("📈 \(logString)")
-		} else {
-			// If it is the connected node
-		}
-		if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) {
+		let logString = String.localizedStringWithFormat("mesh.log.telemetry.received %@".localized, String(packet.from))
+		MeshLogger.log("📈 \(logString)")
+
+		if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) {
 			/// Other unhandled telemetry packets
 			return
 		}
@@ -670,7 +704,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.voltage = telemetryMessage.deviceMetrics.voltage
 					telemetry.uptimeSeconds = Int32(telemetryMessage.deviceMetrics.uptimeSeconds)
 					telemetry.metricsType = 0
-					Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.deviceMetrics.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.deviceMetrics.airUtilTx, privacy: .public) for Node: \(packet.from.toHex(), privacy: .public))")
+					Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.deviceMetrics.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.deviceMetrics.airUtilTx, privacy: .public) for Node: \(packet.from.toHex(), privacy: .public)")
 				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) {
 					// Environment Metrics
 					telemetry.barometricPressure = telemetryMessage.environmentMetrics.barometricPressure
@@ -687,6 +721,21 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.windLull = telemetryMessage.environmentMetrics.windLull
 					telemetry.windDirection = Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.windDirection)
 					telemetry.metricsType = 1
+				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) {
+					// Local Stats for Live activity
+					telemetry.uptimeSeconds = Int32(telemetryMessage.localStats.uptimeSeconds)
+					telemetry.channelUtilization = telemetryMessage.localStats.channelUtilization
+					telemetry.airUtilTx = telemetryMessage.localStats.airUtilTx
+					telemetry.numPacketsTx = Int32(truncatingIfNeeded: telemetryMessage.localStats.numPacketsTx)
+					telemetry.numPacketsRx = Int32(truncatingIfNeeded: telemetryMessage.localStats.numPacketsRx)
+					telemetry.numPacketsRxBad = Int32(truncatingIfNeeded: telemetryMessage.localStats.numPacketsRxBad)
+					telemetry.numRxDupe = Int32(truncatingIfNeeded: telemetryMessage.localStats.numRxDupe)
+					telemetry.numTxRelay = Int32(truncatingIfNeeded: telemetryMessage.localStats.numTxRelay)
+					telemetry.numTxRelayCanceled = Int32(truncatingIfNeeded: telemetryMessage.localStats.numTxRelayCanceled)
+					telemetry.numOnlineNodes = Int32(truncatingIfNeeded: telemetryMessage.localStats.numOnlineNodes)
+					telemetry.numTotalNodes = Int32(truncatingIfNeeded: telemetryMessage.localStats.numTotalNodes)
+					telemetry.metricsType = 4
+					Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.localStats.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.localStats.airUtilTx, privacy: .public) Packets Sent: \(telemetryMessage.localStats.numPacketsTx, privacy: .public) Packets Received: \(telemetryMessage.localStats.numPacketsRx, privacy: .public) Bad Packets Received: \(telemetryMessage.localStats.numPacketsRxBad, privacy: .public) Nodes Online: \(telemetryMessage.localStats.numOnlineNodes, privacy: .public) of \(telemetryMessage.localStats.numTotalNodes, privacy: .public) nodes for Node: \(packet.from.toHex(), privacy: .public)")
 				}
 				telemetry.snr = packet.rxSnr
 				telemetry.rssi = packet.rxRssi
@@ -695,38 +744,57 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					return
 				}
 				mutableTelemetries.add(telemetry)
-				fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(truncatingIfNeeded: packet.rxTime)))
+				if packet.rxTime > 0 {
+					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(packet.rxTime))
+				} else {
+					fetchedNode[0].lastHeard = Date()
+				}
 				fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
 			}
 			try context.save()
-			// Only log telemetry from the mesh not the connected device
-			if connectedNode != Int64(packet.from) {
-				Logger.data.info("💾 [TelemetryEntity] Saved for Node: \(packet.from.toHex())")
-			} else if telemetry.metricsType == 0 {
+
+			Logger.data.info("💾 [TelemetryEntity] of type \(MetricsTypes(rawValue: Int(telemetry.metricsType))?.name ?? "Unknown Metrics Type") Saved for Node: \(packet.from.toHex())")
+			if telemetry.metricsType == 0 {
 				// Connected Device Metrics
 				// ------------------------
 				// Low Battery notification
-				if UserDefaults.lowBatteryNotifications && telemetry.batteryLevel > 0 && telemetry.batteryLevel < 4 {
-					let manager = LocalNotificationManager()
-					manager.notifications = [
-						Notification(
-							id: ("notification.id.\(UUID().uuidString)"),
-							title: "Critically Low Battery!",
-							subtitle: "AKA \(telemetry.nodeTelemetry?.user?.shortName ?? "UNK")",
-							content: "Time to charge your radio, there is \(telemetry.batteryLevel)% battery remaining.",
-							target: "nodes",
-							path: "meshtastic:///nodes?nodenum=\(telemetry.nodeTelemetry?.num ?? 0)"
-						)
-					]
-					manager.schedule()
+				if connectedNode == Int64(packet.from) {
+					if UserDefaults.lowBatteryNotifications && telemetry.batteryLevel > 0 && telemetry.batteryLevel < 4 {
+						let manager = LocalNotificationManager()
+						manager.notifications = [
+							Notification(
+								id: ("notification.id.\(UUID().uuidString)"),
+								title: "Critically Low Battery!",
+								subtitle: "AKA \(telemetry.nodeTelemetry?.user?.shortName ?? "UNK")",
+								content: "Time to charge your radio, there is \(telemetry.batteryLevel)% battery remaining.",
+								target: "nodes",
+								path: "meshtastic:///nodes?nodenum=\(telemetry.nodeTelemetry?.num ?? 0)"
+							)
+						]
+						manager.schedule()
+					}
 				}
-				// Update our live activity if there is one running, not available on mac iOS >= 16.2
+			} else if telemetry.metricsType == 4 {
+				// Update our live activity if there is one running, not available on mac
 #if !targetEnvironment(macCatalyst)
+#if canImport(ActivityKit)
 
-					let oneMinuteLater = Calendar.current.date(byAdding: .minute, value: (Int(1) ), to: Date())!
-					let date = Date.now...oneMinuteLater
-				let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(timerRange: date, connected: true, channelUtilization: telemetry.channelUtilization, airtime: telemetry.airUtilTx, batteryLevel: UInt32(telemetry.batteryLevel), nodes: 17, nodesOnline: 9)
-				let alertConfiguration = AlertConfiguration(title: "Mesh activity update", body: "Updated Device Metrics Data.", sound: .default)
+				let fifteenMinutesLater = Calendar.current.date(byAdding: .minute, value: (Int(15) ), to: Date())!
+				let date = Date.now...fifteenMinutesLater
+				let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(uptimeSeconds: UInt32(telemetry.uptimeSeconds),
+																				  channelUtilization: telemetry.channelUtilization,
+																				  airtime: telemetry.airUtilTx,
+																				  sentPackets: UInt32(telemetry.numPacketsTx),
+																				  receivedPackets: UInt32(telemetry.numPacketsRx),
+																				  badReceivedPackets: UInt32(telemetry.numPacketsRxBad),
+																				  dupeReceivedPackets: UInt32(telemetry.numRxDupe),
+																				  packetsSentRelay: UInt32(telemetry.numTxRelay),
+																				  packetsCanceledRelay: UInt32(telemetry.numTxRelayCanceled),
+																				  nodesOnline: UInt32(telemetry.numOnlineNodes),
+																				  totalNodes: UInt32(telemetry.numTotalNodes),
+																				  timerRange: date)
+
+				let alertConfiguration = AlertConfiguration(title: "Mesh activity update", body: "Updated Node Stats Data.", sound: .default)
 					let updatedContent = ActivityContent(state: updatedMeshStatus, staleDate: nil)
 
 					let meshActivity = Activity<MeshActivityAttributes>.activities.first(where: { $0.attributes.nodeNum == connectedNode })
@@ -737,6 +805,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 							Logger.services.debug("Updated live activity.")
 						}
 					}
+#endif
 #endif
 			}
 		} catch {
@@ -752,17 +821,16 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 func textMessageAppPacket(
 	packet: MeshPacket,
 	wantRangeTestPackets: Bool,
+	critical: Bool = false,
 	connectedNode: Int64,
 	storeForward: Bool = false,
 	context: NSManagedObjectContext,
 	appState: AppState
 ) {
-
 	var messageText = String(bytes: packet.decoded.payload, encoding: .utf8)
 	let rangeRef = Reference(Int.self)
 	let rangeTestRegex = Regex {
 		"seq "
-
 		TryCapture(as: rangeRef) {
 			OneOrMore(.digit)
 		} transform: { match in
@@ -776,7 +844,7 @@ func textMessageAppPacket(
 	}
 	var storeForwardBroadcast = false
 	if storeForward {
-		if let storeAndForwardMessage = try? StoreAndForward(serializedData: packet.decoded.payload) {
+		if let storeAndForwardMessage = try? StoreAndForward(serializedBytes: packet.decoded.payload) {
 			messageText = String(bytes: storeAndForwardMessage.text, encoding: .utf8)
 			if storeAndForwardMessage.rr == .routerTextBroadcast {
 				storeForwardBroadcast = true
@@ -785,17 +853,18 @@ func textMessageAppPacket(
 	}
 
 	if messageText?.count ?? 0 > 0 {
-
 		MeshLogger.log("💬 \("mesh.log.textmessage.received".localized)")
-
 		let messageUsers = UserEntity.fetchRequest()
 		messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
 		do {
 			let fetchedUsers = try context.fetch(messageUsers)
 			let newMessage = MessageEntity(context: context)
 			newMessage.messageId = Int64(packet.id)
-			newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
-			newMessage.receivedTimestamp = Int32(Date().timeIntervalSince1970)
+			if packet.rxTime > 0 {
+				newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
+			} else {
+				newMessage.messageTimestamp = Int32(Date().timeIntervalSince1970)
+			}
 			newMessage.receivedACK = false
 			newMessage.snr = packet.rxSnr
 			newMessage.rssi = packet.rxRssi
@@ -810,17 +879,47 @@ func textMessageAppPacket(
 			if packet.decoded.replyID > 0 {
 				newMessage.replyID = Int64(packet.decoded.replyID)
 			}
-
 			if fetchedUsers.first(where: { $0.num == packet.to }) != nil && packet.to != Constants.maximumNodeNum {
 				if !storeForwardBroadcast {
 					newMessage.toUser = fetchedUsers.first(where: { $0.num == packet.to })
+				} else {
+					/// Make a new to user if they are unknown
+					newMessage.toUser = createUser(num: Int64(truncatingIfNeeded: packet.to), context: context)
 				}
 			}
 			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
 				newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
-				if packet.rxTime > 0 {
-					newMessage.fromUser?.userNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+				/// Set the public key for the message
+				if newMessage.fromUser?.pkiEncrypted ?? false && packet.pkiEncrypted {
+					newMessage.pkiEncrypted = true
+					newMessage.publicKey = packet.publicKey
 				}
+				/// Check for key mismatch
+				if let nodeKey = newMessage.fromUser?.publicKey {
+					if newMessage.toUser != nil && packet.pkiEncrypted && !packet.publicKey.isEmpty {
+						if nodeKey != newMessage.publicKey {
+							newMessage.fromUser?.keyMatch = false
+							newMessage.fromUser?.newPublicKey = newMessage.publicKey
+							let nodeKey = String(nodeKey.base64EncodedString()).prefix(8)
+							let messageKey = String(newMessage.publicKey?.base64EncodedString() ?? "No Key").prefix(8)
+							Logger.data.error("🔑 Key mismatch original key: \(nodeKey, privacy: .public) . . . new key: \(messageKey, privacy: .public) . . .")
+						}
+					}
+				} else if packet.pkiEncrypted {
+					/// We have no key, set it if it is not empty
+					if !packet.publicKey.isEmpty {
+						newMessage.fromUser?.pkiEncrypted = true
+						newMessage.fromUser?.publicKey = packet.publicKey
+					}
+				}
+			} else {
+				/// Make a new from user if they are unknown
+				newMessage.fromUser = createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
+			}
+			if packet.rxTime > 0 {
+				newMessage.fromUser?.userNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+			} else {
+				newMessage.fromUser?.userNode?.lastHeard = Date()
 			}
 			newMessage.messagePayload = messageText
 			newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: messageText!)
@@ -828,15 +927,12 @@ func textMessageAppPacket(
 				newMessage.fromUser?.lastMessage = Date()
 			}
 			var messageSaved = false
-
 			do {
-
 				try context.save()
 				Logger.data.info("💾 Saved a new message for \(newMessage.messageId)")
 				messageSaved = true
 
 				if messageSaved {
-
 					if packet.decoded.portnum == PortNum.detectionSensorApp && !UserDefaults.enableDetectionNotifications {
 						return
 					}
@@ -855,14 +951,17 @@ func textMessageAppPacket(
 									subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 									content: messageText!,
 									target: "messages",
-									path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)"
+									path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)",
+									messageId: newMessage.messageId,
+									channel: newMessage.channel,
+									userNum: Int64(packet.from),
+									critical: critical
 								)
 							]
 							manager.schedule()
 							Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
 						}
 					} else if newMessage.fromUser != nil && newMessage.toUser == nil {
-
 						let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
 						fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedNode))
 
@@ -885,7 +984,11 @@ func textMessageAppPacket(
 												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 												content: messageText!,
 												target: "messages",
-												path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.messageId)")
+												path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.messageId)",
+												messageId: newMessage.messageId,
+												channel: newMessage.channel,
+												userNum: Int64(newMessage.fromUser?.userId ?? "0")
+											)
 										]
 										manager.schedule()
 										Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
@@ -893,7 +996,7 @@ func textMessageAppPacket(
 								}
 							}
 						} catch {
-
+							// Handle error
 						}
 					}
 				}
@@ -918,7 +1021,7 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 	do {
 
-		if let waypointMessage = try? Waypoint(serializedData: packet.decoded.payload) {
+		if let waypointMessage = try? Waypoint(serializedBytes: packet.decoded.payload) {
 			let fetchedWaypoint = try context.fetch(fetchWaypointRequest)
 			if fetchedWaypoint.isEmpty {
 				let waypoint = WaypointEntity(context: context)

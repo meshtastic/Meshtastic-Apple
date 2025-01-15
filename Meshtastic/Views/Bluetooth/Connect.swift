@@ -11,9 +11,7 @@ import CoreData
 import CoreLocation
 import CoreBluetooth
 import OSLog
-#if canImport(TipKit)
 import TipKit
-#endif
 #if canImport(ActivityKit)
 import ActivityKit
 #endif
@@ -28,6 +26,20 @@ struct Connect: View {
 	@State var liveActivityStarted = false
 	@State var selectedPeripherialId = ""
 
+	init () {
+		let notificationCenter = UNUserNotificationCenter.current()
+		notificationCenter.getNotificationSettings(completionHandler: { (settings) in
+		   if settings.authorizationStatus == .notDetermined {
+			   UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound, .criticalAlert]) { success, error in
+				   if success {
+					   Logger.services.info("Notifications are all set!")
+				   } else if let error = error {
+					   Logger.services.error("\(error.localizedDescription)")
+				   }
+			   }
+		   }
+		})
+	}
 	var body: some View {
 		NavigationStack {
 			VStack {
@@ -35,45 +47,47 @@ struct Connect: View {
 					if bleManager.isSwitchedOn {
 						Section(header: Text("connected.radio").font(.title)) {
 							if let connectedPeripheral = bleManager.connectedPeripheral, connectedPeripheral.peripheral.state == .connected {
-								if #available(iOS 17.0, macOS 14.0, *) {
-									TipView(BluetoothConnectionTip(), arrowEdge: .bottom)
-								}
-								HStack {
-									VStack(alignment: .center) {
-										CircleText(text: node?.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90)
-									}
-									.padding(.trailing)
-									VStack(alignment: .leading) {
-										if node != nil {
-											Text(connectedPeripheral.longName).font(.title2)
+								TipView(BluetoothConnectionTip(), arrowEdge: .bottom)
+								VStack(alignment: .leading) {
+									HStack {
+										VStack(alignment: .center) {
+											CircleText(text: node?.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90)
+												.padding(.trailing, 5)
+											if node?.latestDeviceMetrics != nil {
+												BatteryCompact(batteryLevel: node?.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
+													.padding(.trailing, 5)
+											}
 										}
-										Text("ble.name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name ?? "unknown".localized)")
-											.font(.callout).foregroundColor(Color.gray)
-										if node != nil {
-											Text("firmware.version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "unknown".localized)")
+										.padding(.trailing)
+										VStack(alignment: .leading) {
+											if node != nil {
+												Text(connectedPeripheral.longName).font(.title2)
+											}
+											Text("ble.name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name ?? "unknown".localized)")
 												.font(.callout).foregroundColor(Color.gray)
-										}
-										if bleManager.isSubscribed {
-											Text("subscribed").font(.callout)
-												.foregroundColor(.green)
-										} else {
-
-											HStack {
-												if #available(iOS 17.0, macOS 14.0, *) {
+											if node != nil {
+												Text("firmware.version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "unknown".localized)")
+													.font(.callout).foregroundColor(Color.gray)
+											}
+											if bleManager.isSubscribed {
+												Text("subscribed").font(.callout)
+													.foregroundColor(.green)
+											} else {
+												HStack {
 													Image(systemName: "square.stack.3d.down.forward")
 														.symbolRenderingMode(.multicolor)
 														.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 														.foregroundColor(.orange)
+													Text("communicating").font(.callout)
+														.foregroundColor(.orange)
 												}
-												Text("communicating").font(.callout)
-													.foregroundColor(.orange)
 											}
 										}
 									}
 								}
 								.font(.caption)
 								.foregroundColor(Color.gray)
-								.padding([.top, .bottom])
+								.padding([.top])
 								.swipeActions {
 									Button(role: .destructive) {
 										if let connectedPeripheral = bleManager.connectedPeripheral,
@@ -287,10 +301,10 @@ struct Connect: View {
 				.presentationDetents([.large])
 				.presentationDragIndicator(.automatic)
 		}
-		.onChange(of: (self.bleManager.invalidVersion)) { _ in
+    	.onChange(of: self.bleManager.invalidVersion) {
 			invalidFirmwareVersion = self.bleManager.invalidVersion
 		}
-		.onChange(of: (self.bleManager.isSubscribed)) { sub in
+		.onChange(of: self.bleManager.isSubscribed) { _, sub in
 
 			if UserDefaults.preferredPeripheralId.count > 0 && sub {
 
@@ -310,20 +324,32 @@ struct Connect: View {
 			}
 		}
 	}
-	#if canImport(ActivityKit)
+#if !targetEnvironment(macCatalyst)
+#if canImport(ActivityKit)
 	func startNodeActivity() {
 		liveActivityStarted = true
-		let timerSeconds = 60
-		let deviceMetrics = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
-		let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
+		// 15 Minutes Local Stats Interval
+		let timerSeconds = 900
+		let localStats = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 4"))
+		let mostRecent = localStats?.lastObject as? TelemetryEntity
 
 		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName ?? "unknown")
 
 		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
+		let initialContentState = MeshActivityAttributes.ContentState(uptimeSeconds: UInt32(mostRecent?.uptimeSeconds ?? 0),
+																	  channelUtilization: mostRecent?.channelUtilization ?? 0.0,
+																	  airtime: mostRecent?.airUtilTx ?? 0.0,
+																	  sentPackets: UInt32(mostRecent?.numPacketsTx ?? 0),
+																	  receivedPackets: UInt32(mostRecent?.numPacketsRx ?? 0),
+																	  badReceivedPackets: UInt32(mostRecent?.numPacketsRxBad ?? 0),
+																	  dupeReceivedPackets: UInt32(mostRecent?.numRxDupe ?? 0),
+																	  packetsSentRelay: UInt32(mostRecent?.numTxRelay ?? 0),
+																	  packetsCanceledRelay: UInt32(mostRecent?.numTxRelayCanceled ?? 0),
+																	  nodesOnline: UInt32(mostRecent?.numOnlineNodes ?? 0),
+																	  totalNodes: UInt32(mostRecent?.numTotalNodes ?? 0),
+																	  timerRange: Date.now...future)
 
-		let initialContentState = MeshActivityAttributes.ContentState(timerRange: Date.now...future, connected: true, channelUtilization: mostRecent?.channelUtilization ?? 0.0, airtime: mostRecent?.airUtilTx ?? 0.0, batteryLevel: UInt32(mostRecent?.batteryLevel ?? 0), nodes: 17, nodesOnline: 9)
-
-		let activityContent = ActivityContent(state: initialContentState, staleDate: Calendar.current.date(byAdding: .minute, value: 2, to: Date())!)
+		let activityContent = ActivityContent(state: initialContentState, staleDate: Calendar.current.date(byAdding: .minute, value: 15, to: Date())!)
 
 		do {
 			let myActivity = try Activity<MeshActivityAttributes>.request(attributes: activityAttributes, content: activityContent,
@@ -342,8 +368,8 @@ struct Connect: View {
 			}
 		}
 	}
-	#endif
-
+#endif
+#endif
 	func didDismissSheet() {
 		bleManager.disconnectPeripheral(reconnect: false)
 	}

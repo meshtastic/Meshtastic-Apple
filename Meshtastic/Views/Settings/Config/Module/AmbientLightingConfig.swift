@@ -6,8 +6,8 @@
 //
 import MeshtasticProtobufs
 import SwiftUI
+import OSLog
 
-@available(iOS 17.0, macOS 14.0, *)
 struct AmbientLightingConfig: View {
 	@Environment(\.self) var environment
 	@Environment(\.managedObjectContext) var context
@@ -50,10 +50,6 @@ struct AmbientLightingConfig: View {
 						Stepper("Current: \(current)", value: $current, in: 0...31, step: 1)
 							.padding(5)
 					}
-					.onChange(of: color, initial: true) {
-						components = color.resolve(in: environment)
-						hasChanges = true
-					}
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.ambientLightingConfig == nil)
@@ -80,24 +76,45 @@ struct AmbientLightingConfig: View {
 				}
 			}
 			.navigationTitle("ambient.lighting.config")
-			.navigationBarItems(trailing:
-				ZStack {
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-			})
-			.onAppear {
-				setAmbientLightingConfigValue()
+			.navigationBarItems(
+				trailing: ZStack {
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: bleManager.connectedPeripheral?.shortName ?? "?"
+					)
+				}
+			)
+			.onFirstAppear {
 				// Need to request a Ambient Lighting Config from the remote node before allowing changes
-				if bleManager.connectedPeripheral != nil && node?.ambientLightingConfig == nil {
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if node != nil && connectedNode != nil {
-						_ = bleManager.requestAmbientLightingConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+					if let connectedNode {
+						if node.num != connectedNode.num {
+							if UserDefaults.enableAdministration {
+								/// 2.5 Administration with session passkey
+								let expiration = node.sessionExpiration ?? Date()
+								if expiration < Date() || node.ambientLightingConfig == nil {
+									Logger.mesh.info("⚙️ Empty or expired ambient lighting module config requesting via PKI admin")
+									_ = bleManager.requestAmbientLightingConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								}
+							} else {
+								/// Legacy Administration
+								Logger.mesh.info("☠️ Using insecure legacy admin, empty ambient lighting module config")
+								_ = bleManager.requestAmbientLightingConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						}
 					}
 				}
 			}
-			.onChange(of: ledState) { newLedState in
-				if node != nil && node!.ambientLightingConfig != nil {
-					if newLedState != node!.ambientLightingConfig!.ledState { hasChanges = true }
-				}
+			.onChange(of: ledState) { _, newLedState in
+				if newLedState != node?.ambientLightingConfig?.ledState { hasChanges = true }
+			}
+			.onChange(of: current) { _, newCurrent in
+				if newCurrent != node?.ambientLightingConfig?.current ?? 10 { hasChanges = true }
+			}
+			.onChange(of: color) { oldColor, newColor in
+				if oldColor != newColor { hasChanges = true }
 			}
 		}
 	}

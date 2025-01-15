@@ -24,6 +24,7 @@ struct DeviceMetricsLog: View {
 	@ObservedObject var node: NodeInfoEntity
 	@State private var sortOrder = [KeyPathComparator(\TelemetryEntity.time, order: .reverse)]
 	@State private var selection: TelemetryEntity.ID?
+	@State private var chartSelection: Date?
 
 	var body: some View {
 		VStack {
@@ -47,7 +48,6 @@ struct DeviceMetricsLog: View {
 								.accessibilityValue("X: \(point.time!), Y: \(point.batteryLevel)")
 								.foregroundStyle(batteryChartColor)
 								.interpolationMethod(.linear)
-
 								Plot {
 									PointMark(
 										x: .value("x", point.time!),
@@ -58,14 +58,29 @@ struct DeviceMetricsLog: View {
 								.accessibilityLabel("Line Series")
 								.accessibilityValue("X: \(point.time!), Y: \(point.channelUtilization)")
 								.foregroundStyle(channelUtilizationChartColor)
-
+								if let chartSelection {
+									RuleMark(x: .value("Second", chartSelection, unit: .second))
+										.foregroundStyle(.tertiary.opacity(0.5))
+//												.annotation(
+//													position: .automatic,
+//													overflowResolution: .init(x: .fit, y: .disabled)
+//												) {
+//													ZStack {
+//														Text("\(getTelemetry(for: chartSelection))")
+//													}
+//													.padding()
+//													.background {
+//														RoundedRectangle(cornerRadius: 4)
+//															.foregroundStyle(Color.accentColor.opacity(0.2))
+//													}
+//												}
+								}
 								RuleMark(y: .value("Network Status Orange", 25))
 									.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
 									.foregroundStyle(.orange)
 								RuleMark(y: .value("Network Status Red", 50))
 									.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
 									.foregroundStyle(.red)
-
 								Plot {
 									PointMark(
 										x: .value("x", point.time!),
@@ -82,6 +97,7 @@ struct DeviceMetricsLog: View {
 							AxisMarks(position: .top)
 						})
 						.chartXAxis(.automatic)
+						.chartXSelection(value: $chartSelection)
 						.chartYScale(domain: 0...100)
 						.chartForegroundStyleScale([
 							idiom == .phone ? "Battery" : "Battery Level": batteryChartColor,
@@ -191,12 +207,14 @@ struct DeviceMetricsLog: View {
 					.padding(.bottom)
 					.padding(.trailing)
 				}
-			} else {
-				if #available (iOS 17, *) {
-					ContentUnavailableView("No Device Metrics", systemImage: "slash.circle")
-				} else {
-					Text("No Device Metrics")
+				.onChange(of: selection) { _, newSelection in
+					guard let metrics = deviceMetrics.first(where: { $0.id == newSelection }) else {
+						return
+					}
+					chartSelection = metrics.time
 				}
+			} else {
+				ContentUnavailableView("No Device Metrics", systemImage: "slash.circle")
 			}
 		}
 		.navigationTitle("device.metrics.log")

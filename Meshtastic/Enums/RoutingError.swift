@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 8/4/22.
 //
 import Foundation
+import SwiftUI
 import MeshtasticProtobufs
 
 enum RoutingError: Int, CaseIterable, Identifiable {
@@ -21,6 +22,10 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 	case dutyCycleLimit = 9
 	case badRequest = 32
 	case notAuthorized = 33
+	case pkiFailed = 34
+	case pkiUnknownPubkey = 35
+	case adminBadSessionKey = 36
+	case adminPublicKeyUnauthorized = 37
 
 	var id: Int { self.rawValue }
 	var display: String {
@@ -50,6 +55,59 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 			return "routing.badRequest".localized
 		case .notAuthorized:
 			return "routing.notauthorized".localized
+		case .pkiFailed:
+			return "routing.pkifailed".localized
+		case .pkiUnknownPubkey:
+			return "routing.pkiunknownpubkey".localized
+		case .adminBadSessionKey:
+			return "routing.adminbadsessionkey".localized
+		case .adminPublicKeyUnauthorized:
+			return "routing.adminpublickeyunauthorized".localized
+		}
+	}
+	var color: Color {
+		if self == .none {
+			return Color.secondary
+		} else if self.canRetry {
+			return Color.orange
+		} else {
+			return Color.red
+		}
+	}
+	var canRetry: Bool {
+		switch self {
+		case .none:
+			return false
+		case .noRoute:
+			return true
+		case .gotNak:
+			return true
+		case .timeout:
+			return true
+		case .noInterface:
+			return true
+		case .maxRetransmit:
+			return true
+		case .noChannel:
+			return true
+		case .tooLarge:
+			return false
+		case .noResponse:
+			return true
+		case .dutyCycleLimit:
+			return true
+		case .badRequest:
+			return true
+		case .notAuthorized:
+			return true
+		case .pkiFailed:
+			return true
+		case .pkiUnknownPubkey:
+			return true
+		case .adminBadSessionKey:
+			return true
+		case .adminPublicKeyUnauthorized:
+			return true
 		}
 	}
 	func protoEnumValue() -> Routing.Error {
@@ -80,7 +138,14 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 			return Routing.Error.badRequest
 		case .notAuthorized:
 			return Routing.Error.notAuthorized
-
+		case .pkiFailed:
+			return Routing.Error.pkiFailed
+		case .pkiUnknownPubkey:
+			return Routing.Error.pkiUnknownPubkey
+		case .adminBadSessionKey:
+			return Routing.Error.adminBadSessionKey
+		case .adminPublicKeyUnauthorized:
+			return Routing.Error.adminPublicKeyUnauthorized
 		}
 	}
 }

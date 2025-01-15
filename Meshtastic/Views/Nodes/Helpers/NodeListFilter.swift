@@ -15,7 +15,9 @@ struct NodeListFilter: View {
 	@Binding var viaLora: Bool
 	@Binding var viaMqtt: Bool
 	@Binding var isOnline: Bool
+	@Binding var isPkiEncrypted: Bool
 	@Binding var isFavorite: Bool
+	@Binding var isIgnored: Bool
 	@Binding var isEnvironment: Bool
 	@Binding var distanceFilter: Bool
 	@Binding var maximumDistance: Double
@@ -64,6 +66,19 @@ struct NodeListFilter: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 
+					Toggle(isOn: $isPkiEncrypted) {
+
+						Label {
+							Text("Encrypted")
+						} icon: {
+							Image(systemName: "lock.fill")
+								.foregroundColor(.green)
+								.symbolRenderingMode(.hierarchical)
+						}
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.listRowSeparator(.visible)
+
 					Toggle(isOn: $isFavorite) {
 
 						Label {
@@ -76,19 +91,31 @@ struct NodeListFilter: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
-
-					Toggle(isOn: $isEnvironment) {
+					Toggle(isOn: $isIgnored) {
 
 						Label {
-							Text("Environment")
+							Text("Ignored")
 						} icon: {
-							Image(systemName: "cloud.sun")
+
+							Image(systemName: "minus.circle.fill")
 								.symbolRenderingMode(.multicolor)
 						}
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 
+					if filterTitle == "Node Filters" {
+						Toggle(isOn: $isEnvironment) {
+							Label {
+								Text("Environment")
+							} icon: {
+								Image(systemName: "cloud.sun")
+									.symbolRenderingMode(.multicolor)
+							}
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.listRowSeparator(.visible)
+					}
 					Toggle(isOn: $distanceFilter) {
 
 						Label {
@@ -173,9 +200,9 @@ struct NodeListFilter: View {
 			.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.medium, .large])
+		.presentationDetents([.fraction(0.75), .large])
 		.presentationContentInteraction(.scrolls)
 		.presentationDragIndicator(.visible)
-		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
+		.presentationBackgroundInteraction(.enabled(upThrough: .large))
 	}
 }

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 struct RtttlConfig: View {
 	@Environment(\.managedObjectContext) var context
@@ -30,14 +31,14 @@ struct RtttlConfig: View {
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
-							.onChange(of: ringtone, perform: { _ in
-
-								let totalBytes = ringtone.utf8.count
+							.onChange(of: ringtone) {
+								var totalBytes = ringtone.utf8.count
 								// Only mess with the value if it is too big
-								if totalBytes > 228 {
+								while totalBytes > 228 {
 									ringtone = String(ringtone.dropLast())
+									totalBytes = ringtone.utf8.count
 								}
-							})
+							}
 							.foregroundColor(.gray)
 					}
 					.keyboardType(.default)
@@ -62,21 +63,38 @@ struct RtttlConfig: View {
 				}
 			}
 			.navigationTitle("config.ringtone.title")
-			.navigationBarItems(trailing:
-				ZStack {
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-			})
-			.onAppear {
-				setRtttLConfigValue()
-				// Need to request a Rtttl Config from the remote node before allowing changes
-				if bleManager.connectedPeripheral != nil && (node?.rtttlConfig == nil || node?.rtttlConfig?.ringtone?.count ?? 0 == 0) {
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if node != nil && connectedNode != nil {
-						_ = bleManager.requestRtttlConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+			.navigationBarItems(
+				trailing: ZStack {
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: bleManager.connectedPeripheral?.shortName ?? "?"
+					)
+				}
+			)
+			.onFirstAppear {
+				// Need to request a RtttlConfig from the remote node before allowing changes
+				if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+					if let connectedNode {
+						if node.num != connectedNode.num {
+							if UserDefaults.enableAdministration && node.num != connectedNode.num {
+								/// 2.5 Administration with session passkey
+								let expiration = node.sessionExpiration ?? Date()
+								if expiration < Date() || node.rtttlConfig == nil {
+									Logger.mesh.info("⚙️ Empty or expired ringtone module config requesting via PKI admin")
+									_ = bleManager.requestRtttlConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								}
+							} else {
+								/// Legacy Administration
+								Logger.mesh.info("☠️ Using insecure legacy admin, empty ringtone module config")
+								_ = bleManager.requestRtttlConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						}
 					}
 				}
 			}
-			.onChange(of: ringtone) { newRingtone in
+			.onChange(of: ringtone) { _, newRingtone in
 				if node != nil && node!.rtttlConfig != nil {
 					if newRingtone != node!.rtttlConfig!.ringtone { hasChanges = true }
 				}

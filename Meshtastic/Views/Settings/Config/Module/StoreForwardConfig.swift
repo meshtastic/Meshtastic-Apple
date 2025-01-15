@@ -56,7 +56,7 @@ struct StoreForwardConfig: View {
 						}
 						VStack {
 							if isRouter {
-								Text("Store and forward router devices must also be in the router or router client device role and requires a ESP32 device with PSRAM.")
+								Text("Store and forward router devices require a ESP32 device with PSRAM.")
 									.foregroundColor(.gray)
 									.font(.callout)
 							} else {
@@ -137,50 +137,54 @@ struct StoreForwardConfig: View {
 			}
 		}
 		.navigationTitle("storeforward.config")
-		.navigationBarItems(trailing:
-			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
-		.onAppear {
-			// Need to request a Detection Sensor Module Config from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.storeForwardConfig == nil {
-				Logger.mesh.debug("empty store and forward module config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestStoreAndForwardModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
+		.onFirstAppear {
+			// Need to request a StoreForwardModuleConfig from the remote node before allowing changes
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let connectedNode {
+					if node.num != connectedNode.num {
+						if UserDefaults.enableAdministration && node.num != connectedNode.num {
+							/// 2.5 Administration with session passkey
+							let expiration = node.sessionExpiration ?? Date()
+							if expiration < Date() || node.storeForwardConfig == nil {
+								Logger.mesh.info("⚙️ Empty or expired store & forward module config requesting via PKI admin")
+								_ = bleManager.requestStoreAndForwardModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						} else {
+							/// Legacy Administration
+							Logger.mesh.info("☠️ Using insecure legacy admin, empty store & forward module config")
+							_ = bleManager.requestStoreAndForwardModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					}
 				}
 			}
-			setStoreAndForwardValues()
 		}
-		.onChange(of: enabled) { newEnabled in
-			if node != nil && node?.storeForwardConfig != nil {
-				if newEnabled != node!.storeForwardConfig!.enabled { hasChanges = true }
-			}
+		.onChange(of: enabled) { oldEnabled, newEnabled in
+			if oldEnabled != newEnabled && newEnabled != node!.storeForwardConfig!.enabled { hasChanges = true }
 		}
-		.onChange(of: isRouter) { newIsRouter in
-			if node != nil && node?.storeForwardConfig != nil {
-				if newIsRouter != node!.storeForwardConfig!.isRouter { hasChanges = true }
-			}
+		.onChange(of: isRouter) { oldIsRouter, newIsRouter in
+			if oldIsRouter != newIsRouter && newIsRouter != node!.storeForwardConfig!.isRouter { hasChanges = true }
 		}
-		.onChange(of: heartbeat) { newHeartbeat in
-			if node != nil && node?.storeForwardConfig != nil {
-				if newHeartbeat != node!.storeForwardConfig!.heartbeat { hasChanges = true }
-			}
+		.onChange(of: heartbeat) { oldHeartbeat, newHeartbeat in
+			if oldHeartbeat != newHeartbeat && newHeartbeat != node?.storeForwardConfig?.heartbeat ?? true { hasChanges = true }
 		}
-		.onChange(of: records) { newRecords in
-			if node != nil && node?.storeForwardConfig != nil {
-				if newRecords != node!.storeForwardConfig!.records { hasChanges = true }
-			}
+		.onChange(of: records) { oldRecords, newRecords in
+			if oldRecords != newRecords && newRecords != node!.storeForwardConfig?.records ?? -1 { hasChanges = true }
 		}
-		.onChange(of: historyReturnMax) { newHistoryReturnMax in
-			if node != nil && node?.storeForwardConfig != nil {
-				if newHistoryReturnMax != node!.storeForwardConfig!.historyReturnMax { hasChanges = true }
-			}
+		.onChange(of: historyReturnMax) { oldHistoryReturnMax, newHistoryReturnMax in
+			if oldHistoryReturnMax != newHistoryReturnMax && newHistoryReturnMax != node!.storeForwardConfig?.historyReturnMax ?? -1 { hasChanges = true }
 		}
-		.onChange(of: historyReturnWindow) { newHistoryReturnWindow in
-			if node != nil && node?.storeForwardConfig != nil {
-				if newHistoryReturnWindow != node!.storeForwardConfig!.historyReturnWindow { hasChanges = true }
-			}
+		.onChange(of: historyReturnWindow) { oldHistoryReturnWindow, newHistoryReturnWindow in
+			if oldHistoryReturnWindow != newHistoryReturnWindow && newHistoryReturnWindow != node!.storeForwardConfig?.historyReturnWindow ?? -1 { hasChanges = true }
 		}
 	}
 	func setStoreAndForwardValues() {

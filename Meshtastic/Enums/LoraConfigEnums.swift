@@ -25,9 +25,12 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 	case th = 12
 	case ua433 = 14
 	case ua868 = 15
-	case my_433 = 16
-	case my_919 = 17
-	case sg_923 = 18
+	case my433 = 16
+	case my919 = 17
+	case sg923 = 18
+	case ph433 = 19
+	case ph868 = 20
+	case ph915 = 21
 	case lora24 = 13
 	var topic: String {
 		switch self {
@@ -61,12 +64,18 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			"UA_433"
 		case .ua868:
 			"UA_868"
-		case .my_433:
+		case .my433:
 			"MY_433"
-		case .my_919:
+		case .my919:
 			"MY_919"
-		case .sg_923:
+		case .sg923:
 			"SG_923"
+		case .ph433:
+			"ph_433"
+		case .ph868:
+			"ph_868"
+		case .ph915:
+			"ph_915"
 		case .lora24:
 			"LORA_24"
 		} }
@@ -74,43 +83,49 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .unset:
-			return "Please set a region"
+			return "please.set.a.region".localized
 		case .us:
-			return "United States"
+			return "united.states".localized
 		case .eu433:
-			return "European Union 433mhz"
+			return "european.union.433mhz".localized
 		case .eu868:
-			return "European Union 868mhz"
+			return "european.union.868mhz".localized
 		case .cn:
-			return "China"
+			return "china".localized
 		case .jp:
-			return "Japan"
+			return "japan".localized
 		case .anz:
-			return "Australia / New Zealand"
+			return "australia.new.zealand".localized
 		case .kr:
-			return "Korea"
+			return "korea".localized
 		case .tw:
-			return "Taiwan"
+			return "taiwan".localized
 		case .ru:
-			return "Russia"
+			return "russia".localized
 		case .in:
-			return "India"
+			return "india".localized
 		case .nz865:
-			return "New Zealand 865mhz"
+			return "new.zealand.865mhz".localized
 		case .th:
-			return "Thailand"
+			return "thailand".localized
 		case .ua433:
-			return "Ukraine 433mhz"
+			return "ukraine.433mhz".localized
 		case .ua868:
-			return "Ukraine 868mhz"
+			return "ukraine.868mhz".localized
 		case .lora24:
-			return "2.4 GHZ"
-		case .my_433:
-			return "Malaysia 433mhz"
-		case .my_919:
-			return "Malaysia 919mhz"
-		case .sg_923:
-			return "Singapore 923mhz"
+			return "2.4ghz".localized
+		case .my433:
+			return "malaysia.433mhz".localized
+		case .my919:
+			return "malaysia.919mhz".localized
+		case .sg923:
+			return "singapore.923mhz".localized
+		case .ph433:
+			return "philippines.433mhz".localized
+		case .ph868:
+			return "philippines.868mhz".localized
+		case .ph915:
+			return "philippines.915mhz".localized
 		}
 	}
 	var dutyCycle: Int {
@@ -147,12 +162,66 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return 10
 		case .lora24:
 			return 100
-		case .my_433:
+		case .my433:
 			return 100
-		case .my_919:
+		case .my919:
 			return 100
-		case .sg_923:
+		case .sg923:
 			return 100
+		case .ph433:
+			return 100
+		case .ph868:
+			return 100
+		case .ph915:
+			return 100
+		}
+	}
+	var isCountry: Bool {
+		switch self {
+		case .unset:
+			return false
+		case .us:
+			return true
+		case .eu433:
+			return false
+		case .eu868:
+			return false
+		case .cn:
+			return true
+		case .jp:
+			return true
+		case .anz:
+			return false
+		case .kr:
+			return true
+		case .tw:
+			return true
+		case .ru:
+			return true
+		case .in:
+			return true
+		case .nz865:
+			return true
+		case .th:
+			return true
+		case .ua433:
+			return true
+		case .ua868:
+			return true
+		case .lora24:
+			return false
+		case .my433:
+			return true
+		case .my919:
+			return true
+		case .sg923:
+			return true
+		case .ph433:
+			return true
+		case .ph868:
+			return true
+		case .ph915:
+			return true
 		}
 	}
 	func protoEnumValue() -> Config.LoRaConfig.RegionCode {
@@ -190,12 +259,18 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return Config.LoRaConfig.RegionCode.ua868
 		case .lora24:
 			return Config.LoRaConfig.RegionCode.lora24
-		case .my_433:
+		case .my433:
 			return Config.LoRaConfig.RegionCode.my433
-		case .my_919:
+		case .my919:
 			return Config.LoRaConfig.RegionCode.my919
-		case .sg_923:
+		case .sg923:
 			return Config.LoRaConfig.RegionCode.sg923
+		case .ph433:
+			return Config.LoRaConfig.RegionCode.ph433
+		case .ph868:
+			return Config.LoRaConfig.RegionCode.ph868
+		case .ph915:
+			return Config.LoRaConfig.RegionCode.ph915
 		}
 	}
 }
@@ -210,26 +285,29 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 	case medFast = 4
 	case shortSlow = 5
 	case shortFast = 6
+	case shortTurbo = 8
 
 	var id: Int { self.rawValue }
 	var description: String {
-		switch self {
+    		switch self {
 		case .longFast:
-			return "Long Range - Fast"
+			return "long.range.fast".localized
 		case .longSlow:
-			return "Long Range - Slow"
+			return "long.range.slow".localized
 		case .longModerate:
-			return "Long Range - Moderate"
+			return "long.range.moderate".localized
 		case .vLongSlow:
-			return "Very Long Range - Slow"
+			return "very.long.range.slow".localized
 		case .medSlow:
-			return "Medium Range - Slow"
+			return "medium.range.slow".localized
 		case .medFast:
-			return "Medium Range - Fast"
+			return "medium.range.fast".localized
 		case .shortSlow:
-			return "Short Range - Slow"
+			return "short.range.slow".localized
 		case .shortFast:
-			return "Short Range - Fast"
+			return "short.range.fast".localized
+		case .shortTurbo:
+			return "short.range.turbo".localized
 		}
 	}
 	var name: String {
@@ -250,6 +328,8 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return "ShortSlow"
 		case .shortFast:
 			return "ShortFast"
+		case .shortTurbo:
+			return "ShortTurbo"
 		}
 	}
 	func snrLimit() -> Float {
@@ -269,6 +349,8 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 		case .shortSlow:
 			return -10
 		case .shortFast:
+			return -7.5
+		case .shortTurbo:
 			return -7.5
 		}
 	}
@@ -290,6 +372,8 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return Config.LoRaConfig.ModemPreset.shortSlow
 		case .shortFast:
 			return Config.LoRaConfig.ModemPreset.shortFast
+		case .shortTurbo:
+			return Config.LoRaConfig.ModemPreset.shortTurbo
 		}
 	}
 }

@@ -14,36 +14,34 @@ struct LoRaSignalStrengthMeter: View {
 	var compact: Bool
 	var body: some View {
 
-		if snr != 0.0 && rssi != 0 {
-			let signalStrength = getLoRaSignalStrength(snr: snr, rssi: rssi, preset: preset)
-			let gradient = Gradient(colors: [.red, .orange, .yellow, .green])
-			if !compact {
-				VStack {
-					LoRaSignalStrengthIndicator(signalStrength: signalStrength)
-					Text("Signal \(signalStrength.description)").font(.footnote)
-					Text("SNR \(String(format: "%.2f", snr))dB")
-						.foregroundColor(getSnrColor(snr: snr, preset: ModemPresets.longFast))
-						.font(.caption2)
-					Text("RSSI \(rssi)dB")
-						.foregroundColor(getRssiColor(rssi: rssi))
-						.font(.caption2)
+		let signalStrength = getLoRaSignalStrength(snr: snr, rssi: rssi, preset: preset)
+		let gradient = Gradient(colors: [.red, .orange, .yellow, .green])
+		if !compact {
+			VStack {
+				LoRaSignalStrengthIndicator(signalStrength: signalStrength)
+				Text("Signal \(signalStrength.description)").font(.footnote)
+				Text("SNR \(String(format: "%.2f", snr))dB")
+					.foregroundColor(getSnrColor(snr: snr, preset: ModemPresets.longFast))
+					.font(.caption2)
+				Text("RSSI \(rssi)dB")
+					.foregroundColor(getRssiColor(rssi: rssi))
+					.font(.caption2)
+			}
+		} else {
+			VStack {
+				Gauge(value: Double(signalStrength.rawValue), in: 0...3) {
+				} currentValueLabel: {
+					Image(systemName: "dot.radiowaves.left.and.right")
+						.font(.callout)
+						.frame(width: 30)
+					Text("Signal \(signalStrength.description)")
+						.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+						.foregroundColor(.gray)
+						.fixedSize()
 				}
-			} else {
-				VStack {
-					Gauge(value: Double(signalStrength.rawValue), in: 0...3) {
-					} currentValueLabel: {
-						Image(systemName: "dot.radiowaves.left.and.right")
-							.font(.callout)
-							.frame(width: 30)
-						Text("Signal \(signalStrength.description)")
-							.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-							.foregroundColor(.gray)
-							.fixedSize()
-					}
-					.gaugeStyle(.accessoryLinear)
-					.tint(gradient)
-					.font(.caption)
-				}
+				.gaugeStyle(.accessoryLinear)
+				.tint(gradient)
+				.font(.caption)
 			}
 		}
 	}

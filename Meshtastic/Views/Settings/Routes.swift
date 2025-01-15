@@ -10,7 +10,6 @@ import CoreData
 import MapKit
 import OSLog
 
-@available(iOS 17.0, macOS 14.0, *)
 struct Routes: View {
 
 	@State private var columnVisibility = NavigationSplitViewVisibility.doubleColumn
@@ -175,14 +174,14 @@ struct Routes: View {
 								axis: .vertical
 							)
 							.foregroundColor(Color.gray)
-							.onChange(of: name, perform: { _ in
-								let totalBytes = name.utf8.count
+							.onChange(of: name) {
+								var totalBytes = name.utf8.count
 								// Only mess with the value if it is too big
-
-								if totalBytes > 100 {
+								while totalBytes > 100 {
 									name = String(name.dropLast())
+									totalBytes = name.utf8.count
 								}
-							})
+							}
 
 							Toggle(isOn: $enabled) {
 								Label("enabled", systemImage: "point.topleft.filled.down.to.point.bottomright.curvepath")
@@ -236,16 +235,16 @@ struct Routes: View {
 							.controlSize(.large)
 							.disabled(!hasChanges)
 						}
-						.onChange(of: name) { _ in
+						.onChange(of: name) {
 							hasChanges = true
 						}
-						.onChange(of: notes) { _ in
+						.onChange(of: notes) {
 							hasChanges = true
 						}
-						.onChange(of: enabled) { _ in
+						.onChange(of: enabled) {
 							hasChanges = true
 						}
-						.onChange(of: color) { _ in
+						.onChange(of: color) {
 							hasChanges = true
 						}
 						Map {

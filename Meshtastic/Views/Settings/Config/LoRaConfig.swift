@@ -45,10 +45,13 @@ struct LoRaConfig: View {
 	@State var rxBoostedGain = false
 	@State var overrideFrequency: Float = 0.0
 	@State var ignoreMqtt = false
+	@State var okToMqtt = false
 
 	let floatFormatter: NumberFormatter = {
 		let formatter = NumberFormatter()
 		formatter.numberStyle = .decimal
+		formatter.allowsFloats = true
+		formatter.maximumFractionDigits = 4
 		return formatter
 	}()
 
@@ -96,6 +99,10 @@ struct LoRaConfig: View {
 
 					Toggle(isOn: $ignoreMqtt) {
 						Label("Ignore MQTT", systemImage: "server.rack")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Toggle(isOn: $okToMqtt) {
+						Label("Ok to MQTT", systemImage: "network")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
@@ -161,7 +168,7 @@ struct LoRaConfig: View {
 								.focused($focusedField, equals: .channelNum)
 								.disabled(overrideFrequency > 0.0)
 						}
-						Text("This determines the actual frequency you are transmitting on in the band. If set to 0 this value will be calculated automatically based on the primary channel name.")
+						Text("Your node’s operating frequency is calculated based on the region, modem preset, and this field. When 0, the slot is automatically calculated based on the primary channel name.")
 							.foregroundColor(.gray)
 							.font(.callout)
 					}
@@ -207,6 +214,7 @@ struct LoRaConfig: View {
 					lc.sx126XRxBoostedGain = rxBoostedGain
 					lc.overrideFrequency = overrideFrequency
 					lc.ignoreMqtt = ignoreMqtt
+					lc.configOkToMqtt = okToMqtt
 					if connectedNode?.num ?? -1 == node?.user?.num ?? 0 {
 						UserDefaults.modemPreset = modemPreset
 					}
@@ -221,85 +229,79 @@ struct LoRaConfig: View {
 			}
 		}
 		.navigationTitle("lora.config")
-		.navigationBarItems(trailing:
-								ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
-		.onAppear {
-			setLoRaValues()
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
+		.onFirstAppear {
 			// Need to request a LoRaConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.loRaConfig == nil {
-				Logger.mesh.info("empty lora config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestLoRaConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let connectedNode {
+					if node.num != connectedNode.num {
+						if UserDefaults.enableAdministration {
+							/// 2.5 Administration with session passkey
+							let expiration = node.sessionExpiration ?? Date()
+							if expiration < Date() || node.loRaConfig == nil {
+								Logger.mesh.info("⚙️ Empty or expired lora config requesting via PKI admin")
+								
+								_ = bleManager.requestLoRaConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						} else {
+							/// Legacy Administration
+							Logger.mesh.info("☠️ Using insecure legacy admin, empty lora config")
+							_ = bleManager.requestLoRaConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					}
 				}
 			}
 		}
-		.onChange(of: region) { newRegion in
-			if node != nil && node!.loRaConfig != nil {
-				if newRegion != node!.loRaConfig!.regionCode { hasChanges = true }
-			}
+		.onChange(of: region) { _, newRegion in
+			if newRegion != node?.loRaConfig?.regionCode ?? -1 { hasChanges = true }
 		}
-		.onChange(of: usePreset) { newUsePreset in
-			if node != nil && node!.loRaConfig != nil {
-				if newUsePreset != node!.loRaConfig!.usePreset { hasChanges = true }
-			}
+		.onChange(of: usePreset) { _, newPreset in
+			if newPreset != node?.loRaConfig?.usePreset { hasChanges = true }
 		}
-		.onChange(of: modemPreset) { newModemPreset in
-			if node != nil && node!.loRaConfig != nil {
-				if newModemPreset != node!.loRaConfig!.modemPreset { hasChanges = true }
-			}
+		.onChange(of: modemPreset) { _, newModemPreset in
+			if newModemPreset != node?.loRaConfig?.modemPreset ?? -1 { hasChanges = true }
 		}
-		.onChange(of: hopLimit) { newHopLimit in
-			if node != nil && node!.loRaConfig != nil {
-				if newHopLimit != node!.loRaConfig!.hopLimit { hasChanges = true }
-			}
+		.onChange(of: hopLimit) { _, newHopLimit in
+			if newHopLimit != node?.loRaConfig?.hopLimit ?? -1 { hasChanges = true }
 		}
-		.onChange(of: channelNum) { newChannelNum in
-			if node != nil && node!.loRaConfig != nil {
-				if newChannelNum != node!.loRaConfig!.channelNum { hasChanges = true }
-			}
+		.onChange(of: channelNum) { _, newChannelNum in
+			if newChannelNum != node?.loRaConfig?.channelNum ?? -1 { hasChanges = true }
 		}
-		.onChange(of: bandwidth) { newBandwidth in
-			if node != nil && node!.loRaConfig != nil {
-				if newBandwidth != node!.loRaConfig!.bandwidth { hasChanges = true }
-			}
+		.onChange(of: bandwidth) { _, newBandwidth in
+			if newBandwidth != node?.loRaConfig?.bandwidth ?? -1 { hasChanges = true }
 		}
-		.onChange(of: codingRate) { newCodingRate in
-			if node != nil && node!.loRaConfig != nil {
-				if newCodingRate != node!.loRaConfig!.codingRate { hasChanges = true }
-			}
+		.onChange(of: codingRate) { _, newCodingRate in
+			if newCodingRate != node?.loRaConfig?.codingRate ?? -1 { hasChanges = true }
 		}
-		.onChange(of: spreadFactor) { newSpreadFactor in
-			if node != nil && node!.loRaConfig != nil {
-				if newSpreadFactor != node!.loRaConfig!.spreadFactor { hasChanges = true }
-			}
+		.onChange(of: spreadFactor) { _, newSpreadFactor in
+			if newSpreadFactor != node?.loRaConfig?.spreadFactor ?? -1 { hasChanges = true }
 		}
-		.onChange(of: rxBoostedGain) { newRxBoostedGain in
-			if node != nil && node!.loRaConfig != nil {
-				if newRxBoostedGain != node!.loRaConfig!.sx126xRxBoostedGain { hasChanges = true }
-			}
+		.onChange(of: rxBoostedGain) { _, newRxBoostedGain in
+			if newRxBoostedGain != node?.loRaConfig?.sx126xRxBoostedGain { hasChanges = true }
 		}
-		.onChange(of: overrideFrequency) { newOverrideFrequency in
-			if node != nil && node!.loRaConfig != nil {
-				if newOverrideFrequency != node!.loRaConfig!.overrideFrequency { hasChanges = true }
-			}
+		.onChange(of: overrideFrequency) { _, newOverrideFrequency in
+			if newOverrideFrequency != node?.loRaConfig?.overrideFrequency { hasChanges = true }
 		}
-		.onChange(of: txPower) { newTxPower in
-			if node != nil && node!.loRaConfig != nil {
-				if newTxPower != node!.loRaConfig!.txPower { hasChanges = true }
-			}
+		.onChange(of: txPower) { _, newTxPower in
+			if newTxPower != node?.loRaConfig?.txPower ?? -1 { hasChanges = true }
 		}
-		.onChange(of: txEnabled) { newTxEnabled in
-			if node != nil && node!.loRaConfig != nil {
-				if newTxEnabled != node!.loRaConfig!.txEnabled { hasChanges = true }
-			}
+		.onChange(of: txEnabled) { _, newTxEnabled in
+			if newTxEnabled != node?.loRaConfig?.txEnabled { hasChanges = true }
 		}
-		.onChange(of: ignoreMqtt) { newIgnoreMqtt in
-			if node != nil && node!.loRaConfig != nil {
-				if newIgnoreMqtt != node!.loRaConfig!.ignoreMqtt { hasChanges = true }
-			}
+		.onChange(of: ignoreMqtt) { _, newIgnoreMqtt in
+			if newIgnoreMqtt != node?.loRaConfig?.ignoreMqtt { hasChanges = true }
+		}
+		.onChange(of: okToMqtt) { _, newOkToMqtt in
+			if newOkToMqtt != node?.loRaConfig?.okToMqtt { hasChanges = true }
 		}
 	}
 	func setLoRaValues() {
@@ -316,6 +318,7 @@ struct LoRaConfig: View {
 		self.rxBoostedGain = node?.loRaConfig?.sx126xRxBoostedGain ?? false
 		self.overrideFrequency = node?.loRaConfig?.overrideFrequency ?? 0.0
 		self.ignoreMqtt = node?.loRaConfig?.ignoreMqtt ?? false
+		self.okToMqtt = node?.loRaConfig?.okToMqtt ?? false
 		self.hasChanges = false
 	}
 }

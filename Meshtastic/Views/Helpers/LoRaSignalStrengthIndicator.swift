@@ -47,13 +47,13 @@ enum LoRaSignalStrength: Int {
 	var description: String {
 		switch self {
 		case .none:
-			return "None"
+			return "lora.signal.strength.none".localized
 		case .bad:
-			return "Bad"
+			return "lora.signal.strength.bad".localized
 		case .fair:
-			return "Fair"
+			return "lora.signal.strength.fair".localized
 		case .good:
-			return "Good"
+			return "lora.signal.strength.good".localized
 		}
 	}
 }
@@ -72,6 +72,20 @@ private func getColor(signalStrength: LoRaSignalStrength) -> Color {
 }
 
 func getLoRaSignalStrength(snr: Float, rssi: Int32, preset: ModemPresets) -> LoRaSignalStrength {
+	// rssi is 0 when not available
+	if rssi == 0 {
+		if snr > (preset.snrLimit()) {
+			return .good
+		}
+		if snr < (preset.snrLimit() - 7.5) {
+			return .none
+		}
+		if snr <= (preset.snrLimit() - 5.5) {
+			return .bad
+		}
+		return .fair
+	}
+
 	if rssi > -115 && snr > (preset.snrLimit()) {
 		return .good
 	} else if rssi < -126 && snr < (preset.snrLimit() - 7.5) {

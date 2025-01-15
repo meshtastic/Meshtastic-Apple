@@ -61,11 +61,10 @@ extension String {
 	}
 
 	func camelCaseToWords() -> String {
-		return unicodeScalars.dropFirst().reduce(String(prefix(1))) {
-			return CharacterSet.uppercaseLetters.contains($1)
-				? $0 + " " + String($1)
-				: $0 + String($1)
-		}
+		return self
+			.replacingOccurrences(of: "([a-z])([A-Z](?=[A-Z])[a-z]*)", with: "$1 $2", options: .regularExpression)
+			.replacingOccurrences(of: "([A-Z])([A-Z][a-z])", with: "$1 $2", options: .regularExpression)
+			.replacingOccurrences(of: "([a-z])([A-Z][a-z])", with: "$1 $2", options: .regularExpression)
 	}
 
 	var length: Int {
@@ -91,5 +90,4 @@ extension String {
 		let end = index(start, offsetBy: range.upperBound - range.lowerBound)
 		return String(self[start ..< end])
 	}
-
 }

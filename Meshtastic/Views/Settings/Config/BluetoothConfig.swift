@@ -19,7 +19,6 @@ struct BluetoothConfig: View {
 	@State var mode = 0
 	@State var fixedPin = "123456"
 	@State var shortPin = false
-	@State var deviceLoggingEnabled = false
 	var pinLength: Int = 6
 	let numberFormatter: NumberFormatter = {
 		let formatter = NumberFormatter()
@@ -46,7 +45,7 @@ struct BluetoothConfig: View {
 						Label("bluetooth.mode.fixedpin", systemImage: "wallet.pass")
 						TextField("bluetooth.mode.fixedpin", text: $fixedPin)
 							.foregroundColor(.gray)
-							.onChange(of: fixedPin, perform: { _ in
+							.onChange(of: fixedPin) {
 								// Don't let the first character be 0 because it will get stripped when saving a UInt32
 								if fixedPin.first == "0" {
 									fixedPin = fixedPin.replacing("0", with: "")
@@ -60,7 +59,7 @@ struct BluetoothConfig: View {
 								} else if fixedPin.utf8.count < pinLength {
 									shortPin = true
 								}
-							})
+							}
 							.foregroundColor(.gray)
 					}
 					.keyboardType(.decimalPad)
@@ -70,10 +69,6 @@ struct BluetoothConfig: View {
 							.foregroundColor(.red)
 					}
 				}
-				Toggle(isOn: $deviceLoggingEnabled) {
-					Label("Device Logging Enabled", systemImage: "ladybug")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 			}
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.bluetoothConfig == nil)
@@ -85,7 +80,6 @@ struct BluetoothConfig: View {
 				bc.enabled = enabled
 				bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
 				bc.fixedPin = UInt32(fixedPin) ?? 123456
-				bc.deviceLoggingEnabled	= deviceLoggingEnabled
 				let adminMessageId =  bleManager.saveBluetoothConfig(config: bc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 				if adminMessageId > 0 {
 					// Should show a saved successfully alert once I know that to be true
@@ -106,43 +100,43 @@ struct BluetoothConfig: View {
 				)
 			}
 		)
-		.onAppear {
-			setBluetoothValues()
+		.onFirstAppear {
 			// Need to request a BluetoothConfig from the remote node before allowing changes
-			if let connectedPeripheral = bleManager.connectedPeripheral, let node, node.bluetoothConfig == nil {
-				Logger.mesh.info("empty bluetooth config")
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+				
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let connectedNode {
-					_ = bleManager.requestBluetoothConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+					if node.num != connectedNode.num {
+						if UserDefaults.enableAdministration {
+							/// 2.5 Administration with session passkey
+							let expiration = node.sessionExpiration ?? Date()
+							if expiration < Date() || node.bluetoothConfig == nil {
+								Logger.mesh.info("⚙️ Empty or expired bluetooth config requesting via PKI admin")
+								_ = bleManager.requestBluetoothConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						} else {
+							/// Legacy Administration
+							Logger.mesh.info("☠️ Using insecure legacy admin, empty bluetooth config")
+							_ = bleManager.requestBluetoothConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					}
 				}
 			}
 		}
-		.onChange(of: enabled) { newEnabled in
-			if node != nil && node!.bluetoothConfig != nil {
-				if newEnabled != node!.bluetoothConfig!.enabled { hasChanges = true }
-			}
+		.onChange(of: enabled) { oldEnabled, newEnabled in
+			if oldEnabled != newEnabled && newEnabled != node?.bluetoothConfig?.enabled { hasChanges = true }
 		}
-		.onChange(of: mode) { newMode in
-			if node != nil && node!.bluetoothConfig != nil {
-				if newMode != node!.bluetoothConfig!.mode { hasChanges = true }
-			}
+		.onChange(of: mode) { oldNode, newNode in
+			if oldNode != newNode && newNode != node?.bluetoothConfig?.mode ?? -1 { hasChanges = true }
 		}
-		.onChange(of: fixedPin) { newFixedPin in
-			if node != nil && node!.bluetoothConfig != nil {
-				if newFixedPin != String(node!.bluetoothConfig!.fixedPin) { hasChanges = true }
-			}
-		}
-		.onChange(of: deviceLoggingEnabled) { newDeviceLogging in
-			if node != nil && node!.bluetoothConfig != nil {
-				if newDeviceLogging != node!.bluetoothConfig!.deviceLoggingEnabled { hasChanges = true }
-			}
+		.onChange(of: fixedPin) { oldFixedPin, newFixedPin in
+			if oldFixedPin != newFixedPin && newFixedPin != String(node?.bluetoothConfig?.fixedPin ?? -1) { hasChanges = true }
 		}
 	}
 	func setBluetoothValues() {
 		self.enabled = node?.bluetoothConfig?.enabled ?? true
 		self.mode = Int(node?.bluetoothConfig?.mode ?? 0)
 		self.fixedPin = String(node?.bluetoothConfig?.fixedPin ?? 123456)
-		self.deviceLoggingEnabled = node?.bluetoothConfig?.deviceLoggingEnabled ?? false
 		self.hasChanges = false
 	}
 }

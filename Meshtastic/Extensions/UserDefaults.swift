@@ -57,7 +57,6 @@ extension UserDefaults {
 		case enableMapTraffic
 		case enableMapPointsOfInterest
 		case enableOfflineMaps
-		case enableOfflineMapsMBTiles
 		case mapTileServer
 		case enableOverlayServer
 		case mapOverlayServer
@@ -72,6 +71,7 @@ extension UserDefaults {
 		case modemPreset
 		case firmwareVersion
 		case environmentEnableWeatherKit
+		case enableAdministration
 		case testIntEnum
 	}
 
@@ -121,9 +121,6 @@ extension UserDefaults {
 	@UserDefault(.enableOfflineMaps, defaultValue: false)
 	static var enableOfflineMaps: Bool
 
-	@UserDefault(.enableOfflineMapsMBTiles, defaultValue: false)
-	static var enableOfflineMapsMBTiles: Bool
-
 	@UserDefault(.mapTileServer, defaultValue: .openStreetMap)
 	static var mapTileServer: MapTileServer
 
@@ -162,9 +159,12 @@ extension UserDefaults {
 
 	@UserDefault(.firmwareVersion, defaultValue: "0.0.0")
 	static var firmwareVersion: String
-	
+
 	@UserDefault(.environmentEnableWeatherKit, defaultValue: true)
 	static var environmentEnableWeatherKit: Bool
+
+	@UserDefault(.enableAdministration, defaultValue: false)
+	static var enableAdministration: Bool
 
 	@UserDefault(.testIntEnum, defaultValue: .one)
 	static var testIntEnum: TestIntEnum

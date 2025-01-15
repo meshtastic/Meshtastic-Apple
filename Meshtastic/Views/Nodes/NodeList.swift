@@ -24,17 +24,26 @@ struct NodeList: View {
 	@State private var viaLora = true
 	@State private var viaMqtt = true
 	@State private var isOnline = false
+	@State private var isPkiEncrypted = false
 	@State private var isFavorite = false
+	@State private var isIgnored = false
 	@State private var isEnvironment = false
 	@State private var distanceFilter = false
 	@State private var maxDistance: Double = 800000
 	@State private var hopsAway: Double = -1.0
 	@State private var roleFilter = false
 	@State private var deviceRoles: Set<Int> = []
+	@State private var isPresentingTraceRouteSentAlert = false
+	@State private var isPresentingPositionSentAlert = false
+	@State private var isPresentingPositionFailedAlert = false
+	@State private var isPresentingDeleteNodeAlert = false
+	@State private var deleteNodeId: Int64 = 0
 
 	var boolFilters: [Bool] {[
-		isOnline,
 		isFavorite,
+		isIgnored,
+		isOnline,
+		isPkiEncrypted,
 		isEnvironment,
 		distanceFilter,
 		roleFilter
@@ -46,6 +55,7 @@ struct NodeList: View {
 
 	@FetchRequest(
 		sortDescriptors: [
+			NSSortDescriptor(key: "ignored", ascending: true),
 			NSSortDescriptor(key: "favorite", ascending: false),
 			NSSortDescriptor(key: "lastHeard", ascending: false),
 			NSSortDescriptor(key: "user.longName", ascending: true)
@@ -66,12 +76,7 @@ struct NodeList: View {
 		node: NodeInfoEntity,
 		connectedNode: NodeInfoEntity?
 	) -> some View {
-		FavoriteNodeButton(
-			bleManager: bleManager,
-			context: context,
-			node: node
-		)
-
+		/// Allow users to mute notifications for a node even if they are not connected
 		if let user = node.user {
 			NodeAlertsButton(
 				context: context,
@@ -79,22 +84,71 @@ struct NodeList: View {
 				user: user
 			)
 		}
-
 		if let connectedNode {
-			ExchangePositionsButton(
-				bleManager: bleManager,
-				node: node
-			)
-			TraceRouteButton(
-				bleManager: bleManager,
-				node: node
-			)
-			DeleteNodeButton(
+			/// Favoriting a node requires being connected
+			FavoriteNodeButton(
 				bleManager: bleManager,
 				context: context,
-				connectedNode: connectedNode,
 				node: node
 			)
+			/// Don't show message, trace route, position exchange or delete context menu items for the connected node
+			if connectedNode.num != node.num {
+				if (!node.viaMqtt || node.viaMqtt && node.hopsAway == 0) {
+					Button(action: {
+						if let url = URL(string: "meshtastic:///messages?userNum=\(node.num)") {
+						   UIApplication.shared.open(url)
+						}
+					}) {
+						Label("Message", systemImage: "message")
+					}
+				}
+				Button {
+					let traceRouteSent = bleManager.sendTraceRouteRequest(
+						destNum: node.num,
+						wantResponse: true
+					)
+					if traceRouteSent {
+						isPresentingTraceRouteSentAlert = true
+						DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+							isPresentingTraceRouteSentAlert = false
+						}
+					}
+
+				} label: {
+					Label("Trace Route", systemImage: "signpost.right.and.left")
+				}
+				Button {
+					let positionSent = bleManager.sendPosition(
+						channel: node.channel,
+						destNum: node.num,
+						wantResponse: true
+					)
+					if positionSent {
+						isPresentingPositionSentAlert = true
+						DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+							isPresentingPositionSentAlert = false
+						}
+					} else {
+						isPresentingPositionFailedAlert = true
+						DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+							isPresentingPositionFailedAlert = false
+						}
+					}
+				} label: {
+					Label("Exchange Positions", systemImage: "arrow.triangle.2.circlepath")
+				}
+				IgnoreNodeButton(
+					bleManager: bleManager,
+					context: context,
+					node: node
+				)
+				Button(role: .destructive) {
+					deleteNodeId = node.num
+					isPresentingDeleteNodeAlert = true
+				} label: {
+					Label("Delete Node", systemImage: "trash")
+				}
+			}
 		}
 	}
 
@@ -118,7 +172,9 @@ struct NodeList: View {
 					viaLora: $viaLora,
 					viaMqtt: $viaMqtt,
 					isOnline: $isOnline,
+					isPkiEncrypted: $isPkiEncrypted,
 					isFavorite: $isFavorite,
+					isIgnored: $isIgnored,
 					isEnvironment: $isEnvironment,
 					distanceFilter: $distanceFilter,
 					maximumDistance: $maxDistance,
@@ -150,6 +206,44 @@ struct NodeList: View {
 			.scrollDismissesKeyboard(.immediately)
 			.navigationTitle(String.localizedStringWithFormat("nodes %@".localized, String(nodes.count)))
 			.listStyle(.plain)
+			.alert(
+				"Position Exchange Requested",
+				isPresented: $isPresentingPositionSentAlert) {
+					Button("OK") {	}.keyboardShortcut(.defaultAction)
+				} message: {
+				Text("Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned.")
+			}
+			.alert(
+				"Position Exchange Failed",
+				isPresented: $isPresentingPositionFailedAlert) {
+					Button("OK") {	}.keyboardShortcut(.defaultAction)
+				} message: {
+				Text("Failed to get a valid position to exchange")
+			}
+			.alert(
+				"Trace Route Sent",
+				isPresented: $isPresentingTraceRouteSentAlert) {
+					Button("OK") {	}.keyboardShortcut(.defaultAction)
+				} message: {
+					Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
+			}
+			.confirmationDialog(
+				"are.you.sure",
+				isPresented: $isPresentingDeleteNodeAlert,
+				titleVisibility: .visible
+			) {
+				Button("Delete Node") {
+					let deleteNode = getNodeInfo(id: deleteNodeId, context: context)
+					if connectedNode != nil {
+						if deleteNode != nil {
+							let success = bleManager.removeNode(node: deleteNode!, connectedNodeNum: Int64(bleManager.connectedPeripheral?.num ?? -1))
+							if !success {
+								Logger.data.error("Failed to delete node \(deleteNode?.user?.longName ?? "unknown".localized)")
+							}
+						}
+					}
+				}
+			}
 			.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
 			.navigationBarItems(
 				leading: MeshtasticLogo(),
@@ -191,26 +285,18 @@ struct NodeList: View {
 					)
 				}
 			 } else {
-				 if #available (iOS 17, *) {
-					 ContentUnavailableView("select.node", systemImage: "flipphone")
-				 } else {
-					 Text("select.node")
-				 }
+				ContentUnavailableView("select.node", systemImage: "flipphone")
 			 }
 		} detail: {
-			if #available (iOS 17, *) {
-				ContentUnavailableView("", systemImage: "line.3.horizontal")
-			} else {
-				Text("Select something to view")
-			}
+			ContentUnavailableView("", systemImage: "line.3.horizontal")
 		}
 		.navigationSplitViewStyle(.balanced)
-		.onChange(of: searchText) { _ in
+		.onChange(of: searchText) {
 			Task {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: viaLora) { _ in
+		.onChange(of: viaLora) {
 			if !viaLora && !viaMqtt {
 				viaMqtt = true
 			}
@@ -218,7 +304,7 @@ struct NodeList: View {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: viaMqtt) { _ in
+		.onChange(of: viaMqtt) {
 			if !viaLora && !viaMqtt {
 				viaLora = true
 			}
@@ -226,37 +312,34 @@ struct NodeList: View {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: boolFilters) { _ in
+		.onChange(of: [boolFilters]) {
 			Task {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: [deviceRoles]) { _ in
+		.onChange(of: [deviceRoles]) {
 			Task {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: hopsAway) { _ in
+		.onChange(of: hopsAway) {
 			Task {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: maxDistance) { _ in
+		.onChange(of: maxDistance) {
 			Task {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: distanceFilter) { _ in
+		.onChange(of: distanceFilter) {
 			Task {
 				await searchNodeList()
 			}
 		}
-		.onChange(of: router.navigationState) { _ in
-			// Handle deep link routing
-			if case .nodes(let selected) = router.navigationState {
-				self.selectedNode = selected.flatMap {
-					getNodeInfo(id: $0, context: context)
-				}
+		.onChange(of: router.navigationState) {
+			if let selected = router.navigationState.nodeListSelectedNodeNum {
+				self.selectedNode = getNodeInfo(id: selected, context: context)
 			} else {
 				self.selectedNode = nil
 			}
@@ -270,7 +353,7 @@ struct NodeList: View {
 
 	private func searchNodeList() async {
 		/// Case Insensitive Search Text Predicates
-		let searchPredicates = ["user.userId", "user.numString", "user.hwModel", "user.longName", "user.shortName"].map { property in
+		let searchPredicates = ["user.userId", "user.numString", "user.hwModel", "user.hwDisplayName", "user.longName", "user.shortName"].map { property in
 			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
 		}
 		/// Create a compound predicate using each text search preicate as an OR
@@ -307,13 +390,26 @@ struct NodeList: View {
 		}
 		/// Online
 		if isOnline {
-			let isOnlinePredicate = NSPredicate(format: "lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -15, to: Date())! as NSDate)
+			let isOnlinePredicate = NSPredicate(format: "lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -120, to: Date())! as NSDate)
 			predicates.append(isOnlinePredicate)
+		}
+		/// Encrypted
+		if isPkiEncrypted {
+			let isPkiEncryptedPredicate = NSPredicate(format: "user.pkiEncrypted == YES")
+			predicates.append(isPkiEncryptedPredicate)
 		}
 		/// Favorites
 		if isFavorite {
 			let isFavoritePredicate = NSPredicate(format: "favorite == YES")
 			predicates.append(isFavoritePredicate)
+		}
+		/// Ignored
+		if isIgnored {
+			let isIgnoredPredicate = NSPredicate(format: "ignored == YES")
+			predicates.append(isIgnoredPredicate)
+		} else if !isIgnored {
+			let isIgnoredPredicate = NSPredicate(format: "ignored == NO")
+			predicates.append(isIgnoredPredicate)
 		}
 		/// Environment
 		if isEnvironment {

@@ -1,5 +1,6 @@
 import SwiftUI
 import MeshtasticProtobufs
+import OSLog
 
 struct PowerConfig: View {
 	@Environment(\.managedObjectContext) private var context
@@ -117,9 +118,8 @@ struct PowerConfig: View {
 				.font(.subheadline)
 			}
 		}
-		.onAppear {
+		.onFirstAppear {
 			Api().loadDeviceHardwareData { (hw) in
-
 				for device in hw {
 					let currentHardware = node?.user?.hwModel ?? "UNSET"
 					let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "")
@@ -128,51 +128,53 @@ struct PowerConfig: View {
 					}
 				}
 			}
-			setPowerValues()
+			// Need to request a NetworkConfig from the remote node before allowing changes
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
 
-			// Need to request a Power config from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.powerConfig == nil {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestPowerConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let connectedNode {
+					if node.num != connectedNode.num {
+						if UserDefaults.enableAdministration {
+							/// 2.5 Administration with session passkey
+							let expiration = node.sessionExpiration ?? Date()
+							if expiration < Date() || node.powerConfig == nil {
+								Logger.mesh.info("⚙️ Empty or expired power config requesting via PKI admin")
+								_ = bleManager.requestPowerConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						} else {
+							/// Legacy Administration
+							Logger.mesh.info("☠️ Using insecure legacy admin, empty power config")
+							_ = bleManager.requestPowerConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					}
 				}
 			}
 		}
-		.onChange(of: isPowerSaving) {
-			if let val = node?.powerConfig?.isPowerSaving {
-				hasChanges = $0 != val
+		.onChange(of: isPowerSaving) { oldIsPowerSaving, newIsPowerSaving in
+			if oldIsPowerSaving != newIsPowerSaving && newIsPowerSaving != node?.powerConfig?.isPowerSaving { hasChanges = true }
+		}
+		.onChange(of: shutdownOnPowerLoss) { _, newShutdownOnPowerLoss in
+			if newShutdownOnPowerLoss {
+				hasChanges = true
 			}
 		}
-		.onChange(of: shutdownOnPowerLoss) { _ in
+		.onChange(of: shutdownAfterSecs) { oldShutdownAfterSecs, newShutdownAfterSecs in
+			if oldShutdownAfterSecs != newShutdownAfterSecs && newShutdownAfterSecs != node?.powerConfig?.minWakeSecs ?? -1 { hasChanges = true }
+		}
+		.onChange(of: adcOverride) {
 			hasChanges = true
 		}
-		.onChange(of: shutdownAfterSecs) {
-			if let val = node?.powerConfig?.onBatteryShutdownAfterSecs {
-				hasChanges = $0 != val
-			}
+		.onChange(of: adcMultiplier) { _, newAdcMultiplier in
+			if  newAdcMultiplier != node?.powerConfig?.adcMultiplierOverride ?? -1 { hasChanges = true }
 		}
-		.onChange(of: adcOverride) { _ in
-			hasChanges = true
+		.onChange(of: waitBluetoothSecs) { oldWaitBluetoothSecs, newWaitBluetoothSecs in
+			if oldWaitBluetoothSecs != newWaitBluetoothSecs && newWaitBluetoothSecs != node?.powerConfig?.waitBluetoothSecs ?? -1 { hasChanges = true }
 		}
-		.onChange(of: adcMultiplier) {
-			if let val = node?.powerConfig?.adcMultiplierOverride {
-				hasChanges = $0 != val
-			}
+		.onChange(of: lsSecs) { _, newLsSecs in
+			if newLsSecs != node?.powerConfig?.lsSecs ?? -1 { hasChanges = true }
 		}
-		.onChange(of: waitBluetoothSecs) {
-			if let val = node?.powerConfig?.waitBluetoothSecs {
-				hasChanges = $0 != val
-			}
-		}
-		.onChange(of: lsSecs) {
-			if let val = node?.powerConfig?.lsSecs {
-				hasChanges = $0 != val
-			}
-		}
-		.onChange(of: minWakeSecs) {
-			if let val = node?.powerConfig?.minWakeSecs {
-				hasChanges = $0 != val
-			}
+		.onChange(of: minWakeSecs) { _, newMinWakeSecs in
+			if newMinWakeSecs != node?.powerConfig?.minWakeSecs ?? -1 { hasChanges = true }
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
@@ -232,13 +234,13 @@ private struct FloatField: View {
 		TextField(title.localized, value: $typingNumber, format: .number)
 			.foregroundColor(.gray)
 			.multilineTextAlignment(.trailing)
-			.onChange(of: typingNumber, perform: { _ in
+			.onChange(of: typingNumber) {
 				if isValid(typingNumber) {
 					number = typingNumber
 				} else {
 					typingNumber = number
 				}
-			})
+			}
 			.keyboardType(.decimalPad)
 			.onAppear {
 				typingNumber = number

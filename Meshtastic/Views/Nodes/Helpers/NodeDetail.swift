@@ -16,6 +16,9 @@ struct NodeDetail: View {
 		formatter.unitsStyle = .full
 		return formatter
 	}()
+	var modemPreset: ModemPresets = ModemPresets(
+		rawValue: UserDefaults.modemPreset
+	) ?? ModemPresets.longFast
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -43,8 +46,53 @@ struct NodeDetail: View {
 				Section("Hardware") {
 					NodeInfoItem(node: node)
 				}
-
 				Section("Node") {
+					HStack(alignment: .center) {
+						Spacer()
+						CircleText(
+							text: node.user?.shortName ?? "?",
+							color: Color(UIColor(hex: UInt32(node.num))),
+							circleSize: 75
+						)
+						if node.snr != 0 && !node.viaMqtt && node.hopsAway == 0 {
+							Spacer()
+							VStack {
+								let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: modemPreset)
+								LoRaSignalStrengthIndicator(signalStrength: signalStrength)
+								Text("Signal \(signalStrength.description)").font(.footnote)
+								Text("SNR \(String(format: "%.2f", node.snr))dB")
+									.foregroundColor(getSnrColor(snr: node.snr, preset: modemPreset))
+									.font(.caption)
+								Text("RSSI \(node.rssi)dB")
+									.foregroundColor(getRssiColor(rssi: node.rssi))
+									.font(.caption)
+							}
+						}
+						if node.telemetries?.count ?? 0 > 0 {
+							Spacer()
+							BatteryGauge(node: node)
+						}
+						Spacer()
+					}
+					.listRowSeparator(.hidden)
+					if let user = node.user {
+						if !user.keyMatch {
+							Label {
+								VStack(alignment: .leading) {
+									Text("Public Key Mismatch")
+										.font(.title3)
+										.foregroundStyle(.red)
+									Text("The most recent public key for this node does not match the previously recorded key. You can delete the node and let it exchange keys again, but this also may indicate a more serious security problem. Contact the user through another trusted channel to determine if the key change was due to a factory reset or other intentional action.")
+										.foregroundStyle(.secondary)
+										.font(.callout)
+								}
+							} icon: {
+								Image(systemName: "key.slash.fill")
+									.symbolRenderingMode(.multicolor)
+									.foregroundStyle(.red)
+							}
+						}
+					}
 					HStack {
 						Label {
 							Text("Node Number")
@@ -65,7 +113,7 @@ struct NodeDetail: View {
 								.symbolRenderingMode(.multicolor)
 						}
 						Spacer()
-						Text(node.user?.userId ?? "?")
+						Text(node.num.toHex())
 						.textSelection(.enabled)
 					}
 
@@ -177,7 +225,11 @@ struct NodeDetail: View {
 										PressureCompactWidget(pressure: String(format: "%.2f", node.latestEnvironmentMetrics?.barometricPressure ?? 0.0), unit: "hPA", low: node.latestEnvironmentMetrics?.barometricPressure ?? 0.0 <= 1009.144)
 									}
 									if node.latestEnvironmentMetrics?.windSpeed ?? 0.0 > 0.0 {
-										WindCompactWidget(speed: String(node.latestEnvironmentMetrics?.windSpeed ?? 0.0), gust: String(node.latestEnvironmentMetrics?.windGust ?? 0.0), direction: "")
+										let windSpeed = Measurement(value: Double(node.latestEnvironmentMetrics?.windSpeed ?? 0.0), unit: UnitSpeed.metersPerSecond)
+										let windGust = Measurement(value: Double(node.latestEnvironmentMetrics?.windGust ?? 0.0), unit: UnitSpeed.metersPerSecond)
+										let direction = cardinalValue(from: Double(node.latestEnvironmentMetrics?.windDirection ?? 0))
+										WindCompactWidget(speed: windSpeed.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))),
+														  gust: node.latestEnvironmentMetrics?.windGust ?? 0.0 > 0.0 ? windGust.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))) : "", direction: direction)
 									}
 								}
 								.padding(node.latestEnvironmentMetrics?.iaq ?? -1 > 0 ? .bottom : .vertical)
@@ -200,11 +252,7 @@ struct NodeDetail: View {
 					.disabled(!node.hasDeviceMetrics)
 
 					NavigationLink {
-						if #available (iOS 17, macOS 14, *) {
-							NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
-						} else {
-							NodeMapMapkit(node: node)
-						}
+						NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
 					} label: {
 						Label {
 							Text("Node Map")
@@ -239,19 +287,17 @@ struct NodeDetail: View {
 					}
 					.disabled(!node.hasEnvironmentMetrics)
 
-					if #available(iOS 17.0, macOS 14.0, *) {
-						NavigationLink {
-							TraceRouteLog(node: node)
-						} label: {
-							Label {
-								Text("Trace Route Log")
-							} icon: {
-								Image(systemName: "signpost.right.and.left")
-									.symbolRenderingMode(.multicolor)
-							}
+					NavigationLink {
+						TraceRouteLog(node: node)
+					} label: {
+						Label {
+							Text("Trace Route Log")
+						} icon: {
+							Image(systemName: "signpost.right.and.left")
+								.symbolRenderingMode(.multicolor)
 						}
-						.disabled(node.traceRoutes?.count ?? 0 == 0)
 					}
+					.disabled(node.traceRoutes?.count ?? 0 == 0)
 
 					NavigationLink {
 						DetectionSensorLog(node: node)
@@ -281,12 +327,6 @@ struct NodeDetail: View {
 				}
 
 				Section("Actions") {
-					FavoriteNodeButton(
-						bleManager: bleManager,
-						context: context,
-						node: node
-					)
-
 					if let user = node.user {
 						NodeAlertsButton(
 							context: context,
@@ -295,19 +335,21 @@ struct NodeDetail: View {
 						)
 					}
 
-					if let connectedPeripheral = bleManager.connectedPeripheral,
-					   node.num != connectedPeripheral.num {
-						ExchangePositionsButton(
+					if let connectedNode {
+						FavoriteNodeButton(
 							bleManager: bleManager,
+							context: context,
 							node: node
 						)
-
-						TraceRouteButton(
-							bleManager: bleManager,
-							node: node
-						)
-
-						if let connectedNode {
+						if connectedNode.num != node.num {
+							ExchangePositionsButton(
+								bleManager: bleManager,
+								node: node
+							)
+							TraceRouteButton(
+								bleManager: bleManager,
+								node: node
+							)
 							if node.isStoreForwardRouter {
 								ClientHistoryButton(
 									bleManager: bleManager,
@@ -315,7 +357,11 @@ struct NodeDetail: View {
 									node: node
 								)
 							}
-
+							IgnoreNodeButton(
+								bleManager: bleManager,
+								context: context,
+								node: node
+							)
 							DeleteNodeButton(
 								bleManager: bleManager,
 								context: context,
@@ -397,5 +443,55 @@ struct NodeDetail: View {
 			}
 			.listStyle(.insetGrouped)
 		}
+	}
+}
+
+func cardinalValue(from heading: Double) -> String {
+	switch heading {
+	case 0 ..< 22.5:
+		return "North"
+	case 22.5 ..< 67.5:
+		return "North East"
+	case 67.5 ..< 112.5:
+		return "East"
+	case 112.5 ..< 157.5:
+		return "South East"
+	case 157.5 ..< 202.5:
+		return "South"
+	case 202.5 ..< 247.5:
+		return "South West"
+	case 247.5 ..< 292.5:
+		return "West"
+	case 292.5 ..< 337.5:
+		return "North West"
+	case 337.5 ... 360.0:
+		return "North"
+	default:
+		return ""
+	}
+}
+
+func abbreviatedCardinalValue(from heading: Double) -> String {
+	switch heading {
+	case 0 ..< 22.5:
+		return "N"
+	case 22.5 ..< 67.5:
+		return "NE"
+	case 67.5 ..< 112.5:
+		return "E"
+	case 112.5 ..< 157.5:
+		return "E"
+	case 157.5 ..< 202.5:
+		return "S"
+	case 202.5 ..< 247.5:
+		return "SW"
+	case 247.5 ..< 292.5:
+		return "W"
+	case 292.5 ..< 337.5:
+		return "NW"
+	case 337.5 ... 360.0:
+		return "N"
+	default:
+		return ""
 	}
 }

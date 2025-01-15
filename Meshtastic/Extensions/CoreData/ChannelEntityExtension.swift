@@ -11,8 +11,12 @@ import MeshtasticProtobufs
 extension ChannelEntity {
 
 	var allPrivateMessages: [MessageEntity] {
+		let context = PersistenceController.shared.container.viewContext
+		let fetchRequest = MessageEntity.fetchRequest()
+		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
+		fetchRequest.predicate = NSPredicate(format: "channel == %ld AND toUser == nil AND isEmoji == false", self.index)
 
-		self.value(forKey: "allPrivateMessages") as? [MessageEntity] ?? [MessageEntity]()
+		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
 	}
 
 	var unreadMessages: Int {

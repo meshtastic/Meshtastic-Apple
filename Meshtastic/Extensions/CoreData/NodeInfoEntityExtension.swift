@@ -14,12 +14,16 @@ extension NodeInfoEntity {
 		return self.positions?.lastObject as? PositionEntity
 	}
 
+	var latestDeviceMetrics: TelemetryEntity? {
+		return self.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity
+	}
+
 	var latestEnvironmentMetrics: TelemetryEntity? {
 		return self.telemetries?.filtered(using: NSPredicate(format: "metricsType == 1")).lastObject as? TelemetryEntity
 	}
 
 	var hasPositions: Bool {
-		return positions?.count ?? 0 > 0
+		return self.positions?.count ?? 0 > 0
 	}
 
 	var hasDeviceMetrics: Bool {
@@ -36,7 +40,8 @@ extension NodeInfoEntity {
 	}
 
 	var hasTraceRoutes: Bool {
-		return traceRoutes?.count ?? 0 > 0
+		let routes = traceRoutes?.filter { ($0 as AnyObject).response  }
+		return routes?.count ?? 0 > 0
 	}
 
 	var hasPax: Bool {
@@ -48,11 +53,20 @@ extension NodeInfoEntity {
 	}
 
 	var isOnline: Bool {
-		let fifteenMinutesAgo = Calendar.current.date(byAdding: .minute, value: -15, to: Date())
-		if lastHeard?.compare(fifteenMinutesAgo!) == .orderedDescending {
+		let twoHoursAgo = Calendar.current.date(byAdding: .minute, value: -120, to: Date())
+		if lastHeard?.compare(twoHoursAgo!) == .orderedDescending {
 			 return true
 		}
 		return false
+	}
+
+	var canRemoteAdmin: Bool {
+		if UserDefaults.enableAdministration {
+			return true
+		} else {
+			let adminChannel = myInfo?.channels?.filter { ($0 as AnyObject).name?.lowercased() == "admin" }
+			return adminChannel?.count ?? 0 > 0
+		}
 	}
 }
 
@@ -63,7 +77,7 @@ public func createNodeInfo(num: Int64, context: NSManagedObjectContext) -> NodeI
 	newNode.num = Int64(num)
 	let newUser = UserEntity(context: context)
 	newUser.num = Int64(num)
-	let userId = String(format: "%2X", num)
+	let userId = num.toHex()
 	newUser.userId = "!\(userId)"
 	let last4 = String(userId.suffix(4))
 	newUser.longName = "Meshtastic \(last4)"

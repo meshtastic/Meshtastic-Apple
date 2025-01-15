@@ -17,6 +17,11 @@ struct EnvironmentMetricsLog: View {
 	@State var exportString = ""
 	@ObservedObject var node: NodeInfoEntity
 
+	@StateObject var columnList = MetricsColumnList.environmentDefaultColumns
+	@StateObject var seriesList = MetricsSeriesList.environmentDefaultChartSeries
+
+	@State var isEditingColumnConfiguration = false
+
 	var body: some View {
 		VStack {
 			if node.hasEnvironmentMetrics {
@@ -25,121 +30,70 @@ struct EnvironmentMetricsLog: View {
 				let chartData = environmentMetrics
 					.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
 					.sorted { $0.time! < $1.time! }
-				let locale = NSLocale.current as NSLocale
-				let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
-				let format: UnitTemperature = localeUnit as? String ?? "Celsius" == "Fahrenheit" ? .fahrenheit : .celsius
+				let chartRange = applyMargins(seriesList.chartRange(forData: chartData))
 				VStack {
 					if chartData.count > 0 {
 						GroupBox(label: Label("\(environmentMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
-							Chart {
+							Chart(seriesList.visible) { series in
 								ForEach(chartData, id: \.time) { dataPoint in
-									AreaMark(
-										x: .value("Time", dataPoint.time!),
-										y: .value("Temperature", dataPoint.temperature.localeTemperature()),
-										stacking: .unstacked
-									)
-									.interpolationMethod(.cardinal)
-									.foregroundStyle(
-										.linearGradient(
-											colors: [.blue, .yellow, .orange, .red, .red],
-											startPoint: .bottom, endPoint: .top
-										)
-										.opacity(0.6)
-									)
-									.alignsMarkStylesWithPlotArea()
-									.accessibilityHidden(true)
-									LineMark(
-										x: .value("Time", dataPoint.time!),
-										y: .value("Temperature", dataPoint.temperature.localeTemperature())
-									)
-									.interpolationMethod(.cardinal)
-									.foregroundStyle(
-										.linearGradient(
-											colors: [.blue, .yellow, .orange, .red, .red],
-											startPoint: .bottom, endPoint: .top
-										)
-									)
-									.lineStyle(StrokeStyle(lineWidth: 4))
-									.alignsMarkStylesWithPlotArea()
+									series.body(dataPoint, inChartRange: chartRange)
 								}
 							}
 							.chartXAxis(content: {
 								AxisMarks(position: .top)
 							})
-							.chartYScale(domain: format == .celsius ? -20...55 : 0...125)
-							.chartForegroundStyleScale([
-								"Temperature": .clear
-							])
+							.chartYScale(domain: chartRange)
+							.chartForegroundStyleScale { (seriesName: String) -> AnyShapeStyle in
+								return seriesList.foregroundStyle(forAbbreviatedName: seriesName, chartRange: chartRange) ?? AnyShapeStyle(Color.clear)
+							}
 							.chartLegend(position: .automatic, alignment: .bottom)
 						}
 					}
-					let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
-					let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
+
+					// Dynamic table column using SwiftUI Table requires TableColumnForEach which requires the target
+					// to be bumped to 17.4 -- Until that happens, the existing non-configurable table is used.
 					if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 						// Add a table for mac and ipad
 						Table(environmentMetrics) {
 							TableColumn("Temperature") { em in
-								Text(em.temperature.formattedTemperature())
+								columnList.column(forAttribute: "temperature")?.body(em)
 							}
 							TableColumn("Humidity") { em in
-								Text("\(String(format: "%.0f", em.relativeHumidity))%")
+								columnList.column(forAttribute: "relativeHumidity")?.body(em)
 							}
 							TableColumn("Barometric Pressure") { em in
-								Text("\(String(format: "%.1f", em.barometricPressure)) hPa")
+								columnList.column(forAttribute: "barometricPressure")?.body(em)
 							}
 							TableColumn("Indoor Air Quality") { em in
-								HStack {
-									Text("IAQ")
-									IndoorAirQuality(iaq: Int(em.iaq), displayMode: IaqDisplayMode.dot )
-								}
+								columnList.column(forAttribute: "iaq")?.body(em)
+							}
+							TableColumn("Wind Speed") { em in
+								columnList.column(forAttribute: "windSpeed")?.body(em)
+							}
+							TableColumn("Wind Direction") { em in
+								columnList.column(forAttribute: "windDirection")?.body(em)
 							}
 							TableColumn("timestamp") { em in
-								Text(em.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+								columnList.column(forAttribute: "time")?.body(em)
 							}
 							.width(min: 180)
 						}
 					} else {
 						ScrollView {
-							let columns = [
-								GridItem(.flexible(minimum: 30, maximum: 50), spacing: 0.1),
-								GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
-								GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
-								GridItem(.flexible(minimum: 30, maximum: 70), spacing: 0.1),
-								GridItem(spacing: 0)
-							]
-							LazyVGrid(columns: columns, alignment: .leading, spacing: 1, pinnedViews: [.sectionHeaders]) {
-
+							LazyVGrid(columns: columnList.gridItems, alignment: .leading, spacing: 1, pinnedViews: [.sectionHeaders]) {
 								GridRow {
-									Text("Temp")
-										.font(.caption)
-										.fontWeight(.bold)
-									Text("Hum")
-										.font(.caption)
-										.fontWeight(.bold)
-									Text("Bar")
-										.font(.caption)
-										.fontWeight(.bold)
-									Text("IAQ")
-										.font(.caption)
-										.fontWeight(.bold)
-									Text("timestamp")
-										.font(.caption)
-										.fontWeight(.bold)
+									ForEach(columnList.visible) { col in
+										Text(col.abbreviatedName)
+											.font(.caption)
+											.fontWeight(.bold)
+									}
 								}
 								ForEach(environmentMetrics, id: \.self) { em  in
-
 									GridRow {
-
-										Text(em.temperature.formattedTemperature())
-											.font(.caption)
-										Text("\(String(format: "%.0f", em.relativeHumidity))%")
-											.font(.caption)
-										Text("\(String(format: "%.1f", em.barometricPressure))")
-											.font(.caption)
-										IndoorAirQuality(iaq: Int(em.iaq), displayMode: .dot)
-											.font(.caption)
-										Text(em.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
-											.font(.caption)
+										ForEach(columnList.visible) { col in
+											col.body(em)
+												.font(.caption)
+										}
 									}
 								}
 							}
@@ -149,17 +103,33 @@ struct EnvironmentMetricsLog: View {
 					}
 				}
 				HStack {
-
+					let isPadOrCatalyst = UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac
+					let buttonSize: ControlSize =  isPadOrCatalyst ? .large : .small
+					let imageScale: Image.Scale = isPadOrCatalyst ? .medium : .small
+					Button {
+						self.isEditingColumnConfiguration = true
+					} label: {
+						Label("Config", systemImage: "tablecells")
+							.imageScale(imageScale)
+					}
+					.buttonStyle(.bordered)
+					.buttonBorderShape(.capsule)
+					.controlSize(buttonSize)
+					.padding(.bottom)
+					.padding(.leading)
+					.sheet(isPresented: self.$isEditingColumnConfiguration) {
+						MetricsColumnDetail(columnList: columnList, seriesList: seriesList)
+					}
 					Button(role: .destructive) {
 						isPresentingClearLogConfirm = true
 					} label: {
 						Label("clear.log", systemImage: "trash.fill")
+							.imageScale(imageScale)
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
-					.controlSize(.large)
+					.controlSize(buttonSize)
 					.padding(.bottom)
-					.padding(.leading)
 					.confirmationDialog(
 						"are.you.sure",
 						isPresented: $isPresentingClearLogConfirm,
@@ -176,20 +146,17 @@ struct EnvironmentMetricsLog: View {
 						isExporting = true
 					} label: {
 						Label("save", systemImage: "square.and.arrow.down")
+							.imageScale(imageScale)
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
-					.controlSize(.large)
+					.controlSize(buttonSize)
 					.padding(.bottom)
 					.padding(.trailing)
 				}
 
 			} else {
-				if #available (iOS 17, *) {
-					ContentUnavailableView("No Environment Metrics", systemImage: "slash.circle")
-				} else {
-					Text("No Environment Metrics")
-				}
+				ContentUnavailableView("No Environment Metrics", systemImage: "slash.circle")
 			}
 		}
 
@@ -214,5 +181,14 @@ struct EnvironmentMetricsLog: View {
 				}
 			}
 		)
+	}
+
+	// Helper.  Adds a little buffer to the Y axis range, but keeps Y=0
+	func applyMargins<T>(_ range: ClosedRange<T>) -> ClosedRange<T> where T: BinaryFloatingPoint {
+		let span = range.upperBound - range.lowerBound
+		let margin = span * 0.1
+		let lower = range.lowerBound == 0.0 ? 0.0  : range.lowerBound - margin
+		let upper = range.upperBound + margin
+		return lower...upper
 	}
 }

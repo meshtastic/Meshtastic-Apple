@@ -84,19 +84,20 @@ struct ChannelMessageList: View {
 									}
 
 									HStack {
+										let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
 										if currentUser && message.receivedACK {
-											// Ack Received
-											Text("Acknowledged").font(.caption2).foregroundColor(.gray)
+											Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
+												.foregroundStyle(ackErrorVal?.color ?? Color.red)
+												.font(.caption2)
 										} else if currentUser && message.ackError == 0 {
 											// Empty Error
-											Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.orange)
-										} else if currentUser && message.ackError > 0 {
-											let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
+											Text("Waiting to be acknowledged. . .").font(
+												.caption2)
+												.foregroundColor(.orange)
+										} else if currentUser && !isDetectionSensorMessage {
 											Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
-												.font(.caption2).foregroundColor(.red)
-										} else if isDetectionSensorMessage {
-											let messageDate = message.timestamp
-											Text(" \(messageDate.formattedDate(format: MessageText.dateFormatString))").font(.caption2).foregroundColor(.gray)
+												.foregroundStyle(ackErrorVal?.color ?? Color.red)
+												.font(.caption2)
 										}
 									}
 								}
@@ -128,16 +129,16 @@ struct ChannelMessageList: View {
 				}
 				.padding([.top])
 				.scrollDismissesKeyboard(.immediately)
-				.onAppear {
-					if channel.allPrivateMessages.count > 0 {
-						scrollView.scrollTo(channel.allPrivateMessages.last!.messageId)
+				.onFirstAppear {
+					withAnimation {
+						scrollView.scrollTo(channel.allPrivateMessages.last?.messageId ?? 0, anchor: .bottom)
 					}
 				}
-				.onChange(of: channel.allPrivateMessages, perform: { _ in
-					if channel.allPrivateMessages.count > 0 {
-						scrollView.scrollTo(channel.allPrivateMessages.last!.messageId)
+				.onChange(of: channel.allPrivateMessages) {
+					withAnimation {
+						scrollView.scrollTo(channel.allPrivateMessages.last?.messageId ?? 0, anchor: .bottom)
 					}
-				})
+				}
 			}
 
 			TextMessageField(

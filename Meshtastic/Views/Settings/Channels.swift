@@ -10,9 +10,7 @@ import MapKit
 import MeshtasticProtobufs
 import OSLog
 import SwiftUI
-#if canImport(TipKit)
 import TipKit
-#endif
 
 func generateChannelKey(size: Int) -> String {
 	var keyData = Data(count: size)
@@ -62,9 +60,7 @@ struct Channels: View {
 
 		VStack {
 			List {
-				if #available(iOS 17.0, macOS 14.0, *) {
-					TipView(CreateChannelsTip(), arrowEdge: .bottom)
-				}
+				TipView(CreateChannelsTip(), arrowEdge: .bottom)
 				if node != nil && node?.myInfo != nil {
 					ForEach(node?.myInfo?.channels?.array as? [ChannelEntity] ?? [], id: \.self) { (channel: ChannelEntity) in
 						Button(action: {
@@ -92,13 +88,21 @@ struct Channels: View {
 								positionPrecision = 32
 								preciseLocation = true
 								positionsEnabled = true
-
+								if channelKey == "AQ==" {
+									positionPrecision = 14
+									preciseLocation = false
+								}
 							} else if !supportedVersion && channelRole == 2 {
 								positionPrecision = 0
 								preciseLocation = false
 								positionsEnabled = false
 							} else {
-								if positionPrecision == 32 {
+								if channelKey == "AQ==" {
+									preciseLocation = false
+									if (positionPrecision > 0 && positionPrecision < 11) || positionPrecision > 14 {
+										positionPrecision = 14
+									}
+								} else if positionPrecision == 32 {
 									preciseLocation = true
 									positionsEnabled = true
 								} else {
@@ -146,7 +150,7 @@ struct Channels: View {
 				ChannelForm(channelIndex: $channelIndex, channelName: $channelName, channelKeySize: $channelKeySize, channelKey: $channelKey, channelRole: $channelRole, uplink: $uplink, downlink: $downlink, positionPrecision: $positionPrecision, preciseLocation: $preciseLocation, positionsEnabled: $positionsEnabled, hasChanges: $hasChanges, hasValidKey: $hasValidKey, supportedVersion: $supportedVersion)
 					.presentationDetents([.large])
 					.presentationDragIndicator(.visible)
-				.onAppear {
+				.onFirstAppear {
 					supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
 				}
 				HStack {
@@ -217,7 +221,7 @@ struct Channels: View {
 					} label: {
 						Label("save", systemImage: "square.and.arrow.down")
 					}
-					.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !hasValidKey)
+					.disabled(bleManager.connectedPeripheral == nil)// || !hasChanges)// !hasValidKey)
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
 					.controlSize(.large)
@@ -253,7 +257,6 @@ struct Channels: View {
 					positionPrecision = 0
 					uplink = false
 					downlink = false
-					hasChanges = true
 
 					let newChannel = ChannelEntity(context: context)
 					newChannel.id = channelIndex
@@ -265,6 +268,7 @@ struct Channels: View {
 					newChannel.psk = Data(base64Encoded: channelKey) ?? Data()
 					newChannel.positionPrecision = Int32(positionPrecision)
 					selectedChannel = newChannel
+					hasChanges = true
 
 				} label: {
 					Label("Add Channel", systemImage: "plus.square")

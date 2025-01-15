@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "t-deck.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

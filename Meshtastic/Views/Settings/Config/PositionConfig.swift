@@ -189,32 +189,49 @@ struct PositionConfig: View {
 				Label("Altitude", systemImage: "arrow.up")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.onChange(of: includeAltitude) { _, newIncludeAltitude in
+				if newIncludeAltitude != PositionFlags(rawValue: self.positionFlags).contains(.Altitude) { hasChanges = true }
+			}
 
 			Toggle(isOn: $includeSatsinview) {
 				Label("Number of satellites", systemImage: "skew")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.onChange(of: includeSatsinview) { _, newIncludeSatsinview in
+				if newIncludeSatsinview != PositionFlags(rawValue: self.positionFlags).contains(.Satsinview) { hasChanges = true }
+			}
 
 			Toggle(isOn: $includeSeqNo) { // 64
 				Label("Sequence number", systemImage: "number")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.onChange(of: includeSeqNo) { _, newIncludeSeqNo in
+				if newIncludeSeqNo != PositionFlags(rawValue: self.positionFlags).contains(.SeqNo) { hasChanges = true }
+			}
 
 			Toggle(isOn: $includeTimestamp) { // 128
 				Label("timestamp", systemImage: "clock")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.onChange(of: includeTimestamp) { _, newIncludeTimestamp in
+				if newIncludeTimestamp != PositionFlags(rawValue: self.positionFlags).contains(.Timestamp) { hasChanges = true }
+			}
 
 			Toggle(isOn: $includeHeading) { // 128
 				Label("Vehicle heading", systemImage: "location.circle")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.onChange(of: includeHeading) { _, newIncludeHeading in
+				if newIncludeHeading != PositionFlags(rawValue: self.positionFlags).contains(.Heading) { hasChanges = true }
+			}
 
 			Toggle(isOn: $includeSpeed) { // 128
-
 				Label("Vehicle speed", systemImage: "speedometer")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.onChange(of: includeSpeed) { _, newIncludeSpeed in
+				if newIncludeSpeed != PositionFlags(rawValue: self.positionFlags).contains(.Speed) { hasChanges = true }
+			}
 		}
 	}
 
@@ -227,22 +244,35 @@ struct PositionConfig: View {
 					Label("Altitude is Mean Sea Level", systemImage: "arrow.up.to.line.compact")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.onChange(of: includeAltitudeMsl) { _, newIncludeAltitudeMsl in
+					if newIncludeAltitudeMsl != PositionFlags(rawValue: self.positionFlags).contains(.AltitudeMsl) { hasChanges = true }
+				}
+
 				Toggle(isOn: $includeGeoidalSeparation) {
 					Label("Altitude Geoidal Separation", systemImage: "globe.americas")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.onChange(of: includeGeoidalSeparation) { _, newIncludeGeoidalSeparation in
+					if newIncludeGeoidalSeparation != PositionFlags(rawValue: self.positionFlags).contains(.GeoidalSeparation) { hasChanges = true }
+				}
 			}
 
 			Toggle(isOn: $includeDop) {
 				Text("Dilution of precision (DOP) PDOP used by default")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.onChange(of: includeDop) { _, newIncludeDop in
+				if newIncludeDop != PositionFlags(rawValue: self.positionFlags).contains(.Dop) { hasChanges = true }
+			}
 
 			if includeDop {
 				Toggle(isOn: $includeHvdop) {
 					Text("If DOP is set, use HDOP / VDOP values instead of PDOP")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.onChange(of: includeHvdop) { _, newIncludeHvdop in
+					if newIncludeHvdop != PositionFlags(rawValue: self.positionFlags).contains(.Hvdop) { hasChanges = true }
+				}
 			}
 		}
 	}
@@ -376,23 +406,30 @@ struct PositionConfig: View {
 				)
 			}
 		)
-		.onAppear {
-			setPositionValues()
+		.onFirstAppear {
 			supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
-			// Need to request a PositionConfig from the remote node before allowing changes
-			if let connectedPeripheral = bleManager.connectedPeripheral, node?.positionConfig == nil {
-				Logger.mesh.info("empty position config")
+			// Need to request a NetworkConfig from the remote node before allowing changes
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
-				if let node, let connectedNode {
-					_ = bleManager.requestPositionConfig(
-						fromUser: connectedNode.user!,
-						toUser: node.user!,
-						adminIndex: connectedNode.myInfo?.adminIndex ?? 0
-					)
+				if let connectedNode {
+					if node.num != connectedNode.num {
+						if UserDefaults.enableAdministration {
+							/// 2.5 Administration with session passkey
+							let expiration = node.sessionExpiration ?? Date()
+							if expiration < Date() || node.positionConfig == nil {
+								Logger.mesh.info("⚙️ Empty or expired position config requesting via PKI admin")
+								_ = bleManager.requestPositionConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						} else {
+							/// Legacy Administration
+							Logger.mesh.info("☠️ Using insecure legacy admin, empty position config")
+							_ = bleManager.requestPositionConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					}
 				}
 			}
 		}
-		.onChange(of: fixedPosition) { newFixed in
+		.onChange(of: fixedPosition) { _, newFixed in
 			if supportedVersion {
 				if let positionConfig = node?.positionConfig {
 					/// Fixed Position is off to start
@@ -405,51 +442,39 @@ struct PositionConfig: View {
 				}
 			}
 		}
-		.onChange(of: gpsMode) { _ in
-			handleChanges()
+		.onChange(of: gpsMode) { _, newGpsMode in
+			if newGpsMode != node?.positionConfig?.gpsMode ?? 0 { hasChanges = true }
 		}
-		.onChange(of: rxGpio) { _ in
-			handleChanges()
+		.onChange(of: rxGpio) { _, newRxGpio in
+			if newRxGpio != node?.positionConfig?.rxGpio ?? 0 { hasChanges = true }
 		}
-		.onChange(of: txGpio) { _ in
-			handleChanges()
+		.onChange(of: txGpio) { _, newTxGpio in
+			if newTxGpio != node?.positionConfig?.txGpio ?? 0 { hasChanges = true }
 		}
-		.onChange(of: gpsEnGpio) { _ in
-			handleChanges()
+		.onChange(of: gpsEnGpio) { _, newGpsEnGpio in
+			if newGpsEnGpio != node?.positionConfig?.gpsEnGpio ?? 0 { hasChanges = true }
 		}
-		.onChange(of: smartPositionEnabled) { _ in
-			handleChanges()
+		.onChange(of: smartPositionEnabled) { _, newSmartPositionEnabled in
+			if newSmartPositionEnabled != node?.positionConfig?.smartPositionEnabled { hasChanges = true }
 		}
-		.onChange(of: positionBroadcastSeconds) { _ in
-			handleChanges()
+		.onChange(of: positionBroadcastSeconds) { _, newPositionBroadcastSeconds in
+			if newPositionBroadcastSeconds != node?.positionConfig?.positionBroadcastSeconds ?? 0 { hasChanges = true }
 		}
-		.onChange(of: broadcastSmartMinimumIntervalSecs) { _ in
-			handleChanges()
+		.onChange(of: broadcastSmartMinimumIntervalSecs) { _, newBroadcastSmartMinimumIntervalSecs in
+			if newBroadcastSmartMinimumIntervalSecs != node?.positionConfig?.broadcastSmartMinimumIntervalSecs ?? 0 { hasChanges = true }
 		}
-		.onChange(of: broadcastSmartMinimumDistance) { _ in
-			handleChanges()
+		.onChange(of: broadcastSmartMinimumDistance) { _, newBroadcastSmartMinimumDistance in
+			if newBroadcastSmartMinimumDistance != node?.positionConfig?.broadcastSmartMinimumDistance ?? 0 { hasChanges = true }
 		}
-		.onChange(of: gpsUpdateInterval) { _ in
-			handleChanges()
-		}
-		.onChange(of: positionFlags) { _ in
-			handleChanges()
+		.onChange(of: gpsUpdateInterval) { _, newGpsUpdateInterval in
+			if newGpsUpdateInterval != node?.positionConfig?.gpsUpdateInterval ?? 0 { hasChanges = true }
 		}
 	}
 
-	func handleChanges() {
-		guard let positionConfig = node?.positionConfig else { return }
+	func handlePositionFlagtChanges() {
+		guard (node?.positionConfig) != nil else { return }
 		let pf = PositionFlags(rawValue: self.positionFlags)
-		hasChanges = positionConfig.deviceGpsEnabled != deviceGpsEnabled ||
-		positionConfig.gpsMode != gpsMode ||
-		positionConfig.rxGpio != rxGpio ||
-		positionConfig.txGpio != txGpio ||
-		positionConfig.gpsEnGpio != gpsEnGpio ||
-		positionConfig.smartPositionEnabled != smartPositionEnabled ||
-		positionConfig.positionBroadcastSeconds != positionBroadcastSeconds ||
-		positionConfig.broadcastSmartMinimumIntervalSecs != broadcastSmartMinimumIntervalSecs ||
-		positionConfig.broadcastSmartMinimumDistance != broadcastSmartMinimumDistance ||
-		positionConfig.gpsUpdateInterval != gpsUpdateInterval ||
+		hasChanges =
 		pf.contains(.Altitude) ||
 		pf.contains(.AltitudeMsl) ||
 		pf.contains(.Satsinview) ||

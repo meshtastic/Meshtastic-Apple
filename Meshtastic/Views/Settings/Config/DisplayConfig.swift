@@ -154,66 +154,63 @@ struct DisplayConfig: View {
 		}
 
 		.navigationTitle("display.config")
-		.navigationBarItems(trailing:
-			ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
-		})
-		.onAppear {
-			setDisplayValues()
-
-			// Need to request a LoRaConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.displayConfig == nil {
-				Logger.mesh.info("empty display config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestDisplayConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+		.navigationBarItems(
+			trailing: ZStack {
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: bleManager.connectedPeripheral?.shortName ?? "?"
+				)
+			}
+		)
+		.onFirstAppear {
+			// Need to request a DisplayConfig from the remote node before allowing changes
+			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
+				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let connectedNode {
+					if node.num != connectedNode.num {
+						if UserDefaults.enableAdministration {
+							/// 2.5 Administration with session passkey
+							let expiration = node.sessionExpiration ?? Date()
+							if expiration < Date() || node.displayConfig == nil {
+								Logger.mesh.info("⚙️ Empty or expired display config requesting via PKI admin")
+								_ = bleManager.requestDisplayConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							}
+						} else {
+							/// Legacy Administration
+							Logger.mesh.info("☠️ Using insecure legacy admin, empty display config")
+							_ = bleManager.requestDisplayConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+						}
+					}
 				}
 			}
 		}
-		.onChange(of: screenOnSeconds) { newScreenSecs in
-			if node != nil && node!.displayConfig != nil {
-				if newScreenSecs != node!.displayConfig!.screenOnSeconds { hasChanges = true }
-			}
+		.onChange(of: screenOnSeconds) { oldScreenSecs, newScreenSecs in
+			if oldScreenSecs != newScreenSecs && newScreenSecs != node?.displayConfig?.screenOnSeconds ?? -1 { hasChanges = true }
 		}
-		.onChange(of: screenCarouselInterval) { newCarouselSecs in
-			if node != nil && node!.displayConfig != nil {
-				if newCarouselSecs != node!.displayConfig!.screenCarouselInterval { hasChanges = true }
-			}
+		.onChange(of: screenCarouselInterval) { oldCarouselSecs, newCarouselSecs in
+			if oldCarouselSecs != newCarouselSecs && newCarouselSecs != node?.displayConfig?.screenCarouselInterval ?? -1 { hasChanges = true }
 		}
-		.onChange(of: compassNorthTop) { newCompassNorthTop in
-			if node != nil && node!.displayConfig != nil {
-				if newCompassNorthTop != node!.displayConfig!.compassNorthTop { hasChanges = true }
-			}
+		.onChange(of: compassNorthTop) { oldCompassNorthTop, newCompassNorthTop in
+			if oldCompassNorthTop != newCompassNorthTop && newCompassNorthTop != node?.displayConfig?.compassNorthTop { hasChanges = true }
 		}
-		.onChange(of: wakeOnTapOrMotion) { newWakeOnTapOrMotion in
-			if node != nil && node!.displayConfig != nil {
-				if newWakeOnTapOrMotion != node!.displayConfig!.wakeOnTapOrMotion { hasChanges = true }
-			}
+		.onChange(of: wakeOnTapOrMotion) { oldWakeOnTapOrMotion, newWakeOnTapOrMotion in
+			if oldWakeOnTapOrMotion != newWakeOnTapOrMotion && newWakeOnTapOrMotion != node?.displayConfig?.wakeOnTapOrMotion { hasChanges = true }
 		}
-		.onChange(of: gpsFormat) { newGpsFormat in
-			if node != nil && node!.displayConfig != nil {
-				if newGpsFormat != node!.displayConfig!.gpsFormat { hasChanges = true }
-			}
+		.onChange(of: gpsFormat) { oldGpsFormat, newGpsFormat in
+			if oldGpsFormat != newGpsFormat && newGpsFormat != node?.displayConfig?.gpsFormat ?? -1 { hasChanges = true }
 		}
-		.onChange(of: flipScreen) { newFlipScreen in
-			if node != nil && node!.displayConfig != nil {
-				if newFlipScreen != node!.displayConfig!.flipScreen { hasChanges = true }
-			}
+		.onChange(of: flipScreen) { oldFlipScreen, newFlipScreen in
+			if oldFlipScreen != newFlipScreen && newFlipScreen != node?.displayConfig?.flipScreen { hasChanges = true }
 		}
-		.onChange(of: oledType) { newOledType in
-			if node != nil && node!.displayConfig != nil {
-				if newOledType != node!.displayConfig!.oledType { hasChanges = true }
-			}
+		.onChange(of: oledType) { oldOledType, newOledType in
+			if oldOledType != newOledType && newOledType != node?.displayConfig?.oledType ?? -1 { hasChanges = true }
 		}
-		.onChange(of: displayMode) { newDisplayMode in
-			if node != nil && node!.displayConfig != nil {
-				if newDisplayMode != node!.displayConfig!.displayMode { hasChanges = true }
-			}
+		.onChange(of: displayMode) { oldDisplayMode, newDisplayMode in
+			if oldDisplayMode != newDisplayMode && newDisplayMode != node?.displayConfig?.displayMode ?? -1 { hasChanges = true }
 		}
-		.onChange(of: units) { newUnits in
-			if node != nil && node!.displayConfig != nil {
-				if newUnits != node!.displayConfig!.units { hasChanges = true }
-			}
+		.onChange(of: units) { oldUnits, newUnits in
+			if oldUnits != newUnits && newUnits != node?.displayConfig?.units ?? -1 { hasChanges = true }
 		}
 	}
 	func setDisplayValues() {

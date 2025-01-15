@@ -22,9 +22,7 @@ struct AppData: View {
 		VStack {
 
 			Section(header: Text("phone.gps")) {
-				if #available(iOS 17.0, macOS 14.0, *) {
-					GPSStatus()
-				}
+				GPSStatus()
 			}
 			Divider()
 			Button(action: {
@@ -69,8 +67,6 @@ struct AppData: View {
 										let container = NSPersistentContainer(name: "Meshtastic")
 										do {
 											try container.restorePersistentStore(from: file.absoluteURL)
-											let request = MyInfoEntity.fetchRequest()
-											try context.fetch(request)
 											UserDefaults.preferredPeripheralId = ""
 											UserDefaults.preferredPeripheralNum = Int(file.pathComponents[(idiom == .phone || idiom == .pad) ? 9 : 10]) ?? 0
 											Logger.data.notice("🗂️ Restored a core data backup to backup/\(UserDefaults.preferredPeripheralNum, privacy: .public)")

@@ -7,9 +7,7 @@
 
 import SwiftUI
 import OSLog
-#if canImport(TipKit)
 import TipKit
-#endif
 
 struct Settings: View {
 	@Environment(\.managedObjectContext) var context
@@ -17,6 +15,8 @@ struct Settings: View {
 	@FetchRequest(
 		sortDescriptors: [
 			NSSortDescriptor(key: "favorite", ascending: false),
+			NSSortDescriptor(key: "user.pkiEncrypted", ascending: false),
+			NSSortDescriptor(key: "viaMqtt", ascending: true),
 			NSSortDescriptor(key: "user.longName", ascending: true)
 		],
 		animation: .default
@@ -72,6 +72,14 @@ struct Settings: View {
 				}
 			}
 			.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
+
+			NavigationLink(value: SettingsNavigationState.security) {
+				Label {
+					Text("Security")
+				} icon: {
+					Image(systemName: "lock.shield")
+				}
+			}
 
 			NavigationLink(value: SettingsNavigationState.shareQRCode) {
 				Label {
@@ -146,13 +154,11 @@ struct Settings: View {
 
 	var moduleConfigurationSection: some View {
 		Section("module.configuration") {
-			if #available(iOS 17.0, macOS 14.0, *) {
-				NavigationLink(value: SettingsNavigationState.ambientLighting) {
-					Label {
-						Text("ambient.lighting")
-					} icon: {
-						Image(systemName: "light.max")
-					}
+			NavigationLink(value: SettingsNavigationState.ambientLighting) {
+				Label {
+					Text("ambient.lighting")
+				} icon: {
+					Image(systemName: "light.max")
 				}
 			}
 
@@ -243,21 +249,11 @@ struct Settings: View {
 
 	var loggingSection: some View {
 		Section(header: Text("logging")) {
-			NavigationLink(value: SettingsNavigationState.meshLog) {
+			NavigationLink(value: SettingsNavigationState.debugLogs) {
 				Label {
-					Text("mesh.log")
+					Text("Logs")
 				} icon: {
-					Image(systemName: "list.bullet.rectangle")
-				}
-			}
-
-			if #available (iOS 17.4, *) {
-				NavigationLink(value: SettingsNavigationState.debugLogs) {
-					Label {
-						Text("Debug Logs")
-					} icon: {
-						Image(systemName: "stethoscope")
-					}
+					Image(systemName: "scroll")
 				}
 			}
 		}
@@ -265,6 +261,13 @@ struct Settings: View {
 
 	var developersSection: some View {
 		Section(header: Text("Developers")) {
+			NavigationLink(value: SettingsNavigationState.meshLog) {
+				Label {
+					Text("mesh.log")
+				} icon: {
+					Image(systemName: "list.bullet.rectangle")
+				}
+			}
 			NavigationLink(value: SettingsNavigationState.appFiles) {
 				Label {
 					Text("App Files")
@@ -292,13 +295,10 @@ struct Settings: View {
 		NavigationStack(
 			path: Binding<[SettingsNavigationState]>(
 				get: {
-					guard case .settings(let route) = router.navigationState, let setting = route else {
-						return []
-					}
-					return [setting]
+					[router.navigationState.settings].compactMap { $0 }
 				},
 				set: { newPath in
-					router.navigationState = .settings(newPath.first)
+					router.navigationState.settings = newPath.first
 				}
 			)
 		) {
@@ -319,37 +319,33 @@ struct Settings: View {
 						Image(systemName: "gearshape")
 					}
 				}
-				if #available(iOS 17.0, macOS 14.0, *) {
-					NavigationLink(value: SettingsNavigationState.routes) {
-						Label {
-							Text("routes")
-						} icon: {
-							Image(systemName: "road.lanes.curved.right")
-						}
-					}
-
-					NavigationLink(value: SettingsNavigationState.routeRecorder) {
-						Label {
-							Text("route.recorder")
-						} icon: {
-							Image(systemName: "record.circle")
-								.foregroundColor(.red)
-						}
+				NavigationLink(value: SettingsNavigationState.routes) {
+					Label {
+						Text("routes")
+					} icon: {
+						Image(systemName: "road.lanes.curved.right")
 					}
 				}
 
-				let hasAdmin = node?.myInfo?.adminIndex ?? 0 > 0
+				NavigationLink(value: SettingsNavigationState.routeRecorder) {
+					Label {
+						Text("route.recorder")
+					} icon: {
+						Image(systemName: "record.circle")
+							.foregroundColor(.red)
+					}
+				}
 
 				if !(node?.deviceConfig?.isManaged ?? false) {
 					if bleManager.connectedPeripheral != nil {
 						Section("Configure") {
-							if hasAdmin {
-								Picker("Configuring Node", selection: $selectedNode) {
+							if node?.canRemoteAdmin ?? false {
+								Picker("Node", selection: $selectedNode) {
 									if selectedNode == 0 {
 										Text("Connect to a Node").tag(0)
 									}
-
 									ForEach(nodes) { node in
+										/// Connected Node
 										if node.num == bleManager.connectedPeripheral?.num ?? 0 {
 											Label {
 												Text("BLE: \(node.user?.longName ?? "unknown".localized)")
@@ -357,16 +353,31 @@ struct Settings: View {
 												Image(systemName: "antenna.radiowaves.left.and.right")
 											}
 											.tag(Int(node.num))
-										} else if node.metadata != nil {
+										} else if node.canRemoteAdmin && UserDefaults.enableAdministration && node.sessionPasskey != nil { /// Nodes using the new PKI system
 											Label {
-												Text("Remote: \(node.user?.longName ?? "unknown".localized)")
+												Text("Remote PKI Admin: \(node.user?.longName ?? "unknown".localized)")
+											} icon: {
+												Image(systemName: "av.remote")
+											}
+											.font(.caption2)
+											.tag(Int(node.num))
+										} else if  !UserDefaults.enableAdministration && node.metadata != nil { /// Nodes using the old admin system
+											Label {
+												Text("Remote Legacy Admin: \(node.user?.longName ?? "unknown".localized)")
 											} icon: {
 												Image(systemName: "av.remote")
 											}
 											.tag(Int(node.num))
-										} else if hasAdmin {
+										} else if UserDefaults.enableAdministration && node.user?.pkiEncrypted ?? false {
 											Label {
-												Text("Request Admin: \(node.user?.longName ?? "unknown".localized)")
+												Text("Request PKI Admin: \(node.user?.longName ?? "unknown".localized)")
+											} icon: {
+												Image(systemName: "rectangle.and.hand.point.up.left")
+											}
+											.tag(Int(node.num))
+										} else if !UserDefaults.enableAdministration {
+											Label {
+												Text("Request Legacy Admin: \(node.user?.longName ?? "unknown".localized)")
 											} icon: {
 												Image(systemName: "rectangle.and.hand.point.up.left")
 											}
@@ -374,14 +385,13 @@ struct Settings: View {
 										}
 									}
 								}
-								.pickerStyle(.automatic)
-								.labelsHidden()
-								.onChange(of: selectedNode) { newValue in
+								.pickerStyle(.navigationLink)
+								.onChange(of: selectedNode) { _, newValue in
 									if selectedNode > 0 {
 										let node = nodes.first(where: { $0.num == newValue })
 										let connectedNode = nodes.first(where: { $0.num == preferredNodeNum })
 										preferredNodeNum = Int(connectedNode?.num ?? 0)// Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
-										if connectedNode != nil && connectedNode?.user != nil && connectedNode?.myInfo != nil && node?.user != nil && node?.metadata == nil {
+										if connectedNode != nil && connectedNode?.user != nil && connectedNode?.myInfo != nil && node?.user != nil {// && node?.metadata == nil {
 											let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
 											if adminMessageId > 0 {
 												Logger.mesh.info("Sent node metadata request from node details")
@@ -389,9 +399,7 @@ struct Settings: View {
 										}
 									}
 								}
-								if #available(iOS 17.0, macOS 14.0, *) {
-									TipView(AdminChannelTip(), arrowEdge: .top)
-								}
+								TipView(AdminChannelTip(), arrowEdge: .top)
 							} else {
 								if bleManager.connectedPeripheral != nil {
 									Text("Connected Node \(node?.user?.longName ?? "unknown".localized)")
@@ -417,13 +425,9 @@ struct Settings: View {
 				case .appSettings:
 					AppSettings()
 				case .routes:
-					if #available(iOS 17.0, *) {
-						Routes()
-					}
+					Routes()
 				case .routeRecorder:
-					if #available(iOS 17.0, *) {
-						RouteRecorder()
-					}
+					RouteRecorder()
 				case .lora:
 					LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .channels:
@@ -431,56 +435,54 @@ struct Settings: View {
 				case .shareQRCode:
 					ShareChannels(node: node)
 				case .user:
-					UserConfig(node: node)
+					UserConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .bluetooth:
-					BluetoothConfig(node: node)
+					BluetoothConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .device:
-					DeviceConfig(node: node)
+					DeviceConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .display:
-					DisplayConfig(node: node)
+					DisplayConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .network:
-					NetworkConfig(node: node)
+					NetworkConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .position:
-					PositionConfig(node: node)
+					PositionConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .power:
-					PowerConfig(node: node)
+					PowerConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .ambientLighting:
-					if #available(iOS 17.0, *) {
-						AmbientLightingConfig(node: node)
-					}
+					AmbientLightingConfig(node: node)
 				case .cannedMessages:
-					CannedMessagesConfig(node: node)
+					CannedMessagesConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .detectionSensor:
-					DetectionSensorConfig(node: node)
+					DetectionSensorConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .externalNotification:
-					ExternalNotificationConfig(node: node)
+					ExternalNotificationConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .mqtt:
-					MQTTConfig(node: node)
+					MQTTConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .rangeTest:
-					RangeTestConfig(node: node)
+					RangeTestConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .paxCounter:
-					PaxCounterConfig(node: node)
+					PaxCounterConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .ringtone:
-					RtttlConfig(node: node)
+					RtttlConfig(node: nodes.first(where: { $0.num == selectedNode }))
+				case .security:
+					SecurityConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .serial:
-					SerialConfig(node: node)
+					SerialConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .storeAndForward:
-					StoreForwardConfig(node: node)
+					StoreForwardConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .telemetry:
-					TelemetryConfig(node: node)
+					TelemetryConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .meshLog:
 					MeshLog()
 				case .debugLogs:
-					if #available(iOS 17.4, *) {
-						AppLog()
-					}
+					AppLog()
 				case .appFiles:
 					AppData()
 				case .firmwareUpdates:
 					Firmware(node: node)
 				}
 			}
-			.onChange(of: UserDefaults.preferredPeripheralNum ) { newConnectedNode in
+			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
 				preferredNodeNum = newConnectedNode
 				if nodes.count > 1 {
 					if selectedNode == 0 {
