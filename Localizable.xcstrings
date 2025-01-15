@@ -9452,15 +9452,11 @@
           }
         }
       }
-
     },
     "Enable bluetooth" : {
 
     },
     "Enable location services" : {
-
-    },
-    "Enable MB Tiles" : {
 
     },
     "Enable notifications" : {
@@ -9475,12 +9471,8 @@
           }
         }
       }
-
     },
     "Enable notifications?" : {
-
-    },
-    "Enable Offline Maps" : {
 
     },
     "enabled" : {
@@ -29189,6 +29181,7 @@
       }
     },
     "This determines the actual frequency you are transmitting on in the band. If set to 0 this value will be calculated automatically based on the primary channel name." : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
@@ -31406,6 +31399,9 @@
         }
       }
     },
+    "Welcome to" : {
+
+    },
     "What does the lock mean?" : {
       "localizations" : {
         "de" : {
@@ -31421,9 +31417,6 @@
           }
         }
       }
-    },
-    "Welcome to" : {
-
     },
     "What is Meshtastic?" : {
       "localizations" : {
@@ -31654,6 +31647,9 @@
           }
         }
       }
+    },
+    "Your node’s operating frequency is calculated based on the region, modem preset, and this field. When 0, the slot is automatically calculated based on the primary channel name." : {
+
     },
     "Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned." : {
       "localizations" : {
