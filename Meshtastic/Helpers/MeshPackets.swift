@@ -954,7 +954,8 @@ func textMessageAppPacket(
 									path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)",
 									messageId: newMessage.messageId,
 									channel: newMessage.channel,
-									userNum: Int64(packet.from)
+									userNum: Int64(packet.from),
+									critical: critical
 								)
 							]
 							manager.schedule()
