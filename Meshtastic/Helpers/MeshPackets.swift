@@ -987,8 +987,8 @@ func textMessageAppPacket(
 												path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.messageId)",
 												messageId: newMessage.messageId,
 												channel: newMessage.channel,
-												userNum: Int64(newMessage.fromUser?.userId ?? "0")
-											)
+												userNum: Int64(newMessage.fromUser?.userId ?? "0"),
+											    critical: critical)
 										]
 										manager.schedule()
 										Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
