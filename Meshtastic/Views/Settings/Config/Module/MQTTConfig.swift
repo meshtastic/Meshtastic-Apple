@@ -216,7 +216,7 @@ struct MQTTConfig: View {
 						.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
 						Toggle(isOn: $tlsEnabled) {
 							Label("TLS Enabled", systemImage: "checkmark.shield.fill")
-							Text("Your MQTT Server must support TLS. Not available via the public mqtt server.")
+							Text("Your MQTT Server must support TLS.")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
