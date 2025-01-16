@@ -58,6 +58,7 @@ struct OnboardingView: View {
 					}
 					.padding()
 				}
+				.interactiveDismissDisabled()
 			}
 			Spacer()
 
@@ -69,6 +70,8 @@ struct OnboardingView: View {
 				Text("Get started")
 					.frame(maxWidth: .infinity)
 			}
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
 			.padding()
 			.buttonStyle(.borderedProminent)
 		}
