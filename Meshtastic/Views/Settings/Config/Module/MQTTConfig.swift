@@ -174,7 +174,7 @@ struct MQTTConfig: View {
 							.keyboardType(.default)
 					}
 					.autocorrectionDisabled()
-					if !proxyToClientEnabled && address != "mqtt.meshtastic.org" {
+					if address != "mqtt.meshtastic.org" {
 						HStack {
 							Label("mqtt.username", systemImage: "person.text.rectangle")
 							TextField("mqtt.username", text: $username)
