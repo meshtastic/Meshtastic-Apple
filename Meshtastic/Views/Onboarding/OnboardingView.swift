@@ -1,12 +1,14 @@
 import CoreBluetooth
 import OSLog
 import SwiftUI
+import Foundation
 
 struct OnboardingView: View {
 	enum SetupGuide: Hashable {
 		case bluetooth
 		case notifications
 		case location
+		case mqtt
 	}
 
 	@State
@@ -38,6 +40,7 @@ struct OnboardingView: View {
 
 					// Onboarding
 					VStack(alignment: .leading, spacing: 16) {
+						
 						makeRow(
 							icon: "antenna.radiowaves.left.and.right",
 							title: "Stay Connected Anywhere",
@@ -87,6 +90,8 @@ struct OnboardingView: View {
 				Text("Enable bluetooth")
 					.frame(maxWidth: .infinity)
 			}
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
 			.padding()
 			.buttonStyle(.borderedProminent)
 
@@ -103,7 +108,44 @@ struct OnboardingView: View {
 
 	var notificationView: some View {
 		VStack {
-			Text("Enable notifications?")
+			VStack {
+				Text("App Notifications")
+					.font(.largeTitle.bold())
+					.multilineTextAlignment(.center)
+					.fixedSize(horizontal: false, vertical: true)
+			}
+			Spacer()
+			VStack(alignment: .leading, spacing: 16) {
+				
+				Text("Send Notifications")
+					.font(.title2.bold())
+					.multilineTextAlignment(.center)
+					.fixedSize(horizontal: false, vertical: true)
+				makeRow(
+					icon: "message",
+					title: "Incoming Messages",
+					subtitle: "Meshtastic notifications for channel messages and direct messages"
+				)
+				makeRow(
+					icon: "flipphone",
+					title: "New Nodes",
+					subtitle: "Allow Meshtastic to send notifications for messages, newly discovered nodes and low battery alerts for the connected device."
+				)
+				makeRow(
+					icon: "battery.25percent",
+					title: "Low Battery",
+					subtitle: "Allow Meshtastic to send notifications for messages, newly discovered nodes and low battery alerts for the connected device."
+				)
+				Text("Critical Alerts")
+					.font(.title2.bold())
+					.multilineTextAlignment(.center)
+					.fixedSize(horizontal: false, vertical: true)
+				makeRow(
+					icon: "exclamationmark.triangle.fill",
+					subtitle: "Select packets sent as critical will ignore the mute switch and Do Not Disturb settings in the OS notification center."
+				)
+			}
+			.padding()
 			Spacer()
 			Button {
 				Task {
@@ -111,24 +153,41 @@ struct OnboardingView: View {
 					await goToNextStep(after: .notifications)
 				}
 			} label: {
-				Text("Enable notifications")
+				Text("Configure notifications")
+					.frame(maxWidth: .infinity)
+			}
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
+			.buttonStyle(.borderedProminent)
+		}
+	}
+
+	var locationView: some View {
+		VStack {
+			Text("Enable location services")
+			Spacer()
+			Button {
+				Task {
+					await LocationHelper.shared.authorizationStatus
+				}
+			} label: {
+				Text("Enable location services")
 					.frame(maxWidth: .infinity)
 			}
 			.padding()
 			.buttonStyle(.borderedProminent)
 
 			Button {
-				Task {
-					await goToNextStep(after: .notifications)
-				}
+				dismiss()
 			} label: {
-				Text("Set up later in settings")
+				Text("Set up later")
 					.frame(maxWidth: .infinity)
 			}
 		}
 	}
 
-	var locationView: some View {
+	var mqttView: some View {
 		VStack {
 			Text("Enable location services")
 			Spacer()
@@ -163,6 +222,8 @@ struct OnboardingView: View {
 						notificationView
 					case .location:
 						locationView
+					case .mqtt:
+						mqttView
 					}
 				}
 		}
@@ -172,7 +233,7 @@ struct OnboardingView: View {
 	@ViewBuilder
 	func makeRow(
 		icon: String,
-		title: String,
+		title: String = "",
 		subtitle: String
 	) -> some View {
 		HStack(alignment: .center) {
@@ -180,7 +241,7 @@ struct OnboardingView: View {
 				.resizable()
 				.symbolRenderingMode(.multicolor)
 				.font(.subheadline)
-				.aspectRatio(contentMode: .fill)
+				.aspectRatio(contentMode: .fit)
 				.padding()
 				.frame(width: 72, height: 72)
 
@@ -199,11 +260,10 @@ struct OnboardingView: View {
 	}
 
 	// MARK: Navigation
-
 	func goToNextStep(after step: SetupGuide?) async {
 		switch step {
 		case .none:
-			if CBCentralManager.authorization == .notDetermined {
+			if CBCentralManager.authorization == .notDetermined ||  CBCentralManager.authorization == .denied {
 				navigationPath.append(.bluetooth)
 			} else {
 				fallthrough
@@ -218,6 +278,13 @@ struct OnboardingView: View {
 				fallthrough
 			}
 		case .notifications:
+			let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+			if  status == .notDetermined {
+				await requestNotificationsPermissions()
+			} else {
+				fallthrough
+			}
+		case .location:
 			let status = LocationHelper.shared
 				.locationManager
 				.authorizationStatus
@@ -226,7 +293,7 @@ struct OnboardingView: View {
 			} else {
 				fallthrough
 			}
-		case .location:
+		case .mqtt:
 			dismiss()
 		}
 	}
@@ -237,22 +304,21 @@ struct OnboardingView: View {
 		_ = CBCentralManager(delegate: nil, queue: nil)
 	}
 
-	func requestNotificationsPermissions() async {
+	func requestNotificationsPermissions() async -> UNAuthorizationStatus {
 		let center = UNUserNotificationCenter.current()
-		let status = await center.notificationSettings().authorizationStatus
-		guard status == .notDetermined else { return }
 		do {
-			let success = try await center.requestAuthorization(options: [.alert, .badge, .sound])
+			let success = try await center.requestAuthorization(options: [.alert, .badge, .sound, .criticalAlert])
 			if success {
 				Logger.services.info("Notification permissions are enabled")
 			} else {
 				Logger.services.info("Notification permissions denied")
 			}
+			return await center.notificationSettings().authorizationStatus
 		} catch {
 			Logger.services.error("Notification permissions error: \(error.localizedDescription)")
+			return .notDetermined
 		}
 	}
-
 	func requestLocationPermissions() async {
 		LocationHelper.shared.locationManager.requestAlwaysAuthorization()
 	}

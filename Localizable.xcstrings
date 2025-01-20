@@ -1438,6 +1438,9 @@
         }
       }
     },
+    "Allow Meshtastic to send notifications for messages, newly discovered nodes and low battery alerts for the connected device." : {
+
+    },
     "Allow Position Requests" : {
       "localizations" : {
         "sr" : {
@@ -1764,6 +1767,9 @@
           }
         }
       }
+    },
+    "App Notifications" : {
+
     },
     "App Settings" : {
       "localizations" : {
@@ -6253,6 +6259,9 @@
         }
       }
     },
+    "Configure notifications" : {
+
+    },
     "Connect to a Node" : {
       "localizations" : {
         "de" : {
@@ -6834,6 +6843,9 @@
           }
         }
       }
+    },
+    "Critical Alerts" : {
+
     },
     "Current Firmware Version: %@" : {
       "localizations" : {
@@ -9459,9 +9471,6 @@
     "Enable location services" : {
 
     },
-    "Enable notifications" : {
-
-    },
     "Enable Notifications" : {
       "localizations" : {
         "sr" : {
@@ -9471,9 +9480,6 @@
           }
         }
       }
-    },
-    "Enable notifications?" : {
-
     },
     "enabled" : {
       "localizations" : {
@@ -26126,6 +26132,9 @@
           }
         }
       }
+    },
+    "Send Notifications" : {
+
     },
     "Send Reboot OTA" : {
       "localizations" : {

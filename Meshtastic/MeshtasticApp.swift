@@ -11,11 +11,7 @@ struct MeshtasticAppleApp: App {
 	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self)
 	private var appDelegate
 
-	@ObservedObject
-	var appState: AppState
-
-//	@ObservedObject
-//	private var bleManager: BLEManager
+	@ObservedObject var appState: AppState
 
 	private let persistenceController: PersistenceController
 
