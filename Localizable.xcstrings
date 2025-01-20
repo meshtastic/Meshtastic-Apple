@@ -29151,6 +29151,7 @@
       }
     },
     "This determines the actual frequency you are transmitting on in the band. If set to 0 this value will be calculated automatically based on the primary channel name." : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
@@ -31604,7 +31605,11 @@
         }
       }
     },
+    "Your MQTT Server must support TLS." : {
+
+    },
     "Your MQTT Server must support TLS. Not available via the public mqtt server." : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
@@ -31613,6 +31618,9 @@
           }
         }
       }
+    },
+    "Your node’s operating frequency is calculated based on the region, modem preset, and this field. When 0, the slot is automatically calculated based on the primary channel name." : {
+
     },
     "Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned." : {
       "localizations" : {
