@@ -5,14 +5,10 @@
 import SwiftUI
 
 struct ContentView: View {
-	@ObservedObject
-	var appState: AppState
+	@ObservedObject	var appState: AppState
 
-	@ObservedObject
-	var router: Router
+	@ObservedObject	var router: Router
 
-	//@State
-	//var isShowingOnboardingFlow: Bool = false
 	@AppStorage("showOnboarding") var isShowingOnboardingFlow = UserDefaults.showOnboarding
 
 	var body: some View {

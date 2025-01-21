@@ -11,8 +11,7 @@ struct OnboardingView: View {
 		case mqtt
 	}
 
-	@State
-	var navigationPath: [SetupGuide] = []
+	@State var navigationPath: [SetupGuide] = []
 
 	@Environment(\.dismiss) var dismiss
 
@@ -245,7 +244,8 @@ struct OnboardingView: View {
 			}
 		case .notifications:
 			let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
-			if  status == .notDetermined {
+			let criticalAlert = await UNUserNotificationCenter.current().notificationSettings().criticalAlertSetting
+			if  status == .notDetermined && criticalAlert == .notSupported {
 				await requestNotificationsPermissions()
 			} else {
 				fallthrough

@@ -175,9 +175,6 @@ extension UserDefaults {
 	@UserDefault(.provideLocation, defaultValue: false)
 	static var showOnboarding: Bool
 
-	@UserDefault(.preferredPeripheralNum, defaultValue: 0)
-	static var onboardingVersion: Int
-
 	@UserDefault(.testIntEnum, defaultValue: .one)
 	static var testIntEnum: TestIntEnum
 }
