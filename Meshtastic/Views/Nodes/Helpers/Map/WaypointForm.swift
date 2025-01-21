@@ -38,7 +38,7 @@ struct WaypointForm: View {
 					.font(.largeTitle)
 				Divider()
 				Form {
-					let distance = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude).distance(from: CLLocation(latitude: waypoint.coordinate.latitude, longitude: waypoint.coordinate.longitude ))
+					let distance = CLLocation(latitude: LocationsHandler.currentLocation.latitude, longitude: LocationsHandler.currentLocation.longitude).distance(from: CLLocation(latitude: waypoint.coordinate.latitude, longitude: waypoint.coordinate.longitude ))
 					Section(header: Text("Coordinate") ) {
 						HStack {
 							Text("Location:")
@@ -335,8 +335,8 @@ struct WaypointForm: View {
 							.padding(.bottom, 5)
 						}
 						/// Distance
-						if LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) > 0.0 {
-							let metersAway = waypoint.coordinate.distance(from: LocationHelper.currentLocation)
+						if LocationsHandler.currentLocation.distance(from: LocationsHandler.DefaultLocation) > 0.0 {
+							let metersAway = waypoint.coordinate.distance(from: LocationsHandler.currentLocation)
 							Label {
 								Text("distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
 									.foregroundColor(.primary)
