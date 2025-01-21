@@ -418,9 +418,9 @@ struct NodeList: View {
 		}
 		/// Distance
 		if distanceFilter {
-			let pointOfInterest = LocationHelper.currentLocation
+			let pointOfInterest = LocationsHandler.currentLocation
 
-			if pointOfInterest.latitude != LocationHelper.DefaultLocation.latitude && pointOfInterest.longitude != LocationHelper.DefaultLocation.longitude {
+			if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude && pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
 				let d: Double = maxDistance * 1.1
 				let r: Double = 6371009
 				let meanLatitidue = pointOfInterest.latitude * .pi / 180

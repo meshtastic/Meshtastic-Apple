@@ -165,7 +165,7 @@ struct Routes: View {
 					if selectedRoute != nil {
 						let locationArray = selectedRoute?.locations?.array as? [LocationEntity] ?? []
 						let lineCoords = locationArray.compactMap({(location) -> CLLocationCoordinate2D in
-							return location.locationCoordinate ?? LocationHelper.DefaultLocation
+							return location.locationCoordinate ?? LocationsHandler.DefaultLocation
 						})
 						Form {
 							TextField(
@@ -248,7 +248,7 @@ struct Routes: View {
 							hasChanges = true
 						}
 						Map {
-							Annotation("Start", coordinate: lineCoords.first ?? LocationHelper.DefaultLocation) {
+							Annotation("Start", coordinate: lineCoords.first ?? LocationsHandler.DefaultLocation) {
 								ZStack {
 									Circle()
 										.fill(Color(.green))
@@ -257,7 +257,7 @@ struct Routes: View {
 								}
 							}
 							.annotationTitles(.automatic)
-							Annotation("Finish", coordinate: lineCoords.last ?? LocationHelper.DefaultLocation) {
+							Annotation("Finish", coordinate: lineCoords.last ?? LocationsHandler.DefaultLocation) {
 								ZStack {
 									Circle()
 										.fill(Color(.black))

@@ -31644,7 +31644,11 @@
         }
       }
     },
+    "Your MQTT Server must support TLS." : {
+
+    },
     "Your MQTT Server must support TLS. Not available via the public mqtt server." : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
