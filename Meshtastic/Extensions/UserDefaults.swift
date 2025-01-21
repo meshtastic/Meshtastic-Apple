@@ -72,6 +72,9 @@ extension UserDefaults {
 		case firmwareVersion
 		case environmentEnableWeatherKit
 		case enableAdministration
+		case firstLaunch
+		case showOnboarding
+		case onboardingVersion
 		case testIntEnum
 	}
 
@@ -165,6 +168,15 @@ extension UserDefaults {
 
 	@UserDefault(.enableAdministration, defaultValue: false)
 	static var enableAdministration: Bool
+
+	@UserDefault(.firstLaunch, defaultValue: true)
+	static var firstLaunch: Bool
+
+	@UserDefault(.provideLocation, defaultValue: false)
+	static var showOnboarding: Bool
+
+	@UserDefault(.preferredPeripheralNum, defaultValue: 0)
+	static var onboardingVersion: Int
 
 	@UserDefault(.testIntEnum, defaultValue: .one)
 	static var testIntEnum: TestIntEnum

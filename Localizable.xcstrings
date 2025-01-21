@@ -6259,7 +6259,7 @@
         }
       }
     },
-    "Configure notifications" : {
+    "Configure notification permissions" : {
 
     },
     "Connect to a Node" : {
@@ -9465,10 +9465,10 @@
         }
       }
     },
-    "Enable bluetooth" : {
+    "Enable location services" : {
 
     },
-    "Enable location services" : {
+    "Enable MQTT" : {
 
     },
     "Enable Notifications" : {
@@ -19770,6 +19770,9 @@
         }
       }
     },
+    "MQTT Settings" : {
+
+    },
     "mqtt.clientproxy" : {
       "localizations" : {
         "de" : {
@@ -26766,9 +26769,6 @@
     "Set up later" : {
 
     },
-    "Set up later in settings" : {
-
-    },
     "set.region" : {
       "localizations" : {
         "de" : {
@@ -26906,9 +26906,6 @@
           }
         }
       }
-    },
-    "Setup Bluetooth" : {
-
     },
     "Share QR Code & Link" : {
       "localizations" : {

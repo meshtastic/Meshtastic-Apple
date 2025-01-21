@@ -2,10 +2,10 @@ import CoreBluetooth
 import OSLog
 import SwiftUI
 import Foundation
+import MapKit
 
 struct OnboardingView: View {
 	enum SetupGuide: Hashable {
-		case bluetooth
 		case notifications
 		case location
 		case mqtt
@@ -37,10 +37,8 @@ struct OnboardingView: View {
 					// Title
 					title
 						.padding(.top)
-
 					// Onboarding
 					VStack(alignment: .leading, spacing: 16) {
-						
 						makeRow(
 							icon: "antenna.radiowaves.left.and.right",
 							title: "Stay Connected Anywhere",
@@ -80,32 +78,6 @@ struct OnboardingView: View {
 		}
 	}
 
-	var bluetoothView: some View {
-		VStack {
-			Text("Setup Bluetooth")
-			Spacer()
-			Button {
-				// TODO: permission check
-			} label: {
-				Text("Enable bluetooth")
-					.frame(maxWidth: .infinity)
-			}
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.buttonStyle(.borderedProminent)
-
-			Button {
-				Task {
-
-				}
-			} label: {
-				Text("Set up later in settings")
-					.frame(maxWidth: .infinity)
-			}
-		}
-	}
-
 	var notificationView: some View {
 		VStack {
 			VStack {
@@ -116,7 +88,6 @@ struct OnboardingView: View {
 			}
 			Spacer()
 			VStack(alignment: .leading, spacing: 16) {
-				
 				Text("Send Notifications")
 					.font(.title2.bold())
 					.multilineTextAlignment(.center)
@@ -153,7 +124,7 @@ struct OnboardingView: View {
 					await goToNextStep(after: .notifications)
 				}
 			} label: {
-				Text("Configure notifications")
+				Text("Configure notification permissions")
 					.frame(maxWidth: .infinity)
 			}
 			.buttonBorderShape(.capsule)
@@ -169,17 +140,22 @@ struct OnboardingView: View {
 			Spacer()
 			Button {
 				Task {
-					await LocationHelper.shared.authorizationStatus
+					await goToNextStep(after: .location)
 				}
 			} label: {
 				Text("Enable location services")
 					.frame(maxWidth: .infinity)
 			}
 			.padding()
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
 			.buttonStyle(.borderedProminent)
 
 			Button {
-				dismiss()
+				Task {
+					await goToNextStep(after: .mqtt)
+				}
 			} label: {
 				Text("Set up later")
 					.frame(maxWidth: .infinity)
@@ -189,14 +165,14 @@ struct OnboardingView: View {
 
 	var mqttView: some View {
 		VStack {
-			Text("Enable location services")
+			Text("MQTT Settings")
 			Spacer()
 			Button {
 				Task {
-					await requestLocationPermissions()
+
 				}
 			} label: {
-				Text("Enable location services")
+				Text("Enable MQTT")
 					.frame(maxWidth: .infinity)
 			}
 			.padding()
@@ -216,8 +192,6 @@ struct OnboardingView: View {
 			welcomeView
 				.navigationDestination(for: SetupGuide.self) { guide in
 					switch guide {
-					case .bluetooth:
-						bluetoothView
 					case .notifications:
 						notificationView
 					case .location:
@@ -263,17 +237,9 @@ struct OnboardingView: View {
 	func goToNextStep(after step: SetupGuide?) async {
 		switch step {
 		case .none:
-			if CBCentralManager.authorization == .notDetermined ||  CBCentralManager.authorization == .denied {
-				navigationPath.append(.bluetooth)
-			} else {
-				fallthrough
-			}
-		case .bluetooth:
-			let center = UNUserNotificationCenter.current()
-			let status = await center.notificationSettings().authorizationStatus
-			if status == .notDetermined {
+			let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+			if  status == .notDetermined {
 				navigationPath.append(.notifications)
-				return
 			} else {
 				fallthrough
 			}
@@ -300,10 +266,6 @@ struct OnboardingView: View {
 
 	// MARK: Permission Checks
 
-	func requestBluetoothPermissions() async {
-		_ = CBCentralManager(delegate: nil, queue: nil)
-	}
-
 	func requestNotificationsPermissions() async -> UNAuthorizationStatus {
 		let center = UNUserNotificationCenter.current()
 		do {
@@ -318,8 +280,5 @@ struct OnboardingView: View {
 			Logger.services.error("Notification permissions error: \(error.localizedDescription)")
 			return .notDetermined
 		}
-	}
-	func requestLocationPermissions() async {
-		LocationHelper.shared.locationManager.requestAlwaysAuthorization()
 	}
 }
