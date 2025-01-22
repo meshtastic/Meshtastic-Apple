@@ -135,29 +135,54 @@ struct OnboardingView: View {
 
 	var locationView: some View {
 		VStack {
-			Text("Enable location services")
-			Spacer()
-			Button {
-				Task {
-					await goToNextStep(after: .location)
-				}
-			} label: {
-				Text("Enable location services")
-					.frame(maxWidth: .infinity)
+			VStack {
+				Text("Phone Location Permissions")
+					.font(.largeTitle.bold())
+					.multilineTextAlignment(.center)
+					.fixedSize(horizontal: false, vertical: true)
+			}
+			VStack(alignment: .leading, spacing: 16) {
+				Text("Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from Settings > App Setting > Open Settings.")
+					.font(.body.bold())
+					.multilineTextAlignment(.center)
+					.fixedSize(horizontal: false, vertical: true)
+				makeRow(
+					icon: "location",
+					title: "Share Location",
+					subtitle: "Use your phone GPS to send locations to your node to instead of using a hardware GPS on your node."
+				)
+				makeRow(
+					icon: "lines.measurement.horizontal",
+					title: "Distance Measurements",
+					subtitle: "Used to display the distance between your phone and other Meshtastic nodes where positions are available."
+				)
+				makeRow(
+					icon: "line.3.horizontal.decrease.circle",
+					title: "Distance Filters",
+					subtitle: "Filter the node list and mesh map based on proximity to your phone."
+				)
+				makeRow(
+					icon: "mappin",
+					title: "Mesh Map Location",
+					subtitle: "Enables the blue location dot for your phone in the mesh map."
+				)
 			}
 			.padding()
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.buttonStyle(.borderedProminent)
-
-			Button {
-				Task {
-					await goToNextStep(after: .mqtt)
+			Spacer()
+			if LocationHelper.shared.locationManager.authorizationStatus != .notDetermined {
+				Button {
+					Task {
+						await goToNextStep(after: .location)
+					}
+				} label: {
+					Text("Continue to next step")
+						.frame(maxWidth: .infinity)
 				}
-			} label: {
-				Text("Set up later")
-					.frame(maxWidth: .infinity)
+				.padding()
+				.buttonBorderShape(.capsule)
+				.controlSize(.large)
+				.padding()
+				.buttonStyle(.borderedProminent)
 			}
 		}
 	}
@@ -237,25 +262,23 @@ struct OnboardingView: View {
 		switch step {
 		case .none:
 			let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
-			if  status == .notDetermined {
+			let criticalAlert = await UNUserNotificationCenter.current().notificationSettings().criticalAlertSetting
+			if  status == .notDetermined && criticalAlert == .notSupported {
 				navigationPath.append(.notifications)
 			} else {
 				fallthrough
 			}
 		case .notifications:
-			let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
-			let criticalAlert = await UNUserNotificationCenter.current().notificationSettings().criticalAlertSetting
-			if  status == .notDetermined && criticalAlert == .notSupported {
-				await requestNotificationsPermissions()
+			let status = LocationHelper.shared.locationManager.authorizationStatus
+			if status == .notDetermined {
+				navigationPath.append(.location)
+				await LocationHelper.shared.requestLocationAlwaysPermissions()
 			} else {
 				fallthrough
 			}
 		case .location:
-			let status = LocationHelper.shared
-				.locationManager
-				.authorizationStatus
-			if status == .notDetermined {
-				navigationPath.append(.location)
+			if true {
+				navigationPath.append(.mqtt)
 			} else {
 				fallthrough
 			}
@@ -266,7 +289,7 @@ struct OnboardingView: View {
 
 	// MARK: Permission Checks
 
-	func requestNotificationsPermissions() async -> UNAuthorizationStatus {
+	func requestNotificationsPermissions() async {
 		let center = UNUserNotificationCenter.current()
 		do {
 			let success = try await center.requestAuthorization(options: [.alert, .badge, .sound, .criticalAlert])
@@ -275,10 +298,8 @@ struct OnboardingView: View {
 			} else {
 				Logger.services.info("Notification permissions denied")
 			}
-			return await center.notificationSettings().authorizationStatus
 		} catch {
 			Logger.services.error("Notification permissions error: \(error.localizedDescription)")
-			return .notDetermined
 		}
 	}
 }

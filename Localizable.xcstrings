@@ -6632,6 +6632,9 @@
         }
       }
     },
+    "Continue to next step" : {
+
+    },
     "Control Type" : {
       "localizations" : {
         "sr" : {
@@ -9464,9 +9467,6 @@
           }
         }
       }
-    },
-    "Enable location services" : {
-
     },
     "Enable MQTT" : {
 
@@ -19220,6 +19220,9 @@
         }
       }
     },
+    "Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from Settings > App Setting > Open Settings." : {
+
+    },
     "Meshtastic® Copyright Meshtastic LLC" : {
       "localizations" : {
         "sr" : {
@@ -21950,6 +21953,9 @@
           }
         }
       }
+    },
+    "Phone Location Permissions" : {
+
     },
     "phone.gps" : {
       "localizations" : {

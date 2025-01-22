@@ -9,11 +9,20 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 
 	// @Published var region = MKCoordinateRegion()
 	@Published var authorizationStatus: CLAuthorizationStatus?
+
+	// The continuation we will use to asynchronously ask the user permission to track their location.
+	private var permissionContinuation: CheckedContinuation<CLAuthorizationStatus, Never>?
+
+	func requestLocationAlwaysPermissions() async -> CLAuthorizationStatus {
+		self.locationManager.requestAlwaysAuthorization()
+		return await withCheckedContinuation { continuation in
+		   permissionContinuation = continuation
+		}
+   }
 	override init() {
 		super.init()
 		locationManager.delegate = self
 		locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
-		locationManager.pausesLocationUpdatesAutomatically = true
 		locationManager.allowsBackgroundLocationUpdates = true
 		locationManager.activityType = .other
 	}
@@ -55,14 +64,12 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 			authorizationStatus = .authorizedAlways
 		case .authorizedWhenInUse:
 			authorizationStatus = .authorizedWhenInUse
-			locationManager.requestLocation()
 		case .restricted:
 			authorizationStatus = .restricted
 		case .denied:
 			authorizationStatus = .denied
 		case .notDetermined:
 			authorizationStatus = .notDetermined
-			locationManager.requestAlwaysAuthorization()
 		default:
 			break
 		}

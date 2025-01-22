@@ -200,9 +200,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		if UserDefaults.preferredPeripheralId.count < 1 {
 			UserDefaults.preferredPeripheralId = peripheral.identifier.uuidString
 		}
-		if UserDefaults.firstLaunch {
-			UserDefaults.showOnboarding = true
-		}
 		// Invalidate and reset connection timer count
 		timeoutTimerCount = 0
 		if timeoutTimer != nil {
@@ -220,6 +217,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			lastConnectionError = "🚫 [BLE] Bluetooth connection error, please try again."
 			disconnectPeripheral()
 			return
+		}
+		if UserDefaults.firstLaunch {
+			UserDefaults.showOnboarding = true
 		}
 		// Discover Services
 		peripheral.discoverServices([meshtasticServiceCBUUID])
