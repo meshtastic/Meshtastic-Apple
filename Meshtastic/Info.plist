@@ -71,13 +71,13 @@
 	<key>NSCameraUsageDescription</key>
 	<string>We use the camera to share channels using a QR Code</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>We use your location to display it on the mesh map as well as to have GPS coordinatess to send to the connected device. Route Recording uses location in the background.</string>
+	<string>We use your location to display it on the mesh map as well as to have GPS coordinates to send to the connected device. Route Recording uses location in the background.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>We use your location to display it on the mesh map as well as to have GPS coordinatess to send to the connected device.</string>
+	<string>We use your location to display it on the mesh map as well as to have GPS coordinates to send to the connected device.</string>
 	<key>NSLocationUsageDescription</key>
-	<string>We use your location to display it on the mesh map as well as to have GPS coordinatess to send to the connected device.</string>
+	<string>We use your location to display it on the mesh map as well as to have GPS coordinates to send to the connected device.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We use your location to display it on the mesh map as well as to have GPS coordinatess to send to the connected device.</string>
+	<string>We use your location to display it on the mesh map as well as to have GPS coordinates to send to the connected device.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>Privacy – Bluetooth Always Usage Description</key>
