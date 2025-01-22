@@ -77,6 +77,11 @@
             value = "oslogToStdio"
             isEnabled = "YES">
          </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "publicMqttUsername"
+            value = "meshdev"
+            isEnabled = "YES">
+         </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction

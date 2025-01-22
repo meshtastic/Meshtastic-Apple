@@ -111,6 +111,7 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 			myInfoEntity.peripheralId = peripheralId
 			myInfoEntity.myNodeNum = Int64(myInfo.myNodeNum)
 			myInfoEntity.rebootCount = Int32(myInfo.rebootCount)
+			myInfoEntity.deviceId = myInfo.deviceID
 			do {
 				try context.save()
 				Logger.data.info("💾 Saved a new myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
@@ -820,6 +821,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 func textMessageAppPacket(
 	packet: MeshPacket,
 	wantRangeTestPackets: Bool,
+	critical: Bool = false,
 	connectedNode: Int64,
 	storeForward: Bool = false,
 	context: NSManagedObjectContext,
@@ -952,7 +954,8 @@ func textMessageAppPacket(
 									path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)",
 									messageId: newMessage.messageId,
 									channel: newMessage.channel,
-									userNum: Int64(packet.from)
+									userNum: Int64(packet.from),
+									critical: critical
 								)
 							]
 							manager.schedule()
@@ -960,59 +963,41 @@ func textMessageAppPacket(
 						}
 					} else if newMessage.toUser == nil {
 						let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
-	  fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedNode))
+fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedNode))
 
-	  do {
-		  let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
-		  if !fetchedMyInfo.isEmpty {
-			  appState.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
+do {
+    let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
+    if !fetchedMyInfo.isEmpty {
+        appState.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
 
-			  for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
-				  if channel.index == newMessage.channel {
-					  context.refresh(channel, mergeChanges: true)
-				  }
-				  if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications {
-					  // Create an iOS Notification for the received private channel message and schedule it immediately
-					  let manager = LocalNotificationManager()
-					  
-					  if newMessage.fromUser != nil {
-						  manager.notifications = [
-							  Notification(
-								  id: ("notification.id.\(newMessage.messageId)"),
-								  title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
-								  subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
-								  content: messageText!,
-								  target: "messages",
-								  path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.messageId)",
-								  messageId: newMessage.messageId,
-								  channel: newMessage.channel,
-								  userNum: Int64(newMessage.fromUser?.userId ?? "0")
-							  )
-						  ]
-					  } else {
-						  manager.notifications = [
-							  Notification(
-								  id: ("notification.id.\(newMessage.messageId)"),
-								  title: "unknown".localized,
-								  content: messageText!,
-								  target: "messages",
-								  path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.messageId)",
-								  messageId: newMessage.messageId,
-								  channel: newMessage.channel,
-								  userNum: 0
-							  )
-						  ]
-					  }
-					  
-					  manager.schedule()
-					  Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
-				  }
-			  }
-		  }
-	  } catch {
-		  // Handle error
-	  }
-  }
+        for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
+            if channel.index == newMessage.channel {
+                context.refresh(channel, mergeChanges: true)
+            }
+            if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications {
+                // Create an iOS Notification for the received private channel message and schedule it immediately
+                let manager = LocalNotificationManager()
+                manager.notifications = [
+                    Notification(
+                        id: ("notification.id.\(newMessage.messageId)"),
+                        title: "\(newMessage.fromUser?.longName ?? \"unknown\".localized)",
+                        subtitle: "AKA \(newMessage.fromUser?.shortName ?? \"?\")",
+                        content: messageText!,
+                        target: "messages",
+                        path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.messageId)",
+                        messageId: newMessage.messageId,
+                        channel: newMessage.channel,
+                        userNum: Int64(newMessage.fromUser?.userId ?? "0"),
+                        critical: critical)
+                ]
+                manager.schedule()
+                Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? \"unknown\".localized)")
+            }
+        }
+    }
+} catch {
+    // Handle error
+}
 				}
 			} catch {
 				context.rollback()

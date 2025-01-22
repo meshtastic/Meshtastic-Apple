@@ -168,7 +168,7 @@ struct LoRaConfig: View {
 								.focused($focusedField, equals: .channelNum)
 								.disabled(overrideFrequency > 0.0)
 						}
-						Text("This determines the actual frequency you are transmitting on in the band. If set to 0 this value will be calculated automatically based on the primary channel name.")
+						Text("Your node’s operating frequency is calculated based on the region, modem preset, and this field. When 0, the slot is automatically calculated based on the primary channel name.")
 							.foregroundColor(.gray)
 							.font(.callout)
 					}

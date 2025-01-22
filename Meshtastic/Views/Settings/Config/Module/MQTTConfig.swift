@@ -174,51 +174,52 @@ struct MQTTConfig: View {
 							.keyboardType(.default)
 					}
 					.autocorrectionDisabled()
-
-					HStack {
-						Label("mqtt.username", systemImage: "person.text.rectangle")
-						TextField("mqtt.username", text: $username)
-							.foregroundColor(.gray)
-							.autocapitalization(.none)
-							.disableAutocorrection(true)
-							.onChange(of: username) {
-								var totalBytes = username.utf8.count
-								// Only mess with the value if it is too big
-								while totalBytes > 62 {
-									username = String(username.dropLast())
-									totalBytes = username.utf8.count
+					if address != "mqtt.meshtastic.org" {
+						HStack {
+							Label("mqtt.username", systemImage: "person.text.rectangle")
+							TextField("mqtt.username", text: $username)
+								.foregroundColor(.gray)
+								.autocapitalization(.none)
+								.disableAutocorrection(true)
+								.onChange(of: username) {
+									var totalBytes = username.utf8.count
+									// Only mess with the value if it is too big
+									while totalBytes > 62 {
+										username = String(username.dropLast())
+										totalBytes = username.utf8.count
+									}
+									hasChanges = true
 								}
-								hasChanges = true
-							}
-							.foregroundColor(.gray)
-					}
-					.keyboardType(.default)
-					.scrollDismissesKeyboard(.interactively)
-					HStack {
-						Label("password", systemImage: "wallet.pass")
-						TextField("password", text: $password)
-							.foregroundColor(.gray)
-							.autocapitalization(.none)
-							.disableAutocorrection(true)
-							.onChange(of: password) {
-								var totalBytes = password.utf8.count
-								// Only mess with the value if it is too big
-								while totalBytes > 62 {
-									password = String(password.dropLast())
-									totalBytes = password.utf8.count
+								.foregroundColor(.gray)
+						}
+						.keyboardType(.default)
+						.scrollDismissesKeyboard(.interactively)
+						HStack {
+							Label("password", systemImage: "wallet.pass")
+							TextField("password", text: $password)
+								.foregroundColor(.gray)
+								.autocapitalization(.none)
+								.disableAutocorrection(true)
+								.onChange(of: password) {
+									var totalBytes = password.utf8.count
+									// Only mess with the value if it is too big
+									while totalBytes > 62 {
+										password = String(password.dropLast())
+										totalBytes = password.utf8.count
+									}
+									hasChanges = true
 								}
-								hasChanges = true
-							}
-							.foregroundColor(.gray)
+								.foregroundColor(.gray)
+						}
+						.keyboardType(.default)
+						.scrollDismissesKeyboard(.interactively)
+						.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
+						Toggle(isOn: $tlsEnabled) {
+							Label("TLS Enabled", systemImage: "checkmark.shield.fill")
+							Text("Your MQTT Server must support TLS.")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-					.keyboardType(.default)
-					.scrollDismissesKeyboard(.interactively)
-					.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
-					Toggle(isOn: $tlsEnabled) {
-						Label("TLS Enabled", systemImage: "checkmark.shield.fill")
-						Text("Your MQTT Server must support TLS. Not available via the public mqtt server.")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 				Text("For all Mqtt functionality other than the map report you must also set uplink and downlink for each channel you want to bridge over Mqtt.")
 					.font(.callout)

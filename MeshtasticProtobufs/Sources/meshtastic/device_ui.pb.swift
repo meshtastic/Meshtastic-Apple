@@ -134,6 +134,10 @@ public enum Language: SwiftProtobuf.Enum, Swift.CaseIterable {
   case norwegian // = 14
 
   ///
+  /// Slovenian
+  case slovenian // = 15
+
+  ///
   /// Simplified Chinese (experimental)
   case simplifiedChinese // = 30
 
@@ -163,6 +167,7 @@ public enum Language: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 12: self = .dutch
     case 13: self = .greek
     case 14: self = .norwegian
+    case 15: self = .slovenian
     case 30: self = .simplifiedChinese
     case 31: self = .traditionalChinese
     default: self = .UNRECOGNIZED(rawValue)
@@ -186,6 +191,7 @@ public enum Language: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .dutch: return 12
     case .greek: return 13
     case .norwegian: return 14
+    case .slovenian: return 15
     case .simplifiedChinese: return 30
     case .traditionalChinese: return 31
     case .UNRECOGNIZED(let i): return i
@@ -209,6 +215,7 @@ public enum Language: SwiftProtobuf.Enum, Swift.CaseIterable {
     .dutch,
     .greek,
     .norwegian,
+    .slovenian,
     .simplifiedChinese,
     .traditionalChinese,
   ]
@@ -354,6 +361,10 @@ public struct NodeFilter: Sendable {
   /// Filter nodes by matching name string
   public var nodeName: String = String()
 
+  ///
+  /// Filter based on channel
+  public var channel: Int32 = 0
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -418,6 +429,7 @@ extension Language: SwiftProtobuf._ProtoNameProviding {
     12: .same(proto: "DUTCH"),
     13: .same(proto: "GREEK"),
     14: .same(proto: "NORWEGIAN"),
+    15: .same(proto: "SLOVENIAN"),
     30: .same(proto: "SIMPLIFIED_CHINESE"),
     31: .same(proto: "TRADITIONAL_CHINESE"),
   ]
@@ -612,6 +624,7 @@ extension NodeFilter: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     4: .standard(proto: "hops_away"),
     5: .standard(proto: "position_switch"),
     6: .standard(proto: "node_name"),
+    7: .same(proto: "channel"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -626,6 +639,7 @@ extension NodeFilter: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       case 4: try { try decoder.decodeSingularInt32Field(value: &self.hopsAway) }()
       case 5: try { try decoder.decodeSingularBoolField(value: &self.positionSwitch) }()
       case 6: try { try decoder.decodeSingularStringField(value: &self.nodeName) }()
+      case 7: try { try decoder.decodeSingularInt32Field(value: &self.channel) }()
       default: break
       }
     }
@@ -650,6 +664,9 @@ extension NodeFilter: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     if !self.nodeName.isEmpty {
       try visitor.visitSingularStringField(value: self.nodeName, fieldNumber: 6)
     }
+    if self.channel != 0 {
+      try visitor.visitSingularInt32Field(value: self.channel, fieldNumber: 7)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -660,6 +677,7 @@ extension NodeFilter: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     if lhs.hopsAway != rhs.hopsAway {return false}
     if lhs.positionSwitch != rhs.positionSwitch {return false}
     if lhs.nodeName != rhs.nodeName {return false}
+    if lhs.channel != rhs.channel {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
