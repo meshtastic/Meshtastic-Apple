@@ -260,6 +260,18 @@ struct NodeDetail: View {
 					}
 					.disabled(!node.hasDeviceMetrics)
 
+					NavigationLink{
+						PowerMetricsLog(node: node)
+					} label: {
+						Label {
+							Text("Power Metrics Log")
+						} icon: {
+							Image(systemName: "bolt")
+								.symbolRenderingMode(.multicolor)
+						}
+					}
+					.disabled(!node.hasPowerMetrics)
+
 					NavigationLink {
 						NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
 					} label: {
