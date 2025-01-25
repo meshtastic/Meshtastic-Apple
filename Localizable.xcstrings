@@ -22432,6 +22432,28 @@
         }
       }
     },
+    "power.metrics.delete" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete all power metrics?"
+          }
+        }
+      }
+    },
+    "power.metrics.log" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Power Metrics Log"
+          }
+        }
+      }
+    },
     "Powered" : {
       "localizations" : {
         "de" : {

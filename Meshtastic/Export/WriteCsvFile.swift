@@ -46,6 +46,25 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 			csvString += ", "
 			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
 		}
+	} else if metricsType == 2 {
+		// Create Power Metrics Header
+		csvString = "Channel 1 Voltage, Channel 1 Current, Channel 2 Voltage, Channel 2 Current, Channel 3 Voltage, Channel 3 Current, \("timestamp".localized)"
+		for dm in telemetry where dm.metricsType == 2 {
+			csvString += "\n"
+			csvString += String(dm.powerCh1Voltage)
+			csvString += ", "
+			csvString += String(dm.powerCh1Current)
+			csvString += ", "
+			csvString += String(dm.powerCh2Voltage)
+			csvString += ", "
+			csvString += String(dm.powerCh2Current)
+			csvString += ", "
+			csvString += String(dm.powerCh3Voltage)
+			csvString += ", "
+			csvString += String(dm.powerCh3Current)
+			csvString += ", "
+			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
+		}
 	}
 	return csvString
 }
