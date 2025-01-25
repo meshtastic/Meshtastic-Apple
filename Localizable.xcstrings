@@ -1058,6 +1058,12 @@
     },
     "Admin & Direct Message Keys" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schlüssel für Administrator und Direktnachrichten"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1430,6 +1436,12 @@
     },
     "Allow incoming device control over the insecure legacy admin channel." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erlaubt die eingehende Gerätesteuerung über den unsicheren Legacy-Admin-Kanal."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6216,6 +6228,12 @@
     },
     "Configuration for: %@" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguration für: %@"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6924,6 +6942,12 @@
     },
     "Debug Logs" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fehlersuchprotokolle"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7861,7 +7885,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : " Used for nodes that \"only speak when spoken to\" Turns all of the routine broadcasts but allows for ad-hoc communication. Still rebroadcasts, but with local only rebroadcast mode (known meshes only). Can be used for private operation or to dramatically reduce airtime / power consumption."
+            "value" : "Gerät, das nur bei Bedarf sendet, um nicht entdeckt zu werden oder Strom zu sparen."
           }
         },
         "en" : {
@@ -7926,7 +7950,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dasselbe wie Client, außer dass die Pakete nicht über diesen Knoten weitergeleitet werden. Nimmt nicht am Mesh-Routing teil."
+            "value" : "Gerät, das keine Pakete von anderen Geräten weiterleitet."
           }
         },
         "en" : {
@@ -7991,7 +8015,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Broadcasts location as message to default channel regularly for to assist with device recovery."
+            "value" : "Sendet den Standort regelmäßig als Nachricht an den Standardkanal, um die Suche nach dem Gerät zu unterstützen."
           }
         },
         "en" : {
@@ -8053,6 +8077,12 @@
     "device.role.name.client" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8070,6 +8100,12 @@
     "device.role.name.clientHidden" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client - Versteckt"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8104,6 +8140,12 @@
     "device.role.name.lostAndFound" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tracker"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8121,6 +8163,12 @@
     "device.role.name.repeater" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeater"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8138,6 +8186,12 @@
     "device.role.name.router" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Router"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8155,6 +8209,12 @@
     "device.role.name.routerClient" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Router & Client"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8172,6 +8232,12 @@
     "device.role.name.routerlate" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Router mit Verzögerung"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8183,6 +8249,12 @@
     "device.role.name.sensor" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensor"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8200,6 +8272,12 @@
     "device.role.name.tak" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TAK"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8217,6 +8295,12 @@
     "device.role.name.takTracker" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TAK Tracker"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8234,6 +8318,12 @@
     "device.role.name.tracker" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tracker"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8446,6 +8536,12 @@
     "device.role.routerlate" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Infrastrukturknoten, der Pakete immer nur einmal weiterleitet, aber erst nach allen anderen Betriebsarten, um eine zusätzliche Abdeckung für lokale Cluster zu gewährleisten. Sichtbar in der Liste der Knoten."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8460,7 +8556,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Broadcasts telemetry packets as priority."
+            "value" : "Sendet Telemetriepakete mit Priorität."
           }
         },
         "en" : {
@@ -8525,7 +8621,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Optimized for ATAK system communication, reduces routine broadcasts."
+            "value" : "Optimiert für ATAK-Systemkommunikation, verringert die Anzahl der Routineübertragungen."
           }
         },
         "en" : {
@@ -8590,7 +8686,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enables automatic TAK PLI broadcasts and reduces routine broadcasts."
+            "value" : "Aktiviert automatische TAK-PLI-Übertragungen und verringert die Anzahl der Routineübertragungen."
           }
         },
         "en" : {
@@ -8655,7 +8751,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tracker - For use with devices intended as a GPS tracker. Position packets sent from this device will be higher priority, with position broadcasting every two minutes. Smart Position Broadcast will default to off."
+            "value" : "Sendet GPS-Positionspakete mit Priorität."
           }
         },
         "en" : {
@@ -15020,6 +15116,12 @@
     },
     "Legacy Administration" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alte Administrationsart"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15800,6 +15902,12 @@
     "lora.signal.strength.bad" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schlechte Signalstärke"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15817,6 +15925,12 @@
     "lora.signal.strength.fair" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordentliche Signalstärke"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15834,6 +15948,12 @@
     "lora.signal.strength.good" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gute Signalstärke"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15851,6 +15971,12 @@
     "lora.signal.strength.none" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Verbindung"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21510,6 +21636,12 @@
     },
     "Output live debug logging over serial, view and export position-redacted device logs over Bluetooth." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgabe von Echtzeit-Fehlersuchprotokollen über die serielle Schnittstelle, Anzeige und Export von positionskorrigierten Geräteprotokollen über Bluetooth."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22577,6 +22709,12 @@
     },
     "Primary Admin Key" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erster Admin-Schlüssel"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22597,6 +22735,12 @@
     },
     "Private Key" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privater Schlüssel"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22617,6 +22761,12 @@
     },
     "Public Key" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öffentlicher Schlüssel"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25755,6 +25905,12 @@
     },
     "Secondary Admin Key" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zweiter Admin-Schlüssel"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25797,6 +25953,12 @@
     },
     "Security Config Settings require a firmware version 2.5+" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sicherheitskonfigurationseinstellungen erfordern eine Firmware mit Version 2.5 oder höher"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26158,6 +26320,12 @@
     },
     "Sent out to other nodes on the mesh to allow them to compute a shared secret key." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wird an andere Knoten im Netz gesendet, damit diese einen gemeinsamen geheimen Schlüssel berechnen können."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26264,6 +26432,12 @@
     },
     "Serial Console" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serielle Konsole"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26274,6 +26448,12 @@
     },
     "Serial Console over the Stream API." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serielle Konsole über die Stream-API."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28855,6 +29035,12 @@
     },
     "Tertiary Admin Key" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dritter Admin-Schlüssel"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29005,6 +29191,12 @@
     },
     "The primary public key authorized to send admin messages to this node." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der erste öffentliche Schlüssel, der berechtigt ist, Admin-Nachrichten an diesen Knoten zu senden."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29045,6 +29237,12 @@
     },
     "The secondary public key authorized to send admin messages to this node." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der zweite öffentliche Schlüssel, der berechtigt ist, Admin-Nachrichten an diesen Knoten zu senden."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29076,6 +29274,12 @@
     },
     "The tertiary public key authorized to send admin messages to this node." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der dritte öffentliche Schlüssel, der berechtigt ist, Admin-Nachrichten an diesen Knoten zu senden."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30833,8 +31037,14 @@
         }
       }
     },
-    "Used to create a shared key with a remote device." : {
+    "Wird verwendet, um einen gemeinsamen Schlüssel mit einem entfernten Gerät zu erstellen." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verbunden mit einem Knoten"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
