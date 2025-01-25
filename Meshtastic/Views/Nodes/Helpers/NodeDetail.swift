@@ -237,6 +237,15 @@ struct NodeDetail: View {
 						}
 					}
 				}
+				if node.hasPowerMetrics && node.latestPowerMetrics != nil {
+					Section("Power") {
+						VStack {
+							if let metric = node.latestPowerMetrics {
+								PowerMetrics(metric: metric)
+							}
+						}
+					}
+				}
 				Section("Logs") {
 					// Metrics
 					NavigationLink {

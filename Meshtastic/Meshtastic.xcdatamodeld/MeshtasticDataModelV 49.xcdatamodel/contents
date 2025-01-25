@@ -407,6 +407,12 @@
         <attribute name="numTotalNodes" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="numTxRelay" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="numTxRelayCanceled" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="powerCh1Current" optional="YES" attributeType="Float" usesScalarValueType="YES"/>
+        <attribute name="powerCh1Voltage" optional="YES" attributeType="Float" usesScalarValueType="YES"/>
+        <attribute name="powerCh2Current" optional="YES" attributeType="Float" usesScalarValueType="YES"/>
+        <attribute name="powerCh2Voltage" optional="YES" attributeType="Float" usesScalarValueType="YES"/>
+        <attribute name="powerCh3Current" optional="YES" attributeType="Float" usesScalarValueType="YES"/>
+        <attribute name="powerCh3Voltage" optional="YES" attributeType="Float" usesScalarValueType="YES"/>
         <attribute name="relativeHumidity" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="rssi" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="snr" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
