@@ -9450,6 +9450,9 @@
         }
       }
     },
+    "Enable neighbor info" : {
+
+    },
     "Enable Notifications" : {
       "localizations" : {
         "sr" : {
@@ -11855,6 +11858,9 @@
           }
         }
       }
+    },
+    "How often neighbor info packets are sent out over the mesh. Default is 6 hours." : {
+
     },
     "How often power metrics are sent out over the mesh. Default is 30 minutes." : {
       "localizations" : {
@@ -20187,6 +20193,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Теме у окружењу"
+          }
+        }
+      }
+    },
+    "neighbor.info" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neighbor Info"
           }
         }
       }

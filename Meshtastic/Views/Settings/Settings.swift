@@ -244,6 +244,14 @@ struct Settings: View {
 					Image(systemName: "chart.xyaxis.line")
 				}
 			}
+			
+			NavigationLink(value: SettingsNavigationState.neighborInfo) {
+				Label {
+					Text("neighbor.info")
+				} icon: {
+					Image(systemName: "person.3")
+				}
+			}
 		}
 	}
 
@@ -472,6 +480,8 @@ struct Settings: View {
 					StoreForwardConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .telemetry:
 					TelemetryConfig(node: nodes.first(where: { $0.num == selectedNode }))
+				case .neighborInfo:
+					NeighborInfoConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .meshLog:
 					MeshLog()
 				case .debugLogs:

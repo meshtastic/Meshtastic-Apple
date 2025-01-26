@@ -1447,3 +1447,46 @@ func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nod
 		Logger.data.error("💥 [TelemetryConfigEntity] Fetching node for core data TelemetryConfigEntity failed: \(nsError, privacy: .public)")
 	}
 }
+
+func upsertNeighborInfoModuleConfigPacket(config: ModuleConfig.NeighborInfoConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
+	let logString = String.localizedStringWithFormat("mesh.log.neighbor.config %@".localized, String(nodeNum))
+	MeshLogger.log("📈 \(logString)")
+
+	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+	do {
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
+		// Found a node, save Neighbor INfo Config
+		if !fetchedNode.isEmpty {
+			if fetchedNode[0].neighborInfoConfig == nil {
+				let newNeighborInfoConfig = NeighborInfoConfigEntity(context: context)
+				newNeighborInfoConfig.enabled = config.enabled
+				newNeighborInfoConfig.updateInterval = Int32(config.updateInterval)
+				fetchedNode[0].neighborInfoConfig = newNeighborInfoConfig
+			} else {
+				fetchedNode[0].neighborInfoConfig?.enabled = config.enabled
+				fetchedNode[0].neighborInfoConfig?.updateInterval = Int32(config.updateInterval)
+			}
+			if sessionPasskey != nil {
+				fetchedNode[0].sessionPasskey = sessionPasskey
+				fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+			}
+			do {
+				try context.save()
+				Logger.data.info("💾 [NeighborInfoConfigEntity] Updated Neighbor Info Module Config for node: \(nodeNum.toHex(), privacy: .public)")
+
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				Logger.data.error("💥 [NeighborInfoConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
+			}
+
+		} else {
+			Logger.data.error("💥 [NeighborInfoConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Neighbor Info Module Config")
+		}
+
+	} catch {
+		let nsError = error as NSError
+		Logger.data.error("💥 [NeighborInfoConfigEntity] Fetching node for core data NeighborInfoConfigEntity failed: \(nsError, privacy: .public)")
+	}
+}

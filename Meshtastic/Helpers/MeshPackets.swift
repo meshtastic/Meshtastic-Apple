@@ -91,6 +91,8 @@ func moduleConfig (config: ModuleConfig, context: NSManagedObjectContext, nodeNu
 		upsertTelemetryModuleConfigPacket(config: config.telemetry, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.storeForward(config.storeForward) {
 		upsertStoreForwardModuleConfigPacket(config: config.storeForward, nodeNum: nodeNum, context: context)
+	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.neighborInfo(config.neighborInfo) {
+		upsertNeighborInfoModuleConfigPacket(config: config.neighborInfo, nodeNum: nodeNum, context: context)
 	}
 }
 
@@ -535,6 +537,8 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				upsertStoreForwardModuleConfigPacket(config: moduleConfig.storeForward, nodeNum: Int64(packet.from), context: context)
 			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.telemetry(moduleConfig.telemetry) {
 				upsertTelemetryModuleConfigPacket(config: moduleConfig.telemetry, nodeNum: Int64(packet.from), context: context)
+			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.neighborInfo(moduleConfig.neighborInfo) {
+				upsertNeighborInfoModuleConfigPacket(config: moduleConfig.neighborInfo, nodeNum: Int64(packet.from), context: context)
 			}
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getRingtoneResponse(adminMessage.getRingtoneResponse) {
 			let ringtone = adminMessage.getRingtoneResponse
