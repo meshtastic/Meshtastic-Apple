@@ -37,6 +37,7 @@
 		6DA39D8E2A92DC52007E311C /* MeshtasticAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */; };
 		6DEDA55A2A957B8E00321D2E /* DetectionSensorLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */; };
 		6DEDA55C2A9592F900321D2E /* MessageEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */; };
+		8DFB43412D46D51000F45696 /* NeighborInfoConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DFB43402D46D51000F45696 /* NeighborInfoConfig.swift */; };
 		B399E8A42B6F486400E4488E /* RetryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B399E8A32B6F486400E4488E /* RetryButton.swift */; };
 		B3E905B12B71F7F300654D07 /* TextMessageField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E905B02B71F7F300654D07 /* TextMessageField.swift */; };
 		BCB613812C67290800485544 /* SendWaypointIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613802C67290800485544 /* SendWaypointIntent.swift */; };
@@ -290,6 +291,8 @@
 		6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAppDelegate.swift; sourceTree = "<group>"; };
 		6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorLog.swift; sourceTree = "<group>"; };
 		6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntityExtension.swift; sourceTree = "<group>"; };
+		8D1170692D46D20400BB77D8 /* MeshtasticDataModelV 50.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 50.xcdatamodel"; sourceTree = "<group>"; };
+		8DFB43402D46D51000F45696 /* NeighborInfoConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NeighborInfoConfig.swift; path = Module/NeighborInfoConfig.swift; sourceTree = "<group>"; };
 		B399E8A32B6F486400E4488E /* RetryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryButton.swift; sourceTree = "<group>"; };
 		B3E905B02B71F7F300654D07 /* TextMessageField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageField.swift; sourceTree = "<group>"; };
 		BCB613802C67290800485544 /* SendWaypointIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendWaypointIntent.swift; sourceTree = "<group>"; };
@@ -430,7 +433,6 @@
 		DDA0B6B1294CDC55001356EC /* Channels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channels.swift; sourceTree = "<group>"; };
 		DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelRoles.swift; sourceTree = "<group>"; };
 		DDA28B1B2D32C89200EF726F /* MeshtasticDataModelV 48.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 48.xcdatamodel"; sourceTree = "<group>"; };
-		8D1170692D46D20400BB77D8 /* MeshtasticDataModelV 50.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 50.xcdatamodel"; sourceTree = "<group>"; };
 		DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshPackets.swift; sourceTree = "<group>"; };
 		DDA951592BC6624100CEA535 /* TelemetryWeather.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TelemetryWeather.swift; sourceTree = "<group>"; };
 		DDA9515B2BC6631200CEA535 /* TelemetryEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryEnums.swift; sourceTree = "<group>"; };
@@ -761,6 +763,7 @@
 		DD61937A2863876A00E59241 /* Config */ = {
 			isa = PBXGroup;
 			children = (
+				8DFB43402D46D51000F45696 /* NeighborInfoConfig.swift */,
 				D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */,
 				D93069072B81DF040066FBC8 /* SaveConfigButton.swift */,
 				DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */,
@@ -1525,6 +1528,7 @@
 				DDF6B2482A9AEBF500BA6931 /* StoreForwardConfig.swift in Sources */,
 				BCE2D3C92C7C377F008E6199 /* FactoryResetNodeIntent.swift in Sources */,
 				DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */,
+				8DFB43412D46D51000F45696 /* NeighborInfoConfig.swift in Sources */,
 				DD93800B2BA3F968008BEC06 /* NodeMapContent.swift in Sources */,
 				DD41582A28585C32009B0E59 /* RangeTestConfig.swift in Sources */,
 				DD1925B728CDA5A400720036 /* CannedMessagesConfigEnums.swift in Sources */,
