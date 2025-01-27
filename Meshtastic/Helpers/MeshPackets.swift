@@ -682,7 +682,8 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 		let logString = String.localizedStringWithFormat("mesh.log.telemetry.received %@".localized, String(packet.from))
 		MeshLogger.log("📈 \(logString)")
 
-		if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) {
+
+		if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) && telemetryMessage.variant != Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
 			/// Other unhandled telemetry packets
 			return
 		}
@@ -736,6 +737,38 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.numTotalNodes = Int32(truncatingIfNeeded: telemetryMessage.localStats.numTotalNodes)
 					telemetry.metricsType = 4
 					Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.localStats.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.localStats.airUtilTx, privacy: .public) Packets Sent: \(telemetryMessage.localStats.numPacketsTx, privacy: .public) Packets Received: \(telemetryMessage.localStats.numPacketsRx, privacy: .public) Bad Packets Received: \(telemetryMessage.localStats.numPacketsRxBad, privacy: .public) Nodes Online: \(telemetryMessage.localStats.numOnlineNodes, privacy: .public) of \(telemetryMessage.localStats.numTotalNodes, privacy: .public) nodes for Node: \(packet.from.toHex(), privacy: .public)")
+				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
+					Logger.data.info("📈 [Power Metrics] Received for Node: \(packet.from.toHex(), privacy: .public)")
+					
+					if telemetryMessage.powerMetrics.hasCh1Voltage {
+						telemetry.powerCh1Voltage = telemetryMessage.powerMetrics.ch1Voltage
+						telemetry.metricsType = 2
+					}
+
+					if telemetryMessage.powerMetrics.hasCh1Current {
+						telemetry.powerCh1Current = telemetryMessage.powerMetrics.ch1Current
+						telemetry.metricsType = 2
+					}
+
+					if telemetryMessage.powerMetrics.hasCh2Voltage {
+						telemetry.powerCh2Voltage = telemetryMessage.powerMetrics.ch2Voltage
+						telemetry.metricsType = 2
+					}
+
+					if telemetryMessage.powerMetrics.hasCh1Current {
+						telemetry.powerCh2Current = telemetryMessage.powerMetrics.ch2Current
+						telemetry.metricsType = 2
+					}
+
+					if telemetryMessage.powerMetrics.hasCh3Voltage {
+						telemetry.powerCh3Voltage = telemetryMessage.powerMetrics.ch3Voltage
+						telemetry.metricsType = 2
+					}
+
+					if telemetryMessage.powerMetrics.hasCh3Current {
+						telemetry.powerCh3Current = telemetryMessage.powerMetrics.ch3Current
+						telemetry.metricsType = 2
+					}
 				}
 				telemetry.snr = packet.rxSnr
 				telemetry.rssi = packet.rxRssi
@@ -987,8 +1020,8 @@ func textMessageAppPacket(
 												path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.messageId)",
 												messageId: newMessage.messageId,
 												channel: newMessage.channel,
-												userNum: Int64(newMessage.fromUser?.userId ?? "0")
-											)
+												userNum: Int64(newMessage.fromUser?.userId ?? "0"),
+											    critical: critical)
 										]
 										manager.schedule()
 										Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
