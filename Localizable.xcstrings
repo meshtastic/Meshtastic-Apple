@@ -19220,7 +19220,7 @@
         }
       }
     },
-    "Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from Settings > App Setting > Open Settings." : {
+    "Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from Settings > App Settings > Open Settings." : {
 
     },
     "Meshtastic® Copyright Meshtastic LLC" : {
@@ -19772,9 +19772,6 @@
           }
         }
       }
-    },
-    "MQTT Settings" : {
-
     },
     "mqtt.clientproxy" : {
       "localizations" : {
@@ -21954,7 +21951,7 @@
         }
       }
     },
-    "Phone Location Permissions" : {
+    "Phone Location" : {
 
     },
     "phone.gps" : {

@@ -9,7 +9,7 @@ struct ContentView: View {
 
 	@ObservedObject	var router: Router
 
-	@AppStorage("showOnboarding") var isShowingOnboardingFlow = UserDefaults.showOnboarding
+	@State var isShowingOnboardingFlow: Bool = false
 
 	var body: some View {
 		TabView(selection: $appState.router.navigationState.selectedTab) {
@@ -55,10 +55,18 @@ struct ContentView: View {
 		}.sheet(
 			isPresented: $isShowingOnboardingFlow,
 			onDismiss: {
-				UserDefaults.firstLaunch = false
+				//UserDefaults.firstLaunch = false
 			}, content: {
 				OnboardingView()
 			}
 		)
+		.onAppear {
+			if UserDefaults.firstLaunch {
+				isShowingOnboardingFlow = true
+			}
+		}
+		.onChange(of: UserDefaults.showOnboarding) { newValue in
+			isShowingOnboardingFlow = newValue
+		}
 	}
 }

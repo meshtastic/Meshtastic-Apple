@@ -218,9 +218,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			disconnectPeripheral()
 			return
 		}
-		if UserDefaults.firstLaunch {
-			UserDefaults.showOnboarding = true
-		}
 		// Discover Services
 		peripheral.discoverServices([meshtasticServiceCBUUID])
 		Logger.services.info("✅ [BLE] Connected: \(peripheral.name ?? "Unknown", privacy: .public)")
@@ -998,7 +995,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				lastConnectionError = ""
 				isSubscribed = true
 				Logger.mesh.info("🤜 [BLE] Want Config Complete. ID:\(decodedInfo.configCompleteID)")
+				if UserDefaults.firstLaunch {
+					UserDefaults.showOnboarding = true
+				}
 				if sendTime() {
+				
 				}
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again

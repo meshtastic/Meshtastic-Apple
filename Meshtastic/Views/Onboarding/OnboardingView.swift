@@ -12,6 +12,7 @@ struct OnboardingView: View {
 	}
 
 	@State var navigationPath: [SetupGuide] = []
+	@EnvironmentObject var bleManager: BLEManager
 
 	@Environment(\.dismiss) var dismiss
 
@@ -136,13 +137,13 @@ struct OnboardingView: View {
 	var locationView: some View {
 		VStack {
 			VStack {
-				Text("Phone Location Permissions")
+				Text("Phone Location")
 					.font(.largeTitle.bold())
 					.multilineTextAlignment(.center)
 					.fixedSize(horizontal: false, vertical: true)
 			}
 			VStack(alignment: .leading, spacing: 16) {
-				Text("Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from Settings > App Setting > Open Settings.")
+				Text("Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from Settings > App Settings > Open Settings.")
 					.font(.body.bold())
 					.multilineTextAlignment(.center)
 					.fixedSize(horizontal: false, vertical: true)
@@ -189,7 +190,12 @@ struct OnboardingView: View {
 
 	var mqttView: some View {
 		VStack {
-			Text("MQTT Settings")
+			VStack {
+				Text("MQTT")
+					.font(.largeTitle.bold())
+					.multilineTextAlignment(.center)
+					.fixedSize(horizontal: false, vertical: true)
+			}
 			Spacer()
 			Button {
 				Task {
@@ -199,6 +205,10 @@ struct OnboardingView: View {
 				Text("Enable MQTT")
 					.frame(maxWidth: .infinity)
 			}
+			.padding()
+			.padding()
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
 			.padding()
 			.buttonStyle(.borderedProminent)
 
@@ -272,7 +282,7 @@ struct OnboardingView: View {
 			let status = LocationHelper.shared.locationManager.authorizationStatus
 			if status == .notDetermined {
 				navigationPath.append(.location)
-				await LocationHelper.shared.requestLocationAlwaysPermissions()
+				let newStatus = await LocationHelper.shared.requestLocationAlwaysPermissions()
 			} else {
 				fallthrough
 			}
