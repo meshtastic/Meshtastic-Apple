@@ -27,7 +27,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	@Published var automaticallyReconnect: Bool = true
 	@Published var mqttProxyConnected: Bool = false
 	@Published var mqttError: String = ""
-	public var minimumVersion = "2.3.2"
+	public var minimumVersion = "2.3.15"
 	public var connectedVersion: String
 	public var isConnecting: Bool = false
 	public var isConnected: Bool = false
@@ -960,6 +960,22 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 					traceRoute?.hops = NSOrderedSet(array: hopNodes)
 					traceRoute?.time = Date()
+
+					if let tr = traceRoute {
+						let manager = LocalNotificationManager()
+						manager.notifications = [
+							Notification(
+								id: (UUID().uuidString),
+								title: "Traceroute Complete",
+								subtitle: "TR received back from \(destinationHop.name ?? "unknown")",
+								content: "Hops from: \(tr.hopsTowards), Hops back: \(tr.hopsBack)\n\(tr.routeText ?? "unknown".localized)\n\(tr.routeBackText ?? "unknown".localized)",
+								target: "nodes",
+								path: "meshtastic:///nodes?nodenum=\(connectedNode.user?.num ?? 0)"
+							)
+						]
+						manager.schedule()
+					}
+
 					do {
 						try context.save()
 						Logger.data.info("💾 Saved Trace Route")

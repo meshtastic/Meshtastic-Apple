@@ -113,6 +113,12 @@ import OSLog
 	}
 
 	static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
+	static var currentLocation: CLLocationCoordinate2D {
+		guard let location = shared.manager.location else {
+			return DefaultLocation
+		}
+		return location.coordinate
+	}
 
 	static var satsInView: Int {
 		var sats = 0
@@ -139,4 +145,6 @@ import OSLog
 		}
 		return sats
 	}
+	
+
 }
