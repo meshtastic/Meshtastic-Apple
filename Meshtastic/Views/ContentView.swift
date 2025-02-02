@@ -5,11 +5,11 @@
 import SwiftUI
 
 struct ContentView: View {
-	@ObservedObject
-	var appState: AppState
+	@ObservedObject	var appState: AppState
 
-	@ObservedObject
-	var router: Router
+	@ObservedObject	var router: Router
+
+	@State var isShowingOnboardingFlow: Bool = false
 
 	var body: some View {
 		TabView(selection: $appState.router.navigationState.selectedTab) {
@@ -52,6 +52,21 @@ struct ContentView: View {
 					.font(.title)
 			}
 			.tag(NavigationState.Tab.settings)
+		}.sheet(
+			isPresented: $isShowingOnboardingFlow,
+			onDismiss: {
+				//UserDefaults.firstLaunch = false
+			}, content: {
+				OnboardingView()
+			}
+		)
+		.onAppear {
+			if UserDefaults.firstLaunch {
+				isShowingOnboardingFlow = true
+			}
+		}
+		.onChange(of: UserDefaults.showOnboarding) { newValue in
+			isShowingOnboardingFlow = newValue
 		}
 	}
 }

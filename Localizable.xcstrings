@@ -1861,6 +1861,9 @@
         }
       }
     },
+    "Allow Meshtastic to send notifications for messages, newly discovered nodes and low battery alerts for the connected device." : {
+
+    },
     "Allow Position Requests" : {
       "localizations" : {
         "sr" : {
@@ -2211,6 +2214,9 @@
           }
         }
       }
+    },
+    "App Notifications" : {
+
     },
     "App Settings" : {
       "localizations" : {
@@ -3528,6 +3534,9 @@
           }
         }
       }
+    },
+    "Bluetooth" : {
+
     },
     "bluetooth.config" : {
       "localizations" : {
@@ -7014,6 +7023,9 @@
         }
       }
     },
+    "Configure notification permissions" : {
+
+    },
     "Connect to a Node" : {
       "localizations" : {
         "de" : {
@@ -7390,6 +7402,9 @@
         }
       }
     },
+    "Continue to next step" : {
+
+    },
     "Control Type" : {
       "localizations" : {
         "sr" : {
@@ -7625,6 +7640,9 @@
           }
         }
       }
+    },
+    "Critical Alerts" : {
+
     },
     "Current Firmware Version: %@" : {
       "localizations" : {
@@ -10604,6 +10622,9 @@
         }
       }
     },
+    "Enable MQTT" : {
+
+    },
     "Enable Notifications" : {
       "localizations" : {
         "sr" : {
@@ -12158,6 +12179,9 @@
           }
         }
       }
+    },
+    "Get started" : {
+
     },
     "Get the latest alpha firmware" : {
       "localizations" : {
@@ -20913,6 +20937,9 @@
         }
       }
     },
+    "Meshtastic" : {
+
+    },
     "Meshtastic Node %@ has shared channels with you" : {
       "localizations" : {
         "de" : {
@@ -20928,6 +20955,9 @@
           }
         }
       }
+    },
+    "Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from Settings > App Settings > Open Settings." : {
+
     },
     "Meshtastic® Copyright Meshtastic LLC" : {
       "localizations" : {
@@ -23764,6 +23794,9 @@
           }
         }
       }
+    },
+    "Phone Location" : {
+
     },
     "phone.gps" : {
       "localizations" : {
@@ -28236,6 +28269,9 @@
         }
       }
     },
+    "Send Notifications" : {
+
+    },
     "Send Reboot OTA" : {
       "localizations" : {
         "sr" : {
@@ -28898,6 +28934,9 @@
           }
         }
       }
+    },
+    "Set up later" : {
+
     },
     "set.region" : {
       "localizations" : {
@@ -33815,6 +33854,9 @@
           }
         }
       }
+    },
+    "Welcome to" : {
+
     },
     "What does the lock mean?" : {
       "localizations" : {
