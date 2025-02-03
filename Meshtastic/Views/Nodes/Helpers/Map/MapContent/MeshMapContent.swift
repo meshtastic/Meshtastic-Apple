@@ -85,7 +85,7 @@ struct MeshMapContent: MapContent {
 			   let nodePositions = Array(positions) as? [PositionEntity] {
 				if showRouteLines {
 					let routeCoords = nodePositions.compactMap({(pos) -> CLLocationCoordinate2D in
-						return pos.nodeCoordinate ?? LocationHelper.DefaultLocation
+						return pos.nodeCoordinate ?? LocationsHandler.DefaultLocation
 					})
 					let gradient = LinearGradient(
 						colors: [Color(nodeColor.lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
@@ -148,9 +148,9 @@ struct MeshMapContent: MapContent {
 		ForEach(routes) { route in
 			if let routeLocations = route.locations, let locations = Array(routeLocations) as? [LocationEntity] {
 				let routeCoords = locations.compactMap {(loc) -> CLLocationCoordinate2D in
-					return loc.locationCoordinate ?? LocationHelper.DefaultLocation
+					return loc.locationCoordinate ?? LocationsHandler.DefaultLocation
 				}
-				Annotation("Start", coordinate: routeCoords.first ?? LocationHelper.DefaultLocation) {
+				Annotation("Start", coordinate: routeCoords.first ?? LocationsHandler.DefaultLocation) {
 					ZStack {
 						Circle()
 							.fill(Color(.green))
@@ -159,7 +159,7 @@ struct MeshMapContent: MapContent {
 					}
 				}
 				.annotationTitles(.automatic)
-				Annotation("Finish", coordinate: routeCoords.last ?? LocationHelper.DefaultLocation) {
+				Annotation("Finish", coordinate: routeCoords.last ?? LocationsHandler.DefaultLocation) {
 					ZStack {
 						Circle()
 							.fill(Color(.black))

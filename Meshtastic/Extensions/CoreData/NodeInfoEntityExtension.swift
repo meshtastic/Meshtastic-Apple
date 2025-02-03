@@ -22,6 +22,10 @@ extension NodeInfoEntity {
 		return self.telemetries?.filtered(using: NSPredicate(format: "metricsType == 1")).lastObject as? TelemetryEntity
 	}
 
+	var latestPowerMetrics: TelemetryEntity? {
+		return self.telemetries?.filtered(using: NSPredicate(format: "metricsType == 2")).lastObject as? TelemetryEntity
+	}
+
 	var hasPositions: Bool {
 		return self.positions?.count ?? 0 > 0
 	}
@@ -37,6 +41,11 @@ extension NodeInfoEntity {
 	}
 	var hasDetectionSensorMetrics: Bool {
 		return user?.sensorMessageList.count ?? 0 > 0
+	}
+
+	var hasPowerMetrics: Bool {
+		let powerMetrics = telemetries?.filter { ($0 as AnyObject).metricsType == 2 }
+		return powerMetrics?.count ?? 0 > 0
 	}
 
 	var hasTraceRoutes: Bool {

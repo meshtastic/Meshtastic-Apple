@@ -93,7 +93,7 @@ struct NodeList: View {
 			)
 			/// Don't show message, trace route, position exchange or delete context menu items for the connected node
 			if connectedNode.num != node.num {
-				if (!node.viaMqtt || node.viaMqtt && node.hopsAway == 0) {
+				if !node.viaMqtt || node.viaMqtt && node.hopsAway == 0 {
 					Button(action: {
 						if let url = URL(string: "meshtastic:///messages?userNum=\(node.num)") {
 						   UIApplication.shared.open(url)
@@ -418,9 +418,9 @@ struct NodeList: View {
 		}
 		/// Distance
 		if distanceFilter {
-			let pointOfInterest = LocationHelper.currentLocation
+			let pointOfInterest = LocationsHandler.currentLocation
 
-			if pointOfInterest.latitude != LocationHelper.DefaultLocation.latitude && pointOfInterest.longitude != LocationHelper.DefaultLocation.longitude {
+			if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude && pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
 				let d: Double = maxDistance * 1.1
 				let r: Double = 6371009
 				let meanLatitidue = pointOfInterest.latitude * .pi / 180

@@ -237,6 +237,15 @@ struct NodeDetail: View {
 						}
 					}
 				}
+				if node.hasPowerMetrics && node.latestPowerMetrics != nil {
+					Section("Power") {
+						VStack {
+							if let metric = node.latestPowerMetrics {
+								PowerMetrics(metric: metric)
+							}
+						}
+					}
+				}
 				Section("Logs") {
 					// Metrics
 					NavigationLink {
@@ -250,6 +259,18 @@ struct NodeDetail: View {
 						}
 					}
 					.disabled(!node.hasDeviceMetrics)
+
+					NavigationLink {
+						PowerMetricsLog(node: node)
+					} label: {
+						Label {
+							Text("Power Metrics Log")
+						} icon: {
+							Image(systemName: "bolt")
+								.symbolRenderingMode(.multicolor)
+						}
+					}
+					.disabled(!node.hasPowerMetrics)
 
 					NavigationLink {
 						NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
