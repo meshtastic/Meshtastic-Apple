@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -484,6 +484,7 @@
 		DDCDC69A29467643004C1DDA /* MeshtasticDataModelV3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV3.xcdatamodel; sourceTree = "<group>"; };
 		DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserConfig.swift; sourceTree = "<group>"; };
 		DDD28D372C0CD2670063CFA3 /* MeshtasticDataModelV 37.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 37.xcdatamodel"; sourceTree = "<group>"; };
+		DDD3A2B22D5127CF0045EB48 /* ci_pre_xcodebuild.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ci_pre_xcodebuild.sh; sourceTree = "<group>"; };
 		DDD43FE22A78C8900083A3E9 /* MqttClientProxyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MqttClientProxyManager.swift; sourceTree = "<group>"; };
 		DDD5BB082C285DDC007E03CA /* AppLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLog.swift; sourceTree = "<group>"; };
 		DDD5BB0A2C285E45007E03CA /* LogDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDetail.swift; sourceTree = "<group>"; };
@@ -543,6 +544,10 @@
 		DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentConditionsCompact.swift; sourceTree = "<group>"; };
 		DDFFA7462B3A7F3C004730DB /* Bundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		DDD3A2AE2D5121BC0045EB48 /* SupportingFiles */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = SupportingFiles; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		25F5D5C42C4375A8008036E3 /* Frameworks */ = {
@@ -904,6 +909,8 @@
 		DDC2E14B26CE248E0042C5E4 = {
 			isa = PBXGroup;
 			children = (
+				DDD3A2B12D5127B40045EB48 /* ci_scripts */,
+				DDD3A2AE2D5121BC0045EB48 /* SupportingFiles */,
 				DDDBC87A2BC62E4E001E8DF7 /* Settings.bundle */,
 				25AECD4E2C2F723200862C8E /* Localizable.xcstrings */,
 				DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */,
@@ -1060,6 +1067,14 @@
 			path = Persistence;
 			sourceTree = "<group>";
 		};
+		DDD3A2B12D5127B40045EB48 /* ci_scripts */ = {
+			isa = PBXGroup;
+			children = (
+				DDD3A2B22D5127CF0045EB48 /* ci_pre_xcodebuild.sh */,
+			);
+			path = ci_scripts;
+			sourceTree = "<group>";
+		};
 		DDD43FE12A78C86B0083A3E9 /* Mqtt */ = {
 			isa = PBXGroup;
 			children = (
@@ -1179,6 +1194,9 @@
 			);
 			dependencies = (
 				DDDE5A0229AF163E00490C6C /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				DDD3A2AE2D5121BC0045EB48 /* SupportingFiles */,
 			);
 			name = Meshtastic;
 			packageProductDependencies = (
