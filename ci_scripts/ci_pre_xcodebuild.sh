@@ -7,7 +7,7 @@ echo "Stage: PRE-Xcode Build is activated .... "
 cd $CI_PRIMARY_REPOSITORY_PATH/ci_scripts || exit 1
 
 # Write a JSON File containing all the environment variables and secrets.
-printf "{\"PUBLIC_MQTT_USERNAME\":\"%s\",\"PUBLIC_MQTT_PASSWORD\":\"%s\"}" "$PUBLIC_MQTT_USERNAME" "$PUBLIC_MQTT_PASSWORD" >> .\ ../SupportingFiles/Secrets.json
+printf "{\"PUBLIC_MQTT_USERNAME\":\"%s\",\"PUBLIC_MQTT_PASSWORD\":\"%s\"}" "$PUBLIC_MQTT_USERNAME" "$PUBLIC_MQTT_PASSWORD" >> .\ ./SupportingFiles/secrets.json
 
 echo "Wrote Secrets.json file."
 
