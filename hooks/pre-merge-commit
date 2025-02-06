@@ -1,0 +1,6 @@
+#!/usr/bin/env zsh
+# Feedback
+echo "Executing pre-merge-commit hook"
+
+# Execute the pre-commit hook, if present.
+test -x "hooks/pre-commit" && exec "hooks/pre-commit"

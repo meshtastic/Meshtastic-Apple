@@ -1,0 +1,132 @@
+#!/usr/bin/env bash
+# Opt-in : git config core.hooksPath hooks
+# Opt-out: git config --unset core.hooksPath
+
+# Version (e.g. "13.2.1") to Integer (e.g. "13002001000") conversion for version comparison purposes.
+#
+# Parameter 1: The string version to transform to an integer for easy comparison (e.g. 13.2.1)
+function versionToInteger {
+    echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }';
+}
+
+# Ensure the script is run from a relative context
+function validateRelativeContext() {
+    if [ ! -d "./scripts" ]; then
+        printf "\033[97;101mWARNING\033[0m: This script should be executed relative from the project root (e.g. \033[93m./scripts/setup-hooks.sh\033[0m).\n"
+        exit 1
+    fi
+}
+
+# Ensure SwiftLint is installed.
+function validateTools() {
+    local minimumVersion=$(cat .swiftlint.version)
+
+    # Ensure SwiftLint is installed.
+    if [ -z $(which swiftlint) ]
+    then
+        printf "\033[97;101mWARNING\033[0m: SwiftLint is not installed! Please install SwiftLint (e.g. \033[93mbrew install swiftlint\033[0m).\n"
+        exit 1
+    fi
+
+    local swiftlintVersion=$(swiftlint --version)
+
+    # Ensure SwiftLint matched the version criteria.
+    if [ $(versionToInteger "$swiftlintVersion") -lt $(versionToInteger "$minimumVersion") ]
+    then
+        printf "\033[97;101mWARNING\033[0m: SwiftLint is outdated! Please update SwiftLint (e.g. \033[93mbrew update swiftlint\033[0m).\n"
+        exit 1
+    fi
+}
+
+# Format source files and automatically fix any fixable lint issues.
+function formatSourceFiles() {
+    # Get an array of staged files.
+    local staged=($(git diff --cached --name-only --diff-filter=ACMRTUXab -- '*.swift'|sort|uniq))
+    # Get an array of unstaged files.
+    local unstaged=($(git diff --name-only --diff-filter=ACMRTUXab -- '*.swift'|sort|uniq))
+    # Keep (potentially) fixed files that require (re)staging.
+    local fixed=()
+    # Keep track of the number of files that require fixing.
+    local count=0
+    # Try to locate swiftlint.
+    local swiftlint=$(which swiftlint)
+    # Try to locate swift-format.
+    local swiftFormat=$(xcrun --find swift-format)
+
+    # Iterate over all staged files and determine which will be fixed and formatted.
+    for filePath in ${staged[@]}
+    do
+        local absoluteFilePath="./$filePath"
+
+        # Skip files which don't exist.
+        if [ ! -f "$absoluteFilePath" ]
+        then
+            continue
+        fi
+
+        # Provide the file to be fixed to SwiftLint in an incremental manner.
+        export SCRIPT_INPUT_FILE_$count="$absoluteFilePath"
+        count=$((count + 1))
+
+        # Execute swift-format to format this file in-place, if we have swift-format available to us.
+        #
+        # - Rules           : .swift-format
+        # - Documentation   : https://github.com/swiftlang/swift-format/blob/main/Documentation/Configuration.md
+        if [ ! -z $swiftFormat ]
+        then
+            echo "Formatting $filePath"
+            "$swiftFormat" format --in-place "./$filePath"
+        fi
+
+        # As files that will be fixed and formatted will have new unstaged changes, they need to be staged again 
+        # after fixing. We'll keep track of these files by adding the path to the 'fixed' array.
+        #
+        # However, files that have both staged as well as unstaged changes should _not_ be staged as these files
+        # have been deliberately left unstaged. As such, we'll still fix and format them, but we'll refrain from 
+        # staging them after fixing.
+        if [[ " ${unstaged[*]} " =~ [[:space:]]${filePath}[[:space:]] ]]
+        then
+            continue
+        fi
+
+        # Add the file to the array of fixed and formatted files so we can stage it.
+        fixed+=("$filePath")
+    done
+
+    # Ensure we have any files, otherwise bail out.
+    if [ $count -eq 0 ]
+    then
+        return
+    fi
+
+    # Provide the number of files to lint to SwiftLint.
+    export SCRIPT_INPUT_FILE_COUNT=$count
+
+    # Fix the fixable lint issues in the staged files.
+    #
+    # - Rules           : .swiftlint.yml
+    # - Documentation   : https://realm.github.io/SwiftLint/rule-directory.html
+    if [ ! -z $swiftlint ]
+    then
+        "$swiftlint" --use-script-input-files --fix
+    fi
+
+    echo "Staging ${#fixed[@]} files."
+
+    # Stage the fixed files (if any).
+    for filePath in ${fixed[@]}
+    do
+        git add "$filePath"
+    done
+}
+
+# Handle spaces in filenames
+IFS=$'\n'
+# Feedback
+printf "\033[93mExecuting pre-commit hook\033[0m\n"
+# Validate we are being executed relatively fron the project root.
+validateRelativeContext
+# Validate all tools are present and off the right version.
+validateTools
+# Format source files and automatically fix any fixable lint issues.
+formatSourceFiles

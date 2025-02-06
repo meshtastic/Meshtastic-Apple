@@ -929,24 +929,24 @@
 		DDC2E15626CE248E0042C5E4 /* Meshtastic */ = {
 			isa = PBXGroup;
 			children = (
-				BCB6137F2C6728E700485544 /* AppIntents */,
-				DD1BD0EC2C603C5B008C0C70 /* Measurement */,
-				25F5D5BC2C3F6D7B008036E3 /* Router */,
-				DD7709392AA1ABA1007A8BF0 /* Tips */,
 				DD90860A26F645B700DC5189 /* Meshtastic.entitlements */,
+				DDC2E16526CE248F0042C5E4 /* Info.plist */,
+				25F5D5C12C3F6E4B008036E3 /* AppState.swift */,
+				DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */,
+				6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */,
+				BCB6137F2C6728E700485544 /* AppIntents */,
 				DD8ED9C6289CE4A100B3B0AB /* Enums */,
 				DD86D40D2881BDB300BAEB7A /* Export */,
 				DDDB443E29F79A9400EE2349 /* Extensions */,
 				DDC2E1A526CEB32B0042C5E4 /* Helpers */,
+				DD1BD0EC2C603C5B008C0C70 /* Measurement */,
 				DDC2E18826CE24EE0042C5E4 /* Model */,
 				DDC4D5662754996200A4208E /* Persistence */,
-				DDC2E18926CE24F70042C5E4 /* Resources */,
-				DDC2E18726CE24E40042C5E4 /* Views */,
-				DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */,
-				25F5D5C12C3F6E4B008036E3 /* AppState.swift */,
-				DDC2E16526CE248F0042C5E4 /* Info.plist */,
 				DDC2E15D26CE248F0042C5E4 /* Preview Content */,
-				6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */,
+				DDC2E18926CE24F70042C5E4 /* Resources */,
+				25F5D5BC2C3F6D7B008036E3 /* Router */,
+				DD7709392AA1ABA1007A8BF0 /* Tips */,
+				DDC2E18726CE24E40042C5E4 /* Views */,
 			);
 			path = Meshtastic;
 			sourceTree = "<group>";
@@ -1169,7 +1169,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = DDC2E17E26CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "Meshtastic" */;
 			buildPhases = (
-				BB450974275599CE00509624 /* ShellScript */,
+				BB450974275599CE00509624 /* SwiftLint */,
 				DDC2E15026CE248E0042C5E4 /* Sources */,
 				DDC2E15126CE248E0042C5E4 /* Frameworks */,
 				DDC2E15226CE248E0042C5E4 /* Resources */,
@@ -1301,7 +1301,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		BB450974275599CE00509624 /* ShellScript */ = {
+		BB450974275599CE00509624 /* SwiftLint */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -1311,6 +1311,7 @@
 			);
 			inputPaths = (
 			);
+			name = SwiftLint;
 			outputFileListPaths = (
 			);
 			outputPaths = (
