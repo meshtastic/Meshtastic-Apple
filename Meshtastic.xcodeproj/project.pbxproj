@@ -545,6 +545,7 @@
 		DDF924C926FBB953009FE055 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
 		DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentConditionsCompact.swift; sourceTree = "<group>"; };
 		DDFFA7462B3A7F3C004730DB /* Bundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
+		F358A0E52D54E36900DB57BC /* MeshtasticDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MeshtasticDebug.entitlements; sourceTree = "<group>"; };
 		F3750A6B2D54CA450075BC53 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		F3750A6D2D54CA6C0075BC53 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		F3750A6F2D54CB0A0075BC53 /* Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Common.xcconfig; sourceTree = "<group>"; };
@@ -935,6 +936,7 @@
 		DDC2E15626CE248E0042C5E4 /* Meshtastic */ = {
 			isa = PBXGroup;
 			children = (
+				F358A0E52D54E36900DB57BC /* MeshtasticDebug.entitlements */,
 				DD90860A26F645B700DC5189 /* Meshtastic.entitlements */,
 				DDC2E16526CE248F0042C5E4 /* Info.plist */,
 				25F5D5C12C3F6E4B008036E3 /* AppState.swift */,
