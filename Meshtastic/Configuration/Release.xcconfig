@@ -1,0 +1,15 @@
+//
+//  Release.xcconfig
+//  Meshtastic
+//
+//  Created by Jeroen Wesbeek on 06/02/2025.
+//
+
+// Configuration settings file format documentation can be found at: https://help.apple.com/xcode/#/dev745c5c974
+//
+// Include common configuration.
+#include "Common.xcconfig"
+
+// Release configuration
+DEVELOPMENT_TEAM = 6YF6QJH524
+BUNDLE_IDENTIFIER = thebentern.Meshtastic

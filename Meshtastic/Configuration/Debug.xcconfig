@@ -1,0 +1,20 @@
+//
+//  Debug.xcconfig
+//  Meshtastic
+//
+//  Created by Jeroen Wesbeek on 06/02/2025.
+//
+
+// Configuration settings file format documentation can be found at: https://help.apple.com/xcode/#/dev745c5c974
+//
+// Include common configuration.
+#include "Common.xcconfig"
+
+// Debug configuration
+DEVELOPMENT_TEAM = GCH7VS5Y9R
+PRODUCT_BUNDLE_IDENTIFIER = gvh.Meshtastic
+
+// Local overrides, if any (ignored by .gitingore)
+//
+// Refer to README.md for more information.
+#include? "Local.xcconfig"

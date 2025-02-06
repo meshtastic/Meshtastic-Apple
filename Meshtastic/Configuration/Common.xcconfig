@@ -1,0 +1,9 @@
+//
+//  Common.xcconfig
+//  Meshtastic
+//
+//  Created by Jeroen Wesbeek on 06/02/2025.
+//
+
+// Configuration settings file format documentation can be found at: https://help.apple.com/xcode/#/dev745c5c974
+CODE_SIGN_IDENTITY = Apple Development

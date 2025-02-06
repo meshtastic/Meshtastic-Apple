@@ -6,19 +6,41 @@ SwiftUI client applications for iOS, iPadOS and macOS.
 
 ## Getting Started
 
-This project always uses the latest release version of XCode.
+This project always uses the [latest Xcode release version](https://xcodereleases.com/?scope=release).
 
 1. Clone the repo.
-2. Set up git hooks to automatically lint the project when you commit changes.
-2. Open `Meshtastic.xcworkspace`
-2. Build and run the `Meshtastic` target.
+   ```zsh
+   git clone git@github.com:meshtastic/Meshtastic-Apple.git
+   ```
+2. Set up git hooks to automatically apply formatting and fix lint issues on commit:
+   ```zsh
+   ./scripts/setup-hooks.sh
+   ```
+3. Add your team and bundle idenfiers in a externalized configuration file:
+   ```zsh
+   echo """
+    //
+    //  Local.xcconfig
+    //  Meshtastic
+    //
+    //  Created by $(whoami) on $(date -u -R +"%m/%d/%Y").
+    //
 
-```sh
-git clone git@github.com:meshtastic/Meshtastic-Apple.git
-cd Meshtastic-Apple
-./scripts/setup-hooks.sh
-open Meshtastic.xcworkspace
-```
+    DEVELOPMENT_TEAM = GCH7VS5Y9R
+    PRODUCT_BUNDLE_IDENTIFIER = gvh.Meshtastic
+   """ > Meshtastic/Configuration/Local.xcconfig
+   ```
+
+   > Note: Ensure to update the [`DEVELOPMENT_TEAM`](https://developer.apple.com/documentation/xcode/build-settings-reference#Development-Team) to your team and [`PRODUCT_BUNDLE_IDENTIFIER`](https://developer.apple.com/documentation/xcode/build-settings-reference#Product-Bundle-Identifier) to your bundle identifier in reverse-DNS format. The `Local.xcconfig` configuration file is ignored in `.gitignore`.
+4. Generate Protobufs:
+   ```zsh
+   ./scripts/gen_protos.sh
+   ```
+5. Open `Meshtastic.xcworkspace`:
+   ```zsh
+   xed Meshtastic.xcworkspace
+   ```
+6. Build and run the `Meshtastic` target.
 
 ## Technical Standards
 
@@ -34,10 +56,10 @@ The last two major operating system versions are supported on iOS, iPadOS and ma
 
 ## Updating Protobufs:
 
-1. run
-```bash
-./scripts/gen_protos.sh
-```
+1. run:
+  ```zsh
+  ./scripts/gen_protos.sh
+  ```
 2. Build, test, and commit the changes.
 
 ## Release Process
