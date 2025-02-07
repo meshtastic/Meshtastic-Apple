@@ -12,7 +12,7 @@ function versionToInteger {
 # Ensure the script is run from a relative context
 function validateRelativeContext() {
     if [ ! -d "./scripts" ]; then
-        printf "\033[97;101mWARNING\033[0m: This script should be executed relative from the project root (e.g. \033[93m./scripts/setup-hooks.sh\033[0m).\n"
+        printf "\033[97;101mWARNING\033[0m: This script should be executed relative from the project root.\n"
         exit 1
     fi
 }
