@@ -9,6 +9,7 @@ import Foundation
 import RegexBuilder
 
 class CommonRegex {
+	// swiftlint:disable:next identifier_name
 	static let COORDS_REGEX = Regex {
 			Capture {
 			 Regex {

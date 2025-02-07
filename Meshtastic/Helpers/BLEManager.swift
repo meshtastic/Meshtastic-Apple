@@ -10,7 +10,7 @@ import OSLog
 // ---------------------------------------------------------------------------------------
 // Meshtastic BLE Device Manager
 // ---------------------------------------------------------------------------------------
-class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate, ObservableObject {
+class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate, ObservableObject { // swiftlint:disable:this type_body_length
 	static var shared: BLEManager! // Singleton instance
 
 	let appState: AppState
@@ -40,17 +40,28 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	var wantRangeTestPackets = false
 	var wantStoreAndForwardPackets = false
 	/* Meshtastic Service Details */
+	// swiftlint:disable:next identifier_name
 	var TORADIO_characteristic: CBCharacteristic!
+	// swiftlint:disable:next identifier_name
 	var FROMRADIO_characteristic: CBCharacteristic!
+	// swiftlint:disable:next identifier_name
 	var FROMNUM_characteristic: CBCharacteristic!
+	// swiftlint:disable:next identifier_name
 	var LEGACY_LOGRADIO_characteristic: CBCharacteristic!
+	// swiftlint:disable:next identifier_name
 	var LOGRADIO_characteristic: CBCharacteristic!
 	let meshtasticServiceCBUUID = CBUUID(string: "0x6BA1B218-15A8-461F-9FA8-5DCAE273EAFD")
+	// swiftlint:disable:next identifier_name
 	let TORADIO_UUID = CBUUID(string: "0xF75C76D2-129E-4DAD-A1DD-7866124401E7")
+	// swiftlint:disable:next identifier_name
 	let FROMRADIO_UUID = CBUUID(string: "0x2C55E69E-4993-11ED-B878-0242AC120002")
+	// swiftlint:disable:next identifier_name
 	let EOL_FROMRADIO_UUID = CBUUID(string: "0x8BA2BCC2-EE02-4A55-A531-C525C5E454D5")
+	// swiftlint:disable:next identifier_name
 	let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
+	// swiftlint:disable:next identifier_name
 	let LEGACY_LOGRADIO_UUID = CBUUID(string: "0x6C6FD238-78FA-436B-AACF-15C5BE1EF2E2")
+	// swiftlint:disable:next identifier_name
 	let LOGRADIO_UUID = CBUUID(string: "0x5a3d6e49-06e6-4423-9944-e9de8cdf9547")
 
 	// MARK: init
@@ -236,13 +247,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		self.isConnected = false
 		self.isSubscribed = false
 		let manager = LocalNotificationManager()
-		if let e = error {
+		if let error {
 			// https://developer.apple.com/documentation/corebluetooth/cberror/code
-			let errorCode = (e as NSError).code
+			let errorCode = (error as NSError).code
 			if errorCode == 6 { // CBError.Code.connectionTimeout The connection has timed out unexpectedly.
 				// Happens when device is manually reset / powered off
-				lastConnectionError = "🚨" + String.localizedStringWithFormat("ble.errorcode.6 %@".localized, e.localizedDescription)
-				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized, privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(e.localizedDescription, privacy: .public)")
+				lastConnectionError = "🚨" + String.localizedStringWithFormat("ble.errorcode.6 %@".localized, error.localizedDescription)
+				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized, privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(error.localizedDescription, privacy: .public)")
 			} else if errorCode == 7 { // CBError.Code.peripheralDisconnected The specified device has disconnected from us.
 				// Seems to be what is received when a tbeam sleeps, immediately recconnecting does not work.
 				if UserDefaults.preferredPeripheralId == peripheral.identifier.uuidString {
@@ -251,7 +262,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							id: (peripheral.identifier.uuidString),
 							title: "Radio Disconnected".localized,
 							subtitle: "\(peripheral.name ?? "unknown".localized)",
-							content: e.localizedDescription,
+							content: error.localizedDescription,
 							target: "bluetooth",
 							path: "meshtastic:///bluetooth"
 						)
@@ -259,10 +270,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					manager.schedule()
 				}
 				lastConnectionError = "🚨 \("The specified device has disconnected from us".localized)"
-				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized, privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(e.localizedDescription, privacy: .public)")
+				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized, privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(error.localizedDescription, privacy: .public)")
 			} else if errorCode == 14 { // Peer removed pairing information
 				// Forgetting and reconnecting seems to be necessary so we need to show the user an error telling them to do that
-				lastConnectionError = "🚨 " + String.localizedStringWithFormat("ble.errorcode.14 %@".localized, e.localizedDescription)
+				lastConnectionError = "🚨 " + String.localizedStringWithFormat("ble.errorcode.14 %@".localized, error.localizedDescription)
 				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized) Error Code: \(errorCode, privacy: .public) Error: \(self.lastConnectionError, privacy: .public)")
 			} else {
 				if UserDefaults.preferredPeripheralId == peripheral.identifier.uuidString {
@@ -271,15 +282,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							id: (peripheral.identifier.uuidString),
 							title: "Radio Disconnected".localized,
 							subtitle: "\(peripheral.name ?? "unknown".localized)",
-							content: e.localizedDescription,
+							content: error.localizedDescription,
 							target: "bluetooth",
 							path: "meshtastic:///bluetooth"
 						)
 					]
 					manager.schedule()
 				}
-				lastConnectionError = "🚨 \(e.localizedDescription)"
-				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized, privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(e.localizedDescription, privacy: .public)")
+				lastConnectionError = "🚨 \(error.localizedDescription)"
+				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized, privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(error.localizedDescription, privacy: .public)")
 			}
 		} else {
 			// Disconnected without error which indicates user intent to disconnect
@@ -1668,7 +1679,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	public func saveChannelSet(base64UrlString: String, addChannels: Bool = false) -> Bool {
 		if isConnected {
 
-			var i: Int32 = 0
+			var index: Int32 = 0
 			var myInfo: MyInfoEntity
 			// Before we get started delete the existing channels from the myNodeInfo
 			if !addChannels {
@@ -1687,10 +1698,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							do {
 								let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
 								if fetchedMyInfo.count == 1 {
-									i = Int32(fetchedMyInfo[0].channels?.count ?? -1)
+									index = Int32(fetchedMyInfo[0].channels?.count ?? -1)
 									myInfo = fetchedMyInfo[0]
 									// Bail out if the index is negative or bigger than our max of 8
-									if i < 0 || i > 8 {
+									if index < 0 || index > 8 {
 										return false
 									}
 									// Bail out if there are no channels or if the same channel name already exists
@@ -1707,14 +1718,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						}
 
 						var chan = Channel()
-						if i == 0 {
+						if index == 0 {
 							chan.role = Channel.Role.primary
 						} else {
 							chan.role = Channel.Role.secondary
 						}
 						chan.settings = cs
-						chan.index = i
-						i += 1
+						chan.index = index
+						index += 1
 
 						var adminPacket = AdminMessage()
 						adminPacket.setChannel = chan

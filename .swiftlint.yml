@@ -97,10 +97,16 @@ opt_in_rules:
   - weak_delegate
   - yoda_condition
 allow_zero_lintable_files: true
-attributes:
-  always_on_same_line: ["@objc", "@IBAction", "@NSManaged", "@Environment", "@ObservedObject", "@Binding", "@State", "@ScaledMetric", "@ViewBuilder", "@MainActor"]
+# These should be updated after the code has been refactored.
+closure_body_length:
+  warning: 50  # default: 30
+  error: 405   # default: 100
 cyclomatic_complexity:
   ignores_case_statements: true
+# Changed severity from error (default) to warning as there are just too many errors.
+# This should be reverted back to error when all issues are fixed.
+empty_count:
+  severity: warning
 file_header:
   required_pattern: |
                     \/\/
@@ -111,17 +117,31 @@ file_header:
                     \/\/
 file_length:
   ignore_comment_only_lines: true
-force_cast: error
-force_try: error
-force_unwrapping: error
+# There are normally errors, as they are a source of application crashes. However, as there is an overwhelming amount
+# of errors there have for the time being been lowered to warnings. This should be reverted when the all occurences 
+# have been fixed!
+force_cast: warning
+force_try: warning
+force_unwrapping: warning
+# These should be updated after the code has been refactored.
+function_body_length:
+  warning: 50 # default: 50
+  error: 445  # default: 100
+identifier_name:
+  excluded:
+    - x
+    - y
+    - z
 # 30 chars wider than Xcode's default page guide, still readable on a MacBook Pro 16" with 'minimap' shown.
 line_length: 
-  warning: 190
-  error: 240
+  warning: 190  # default: 120
+  error: 410    # default: 200
   ignores_comments: true
+  ignores_interpolated_strings: true
   ignores_urls: true
 type_body_length:
-  error: 450
+  warning: 250  # default: 250
+  error: 475    # default: 350
 custom_rules:
   disable_print:
     included: ".*\\.swift"

@@ -232,8 +232,8 @@ extension AppLog {
 			/// Categories
 			if categories.count > 0 {
 				var categoriesArray: [NSPredicate] = []
-				for c in categories {
-					let categoriesPredicate = NSPredicate(format: "category == %@", LogCategories(rawValue: c)?.description ?? "services")
+				for category in categories {
+					let categoriesPredicate = NSPredicate(format: "category == %@", LogCategories(rawValue: category)?.description ?? "services")
 					categoriesArray.append(categoriesPredicate)
 				}
 				let compoundPredicate = NSCompoundPredicate(type: .or, subpredicates: categoriesArray)
@@ -242,8 +242,8 @@ extension AppLog {
 			/// Log Levels
 			if levels.count > 0 {
 				var levelsArray: [NSPredicate] = []
-				for l in levels {
-					let levelsPredicate = NSPredicate(format: "messageType == %@", LogLevels(rawValue: l)?.level ?? "info")
+				for level in levels {
+					let levelsPredicate = NSPredicate(format: "messageType == %@", LogLevels(rawValue: level)?.level ?? "info")
 					levelsArray.append(levelsPredicate)
 				}
 				let compoundPredicate = NSCompoundPredicate(type: .or, subpredicates: levelsArray)

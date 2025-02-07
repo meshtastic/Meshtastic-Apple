@@ -28,9 +28,9 @@ class MetricsColumnList: ObservableObject, RandomAccessCollection, RangeReplacea
 	var gridItems: [GridItem] {
 		var returnValues: [GridItem] = []
 		let columnsInChart = self.visible
-		for i in 0..<columnsInChart.count {
-			let thisColumn = columnsInChart[i]
-			let spacing = (i == columns.count - 1) ? 0 : thisColumn.spacing
+		for index in 0..<columnsInChart.count {
+			let thisColumn = columnsInChart[index]
+			let spacing = (index == columns.count - 1) ? 0 : thisColumn.spacing
 			if let min = thisColumn.minWidth, let max = thisColumn.maxWidth {
 				returnValues.append(
 					GridItem(
@@ -68,7 +68,7 @@ class MetricsColumnList: ObservableObject, RandomAccessCollection, RangeReplacea
 		}
 	}
 	subscript(bounds: Range<Int>) -> ArraySlice<Element> { columns[bounds] }
-	func index(after i: Int) -> Int { columns.index(after: i) }
+	func index(after index: Int) -> Int { columns.index(after: index) }
 
 	func replaceSubrange<C: Collection>(_ subrange: Range<Int>, with newElements: C) where C.Element == Element {
 		objectWillChange.send()

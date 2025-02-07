@@ -156,10 +156,10 @@ struct UserConfig: View {
 						if node != nil && connectedNode != nil {
 
 							if !isLicensed {
-								var u = User()
-								u.shortName = shortName
-								u.longName = longName
-								let adminMessageId = bleManager.saveUser(config: u, fromUser: connectedUser, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+								var user = User()
+								user.shortName = shortName
+								user.longName = longName
+								let adminMessageId = bleManager.saveUser(config: user, fromUser: connectedUser, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 								if adminMessageId > 0 {
 									hasChanges = false
 									goBack()

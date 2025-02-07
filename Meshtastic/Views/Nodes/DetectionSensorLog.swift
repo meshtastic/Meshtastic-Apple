@@ -67,12 +67,12 @@ struct DetectionSensorLog: View {
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				// Add a table for mac and ipad
 				Table(detections) {
-					TableColumn("Detection event") { d in
-						Text(d.messagePayload ?? "Detected")
+					TableColumn("Detection event") { detection in
+						Text(detection.messagePayload ?? "Detected")
 					}
 
-					TableColumn("timestamp") { d in
-						Text(d.timestamp.formattedDate(format: dateFormatString))
+					TableColumn("timestamp") { detection in
+						Text(detection.timestamp.formattedDate(format: dateFormatString))
 					}
 					.width(min: 180)
 				}
@@ -91,11 +91,11 @@ struct DetectionSensorLog: View {
 								.font(.caption)
 								.fontWeight(.bold)
 						}
-						ForEach(detections.filter( {$0.fromUser?.num ?? -1 == node.user?.num ?? 0})) { d in
+						ForEach(detections.filter( {$0.fromUser?.num ?? -1 == node.user?.num ?? 0})) { detection in
 							GridRow {
-								Text(d.messagePayload ?? "Detected")
+								Text(detection.messagePayload ?? "Detected")
 									.font(.caption)
-								Text(d.timestamp.formattedDate(format: dateFormatString))
+								Text(detection.timestamp.formattedDate(format: dateFormatString))
 									.font(.caption)
 							}
 						}
