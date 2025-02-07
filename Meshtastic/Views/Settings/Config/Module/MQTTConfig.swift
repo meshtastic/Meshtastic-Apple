@@ -64,7 +64,7 @@ struct MQTTConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
-					if enabled && proxyToClientEnabled && node!.mqttConfig!.proxyToClientEnabled == true {
+					if enabled && proxyToClientEnabled && node?.mqttConfig?.proxyToClientEnabled ?? false == true {
 						Toggle(isOn: $mqttConnected) {
 							Label(mqttConnected ? "mqtt.disconnect".localized : "mqtt.connect".localized, systemImage: "server.rack")
 							if bleManager.mqttError.count > 0 {
