@@ -1,9 +1,14 @@
-//
-//  Common.xcconfig
-//  Meshtastic
-//
-//  Created by Jeroen Wesbeek on 06/02/2025.
-//  Copyright (C) 2025 Meshtastic LLC and the Meshtastic project authors.
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>FILEHEADER</key>
+    <string>
+//  ___FILENAME___
+//  ___PROJECTNAME___
+//  
+//  Created by ___FULLUSERNAME___ on ___DATE___.
+//  Copyright (C) ___YEAR___ ___ORGANIZATION___ and the ___WORKSPACENAME___ project authors.
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -19,7 +24,8 @@
 //  along with this program. If not, see https://www.gnu.org/licenses/.
 //
 //  SPDX-License-Identifier: GPL-3.0-or-later
-//
-
-// Configuration settings file format documentation can be found at: https://help.apple.com/xcode/#/dev745c5c974
-CODE_SIGN_IDENTITY = Apple Development
+//  </string>
+    <key>ORGANIZATION</key>
+    <string>Meshtastic LLC</string>
+</dict>
+</plist>
