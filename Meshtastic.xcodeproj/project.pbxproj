@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -545,10 +545,6 @@
 		DDFFA7462B3A7F3C004730DB /* Bundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		DDD3A2AE2D5121BC0045EB48 /* SupportingFiles */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = SupportingFiles; sourceTree = "<group>"; };
-/* End PBXFileSystemSynchronizedRootGroup section */
-
 /* Begin PBXFrameworksBuildPhase section */
 		25F5D5C42C4375A8008036E3 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -910,7 +906,6 @@
 			isa = PBXGroup;
 			children = (
 				DDD3A2B12D5127B40045EB48 /* ci_scripts */,
-				DDD3A2AE2D5121BC0045EB48 /* SupportingFiles */,
 				DDDBC87A2BC62E4E001E8DF7 /* Settings.bundle */,
 				25AECD4E2C2F723200862C8E /* Localizable.xcstrings */,
 				DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */,
@@ -1194,9 +1189,6 @@
 			);
 			dependencies = (
 				DDDE5A0229AF163E00490C6C /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				DDD3A2AE2D5121BC0045EB48 /* SupportingFiles */,
 			);
 			name = Meshtastic;
 			packageProductDependencies = (
