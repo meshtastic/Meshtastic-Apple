@@ -2,38 +2,10 @@
 # Opt-in : git config core.hooksPath hooks
 # Opt-out: git config --unset core.hooksPath
 
-# Version (e.g. "13.2.1") to Integer (e.g. "13002001000") conversion for version comparison purposes.
-#
-# Parameter 1: The string version to transform to an integer for easy comparison (e.g. 13.2.1)
-function versionToInteger {
-    echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }';
-}
-
 # Ensure the script is run from a relative context
 function validateRelativeContext() {
     if [ ! -d "./scripts" ]; then
         printf "\033[97;101mWARNING\033[0m: This script should be executed relative from the project root.\n"
-        exit 1
-    fi
-}
-
-# Ensure SwiftLint is installed.
-function validateTools() {
-    local minimumVersion=$(cat .swiftlint.version)
-
-    # Ensure SwiftLint is installed.
-    if [ -z $(which swiftlint) ]
-    then
-        printf "\033[97;101mWARNING\033[0m: SwiftLint is not installed! Please install SwiftLint (e.g. \033[93mbrew install swiftlint\033[0m).\n"
-        exit 1
-    fi
-
-    local swiftlintVersion=$(swiftlint --version)
-
-    # Ensure SwiftLint matched the version criteria.
-    if [ $(versionToInteger "$swiftlintVersion") -lt $(versionToInteger "$minimumVersion") ]
-    then
-        printf "\033[97;101mWARNING\033[0m: SwiftLint is outdated! Please update SwiftLint (e.g. \033[93mbrew update swiftlint\033[0m).\n"
         exit 1
     fi
 }
@@ -48,8 +20,8 @@ function formatSourceFiles() {
     local fixed=()
     # Keep track of the number of files that require fixing.
     local count=0
-    # Try to locate swiftlint.
-    local swiftlint=$(which swiftlint)
+    # Find the path of SwiftLintBuildToolPlugin's swiftlint distribution.
+    local swiftlintPath=$(find ~/Library/Developer/Xcode/DerivedData/Meshtastic* -d -name 'swiftlint-*-macos' -print -quit)
     # Try to locate swift-format.
     local swiftFormat=$(xcrun --find swift-format)
 
@@ -106,9 +78,9 @@ function formatSourceFiles() {
     #
     # - Rules           : .swiftlint.yml
     # - Documentation   : https://realm.github.io/SwiftLint/rule-directory.html
-    if [ ! -z $swiftlint ]
+    if [ ! -z $swiftlintPath ]
     then
-        "$swiftlint" --use-script-input-files --fix
+        "$swiftlintPath/bin/swiftlint" --use-script-input-files --fix
     fi
 
     echo "Staging ${#fixed[@]} files."
@@ -126,7 +98,5 @@ IFS=$'\n'
 printf "\033[93mExecuting pre-commit hook\033[0m\n"
 # Validate we are being executed relatively fron the project root.
 validateRelativeContext
-# Validate all tools are present and off the right version.
-validateTools
 # Format source files and automatically fix any fixable lint issues.
 formatSourceFiles
