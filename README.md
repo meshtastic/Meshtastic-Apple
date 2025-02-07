@@ -42,6 +42,9 @@ This project always uses the [latest Xcode release version](https://xcoderelease
    ```
 6. Build and run the `Meshtastic` target.
 
+> Note: if you use a personal or non-premium Apple Developer account, you will be unable to build as `WeatherKit`, `CarKit` and `Associated Domains` require a premium account. In order to build, change the entitlements for `Debug` builds to `MesthtasticDebug.entitlements`:
+> <img width="1482" alt="image" src="https://github.com/user-attachments/assets/af72b371-40ec-4a44-bae7-a36752dfd19c" />
+
 ## Technical Standards
 
 ### Supported Operating Systems
