@@ -260,7 +260,7 @@ struct NodeDetail: View {
 					}
 					.disabled(!node.hasDeviceMetrics)
 
-					NavigationLink{
+					NavigationLink {
 						PowerMetricsLog(node: node)
 					} label: {
 						Label {
@@ -378,6 +378,9 @@ struct NodeDetail: View {
 									node: node
 								)
 							}
+							if node.hasPositions {
+								NavigateToButton(node: node)
+								}
 							IgnoreNodeButton(
 								bleManager: bleManager,
 								context: context,

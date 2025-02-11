@@ -37,17 +37,15 @@ class MqttClientProxyManager {
 				defaultServerPort = Int(fullHost.components(separatedBy: ":")[1]) ?? (useSsl ? 8883 : 1883)
 			}
 		}
-		
+
 		if let host = host {
 			let port = defaultServerPort
 			var username = node.mqttConfig?.username
 			var password = node.mqttConfig?.password
-			if host == defaultServerAddress {
-
-				// username = ProcessInfo.processInfo.environment["publicMqttUsername"]
-				// password = ProcessInfo.processInfo.environment["publicMqttPsk"]
-				useSsl = false
-			}
+			// if host == defaultServerAddress {
+				//username = ProcessInfo.processInfo.environment["PUBLIC_MQTT_USERNAME"]
+				//password = ProcessInfo.processInfo.environment["PUBLIC_MQTT_PASSWORD"]
+			// }
 			let root = node.mqttConfig?.root?.count ?? 0 > 0 ? node.mqttConfig?.root : "msh"
 			let prefix = root!
 			topic = prefix + "/2/e" + "/#"

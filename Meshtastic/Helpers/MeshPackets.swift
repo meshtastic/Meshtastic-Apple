@@ -682,7 +682,6 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 		let logString = String.localizedStringWithFormat("mesh.log.telemetry.received %@".localized, String(packet.from))
 		MeshLogger.log("📈 \(logString)")
 
-
 		if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) && telemetryMessage.variant != Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
 			/// Other unhandled telemetry packets
 			return
@@ -739,7 +738,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.localStats.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.localStats.airUtilTx, privacy: .public) Packets Sent: \(telemetryMessage.localStats.numPacketsTx, privacy: .public) Packets Received: \(telemetryMessage.localStats.numPacketsRx, privacy: .public) Bad Packets Received: \(telemetryMessage.localStats.numPacketsRxBad, privacy: .public) Nodes Online: \(telemetryMessage.localStats.numOnlineNodes, privacy: .public) of \(telemetryMessage.localStats.numTotalNodes, privacy: .public) nodes for Node: \(packet.from.toHex(), privacy: .public)")
 				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
 					Logger.data.info("📈 [Power Metrics] Received for Node: \(packet.from.toHex(), privacy: .public)")
-					
+
 					if telemetryMessage.powerMetrics.hasCh1Voltage {
 						telemetry.powerCh1Voltage = telemetryMessage.powerMetrics.ch1Voltage
 						telemetry.metricsType = 2

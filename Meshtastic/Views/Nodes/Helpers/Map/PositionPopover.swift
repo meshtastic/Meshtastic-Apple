@@ -143,7 +143,7 @@ struct PositionPopover: View {
 					/// Heading
 					let degrees = Angle.degrees(Double(position.heading))
 					Label {
-						let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees).reciprocal()
+						let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees)
 						Text("Heading: \(heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0)))))")
 					} icon: {
 						Image(systemName: "location.north")

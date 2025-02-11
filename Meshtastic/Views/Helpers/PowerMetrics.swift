@@ -17,8 +17,7 @@ struct PowerMetrics: View {
 
 		LazyVGrid(columns: gridItemLayout) {
 
-
-			if(metric.powerCh1Voltage != nil) {
+			if metric.powerCh1Voltage != nil {
 				PowerMetricCompactWidget(
 					type: .voltage,
 					value: metric.powerCh1Voltage,
@@ -26,7 +25,7 @@ struct PowerMetrics: View {
 				)
 			}
 
-			if(metric.powerCh1Current != nil) {
+			if metric.powerCh1Current != nil {
 				PowerMetricCompactWidget(
 					type: .current,
 					value: metric.powerCh1Current,
@@ -34,7 +33,7 @@ struct PowerMetrics: View {
 				)
 			}
 
-			if(metric.powerCh2Voltage != nil) {
+			if metric.powerCh2Voltage != nil {
 				PowerMetricCompactWidget(
 					type: .voltage,
 					value: metric.powerCh2Voltage,
@@ -42,7 +41,7 @@ struct PowerMetrics: View {
 				)
 			}
 
-			if(metric.powerCh2Current != nil) {
+			if metric.powerCh2Current != nil {
 				PowerMetricCompactWidget(
 					type: .current,
 					value: metric.powerCh2Current,
@@ -50,7 +49,7 @@ struct PowerMetrics: View {
 				)
 			}
 
-			if(metric.powerCh3Voltage != nil) {
+			if metric.powerCh3Voltage != nil {
 				PowerMetricCompactWidget(
 					type: .voltage,
 					value: metric.powerCh3Voltage,
@@ -58,7 +57,7 @@ struct PowerMetrics: View {
 				)
 			}
 
-			if(metric.powerCh3Current != nil) {
+			if metric.powerCh3Current != nil {
 				PowerMetricCompactWidget(
 					type: .current,
 					value: metric.powerCh3Current,
