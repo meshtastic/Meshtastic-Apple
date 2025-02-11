@@ -79,12 +79,12 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "PUBLIC_MQTT_USERNAME"
-            value = "meshdev1"
+            value = "meshdev"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "PUBLIC_MQTT_PASSWORD"
-            value = "large4cats1"
+            value = "large4cats"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>
