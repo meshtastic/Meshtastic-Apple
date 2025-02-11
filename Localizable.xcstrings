@@ -18191,6 +18191,52 @@
         }
       }
     },
+    "Channel" : {
+
+    },
+    "Channel 0 Included" : {
+
+    },
+    "Channel 1 Included" : {
+
+    },
+    "Channel 2 Included" : {
+
+    },
+    "Channel 3 Included" : {
+
+    },
+    "Channel 4 Included" : {
+
+    },
+    "Channel 5 Included" : {
+
+    },
+    "Channel 6 Included" : {
+
+    },
+    "Channel 7 Included" : {
+
+    },
+    "channel details" : {
+
+    },
+    "Channel Name" : {
+
+    },
+    "Channel number must be between 0 and 7." : {
+
+    },
+    "Channel Role" : {
+
+    },
+    "Channel URL" : {
+
+    },
+    "Channel Utilization %@%% " : {
+
+    },
+    "channel.role.disabled" : {
     "interval.twentyfour.hours" : {
       "extractionState" : "migrated",
       "localizations" : {
@@ -34769,6 +34815,17 @@
         }
       }
     },
+    "Save" : {
+
+    },
+    "Save Channel Settings" : {
+
+    },
+    "Save User Config to %@?" : {
+
+    },
+    "save.config %@" : {
+      "extractionState" : "migrated",
     "telemetry.config" : {
       "localizations" : {
         "de" : {
@@ -35048,6 +35105,70 @@
         }
       }
     },
+    "Send" : {
+
+    },
+    "Send ${messageContent} to ${channelNumber}" : {
+
+    },
+    "Send ${messageContent} to ${nodeNumber}" : {
+
+    },
+    "Send a Direct Message" : {
+
+    },
+    "Send a Group Message" : {
+
+    },
+    "Send a message to a certain meshtastic channel" : {
+
+    },
+    "Send a message to a certain meshtastic node" : {
+
+    },
+    "Send a position on the primary channel when the user button is triple clicked." : {
+
+    },
+    "Send a shutdown to the node you are connected to" : {
+
+    },
+    "Send a Waypoint" : {
+
+    },
+    "Send ASCII bell with alert message. Useful for triggering external notification on bell." : {
+
+    },
+    "Send Bell" : {
+
+    },
+    "Send Reboot OTA" : {
+
+    },
+    "Sender Interval" : {
+
+    },
+    "Sensor" : {
+
+    },
+    "Sensor Metrics" : {
+
+    },
+    "Sensor options" : {
+
+    },
+    "Sensor Options" : {
+
+    },
+    "Sent out to other nodes on the mesh to allow them to compute a shared secret key." : {
+
+    },
+    "Sequence number" : {
+
+    },
+    "Sequence: %@" : {
+
+    },
+    "serial" : {
     "The amount of time to wait before we consider your packet as done." : {
       "localizations" : {
         "sr" : {
@@ -36378,6 +36499,16 @@
         }
       }
     },
+    "Supported" : {
+
+    },
+    "Supported I2C Connected sensors will be detected automatically, sensors are BMP280, BME280, BME680, MCP9808, INA219, INA260, LPS22 and SHTC3." : {
+
+    },
+    "Takes a Meshtastic channel URL and saves the channel settings." : {
+
+    },
+    "tapback" : {
     "tip.messages.message" : {
       "localizations" : {
         "de" : {
@@ -37138,6 +37269,118 @@
         }
       }
     },
+    "Temp" : {
+
+    },
+    "Temperature" : {
+
+    },
+    "Ten Minutes" : {
+
+    },
+    "Tertiary Admin Key" : {
+
+    },
+    "The amount of time to wait before we consider your packet as done." : {
+
+    },
+    "The compass heading on the screen outside of the circle will always point north." : {
+
+    },
+    "The dew point is %@ right now." : {
+
+    },
+    "The fastest that position updates will be sent if the minimum distance has been satisfied" : {
+
+    },
+    "The format used to display GPS coordinates on the device screen." : {
+
+    },
+    "The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long." : {
+
+    },
+    "The maximum interval that can elapse without a node broadcasting a position" : {
+
+    },
+    "The Meshtastic Apple apps support firmware version %@ and above." : {
+
+    },
+    "The minimum distance change in meters to be considered for a smart position broadcast." : {
+
+    },
+    "The most recent public key for this node does not match the previously recorded key. You can delete the node and let it exchange keys again, but this also may indicate a more serious security problem. Contact the user through another trusted channel to determine if the key change was due to a factory reset or other intentional action." : {
+
+    },
+    "The primary public key authorized to send admin messages to this node." : {
+
+    },
+    "The public key does not match the recorded key. You may delete the node and let it exchange keys again, but this may indicate a more serious security problem. Contact the user through another trusted channel, to determine if the key change was due to a factory reset or other intentional action." : {
+
+    },
+    "The region where you will be using your radios." : {
+
+    },
+    "The root topic to use for MQTT." : {
+
+    },
+    "The secondary public key authorized to send admin messages to this node." : {
+
+    },
+    "The state of the LED (on/off)" : {
+
+    },
+    "The tertiary public key authorized to send admin messages to this node." : {
+
+    },
+    "The URL for the channel settings" : {
+
+    },
+    "There has been no response to a request for device metadata over the admin channel for this node." : {
+
+    },
+    "These settings will %@ channels. The current LoRa Config will be replaced, if there are substantial changes to the LoRa config the device will reboot" : {
+
+    },
+    "Thirty Minutes" : {
+
+    },
+    "This conversation will be deleted." : {
+
+    },
+    "This could take a while, response will appear in the trace route log for the node it was sent to." : {
+
+    },
+    "This could take a while. The response will appear in the trace route log for the node it was sent to." : {
+
+    },
+    "This determines the actual frequency you are transmitting on in the band. If set to 0 this value will be calculated automatically based on the primary channel name." : {
+
+    },
+    "This device will send out range test messages on the selected interval." : {
+
+    },
+    "This message was likely not delivered." : {
+
+    },
+    "This will disable fixed position and remove the currently set position." : {
+
+    },
+    "This will send a current position from your phone and enable fixed position." : {
+
+    },
+    "Time" : {
+
+    },
+    "Time Stamp" : {
+
+    },
+    "Time Zone" : {
+
+    },
+    "Time zone for dates on the device screen and log." : {
+
+    },
+    "timeout" : {
     "unset" : {
       "localizations" : {
         "de" : {
@@ -38087,6 +38330,44 @@
         }
       }
     },
+    "Trace Route Sent" : {
+
+    },
+    "Trace route sent to %@" : {
+
+    },
+    "Trace route to %@ was not sent." : {
+
+    },
+    "Trace Route was rate limited. You can send a trace route a maximum of once every thirty seconds." : {
+
+    },
+    "Tracker" : {
+
+    },
+    "Traffic" : {
+
+    },
+    "Transmit data (txd) GPIO pin" : {
+
+    },
+    "Transmit Enabled" : {
+
+    },
+    "Treat double tap on supported accelerometers as a user button press." : {
+
+    },
+    "TriggerType" : {
+
+    },
+    "Triple Click Ad Hoc Ping" : {
+
+    },
+    "Try Again" : {
+
+    },
+    "twitter" : {
+      "extractionState" : "manual",
     "waiting" : {
       "localizations" : {
         "de" : {
