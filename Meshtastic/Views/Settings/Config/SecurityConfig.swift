@@ -85,7 +85,7 @@ struct SecurityConfig: View {
 							.font(idiom == .phone ? .caption : .callout)
 						Divider()
 						Label("Tertiary Admin Key", systemImage: "key.viewfinder")
-						SecureInput("Tertiary Admin Key", text: $adminKey2, isValid: $hasValidAdminKey2)
+						SecureInput("Tertiary Admin Key", text: $adminKey3, isValid: $hasValidAdminKey3)
 							.background(
 								RoundedRectangle(cornerRadius: 10.0)
 									.stroke(hasValidAdminKey3 ? Color.clear : Color.red, lineWidth: 2.0)
@@ -198,7 +198,6 @@ struct SecurityConfig: View {
 		.onFirstAppear {
 			// Need to request a DeviceConfig from the remote node before allowing changes
 			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-				Logger.mesh.info("empty security config")
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let connectedNode {
 					if node.num != connectedNode.num {
@@ -206,11 +205,13 @@ struct SecurityConfig: View {
 							/// 2.5 Administration with session passkey
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.securityConfig == nil {
+								Logger.mesh.info("⚙️ Empty or expired security config requesting via PKI admin")
 								_ = bleManager.requestSecurityConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 							}
 						} else {
 							if node.deviceConfig == nil {
 								/// Legacy Administration
+								Logger.mesh.info("☠️ Using insecure legacy admin, empty security config")
 								_ = bleManager.requestSecurityConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 							}
 						}
@@ -259,8 +260,8 @@ struct SecurityConfig: View {
 		self.publicKey = node?.securityConfig?.publicKey?.base64EncodedString() ?? ""
 		self.privateKey = node?.securityConfig?.privateKey?.base64EncodedString() ?? ""
 		self.adminKey = node?.securityConfig?.adminKey?.base64EncodedString() ?? ""
-		self.adminKey2 = node?.securityConfig?.adminKey?.base64EncodedString() ?? ""
-		self.adminKey3 = node?.securityConfig?.adminKey?.base64EncodedString() ?? ""
+		self.adminKey2 = node?.securityConfig?.adminKey2?.base64EncodedString() ?? ""
+		self.adminKey3 = node?.securityConfig?.adminKey3?.base64EncodedString() ?? ""
 		self.isManaged = node?.securityConfig?.isManaged ?? false
 		self.serialEnabled = node?.securityConfig?.serialEnabled ?? false
 		self.debugLogApiEnabled = node?.securityConfig?.debugLogApiEnabled ?? false

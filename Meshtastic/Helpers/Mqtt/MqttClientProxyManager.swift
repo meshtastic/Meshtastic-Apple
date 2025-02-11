@@ -26,7 +26,7 @@ class MqttClientProxyManager {
 	var debugLog = false
 	func connectFromConfigSettings(node: NodeInfoEntity) {
 		let defaultServerAddress = "mqtt.meshtastic.org"
-		let useSsl = node.mqttConfig?.tlsEnabled == true
+		var useSsl = node.mqttConfig?.tlsEnabled == true
 		var defaultServerPort = useSsl ? 8883 : 1883
 		var host = node.mqttConfig?.address
 		if host == nil || host!.isEmpty {
@@ -37,17 +37,18 @@ class MqttClientProxyManager {
 				defaultServerPort = Int(fullHost.components(separatedBy: ":")[1]) ?? (useSsl ? 8883 : 1883)
 			}
 		}
-		let minimumVersion = "2.3.2"
-		let currentVersion = UserDefaults.firmwareVersion
-		let supportedVersion = minimumVersion.compare(currentVersion, options: .numeric) == .orderedAscending  || minimumVersion.compare(currentVersion, options: .numeric) == .orderedSame
 
 		if let host = host {
 			let port = defaultServerPort
-			let username = node.mqttConfig?.username
-			let password = node.mqttConfig?.password
+			var username = node.mqttConfig?.username
+			var password = node.mqttConfig?.password
+			// if host == defaultServerAddress {
+				//username = ProcessInfo.processInfo.environment["PUBLIC_MQTT_USERNAME"]
+				//password = ProcessInfo.processInfo.environment["PUBLIC_MQTT_PASSWORD"]
+			// }
 			let root = node.mqttConfig?.root?.count ?? 0 > 0 ? node.mqttConfig?.root : "msh"
 			let prefix = root!
-			topic = prefix + (supportedVersion ? "/2/e" : "/2/c") + "/#"
+			topic = prefix + "/2/e" + "/#"
 			let qos = CocoaMQTTQoS(rawValue: UInt8(1))!
 			connect(host: host, port: port, useSsl: useSsl, username: username, password: password, topic: topic, qos: qos, cleanSession: true)
 		}

@@ -115,9 +115,13 @@ struct UserMessageList: View {
 						}
 					}
 				}
-				.padding([.top])
-				.scrollDismissesKeyboard(.immediately)
+				.scrollDismissesKeyboard(.interactively)
 				.onFirstAppear {
+					withAnimation {
+						scrollView.scrollTo(user.messageList.last?.messageId ?? 0, anchor: .bottom)
+					}
+				}
+				.onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
 					withAnimation {
 						scrollView.scrollTo(user.messageList.last?.messageId ?? 0, anchor: .bottom)
 					}

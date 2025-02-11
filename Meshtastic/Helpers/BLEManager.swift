@@ -27,7 +27,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	@Published var automaticallyReconnect: Bool = true
 	@Published var mqttProxyConnected: Bool = false
 	@Published var mqttError: String = ""
-	public var minimumVersion = "2.0.0"
+	public var minimumVersion = "2.3.15"
 	public var connectedVersion: String
 	public var isConnecting: Bool = false
 	public var isConnected: Bool = false
@@ -242,14 +242,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			if errorCode == 6 { // CBError.Code.connectionTimeout The connection has timed out unexpectedly.
 				// Happens when device is manually reset / powered off
 				lastConnectionError = "🚨" + String.localizedStringWithFormat("ble.errorcode.6 %@".localized, e.localizedDescription)
-				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown", privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(e.localizedDescription, privacy: .public)")
+				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized, privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(e.localizedDescription, privacy: .public)")
 			} else if errorCode == 7 { // CBError.Code.peripheralDisconnected The specified device has disconnected from us.
 				// Seems to be what is received when a tbeam sleeps, immediately recconnecting does not work.
 				if UserDefaults.preferredPeripheralId == peripheral.identifier.uuidString {
 					manager.notifications = [
 						Notification(
 							id: (peripheral.identifier.uuidString),
-							title: "Radio Disconnected",
+							title: "Radio Disconnected".localized,
 							subtitle: "\(peripheral.name ?? "unknown".localized)",
 							content: e.localizedDescription,
 							target: "bluetooth",
@@ -258,18 +258,18 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					]
 					manager.schedule()
 				}
-				lastConnectionError = "🚨 \(e.localizedDescription)"
-				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown", privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(e.localizedDescription, privacy: .public)")
+				lastConnectionError = "🚨 \("The specified device has disconnected from us".localized)"
+				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized, privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(e.localizedDescription, privacy: .public)")
 			} else if errorCode == 14 { // Peer removed pairing information
 				// Forgetting and reconnecting seems to be necessary so we need to show the user an error telling them to do that
 				lastConnectionError = "🚨 " + String.localizedStringWithFormat("ble.errorcode.14 %@".localized, e.localizedDescription)
-				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode, privacy: .public) Error: \(self.lastConnectionError, privacy: .public)")
+				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized) Error Code: \(errorCode, privacy: .public) Error: \(self.lastConnectionError, privacy: .public)")
 			} else {
 				if UserDefaults.preferredPeripheralId == peripheral.identifier.uuidString {
 					manager.notifications = [
 						Notification(
 							id: (peripheral.identifier.uuidString),
-							title: "Radio Disconnected",
+							title: "Radio Disconnected".localized,
 							subtitle: "\(peripheral.name ?? "unknown".localized)",
 							content: e.localizedDescription,
 							target: "bluetooth",
@@ -279,12 +279,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					manager.schedule()
 				}
 				lastConnectionError = "🚨 \(e.localizedDescription)"
-				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown", privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(e.localizedDescription, privacy: .public)")
+				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized, privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(e.localizedDescription, privacy: .public)")
 			}
 		} else {
 			// Disconnected without error which indicates user intent to disconnect
 			// Happens when swiping to disconnect
-			Logger.services.info("ℹ️ [BLE] Disconnected: \(peripheral.name ?? "Unknown", privacy: .public): User Initiated Disconnect")
+			Logger.services.info("ℹ️ [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized, privacy: .public): \(String(describing: "User Initiated Disconnect".localized))")
 		}
 		// Start a scan so the disconnected peripheral is moved to the peripherals[] if it is awake
 		self.startScanning()
@@ -765,6 +765,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					context: context,
 					appState: appState
 				)
+			case .alertApp:
+				textMessageAppPacket(
+					packet: decodedInfo.packet,
+					wantRangeTestPackets: wantRangeTestPackets,
+					critical: true,
+					connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0),
+					context: context,
+					appState: appState
+				)
 			case .remoteHardwareApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .positionApp:
@@ -834,73 +843,81 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				if let routingMessage = try? RouteDiscovery(serializedBytes: decodedInfo.packet.decoded.payload) {
 					let traceRoute = getTraceRoute(id: Int64(decodedInfo.packet.decoded.requestID), context: context)
 					traceRoute?.response = true
-					if routingMessage.route.count == 0 {
-						let snr = routingMessage.snrBack.count > 0 ? routingMessage.snrBack[0] / 4 : 0
-						traceRoute?.snr = Float(snr)
-						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.direct %@".localized, String(snr))
-						MeshLogger.log("🪧 \(logString)")
-					} else {
-						guard let connectedNode = getNodeInfo(id: Int64(connectedPeripheral.num), context: context) else {
-							return
+					guard let connectedNode = getNodeInfo(id: Int64(connectedPeripheral.num), context: context) else {
+						return
+					}
+					var hopNodes: [TraceRouteHopEntity] = []
+					let connectedHop = TraceRouteHopEntity(context: context)
+					connectedHop.time = Date()
+					connectedHop.num = connectedPeripheral.num
+					connectedHop.name = connectedNode.user?.longName ?? "???"
+					// If nil, set to unknown, INT8_MIN (-128) then divide by 4
+					connectedHop.snr = Float(routingMessage.snrBack.last ?? -128) / 4
+					if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
+						connectedHop.altitude = mostRecent.altitude
+						connectedHop.latitudeI = mostRecent.latitudeI
+						connectedHop.longitudeI = mostRecent.longitudeI
+						traceRoute?.hasPositions = true
+					}
+					var routeString = "\(connectedNode.user?.longName ?? "???") --> "
+					hopNodes.append(connectedHop)
+					traceRoute?.hopsTowards = Int32(routingMessage.route.count)
+					for (index, node) in routingMessage.route.enumerated() {
+						var hopNode = getNodeInfo(id: Int64(node), context: context)
+						if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
+							hopNode = createNodeInfo(num: Int64(node), context: context)
 						}
-						var hopNodes: [TraceRouteHopEntity] = []
-						let connectedHop = TraceRouteHopEntity(context: context)
-						connectedHop.time = Date()
-						connectedHop.num = connectedPeripheral.num
-						connectedHop.name = connectedNode.user?.longName ?? "???"
-						connectedHop.snr = Float(routingMessage.snrBack.last ?? 0 / 4)
-						if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
-							connectedHop.altitude = mostRecent.altitude
-							connectedHop.latitudeI = mostRecent.latitudeI
-							connectedHop.longitudeI = mostRecent.longitudeI
-							traceRoute?.hasPositions = true
+						let traceRouteHop = TraceRouteHopEntity(context: context)
+						traceRouteHop.time = Date()
+						if routingMessage.snrTowards.count >= index + 1 {
+							traceRouteHop.snr = Float(routingMessage.snrTowards[index]) / 4
+						} else {
+							// If no snr in route, set unknown
+							traceRouteHop.snr = -32
 						}
-						var routeString = "\(connectedNode.user?.longName ?? "???") --> "
-						hopNodes.append(connectedHop)
-						traceRoute?.hopsTowards = Int32(routingMessage.route.count)
-						for (index, node) in routingMessage.route.enumerated() {
-							var hopNode = getNodeInfo(id: Int64(node), context: context)
-							if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
-								hopNode = createNodeInfo(num: Int64(node), context: context)
+						if let hn = hopNode, hn.hasPositions {
+							if let mostRecent = hn.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
+								traceRouteHop.altitude = mostRecent.altitude
+								traceRouteHop.latitudeI = mostRecent.latitudeI
+								traceRouteHop.longitudeI = mostRecent.longitudeI
+								traceRoute?.hasPositions = true
 							}
-							let traceRouteHop = TraceRouteHopEntity(context: context)
-							traceRouteHop.time = Date()
-							if routingMessage.snrTowards.count >= index + 1 {
-								traceRouteHop.snr = Float(routingMessage.snrTowards[index] / 4)
-							}
-							if let hn = hopNode, hn.hasPositions {
-								if let mostRecent = hn.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
-									traceRouteHop.altitude = mostRecent.altitude
-									traceRouteHop.latitudeI = mostRecent.latitudeI
-									traceRouteHop.longitudeI = mostRecent.longitudeI
-									traceRoute?.hasPositions = true
-								}
-							}
-							traceRouteHop.num = hopNode?.num ?? 0
-							if hopNode != nil {
-								if decodedInfo.packet.rxTime > 0 {
-									hopNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
-								}
-							}
-							hopNodes.append(traceRouteHop)
-							routeString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") (\(traceRouteHop.snr > 0 ? hopNode?.snr ?? 0.0 : 0.0)dB) --> "
 						}
-						let destinationHop = TraceRouteHopEntity(context: context)
-						destinationHop.name = traceRoute?.node?.user?.longName ?? "unknown".localized
-						destinationHop.time = Date()
-						destinationHop.snr = Float(routingMessage.snrTowards.last ?? 0 / 4)
-						destinationHop.num = traceRoute?.node?.num ?? 0
-						if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
-							destinationHop.altitude = mostRecent.altitude
-							destinationHop.latitudeI = mostRecent.latitudeI
-							destinationHop.longitudeI = mostRecent.longitudeI
-							traceRoute?.hasPositions = true
+						traceRouteHop.num = hopNode?.num ?? 0
+						if hopNode != nil {
+							if decodedInfo.packet.rxTime > 0 {
+								hopNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
+							}
 						}
-						hopNodes.append(destinationHop)
-						/// Add the destination node to the end of the route towards string and the beginning of teh route back string
-						routeString += "\(traceRoute?.node?.user?.longName ?? "unknown".localized) \((traceRoute?.node?.num ?? 0).toHex()) \(traceRoute?.node?.snr ?? 0 > 0 ? traceRoute?.node?.snr ?? 0 : 0.0)dB)"
-						var routeBackString = "\(traceRoute?.node?.user?.longName ?? "unknown".localized) \((traceRoute?.node?.num ?? 0).toHex()) \(traceRoute?.node?.snr ?? 0 > 0 ? traceRoute?.node?.snr ?? 0 : 0.0)dB) --> "
+						hopNodes.append(traceRouteHop)
+
+						let hopName = hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))
+						let mqttLabel = hopNode?.viaMqtt ?? false ? "MQTT " : ""
+						let snrLabel = (traceRouteHop.snr != -32) ? String(traceRouteHop.snr) : "unknown ".localized
+						routeString += "\(hopName) \(mqttLabel)(\(snrLabel)dB) --> "
+					}
+					let destinationHop = TraceRouteHopEntity(context: context)
+					destinationHop.name = traceRoute?.node?.user?.longName ?? "unknown".localized
+					destinationHop.time = Date()
+					// If nil, set to unknown, INT8_MIN (-128) then divide by 4
+					destinationHop.snr = Float(routingMessage.snrTowards.last ?? -128) / 4
+					destinationHop.num = traceRoute?.node?.num ?? 0
+					if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
+						destinationHop.altitude = mostRecent.altitude
+						destinationHop.latitudeI = mostRecent.latitudeI
+						destinationHop.longitudeI = mostRecent.longitudeI
+						traceRoute?.hasPositions = true
+					}
+					hopNodes.append(destinationHop)
+					/// Add the destination node to the end of the route towards string and the beginning of the route back string
+					routeString += "\(traceRoute?.node?.user?.longName ?? "unknown".localized) \((traceRoute?.node?.num ?? 0).toHex()) (\(destinationHop.snr != -32 ? String(destinationHop.snr) : "unknown ".localized)dB)"
+					traceRoute?.routeText = routeString
+					// Default to -1 only fill in if routeBack is valid below
+					traceRoute?.hopsBack = -1
+					// Only if hopStart is set and there is an SNR entry
+					if decodedInfo.packet.hopStart > 0 && routingMessage.snrBack.count > 0 {
 						traceRoute?.hopsBack = Int32(routingMessage.routeBack.count)
+						var routeBackString = "\(traceRoute?.node?.user?.longName ?? "unknown".localized) \((traceRoute?.node?.num ?? 0).toHex()) --> "
 						for (index, node) in routingMessage.routeBack.enumerated() {
 							var hopNode = getNodeInfo(id: Int64(node), context: context)
 							if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
@@ -910,7 +927,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							traceRouteHop.time = Date()
 							traceRouteHop.back = true
 							if routingMessage.snrBack.count >= index + 1 {
-								traceRouteHop.snr = Float(routingMessage.snrBack[index] / 4)
+								traceRouteHop.snr = Float(routingMessage.snrBack[index]) / 4
+							} else {
+								// If no snr in route, set to unknown
+								traceRouteHop.snr = -32
 							}
 							if let hn = hopNode, hn.hasPositions {
 								if let mostRecent = hn.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
@@ -927,24 +947,45 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								}
 							}
 							hopNodes.append(traceRouteHop)
-							routeBackString += "\(hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") (\(traceRouteHop.snr > 0 ? hopNode?.snr ?? 0.0 : 0.0)dB) --> "
+
+							let hopName = hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "unknown".localized))
+							let mqttLabel = hopNode?.viaMqtt ?? false ? "MQTT " : ""
+							let snrLabel = (traceRouteHop.snr != -32) ? String(traceRouteHop.snr) : "unknown ".localized
+							routeBackString += "\(hopName) \(mqttLabel)(\(snrLabel)dB) --> "
 						}
-						routeBackString += "\(connectedNode.user?.longName ?? String(connectedNode.num.toHex())) \(connectedNode.snr > 0 ? connectedNode.snr : 0.0)dB)"
-						traceRoute?.routeText = routeString
+						// If nil, set to unknown, INT8_MIN (-128) then divide by 4
+						let snrBackLast = Float(routingMessage.snrBack.last ?? -128) / 4
+						routeBackString += "\(connectedNode.user?.longName ?? String(connectedNode.num.toHex())) (\(snrBackLast != -32 ? String(snrBackLast) : "unknown ".localized)dB)"
 						traceRoute?.routeBackText = routeBackString
-						traceRoute?.hops = NSOrderedSet(array: hopNodes)
-						traceRoute?.time = Date()
-						do {
-							try context.save()
-							Logger.data.info("💾 Saved Trace Route")
-						} catch {
-							context.rollback()
-							let nsError = error as NSError
-							Logger.data.error("Error Updating Core Data TraceRouteHop: \(nsError, privacy: .public)")
-						}
-						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.route %@".localized, routeString)
-						MeshLogger.log("🪧 \(logString)")
 					}
+					traceRoute?.hops = NSOrderedSet(array: hopNodes)
+					traceRoute?.time = Date()
+
+					if let tr = traceRoute {
+						let manager = LocalNotificationManager()
+						manager.notifications = [
+							Notification(
+								id: (UUID().uuidString),
+								title: "Traceroute Complete",
+								subtitle: "TR received back from \(destinationHop.name ?? "unknown")",
+								content: "Hops from: \(tr.hopsTowards), Hops back: \(tr.hopsBack)\n\(tr.routeText ?? "unknown".localized)\n\(tr.routeBackText ?? "unknown".localized)",
+								target: "nodes",
+								path: "meshtastic:///nodes?nodenum=\(connectedNode.user?.num ?? 0)"
+							)
+						]
+						manager.schedule()
+					}
+
+					do {
+						try context.save()
+						Logger.data.info("💾 Saved Trace Route")
+					} catch {
+						context.rollback()
+						let nsError = error as NSError
+						Logger.data.error("Error Updating Core Data TraceRouteHop: \(nsError, privacy: .public)")
+					}
+					let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.route %@".localized, routeString)
+					MeshLogger.log("🪧 \(logString)")
 				}
 			case .neighborinfoApp:
 				if let neighborInfo = try? NeighborInfo(serializedBytes: decodedInfo.packet.decoded.payload) {
@@ -1844,6 +1885,64 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	public func removeFavoriteNode(node: NodeInfoEntity, connectedNodeNum: Int64) -> Bool {
 		var adminPacket = AdminMessage()
 		adminPacket.removeFavoriteNode = UInt32(node.num)
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(connectedNodeNum)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		var dataMessage = DataMessage()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+		guard let binaryData: Data = try? toRadio.serializedData() else {
+			return false
+		}
+
+		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
+			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+			return true
+		}
+		return false
+	}
+
+	public func setIgnoredNode(node: NodeInfoEntity, connectedNodeNum: Int64) -> Bool {
+		var adminPacket = AdminMessage()
+		adminPacket.setIgnoredNode = UInt32(node.num)
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(connectedNodeNum)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		var dataMessage = DataMessage()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return false
+		}
+		dataMessage.payload = adminData
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+		guard let binaryData: Data = try? toRadio.serializedData() else {
+			return false
+		}
+
+		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
+			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+			return true
+		}
+		return false
+	}
+
+	public func removeIgnoredNode(node: NodeInfoEntity, connectedNodeNum: Int64) -> Bool {
+		var adminPacket = AdminMessage()
+		adminPacket.removeIgnoredNode = UInt32(node.num)
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(connectedNodeNum)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)

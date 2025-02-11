@@ -13,7 +13,7 @@ import SwiftUI
 
 extension PositionEntity {
 
-	static func allPositionsFetchRequest() -> NSFetchRequest<PositionEntity> {
+	@MainActor static func allPositionsFetchRequest() -> NSFetchRequest<PositionEntity> {
 		let request: NSFetchRequest<PositionEntity> = PositionEntity.fetchRequest()
 		request.fetchLimit = 1000
 		request.returnsObjectsAsFaults = false
@@ -22,9 +22,9 @@ extension PositionEntity {
 		request.sortDescriptors = [NSSortDescriptor(key: "time", ascending: false)]
 		let positionPredicate = NSPredicate(format: "nodePosition != nil && (nodePosition.user.shortName != nil || nodePosition.user.shortName != '') && latest == true")
 
-		let pointOfInterest = LocationHelper.currentLocation
+		let pointOfInterest = LocationsHandler.currentLocation
 
-		if pointOfInterest.latitude != LocationHelper.DefaultLocation.latitude && pointOfInterest.longitude != LocationHelper.DefaultLocation.longitude {
+		if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude && pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
 			let d: Double = UserDefaults.meshMapDistance * 1.1
 			let r: Double = 6371009
 			let meanLatitidue = pointOfInterest.latitude * .pi / 180
@@ -88,7 +88,7 @@ extension PositionEntity {
 }
 
 extension PositionEntity: MKAnnotation {
-	public var coordinate: CLLocationCoordinate2D { nodeCoordinate ?? LocationHelper.DefaultLocation }
+	public var coordinate: CLLocationCoordinate2D { nodeCoordinate ?? LocationsHandler.DefaultLocation }
 	public var title: String? {  nodePosition?.user?.shortName ?? "unknown".localized }
 	public var subtitle: String? {  time?.formatted() }
 }

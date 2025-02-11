@@ -138,7 +138,7 @@ struct ChannelForm: View {
 					}
 
 					if positionsEnabled {
-						if channelKey != "AQ=="  && channelRole > 0 {
+						if (channelKey != "AQ==" && channelKeySize > 1)  && channelRole > 0 {
 							VStack(alignment: .leading) {
 								Toggle(isOn: $preciseLocation) {
 									Label("Precise Location", systemImage: "scope")
@@ -212,12 +212,11 @@ struct ChannelForm: View {
 			}
 			.onChange(of: preciseLocation) { _, loc in
 				if loc == true {
-					if channelKey == "AQ==" {
+					if channelKey == "AQ==" || channelKeySize <= 1 {
 						preciseLocation = false
 					} else {
 						positionPrecision = 32
 					}
-					positionPrecision = 32
 				} else {
 					positionPrecision = 14
 				}

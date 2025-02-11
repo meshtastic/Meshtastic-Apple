@@ -64,7 +64,7 @@ struct MQTTConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
-					if enabled && proxyToClientEnabled && node!.mqttConfig!.proxyToClientEnabled == true {
+					if enabled && proxyToClientEnabled && node?.mqttConfig?.proxyToClientEnabled ?? false == true {
 						Toggle(isOn: $mqttConnected) {
 							Label(mqttConnected ? "mqtt.disconnect".localized : "mqtt.connect".localized, systemImage: "server.rack")
 							if bleManager.mqttError.count > 0 {
@@ -174,51 +174,55 @@ struct MQTTConfig: View {
 							.keyboardType(.default)
 					}
 					.autocorrectionDisabled()
-
-					HStack {
-						Label("mqtt.username", systemImage: "person.text.rectangle")
-						TextField("mqtt.username", text: $username)
-							.foregroundColor(.gray)
-							.autocapitalization(.none)
-							.disableAutocorrection(true)
-							.onChange(of: username) {
-								var totalBytes = username.utf8.count
-								// Only mess with the value if it is too big
-								while totalBytes > 62 {
-									username = String(username.dropLast())
-									totalBytes = username.utf8.count
+					if address != "mqtt.meshtastic.org" {
+						HStack {
+							Label("mqtt.username", systemImage: "person.text.rectangle")
+							TextField("mqtt.username", text: $username)
+								.foregroundColor(.gray)
+								.autocapitalization(.none)
+								.disableAutocorrection(true)
+								.onChange(of: username) {
+									var totalBytes = username.utf8.count
+									// Only mess with the value if it is too big
+									while totalBytes > 62 {
+										username = String(username.dropLast())
+										totalBytes = username.utf8.count
+									}
+									hasChanges = true
 								}
-								hasChanges = true
-							}
-							.foregroundColor(.gray)
-					}
-					.keyboardType(.default)
-					.scrollDismissesKeyboard(.interactively)
-					HStack {
-						Label("password", systemImage: "wallet.pass")
-						TextField("password", text: $password)
-							.foregroundColor(.gray)
-							.autocapitalization(.none)
-							.disableAutocorrection(true)
-							.onChange(of: password) {
-								var totalBytes = password.utf8.count
-								// Only mess with the value if it is too big
-								while totalBytes > 62 {
-									password = String(password.dropLast())
-									totalBytes = password.utf8.count
+								.foregroundColor(.gray)
+						}
+						.keyboardType(.default)
+						.scrollDismissesKeyboard(.interactively)
+						
+						HStack {
+							Label("password", systemImage: "wallet.pass")
+							TextField("password", text: $password)
+								.foregroundColor(.gray)
+								.autocapitalization(.none)
+								.disableAutocorrection(true)
+								.onChange(of: password) {
+									var totalBytes = password.utf8.count
+									// Only mess with the value if it is too big
+									while totalBytes > 62 {
+										password = String(password.dropLast())
+										totalBytes = password.utf8.count
+									}
+									hasChanges = true
 								}
-								hasChanges = true
+								.foregroundColor(.gray)
+						}
+						.keyboardType(.default)
+						.scrollDismissesKeyboard(.interactively)
+						.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
+						if !proxyToClientEnabled {
+							Toggle(isOn: $tlsEnabled) {
+								Label("TLS Enabled", systemImage: "checkmark.shield.fill")
+								Text("Your MQTT Server must support TLS.")
 							}
-							.foregroundColor(.gray)
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						}
 					}
-					.keyboardType(.default)
-					.scrollDismissesKeyboard(.interactively)
-					.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
-					Toggle(isOn: $tlsEnabled) {
-						Label("TLS Enabled", systemImage: "checkmark.shield.fill")
-						Text("Your MQTT Server must support TLS. Not available via the public mqtt server.")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 				Text("For all Mqtt functionality other than the map report you must also set uplink and downlink for each channel you want to bridge over Mqtt.")
 					.font(.callout)
@@ -268,6 +272,7 @@ struct MQTTConfig: View {
 		.onChange(of: proxyToClientEnabled) { _, newProxyToClientEnabled in
 			if newProxyToClientEnabled {
 				jsonEnabled = false
+				tlsEnabled = false
 			}
 			if newProxyToClientEnabled != node?.mqttConfig?.proxyToClientEnabled { hasChanges = true }
 		}
@@ -322,7 +327,6 @@ struct MQTTConfig: View {
 		.onFirstAppear {
 			// Need to request a MqttModuleConfig from the remote node before allowing changes
 			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-				Logger.mesh.info("empty mqtt module config")
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let connectedNode {
 					if node.num != connectedNode.num {
@@ -330,10 +334,12 @@ struct MQTTConfig: View {
 							/// 2.5 Administration with session passkey
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.mqttConfig == nil {
+								Logger.mesh.info("⚙️ Empty or expired mqtt module config requesting via PKI admin")
 								_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 							}
 						} else {
 							/// Legacy Administration
+							Logger.mesh.info("☠️ Using insecure legacy admin, empty mqtt module config")
 							_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 						}
 					}
@@ -346,8 +352,8 @@ struct MQTTConfig: View {
 		nearbyTopics = []
 		let geocoder = CLGeocoder()
 		if LocationsHandler.shared.locationsArray.count > 0 {
-			let region  = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))?.topic
-			defaultTopic = "msh/" + (region ?? "UNSET")
+			let region  = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))
+			defaultTopic = "msh/" + (region?.topic ?? "UNSET")
 			geocoder.reverseGeocodeLocation(LocationsHandler.shared.locationsArray.first!, completionHandler: {(placemarks, error) in
 				if let error {
 					Logger.services.error("Failed to reverse geocode location: \(error.localizedDescription)")
@@ -356,8 +362,8 @@ struct MQTTConfig: View {
 
 				if let placemarks = placemarks, let placemark = placemarks.first {
 					let cc = locale.region?.identifier ?? "UNK"
-					/// Country Topic unless you are US
-					if  placemark.isoCountryCode ?? "unknown" != cc {
+					/// Country Topic unless your region is a country
+					if !(region?.isCountry ?? false) {
 						let countryTopic = defaultTopic + "/" + (placemark.isoCountryCode ?? "")
 						if !countryTopic.isEmpty {
 							nearbyTopics.append(countryTopic)

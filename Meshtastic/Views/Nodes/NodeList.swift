@@ -26,6 +26,7 @@ struct NodeList: View {
 	@State private var isOnline = false
 	@State private var isPkiEncrypted = false
 	@State private var isFavorite = false
+	@State private var isIgnored = false
 	@State private var isEnvironment = false
 	@State private var distanceFilter = false
 	@State private var maxDistance: Double = 800000
@@ -40,6 +41,7 @@ struct NodeList: View {
 
 	var boolFilters: [Bool] {[
 		isFavorite,
+		isIgnored,
 		isOnline,
 		isPkiEncrypted,
 		isEnvironment,
@@ -53,6 +55,7 @@ struct NodeList: View {
 
 	@FetchRequest(
 		sortDescriptors: [
+			NSSortDescriptor(key: "ignored", ascending: true),
 			NSSortDescriptor(key: "favorite", ascending: false),
 			NSSortDescriptor(key: "lastHeard", ascending: false),
 			NSSortDescriptor(key: "user.longName", ascending: true)
@@ -90,12 +93,14 @@ struct NodeList: View {
 			)
 			/// Don't show message, trace route, position exchange or delete context menu items for the connected node
 			if connectedNode.num != node.num {
-				Button(action: {
-					if let url = URL(string: "meshtastic:///messages?userNum=\(node.num)") {
-					   UIApplication.shared.open(url)
+				if !node.viaMqtt || node.viaMqtt && node.hopsAway == 0 {
+					Button(action: {
+						if let url = URL(string: "meshtastic:///messages?userNum=\(node.num)") {
+						   UIApplication.shared.open(url)
+						}
+					}) {
+						Label("Message", systemImage: "message")
 					}
-				}) {
-					Label("Message", systemImage: "message")
 				}
 				Button {
 					let traceRouteSent = bleManager.sendTraceRouteRequest(
@@ -132,6 +137,11 @@ struct NodeList: View {
 				} label: {
 					Label("Exchange Positions", systemImage: "arrow.triangle.2.circlepath")
 				}
+				IgnoreNodeButton(
+					bleManager: bleManager,
+					context: context,
+					node: node
+				)
 				Button(role: .destructive) {
 					deleteNodeId = node.num
 					isPresentingDeleteNodeAlert = true
@@ -164,6 +174,7 @@ struct NodeList: View {
 					isOnline: $isOnline,
 					isPkiEncrypted: $isPkiEncrypted,
 					isFavorite: $isFavorite,
+					isIgnored: $isIgnored,
 					isEnvironment: $isEnvironment,
 					distanceFilter: $distanceFilter,
 					maximumDistance: $maxDistance,
@@ -189,7 +200,6 @@ struct NodeList: View {
 				.controlSize(.regular)
 				.padding(5)
 			}
-			.padding(.bottom, 5)
 			.searchable(text: $searchText, placement: .automatic, prompt: "Find a node")
 			.disableAutocorrection(true)
 			.scrollDismissesKeyboard(.immediately)
@@ -392,6 +402,14 @@ struct NodeList: View {
 			let isFavoritePredicate = NSPredicate(format: "favorite == YES")
 			predicates.append(isFavoritePredicate)
 		}
+		/// Ignored
+		if isIgnored {
+			let isIgnoredPredicate = NSPredicate(format: "ignored == YES")
+			predicates.append(isIgnoredPredicate)
+		} else if !isIgnored {
+			let isIgnoredPredicate = NSPredicate(format: "ignored == NO")
+			predicates.append(isIgnoredPredicate)
+		}
 		/// Environment
 		if isEnvironment {
 			let environmentPredicate = NSPredicate(format: "SUBQUERY(telemetries, $tel, $tel.metricsType == 1).@count > 0")
@@ -399,9 +417,9 @@ struct NodeList: View {
 		}
 		/// Distance
 		if distanceFilter {
-			let pointOfInterest = LocationHelper.currentLocation
+			let pointOfInterest = LocationsHandler.currentLocation
 
-			if pointOfInterest.latitude != LocationHelper.DefaultLocation.latitude && pointOfInterest.longitude != LocationHelper.DefaultLocation.longitude {
+			if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude && pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
 				let d: Double = maxDistance * 1.1
 				let r: Double = 6371009
 				let meanLatitidue = pointOfInterest.latitude * .pi / 180

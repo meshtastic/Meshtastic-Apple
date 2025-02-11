@@ -67,9 +67,11 @@ class LocalNotificationManager {
 			if notification.userNum != nil {
 				content.userInfo["userNum"] = notification.userNum
 			}
+			if notification.critical {
+				content.sound = UNNotificationSound.defaultCritical
+			}
 
-            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-            let request = UNNotificationRequest(identifier: notification.id, content: content, trigger: trigger)
+            let request = UNNotificationRequest(identifier: notification.id, content: content, trigger: nil)
 
             UNUserNotificationCenter.current().add(request) { error in
 				if let error {
@@ -101,4 +103,5 @@ struct Notification {
 	var messageId: Int64?
 	var channel: Int32?
 	var userNum: Int64?
+	var critical: Bool = false
 }

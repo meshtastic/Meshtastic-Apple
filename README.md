@@ -6,7 +6,7 @@ SwiftUI client applications for iOS, iPadOS and macOS.
 
 ## Getting Started
 
-This project is currently using **Xcode 15.4**. 
+This project always uses the latest release version of XCode.
 
 1. Clone the repo.
 2. Set up git hooks to automatically lint the project when you commit changes.
@@ -24,11 +24,7 @@ open Meshtastic.xcworkspace
 
 ### Supported Operating Systems
 
-The last two operating system versions are supported. Currently that is 16 and 17.
-
-* iOS 16.6+
-* iPadOS 16.6+
-* macOS 13+
+The last two major operating system versions are supported on iOS, iPadOS and macOS.
 
 ### Code Standards
 

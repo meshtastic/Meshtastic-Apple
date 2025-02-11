@@ -30,7 +30,7 @@ struct Connect: View {
 		let notificationCenter = UNUserNotificationCenter.current()
 		notificationCenter.getNotificationSettings(completionHandler: { (settings) in
 		   if settings.authorizationStatus == .notDetermined {
-			   UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
+			   UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound, .criticalAlert]) { success, error in
 				   if success {
 					   Logger.services.info("Notifications are all set!")
 				   } else if let error = error {
@@ -324,7 +324,8 @@ struct Connect: View {
 			}
 		}
 	}
-	#if canImport(ActivityKit)
+#if !targetEnvironment(macCatalyst)
+#if canImport(ActivityKit)
 	func startNodeActivity() {
 		liveActivityStarted = true
 		// 15 Minutes Local Stats Interval
@@ -367,8 +368,8 @@ struct Connect: View {
 			}
 		}
 	}
-	#endif
-
+#endif
+#endif
 	func didDismissSheet() {
 		bleManager.disconnectPeripheral(reconnect: false)
 	}

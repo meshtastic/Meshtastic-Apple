@@ -16,6 +16,9 @@ struct NodeDetail: View {
 		formatter.unitsStyle = .full
 		return formatter
 	}()
+	var modemPreset: ModemPresets = ModemPresets(
+		rawValue: UserDefaults.modemPreset
+	) ?? ModemPresets.longFast
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -44,6 +47,34 @@ struct NodeDetail: View {
 					NodeInfoItem(node: node)
 				}
 				Section("Node") {
+					HStack(alignment: .center) {
+						Spacer()
+						CircleText(
+							text: node.user?.shortName ?? "?",
+							color: Color(UIColor(hex: UInt32(node.num))),
+							circleSize: 75
+						)
+						if node.snr != 0 && !node.viaMqtt && node.hopsAway == 0 {
+							Spacer()
+							VStack {
+								let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: modemPreset)
+								LoRaSignalStrengthIndicator(signalStrength: signalStrength)
+								Text("Signal \(signalStrength.description)").font(.footnote)
+								Text("SNR \(String(format: "%.2f", node.snr))dB")
+									.foregroundColor(getSnrColor(snr: node.snr, preset: modemPreset))
+									.font(.caption)
+								Text("RSSI \(node.rssi)dB")
+									.foregroundColor(getRssiColor(rssi: node.rssi))
+									.font(.caption)
+							}
+						}
+						if node.telemetries?.count ?? 0 > 0 {
+							Spacer()
+							BatteryGauge(node: node)
+						}
+						Spacer()
+					}
+					.listRowSeparator(.hidden)
 					if let user = node.user {
 						if !user.keyMatch {
 							Label {
@@ -206,6 +237,15 @@ struct NodeDetail: View {
 						}
 					}
 				}
+				if node.hasPowerMetrics && node.latestPowerMetrics != nil {
+					Section("Power") {
+						VStack {
+							if let metric = node.latestPowerMetrics {
+								PowerMetrics(metric: metric)
+							}
+						}
+					}
+				}
 				Section("Logs") {
 					// Metrics
 					NavigationLink {
@@ -219,6 +259,18 @@ struct NodeDetail: View {
 						}
 					}
 					.disabled(!node.hasDeviceMetrics)
+
+					NavigationLink {
+						PowerMetricsLog(node: node)
+					} label: {
+						Label {
+							Text("Power Metrics Log")
+						} icon: {
+							Image(systemName: "bolt")
+								.symbolRenderingMode(.multicolor)
+						}
+					}
+					.disabled(!node.hasPowerMetrics)
 
 					NavigationLink {
 						NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
@@ -326,6 +378,14 @@ struct NodeDetail: View {
 									node: node
 								)
 							}
+							if node.hasPositions {
+								NavigateToButton(node: node)
+								}
+							IgnoreNodeButton(
+								bleManager: bleManager,
+								context: context,
+								node: node
+							)
 							DeleteNodeButton(
 								bleManager: bleManager,
 								context: context,
@@ -430,6 +490,31 @@ func cardinalValue(from heading: Double) -> String {
 		return "North West"
 	case 337.5 ... 360.0:
 		return "North"
+	default:
+		return ""
+	}
+}
+
+func abbreviatedCardinalValue(from heading: Double) -> String {
+	switch heading {
+	case 0 ..< 22.5:
+		return "N"
+	case 22.5 ..< 67.5:
+		return "NE"
+	case 67.5 ..< 112.5:
+		return "E"
+	case 112.5 ..< 157.5:
+		return "E"
+	case 157.5 ..< 202.5:
+		return "S"
+	case 202.5 ..< 247.5:
+		return "SW"
+	case 247.5 ..< 292.5:
+		return "W"
+	case 292.5 ..< 337.5:
+		return "NW"
+	case 337.5 ... 360.0:
+		return "N"
 	default:
 		return ""
 	}

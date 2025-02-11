@@ -20,6 +20,7 @@ struct UserList: View {
 	@State private var isOnline = false
 	@State private var isPkiEncrypted = false
 	@State private var isFavorite = false
+	@State private var isIgnored = false
 	@State private var isEnvironment = false
 	@State private var distanceFilter = false
 	@State private var maxDistance: Double = 800000
@@ -44,8 +45,9 @@ struct UserList: View {
 						  NSSortDescriptor(key: "pkiEncrypted", ascending: false),
 						  NSSortDescriptor(key: "userNode.lastHeard", ascending: false),
 						  NSSortDescriptor(key: "longName", ascending: true)],
-		predicate: NSPredicate(format: "longName != ''"),
-		animation: .default
+		predicate: NSPredicate(
+		  format: "userNode.ignored == false && longName != '' AND NOT (userNode.viaMqtt == YES AND userNode.hopsAway > 0)"
+		), animation: .default
 	)
 	var users: FetchedResults<UserEntity>
 
@@ -194,7 +196,7 @@ struct UserList: View {
 			.listStyle(.plain)
 			.navigationTitle(String.localizedStringWithFormat("contacts %@".localized, String(users.count == 0 ? 0 : users.count)))
 			.sheet(isPresented: $editingFilters) {
-				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isPkiEncrypted: $isPkiEncrypted, isFavorite: $isFavorite, isEnvironment: $isEnvironment, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
+				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isPkiEncrypted: $isPkiEncrypted, isFavorite: $isFavorite, isIgnored: $isIgnored, isEnvironment: $isEnvironment, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
 			}
 			.sheet(isPresented: $showingHelp) {
 				DirectMessagesHelp()
@@ -296,7 +298,7 @@ struct UserList: View {
 		let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
 		/// Create an array of predicates to hold our AND predicates
 		var predicates: [NSPredicate] = []
-		/// Mqtt
+		/// Mqtt and lora
 		if !(viaLora && viaMqtt) {
 			if viaLora {
 				let loraPredicate = NSPredicate(format: "userNode.viaMqtt == NO")
@@ -306,9 +308,8 @@ struct UserList: View {
 				predicates.append(mqttPredicate)
 			}
 		} else {
-			/// Only show mqtt nodes that can be contacted (zero hops) on the default key
-			// let bothPredicate = NSPredicate(format: "userNode.viaMqtt == YES AND userNode.hopsAway == 0 OR userNode.viaMqtt == NO")
-			// predicates.append(bothPredicate)
+			let mqttPredicate = NSPredicate(format: "NOT (userNode.viaMqtt == YES AND userNode.hopsAway > 0)")
+			predicates.append(mqttPredicate)
 		}
 		/// Roles
 		if roleFilter && deviceRoles.count > 0 {
@@ -345,9 +346,9 @@ struct UserList: View {
 		}
 		/// Distance
 		if distanceFilter {
-			let pointOfInterest = LocationHelper.currentLocation
+			let pointOfInterest = LocationsHandler.currentLocation
 
-			if pointOfInterest.latitude != LocationHelper.DefaultLocation.latitude && pointOfInterest.longitude != LocationHelper.DefaultLocation.longitude {
+			if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude && pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
 				let d: Double = maxDistance * 1.1
 				let r: Double = 6371009
 				let meanLatitidue = pointOfInterest.latitude * .pi / 180
