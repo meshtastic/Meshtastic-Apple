@@ -54,6 +54,7 @@ struct PositionLog: View {
 							let degrees = Angle.degrees(Double(position.heading))
 							let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees)
 							Text(heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0)))))
+								.textSelection(.enabled)
 						}
 						TableColumn("SNR") { position in
 							Text("\(String(format: "%.2f", position.snr)) dB")
@@ -63,6 +64,8 @@ struct PositionLog: View {
 						}
 						.width(min: 180)
 					}
+					.textSelection(.enabled)
+
 
 				} else {
 					ScrollView {
