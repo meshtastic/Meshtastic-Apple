@@ -233,6 +233,7 @@
 		DDF45C342BC1A48E005ED5F2 /* MQTTIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF45C332BC1A48E005ED5F2 /* MQTTIcon.swift */; };
 		DDF45C372BC46A5A005ED5F2 /* TimeZone.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF45C362BC46A5A005ED5F2 /* TimeZone.swift */; };
 		DDF6B2482A9AEBF500BA6931 /* StoreForwardConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF6B2472A9AEBF500BA6931 /* StoreForwardConfig.swift */; };
+		DDF82CBD2D5BC69200DC25EC /* NavigateToButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF82CBC2D5BC69200DC25EC /* NavigateToButton.swift */; };
 		DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF924C926FBB953009FE055 /* ConnectedDevice.swift */; };
 		DDFEB3BB29900C1200EE7472 /* CurrentConditionsCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */; };
 		DDFFA7472B3A7F3C004730DB /* Bundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFFA7462B3A7F3C004730DB /* Bundle.swift */; };
@@ -548,6 +549,7 @@
 		DDF45C382BC46B16005ED5F2 /* MeshtasticDataModelV33.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV33.xcdatamodel; sourceTree = "<group>"; };
 		DDF6B2462A9AEB9E00BA6931 /* MeshtasticDataModelV17.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV17.xcdatamodel; sourceTree = "<group>"; };
 		DDF6B2472A9AEBF500BA6931 /* StoreForwardConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreForwardConfig.swift; sourceTree = "<group>"; };
+		DDF82CBC2D5BC69200DC25EC /* NavigateToButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigateToButton.swift; sourceTree = "<group>"; };
 		DDF924C926FBB953009FE055 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
 		DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentConditionsCompact.swift; sourceTree = "<group>"; };
 		DDFFA7462B3A7F3C004730DB /* Bundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
@@ -611,6 +613,7 @@
 				DDDFE73E2D0D48FF0044463C /* IgnoreNodeButton.swift */,
 				251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */,
 				251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */,
+				DDF82CBC2D5BC69200DC25EC /* NavigateToButton.swift */,
 				251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */,
 				2519268B2C3BB52000249DF5 /* TraceRouteButton.swift */,
 				2519268F2C3CB44900249DF5 /* ClientHistoryButton.swift */,
@@ -1533,6 +1536,7 @@
 				DDB6ABE428B13FFF00384BA1 /* DisplayEnums.swift in Sources */,
 				DD4975A52B147BA90026544E /* AmbientLightingConfig.swift in Sources */,
 				D93068D92B81509C0066FBC8 /* TapbackResponses.swift in Sources */,
+				DDF82CBD2D5BC69200DC25EC /* NavigateToButton.swift in Sources */,
 				8D3F8A3F2D44BB02009EAAA4 /* PowerMetrics.swift in Sources */,
 				2519268A2C3BB1B200249DF5 /* ExchangePositionsButton.swift in Sources */,
 				DD86D40A287F04F100BAEB7A /* InvalidVersion.swift in Sources */,

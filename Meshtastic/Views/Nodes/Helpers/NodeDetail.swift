@@ -260,7 +260,6 @@ struct NodeDetail: View {
 					}
 					.disabled(!node.hasDeviceMetrics)
 
-
 					NavigationLink {
 						NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
 					} label: {
@@ -379,6 +378,9 @@ struct NodeDetail: View {
 									node: node
 								)
 							}
+							if node.hasPositions {
+								NavigateToButton(node: node)
+								}
 							IgnoreNodeButton(
 								bleManager: bleManager,
 								context: context,

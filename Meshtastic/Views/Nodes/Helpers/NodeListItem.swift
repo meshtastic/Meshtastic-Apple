@@ -77,9 +77,11 @@ struct NodeListItem: View {
 										imageColor: .green,
 										text: "connected".localized)
 						}
-						IconAndText(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill",
-									imageColor: node.isOnline ? .green : .orange,
-									text: node.lastHeard?.lastHeard ?? "unknown")
+						if node.lastHeard?.timeIntervalSince1970 ?? 0 > 0 {
+							IconAndText(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill",
+										imageColor: node.isOnline ? .green : .orange,
+										text: node.lastHeard?.formatted() ?? "unknown")
+						}
 						let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
 						IconAndText(systemName: role?.systemName ?? "figure",
 									text: "Role: \(role?.name ?? "unknown".localized)")
