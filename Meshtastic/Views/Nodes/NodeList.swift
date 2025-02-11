@@ -200,7 +200,6 @@ struct NodeList: View {
 				.controlSize(.regular)
 				.padding(5)
 			}
-			.padding(.bottom, 5)
 			.searchable(text: $searchText, placement: .automatic, prompt: "Find a node")
 			.disableAutocorrection(true)
 			.scrollDismissesKeyboard(.immediately)

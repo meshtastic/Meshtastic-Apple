@@ -55,7 +55,7 @@ struct PositionPopover: View {
 						if idiom != .phone {
 							Text("heard".localized + ":")
 						}
-						LastHeardText(lastHeard: position.time)
+						Text(position.time?.lastHeard ?? "unknown")
 							.foregroundColor(.primary)
 							.font(idiom == .phone ? .callout : .body)
 							.allowsTightening(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
