@@ -925,6 +925,11 @@ public struct Config: Sendable {
     /// Indicates how to rotate or invert the compass output to accurate display on the display.
     public var compassOrientation: Config.DisplayConfig.CompassOrientation = .degrees0
 
+    ///
+    /// If false (default), the device will display the time in 24-hour format on screen.
+    /// If true, the device will display the time in 12-hour format on screen.
+    public var use12HClock: Bool = false
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
@@ -2523,6 +2528,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     9: .standard(proto: "heading_bold"),
     10: .standard(proto: "wake_on_tap_or_motion"),
     11: .standard(proto: "compass_orientation"),
+    12: .standard(proto: "use_12h_clock"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2542,6 +2548,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       case 9: try { try decoder.decodeSingularBoolField(value: &self.headingBold) }()
       case 10: try { try decoder.decodeSingularBoolField(value: &self.wakeOnTapOrMotion) }()
       case 11: try { try decoder.decodeSingularEnumField(value: &self.compassOrientation) }()
+      case 12: try { try decoder.decodeSingularBoolField(value: &self.use12HClock) }()
       default: break
       }
     }
@@ -2581,6 +2588,9 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if self.compassOrientation != .degrees0 {
       try visitor.visitSingularEnumField(value: self.compassOrientation, fieldNumber: 11)
     }
+    if self.use12HClock != false {
+      try visitor.visitSingularBoolField(value: self.use12HClock, fieldNumber: 12)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2596,6 +2606,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if lhs.headingBold != rhs.headingBold {return false}
     if lhs.wakeOnTapOrMotion != rhs.wakeOnTapOrMotion {return false}
     if lhs.compassOrientation != rhs.compassOrientation {return false}
+    if lhs.use12HClock != rhs.use12HClock {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

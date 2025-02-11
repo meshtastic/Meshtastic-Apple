@@ -399,6 +399,11 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
   case meshTab // = 86
 
   ///
+  /// MeshLink board developed by LoraItalia. NRF52840, eByte E22900M22S (Will also come with other frequencies), 25w MPPT solar charger (5v,12v,18v selectable), support for gps, buzzer, oled or e-ink display, 10 gpios, hardware watchdog
+  /// https://www.loraitalia.it
+  case meshlink // = 87
+
+  ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -498,6 +503,7 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 84: self = .wismeshTap
     case 85: self = .routastic
     case 86: self = .meshTab
+    case 87: self = .meshlink
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -592,6 +598,7 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .wismeshTap: return 84
     case .routastic: return 85
     case .meshTab: return 86
+    case .meshlink: return 87
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -686,6 +693,7 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     .wismeshTap,
     .routastic,
     .meshTab,
+    .meshlink,
     .privateHw,
   ]
 
@@ -3316,6 +3324,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     84: .same(proto: "WISMESH_TAP"),
     85: .same(proto: "ROUTASTIC"),
     86: .same(proto: "MESH_TAB"),
+    87: .same(proto: "MESHLINK"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }

@@ -1058,7 +1058,7 @@ public struct ModuleConfig: Sendable {
   }
 
   ///
-  /// TODO: REPLACE
+  /// Canned Messages Module Config
   public struct CannedMessageConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for

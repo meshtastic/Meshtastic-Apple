@@ -164,6 +164,10 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
   ///
   /// High accuracy current and voltage
   case ina226 // = 34
+
+  ///
+  /// DFRobot Gravity tipping bucket rain gauge
+  case dfrobotRain // = 35
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -207,6 +211,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 32: self = .scd4X
     case 33: self = .radsens
     case 34: self = .ina226
+    case 35: self = .dfrobotRain
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -248,6 +253,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .scd4X: return 32
     case .radsens: return 33
     case .ina226: return 34
+    case .dfrobotRain: return 35
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -289,6 +295,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     .scd4X,
     .radsens,
     .ina226,
+    .dfrobotRain,
   ]
 
 }
@@ -572,6 +579,28 @@ public struct EnvironmentMetrics: @unchecked Sendable {
   public var hasRadiation: Bool {return _storage._radiation != nil}
   /// Clears the value of `radiation`. Subsequent reads from it will return its default value.
   public mutating func clearRadiation() {_uniqueStorage()._radiation = nil}
+
+  ///
+  /// Rainfall in the last hour in mm
+  public var rainfall1H: Float {
+    get {return _storage._rainfall1H ?? 0}
+    set {_uniqueStorage()._rainfall1H = newValue}
+  }
+  /// Returns true if `rainfall1H` has been explicitly set.
+  public var hasRainfall1H: Bool {return _storage._rainfall1H != nil}
+  /// Clears the value of `rainfall1H`. Subsequent reads from it will return its default value.
+  public mutating func clearRainfall1H() {_uniqueStorage()._rainfall1H = nil}
+
+  ///
+  /// Rainfall in the last 24 hours in mm
+  public var rainfall24H: Float {
+    get {return _storage._rainfall24H ?? 0}
+    set {_uniqueStorage()._rainfall24H = newValue}
+  }
+  /// Returns true if `rainfall24H` has been explicitly set.
+  public var hasRainfall24H: Bool {return _storage._rainfall24H != nil}
+  /// Clears the value of `rainfall24H`. Subsequent reads from it will return its default value.
+  public mutating func clearRainfall24H() {_uniqueStorage()._rainfall24H = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1102,6 +1131,7 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     32: .same(proto: "SCD4X"),
     33: .same(proto: "RADSENS"),
     34: .same(proto: "INA226"),
+    35: .same(proto: "DFROBOT_RAIN"),
   ]
 }
 
@@ -1186,6 +1216,8 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     16: .standard(proto: "wind_gust"),
     17: .standard(proto: "wind_lull"),
     18: .same(proto: "radiation"),
+    19: .standard(proto: "rainfall_1h"),
+    20: .standard(proto: "rainfall_24h"),
   ]
 
   fileprivate class _StorageClass {
@@ -1207,6 +1239,8 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     var _windGust: Float? = nil
     var _windLull: Float? = nil
     var _radiation: Float? = nil
+    var _rainfall1H: Float? = nil
+    var _rainfall24H: Float? = nil
 
     #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
@@ -1239,6 +1273,8 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       _windGust = source._windGust
       _windLull = source._windLull
       _radiation = source._radiation
+      _rainfall1H = source._rainfall1H
+      _rainfall24H = source._rainfall24H
     }
   }
 
@@ -1275,6 +1311,8 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
         case 16: try { try decoder.decodeSingularFloatField(value: &_storage._windGust) }()
         case 17: try { try decoder.decodeSingularFloatField(value: &_storage._windLull) }()
         case 18: try { try decoder.decodeSingularFloatField(value: &_storage._radiation) }()
+        case 19: try { try decoder.decodeSingularFloatField(value: &_storage._rainfall1H) }()
+        case 20: try { try decoder.decodeSingularFloatField(value: &_storage._rainfall24H) }()
         default: break
         }
       }
@@ -1341,6 +1379,12 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       try { if let v = _storage._radiation {
         try visitor.visitSingularFloatField(value: v, fieldNumber: 18)
       } }()
+      try { if let v = _storage._rainfall1H {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 19)
+      } }()
+      try { if let v = _storage._rainfall24H {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 20)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1368,6 +1412,8 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
         if _storage._windGust != rhs_storage._windGust {return false}
         if _storage._windLull != rhs_storage._windLull {return false}
         if _storage._radiation != rhs_storage._radiation {return false}
+        if _storage._rainfall1H != rhs_storage._rainfall1H {return false}
+        if _storage._rainfall24H != rhs_storage._rainfall24H {return false}
         return true
       }
       if !storagesAreEqual {return false}
