@@ -37,7 +37,7 @@ class MqttClientProxyManager {
 				defaultServerPort = Int(fullHost.components(separatedBy: ":")[1]) ?? (useSsl ? 8883 : 1883)
 			}
 		}
-		
+
 		if let host = host {
 			let port = defaultServerPort
 			var username = node.mqttConfig?.username

@@ -260,7 +260,7 @@ struct NodeDetail: View {
 					}
 					.disabled(!node.hasDeviceMetrics)
 
-					NavigationLink{
+					NavigationLink {
 						PowerMetricsLog(node: node)
 					} label: {
 						Label {

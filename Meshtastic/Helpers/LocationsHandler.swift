@@ -145,6 +145,5 @@ import OSLog
 		}
 		return sats
 	}
-	
 
 }
