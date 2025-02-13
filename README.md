@@ -21,8 +21,6 @@ This project always uses the [latest Xcode release version](https://xcoderelease
    echo """
     //
     //  Local.xcconfig
-    //  Meshtastic
-    //
     //  Created by $(whoami) on $(date -u -R +"%m/%d/%Y").
     //
 

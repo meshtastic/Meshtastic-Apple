@@ -5,7 +5,18 @@
 # Ensure the script is run from a relative context
 function validateRelativeContext() {
     if [ ! -d "./scripts" ]; then
-        printf "\033[97;101mWARNING\033[0m: This script should be executed relative from the project root.\n"
+        printf "This script should be executed relative from the project root!"
+        exit 1
+    fi
+}
+
+# Ensure the debug entitlements are not committed.
+function validateEntitlements() {
+    if [ $(git diff --staged -- 'Meshtastic.xcodeproj/project.pbxproj'|grep "MeshtasticDebug.entitlements"|wc -l) -gt 0 ]
+    then
+        echo """
+The Code Signing Entitlements are set to 'MeshtasticDebug.entitlements', which should not be committed! Unstage the changed line in 'project.pbxproj' before committing, or revert the change by navigating to the 'Code Signing Entitlements' in the 'Meshtastic' target's Build Settings.
+"""
         exit 1
     fi
 }
@@ -94,9 +105,9 @@ function formatSourceFiles() {
 
 # Handle spaces in filenames
 IFS=$'\n'
-# Feedback
-printf "\033[93mExecuting pre-commit hook\033[0m\n"
 # Validate we are being executed relatively fron the project root.
 validateRelativeContext
+# Validate the debug entitlements are not configured.
+validateEntitlements
 # Format source files and automatically fix any fixable lint issues.
 formatSourceFiles
