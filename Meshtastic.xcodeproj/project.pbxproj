@@ -311,10 +311,6 @@
 		BCE2D3C42C7AE369008E6199 /* RestartNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestartNodeIntent.swift; sourceTree = "<group>"; };
 		BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsProvider.swift; sourceTree = "<group>"; };
 		BCE2D3C82C7C377F008E6199 /* FactoryResetNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FactoryResetNodeIntent.swift; sourceTree = "<group>"; };
-		D32BA3912D54617800714840 /* NodeInfoEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NodeInfoEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
-		D32BA3922D54617800714840 /* NodeInfoEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NodeInfoEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		D32BA3932D54617800714840 /* UserEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
-		D32BA3942D54617800714840 /* UserEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageContextMenuItems.swift; sourceTree = "<group>"; };
 		D93068D42B812B700066FBC8 /* MessageDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDestination.swift; sourceTree = "<group>"; };
 		D93068D62B8146690066FBC8 /* MessageText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageText.swift; sourceTree = "<group>"; };
@@ -678,17 +674,6 @@
 			path = Custom;
 			sourceTree = "<group>";
 		};
-		D32BA3902D54612800714840 /* CoreData */ = {
-			isa = PBXGroup;
-			children = (
-				D32BA3912D54617800714840 /* NodeInfoEntity+CoreDataClass.swift */,
-				D32BA3922D54617800714840 /* NodeInfoEntity+CoreDataProperties.swift */,
-				D32BA3932D54617800714840 /* UserEntity+CoreDataClass.swift */,
-				D32BA3942D54617800714840 /* UserEntity+CoreDataProperties.swift */,
-			);
-			path = CoreData;
-			sourceTree = "<group>";
-		};
 		D9C9839E2B79D0C600BDBE6A /* TextMessageField */ = {
 			isa = PBXGroup;
 			children = (
@@ -956,7 +941,6 @@
 		DDC2E15626CE248E0042C5E4 /* Meshtastic */ = {
 			isa = PBXGroup;
 			children = (
-				D32BA3902D54612800714840 /* CoreData */,
 				BCB6137F2C6728E700485544 /* AppIntents */,
 				DD1BD0EC2C603C5B008C0C70 /* Measurement */,
 				25F5D5BC2C3F6D7B008036E3 /* Router */,
