@@ -227,7 +227,7 @@ struct NodeList: View {
 					Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
 			}
 			.confirmationDialog(
-				"are.you.sure",
+				"Are you sure?",
 				isPresented: $isPresentingDeleteNodeAlert,
 				titleVisibility: .visible
 			) {

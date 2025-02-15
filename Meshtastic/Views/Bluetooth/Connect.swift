@@ -63,7 +63,7 @@ struct Connect: View {
 											if node != nil {
 												Text(connectedPeripheral.longName).font(.title2)
 											}
-											Text("ble.name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name ?? "unknown".localized)")
+											Text("BLE Name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name ?? "unknown".localized)")
 												.font(.callout).foregroundColor(Color.gray)
 											if node != nil {
 												Text("firmware.version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "unknown".localized)")
@@ -243,7 +243,7 @@ struct Connect: View {
 						}
 
 					} else {
-						Text("bluetooth.off")
+						Text("Bluetooth is off")
 							.foregroundColor(.red)
 							.font(.title)
 					}
@@ -282,7 +282,7 @@ struct Connect: View {
 				}
 				.padding(.bottom, 10)
 			}
-			.navigationTitle("bluetooth")
+			.navigationTitle("Bluetooth")
 			.navigationBarItems(
 				leading: MeshtasticLogo(),
 				trailing: ZStack {

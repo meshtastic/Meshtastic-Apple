@@ -123,7 +123,7 @@ struct EnvironmentMetricsLog: View {
 					Button(role: .destructive) {
 						isPresentingClearLogConfirm = true
 					} label: {
-						Label("clear.log", systemImage: "trash.fill")
+						Label("Clear", systemImage: "trash.fill")
 							.imageScale(imageScale)
 					}
 					.buttonStyle(.bordered)
@@ -131,7 +131,7 @@ struct EnvironmentMetricsLog: View {
 					.controlSize(buttonSize)
 					.padding(.bottom)
 					.confirmationDialog(
-						"are.you.sure",
+						"Are you sure?",
 						isPresented: $isPresentingClearLogConfirm,
 						titleVisibility: .visible
 					) {

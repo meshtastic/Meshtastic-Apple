@@ -113,7 +113,7 @@ struct DeviceMetricsLog: View {
 				if idiom == .phone {
 					/// Single Cell Compact display for phones
 					Table(deviceMetrics, selection: $selection, sortOrder: $sortOrder) {
-						TableColumn("battery.level") { dm in
+						TableColumn("Battery Level") { dm in
 							HStack {
 								Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 									.font(.caption)

@@ -36,7 +36,7 @@ struct ConnectedDevice: View {
                             .symbolRenderingMode(.hierarchical)
                     }
                 } else {
-                    Text("bluetooth.off").font(.subheadline).foregroundColor(.red)
+                    Text("Bluetooth is off").font(.subheadline).foregroundColor(.red)
                 }
             }
         }

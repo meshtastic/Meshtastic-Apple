@@ -426,7 +426,7 @@ struct NodeDetail: View {
 							} label: {
 								Label("Power Off", systemImage: "power")
 							}.confirmationDialog(
-								"are.you.sure",
+								"Are you sure?",
 								isPresented: $showingShutdownConfirm
 							) {
 								Button("Shutdown Node?", role: .destructive) {
@@ -449,7 +449,7 @@ struct NodeDetail: View {
 								systemImage: "arrow.triangle.2.circlepath"
 							)
 						}.confirmationDialog(
-							"are.you.sure",
+							"Are you sure?",
 							isPresented: $showingRebootConfirm
 						) {
 							Button("reboot.node", role: .destructive) {

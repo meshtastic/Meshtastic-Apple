@@ -48,7 +48,7 @@ struct AppSettings: View {
 							.foregroundColor(.red)
 					}
 					.confirmationDialog(
-						"are.you.sure",
+						"Are you sure?",
 						isPresented: $isPresentingCoreDataResetConfirm,
 						titleVisibility: .visible
 					) {
@@ -94,7 +94,7 @@ struct AppSettings: View {
 								.foregroundColor(.red)
 						}
 						.confirmationDialog(
-							"are.you.sure",
+							"Are you sure?",
 							isPresented: $isPresentingDeleteMapTilesConfirm,
 							titleVisibility: .visible
 						) {

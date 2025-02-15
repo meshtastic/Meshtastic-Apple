@@ -208,7 +208,7 @@ struct Routes: View {
 						}
 						HStack {
 
-							Button("cancel", role: .cancel) {
+							Button("Cancel", role: .cancel) {
 								selectedRoute = nil
 							}
 							.buttonStyle(.bordered)

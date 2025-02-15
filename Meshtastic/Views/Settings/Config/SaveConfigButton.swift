@@ -20,7 +20,7 @@ struct SaveConfigButton: View {
 		.controlSize(.large)
 		.padding()
 		.confirmationDialog(
-			"are.you.sure",
+			"Are you sure?",
 			isPresented: $isPresentingSaveConfirm,
 			titleVisibility: .visible
 		) {

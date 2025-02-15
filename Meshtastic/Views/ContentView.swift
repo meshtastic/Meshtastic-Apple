@@ -26,7 +26,7 @@ struct ContentView: View {
 
 			Connect()
 				.tabItem {
-					Label("bluetooth", systemImage: "antenna.radiowaves.left.and.right")
+					Label("Bluetooth", systemImage: "antenna.radiowaves.left.and.right")
 				}
 				.tag(NavigationState.Tab.bluetooth)
 

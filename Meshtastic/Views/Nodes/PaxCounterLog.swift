@@ -162,7 +162,7 @@ struct PaxCounterLog: View {
 					Button(role: .destructive) {
 						isPresentingClearLogConfirm = true
 					} label: {
-						Label("clear.log", systemImage: "trash.fill")
+						Label("Clear", systemImage: "trash.fill")
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
@@ -170,7 +170,7 @@ struct PaxCounterLog: View {
 					.padding(.bottom)
 					.padding(.leading)
 					.confirmationDialog(
-						"are.you.sure",
+						"Are you sure?",
 						isPresented: $isPresentingClearLogConfirm,
 						titleVisibility: .visible
 					) {

@@ -104,7 +104,7 @@ struct Settings: View {
 
 			NavigationLink(value: SettingsNavigationState.bluetooth) {
 				Label {
-					Text("bluetooth")
+					Text("Bluetooth")
 				} icon: {
 					Image(systemName: "antenna.radiowaves.left.and.right")
 				}

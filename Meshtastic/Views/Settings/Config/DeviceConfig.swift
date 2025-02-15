@@ -148,7 +148,7 @@ struct DeviceConfig: View {
 					.controlSize(.regular)
 					.padding(.leading)
 					.confirmationDialog(
-						"are.you.sure",
+						"Are you sure?",
 						isPresented: $isPresentingNodeDBResetConfirm,
 						titleVisibility: .visible
 					) {
