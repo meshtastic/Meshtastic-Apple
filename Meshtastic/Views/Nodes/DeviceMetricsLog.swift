@@ -140,7 +140,7 @@ struct DeviceMetricsLog: View {
 				} else {
 					/// Multi Column table for ipads and mac
 					Table(deviceMetrics, selection: $selection, sortOrder: $sortOrder) {
-						TableColumn("battery.level") { dm in
+						TableColumn("Battery Level") { dm in
 							if dm.batteryLevel > 100 {
 								Text("Powered")
 							} else {

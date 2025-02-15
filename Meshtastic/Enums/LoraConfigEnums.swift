@@ -83,49 +83,49 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .unset:
-			return "please.set.a.region".localized
+			return "Please set a region".localized
 		case .us:
-			return "united.states".localized
+			return "United States".localized
 		case .eu433:
-			return "european.union.433mhz".localized
+			return "European Union 433MHz".localized
 		case .eu868:
-			return "european.union.868mhz".localized
+			return "European Union 868MHz".localized
 		case .cn:
-			return "china".localized
+			return "China".localized
 		case .jp:
 			return "Japan".localized
 		case .anz:
-			return "australia.new.zealand".localized
+			return "Australia / New Zealand".localized
 		case .kr:
-			return "korea".localized
+			return "Korea".localized
 		case .tw:
-			return "taiwan".localized
+			return "Taiwan".localized
 		case .ru:
-			return "russia".localized
+			return "Russia".localized
 		case .in:
-			return "india".localized
+			return "India".localized
 		case .nz865:
-			return "new.zealand.865mhz".localized
+			return "New Zealand 865mhz".localized
 		case .th:
-			return "thailand".localized
+			return "Thailand".localized
 		case .ua433:
-			return "ukraine.433mhz".localized
+			return "Ukraine 433mhz".localized
 		case .ua868:
-			return "ukraine.868mhz".localized
+			return "Ukraine 868mhz".localized
 		case .lora24:
 			return "2.4ghz".localized
 		case .my433:
-			return "malaysia.433mhz".localized
+			return "Malaysia 433mhz".localized
 		case .my919:
-			return "malaysia.919mhz".localized
+			return "Malaysia 919mhz".localized
 		case .sg923:
-			return "singapore.923mhz".localized
+			return "Singapore 923mhz".localized
 		case .ph433:
-			return "philippines.433mhz".localized
+			return "Philippines 433mhz".localized
 		case .ph868:
-			return "philippines.868mhz".localized
+			return "Philippines 868mhz".localized
 		case .ph915:
-			return "philippines.915mhz".localized
+			return "Philippines 915mhz".localized
 		}
 	}
 	var dutyCycle: Int {

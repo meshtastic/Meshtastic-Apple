@@ -157,7 +157,7 @@ struct LoRaConfig: View {
 							TextField("Frequency Slot", value: $channelNum, formatter: formatter)
 								.toolbar {
 									ToolbarItemGroup(placement: .keyboard) {
-										Button("dismiss.keyboard") {
+										Button("Dismiss") {
 											focusedField = nil
 										}
 										.font(.subheadline)

@@ -75,7 +75,7 @@ struct AmbientLightingConfig: View {
 					}
 				}
 			}
-			.navigationTitle("ambient.lighting.config")
+			.navigationTitle("Ambient Lighting Config")
 			.navigationBarItems(
 				trailing: ZStack {
 					ConnectedDevice(

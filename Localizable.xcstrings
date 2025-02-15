@@ -1610,7 +1610,7 @@
         }
       }
     },
-    "ambient.lighting" : {
+    "Ambient Lighting" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1674,7 +1674,7 @@
         }
       }
     },
-    "ambient.lighting.config" : {
+    "Ambient Lighting Config" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1856,136 +1856,6 @@
         }
       }
     },
-    "appsettings.provide.location" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Standort im Mesh veröffentlichen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Share location"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Partager la position"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שתף מיקום"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Udostępnij lokalizację"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Partilha localização"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dela plats"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Подели информације о локацији"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "提供定位到 Mesh 网络"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "提供定位到 Mesh 網路"
-          }
-        }
-      }
-    },
-    "appsettings.smartposition" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Smart Position"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Smart Position"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Position intelligente"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מיקום חכם"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Smart Position"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Posição Inteligente"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Smart position"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Паметно позиционирање"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智能定位"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智能定位"
-          }
-        }
-      }
-    },
     "Are you sure you want to delete this message?" : {
       "localizations" : {
         "sr" : {
@@ -2025,9 +1895,6 @@
       }
     },
     "Are you sure?" : {
-
-    },
-    "are.you.sure" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2091,72 +1958,10 @@
         }
       }
     },
-    "ascii.capable" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ASCII-fähig"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ASCII Capable"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ASCII Compatible"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "בעל יכולת ASCII"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zgodny z ASCII"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Capacidade ASCII"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ASCII-kompatibel"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ASCII способан"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ASCII 兼容"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "支援 ASCII"
-          }
-        }
-      }
+    "are.you.sure" : {
+
     },
-    "australia.new.zealand" : {
+    "Australia / New Zealand" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -2205,7 +2010,7 @@
         }
       }
     },
-    "available.radios" : {
+    "Available Radios" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2355,23 +2160,7 @@
         }
       }
     },
-    "Battery Level %" : {
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ниво батерије у %"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "电池电量 %"
-          }
-        }
-      }
-    },
-    "battery.level" : {
+    "Battery Level" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2434,6 +2223,25 @@
           }
         }
       }
+    },
+    "Battery Level %" : {
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ниво батерије у %"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "电池电量 %"
+          }
+        }
+      }
+    },
+    "battery.level" : {
+
     },
     "Baud" : {
       "localizations" : {
@@ -4639,7 +4447,7 @@
         }
       }
     },
-    "china" : {
+    "China" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -9343,7 +9151,7 @@
         }
       }
     },
-    "dismiss.keyboard" : {
+    "Dismiss" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9407,7 +9215,7 @@
         }
       }
     },
-    "display" : {
+    "Display" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10401,7 +10209,7 @@
         }
       }
     },
-    "european.union.433mhz" : {
+    "European Union 433MHz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -10418,7 +10226,7 @@
         }
       }
     },
-    "european.union.868mhz" : {
+    "European Union 868MHz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -13204,7 +13012,7 @@
         }
       }
     },
-    "india" : {
+    "India" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -15870,7 +15678,7 @@
         }
       }
     },
-    "korea" : {
+    "Korea" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -16928,7 +16736,7 @@
         }
       }
     },
-    "malaysia.433mhz" : {
+    "Malaysia 433mhz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -16945,7 +16753,7 @@
         }
       }
     },
-    "malaysia.919mhz" : {
+    "Malaysia 919mhz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -21564,7 +21372,7 @@
         }
       }
     },
-    "new.zealand.865mhz" : {
+    "New Zealand 865mhz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -23132,7 +22940,7 @@
         }
       }
     },
-    "philippines.433mhz" : {
+    "Philippines 433mhz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -23149,7 +22957,7 @@
         }
       }
     },
-    "philippines.868mhz" : {
+    "Philippines 868mhz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -23166,7 +22974,7 @@
         }
       }
     },
-    "philippines.915mhz" : {
+    "Philippines 915mhz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -23380,7 +23188,7 @@
         }
       }
     },
-    "please.set.a.region" : {
+    "Please set a region" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -26700,7 +26508,7 @@
         }
       }
     },
-    "russia" : {
+    "Russia" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -28767,7 +28575,7 @@
         }
       }
     },
-    "singapore.923mhz" : {
+    "Singapore 923mhz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -29316,7 +29124,7 @@
         }
       }
     },
-    "taiwan" : {
+    "Taiwan" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -30243,7 +30051,7 @@
         }
       }
     },
-    "thailand" : {
+    "Thailand" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -31775,7 +31583,7 @@
         }
       }
     },
-    "ukraine.433mhz" : {
+    "Ukraine 433mhz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -31792,7 +31600,7 @@
         }
       }
     },
-    "ukraine.868mhz" : {
+    "Ukraine 868mhz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -31819,7 +31627,7 @@
         }
       }
     },
-    "united.states" : {
+    "United States" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {

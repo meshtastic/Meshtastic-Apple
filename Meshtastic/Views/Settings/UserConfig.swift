@@ -109,7 +109,7 @@ struct UserConfig: View {
 								TextField("Frequency Override", value: $overrideFrequency, formatter: floatFormatter)
 									.toolbar {
 										ToolbarItemGroup(placement: .keyboard) {
-											Button("dismiss.keyboard") {
+											Button("Dismiss") {
 												focusedField = nil
 											}
 											.font(.subheadline)

@@ -120,7 +120,7 @@ struct Settings: View {
 
 			NavigationLink(value: SettingsNavigationState.display) {
 				Label {
-					Text("display")
+					Text("Display")
 				} icon: {
 					Image(systemName: "display")
 				}
@@ -156,7 +156,7 @@ struct Settings: View {
 		Section("module.configuration") {
 			NavigationLink(value: SettingsNavigationState.ambientLighting) {
 				Label {
-					Text("ambient.lighting")
+					Text("Ambient Lighting")
 				} icon: {
 					Image(systemName: "light.max")
 				}

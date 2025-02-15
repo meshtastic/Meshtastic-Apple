@@ -197,7 +197,7 @@ struct Connect: View {
 						.textCase(nil)
 
 						if !self.bleManager.isConnected {
-							Section(header: Text("available.radios").font(.title)) {
+							Section(header: Text("Available Radios").font(.title)) {
 								ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.name < $1.name })) { peripheral in
 									HStack {
 										if UserDefaults.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
