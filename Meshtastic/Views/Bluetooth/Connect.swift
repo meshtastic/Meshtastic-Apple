@@ -172,7 +172,7 @@ struct Connect: View {
 										Button(role: .destructive) {
 											bleManager.cancelPeripheralConnection()
 										} label: {
-											Label("disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 										}
 									}
 
@@ -258,7 +258,7 @@ struct Connect: View {
 								bleManager.disconnectPeripheral(reconnect: false)
 							}
 						}) {
-							Label("disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+							Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 						}
 						.buttonStyle(.bordered)
 						.buttonBorderShape(.capsule)
@@ -270,7 +270,7 @@ struct Connect: View {
 							bleManager.cancelPeripheralConnection()
 
 						}) {
-							Label("disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+							Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 						}
 						.buttonStyle(.bordered)
 						.buttonBorderShape(.capsule)

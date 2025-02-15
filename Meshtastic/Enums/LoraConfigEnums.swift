@@ -93,7 +93,7 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 		case .cn:
 			return "china".localized
 		case .jp:
-			return "japan".localized
+			return "Japan".localized
 		case .anz:
 			return "australia.new.zealand".localized
 		case .kr:

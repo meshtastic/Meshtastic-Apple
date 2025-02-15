@@ -65,7 +65,7 @@ enum ScreenOnIntervals: Int, CaseIterable, Identifiable {
 		case .oneHour:
 			return "interval.one.hour".localized
 		case .max:
-			return "always.on".localized
+			return "Always On".localized
 		}
 	}
 }

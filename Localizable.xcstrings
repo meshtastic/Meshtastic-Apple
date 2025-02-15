@@ -1235,7 +1235,7 @@
         }
       }
     },
-    "airtime" : {
+    "Airtime" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1295,22 +1295,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "廣播時間"
-          }
-        }
-      }
-    },
-    "Airtime" : {
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Време емитовања"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "广播时间"
           }
         }
       }
@@ -1545,23 +1529,7 @@
         }
       }
     },
-    "Always point north" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Immer nach Norden zeigen"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Увек усмеравајте на север"
-          }
-        }
-      }
-    },
-    "always.on" : {
+    "Always On" : {
       "extractionState" : "migrated",
       "localizations" : {
         "de" : {
@@ -1622,6 +1590,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "常亮"
+          }
+        }
+      }
+    },
+    "Always point north" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Immer nach Norden zeigen"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Увек усмеравајте на север"
           }
         }
       }
@@ -1868,135 +1852,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Приближна локација"
-          }
-        }
-      }
-    },
-    "appsettings" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Einstellungen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Settings"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Réglages de l'application"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות אפליקציה"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ustawienia aplikacji"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Definições do App"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Appinställningar"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Подешавања апликације"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App 设置"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "設定"
-          }
-        }
-      }
-    },
-    "appsettings.newNodeNotifications" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mitteilungen über neue Knoten"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Node Notifications"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Node Notifications"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Node Notifications"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Node Notifications"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Notificações de Nó Novo"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Node Notifications"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Обавештења о новим чворовима"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "新节点通知"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "新節點通知"
           }
         }
       }
@@ -5136,69 +4991,8 @@
         }
       }
     },
-    "communicating" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verbinde mit Gerät..."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Communicating with device. ."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Communication avec l'appareil en cours. ."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מתקשר עם מכשיר. ."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Komunikowanie z urządzeniem. ."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Comunicando com dispositivo. ."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kommunicerar med enheten..."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Комуницирање са уређајем. ."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "与设备进行通讯中..."
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "與電台進行通訊中..."
-          }
-        }
-      }
+    "Communicating" : {
+
     },
     "Config" : {
       "localizations" : {
@@ -7045,7 +6839,7 @@
         }
       }
     },
-    "copy" : {
+    "Copy" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7577,6 +7371,9 @@
           }
         }
       }
+    },
+    "Delete Power metrics?" : {
+
     },
     "Description" : {
       "localizations" : {
@@ -9482,7 +9279,7 @@
         }
       }
     },
-    "disconnect" : {
+    "Disconnect" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -15911,7 +15708,7 @@
         }
       }
     },
-    "japan" : {
+    "Japan" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -21702,6 +21499,71 @@
         }
       }
     },
+    "New Node Notifications" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mitteilungen über neue Knoten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Node Notifications"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Node Notifications"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Node Notifications"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Node Notifications"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notificações de Nó Novo"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Node Notifications"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обавештења о новим чворовима"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新节点通知"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新節點通知"
+          }
+        }
+      }
+    },
     "new.zealand.865mhz" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -23832,6 +23694,9 @@
     "Power Metrics Log" : {
 
     },
+    "Power Metrics Log}" : {
+
+    },
     "Power Off" : {
       "localizations" : {
         "sr" : {
@@ -25024,7 +24889,7 @@
         }
       }
     },
-    "reply" : {
+    "Reply" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -29399,66 +29264,12 @@
         }
       }
     },
-    "subscribed" : {
+    "Subscribed" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verbunden mit dem Mesh"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Subscribed to mesh"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abonné au maillage"
-          }
-        },
         "he" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "מחובר למש"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zapisano do siatki"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inscrito no mesh"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prenumererar på mesh"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Повезано са меш мрежом"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "连接到 Mesh 网络"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "連接到 Mesh 網路"
           }
         }
       }
@@ -29525,7 +29336,7 @@
     "Takes a Meshtastic channel URL and saves the channel settings." : {
 
     },
-    "tapback" : {
+    "Tapback" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -30976,6 +30787,9 @@
       }
     },
     "timestamp" : {
+
+    },
+    "Timestamp" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -31035,16 +30849,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "時間戳記"
-          }
-        }
-      }
-    },
-    "Timestamp" : {
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Временска ознака"
           }
         }
       }
@@ -32043,6 +31847,9 @@
       }
     },
     "unknown" : {
+
+    },
+    "Unknown" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -32978,7 +32785,7 @@
         }
       }
     },
-    "waiting" : {
+    "Waiting" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {

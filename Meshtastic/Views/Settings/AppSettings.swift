@@ -111,7 +111,7 @@ struct AppSettings: View {
 				totalDownloadedTileSize = tileManager.getAllDownloadedSize()
 			})
 		}
-		.navigationTitle("appsettings")
+		.navigationTitle("App Settings")
 		.navigationBarItems(trailing:
 								ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
