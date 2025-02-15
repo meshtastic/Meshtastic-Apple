@@ -113,7 +113,7 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 		case .ua868:
 			return "Ukraine 868mhz".localized
 		case .lora24:
-			return "2.4ghz".localized
+			return "2.4 Ghz".localized
 		case .my433:
 			return "Malaysia 433mhz".localized
 		case .my919:

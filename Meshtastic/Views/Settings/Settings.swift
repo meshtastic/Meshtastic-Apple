@@ -164,7 +164,7 @@ struct Settings: View {
 
 			NavigationLink(value: SettingsNavigationState.cannedMessages) {
 				Label {
-					Text("canned.messages")
+					Text("Canned Messages")
 				} icon: {
 					Image(systemName: "list.bullet.rectangle.fill")
 				}

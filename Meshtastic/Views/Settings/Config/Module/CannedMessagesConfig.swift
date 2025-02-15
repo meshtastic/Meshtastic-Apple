@@ -223,7 +223,7 @@ struct CannedMessagesConfig: View {
 					}
 				}
 			}
-			.navigationTitle("canned.messages.config")
+			.navigationTitle("Canned Messages Config")
 			.navigationBarItems(
 				trailing: ZStack {
 					ConnectedDevice(
