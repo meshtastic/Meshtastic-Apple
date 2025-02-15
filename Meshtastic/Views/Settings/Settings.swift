@@ -231,7 +231,7 @@ struct Settings: View {
 
 			NavigationLink(value: SettingsNavigationState.storeAndForward) {
 				Label {
-					Text("storeforward")
+					Text("Store & Forward")
 				} icon: {
 					Image(systemName: "envelope.arrow.triangle.branch")
 				}
@@ -306,7 +306,7 @@ struct Settings: View {
 			List {
 				NavigationLink(value: SettingsNavigationState.about) {
 					Label {
-						Text("about.meshtastic")
+						Text("About Meshtastic")
 					} icon: {
 						Image(systemName: "questionmark.app")
 					}
@@ -314,14 +314,14 @@ struct Settings: View {
 
 				NavigationLink(value: SettingsNavigationState.appSettings) {
 					Label {
-						Text("appsettings")
+						Text("App Settings")
 					} icon: {
 						Image(systemName: "gearshape")
 					}
 				}
 				NavigationLink(value: SettingsNavigationState.routes) {
 					Label {
-						Text("routes")
+						Text("Routes")
 					} icon: {
 						Image(systemName: "road.lanes.curved.right")
 					}
@@ -329,7 +329,7 @@ struct Settings: View {
 
 				NavigationLink(value: SettingsNavigationState.routeRecorder) {
 					Label {
-						Text("route.recorder")
+						Text("Route Recorder")
 					} icon: {
 						Image(systemName: "record.circle")
 							.foregroundColor(.red)

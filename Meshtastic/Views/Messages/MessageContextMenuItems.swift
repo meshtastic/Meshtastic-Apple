@@ -16,7 +16,7 @@ struct MessageContextMenuItems: View {
 			if message.pkiEncrypted {
 				Label("Encrypted", systemImage: "lock")
 			}
-			Text("channel") + Text(": \(message.channel)")
+			Text("Channel") + Text(": \(message.channel)")
 		}
 
 		Menu("tapback") {

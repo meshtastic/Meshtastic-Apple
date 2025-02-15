@@ -143,7 +143,7 @@ struct Channels: View {
 			}
 			.sheet(item: $selectedChannel) { _ in
 				#if targetEnvironment(macCatalyst)
-				Text("channel")
+				Text("Channel")
 					.font(.largeTitle)
 					.padding()
 				#endif

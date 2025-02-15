@@ -88,7 +88,7 @@ struct NodeListItem: View {
 						if node.isStoreForwardRouter {
 							IconAndText(systemName: "envelope.arrow.triangle.branch",
 										renderingMode: .multicolor,
-										text: "storeforward".localized)
+										text: "Store & Forward".localized)
 						}
 
 						if node.positions?.count ?? 0 > 0 && connectedNode != node.num {

@@ -20,22 +20,6 @@
         }
       }
     },
-    "  %@" : {
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "  %@"
-          }
-        }
-      }
-    },
     " %@" : {
       "localizations" : {
         "sr" : {
@@ -48,22 +32,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : " %@"
-          }
-        }
-      }
-    },
-    " Whether or not use INPUT_PULLUP mode for GPIO pin. Only applicable if the board uses pull-up resistors on the pin" : {
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Да ли желите да користите режим INPUT_PULLUP за GPIO пин. Применљиво само ако плоча користи pull-up отпорнике на пиновима"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "是否为 GPIO 引脚使用输入上拉模式。仅适用于电路板在引脚上使用上拉电阻的情况"
           }
         }
       }
@@ -194,40 +162,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ - %2$@ Towards  %3$@ Back"
-          }
-        }
-      }
-    },
-    "%@ - 1 Hop" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ - 1 Скок"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ - 1 跳"
-          }
-        }
-      }
-    },
-    "%@ - Direct" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ - Директно"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ - 直接"
           }
         }
       }
@@ -430,23 +364,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ dB"
-          }
-        }
-      }
-    },
-    "%@ hPa" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ hPa"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ hPa"
           }
         }
       }
@@ -976,133 +893,11 @@
         }
       }
     },
-    "about" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Über"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "About"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "À propos"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אודות"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O programie"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sobre"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Om"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "О"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "关于"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "關於"
-          }
-        }
-      }
+    "About" : {
+
     },
-    "about.meshtastic" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Über Meshtastic"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "About Meshtastic"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "À propos de Meshtastic"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אודות משטסטיק"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O Meshtastic"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sobre Meshtastic"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Om Meshtastic"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "О Мештастику"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "关于 Meshtastic"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "關於 Meshtastic"
-          }
-        }
-      }
+    "About Meshtastic" : {
+
     },
     "Accuracy %@" : {
       "localizations" : {
@@ -1182,70 +977,6 @@
         }
       }
     },
-    "activity" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aktivität"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activity"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activity"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activity"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activity"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actividade"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activity"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Активност"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "活动"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activity"
-          }
-        }
-      }
-    },
     "Activity" : {
       "localizations" : {
         "de" : {
@@ -1258,6 +989,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Активност"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "活动"
           }
         }
       }
@@ -1330,71 +1067,6 @@
         }
       }
     },
-    "admin" : {
-      "extractionState" : "migrated",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "admin"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Admin"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Administrateur"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אדמין"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Administrator"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Admin"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Administratör"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Админ"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "管理员"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "管理員"
-          }
-        }
-      }
-    },
     "Admin & Direct Message Keys" : {
       "localizations" : {
         "de" : {
@@ -1413,72 +1085,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "管理员 & 私信密钥"
-          }
-        }
-      }
-    },
-    "admin.log" : {
-      "comment" : "On Serbian language Admin and Administrator are the same as in English, but in sentences like this we use the longer version always.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Admin Log"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Admin Message Log"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Journal des messages d'administration"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "היסטוריית הודעות אדמין"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Log administratora"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Log das Mensagens do Admin"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Administratörsmeddelandelogg"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Дневник администраторских порука"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "管理员消息日志"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "管理員消息紀錄檔"
           }
         }
       }
@@ -2563,6 +2169,9 @@
         }
       }
     },
+    "Are you sure?" : {
+
+    },
     "are.you.sure" : {
       "localizations" : {
         "de" : {
@@ -2709,71 +2318,6 @@
         }
       }
     },
-    "automatic.detection" : {
-      "extractionState" : "migrated",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatische erkennung"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatic Detection"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Détection automatique"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "זיהוי אוטומטי"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatyczne wykrywanie"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deteção Automático"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatisk upptäckt"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Аутоматска детекција"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "自动识别"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "自動識別"
-          }
-        }
-      }
-    },
     "Automatically toggles to the next page on the screen like a carousel, based the specified interval." : {
       "localizations" : {
         "sr" : {
@@ -2882,23 +2426,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "备份数据库"
-          }
-        }
-      }
-    },
-    "Bad" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Лош"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "坏"
           }
         }
       }
@@ -4606,6 +4133,9 @@
 
     },
     "channel" : {
+
+    },
+    "Channel" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4665,28 +4195,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "頻道"
-          }
-        }
-      }
-    },
-    "Channel" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kanal"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Канал"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "频道"
           }
         }
       }
@@ -5314,6 +4822,9 @@
           }
         }
       }
+    },
+    "Clear Log" : {
+
     },
     "clear.app.data" : {
       "localizations" : {
@@ -26002,6 +25513,9 @@
         }
       }
     },
+    "Route Recorder" : {
+
+    },
     "Route recording paused" : {
       "localizations" : {
         "sr" : {
@@ -26029,6 +25543,7 @@
       }
     },
     "route.recorder" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -26113,6 +25628,7 @@
       }
     },
     "routes" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -26175,6 +25691,9 @@
           }
         }
       }
+    },
+    "Routes" : {
+
     },
     "routes.activitytype.biking" : {
       "extractionState" : "migrated",
@@ -29906,6 +29425,26 @@
         }
       }
     },
+    "Store & Forward" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "储存 & 转发"
+          }
+        }
+      }
+    },
+    "Store & Forward Config" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "储存 & 转发设置"
+          }
+        }
+      }
+    },
     "Store and forward clients can request history from routers on the network." : {
       "localizations" : {
         "sr" : {
@@ -29922,134 +29461,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Рутер за складиштење и прослеђивање захтева ESP32 уређај са PSRAM."
-          }
-        }
-      }
-    },
-    "storeforward" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Store & Forward"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Store & Forward"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stocker et Transmettre"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שמירה ושליחה"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Store & Forward"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Armazenar e Encaminhar"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lagra & Videresänd"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Складиштење и прослеђивање"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "储存 & 转发"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "儲存 & 轉發"
-          }
-        }
-      }
-    },
-    "storeforward.config" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Store & Forward Config"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Store & Forward Config"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuration de Stocker et Transmettre"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות שמירה ושליחה"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Store & Forward Config"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuração de Armazenar e Encaminhar"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konfiguration för Lagra & Videresänd"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Конфигурација за складиштење и прослеђивање"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "储存 & 转发设置"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "儲存 & 轉發設定"
           }
         }
       }
@@ -33226,6 +32637,9 @@
         }
       }
     },
+    "Uptime" : {
+
+    },
     "Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead." : {
       "localizations" : {
         "sr" : {
@@ -33951,6 +33365,9 @@
         }
       }
     },
+    "Whether or not use INPUT_PULLUP mode for GPIO pin. Only applicable if the board uses pull-up resistors on the pin" : {
+
+    },
     "WiFi Options" : {
       "localizations" : {
         "de" : {
@@ -34011,29 +33428,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Брзина ветра"
-          }
-        }
-      }
-    },
-    "Wird verwendet, um einen gemeinsamen Schlüssel mit einem entfernten Gerät zu erstellen." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verbunden mit einem Knoten"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Користи се за креирање заједничког кључа са удаљеним уређајем."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "用于与远程设备创建共享密钥。"
           }
         }
       }
@@ -34202,23 +33596,6 @@
     },
     "Your MQTT Server must support TLS." : {
 
-    },
-    "Your MQTT Server must support TLS. Not available via the public mqtt server." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ваш MQTT сервер мора подржавати TLS. Није доступно преко јавног MQTT сервера."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "您的 MQTT 服务器必须支持 TLS。没有可用的公开 MQTT 服务器。"
-          }
-        }
-      }
     },
     "Your node’s operating frequency is calculated based on the region, modem preset, and this field. When 0, the slot is automatically calculated based on the primary channel name." : {
 

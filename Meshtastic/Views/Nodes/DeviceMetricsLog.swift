@@ -154,17 +154,17 @@ struct DeviceMetricsLog: View {
 							Text("\(String(format: "%.2f", dm.channelUtilization))%")
 								.foregroundColor(dm.channelUtilization < 25 ? .green : (dm.channelUtilization > 50 ? .red : .orange))
 						}
-						TableColumn("airtime") { dm in
+						TableColumn("Airtime") { dm in
 							Text("\(String(format: "%.2f", dm.airUtilTx))%")
 						}
-						TableColumn("uptime") { dm in
+						TableColumn("Uptime") { dm in
 							let now = Date.now
 							let later = now + TimeInterval(dm.uptimeSeconds)
 							let components = (now..<later).formatted(.components(style: .narrow))
 							Text(components)
 						}
 						.width(min: 100)
-						TableColumn("timestamp") { dm in
+						TableColumn("Timestamp") { dm in
 							Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 						}
 						.width(min: 180)
@@ -174,7 +174,7 @@ struct DeviceMetricsLog: View {
 					Button(role: .destructive) {
 						isPresentingClearLogConfirm = true
 					} label: {
-						Label("clear.log", systemImage: "trash.fill")
+						Label("Clear Log", systemImage: "trash.fill")
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
@@ -182,7 +182,7 @@ struct DeviceMetricsLog: View {
 					.padding(.bottom)
 					.padding(.leading)
 					.confirmationDialog(
-						"are.you.sure",
+						"Are you sure?",
 						isPresented: $isPresentingClearLogConfirm,
 						titleVisibility: .visible
 					) {
