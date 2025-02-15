@@ -109,7 +109,7 @@ struct UserConfig: View {
 								TextField("Frequency Override", value: $overrideFrequency, formatter: floatFormatter)
 									.toolbar {
 										ToolbarItemGroup(placement: .keyboard) {
-											Button("dismiss.keyboard") {
+											Button("Dismiss") {
 												focusedField = nil
 											}
 											.font(.subheadline)
@@ -142,7 +142,7 @@ struct UserConfig: View {
 				.controlSize(.large)
 				.padding()
 				.confirmationDialog(
-					"are.you.sure",
+					"Are you sure?",
 					isPresented: $isPresentingSaveConfirm,
 					titleVisibility: .visible
 				) {

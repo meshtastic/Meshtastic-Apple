@@ -41,7 +41,7 @@ struct TextMessageField: View {
 					.keyboardType(.default)
 					.toolbar {
 						ToolbarItemGroup(placement: .keyboard) {
-							Button("dismiss.keyboard") {
+							Button("Dismiss") {
 								isFocused = false
 							}
 							.font(.subheadline)

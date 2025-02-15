@@ -52,8 +52,9 @@ struct PositionLog: View {
 						}
 						TableColumn("Heading") { position in
 							let degrees = Angle.degrees(Double(position.heading))
-							let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees).reciprocal()
+							let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees)
 							Text(heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0)))))
+								.textSelection(.enabled)
 						}
 						TableColumn("SNR") { position in
 							Text("\(String(format: "%.2f", position.snr)) dB")
@@ -63,6 +64,8 @@ struct PositionLog: View {
 						}
 						.width(min: 180)
 					}
+					.textSelection(.enabled)
+
 
 				} else {
 					ScrollView {
@@ -88,7 +91,7 @@ struct PositionLog: View {
 								Text("Alt")
 									.font(.caption2)
 									.fontWeight(.bold)
-								Text("timestamp")
+								Text("Timestamp")
 									.font(.caption2)
 									.fontWeight(.bold)
 							}
@@ -117,7 +120,7 @@ struct PositionLog: View {
 					Button(role: .destructive) {
 						isPresentingClearLogConfirm = true
 					} label: {
-						Label("clear.log", systemImage: "trash.fill")
+						Label("Clear Log", systemImage: "trash.fill")
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
@@ -125,7 +128,7 @@ struct PositionLog: View {
 					.padding(.bottom)
 					.padding(.leading)
 					.confirmationDialog(
-						"are.you.sure",
+						"Are you sure?",
 						isPresented: $isPresentingClearLogConfirm,
 						titleVisibility: .visible
 					) {
@@ -141,7 +144,7 @@ struct PositionLog: View {
 						exportString = positionToCsvFile(positions: node.positions!.array as? [PositionEntity] ?? [])
 						isExporting = true
 					} label: {
-						Label("save", systemImage: "square.and.arrow.down")
+						Label("Save", systemImage: "square.and.arrow.down")
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)

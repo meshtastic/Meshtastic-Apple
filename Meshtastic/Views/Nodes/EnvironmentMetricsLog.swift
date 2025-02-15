@@ -73,7 +73,7 @@ struct EnvironmentMetricsLog: View {
 							TableColumn("Wind Direction") { em in
 								columnList.column(forAttribute: "windDirection")?.body(em)
 							}
-							TableColumn("timestamp") { em in
+							TableColumn("Timestamp") { em in
 								columnList.column(forAttribute: "time")?.body(em)
 							}
 							.width(min: 180)
@@ -123,7 +123,7 @@ struct EnvironmentMetricsLog: View {
 					Button(role: .destructive) {
 						isPresentingClearLogConfirm = true
 					} label: {
-						Label("clear.log", systemImage: "trash.fill")
+						Label("Clear", systemImage: "trash.fill")
 							.imageScale(imageScale)
 					}
 					.buttonStyle(.bordered)
@@ -131,7 +131,7 @@ struct EnvironmentMetricsLog: View {
 					.controlSize(buttonSize)
 					.padding(.bottom)
 					.confirmationDialog(
-						"are.you.sure",
+						"Are you sure?",
 						isPresented: $isPresentingClearLogConfirm,
 						titleVisibility: .visible
 					) {

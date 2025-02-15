@@ -24,7 +24,7 @@ struct DeleteNodeButton: View {
 				}
 			}
 			.alert(
-				"are.you.sure",
+				"Are you sure?",
 				isPresented: $isPresentingAlert
 			) {
 				Button("OK") {	}.keyboardShortcut(.defaultAction)
@@ -32,7 +32,7 @@ struct DeleteNodeButton: View {
 				Text("Delete Node?")
 			}
 			.confirmationDialog(
-				"are.you.sure",
+				"Are you sure?",
 				isPresented: $isPresentingAlert,
 				titleVisibility: .visible
 			) {

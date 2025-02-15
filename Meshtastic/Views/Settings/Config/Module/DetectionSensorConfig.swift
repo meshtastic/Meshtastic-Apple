@@ -126,7 +126,7 @@ struct DetectionSensorConfig: View {
 
 						Toggle(isOn: $usePullup) {
 							Label("Uses pullup resistor", systemImage: "arrow.up.to.line")
-							Text(" Whether or not use INPUT_PULLUP mode for GPIO pin. Only applicable if the board uses pull-up resistors on the pin")
+							Text("Whether or not use INPUT_PULLUP mode for GPIO pin. Only applicable if the board uses pull-up resistors on the pin")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}

@@ -20,22 +20,6 @@
         }
       }
     },
-    "  %@" : {
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "  %@"
-          }
-        }
-      }
-    },
     " %@" : {
       "localizations" : {
         "sr" : {
@@ -48,22 +32,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : " %@"
-          }
-        }
-      }
-    },
-    " Whether or not use INPUT_PULLUP mode for GPIO pin. Only applicable if the board uses pull-up resistors on the pin" : {
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Да ли желите да користите режим INPUT_PULLUP за GPIO пин. Применљиво само ако плоча користи pull-up отпорнике на пиновима"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "是否为 GPIO 引脚使用输入上拉模式。仅适用于电路板在引脚上使用上拉电阻的情况"
           }
         }
       }
@@ -198,40 +166,6 @@
         }
       }
     },
-    "%@ - 1 Hop" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ - 1 Скок"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ - 1 跳"
-          }
-        }
-      }
-    },
-    "%@ - Direct" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ - Директно"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ - 直接"
-          }
-        }
-      }
-    },
     "%@ - No Response" : {
       "localizations" : {
         "de" : {
@@ -347,7 +281,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ entfernt"
+            "value" : "%@ entfernt"
           }
         },
         "sr" : {
@@ -366,15 +300,9 @@
     },
     "%@ can be up to %@ bytes long." : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ can be up to %2$@ bytes long."
-          }
-        },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "%1$@ може имати до %2$@ бајтова."
           }
         },
@@ -434,19 +362,179 @@
         }
       }
     },
-    "%@ hPa" : {
-      "extractionState" : "stale",
+    "%@ Please try connecting again and check the PIN carefully." : {
+      "extractionState" : "migrated",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Bitte versuche es erneut. Achte sorgfältig auf die richtige PIN."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Merci d'essayer à nouveau en vérifiant bien le code PIN."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ בבקשה נסה שנית להתחבר למכשיר ובדוק את הקוד."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Spróbuj połączyć się ponownie i dokładnie sprawdź PIN."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Por favor, tente conectar novamente e verifique cuidadosamente o PIN."
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Försök att ansluta igen och kontrollera PIN-koden noggrant."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ hPa"
+            "value" : "%@ Покушајте поново да се повежете и пажљиво проверите ПИН."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ hPa"
+            "value" : "%@ 请再次尝试连接并仔细检查 PIN 码。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 請再次嘗試連接並仔細檢查 PIN 碼。"
+          }
+        }
+      }
+    },
+    "%@ The app will automatically reconnect to the preferred radio if it comes back in range." : {
+      "extractionState" : "migrated",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ Die App wird automatisch wieder zum präferierten Gerät verbinden, sobald es in Reichweite kommt."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ L'application se reconnectera automatiquement à la radio en favori dès qu'elle sera à nouveau disponible."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ האפליקציה תנסה אוטומטית להתחבר מחדש למכשיר המועדף אם ייראה."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ Aplikacja automatycznie ponownie połączy się z preferowanym radiem, jeśli wróci w zasięg."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ O App vai reconetar automaticamente ao rádio preferido se ele voltar ao alcance."
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ Appen kommer automatiskt att återansluta till den föredragna radion om den kommer inom räckhåll igen."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ Апликација ће се аутоматски поново повезати са жељеним радиом ако се врати у домет."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 如果在默认电台的旁边，App 将会自动重连。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ 如果在首選電台的旁邊，App 將會自動重連。"
+          }
+        }
+      }
+    },
+    "%@ This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio." : {
+      "extractionState" : "migrated",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ Dieser Fehler kann üblicherweise behoben werden, indem man unter Einstellungen > Bluetooth die Verbindung manuell löscht und sich erneut mit dem Gerät verbindet."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ Cette erreur ne peut généralement pas être corrigée sans aller dans Réglages > Bluetooth et faire > Oublier cet appareil, puis reconnecter la radio."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ שגיאה זו בדרך כלל אינה ניתנת לתיקון ללא שכחחת המכשיר בהגדרות מכשיר > בלוטוס ואז להתחבר מחדש למכשיר."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ Ten błąd zwykle nie może być naprawiony bez zapomnienia urządzenia w Ustawienia > Bluetooth i ponownego połączenia z radiem."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ Esse erro geralmente não pode ser corrigido sem esquecer o dispositivo em Configurações > Bluetooth e reconetar ao rádio."
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ Detta fel kan vanligtvis inte åtgärdas utan att glömma enheten under Inställningar > Bluetooth och återansluta till radion."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ Ова грешка обично не може да се поправи без заборављања уређаја испод подешавања > Блутут и поново повезивање са радиом."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 这个错误通常无法自动修复，你需要在系统设置的蓝牙选项中忽略该电台并重新配对。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ 這個錯誤通常無法自動修復，你需要在系統設定的藍芽選項中忽略該電台並重新配對。"
           }
         }
       }
@@ -526,6 +614,12 @@
           }
         }
       }
+    },
+    "%@mA" : {
+
+    },
+    "%@V" : {
+
     },
     "%d" : {
       "localizations" : {
@@ -815,18 +909,12 @@
         }
       }
     },
-    "2.4ghz" : {
+    "2.4 Ghz" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2.4 GHz"
-          }
-        },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "2.4 GHz"
           }
         }
@@ -970,133 +1058,11 @@
         }
       }
     },
-    "about" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Über"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "About"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "À propos"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אודות"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O programie"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sobre"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Om"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "О"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "关于"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "關於"
-          }
-        }
-      }
+    "About" : {
+
     },
-    "about.meshtastic" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Über Meshtastic"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "About Meshtastic"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "À propos de Meshtastic"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אודות משטסטיק"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O Meshtastic"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sobre Meshtastic"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Om Meshtastic"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "О Мештастику"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "关于 Meshtastic"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "關於 Meshtastic"
-          }
-        }
-      }
+    "About Meshtastic" : {
+
     },
     "Accuracy %@" : {
       "localizations" : {
@@ -1176,70 +1142,6 @@
         }
       }
     },
-    "activity" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aktivität"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activity"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activity"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activity"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activity"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actividade"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activity"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Активност"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "活动"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activity"
-          }
-        }
-      }
-    },
     "Activity" : {
       "localizations" : {
         "de" : {
@@ -1252,6 +1154,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Активност"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "活动"
           }
         }
       }
@@ -1324,71 +1232,6 @@
         }
       }
     },
-    "admin" : {
-      "extractionState" : "migrated",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "admin"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Admin"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Administrateur"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אדמין"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Administrator"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Admin"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Administratör"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Админ"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "管理员"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "管理員"
-          }
-        }
-      }
-    },
     "Admin & Direct Message Keys" : {
       "localizations" : {
         "de" : {
@@ -1407,72 +1250,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "管理员 & 私信密钥"
-          }
-        }
-      }
-    },
-    "admin.log" : {
-      "comment" : "On Serbian language Admin and Administrator are the same as in English, but in sentences like this we use the longer version always.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Admin Log"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Admin Message Log"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Journal des messages d'administration"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "היסטוריית הודעות אדמין"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Log administratora"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Log das Mensagens do Admin"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Administratörsmeddelandelogg"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Дневник администраторских порука"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "管理员消息日志"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "管理員消息紀錄檔"
           }
         }
       }
@@ -1563,49 +1340,43 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "her"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ago"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "auparavant"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "עברו"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "temu"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "há"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "sedan"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "пре"
           }
         },
@@ -1617,59 +1388,53 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "ago"
           }
         }
       }
     },
-    "airtime" : {
+    "Airtime" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Airtime"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Airtime"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Temps d'émission"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "זמן אוויר"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Czas nadawania"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Tempo ao Ár"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Sändningstid"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Време емитовања"
           }
         },
@@ -1681,24 +1446,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "廣播時間"
-          }
-        }
-      }
-    },
-    "Airtime" : {
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Време емитовања"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "广播时间"
           }
         }
       }
@@ -1933,6 +1682,65 @@
         }
       }
     },
+    "Always On" : {
+      "extractionState" : "migrated",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Immer an"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En permanence"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "תמיד דלוק"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zawsze włączone"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sempre Ligado"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Alltid på"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Увек укључен"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "常亮"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "常亮"
+          }
+        }
+      }
+    },
     "Always point north" : {
       "localizations" : {
         "de" : {
@@ -1949,118 +1757,47 @@
         }
       }
     },
-    "always.on" : {
-      "extractionState" : "migrated",
+    "Ambient Lighting" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Immer an"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Always On"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "En permanence"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "תמיד דלוק"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zawsze włączone"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sempre Ligado"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alltid på"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Увек укључен"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "常亮"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "常亮"
-          }
-        }
-      }
-    },
-    "ambient.lighting" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ambient Lighting"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Ambient Lighting"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Lumière ambiante"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "תאורת סביבה"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Ambient Lighting"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Iluminação Ambiental"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Omgivningsbelysning"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Амбијентално осветљење"
           }
         },
@@ -2072,59 +1809,53 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "環境照明"
           }
         }
       }
     },
-    "ambient.lighting.config" : {
+    "Ambient Lighting Config" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ambient Lighting Config"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Ambient Lighting Config"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Configuration de la lumière ambiante"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "הגדרות תאורת סביבה"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Ambient Lighting Config"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Configuração Iluminação Ambiental"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Konfiguration av omgivningsbelysning"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Подешавања амбијенталног осветљења"
           }
         },
@@ -2136,7 +1867,7 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "環境照明設定"
           }
         }
@@ -2260,265 +1991,6 @@
         }
       }
     },
-    "appsettings" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Einstellungen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Settings"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Réglages de l'application"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות אפליקציה"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ustawienia aplikacji"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Definições do App"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Appinställningar"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Подешавања апликације"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App 设置"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "設定"
-          }
-        }
-      }
-    },
-    "appsettings.newNodeNotifications" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mitteilungen über neue Knoten"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Node Notifications"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Node Notifications"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Node Notifications"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Node Notifications"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Notificações de Nó Novo"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Node Notifications"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Обавештења о новим чворовима"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "新节点通知"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "新節點通知"
-          }
-        }
-      }
-    },
-    "appsettings.provide.location" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Standort im Mesh veröffentlichen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Share location"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Partager la position"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שתף מיקום"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Udostępnij lokalizację"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Partilha localização"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dela plats"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Подели информације о локацији"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "提供定位到 Mesh 网络"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "提供定位到 Mesh 網路"
-          }
-        }
-      }
-    },
-    "appsettings.smartposition" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Smart Position"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Smart Position"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Position intelligente"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מיקום חכם"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Smart Position"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Posição Inteligente"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Smart position"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Паметно позиционирање"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智能定位"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智能定位"
-          }
-        }
-      }
-    },
     "Are you sure you want to delete this message?" : {
       "localizations" : {
         "sr" : {
@@ -2557,53 +2029,47 @@
         }
       }
     },
-    "are.you.sure" : {
+    "Are you sure?" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Bist Du sicher?"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Are you sure?"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Êtes-vous sûr ?"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "האם אתה בטוח?"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Jesteś pewny?"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Tem a certeza?"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Är du säker?"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Да ли си сигуран?"
           }
         },
@@ -2615,155 +2081,19 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "是否確定？"
           }
         }
       }
     },
-    "ascii.capable" : {
+    "Australia / New Zealand" : {
       "extractionState" : "manual",
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ASCII-fähig"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ASCII Capable"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ASCII Compatible"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "בעל יכולת ASCII"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zgodny z ASCII"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Capacidade ASCII"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ASCII-kompatibel"
-          }
-        },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "ASCII способан"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ASCII 兼容"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "支援 ASCII"
-          }
-        }
-      }
-    },
-    "australia.new.zealand" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Australia / New Zealand"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Аустралија / Нови Зеланд"
-          }
-        }
-      }
-    },
-    "automatic.detection" : {
-      "extractionState" : "migrated",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatische erkennung"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatic Detection"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Détection automatique"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "זיהוי אוטומטי"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatyczne wykrywanie"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deteção Automático"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatisk upptäckt"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Аутоматска детекција"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "自动识别"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "自動識別"
           }
         }
       }
@@ -2800,53 +2130,47 @@
         }
       }
     },
-    "available.radios" : {
+    "Available Radios" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Geräte in der Nähe"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Available Radios"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Radios disponibles"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "מכשירים זמינים"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Dostępne radia"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Rádios Disponíveis"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Tillgängliga radioapparater"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Доступни радио уређаји"
           }
         },
@@ -2858,7 +2182,7 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "可以連接的設備"
           }
         }
@@ -2876,23 +2200,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "备份数据库"
-          }
-        }
-      }
-    },
-    "Bad" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Лош"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "坏"
           }
         }
       }
@@ -2967,6 +2274,64 @@
         }
       }
     },
+    "Battery Level" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Batterie Ladung"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niveau de batterie"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "רמת סוללה"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Poziom naładowania baterii"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nível de Bataria"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Batterinivå"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ниво батерије"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "电池电量"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "電池電量"
+          }
+        }
+      }
+    },
     "Battery Level %" : {
       "localizations" : {
         "sr" : {
@@ -2983,70 +2348,6 @@
         }
       }
     },
-    "battery.level" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Batterie Ladung"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Battery Level"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Niveau de batterie"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "רמת סוללה"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Poziom naładowania baterii"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nível de Bataria"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Batterinivå"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ниво батерије"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "电池电量"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "電池電量"
-          }
-        }
-      }
-    },
     "Baud" : {
       "localizations" : {
         "sr" : {
@@ -3059,6 +2360,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "波特率"
+          }
+        }
+      }
+    },
+    "BLE Name" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "BLE Name"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nom du BLE"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "שם בלוטוס"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nazwa BLE"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nome BLE"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "BLE-namn"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "BLE назив"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "蓝牙名称"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "藍芽名稱"
+          }
+        }
+      }
+    },
+    "BLE Pin must be 6 digits long." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Bluetooth Pin muss 6 Stellen lang sein."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le code pin BLE doit avoir 6 chiffres."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "קוד בלוטוס חייבת להיות בת 6 ספרות."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pin BLE musi mieć długość 6 cyfr."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O Pin do BLE deve ter 6 dígitos."
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "BLE-PIN måste vara 6 siffror lång."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "BLE пин мора имати 6 цифара."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "蓝牙 PIN 码必须是 6 位数字。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "藍芽 PIN 碼必須是 6 位數字。"
           }
         }
       }
@@ -3095,385 +2512,9 @@
         }
       }
     },
-    "ble.connection.timeout %d %@" : {
-      "extractionState" : "migrated",
+    "Bluetooth" : {
       "localizations" : {
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verbindung nach %d Versuchen zu %@ fehlgeschlagen. Evtl. hilft es, die Verbindung unter Einstellungen > Bluetooth manuell zu löschen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connection failed after %d attempts to connect to %@. You may need to forget your device under Settings > Bluetooth."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connexion impossible après %d essais avec %@. Allez dans Réglages > Bluetooth et essayez de faire de faire > Oublier cet appareil."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "התחברות נכשלה לאחר %d נסיונות להתחבר ל%@. יתכן ויש צורך 'לשכוח' את המכשיר בהגדרות מכשיר > בלוטוס."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Połączenie nie powiodło się po %d próbach połączenia z %@. Zapomnij o urządzeniu w Ustawienia > Bluetooth."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Falha de conexão após %d tentativas de conectar a %@. Você pode precisar esquecer seu dispositivo em Configurações > Bluetooth."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anslutningen misslyckades efter %d försök att ansluta till %@. Du kan behöva glömma din enhet under Inställningar > Bluetooth."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Веза није успела након %d покушаја да се повеже са %@. Можда ћете морати да заборавите уређај у Подешавања > Блутут."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "尝试连接%d失败，你可能需要在系统设置的蓝牙选项中忽略该设备。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "嘗試連接%d失敗，你可能需要在系统設定的藍芽選項中忽略該電台。"
-          }
-        }
-      }
-    },
-    "ble.errorcode.6" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The connection has timed out unexpectedly."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Веза је неочекивано истекла."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "连接意外超时。"
-          }
-        }
-      }
-    },
-    "ble.errorcode.6 %@" : {
-      "extractionState" : "migrated",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Die App wird automatisch wieder zum präferierten Gerät verbinden, sobald es in Reichweite kommt."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ The app will automatically reconnect to the preferred radio if it comes back in range."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ L'application se reconnectera automatiquement à la radio en favori dès qu'elle sera à nouveau disponible."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ האפליקציה תנסה אוטומטית להתחבר מחדש למכשיר המועדף אם ייראה."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Aplikacja automatycznie ponownie połączy się z preferowanym radiem, jeśli wróci w zasięg."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ O App vai reconetar automaticamente ao rádio preferido se ele voltar ao alcance."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Appen kommer automatiskt att återansluta till den föredragna radion om den kommer inom räckhåll igen."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Апликација ће се аутоматски поново повезати са жељеним радиом ако се врати у домет."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 如果在默认电台的旁边，App 将会自动重连。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 如果在首選電台的旁邊，App 將會自動重連。"
-          }
-        }
-      }
-    },
-    "ble.errorcode.14" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Peer removed pairing information."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Радио уређај је уклонио информације о упаривању."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "同伴删除了配对信息。"
-          }
-        }
-      }
-    },
-    "ble.errorcode.14 %@" : {
-      "extractionState" : "migrated",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Dieser Fehler kann üblicherweise behoben werden, indem man unter Einstellungen > Bluetooth die Verbindung manuell löscht und sich erneut mit dem Gerät verbindet."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Cette erreur ne peut généralement pas être corrigée sans aller dans Réglages > Bluetooth et faire > Oublier cet appareil, puis reconnecter la radio."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ שגיאה זו בדרך כלל אינה ניתנת לתיקון ללא שכחחת המכשיר בהגדרות מכשיר > בלוטוס ואז להתחבר מחדש למכשיר."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Ten błąd zwykle nie może być naprawiony bez zapomnienia urządzenia w Ustawienia > Bluetooth i ponownego połączenia z radiem."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Esse erro geralmente não pode ser corrigido sem esquecer o dispositivo em Configurações > Bluetooth e reconetar ao rádio."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Detta fel kan vanligtvis inte åtgärdas utan att glömma enheten under Inställningar > Bluetooth och återansluta till radion."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Ова грешка обично не може да се поправи без заборављања уређаја испод подешавања > Блутут и поново повезивање са радиом."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 这个错误通常无法自动修复，你需要在系统设置的蓝牙选项中忽略该电台并重新配对。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 這個錯誤通常無法自動修復，你需要在系統設定的藍芽選項中忽略該電台並重新配對。"
-          }
-        }
-      }
-    },
-    "ble.errorcode.pin %@" : {
-      "extractionState" : "migrated",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Bitte versuche es erneut. Achte sorgfältig auf die richtige PIN."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Please try connecting again and check the PIN carefully."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Merci d'essayer à nouveau en vérifiant bien le code PIN."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ בבקשה נסה שנית להתחבר למכשיר ובדוק את הקוד."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Spróbuj połączyć się ponownie i dokładnie sprawdź PIN."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Por favor, tente conectar novamente e verifique cuidadosamente o PIN."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Försök att ansluta igen och kontrollera PIN-koden noggrant."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Покушајте поново да се повежете и пажљиво проверите ПИН."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 请再次尝试连接并仔细检查 PIN 码。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 請再次嘗試連接並仔細檢查 PIN 碼。"
-          }
-        }
-      }
-    },
-    "ble.name" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE Name"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE Name"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nom du BLE"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שם בלוטוס"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nazwa BLE"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nome BLE"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE-namn"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE назив"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "蓝牙名称"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "藍芽名稱"
-          }
-        }
-      }
-    },
-    "bluetooth" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bluetooth"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bluetooth"
@@ -3529,53 +2570,47 @@
         }
       }
     },
-    "bluetooth.config" : {
+    "Bluetooth Config" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Bluetooth Konfiguration"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bluetooth Config"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Configuration Bluetooth"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "הגדרות בלוטוס"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Konfiguracja Bluetooth"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Configuração Bluetooth"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Bluetooth-konfiguration"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Блутут подешавања"
           }
         },
@@ -3587,253 +2622,53 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "藍芽設置"
           }
         }
       }
     },
-    "bluetooth.mode.fixedpin" : {
+    "Bluetooth is off" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Feste PIN"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fixed PIN"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Code PIN fixe"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "קוד קבוע"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stały PIN"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PIN fixo"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fast PIN"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Фиксни ПИН"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "固定 PIN 码"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "固定 PIN 碼"
-          }
-        }
-      }
-    },
-    "bluetooth.mode.nopin" : {
-      "extractionState" : "migrated",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keine PIN (geht einfach)"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No PIN (Just Works)"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sans code PIN (connexion directe)"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ללא קוד (פשוט עובד)"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Brak PINu (po prostu działa)"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sem PIN (Simplesmente Funciona)"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ingen PIN (Bara fungerar)"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Нема ПИН-а (само ради)"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "不使用 PIN 码（直接配对）"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "不使用 PIN 碼（直接配對）"
-          }
-        }
-      }
-    },
-    "bluetooth.mode.randompin" : {
-      "extractionState" : "migrated",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zufällige PIN"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Random PIN"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Code PIN aléatoire"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "קוד אקראי"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Losowy PIN"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PIN Aleatório"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Slumpmässig PIN"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Насумичан ПИН"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "随机 PIN 码"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "隨機 PIN 碼"
-          }
-        }
-      }
-    },
-    "bluetooth.off" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Bluetooth ist aus"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bluetooth is off"
-          }
-        },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Le Bluetooth est arrêté"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "בלוטוס כבוי"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Bluetooth jest wyłączony"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Bluetooth está desligado"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Bluetooth är avstängt"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Блутут је искључен"
           }
         },
@@ -3845,136 +2680,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "藍芽已關閉"
-          }
-        }
-      }
-    },
-    "bluetooth.pairingmode" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pairing Modus"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pairing Mode"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mode d'appairage"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מצב הצמדה"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tryb parowania"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Modo Pairing"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Parläge"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Мод упаривања"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "配对模式"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "配對模式"
-          }
-        }
-      }
-    },
-    "bluetooth.pin.validation" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die Bluetooth Pin muss 6 Stellen lang sein."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE Pin must be 6 digits long."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Le code pin BLE doit avoir 6 chiffres."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "קוד בלוטוס חייבת להיות בת 6 ספרות."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pin BLE musi mieć długość 6 cyfr."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O Pin do BLE deve ter 6 dígitos."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE-PIN måste vara 6 siffror lång."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE пин мора имати 6 цифара."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "蓝牙 PIN 码必须是 6 位数字。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "藍芽 PIN 碼必須是 6 位數字。"
           }
         }
       }
@@ -4043,54 +2750,48 @@
         }
       }
     },
-    "bytes" : {
+    "Bytes" : {
       "extractionState" : "migrated",
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bytes"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Bytes"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Octets"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "בייטים"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Bajty"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Bytes"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Bytes"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Бајтова"
           }
         },
@@ -4102,7 +2803,7 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "位元組"
           }
         }
@@ -4140,53 +2841,47 @@
         }
       }
     },
-    "cancel" : {
+    "Cancel" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Abbrechen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancel"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Annuler"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "בטל"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Anuluj"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Cancelar"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Avbryt"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Откажи"
           }
         },
@@ -4198,81 +2893,53 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "取消"
           }
         }
       }
     },
-    "Cancel" : {
+    "Canned Messages" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abbrechen"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Откажи"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "取消"
-          }
-        }
-      }
-    },
-    "canned.messages" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Canned Messages"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Canned Messages"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Messages préformatés"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "הודעות קבועות"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Gotowe wiadomości"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Mensagens Enlatados"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Fördefinierade meddelanden"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Унапред припремљене поруке"
           }
         },
@@ -4284,59 +2951,53 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "罐頭訊息"
           }
         }
       }
     },
-    "canned.messages.config" : {
+    "Canned Messages Config" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Canned Messages Config"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Canned Messages Config"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Configuration des messages préformatés"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "הגדרות הודעות קבועות"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Konfiguracja gotowych wiadomości"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Configuração dos Mensagens Enlatados"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Konfiguration av fördefinierade meddelanden"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Подешавања унапред припремљених порука"
           }
         },
@@ -4348,7 +3009,7 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "通知設定"
           }
         }
@@ -4581,53 +3242,65 @@
         }
       }
     },
-    "channel" : {
+    "Ch1 Current" : {
+
+    },
+    "Ch1 Voltage" : {
+
+    },
+    "Ch2 Current" : {
+
+    },
+    "Ch2 Voltage" : {
+
+    },
+    "Ch3 Current" : {
+
+    },
+    "Ch3 Voltage" : {
+
+    },
+    "Channel" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Kanal"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Channel"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Canal"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "ערוץ"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Kanał"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Canal"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Kanal"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Канал"
           }
         },
@@ -4639,30 +3312,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "頻道"
-          }
-        }
-      }
-    },
-    "Channel" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kanal"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Канал"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "频道"
           }
         }
       }
@@ -4683,6 +3334,9 @@
         }
       }
     },
+    "Channel 1" : {
+
+    },
     "Channel 1 Included" : {
       "localizations" : {
         "sr" : {
@@ -4699,6 +3353,9 @@
         }
       }
     },
+    "Channel 2" : {
+
+    },
     "Channel 2 Included" : {
       "localizations" : {
         "sr" : {
@@ -4714,6 +3371,9 @@
           }
         }
       }
+    },
+    "Channel 3" : {
+
     },
     "Channel 3 Included" : {
       "localizations" : {
@@ -4858,6 +3518,9 @@
           }
         }
       }
+    },
+    "Channel URL" : {
+
     },
     "Channel Utilization %@%% " : {
       "localizations" : {
@@ -5240,25 +3903,13 @@
         }
       }
     },
-    "china" : {
+    "China" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "China"
-          }
-        },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Кина"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CHG"
           }
         }
       }
@@ -5278,6 +3929,9 @@
           }
         }
       }
+    },
+    "Clear Log" : {
+
     },
     "clear.app.data" : {
       "localizations" : {
@@ -5339,70 +3993,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "清除 App 資料"
-          }
-        }
-      }
-    },
-    "clear.log" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Log löschen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clear"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Effacer"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "נקה"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wyczyść"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apagar"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rensa"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Очисти"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "清除日志"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "清除紀錄檔"
           }
         }
       }
@@ -5589,69 +4179,8 @@
         }
       }
     },
-    "communicating" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verbinde mit Gerät..."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Communicating with device. ."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Communication avec l'appareil en cours. ."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מתקשר עם מכשיר. ."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Komunikowanie z urządzeniem. ."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Comunicando com dispositivo. ."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kommunicerar med enheten..."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Комуницирање са уређајем. ."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "与设备进行通讯中..."
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "與電台進行通訊中..."
-          }
-        }
-      }
+    "Communicating" : {
+
     },
     "Config" : {
       "localizations" : {
@@ -7260,6 +5789,71 @@
         }
       }
     },
+    "Connection failed after %d attempts to connect to %@. You may need to forget your device under Settings > Bluetooth." : {
+      "extractionState" : "migrated",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verbindung nach %d Versuchen zu %@ fehlgeschlagen. Evtl. hilft es, die Verbindung unter Einstellungen > Bluetooth manuell zu löschen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connection failed after %d attempts to connect to %@. You may need to forget your device under Settings > Bluetooth."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connexion impossible après %d essais avec %@. Allez dans Réglages > Bluetooth et essayez de faire de faire > Oublier cet appareil."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "התחברות נכשלה לאחר %d נסיונות להתחבר ל%@. יתכן ויש צורך 'לשכוח' את המכשיר בהגדרות מכשיר > בלוטוס."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Połączenie nie powiodło się po %d próbach połączenia z %@. Zapomnij o urządzeniu w Ustawienia > Bluetooth."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Falha de conexão após %d tentativas de conectar a %@. Você pode precisar esquecer seu dispositivo em Configurações > Bluetooth."
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anslutningen misslyckades efter %d försök att ansluta till %@. Du kan behöva glömma din enhet under Inställningar > Bluetooth."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Веза није успела након %d покушаја да се повеже са %@. Можда ћете морати да заборавите уређај у Подешавања > Блутут."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尝试连接%d失败，你可能需要在系统设置的蓝牙选项中忽略该设备。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "嘗試連接%d失敗，你可能需要在系统設定的藍芽選項中忽略該電台。"
+          }
+        }
+      }
+    },
     "contacts" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7462,12 +6056,6 @@
             "value" : "Koordinate %1$@, %2$@"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Coordinate %1$@, %2$@"
-          }
-        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7498,18 +6086,12 @@
         }
       }
     },
-    "copy" : {
+    "Copy" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kopieren"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copy"
           }
         },
         "fr" : {
@@ -7626,6 +6208,9 @@
         }
       }
     },
+    "Current" : {
+
+    },
     "Current Firmware Version: %@" : {
       "localizations" : {
         "de" : {
@@ -7654,12 +6239,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aktuelle Firmware Version: %1$@, neuste Firmware Version %2$@"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Current Firmware Version: %1$@, Latest Firmware Version: %2$@"
           }
         },
         "sr" : {
@@ -8027,6 +6606,9 @@
           }
         }
       }
+    },
+    "Delete Power metrics?" : {
+
     },
     "Description" : {
       "localizations" : {
@@ -9932,7 +8514,7 @@
         }
       }
     },
-    "disconnect" : {
+    "Disconnect" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9996,7 +8578,7 @@
         }
       }
     },
-    "dismiss.keyboard" : {
+    "Dismiss" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10060,7 +8642,7 @@
         }
       }
     },
-    "display" : {
+    "Display" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11054,7 +9636,7 @@
         }
       }
     },
-    "european.union.433mhz" : {
+    "European Union 433MHz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -11071,7 +9653,7 @@
         }
       }
     },
-    "european.union.868mhz" : {
+    "European Union 868MHz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -11773,6 +10355,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пет минута"
+          }
+        }
+      }
+    },
+    "Fixed Pin" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feste PIN"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fixed PIN"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Code PIN fixe"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "קוד קבוע"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stały PIN"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PIN fixo"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fast PIN"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Фиксни ПИН"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "固定 PIN 码"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "固定 PIN 碼"
           }
         }
       }
@@ -13857,7 +12503,7 @@
         }
       }
     },
-    "india" : {
+    "India" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -16361,7 +15007,7 @@
         }
       }
     },
-    "japan" : {
+    "Japan" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -16523,7 +15169,7 @@
         }
       }
     },
-    "korea" : {
+    "Korea" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -17581,7 +16227,7 @@
         }
       }
     },
-    "malaysia.433mhz" : {
+    "Malaysia 433mhz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -17598,7 +16244,7 @@
         }
       }
     },
-    "malaysia.919mhz" : {
+    "Malaysia 919mhz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -18658,7 +17304,7 @@
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mensagens Padrão solicitadas para o módulo de mensagens para o nó: %@"
+            "value" : "Mensagens Padrão solicitadas para o módulo de mensagens para o nó: %@"
           }
         },
         "se" : {
@@ -18717,7 +17363,7 @@
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mensagens Padrão recebidas para: %@"
+            "value" : "Mensagens Padrão recebidas para: %@"
           }
         },
         "se" : {
@@ -18776,7 +17422,7 @@
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Um Canal Enviado para: %@ Índice do Canal %d"
+            "value" : "Um Canal Enviado para: %@ Índice do Canal %d"
           }
         },
         "se" : {
@@ -19030,7 +17676,7 @@
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Solicitando os Metadados do Dispositivo para %@"
+            "value" : "Solicitando os Metadados do Dispositivo para %@"
           }
         },
         "se" : {
@@ -20435,7 +19081,7 @@
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Falha no envio da mensagem, não conectado corretamente a %@"
+            "value" : "Falha no envio da mensagem, não conectado corretamente a %@"
           }
         },
         "se" : {
@@ -20500,7 +19146,7 @@
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mensagem enviada %@ de %@ para %@"
+            "value" : "Mensagem enviada %@ de %@ para %@"
           }
         },
         "se" : {
@@ -20754,7 +19400,7 @@
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Emitindo Configuração Desejada para %@"
+            "value" : "Emitindo Configuração Desejada para %@"
           }
         },
         "se" : {
@@ -21941,6 +20587,9 @@
         }
       }
     },
+    "Navigate to node" : {
+
+    },
     "Nearby Topics" : {
       "localizations" : {
         "sr" : {
@@ -22149,7 +20798,72 @@
         }
       }
     },
-    "new.zealand.865mhz" : {
+    "New Node Notifications" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mitteilungen über neue Knoten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Node Notifications"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Node Notifications"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Node Notifications"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Node Notifications"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notificações de Nó Novo"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Node Notifications"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обавештења о новим чворовима"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新节点通知"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新節點通知"
+          }
+        }
+      }
+    },
+    "New Zealand 865mhz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -22230,6 +20944,71 @@
         }
       }
     },
+    "No PIN (Just Works)" : {
+      "extractionState" : "migrated",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine PIN (geht einfach)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No PIN (Just Works)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sans code PIN (connexion directe)"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ללא קוד (פשוט עובד)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brak PINu (po prostu działa)"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem PIN (Simplesmente Funciona)"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen PIN (Bara fungerar)"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нема ПИН-а (само ради)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不使用 PIN 码（直接配对）"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不使用 PIN 碼（直接配對）"
+          }
+        }
+      }
+    },
     "No Positions" : {
       "localizations" : {
         "de" : {
@@ -22245,6 +21024,9 @@
           }
         }
       }
+    },
+    "No Power Metrics" : {
+
     },
     "no.nodes" : {
       "extractionState" : "manual",
@@ -23402,6 +22184,70 @@
         }
       }
     },
+    "Pairing Mode" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pairing Modus"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pairing Mode"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mode d'appairage"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "מצב הצמדה"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tryb parowania"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modo Pairing"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parläge"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мод упаривања"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "配对模式"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "配對模式"
+          }
+        }
+      }
+    },
     "password" : {
       "localizations" : {
         "de" : {
@@ -23714,7 +22560,7 @@
         }
       }
     },
-    "philippines.433mhz" : {
+    "Philippines 433mhz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -23731,7 +22577,7 @@
         }
       }
     },
-    "philippines.868mhz" : {
+    "Philippines 868mhz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -23748,7 +22594,7 @@
         }
       }
     },
-    "philippines.915mhz" : {
+    "Philippines 915mhz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -23962,7 +22808,7 @@
         }
       }
     },
-    "please.set.a.region" : {
+    "Please set a region" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -24260,6 +23106,9 @@
         }
       }
     },
+    "Power" : {
+
+    },
     "Power Metrics" : {
       "localizations" : {
         "sr" : {
@@ -24269,6 +23118,12 @@
           }
         }
       }
+    },
+    "Power Metrics Log" : {
+
+    },
+    "Power Metrics Log}" : {
+
     },
     "Power Off" : {
       "localizations" : {
@@ -24676,6 +23531,71 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "電台設定"
+          }
+        }
+      }
+    },
+    "Random PIN" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zufällige PIN"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Random PIN"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Code PIN aléatoire"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "קוד אקראי"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Losowy PIN"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PIN Aleatório"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slumpmässig PIN"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Насумичан ПИН"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "随机 PIN 码"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隨機 PIN 碼"
           }
         }
       }
@@ -25462,7 +24382,7 @@
         }
       }
     },
-    "reply" : {
+    "Reply" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -25951,6 +24871,9 @@
         }
       }
     },
+    "Route Recorder" : {
+
+    },
     "Route recording paused" : {
       "localizations" : {
         "sr" : {
@@ -25977,70 +24900,6 @@
         }
       }
     },
-    "route.recorder" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Route Recorder"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Route Recorder"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enregistreur de route"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מקליט מסלול"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Route Recorder"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gravador de Rotas"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ruttinspelare"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Снимач руте"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "路径记录器"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "路線錄製"
-          }
-        }
-      }
-    },
     "Router" : {
       "localizations" : {
         "sr" : {
@@ -26061,69 +24920,8 @@
         }
       }
     },
-    "routes" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Routen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Routes"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Routes"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מסלולים"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Routes"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rotas"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rutter"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Руте"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "路径"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "路線"
-          }
-        }
-      }
+    "Routes" : {
+
     },
     "routes.activitytype.biking" : {
       "extractionState" : "migrated",
@@ -27395,7 +26193,7 @@
         }
       }
     },
-    "russia" : {
+    "Russia" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -27680,6 +26478,9 @@
         }
       }
     },
+    "Save Channel Settings" : {
+
+    },
     "Save User Config to %@?" : {
       "localizations" : {
         "de" : {
@@ -27963,6 +26764,9 @@
         }
       }
     },
+    "Select Channel" : {
+
+    },
     "select.contact" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -28124,6 +26928,12 @@
         }
       }
     },
+    "Send ${messageContent} to ${nodeNumber}" : {
+
+    },
+    "Send a Direct Message" : {
+
+    },
     "Send a Group Message" : {
       "localizations" : {
         "de" : {
@@ -28149,6 +26959,9 @@
           }
         }
       }
+    },
+    "Send a message to a certain meshtastic node" : {
+
     },
     "Send a position on the primary channel when the user button is triple clicked." : {
       "localizations" : {
@@ -29447,7 +28260,7 @@
         }
       }
     },
-    "singapore.923mhz" : {
+    "Singapore 923mhz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -29840,6 +28653,26 @@
         }
       }
     },
+    "Store & Forward" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "储存 & 转发"
+          }
+        }
+      }
+    },
+    "Store & Forward Config" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "储存 & 转发设置"
+          }
+        }
+      }
+    },
     "Store and forward clients can request history from routers on the network." : {
       "localizations" : {
         "sr" : {
@@ -29856,134 +28689,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Рутер за складиштење и прослеђивање захтева ESP32 уређај са PSRAM."
-          }
-        }
-      }
-    },
-    "storeforward" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Store & Forward"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Store & Forward"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stocker et Transmettre"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שמירה ושליחה"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Store & Forward"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Armazenar e Encaminhar"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lagra & Videresänd"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Складиштење и прослеђивање"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "储存 & 转发"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "儲存 & 轉發"
-          }
-        }
-      }
-    },
-    "storeforward.config" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Store & Forward Config"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Store & Forward Config"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuration de Stocker et Transmettre"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות שמירה ושליחה"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Store & Forward Config"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuração de Armazenar e Encaminhar"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konfiguration för Lagra & Videresänd"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Конфигурација за складиштење и прослеђивање"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "储存 & 转发设置"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "儲存 & 轉發設定"
           }
         }
       }
@@ -30052,66 +28757,12 @@
         }
       }
     },
-    "subscribed" : {
+    "Subscribed" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verbunden mit dem Mesh"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Subscribed to mesh"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abonné au maillage"
-          }
-        },
         "he" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "מחובר למש"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zapisano do siatki"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inscrito no mesh"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prenumererar på mesh"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Повезано са меш мрежом"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "连接到 Mesh 网络"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "連接到 Mesh 網路"
           }
         }
       }
@@ -30158,7 +28809,7 @@
         }
       }
     },
-    "taiwan" : {
+    "Taiwan" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -30175,7 +28826,10 @@
         }
       }
     },
-    "tapback" : {
+    "Takes a Meshtastic channel URL and saves the channel settings." : {
+
+    },
+    "Tapback" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -31082,7 +29736,7 @@
         }
       }
     },
-    "thailand" : {
+    "Thailand" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -31370,6 +30024,9 @@
         }
       }
     },
+    "The URL for the channel settings" : {
+
+    },
     "There has been no response to a request for device metadata over the admin channel for this node." : {
       "localizations" : {
         "sr" : {
@@ -31432,23 +30089,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ово може потрајати. Одговор ће се појавити у евиденцији трасе праћења за чвор којем је послат."
-          }
-        }
-      }
-    },
-    "This determines the actual frequency you are transmitting on in the band. If set to 0 this value will be calculated automatically based on the primary channel name." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ово одређује стварну фреквенцију на којој преносите у опсегу. Ако је постављено на 0, ова вредност ће се аутоматски израчунати на основу назива примарног канала."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "这决定了您在频段内的实际发射频率。如果设置为 0，该值将根据主频道名称自动计算。"
           }
         }
       }
@@ -31640,6 +30280,9 @@
       }
     },
     "timestamp" : {
+
+    },
+    "Timestamp" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -32416,29 +31059,6 @@
         }
       }
     },
-    "Trace route received directly by %@ with a SNR of %@ dB" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Trace route received directly by %1$@ with a SNR of %2$@ dB"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Захтев за праћење руте комуникације директно примљен од %1$@ са SNR од %2$@ dB."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "由 %1$@ 直接接收的跟踪路由，信噪比为 %2$@ dB"
-          }
-        }
-      }
-    },
     "Trace Route Sent" : {
       "localizations" : {
         "sr" : {
@@ -32648,7 +31268,7 @@
         }
       }
     },
-    "ukraine.433mhz" : {
+    "Ukraine 433mhz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -32665,7 +31285,7 @@
         }
       }
     },
-    "ukraine.868mhz" : {
+    "Ukraine 868mhz" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -32692,7 +31312,7 @@
         }
       }
     },
-    "united.states" : {
+    "United States" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -32720,6 +31340,9 @@
       }
     },
     "unknown" : {
+
+    },
+    "Unknown" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -33151,6 +31774,9 @@
         }
       }
     },
+    "Uptime" : {
+
+    },
     "Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead." : {
       "localizations" : {
         "sr" : {
@@ -33209,27 +31835,8 @@
         }
       }
     },
-    "Wird verwendet, um einen gemeinsamen Schlüssel mit einem entfernten Gerät zu erstellen." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verbunden mit einem Knoten"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Користи се за креирање заједничког кључа са удаљеним уређајем."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "用于与远程设备创建共享密钥。"
-          }
-        }
-      }
+    "Used to create a shared key with a remote device." : {
+
     },
     "user" : {
       "localizations" : {
@@ -33652,6 +32259,9 @@
         }
       }
     },
+    "Voltage" : {
+
+    },
     "Volts %@ " : {
       "localizations" : {
         "de" : {
@@ -33668,7 +32278,7 @@
         }
       }
     },
-    "waiting" : {
+    "Waiting" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -33891,6 +32501,9 @@
           }
         }
       }
+    },
+    "Whether or not use INPUT_PULLUP mode for GPIO pin. Only applicable if the board uses pull-up resistors on the pin" : {
+
     },
     "WiFi Options" : {
       "localizations" : {
@@ -34120,23 +32733,6 @@
     },
     "Your MQTT Server must support TLS." : {
 
-    },
-    "Your MQTT Server must support TLS. Not available via the public mqtt server." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ваш MQTT сервер мора подржавати TLS. Није доступно преко јавног MQTT сервера."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "您的 MQTT 服务器必须支持 TLS。没有可用的公开 MQTT 服务器。"
-          }
-        }
-      }
     },
     "Your node’s operating frequency is calculated based on the region, modem preset, and this field. When 0, the slot is automatically calculated based on the primary channel name." : {
 

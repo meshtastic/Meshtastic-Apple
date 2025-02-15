@@ -181,7 +181,7 @@ struct WaypointForm: View {
 					Button(role: .cancel) {
 						dismiss()
 					} label: {
-						Label("cancel", systemImage: "x.circle")
+						Label("Cancel", systemImage: "x.circle")
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)

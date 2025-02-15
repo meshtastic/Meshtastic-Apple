@@ -15,12 +15,43 @@ struct NodeListItem: View {
 	var connectedNode: Int64
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
 
-	var body: some View {
+	var userKeyStatus: (String, Color) {
+		var image = "lock.open.fill"
+		var color = Color.yellow
+		if node.user?.pkiEncrypted ?? false {
+			if !(node.user?.keyMatch ?? false) {
+				/// Public Key on the User and the Public Key on the Last Message don't match
+				image = "key.slash"
+				color = .red
+			} else {
+				image = "lock.fill"
+				color = .green
+			}
+		}
+		return (image, color)
+	}
 
+	var locationData: (PositionEntity, CLLocation)? {
+		guard let lastPostion = node.positions?.lastObject as? PositionEntity else {
+			return nil
+		}
+		guard let currentLocation = LocationsHandler.shared.locationsArray.last else {
+			return nil
+		}
+
+		let myCoord = CLLocation(latitude: currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
+
+		if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
+				return (lastPostion, myCoord)
+		}
+		return nil
+	}
+
+	var body: some View {
 		NavigationLink(value: node) {
 			LazyVStack(alignment: .leading) {
 				HStack {
-					VStack(alignment: .leading) {
+					VStack(alignment: .center) {
 						CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 70)
 							.padding(.trailing, 5)
 						if node.latestDeviceMetrics != nil {
@@ -30,23 +61,11 @@ struct NodeListItem: View {
 					}
 					VStack(alignment: .leading) {
 						HStack {
-							if node.user?.pkiEncrypted ?? false {
-								if !(node.user?.keyMatch ?? false) {
-									/// Public Key on the User and the Public Key on the Last Message don't match
-									Image(systemName: "key.slash")
-										.foregroundColor(.red)
-								} else {
-									Image(systemName: "lock.fill")
-										.foregroundColor(.green)
-								}
-							} else {
-								Image(systemName: "lock.open.fill")
-									.foregroundColor(.yellow)
-							}
-							Text(node.user?.longName ?? "unknown".localized)
-								.font(.headline)
-								.fontWeight(.regular)
-								.allowsTightening(true)
+							let (image, color) = userKeyStatus
+							IconAndText(systemName: image,
+										imageColor: color,
+										text: node.user?.longName ?? "unknown".localized,
+										textColor: .primary)
 							if node.favorite {
 								Spacer()
 								Image(systemName: "star.fill")
@@ -54,149 +73,84 @@ struct NodeListItem: View {
 							}
 						}
 						if connected {
-							HStack {
-								Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
-									.font(.callout)
-									.symbolRenderingMode(.hierarchical)
-									.foregroundColor(.green)
-									.frame(width: 30)
-								Text("connected")
-									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-									.foregroundColor(.gray)
-							}
+							IconAndText(systemName: "antenna.radiowaves.left.and.right.circle.fill",
+										imageColor: .green,
+										text: "connected".localized)
 						}
-						HStack {
-							Image(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill")
-								.font(.callout)
-								.symbolRenderingMode(.hierarchical)
-								.foregroundColor(node.isOnline ? .green : .orange)
-								.frame(width: 30)
-							LastHeardText(lastHeard: node.lastHeard)
-								.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-								.foregroundColor(.gray)
+						if node.lastHeard?.timeIntervalSince1970 ?? 0 > 0 {
+							IconAndText(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill",
+										imageColor: node.isOnline ? .green : .orange,
+										text: node.lastHeard?.formatted() ?? "unknown")
 						}
-						HStack {
-							let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
-							Image(systemName: role?.systemName ?? "figure")
-								.font(.callout)
-								.symbolRenderingMode(.hierarchical)
-								.frame(width: 30)
-							Text("Role: \(role?.name ?? "unknown".localized)")
-								.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-								.foregroundColor(.gray)
-
-						}
+						let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
+						IconAndText(systemName: role?.systemName ?? "figure",
+									text: "Role: \(role?.name ?? "unknown".localized)")
 						if node.isStoreForwardRouter {
-							HStack {
-								Image(systemName: "envelope.arrow.triangle.branch")
-									.font(.callout)
-									.symbolRenderingMode(.multicolor)
-									.frame(width: 30)
-								Text("storeforward".localized)
-									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-									.foregroundColor(.secondary)
-							}
+							IconAndText(systemName: "envelope.arrow.triangle.branch",
+										renderingMode: .multicolor,
+										text: "Store & Forward".localized)
 						}
 
 						if node.positions?.count ?? 0 > 0 && connectedNode != node.num {
 							HStack {
-								if let lastPostion = node.positions?.lastObject as? PositionEntity {
-									if let currentLocation = LocationsHandler.shared.locationsArray.last {
-										let myCoord = CLLocation(latitude: currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
-										if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
-											let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
-											let metersAway = nodeCoord.distance(from: myCoord)
-											Image(systemName: "lines.measurement.horizontal")
-												.font(.callout)
-												.symbolRenderingMode(.multicolor)
-												.frame(width: 30)
-											DistanceText(meters: metersAway)
-												.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-												.foregroundColor(.gray)
-											let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: nodeCoord)
-											let headingDegrees = Measurement(value: trueBearing, unit: UnitAngle.degrees).reciprocal()
-											Image(systemName: "location.north")
-												.font(.callout)
-												.symbolRenderingMode(.multicolor)
-												.clipShape(Circle())
-												.rotationEffect(Angle(degrees: headingDegrees.value))
-											let heading = Measurement(value: trueBearing, unit: UnitAngle.degrees).reciprocal()
-											Text("\(heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0)))))")
-												.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-												.foregroundColor(.gray)
-										}
-									}
+								if let (lastPostion, myCoord) = locationData {
+									let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
+									let metersAway = nodeCoord.distance(from: myCoord)
+									Image(systemName: "lines.measurement.horizontal")
+										.font(.callout)
+										.symbolRenderingMode(.multicolor)
+										.frame(width: 30)
+									DistanceText(meters: metersAway)
+										.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+										.foregroundColor(.gray)
+									let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: nodeCoord)
+									let headingDegrees = Measurement(value: trueBearing, unit: UnitAngle.degrees)
+									Image(systemName: "location.north")
+										.font(.callout)
+										.symbolRenderingMode(.multicolor)
+										.clipShape(Circle())
+										.rotationEffect(Angle(degrees: headingDegrees.value))
+									let heading = Measurement(value: trueBearing, unit: UnitAngle.degrees)
+									Text("\(heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0)))))")
+										.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+										.foregroundColor(.gray)
 								}
 							}
 						}
 						HStack {
 							if node.channel > 0 {
-								HStack {
-									Image(systemName: "\(node.channel).circle.fill")
-										.font(.title2)
-										.frame(width: 30)
-									Text("Channel")
-										.foregroundColor(.secondary)
-										.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-								}
+								IconAndText(systemName: "\(node.channel).circle.fill", text: "Channel")
 							}
 
 							if node.viaMqtt && connectedNode != node.num {
-								Image(systemName: "dot.radiowaves.up.forward")
-									.symbolRenderingMode(.multicolor)
-									.font(.callout)
-									.frame(width: 30)
-								Text("MQTT")
-									.foregroundColor(.gray)
-									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+								IconAndText(systemName: "dot.radiowaves.up.forward",
+											renderingMode: .multicolor,
+											text: "MQTT")
 							}
 						}
 						if node.hasPositions || node.hasEnvironmentMetrics || node.hasDetectionSensorMetrics || node.hasTraceRoutes {
 							HStack {
-								Image(systemName: "scroll")
-									.symbolRenderingMode(.hierarchical)
-									.font(.callout)
-								Text("Logs:")
-									.foregroundColor(.gray)
-									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption2)
-									.allowsTightening(true)
+								IconAndText(systemName: "scroll", text: "Logs:")
 								if node.hasDeviceMetrics {
-									Image(systemName: "flipphone")
-										.symbolRenderingMode(.hierarchical)
-										.font(.callout)
+									DefaultIcon(systemName: "flipphone")
 								}
 								if node.hasPositions {
-									Image(systemName: "mappin.and.ellipse")
-										.symbolRenderingMode(.hierarchical)
-										.font(.callout)
-
+									DefaultIcon(systemName: "mappin.and.ellipse")
 								}
 								if node.hasEnvironmentMetrics {
-									Image(systemName: "cloud.sun.rain")
-										.symbolRenderingMode(.hierarchical)
-										.font(.callout)
-
+									DefaultIcon(systemName: "cloud.sun.rain")
 								}
 								if node.hasDetectionSensorMetrics {
-									Image(systemName: "sensor")
-										.symbolRenderingMode(.hierarchical)
-										.font(.callout)
+									DefaultIcon(systemName: "sensor")
 								}
 								if node.hasTraceRoutes {
-									Image(systemName: "signpost.right.and.left")
-										.symbolRenderingMode(.hierarchical)
-										.font(.callout)
+									DefaultIcon(systemName: "signpost.right.and.left")
 								}
 							}
 						}
 						if node.hopsAway > 0 {
 							HStack {
-								Image(systemName: "hare")
-									.font(.callout)
-									.symbolRenderingMode(.multicolor)
-								Text("Hops Away:")
-									.foregroundColor(.secondary)
-									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+								IconAndText(systemName: "hare", text: "Hops Away:")
 								Image(systemName: "\(node.hopsAway).square")
 									.font(.title2)
 							}
@@ -213,5 +167,62 @@ struct NodeListItem: View {
 		}
 		.padding(.top, 4)
 		.padding(.bottom, 4)
+	}
+}
+
+struct DefaultIcon: View {
+	let systemName: String
+
+	var body: some View {
+		Image(systemName: systemName)
+			.symbolRenderingMode(.hierarchical)
+			.font(.callout)
+	}
+}
+
+struct IconAndText: View {
+	let systemName: String
+	var imageColor: Color?
+	var renderingMode: SymbolRenderingMode = .hierarchical
+	let text: String
+	var textColor: Color = .gray
+
+	@ViewBuilder
+	var image: some View {
+		if let color = imageColor {
+			Image(systemName: systemName)
+				.foregroundColor(color)
+		} else {
+			Image(systemName: systemName)
+		}
+	}
+
+	var body: some View {
+		HStack {
+			image
+				.font(.callout)
+				.symbolRenderingMode(renderingMode)
+				.frame(width: 30)
+			Text(text)
+				.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+				.foregroundColor(textColor)
+				.allowsTightening(true)
+		}
+	}
+}
+
+#Preview {
+	VStack(alignment: .leading) {
+		IconAndText(systemName: "antenna.radiowaves.left.and.right.circle.fill", text: "foo")
+		IconAndText(systemName: "antenna.radiowaves.left.and.right.circle", text: "bar")
+		NodeListItem(node: {
+			let context = PersistenceController.preview.container.viewContext
+			let nodeInfo = NodeInfoEntity(context: context)
+			let user = UserEntity(context: context)
+			user.longName = "Test User"
+			user.shortName = "TU"
+			nodeInfo.user = user
+			return nodeInfo
+		}(), connected: true, connectedNode: 0, modemPreset: .longFast)
 	}
 }

@@ -93,7 +93,7 @@ struct NodeList: View {
 			)
 			/// Don't show message, trace route, position exchange or delete context menu items for the connected node
 			if connectedNode.num != node.num {
-				if (!node.viaMqtt || node.viaMqtt && node.hopsAway == 0) {
+				if !node.viaMqtt || node.viaMqtt && node.hopsAway == 0 {
 					Button(action: {
 						if let url = URL(string: "meshtastic:///messages?userNum=\(node.num)") {
 						   UIApplication.shared.open(url)
@@ -200,7 +200,6 @@ struct NodeList: View {
 				.controlSize(.regular)
 				.padding(5)
 			}
-			.padding(.bottom, 5)
 			.searchable(text: $searchText, placement: .automatic, prompt: "Find a node")
 			.disableAutocorrection(true)
 			.scrollDismissesKeyboard(.immediately)
@@ -228,7 +227,7 @@ struct NodeList: View {
 					Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
 			}
 			.confirmationDialog(
-				"are.you.sure",
+				"Are you sure?",
 				isPresented: $isPresentingDeleteNodeAlert,
 				titleVisibility: .visible
 			) {

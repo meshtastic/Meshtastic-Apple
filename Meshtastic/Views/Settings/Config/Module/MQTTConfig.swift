@@ -64,7 +64,7 @@ struct MQTTConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
-					if enabled && proxyToClientEnabled && node!.mqttConfig!.proxyToClientEnabled == true {
+					if enabled && proxyToClientEnabled && node?.mqttConfig?.proxyToClientEnabled ?? false == true {
 						Toggle(isOn: $mqttConnected) {
 							Label(mqttConnected ? "mqtt.disconnect".localized : "mqtt.connect".localized, systemImage: "server.rack")
 							if bleManager.mqttError.count > 0 {
@@ -82,11 +82,13 @@ struct MQTTConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
-					Toggle(isOn: $jsonEnabled) {
-						Label("JSON Enabled", systemImage: "ellipsis.curlybraces")
-						Text("JSON mode is a limited, unencrypted MQTT output for locally integrating with home assistant")
+					if !proxyToClientEnabled {
+						Toggle(isOn: $jsonEnabled) {
+							Label("JSON Enabled", systemImage: "ellipsis.curlybraces")
+							Text("JSON mode is a limited, unencrypted MQTT output for locally integrating with home assistant")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 
 				Section(header: Text("Map Report")) {
@@ -194,6 +196,7 @@ struct MQTTConfig: View {
 						}
 						.keyboardType(.default)
 						.scrollDismissesKeyboard(.interactively)
+						
 						HStack {
 							Label("password", systemImage: "wallet.pass")
 							TextField("password", text: $password)
@@ -214,11 +217,13 @@ struct MQTTConfig: View {
 						.keyboardType(.default)
 						.scrollDismissesKeyboard(.interactively)
 						.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
-						Toggle(isOn: $tlsEnabled) {
-							Label("TLS Enabled", systemImage: "checkmark.shield.fill")
-							Text("Your MQTT Server must support TLS.")
+						if !proxyToClientEnabled {
+							Toggle(isOn: $tlsEnabled) {
+								Label("TLS Enabled", systemImage: "checkmark.shield.fill")
+								Text("Your MQTT Server must support TLS.")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
 				}
 				Text("For all Mqtt functionality other than the map report you must also set uplink and downlink for each channel you want to bridge over Mqtt.")
@@ -269,10 +274,11 @@ struct MQTTConfig: View {
 		.onChange(of: proxyToClientEnabled) { _, newProxyToClientEnabled in
 			if newProxyToClientEnabled {
 				jsonEnabled = false
+				tlsEnabled = false
 			}
 			if newProxyToClientEnabled != node?.mqttConfig?.proxyToClientEnabled { hasChanges = true }
 		}
-		.onChange(of: address) { _, newAddress in
+		.onChange(of: address) { newAddress in
 			if newAddress != node?.mqttConfig?.address ?? "" { hasChanges = true }
 		}
 		.onChange(of: username) { newUsername in
@@ -281,7 +287,7 @@ struct MQTTConfig: View {
 		.onChange(of: password) { newPassword in
 			if newPassword != node?.mqttConfig?.password ?? "" { hasChanges = true }
 		}
-		.onChange(of: root) { newRoot in
+		.onChange(of: root) { _, newRoot in
 			if newRoot != node?.mqttConfig?.root ?? "" { hasChanges = true }
 		}
 		.onChange(of: selectedTopic) { _, newSelectedTopic in

@@ -66,7 +66,7 @@ struct ShareChannels: View {
 								.font(.caption)
 								.fontWeight(.bold)
 								.padding(.trailing)
-							Text("channel")
+							Text("Channel")
 								.font(.caption)
 								.fontWeight(.bold)
 								.padding(.trailing)

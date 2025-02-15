@@ -127,9 +127,13 @@ struct ChannelMessageList: View {
 						}
 					}
 				}
-				.padding([.top])
-				.scrollDismissesKeyboard(.immediately)
+				.scrollDismissesKeyboard(.interactively)
 				.onFirstAppear {
+					withAnimation {
+						scrollView.scrollTo(channel.allPrivateMessages.last?.messageId ?? 0, anchor: .bottom)
+					}
+				}
+				.onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
 					withAnimation {
 						scrollView.scrollTo(channel.allPrivateMessages.last?.messageId ?? 0, anchor: .bottom)
 					}

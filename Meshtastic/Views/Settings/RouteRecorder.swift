@@ -153,7 +153,7 @@ struct RouteRecorder: View {
 										.symbolRenderingMode(.multicolor)
 										.font(.title3)
 										.foregroundColor(.accentColor)
-									Text("activity")
+									Text("Activity")
 									Picker(selection: $activity, label: Text("Activity")) {
 										ForEach(ActivityType.allCases) { r in
 											Text(r.description)

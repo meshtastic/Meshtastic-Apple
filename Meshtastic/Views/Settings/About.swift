@@ -62,7 +62,7 @@ struct AboutMeshtastic: View {
 					.font(.caption)
 			}
 		}
-		.navigationTitle("about")
+		.navigationTitle("About")
 		.navigationBarTitleDisplayMode(.inline)
 	}
 }
