@@ -91,7 +91,7 @@ struct PositionLog: View {
 								Text("Alt")
 									.font(.caption2)
 									.fontWeight(.bold)
-								Text("timestamp")
+								Text("Timestamp")
 									.font(.caption2)
 									.fontWeight(.bold)
 							}
@@ -120,7 +120,7 @@ struct PositionLog: View {
 					Button(role: .destructive) {
 						isPresentingClearLogConfirm = true
 					} label: {
-						Label("clear.log", systemImage: "trash.fill")
+						Label("Clear Log", systemImage: "trash.fill")
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
@@ -128,7 +128,7 @@ struct PositionLog: View {
 					.padding(.bottom)
 					.padding(.leading)
 					.confirmationDialog(
-						"are.you.sure",
+						"Are you sure?",
 						isPresented: $isPresentingClearLogConfirm,
 						titleVisibility: .visible
 					) {
@@ -144,7 +144,7 @@ struct PositionLog: View {
 						exportString = positionToCsvFile(positions: node.positions!.array as? [PositionEntity] ?? [])
 						isExporting = true
 					} label: {
-						Label("save", systemImage: "square.and.arrow.down")
+						Label("Save", systemImage: "square.and.arrow.down")
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)

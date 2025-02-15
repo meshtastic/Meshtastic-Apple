@@ -73,7 +73,7 @@ struct EnvironmentMetricsLog: View {
 							TableColumn("Wind Direction") { em in
 								columnList.column(forAttribute: "windDirection")?.body(em)
 							}
-							TableColumn("timestamp") { em in
+							TableColumn("Timestamp") { em in
 								columnList.column(forAttribute: "time")?.body(em)
 							}
 							.width(min: 180)

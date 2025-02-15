@@ -58,11 +58,11 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .pkiFailed:
 			return "routing.pkifailed".localized
 		case .pkiUnknownPubkey:
-			return "routing.pkiunknownpubkey".localized
+			return "Unknown public key".localized
 		case .adminBadSessionKey:
-			return "routing.adminbadsessionkey".localized
+			return "Bad admin session key".localized
 		case .adminPublicKeyUnauthorized:
-			return "routing.adminpublickeyunauthorized".localized
+			return "Unauthorized admin public key".localized
 		}
 	}
 	var color: Color {

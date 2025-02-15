@@ -25542,71 +25542,6 @@
         }
       }
     },
-    "route.recorder" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Route Recorder"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Route Recorder"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enregistreur de route"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מקליט מסלול"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Route Recorder"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gravador de Rotas"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ruttinspelare"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Снимач руте"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "路径记录器"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "路線錄製"
-          }
-        }
-      }
-    },
     "Router" : {
       "localizations" : {
         "sr" : {
@@ -25623,71 +25558,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Опције рутера"
-          }
-        }
-      }
-    },
-    "routes" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Routen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Routes"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Routes"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מסלולים"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Routes"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rotas"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rutter"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Руте"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "路径"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "路線"
           }
         }
       }
@@ -30919,23 +30789,6 @@
         }
       }
     },
-    "This determines the actual frequency you are transmitting on in the band. If set to 0 this value will be calculated automatically based on the primary channel name." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ово одређује стварну фреквенцију на којој преносите у опсегу. Ако је постављено на 0, ова вредност ће се аутоматски израчунати на основу назива примарног канала."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "这决定了您在频段内的实际发射频率。如果设置为 0，该值将根据主频道名称自动计算。"
-          }
-        }
-      }
-    },
     "This device will send out range test messages on the selected interval." : {
       "localizations" : {
         "sr" : {
@@ -31187,7 +31040,14 @@
       }
     },
     "Timestamp" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Временска ознака"
+          }
+        }
+      }
     },
     "Timing & Format" : {
       "localizations" : {
@@ -31898,29 +31758,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Лог праћења руте комуникације"
-          }
-        }
-      }
-    },
-    "Trace route received directly by %@ with a SNR of %@ dB" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Trace route received directly by %1$@ with a SNR of %2$@ dB"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Захтев за праћење руте комуникације директно примљен од %1$@ са SNR од %2$@ dB."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "由 %1$@ 直接接收的跟踪路由，信噪比为 %2$@ dB"
           }
         }
       }

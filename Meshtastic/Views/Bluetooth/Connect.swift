@@ -70,7 +70,7 @@ struct Connect: View {
 													.font(.callout).foregroundColor(Color.gray)
 											}
 											if bleManager.isSubscribed {
-												Text("subscribed").font(.callout)
+												Text("Subscribed").font(.callout)
 													.foregroundColor(.green)
 											} else {
 												HStack {
@@ -78,7 +78,7 @@ struct Connect: View {
 														.symbolRenderingMode(.multicolor)
 														.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 														.foregroundColor(.orange)
-													Text("communicating").font(.callout)
+													Text("Communicating").font(.callout)
 														.foregroundColor(.orange)
 												}
 											}
@@ -95,7 +95,7 @@ struct Connect: View {
 											bleManager.disconnectPeripheral(reconnect: false)
 										}
 									} label: {
-										Label("disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+										Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 									}
 								}
 								.contextMenu {
