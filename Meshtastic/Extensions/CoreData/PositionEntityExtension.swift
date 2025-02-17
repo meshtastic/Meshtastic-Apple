@@ -25,11 +25,11 @@ extension PositionEntity {
 		let pointOfInterest = LocationsHandler.currentLocation
 
 		if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude && pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
-			let d: Double = UserDefaults.meshMapDistance * 1.1
-			let r: Double = 6371009
-			let meanLatitidue = pointOfInterest.latitude * .pi / 180
-			let deltaLatitude = d / r * 180 / .pi
-			let deltaLongitude = d / (r * cos(meanLatitidue)) * 180 / .pi
+			let distance: Double = UserDefaults.meshMapDistance * 1.1
+			let earthRadius: Double = 6371009
+			let meanLatitude = pointOfInterest.latitude * .pi / 180
+			let deltaLatitude = distance / earthRadius * 180 / .pi
+			let deltaLongitude = distance / (earthRadius * cos(meanLatitude)) * 180 / .pi
 			let minLatitude: Double = pointOfInterest.latitude - deltaLatitude
 			let maxLatitude: Double = pointOfInterest.latitude + deltaLatitude
 			let minLongitude: Double = pointOfInterest.longitude - deltaLongitude
@@ -43,21 +43,11 @@ extension PositionEntity {
 	}
 
 	var latitude: Double? {
-
-		let d = Double(latitudeI)
-		if d == 0 {
-			return 0
-		}
-		return d / 1e7
+		latitudeI == 0 ? 0 : Double(latitudeI) / 1e7
 	}
 
 	var longitude: Double? {
-
-		let d = Double(longitudeI)
-		if d == 0 {
-			return 0
-		}
-		return d / 1e7
+		longitudeI == 0 ? 0 : Double(longitudeI) / 1e7
 	}
 
 	var nodeCoordinate: CLLocationCoordinate2D? {

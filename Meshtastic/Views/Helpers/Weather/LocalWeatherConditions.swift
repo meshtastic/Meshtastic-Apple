@@ -190,8 +190,8 @@ struct WindCompactWidget: View {
 
 /// Magnus Formula
 func calculateDewPoint(temp: Float, relativeHumidity: Float) -> Double {
-	let a: Float = 17.27
-	let b: Float = 237.7
+	let a: Float = 17.27 // swiftlint:disable:this identifier_name
+	let b: Float = 237.7 // swiftlint:disable:this identifier_name
 	let alpha = ((a * temp) / (b + temp)) + log(relativeHumidity / 100.0)
 	let dewPoint = (b * alpha) / (a - alpha)
 	let dewPointUnit = Measurement<UnitTemperature>(value: Double(dewPoint), unit: .celsius)

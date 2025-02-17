@@ -22,23 +22,13 @@ extension WaypointEntity {
 		request.predicate = NSPredicate(format: "expire == nil || expire >= %@", Date() as NSDate)
 		return request
 	}
-
+	
 	var latitude: Double? {
-
-		let d = Double(latitudeI)
-		if d == 0 {
-			return 0
-		}
-		return d / 1e7
+		latitudeI == 0 ? 0 : Double(latitudeI) / 1e7
 	}
-
+	
 	var longitude: Double? {
-
-		let d = Double(longitudeI)
-		if d == 0 {
-			return 0
-		}
-		return d / 1e7
+		longitudeI == 0 ? 0 : Double(longitudeI) / 1e7
 	}
 
 	var waypointCoordinate: CLLocationCoordinate2D? {

@@ -61,12 +61,12 @@ extension TimeZone {
 
 	private func posixOffset(for date: Date = Date()) -> String {
 		// The POSIX offset is the opposite of the GMT offset
-		let secs = 0 - secondsFromGMT(for: date)
-		let h = secs / 3600
-		let m = abs(secs) % 3600 / 60
-		let s = abs(secs) % 60
+		let totalSeconds = 0 - secondsFromGMT(for: date)
+		let hours = totalSeconds / 3600
+		let minutes = abs(totalSeconds) % 3600 / 60
+		let seconds = abs(totalSeconds) % 60
 
 		// Show the hour, only show the minutes and seconds if non-zero
-		return "\(h)\(m == 0 && s == 0 ? "" : ":\(String(format: "%02d", m))")\(s == 0 ? "" : ":\(String(format: "%02d", s))")"
+		return "\(hours)\(minutes == 0 && seconds == 0 ? "" : ":\(String(format: "%02d", minutes))")\(seconds == 0 ? "" : ":\(String(format: "%02d", seconds))")"
 	}
 }

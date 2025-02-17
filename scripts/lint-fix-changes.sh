@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Path to swiftlint
 SWIFT_LINT=$(which swiftlint)

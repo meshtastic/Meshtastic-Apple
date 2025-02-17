@@ -58,9 +58,9 @@ struct DetectionSensorConfig: View {
 					if enabled {
 						HStack {
 							Picker(selection: $role, label: Text("Role")) {
-								ForEach(DetectionSensorRole.allCases, id: \.self) { r in
-									Text(r.description)
-										.tag(r)
+								ForEach(DetectionSensorRole.allCases, id: \.self) { detectionSensorRole in
+									Text(detectionSensorRole.description)
+										.tag(detectionSensorRole)
 								}
 							}
 							.pickerStyle(SegmentedPickerStyle())

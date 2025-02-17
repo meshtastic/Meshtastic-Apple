@@ -105,9 +105,9 @@ public func deleteUserMessages(user: UserEntity, context: NSManagedObjectContext
 public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes: Bool) {
 
 	let persistenceController = PersistenceController.shared.container
-	for i in 0...persistenceController.managedObjectModel.entities.count-1 {
+	for index in 0...persistenceController.managedObjectModel.entities.count-1 {
 
-		let entity = persistenceController.managedObjectModel.entities[i]
+		let entity = persistenceController.managedObjectModel.entities[index]
 		let query = NSFetchRequest<NSFetchRequestResult>(entityName: entity.name!)
 		var deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
 		let entityName = entity.name ?? "UNK"

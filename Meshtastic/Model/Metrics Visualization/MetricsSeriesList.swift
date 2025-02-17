@@ -78,7 +78,7 @@ class MetricsSeriesList: ObservableObject, RandomAccessCollection, RangeReplacea
 		}
 	}
 	subscript(bounds: Range<Int>) -> ArraySlice<Element> { series[bounds] }
-	func index(after i: Int) -> Int { series.index(after: i) }
+	func index(after index: Int) -> Int { series.index(after: index) }
 
 	func replaceSubrange<C: Collection>(_ subrange: Range<Int>, with newElements: C) where C.Element == Element {
 		objectWillChange.send()

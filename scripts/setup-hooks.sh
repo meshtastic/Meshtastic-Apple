@@ -1,21 +1,48 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
+HOOKS_PATH="hooks"
 
-# Define the source and destination paths
-SOURCE_PATH="./scripts/hooks/pre-commit"
-HOOKS_DIR=".git/hooks"
-DEST_PATH="$HOOKS_DIR/pre-commit"
+# Ensure the script is run from a relative context
+function validateRelativeContext() {
+    if [ ! -d "./scripts" ]; then
+        printf "\033[0m \033[97;101mWARNING\033[0m: This script should be executed relative from the project root, e.g. \033[93m./scripts/setup-hooks.sh\033[0m.\n"
+        exit 1
+    fi
+}
 
-# Check if the hooks directory exists
-if [ ! -d "$HOOKS_DIR" ]; then
-  echo "Error: .git/hooks directory not found. Make sure you're in the root of a Git repository."
-  exit 1
-fi
+# Opt-in to Git Hooks, if needed.
+function optInToGitHooksIfNeeded() {
+    local gitHooksPath=${1:-"hooks"}
 
-# Copy the script to the hooks directory
-cp "$SOURCE_PATH" "$DEST_PATH"
+    # Check if we have a Git Hooks directory.
+    if [ ! -d "$gitHooksPath" ]
+    then
+        # We don't have a Git Hooks directory. If necessary, opt-out to using Git Hooks.
+        git config core.hooksPath > /dev/null
 
-# Make the hook script executable
-chmod +x "$DEST_PATH"
+        if [[ $? -eq 0 ]]
+        then
+            printf "\033[93m*)\033[0m Opt-out to using Git Hooks\033[94m\n"
+            git config --unset core.hooksPath
+        fi
 
-echo "Pre-commit hooks have been set up successfully."
+        return
+    fi
+
+    # Check if we need to opt-in or opt-out to using Git Hooks.
+    if [[ $(git config core.hooksPath) != "$gitHooksPath" ]]
+    then
+        printf "\033[93m*)\033[0m Opt-in to using Git Hooks\033[0m\n"
+        git config core.hooksPath $gitHooksPath
+    elif [[ $(git config core.hooksPath) == "$gitHooksPath" ]]
+    then
+        printf "\033[93m*)\033[0m Already opted-in to using Git Hooks\033[0m\n"
+    else
+        printf "\033[93m*)\033[0m Skip opting-in to using Git Hooks\033[0m\n"
+    fi
+}
+
+# Validate we are being executed relatively fron the project root.
+validateRelativeContext
+# Configure Git hooks, if needed.
+optInToGitHooksIfNeeded "$HOOKS_PATH"

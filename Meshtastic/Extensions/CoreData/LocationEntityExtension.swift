@@ -11,23 +11,12 @@ import MapKit
 import SwiftUI
 
 extension LocationEntity {
-
 	var latitude: Double? {
-
-		let d = Double(latitudeI)
-		if d == 0 {
-			return 0
-		}
-		return d / 1e7
+		latitudeI == 0 ? 0 : Double(latitudeI) / 1e7
 	}
-
+	
 	var longitude: Double? {
-
-		let d = Double(longitudeI)
-		if d == 0 {
-			return 0
-		}
-		return d / 1e7
+		longitudeI == 0 ? 0 : Double(longitudeI) / 1e7
 	}
 
 	var locationCoordinate: CLLocationCoordinate2D? {

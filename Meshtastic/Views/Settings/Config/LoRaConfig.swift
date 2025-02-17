@@ -64,8 +64,8 @@ struct LoRaConfig: View {
 
 					VStack(alignment: .leading) {
 						Picker("Region", selection: $region ) {
-							ForEach(RegionCodes.allCases) { r in
-								Text(r.description)
+							ForEach(RegionCodes.allCases) { regionCode in
+								Text(regionCode.description)
 							}
 						}
 						.fixedSize()
@@ -83,8 +83,8 @@ struct LoRaConfig: View {
 					if usePreset {
 						VStack(alignment: .leading) {
 							Picker("Presets", selection: $modemPreset ) {
-								ForEach(ModemPresets.allCases) { m in
-									Text(m.description)
+								ForEach(ModemPresets.allCases) { modemPreset in
+									Text(modemPreset.description)
 								}
 							}
 							.pickerStyle(DefaultPickerStyle())

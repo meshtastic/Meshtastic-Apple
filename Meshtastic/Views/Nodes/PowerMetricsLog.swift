@@ -116,9 +116,9 @@ struct PowerMetricsLog: View {
 
 				if idiom == .phone {
 					Table(powerMetrics, selection: $selection, sortOrder: $sortOrder) {
-						TableColumn("Timestamp") { m in
+						TableColumn("Timestamp") { powerMetrics in
 							HStack {
-								Text(m.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+								Text(powerMetrics.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 								Spacer()
 								HStack {
 									VStack {
@@ -127,13 +127,13 @@ struct PowerMetricsLog: View {
 											Image(systemName: "powerplug.fill")
 												.font(.caption)
 												.symbolRenderingMode(.multicolor)
-											Text("\(String(format: "%.2f", m.powerCh1Voltage))V")
+											Text("\(String(format: "%.2f", powerMetrics.powerCh1Voltage))V")
 										}
 										HStack {
 											Image(systemName: "bolt.fill")
 												.font(.caption)
 												.symbolRenderingMode(.multicolor)
-											Text("\(String(format: "%.2f", m.powerCh1Current))mA")
+											Text("\(String(format: "%.2f", powerMetrics.powerCh1Current))mA")
 										}
 									}
 								}
@@ -145,13 +145,13 @@ struct PowerMetricsLog: View {
 											Image(systemName: "powerplug.fill")
 												.font(.caption)
 												.symbolRenderingMode(.multicolor)
-											Text("\(String(format: "%.2f", m.powerCh2Voltage))V")
+											Text("\(String(format: "%.2f", powerMetrics.powerCh2Voltage))V")
 										}
 										HStack {
 											Image(systemName: "bolt.fill")
 												.font(.caption)
 												.symbolRenderingMode(.multicolor)
-											Text("\(String(format: "%.2f", m.powerCh2Current))mA")
+											Text("\(String(format: "%.2f", powerMetrics.powerCh2Current))mA")
 										}
 									}
 								}
@@ -163,13 +163,13 @@ struct PowerMetricsLog: View {
 											Image(systemName: "powerplug.fill")
 												.font(.caption)
 												.symbolRenderingMode(.multicolor)
-											Text("\(String(format: "%.2f", m.powerCh3Voltage))V")
+											Text("\(String(format: "%.2f", powerMetrics.powerCh3Voltage))V")
 										}
 										HStack {
 											Image(systemName: "bolt.fill")
 												.font(.caption)
 												.symbolRenderingMode(.multicolor)
-											Text("\(String(format: "%.2f", m.powerCh3Current))mA")
+											Text("\(String(format: "%.2f", powerMetrics.powerCh3Current))mA")
 										}
 									}
 								}

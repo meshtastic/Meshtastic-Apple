@@ -155,8 +155,8 @@ struct RouteRecorder: View {
 										.foregroundColor(.accentColor)
 									Text("Activity")
 									Picker(selection: $activity, label: Text("Activity")) {
-										ForEach(ActivityType.allCases) { r in
-											Text(r.description)
+										ForEach(ActivityType.allCases) { activityType in
+											Text(activityType.description)
 										}
 									}
 									Spacer()

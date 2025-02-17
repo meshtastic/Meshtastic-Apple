@@ -226,20 +226,20 @@ struct TraceRouteLog: View {
 			TraceRouteComponent(animation: animation) {
 				let hops = selectedRoute?.hops?.array as? [TraceRouteHopEntity] ?? [] // getTraceRouteHops(context: PersistenceController.preview.container.viewContext)//
 				if idx % 2 == 0 {
-					let i = idx / 2
-					let snrColor = getSnrColor(snr: hops[i].snr, preset: modemPreset)
+					let index = idx / 2
+					let snrColor = getSnrColor(snr: hops[index].snr, preset: modemPreset)
 					VStack {
-						let nodeColor = UIColor(hex: UInt32(truncatingIfNeeded: hops[i].num))
-						CircleText(text: String(hops[i].num.toHex().suffix(4)), color: Color(nodeColor), circleSize: idiom == .phone ? 70 : 125)
-							Text("\(String(format: "%.2f", hops[i].snr)) dB")
+						let nodeColor = UIColor(hex: UInt32(truncatingIfNeeded: hops[index].num))
+						CircleText(text: String(hops[index].num.toHex().suffix(4)), color: Color(nodeColor), circleSize: idiom == .phone ? 70 : 125)
+							Text("\(String(format: "%.2f", hops[index].snr)) dB")
 								.font(idiom == .phone ? .caption2 : .headline)
 								.foregroundColor(snrColor)
 								.allowsTightening(true)
 								.fontWeight(.semibold)
 					}
 				} else {
-					let i = (idx - 1) / 2
-					let snrColor = getSnrColor(snr: hops[i].snr, preset: modemPreset)
+					let index = (idx - 1) / 2
+					let snrColor = getSnrColor(snr: hops[index].snr, preset: modemPreset)
 					Image(systemName: "arrowshape.right.fill")
 						.resizable()
 						.frame(width: idiom == .phone ? 25 : 60, height: idiom == .phone ? 25 : 60)

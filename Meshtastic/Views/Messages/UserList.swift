@@ -349,11 +349,11 @@ struct UserList: View {
 			let pointOfInterest = LocationsHandler.currentLocation
 
 			if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude && pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
-				let d: Double = maxDistance * 1.1
-				let r: Double = 6371009
-				let meanLatitidue = pointOfInterest.latitude * .pi / 180
-				let deltaLatitude = d / r * 180 / .pi
-				let deltaLongitude = d / (r * cos(meanLatitidue)) * 180 / .pi
+				let distance: Double = maxDistance * 1.1
+				let earthRadius: Double = 6371009
+				let meanLatitude = pointOfInterest.latitude * .pi / 180
+				let deltaLatitude = distance / earthRadius * 180 / .pi
+				let deltaLongitude = distance / (earthRadius * cos(meanLatitude)) * 180 / .pi
 				let minLatitude: Double = pointOfInterest.latitude - deltaLatitude
 				let maxLatitude: Double = pointOfInterest.latitude + deltaLatitude
 				let minLongitude: Double = pointOfInterest.longitude - deltaLongitude

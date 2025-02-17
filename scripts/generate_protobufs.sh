@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # simple sanity checking for executable
 if [ ! -x "$(which protoc)" ]; then

@@ -1,0 +1,167 @@
+excluded: # paths to ignore during linting. Takes precedence over `included`.
+  - MeshtasticProtobufs
+disabled_rules:
+  - nesting
+  - todo
+  - trailing_comma
+  - trailing_whitespace
+analyzer_rules:
+  - capture_variable
+  - typesafe_array_init
+  - unused_declaration
+  - unused_import
+opt_in_rules:
+  - accessibility_label_for_image
+  - accessibility_trait_for_button
+  - anonymous_argument_in_multiline_closure
+  - array_init
+  - attributes
+  - closure_body_length
+  - closure_end_indentation
+  - closure_spacing
+  - collection_alignment
+  - contains_over_filter_count
+  - contains_over_filter_is_empty
+  - contains_over_first_not_nil
+  - contains_over_range_nil_comparison
+  - direct_return
+  - discarded_notification_center_observer
+  - discouraged_assert
+  - discouraged_none_name
+  - discouraged_object_literal
+  - discouraged_optional_boolean
+  - empty_collection_literal
+  - empty_count
+  - empty_string
+  - enum_case_associated_values_count
+  - expiring_todo
+  - explicit_init
+  - fatal_error_message
+  - file_header
+  - file_name_no_space
+  #- file_types_order
+  - first_where
+  - flatmap_over_map_reduce
+  - force_unwrapping
+  - identical_operands
+  - implicit_return
+  - implicitly_unwrapped_optional
+  - joined_default_parameter
+  - last_where
+  - legacy_objc_type
+  - let_var_whitespace
+  - literal_expression_end_indentation
+  - lower_acl_than_parent
+  - modifier_order
+  - multiline_arguments
+  - multiline_function_chains
+  #- multiline_parameters
+  - non_overridable_class_declaration
+  #- no_empty_block
+  #- number_separator
+  - operator_usage_whitespace
+  - optional_data_string_conversion
+  - optional_enum_case_matching
+  - overridden_super_call
+  - period_spacing
+  - prefer_self_in_static_references
+  - prefer_self_type_over_type_of_self
+  - prefer_zero_over_explicit_init
+  - private_action
+  - private_outlet
+  - private_swiftui_state
+  - prohibited_super_call
+  - reduce_into
+  - redundant_nil_coalescing
+  - redundant_self_in_closure
+  - redundant_type_annotation
+  - return_value_from_void_function
+  - self_binding
+  - shorthand_optional_binding
+  - sorted_enum_cases
+  - sorted_first_last
+  - static_operator
+  - superfluous_else
+  #- switch_case_on_newline
+  - toggle_bool
+  - trailing_closure
+  - unavailable_condition
+  - unhandled_throwing_task
+  - unneeded_parentheses_in_closure_argument
+  - unowned_variable_capture
+  - untyped_error_in_catch
+  #- unused_parameter
+  - vertical_parameter_alignment_on_call
+  - vertical_whitespace_closing_braces
+  - vertical_whitespace_opening_braces
+  - weak_delegate
+  - yoda_condition
+allow_zero_lintable_files: true
+# These should be updated after the code has been refactored.
+closure_body_length:
+  warning: 50  # default: 30
+  error: 405   # default: 100
+cyclomatic_complexity:
+  ignores_case_statements: true
+# Changed severity from error (default) to warning as there are just too many errors.
+# This should be reverted back to error when all issues are fixed.
+empty_count:
+  severity: warning
+file_header:
+  required_pattern: |
+                    \/\/
+                    \/\/  .*?\.swift
+                    \/\/  .*?
+                    \/\/
+                    \/\/  Created by .*? on \d{1,2}\/\d{1,2}\/(?:\d{4}|\d{2})\.
+                    \/\/  Copyright (C) \d{4} .*? and the .*? project authors.
+                    \/\/  
+                    \/\/  This program is free software: you can redistribute it and/or modify
+                    \/\/  it under the terms of the GNU General Public License as published by
+                    \/\/  the Free Software Foundation, either version 3 of the License, or
+                    \/\/  (at your option) any later version.
+                    \/\/  
+                    \/\/  This program is distributed in the hope that it will be useful,
+                    \/\/  but WITHOUT ANY WARRANTY; without even the implied warranty of
+                    \/\/  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+                    \/\/  GNU General Public License for more details.
+                    \/\/  
+                    \/\/  You should have received a copy of the GNU General Public License
+                    \/\/  along with this program. If not, see https:\/\/www.gnu.org\/licenses\/.
+                    \/\/  
+                    \/\/  SPDX-License-Identifier: GPL-3.0-or-later
+                    \/\/  
+file_length:
+  ignore_comment_only_lines: true
+# There are normally errors, as they are a source of application crashes. However, as there is an overwhelming amount
+# of errors there have for the time being been lowered to warnings. This should be reverted when the all occurences 
+# have been fixed!
+force_cast: warning
+force_try: warning
+force_unwrapping: warning
+# These should be updated after the code has been refactored.
+function_body_length:
+  warning: 50 # default: 50
+  error: 445  # default: 100
+identifier_name:
+  excluded:
+    - x
+    - y
+    - z
+# 30 chars wider than Xcode's default page guide, still readable on a MacBook Pro 16" with 'minimap' shown.
+line_length: 
+  warning: 190  # default: 120
+  error: 410    # default: 200
+  ignores_comments: true
+  ignores_interpolated_strings: true
+  ignores_urls: true
+type_body_length:
+  warning: 250  # default: 250
+  error: 475    # default: 350
+custom_rules:
+  disable_print:
+    included: ".*\\.swift"
+    name: "Disable `print()`"
+    regex: "((\\bprint)|(Swift\\.print))\\s*\\("
+    message: "Consider using a dedicated log message or the Xcode debugger instead of using `print`. ex. logger.debug(...)"
+    severity: warning
