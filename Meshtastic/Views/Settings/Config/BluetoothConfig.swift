@@ -34,7 +34,7 @@ struct BluetoothConfig: View {
 					Label("enabled", systemImage: "antenna.radiowaves.left.and.right")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Picker("bluetooth.pairingmode", selection: $mode ) {
+				Picker("Pairing Mode", selection: $mode ) {
 					ForEach(BluetoothModes.allCases) { bm in
 						Text(bm.description)
 					}
@@ -42,8 +42,8 @@ struct BluetoothConfig: View {
 				.pickerStyle(DefaultPickerStyle())
 				if mode == 1 {
 					HStack {
-						Label("bluetooth.mode.fixedpin", systemImage: "wallet.pass")
-						TextField("bluetooth.mode.fixedpin", text: $fixedPin)
+						Label("Fixed Pin", systemImage: "wallet.pass")
+						TextField("Fixed Pin", text: $fixedPin)
 							.foregroundColor(.gray)
 							.onChange(of: fixedPin) {
 								// Don't let the first character be 0 because it will get stripped when saving a UInt32
@@ -64,7 +64,7 @@ struct BluetoothConfig: View {
 					}
 					.keyboardType(.decimalPad)
 					if shortPin {
-						Text("bluetooth.pin.validation")
+						Text("BLE Pin must be 6 digits long.")
 							.font(.callout)
 							.foregroundColor(.red)
 					}
@@ -90,7 +90,7 @@ struct BluetoothConfig: View {
 			}
 		}
 
-		.navigationTitle("bluetooth.config")
+		.navigationTitle("Bluetooth Config")
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(
@@ -103,7 +103,6 @@ struct BluetoothConfig: View {
 		.onFirstAppear {
 			// Need to request a BluetoothConfig from the remote node before allowing changes
 			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-				
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let connectedNode {
 					if node.num != connectedNode.num {

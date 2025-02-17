@@ -32,7 +32,7 @@ struct StoreForwardConfig: View {
 	var body: some View {
 		VStack {
 			Form {
-				ConfigHeader(title: "storeforward", config: \.storeForwardConfig, node: node, onAppear: setStoreAndForwardValues)
+				ConfigHeader(title: "Store & Forward", config: \.storeForwardConfig, node: node, onAppear: setStoreAndForwardValues)
 
 				Section(header: Text("options")) {
 
@@ -136,7 +136,7 @@ struct StoreForwardConfig: View {
 				}
 			}
 		}
-		.navigationTitle("storeforward.config")
+		.navigationTitle("Store & Forward Config")
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(

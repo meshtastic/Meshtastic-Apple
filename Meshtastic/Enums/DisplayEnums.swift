@@ -65,7 +65,7 @@ enum ScreenOnIntervals: Int, CaseIterable, Identifiable {
 		case .oneHour:
 			return "interval.one.hour".localized
 		case .max:
-			return "always.on".localized
+			return "Always On".localized
 		}
 	}
 }
@@ -113,7 +113,7 @@ enum OledTypes: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .auto:
-			return "automatic.detection".localized
+			return "Detect Automatically".localized
 		case .ssd1306:
 			return "SSD 1306"
 		case .sh1106:

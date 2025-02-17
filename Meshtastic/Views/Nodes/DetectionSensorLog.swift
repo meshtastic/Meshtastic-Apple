@@ -71,7 +71,7 @@ struct DetectionSensorLog: View {
 						Text(detection.messagePayload ?? "Detected")
 					}
 
-					TableColumn("timestamp") { detection in
+					TableColumn("Timestamp") { detection in
 						Text(detection.timestamp.formattedDate(format: dateFormatString))
 					}
 					.width(min: 180)
@@ -87,7 +87,7 @@ struct DetectionSensorLog: View {
 							Text("Detection")
 								.font(.caption)
 								.fontWeight(.bold)
-							Text("timestamp")
+							Text("Timestamp")
 								.font(.caption)
 								.fontWeight(.bold)
 						}

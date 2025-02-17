@@ -129,7 +129,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			}
 			self.isConnected = false
 			self.isConnecting = false
-			self.lastConnectionError = "🚨 " + String.localizedStringWithFormat("ble.connection.timeout %d %@".localized, timeoutTimerCount, name)
+			self.lastConnectionError = "🚨 " + String.localizedStringWithFormat("Connection failed after %d attempts to connect to %@. You may need to forget your device under Settings > Bluetooth.".localized, timeoutTimerCount, name)
 			MeshLogger.log(lastConnectionError)
 			self.timeoutTimerCount = 0
 			self.startScanning()
@@ -252,7 +252,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			let errorCode = (error as NSError).code
 			if errorCode == 6 { // CBError.Code.connectionTimeout The connection has timed out unexpectedly.
 				// Happens when device is manually reset / powered off
-				lastConnectionError = "🚨" + String.localizedStringWithFormat("ble.errorcode.6 %@".localized, error.localizedDescription)
+				lastConnectionError = "🚨" + String.localizedStringWithFormat("%@ The app will automatically reconnect to the preferred radio if it comes back in range.".localized, error.localizedDescription)
 				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized, privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(error.localizedDescription, privacy: .public)")
 			} else if errorCode == 7 { // CBError.Code.peripheralDisconnected The specified device has disconnected from us.
 				// Seems to be what is received when a tbeam sleeps, immediately recconnecting does not work.
@@ -273,7 +273,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized, privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(error.localizedDescription, privacy: .public)")
 			} else if errorCode == 14 { // Peer removed pairing information
 				// Forgetting and reconnecting seems to be necessary so we need to show the user an error telling them to do that
-				lastConnectionError = "🚨 " + String.localizedStringWithFormat("ble.errorcode.14 %@".localized, error.localizedDescription)
+				lastConnectionError = "🚨 " + String.localizedStringWithFormat("%@ This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio.".localized, error.localizedDescription)
 				Logger.services.error("🚨 [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized) Error Code: \(errorCode, privacy: .public) Error: \(self.lastConnectionError, privacy: .public)")
 			} else {
 				if UserDefaults.preferredPeripheralId == peripheral.identifier.uuidString {
@@ -586,7 +586,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// BLE PIN connection errors
 				// 5 CBATTErrorDomain Code=5 "Authentication is insufficient."
 				// 15 CBATTErrorDomain Code=15 "Encryption is insufficient."
-				lastConnectionError = "🚨" + String.localizedStringWithFormat("ble.errorcode.pin %@".localized, error.localizedDescription)
+				lastConnectionError = "🚨" + String.localizedStringWithFormat("%@ Please try connecting again and check the PIN carefully.".localized, error.localizedDescription)
 				Logger.services.error("🚫 [BLE] \(error.localizedDescription, privacy: .public) Please try connecting again and check the PIN carefully.")
 				self.disconnectPeripheral(reconnect: false)
 			}

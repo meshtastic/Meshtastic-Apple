@@ -104,7 +104,7 @@ struct PaxCounterLog: View {
 							let components = (now..<later).formatted(.components(style: .condensedAbbreviated))
 							Text(components)
 						}
-						TableColumn("timestamp") { pc in
+						TableColumn("Timestamp") { pc in
 							Text(pc.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 						}
 						.width(min: 180)
@@ -129,10 +129,10 @@ struct PaxCounterLog: View {
 								Text("Total")
 									.font(.caption)
 									.fontWeight(.bold)
-								Text("uptime")
+								Text("Uptime")
 									.font(.caption)
 									.fontWeight(.bold)
-								Text("timestamp")
+								Text("Timestamp")
 									.font(.caption)
 									.fontWeight(.bold)
 							}
@@ -162,7 +162,7 @@ struct PaxCounterLog: View {
 					Button(role: .destructive) {
 						isPresentingClearLogConfirm = true
 					} label: {
-						Label("clear.log", systemImage: "trash.fill")
+						Label("Clear", systemImage: "trash.fill")
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
@@ -170,7 +170,7 @@ struct PaxCounterLog: View {
 					.padding(.bottom)
 					.padding(.leading)
 					.confirmationDialog(
-						"are.you.sure",
+						"Are you sure?",
 						isPresented: $isPresentingClearLogConfirm,
 						titleVisibility: .visible
 					) {

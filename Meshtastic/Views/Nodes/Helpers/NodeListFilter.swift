@@ -174,14 +174,14 @@ struct NodeListFilter: View {
 						VStack {
 							List(DeviceRoles.allCases, selection: $deviceRoles) { dr in
 								Label {
-									Text("  \(dr.name)")
+									Text("\(dr.name)")
 								} icon: {
 									Image(systemName: dr.systemName)
 								}
 							}
 							.listStyle(.plain)
 							.environment(\.editMode, $editMode) /// bind it here!
-							.frame(minHeight: 490, maxHeight: .infinity)
+							.frame(minHeight: 510, maxHeight: .infinity)
 						}
 					}
 				}
@@ -200,7 +200,7 @@ struct NodeListFilter: View {
 			.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.fraction(0.75), .large])
+		.presentationDetents([.fraction(0.80), .large])
 		.presentationContentInteraction(.scrolls)
 		.presentationDragIndicator(.visible)
 		.presentationBackgroundInteraction(.enabled(upThrough: .large))

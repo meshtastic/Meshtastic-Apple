@@ -112,7 +112,7 @@ struct PowerConfig: View {
 		.toolbar {
 			ToolbarItemGroup(placement: .keyboard) {
 				Spacer()
-				Button("dismiss.keyboard") {
+				Button("Dismiss") {
 					isFocused = false
 				}
 				.font(.subheadline)

@@ -16,10 +16,10 @@ struct MessageContextMenuItems: View {
 			if message.pkiEncrypted {
 				Label("Encrypted", systemImage: "lock")
 			}
-			Text("channel") + Text(": \(message.channel)")
+			Text("Channel") + Text(": \(message.channel)")
 		}
 
-		Menu("tapback") {
+		Menu("Tapback") {
 			ForEach(Tapbacks.allCases) { tb in
 				Button {
 					let sentMessage = bleManager.sendMessage(
@@ -40,14 +40,14 @@ struct MessageContextMenuItems: View {
 		}
 
 		Button(action: onReply) {
-			Text("reply")
+			Text("Reply")
 			Image(systemName: "arrowshape.turn.up.left")
 		}
 
 		Button {
 			UIPasteboard.general.string = message.messagePayload
 		} label: {
-			Text("copy")
+			Text("Copy")
 			Image(systemName: "doc.on.doc")
 		}
 
@@ -74,7 +74,7 @@ struct MessageContextMenuItems: View {
 				}
 			} else if isCurrentUser && message.ackError == 0 {
 				// Empty Error
-				Text("waiting")
+				Text("Waiting")
 			} else if isCurrentUser && message.ackError > 0 {
 				let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
 				Text("\(ackErrorVal?.display ?? "Empty Ack Error")")

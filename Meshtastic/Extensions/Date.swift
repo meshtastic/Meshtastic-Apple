@@ -9,6 +9,14 @@ import Foundation
 
 extension Date {
 
+	var lastHeard: String {
+		if timeIntervalSince1970 > 0 {
+			formatted()
+		} else {
+			"unknown"
+		}
+	}
+
 	func formattedDate(format: String) -> String {
 		let dateformat = DateFormatter()
 		dateformat.dateFormat = format

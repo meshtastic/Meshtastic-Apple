@@ -7,7 +7,7 @@ class LocalNotificationManager {
     var notifications = [Notification]()
 	let thumbsUpAction = UNNotificationAction(identifier: "messageNotification.thumbsUpAction", title: "👍 \(Tapbacks.thumbsUp.description)", options: [])
 	let thumbsDownAction = UNNotificationAction(identifier: "messageNotification.thumbsDownAction", title: "👎  \(Tapbacks.thumbsDown.description)", options: [])
-	let replyInputAction =  UNTextInputNotificationAction(identifier: "messageNotification.replyInputAction", title: "reply".localized, options: [])
+	let replyInputAction =  UNTextInputNotificationAction(identifier: "messageNotification.replyInputAction", title: "Reply".localized, options: [])
 
     // Step 1 Request Permissions for notifications
     private func requestAuthorization() {

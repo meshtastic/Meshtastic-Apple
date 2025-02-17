@@ -54,7 +54,7 @@ struct SaveChannelQRCode: View {
 	Button {
 		dismiss()
 	} label: {
-		Label("cancel", systemImage: "xmark")
+		Label("Cancel", systemImage: "xmark")
 
 	}
 	.buttonStyle(.bordered)
@@ -66,7 +66,7 @@ struct SaveChannelQRCode: View {
 					Button {
 						dismiss()
 					} label: {
-						Label("cancel", systemImage: "xmark")
+						Label("Cancel", systemImage: "xmark")
 
 					}
 					.buttonStyle(.bordered)

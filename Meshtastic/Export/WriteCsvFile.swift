@@ -14,7 +14,7 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 	if metricsType == 0 {
 		// Create Device Metrics Header
-		csvString = "\("battery.level".localized), \("voltage".localized), \("channel.utilization".localized), \("airtime".localized), \("uptime".localized), \("timestamp".localized)"
+		csvString = "\("battery.level".localized), \("voltage".localized), \("channel.utilization".localized), \("airtime".localized), \("uptime".localized), \("Timestamp".localized)"
 		for telemetryEntity in telemetry where telemetryEntity.metricsType == 0 {
 				csvString += "\n"
 				csvString += String(telemetryEntity.batteryLevel)
@@ -31,7 +31,7 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 		}
 	} else if metricsType == 1 {
 		// Create Environment Telemetry Header
-		csvString = "Temperature, Relative Humidity, Barometric Pressure, Indoor Air Quality, Gas Resistance, \("timestamp".localized)"
+		csvString = "Temperature, Relative Humidity, Barometric Pressure, Indoor Air Quality, Gas Resistance, \("Timestamp".localized)"
 		for telemetryEntity in telemetry where telemetryEntity.metricsType == 1 {
 			csvString += "\n"
 			csvString += String(telemetryEntity.temperature.localeTemperature())
@@ -48,7 +48,7 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 		}
 	} else if metricsType == 2 {
 		// Create Power Metrics Header
-		csvString = "Channel 1 Voltage, Channel 1 Current, Channel 2 Voltage, Channel 2 Current, Channel 3 Voltage, Channel 3 Current, \("timestamp".localized)"
+		csvString = "Channel 1 Voltage, Channel 1 Current, Channel 2 Voltage, Channel 2 Current, Channel 3 Voltage, Channel 3 Current, \("Timestamp".localized)"
 		for telemetryEntity in telemetry where telemetryEntity.metricsType == 2 {
 			csvString += "\n"
 			csvString += String(telemetryEntity.powerCh1Voltage)
@@ -74,7 +74,7 @@ func detectionsToCsv(detections: [MessageEntity]) -> String {
 	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 	// Create Header
-	csvString = "Detection event, \("timestamp".localized)"
+	csvString = "Detection event, \("Timestamp".localized)"
 	for direction in detections {
 		csvString += "\n"
 		csvString += direction.messagePayload ?? "Detection"
@@ -89,7 +89,7 @@ func logToCsvFile(log: [OSLogEntryLog]) -> String {
 	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 	// Create PAX Header
-	csvString = "Process, Category, Level, Message, \("timestamp".localized)"
+	csvString = "Process, Category, Level, Message, \("Timestamp".localized)"
 	for logEntry in log {
 		csvString += "\n"
 		csvString += String(logEntry.process)
@@ -110,7 +110,7 @@ func paxToCsvFile(pax: [PaxCounterEntity]) -> String {
 	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 	// Create PAX Header
-	csvString = "BLE, WiFi, Total Pax, Uptime, \("timestamp".localized)"
+	csvString = "BLE, WiFi, Total Pax, Uptime, \("Timestamp".localized)"
 	for paxCounterEntity in pax {
 		csvString += "\n"
 		csvString += String(paxCounterEntity.ble)
@@ -131,7 +131,7 @@ func positionToCsvFile(positions: [PositionEntity]) -> String {
 	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 	// Create Position Header
-	csvString = "SeqNo, Latitude, Longitude, Altitude, Sats, Speed, Heading, SNR, \("timestamp".localized)"
+	csvString = "SeqNo, Latitude, Longitude, Altitude, Sats, Speed, Heading, SNR, \("Timestamp".localized)"
 	for position in positions {
 		csvString += "\n"
 		csvString += String(position.seqNo)

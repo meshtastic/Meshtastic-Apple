@@ -208,7 +208,7 @@ struct PowerMetricsLog: View {
 							Text("\(String(format: "%.2f", dm.powerCh3Current))mA")
 						}
 						.width(min: 75)
-						TableColumn("timestamp") { dm in
+						TableColumn("Timestamp") { dm in
 							Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 						}
 						.width(min: 180)
@@ -225,7 +225,7 @@ struct PowerMetricsLog: View {
 					Button(role: .destructive) {
 						isPresentingClearLogConfirm = true
 					} label: {
-						Label("clear.log", systemImage: "trash.fill")
+						Label("Clear Log", systemImage: "trash.fill")
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
@@ -233,11 +233,11 @@ struct PowerMetricsLog: View {
 					.padding(.bottom)
 					.padding(.leading)
 					.confirmationDialog(
-						"are.you.sure",
+						"Are you sure?",
 						isPresented: $isPresentingClearLogConfirm,
 						titleVisibility: .visible
 					) {
-						Button("power.metrics.delete", role: .destructive) {
+						Button("Delete Power metrics?", role: .destructive) {
 							if clearTelemetry(destNum: node.num, metricsType: 2, context: context) {
 								Logger.data.notice("Cleared Power Metrics for \(node.num)")
 							} else {
@@ -250,7 +250,7 @@ struct PowerMetricsLog: View {
 						exportString = telemetryToCsvFile(telemetry: powerMetrics, metricsType: 2)
 						isExporting = true
 					} label: {
-						Label("save", systemImage: "square.and.arrow.down")
+						Label("Save", systemImage: "square.and.arrow.down")
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
@@ -268,7 +268,7 @@ struct PowerMetricsLog: View {
 				ContentUnavailableView("No Power Metrics", systemImage: "slash.circle")
 			}
 		}
-		.navigationTitle("power.metrics.log")
+		.navigationTitle("Power Metrics Log}")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 			ZStack {

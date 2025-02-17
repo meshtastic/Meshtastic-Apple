@@ -63,14 +63,14 @@ struct Connect: View {
 											if node != nil {
 												Text(connectedPeripheral.longName).font(.title2)
 											}
-											Text("ble.name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name ?? "unknown".localized)")
+											Text("BLE Name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name ?? "unknown".localized)")
 												.font(.callout).foregroundColor(Color.gray)
 											if node != nil {
 												Text("firmware.version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "unknown".localized)")
 													.font(.callout).foregroundColor(Color.gray)
 											}
 											if bleManager.isSubscribed {
-												Text("subscribed").font(.callout)
+												Text("Subscribed").font(.callout)
 													.foregroundColor(.green)
 											} else {
 												HStack {
@@ -78,7 +78,7 @@ struct Connect: View {
 														.symbolRenderingMode(.multicolor)
 														.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 														.foregroundColor(.orange)
-													Text("communicating").font(.callout)
+													Text("Communicating").font(.callout)
 														.foregroundColor(.orange)
 												}
 											}
@@ -95,7 +95,7 @@ struct Connect: View {
 											bleManager.disconnectPeripheral(reconnect: false)
 										}
 									} label: {
-										Label("disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+										Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 									}
 								}
 								.contextMenu {
@@ -172,7 +172,7 @@ struct Connect: View {
 										Button(role: .destructive) {
 											bleManager.cancelPeripheralConnection()
 										} label: {
-											Label("disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 										}
 									}
 
@@ -197,7 +197,7 @@ struct Connect: View {
 						.textCase(nil)
 
 						if !self.bleManager.isConnected {
-							Section(header: Text("available.radios").font(.title)) {
+							Section(header: Text("Available Radios").font(.title)) {
 								ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.name < $1.name })) { peripheral in
 									HStack {
 										if UserDefaults.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
@@ -243,7 +243,7 @@ struct Connect: View {
 						}
 
 					} else {
-						Text("bluetooth.off")
+						Text("Bluetooth is off")
 							.foregroundColor(.red)
 							.font(.title)
 					}
@@ -258,7 +258,7 @@ struct Connect: View {
 								bleManager.disconnectPeripheral(reconnect: false)
 							}
 						}) {
-							Label("disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+							Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 						}
 						.buttonStyle(.bordered)
 						.buttonBorderShape(.capsule)
@@ -270,7 +270,7 @@ struct Connect: View {
 							bleManager.cancelPeripheralConnection()
 
 						}) {
-							Label("disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+							Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 						}
 						.buttonStyle(.bordered)
 						.buttonBorderShape(.capsule)
@@ -282,7 +282,7 @@ struct Connect: View {
 				}
 				.padding(.bottom, 10)
 			}
-			.navigationTitle("bluetooth")
+			.navigationTitle("Bluetooth")
 			.navigationBarItems(
 				leading: MeshtasticLogo(),
 				trailing: ZStack {
