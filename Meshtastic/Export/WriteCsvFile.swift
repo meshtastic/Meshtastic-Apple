@@ -14,35 +14,35 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 	if metricsType == 0 {
 		// Create Device Metrics Header
-		csvString = "\("battery.level".localized), \("voltage".localized), \("channel.utilization".localized), \("airtime".localized), \("uptime".localized), \("Timestamp".localized)"
+		csvString = "\("battery.level".localized), \("Voltage".localized), \("channel.utilization".localized), \("airtime".localized), \("uptime".localized), \("Timestamp".localized)"
 		for dm in telemetry where dm.metricsType == 0 {
-				csvString += "\n"
-				csvString += String(dm.batteryLevel)
-				csvString += ", "
-				csvString += String(dm.voltage)
-				csvString += ", "
-				csvString += String(dm.channelUtilization)
-				csvString += ", "
-				csvString += String(dm.airUtilTx)
-				csvString += ", "
-				csvString += String(dm.uptimeSeconds)
-				csvString += ", "
-				csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
+			csvString += "\n"
+			csvString += dm.batteryLevel?.formatted(.number.grouping(.never)) ?? ""
+			csvString += ", "
+			csvString += dm.voltage?.formatted(.number.grouping(.never)) ?? ""
+			csvString += ", "
+			csvString += dm.channelUtilization?.formatted(.number.grouping(.never)) ?? ""
+			csvString += ", "
+			csvString += dm.airUtilTx?.formatted(.number.grouping(.never)) ?? ""
+			csvString += ", "
+			csvString += dm.uptimeSeconds?.formatted(.number.grouping(.never)) ?? ""
+			csvString += ", "
+			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
 		}
 	} else if metricsType == 1 {
 		// Create Environment Telemetry Header
 		csvString = "Temperature, Relative Humidity, Barometric Pressure, Indoor Air Quality, Gas Resistance, \("Timestamp".localized)"
 		for dm in telemetry where dm.metricsType == 1 {
 			csvString += "\n"
-			csvString += String(dm.temperature.localeTemperature())
+			csvString += dm.temperature?.formatted(.number.grouping(.never)) ?? ""
 			csvString += ", "
-			csvString += String(dm.relativeHumidity)
+			csvString += dm.relativeHumidity?.formatted(.number.grouping(.never)) ?? ""
 			csvString += ", "
-			csvString += String(dm.barometricPressure)
+			csvString += dm.barometricPressure?.formatted(.number.grouping(.never)) ?? ""
 			csvString += ", "
-			csvString += String(dm.iaq)
+			csvString += dm.iaq?.formatted(.number.grouping(.never)) ?? ""
 			csvString += ", "
-			csvString += String(dm.gasResistance)
+			csvString += dm.gasResistance?.formatted(.number.grouping(.never)) ?? ""
 			csvString += ", "
 			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
 		}
@@ -51,17 +51,17 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 		csvString = "Channel 1 Voltage, Channel 1 Current, Channel 2 Voltage, Channel 2 Current, Channel 3 Voltage, Channel 3 Current, \("Timestamp".localized)"
 		for dm in telemetry where dm.metricsType == 2 {
 			csvString += "\n"
-			csvString += String(dm.powerCh1Voltage)
+			csvString += dm.powerCh1Voltage?.formatted(.number.grouping(.never)) ?? ""
 			csvString += ", "
-			csvString += String(dm.powerCh1Current)
+			csvString += dm.powerCh1Current?.formatted(.number.grouping(.never)) ?? ""
 			csvString += ", "
-			csvString += String(dm.powerCh2Voltage)
+			csvString += dm.powerCh2Voltage?.formatted(.number.grouping(.never)) ?? ""
 			csvString += ", "
-			csvString += String(dm.powerCh2Current)
+			csvString += dm.powerCh2Current?.formatted(.number.grouping(.never)) ?? ""
 			csvString += ", "
-			csvString += String(dm.powerCh3Voltage)
+			csvString += dm.powerCh3Voltage?.formatted(.number.grouping(.never)) ?? ""
 			csvString += ", "
-			csvString += String(dm.powerCh3Current)
+			csvString += dm.powerCh3Current?.formatted(.number.grouping(.never)) ?? ""
 			csvString += ", "
 			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
 		}
