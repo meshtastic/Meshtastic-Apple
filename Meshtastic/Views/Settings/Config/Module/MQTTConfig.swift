@@ -196,7 +196,6 @@ struct MQTTConfig: View {
 						}
 						.keyboardType(.default)
 						.scrollDismissesKeyboard(.interactively)
-						
 						HStack {
 							Label("password", systemImage: "wallet.pass")
 							TextField("password", text: $password)
@@ -206,7 +205,7 @@ struct MQTTConfig: View {
 								.onChange(of: password) {
 									var totalBytes = password.utf8.count
 									// Only mess with the value if it is too big
-									while totalBytes > 62 {
+									while totalBytes > 30 {
 										password = String(password.dropLast())
 										totalBytes = password.utf8.count
 									}
