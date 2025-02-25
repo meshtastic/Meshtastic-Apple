@@ -15,6 +15,13 @@ import OSLog
 import ActivityKit
 #endif
 
+// Simple extension to consicely pass values through a has_XXX boolean check
+fileprivate extension Bool {
+	func then<T>(_ value: T) -> T? {
+		self ? value : nil
+	}
+}
+
 func generateMessageMarkdown (message: String) -> String {
 	if !message.isEmoji() {
 		let types: NSTextCheckingResult.CheckingType = [.address, .link, .phoneNumber]
@@ -698,28 +705,28 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 				/// Currently only Device Metrics and Environment Telemetry are supported in the app
 				if telemetryMessage.variant == Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) {
 					// Device Metrics
-					telemetry.airUtilTx = telemetryMessage.deviceMetrics.airUtilTx
-					telemetry.channelUtilization = telemetryMessage.deviceMetrics.channelUtilization
-					telemetry.batteryLevel = Int32(telemetryMessage.deviceMetrics.batteryLevel)
-					telemetry.voltage = telemetryMessage.deviceMetrics.voltage
-					telemetry.uptimeSeconds = Int32(telemetryMessage.deviceMetrics.uptimeSeconds)
+					telemetry.airUtilTx = telemetryMessage.deviceMetrics.hasAirUtilTx.then(telemetryMessage.deviceMetrics.airUtilTx)
+					telemetry.channelUtilization = telemetryMessage.deviceMetrics.hasChannelUtilization.then(telemetryMessage.deviceMetrics.channelUtilization)
+					telemetry.batteryLevel = telemetryMessage.deviceMetrics.hasBatteryLevel.then(Int32(telemetryMessage.deviceMetrics.batteryLevel))
+					telemetry.voltage = telemetryMessage.deviceMetrics.hasVoltage.then(telemetryMessage.deviceMetrics.voltage)
+					telemetry.uptimeSeconds = telemetryMessage.deviceMetrics.hasUptimeSeconds.then(Int32(telemetryMessage.deviceMetrics.uptimeSeconds))
 					telemetry.metricsType = 0
 					Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.deviceMetrics.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.deviceMetrics.airUtilTx, privacy: .public) for Node: \(packet.from.toHex(), privacy: .public)")
 				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) {
 					// Environment Metrics
-					telemetry.barometricPressure = telemetryMessage.environmentMetrics.barometricPressure
-					telemetry.current = telemetryMessage.environmentMetrics.current
-					telemetry.iaq = Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.iaq)
-					telemetry.gasResistance = telemetryMessage.environmentMetrics.gasResistance
-					telemetry.relativeHumidity = telemetryMessage.environmentMetrics.relativeHumidity
-					telemetry.temperature = telemetryMessage.environmentMetrics.temperature
-					telemetry.current = telemetryMessage.environmentMetrics.current
-					telemetry.voltage = telemetryMessage.environmentMetrics.voltage
-					telemetry.weight = telemetryMessage.environmentMetrics.weight
-					telemetry.windSpeed = telemetryMessage.environmentMetrics.windSpeed
-					telemetry.windGust = telemetryMessage.environmentMetrics.windGust
-					telemetry.windLull = telemetryMessage.environmentMetrics.windLull
-					telemetry.windDirection = Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.windDirection)
+					telemetry.barometricPressure = telemetryMessage.environmentMetrics.hasBarometricPressure.then(telemetryMessage.environmentMetrics.barometricPressure)
+					telemetry.current = telemetryMessage.environmentMetrics.hasCurrent.then(telemetryMessage.environmentMetrics.current)
+					telemetry.iaq = telemetryMessage.environmentMetrics.hasIaq.then(Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.iaq))
+					telemetry.gasResistance = telemetryMessage.environmentMetrics.hasGasResistance.then(telemetryMessage.environmentMetrics.gasResistance)
+					telemetry.relativeHumidity = telemetryMessage.environmentMetrics.hasRelativeHumidity.then(telemetryMessage.environmentMetrics.relativeHumidity)
+					telemetry.temperature = telemetryMessage.environmentMetrics.hasTemperature.then(telemetryMessage.environmentMetrics.temperature)
+					telemetry.current = telemetryMessage.environmentMetrics.hasCurrent.then(telemetryMessage.environmentMetrics.current)
+					telemetry.voltage = telemetryMessage.environmentMetrics.hasVoltage.then(telemetryMessage.environmentMetrics.voltage)
+					telemetry.weight = telemetryMessage.environmentMetrics.hasWeight.then(telemetryMessage.environmentMetrics.weight)
+					telemetry.windSpeed = telemetryMessage.environmentMetrics.hasWindSpeed.then(telemetryMessage.environmentMetrics.windSpeed)
+					telemetry.windGust = telemetryMessage.environmentMetrics.hasWindGust.then(telemetryMessage.environmentMetrics.windGust)
+					telemetry.windLull = telemetryMessage.environmentMetrics.hasWindLull.then(telemetryMessage.environmentMetrics.windLull)
+					telemetry.windDirection = telemetryMessage.environmentMetrics.hasWindDirection.then(Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.windDirection))
 					telemetry.metricsType = 1
 				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) {
 					// Local Stats for Live activity
@@ -739,35 +746,14 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
 					Logger.data.info("📈 [Power Metrics] Received for Node: \(packet.from.toHex(), privacy: .public)")
 
-					if telemetryMessage.powerMetrics.hasCh1Voltage {
-						telemetry.powerCh1Voltage = telemetryMessage.powerMetrics.ch1Voltage
-						telemetry.metricsType = 2
-					}
+					telemetry.powerCh1Voltage = telemetryMessage.powerMetrics.hasCh1Voltage.then(telemetryMessage.powerMetrics.ch1Voltage)
+					telemetry.powerCh1Current = telemetryMessage.powerMetrics.hasCh1Current.then(telemetryMessage.powerMetrics.ch1Current)
+					telemetry.powerCh2Voltage = telemetryMessage.powerMetrics.hasCh2Voltage.then(telemetryMessage.powerMetrics.ch2Voltage)
+					telemetry.powerCh2Current = telemetryMessage.powerMetrics.hasCh1Current.then(telemetryMessage.powerMetrics.ch2Current)
+					telemetry.powerCh3Voltage = telemetryMessage.powerMetrics.hasCh3Voltage.then(telemetryMessage.powerMetrics.ch3Voltage)
+					telemetry.powerCh3Current = telemetryMessage.powerMetrics.hasCh3Current.then(telemetryMessage.powerMetrics.ch3Current)
+					telemetry.metricsType = 2
 
-					if telemetryMessage.powerMetrics.hasCh1Current {
-						telemetry.powerCh1Current = telemetryMessage.powerMetrics.ch1Current
-						telemetry.metricsType = 2
-					}
-
-					if telemetryMessage.powerMetrics.hasCh2Voltage {
-						telemetry.powerCh2Voltage = telemetryMessage.powerMetrics.ch2Voltage
-						telemetry.metricsType = 2
-					}
-
-					if telemetryMessage.powerMetrics.hasCh1Current {
-						telemetry.powerCh2Current = telemetryMessage.powerMetrics.ch2Current
-						telemetry.metricsType = 2
-					}
-
-					if telemetryMessage.powerMetrics.hasCh3Voltage {
-						telemetry.powerCh3Voltage = telemetryMessage.powerMetrics.ch3Voltage
-						telemetry.metricsType = 2
-					}
-
-					if telemetryMessage.powerMetrics.hasCh3Current {
-						telemetry.powerCh3Current = telemetryMessage.powerMetrics.ch3Current
-						telemetry.metricsType = 2
-					}
 				}
 				telemetry.snr = packet.rxSnr
 				telemetry.rssi = packet.rxRssi
@@ -791,14 +777,15 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 				// ------------------------
 				// Low Battery notification
 				if connectedNode == Int64(packet.from) {
-					if UserDefaults.lowBatteryNotifications && telemetry.batteryLevel > 0 && telemetry.batteryLevel < 4 {
+					let batteryLevel = telemetry.batteryLevel ?? 0
+					if UserDefaults.lowBatteryNotifications && batteryLevel > 0 && batteryLevel < 4 {
 						let manager = LocalNotificationManager()
 						manager.notifications = [
 							Notification(
 								id: ("notification.id.\(UUID().uuidString)"),
 								title: "Critically Low Battery!",
 								subtitle: "AKA \(telemetry.nodeTelemetry?.user?.shortName ?? "UNK")",
-								content: "Time to charge your radio, there is \(telemetry.batteryLevel)% battery remaining.",
+								content: "Time to charge your radio, there is \(telemetry.batteryLevel?.formatted(.number) ?? Constants.nilValueIndicator)% battery remaining.",
 								target: "nodes",
 								path: "meshtastic:///nodes?nodenum=\(telemetry.nodeTelemetry?.num ?? 0)"
 							)
@@ -813,7 +800,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 
 				let fifteenMinutesLater = Calendar.current.date(byAdding: .minute, value: (Int(15) ), to: Date())!
 				let date = Date.now...fifteenMinutesLater
-				let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(uptimeSeconds: UInt32(telemetry.uptimeSeconds),
+				let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(uptimeSeconds: telemetry.uptimeSeconds.map { UInt32($0) },
 																				  channelUtilization: telemetry.channelUtilization,
 																				  airtime: telemetry.airUtilTx,
 																				  sentPackets: UInt32(telemetry.numPacketsTx),
