@@ -14,8 +14,9 @@ import SwiftUI
 // the chart.  MetricsChartSeries objects are collected in a MetricsSeriesList
 class MetricsChartSeries: ObservableObject {
 
-	// CoreData Attribute Name on TelemetryEntity
-	let attribute: String
+	// Uniquely identify this column for presistance and iteration
+	// Recommend using CoreData Attribute Name on TelemetryEntity
+	let id: String
 
 	// Heading for areas that have the room
 	let name: String
@@ -39,6 +40,7 @@ class MetricsChartSeries: ObservableObject {
 
 	// Main initializer
 	init<Value, ChartBody: ChartContent, ForegroundStyle: ShapeStyle>(
+		id: String,
 		keyPath: KeyPath<TelemetryEntity, Value>,
 		name: String,
 		abbreviatedName: String,
@@ -46,10 +48,10 @@ class MetricsChartSeries: ObservableObject {
 		visible: Bool = true,
 		foregroundStyle: @escaping ((ClosedRange<Float>?) -> ForegroundStyle?) = { _ in nil },
 		@ChartContentBuilder chartBody: @escaping (MetricsChartSeries, ClosedRange<Float>?, Date, Value) -> ChartBody?
-	) where Value: Plottable & Comparable {
+	) {
 
 		// This works because TelemetryEntity is an NSManagedObject and derrived from NSObject
-		self.attribute = NSExpression(forKeyPath: keyPath).keyPath
+		self.id = id
 		self.name = name
 		self.abbreviatedName = abbreviatedName
 		self.visible = visible
@@ -63,9 +65,15 @@ class MetricsChartSeries: ObservableObject {
 		}
 		self.valueClosure = { te in
 			if let conversion {
-				return conversion(te[keyPath: keyPath]).floatValue
+				if let value = conversion(te[keyPath: keyPath]) as? (any Plottable) {
+					return value.floatValue ?? 0.0
+				}
+			} else {
+				if let value = te[keyPath: keyPath] as? (any Plottable) {
+					return value.floatValue
+				}
 			}
-			return te[keyPath: keyPath].floatValue
+			return nil
 		}
 	}
 
@@ -82,14 +90,13 @@ class MetricsChartSeries: ObservableObject {
 }
 
 extension MetricsChartSeries: Identifiable, Hashable {
-	var id: String { self.attribute }
 
 	static func == (lhs: MetricsChartSeries, rhs: MetricsChartSeries) -> Bool {
-		lhs.attribute == rhs.attribute
+		lhs.id == rhs.id
 	}
 
 	func hash(into hasher: inout Hasher) {
-		hasher.combine(attribute)
+		hasher.combine(id)
 	}
 }
 

@@ -43,8 +43,8 @@ class MetricsColumnList: ObservableObject, RandomAccessCollection, RangeReplacea
 		return returnValues
 	}
 
-	func column(forAttribute attribute: String) -> MetricsTableColumn? {
-		return columns.first(where: { $0.attribute == attribute})
+	func column(withId id: String) -> MetricsTableColumn? {
+		return columns.first(where: { $0.id == id})
 	}
 
 	// Collection conformance
