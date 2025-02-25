@@ -112,16 +112,8 @@ struct ChannelMessageList: View {
 							.frame(maxWidth: .infinity)
 							.id(message.messageId)
 							.onAppear {
-								if !message.read {
-									message.read = true
-									do {
-										try context.save()
-										Logger.data.info("📖 [App] Read message \(message.messageId) ")
-										appState.unreadChannelMessages = myInfo.unreadMessages
-										context.refresh(myInfo, mergeChanges: true)
-									} catch {
-										Logger.data.error("Failed to read message \(message.messageId): \(error.localizedDescription)")
-									}
+								Task {
+									await markMessageAsRead(message)
 								}
 							}
 						}
@@ -178,4 +170,21 @@ struct ChannelMessageList: View {
 			}
 		}
 	}
+	
+	@MainActor
+		func markMessageAsRead(_ message: MessageEntity) async {
+			guard !message.read else { return }
+			
+			message.read = true
+			
+			do {
+				try await Task.sleep(nanoseconds: 300_000_000) // 300ms debounce
+				try context.save()
+				Logger.data.info("📖 [App] Read message \(message.messageId)")
+				appState.unreadChannelMessages = myInfo.unreadMessages
+				context.refresh(myInfo, mergeChanges: true)
+			} catch {
+				Logger.data.error("Failed to read message \(message.messageId): \(error.localizedDescription)")
+			}
+		}
 }
