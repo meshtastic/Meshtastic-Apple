@@ -225,8 +225,19 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 	// Called when a Peripheral fails to connect
 	func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-		cancelPeripheralConnection()
-		Logger.services.error("🚫 [BLE] Failed to Connect: \(peripheral.name ?? "Unknown", privacy: .public)")
+		if let e = error {
+			// https://developer.apple.com/documentation/corebluetooth/cberror/code
+			let errorCode = (e as NSError).code
+			cancelPeripheralConnection()
+			if errorCode == 14 { // Peer removed pairing information
+				// Forgetting and reconnecting seems to be necessary so we need to show the user an error telling them to do that
+				lastConnectionError = "🚨 " + String.localizedStringWithFormat("%@ This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re pairing the radio.".localized, e.localizedDescription)
+				Logger.services.error("🚨 [BLE] Failed to connect: \(peripheral.name ?? "Unknown".localized) Error Code: \(errorCode, privacy: .public) Error: \(self.lastConnectionError, privacy: .public)")
+			} else {
+				lastConnectionError = "🚨 \(e.localizedDescription)"
+				Logger.services.error("🚨 [BLE] Failed to connect: \(peripheral.name ?? "Unknown".localized, privacy: .public) Error Code: \(errorCode, privacy: .public) Error: \(e.localizedDescription, privacy: .public)")
+			}
+		}
 	}
 
 	// Disconnect Peripheral Event

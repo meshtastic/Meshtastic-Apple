@@ -9167,7 +9167,6 @@
       }
     },
     "Empty" : {
-      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
