@@ -36,6 +36,12 @@
         }
       }
     },
+    " %@%%" : {
+
+    },
+    "--" : {
+      "shouldTranslate" : false
+    },
     ": %@" : {
       "localizations" : {
         "sr" : {
@@ -67,6 +73,9 @@
           }
         }
       }
+    },
+    "?" : {
+
     },
     "(Re)define PIN_GPS_EN for your board." : {
       "localizations" : {
@@ -742,6 +751,9 @@
           }
         }
       }
+    },
+    "%f%%" : {
+
     },
     "%lf" : {
       "localizations" : {
@@ -1476,22 +1488,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "廣播時間"
-          }
-        }
-      }
-    },
-    "Airtime %@%%" : {
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Време емитовања %@%%"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "广播时间 %@%%"
           }
         }
       }
@@ -3620,7 +3616,7 @@
         }
       }
     },
-    "Channel Utilization %@%% " : {
+    "Channel Utilization %@%%" : {
       "localizations" : {
         "sr" : {
           "stringUnit" : {
@@ -12160,22 +12156,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Влажност"
-          }
-        }
-      }
-    },
-    "HUMIDITY" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "LUFTFEUCHTIGKEIT"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ВЛАЖНОСТ"
           }
         }
       }
@@ -23485,18 +23465,18 @@
         }
       }
     },
-    "PRESSURE" : {
+    "Pressure" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "DRUCK"
+            "value" : "Druck"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ПРИТИСАК"
+            "value" : "Притисак"
           }
         }
       }
@@ -32489,7 +32469,7 @@
         }
       }
     },
-    "voltage" : {
+    "Voltage" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -32829,18 +32809,12 @@
         }
       }
     },
-    "WIND" : {
+    "Wind" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WIND"
-          }
-        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ВЕТАР"
+            "value" : "Ветар"
           }
         }
       }

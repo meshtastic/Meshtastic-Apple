@@ -11,6 +11,10 @@
 		231B3F222D087A4C0069A07D /* MetricsColumnList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F1F2D087A4C0069A07D /* MetricsColumnList.swift */; };
 		231B3F252D087C3C0069A07D /* EnvironmentDefaultColumns.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */; };
 		231B3F272D0885240069A07D /* MetricsColumnDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F262D0885240069A07D /* MetricsColumnDetail.swift */; };
+		2344A2AB2D66974300170A77 /* ManagedAttributePropertyWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2344A2AA2D66973D00170A77 /* ManagedAttributePropertyWrapper.swift */; };
+		2344A2AF2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2344A2AD2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift */; };
+		2344A2B02D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2344A2AE2D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift */; };
+		2344A2B12D68DFF800170A77 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C49D8F2C471AEA0024FBD1 /* Constants.swift */; };
 		2373AE132D0A216C0086C749 /* MetricsChartSeries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE122D0A216C0086C749 /* MetricsChartSeries.swift */; };
 		2373AE152D0A24930086C749 /* MetricsSeriesList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE142D0A24930086C749 /* MetricsSeriesList.swift */; };
 		2373AE172D0A26620086C749 /* EnviornmentDefaultSeries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE162D0A26620086C749 /* EnviornmentDefaultSeries.swift */; };
@@ -275,6 +279,9 @@
 		231B3F202D087A4C0069A07D /* MetricTableColumn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricTableColumn.swift; sourceTree = "<group>"; };
 		231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentDefaultColumns.swift; sourceTree = "<group>"; };
 		231B3F262D0885240069A07D /* MetricsColumnDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsColumnDetail.swift; sourceTree = "<group>"; };
+		2344A2AA2D66973D00170A77 /* ManagedAttributePropertyWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedAttributePropertyWrapper.swift; sourceTree = "<group>"; };
+		2344A2AD2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TelemetryEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		2344A2AE2D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TelemetryEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		2373AE122D0A216C0086C749 /* MetricsChartSeries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsChartSeries.swift; sourceTree = "<group>"; };
 		2373AE142D0A24930086C749 /* MetricsSeriesList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsSeriesList.swift; sourceTree = "<group>"; };
 		2373AE162D0A26620086C749 /* EnviornmentDefaultSeries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnviornmentDefaultSeries.swift; sourceTree = "<group>"; };
@@ -603,6 +610,15 @@
 			path = "Metrics Columns";
 			sourceTree = "<group>";
 		};
+		2344A2AC2D66978000170A77 /* CoreData */ = {
+			isa = PBXGroup;
+			children = (
+				2344A2AD2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift */,
+				2344A2AE2D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift */,
+			);
+			path = CoreData;
+			sourceTree = "<group>";
+		};
 		251926882C3BAF2E00249DF5 /* Actions */ = {
 			isa = PBXGroup;
 			children = (
@@ -688,6 +704,7 @@
 		DD007BB12AA59B9A00F5FA12 /* CoreData */ = {
 			isa = PBXGroup;
 			children = (
+				2344A2AA2D66973D00170A77 /* ManagedAttributePropertyWrapper.swift */,
 				DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */,
 				6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */,
 				DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */,
@@ -989,6 +1006,7 @@
 		DDC2E18826CE24EE0042C5E4 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				2344A2AC2D66978000170A77 /* CoreData */,
 				231B3F1E2D0879BC0069A07D /* Metrics Visualization */,
 				DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */,
 			);
@@ -1542,12 +1560,15 @@
 				DD6F657B2C6EC2900053C113 /* LockLegend.swift in Sources */,
 				DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */,
 				DDAB580D2B0DAA9E00147258 /* Routes.swift in Sources */,
+				2344A2AB2D66974300170A77 /* ManagedAttributePropertyWrapper.swift in Sources */,
 				BCB613832C672A2600485544 /* MessageChannelIntent.swift in Sources */,
 				D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */,
 				DDA9515E2BC6F56F00CEA535 /* IndoorAirQuality.swift in Sources */,
 				DDDB444E29F8AB0E00EE2349 /* Int.swift in Sources */,
 				DD3CC6BC28E366DF00FA9159 /* Meshtastic.xcdatamodeld in Sources */,
 				DDC4C9FF2A8D982900CE201C /* DetectionSensorConfig.swift in Sources */,
+				2344A2AF2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift in Sources */,
+				2344A2B02D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift in Sources */,
 				D9C983A22B79D1A600BDBE6A /* RequestPositionButton.swift in Sources */,
 				DDDB26442AAC0206003AFCB7 /* NodeDetail.swift in Sources */,
 				DD77093F2AA1B146007A8BF0 /* UIColor.swift in Sources */,
@@ -1570,6 +1591,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2344A2B12D68DFF800170A77 /* Constants.swift in Sources */,
 				DDC94FC229CE063B0082EA6E /* BatteryLevel.swift in Sources */,
 				DDDE5A1129AFE69700490C6C /* MeshActivityAttributes.swift in Sources */,
 				DDDE59FB29AF163D00490C6C /* WidgetsLiveActivity.swift in Sources */,
@@ -1786,7 +1808,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.5.19;
+				MARKETING_VERSION = 2.5.20;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1820,7 +1842,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.5.19;
+				MARKETING_VERSION = 2.5.20;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1852,7 +1874,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.5.19;
+				MARKETING_VERSION = 2.5.20;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1885,7 +1907,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.5.19;
+				MARKETING_VERSION = 2.5.20;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

@@ -39,7 +39,8 @@ struct PowerMetricsLog: View {
 			$0.powerCh2Current,
 			$0.powerCh3Voltage,
 			$0.powerCh3Current
-		]}
+			].compactMap({$0}) // Remove nils
+		}
 
 		guard !allValues.isEmpty else {
 			return (min: -10, max: 10)
@@ -72,24 +73,27 @@ struct PowerMetricsLog: View {
 								let voltage = channelSelection == 0 ? point.powerCh1Voltage : channelSelection == 1 ? point.powerCh2Voltage : point.powerCh3Voltage
 								let current = channelSelection == 0 ? point.powerCh1Current : channelSelection == 1 ? point.powerCh2Current : point.powerCh3Current
 
-								LineMark(
-									x: .value("Time", point.time ?? Date()),
-									y: .value("Voltage", voltage)
-								)
-								.foregroundStyle(by: .value("Series", "Voltage"))
-								.interpolationMethod(.linear)
-								.accessibilityLabel("Voltage")
-								.accessibilityValue("X: \(point.time ?? Date()), Y: \(voltage)")
+								if let voltage {
+									LineMark(
+										x: .value("Time", point.time ?? Date()),
+										y: .value("Voltage", voltage)
+									)
+									.foregroundStyle(by: .value("Series", "Voltage"))
+									.interpolationMethod(.linear)
+									.accessibilityLabel("Voltage")
+									.accessibilityValue("X: \(point.time ?? Date()), Y: \(voltage)")
+								}
 
-								LineMark(
-									x: .value("Time", point.time ?? Date()),
-									y: .value("Current", current)
-								)
-								.foregroundStyle(by: .value("Series", "Current"))
-								.interpolationMethod(.linear)
-								.accessibilityLabel("Current")
-								.accessibilityValue("X: \(point.time ?? Date()), Y: \(current)")
-
+								if let current {
+									LineMark(
+										x: .value("Time", point.time ?? Date()),
+										y: .value("Current", current)
+									)
+									.foregroundStyle(by: .value("Series", "Current"))
+									.interpolationMethod(.linear)
+									.accessibilityLabel("Current")
+									.accessibilityValue("X: \(point.time ?? Date()), Y: \(current)")
+								}
 							}
 
 							if let chartSelection {
@@ -127,13 +131,13 @@ struct PowerMetricsLog: View {
 											Image(systemName: "powerplug.fill")
 												.font(.caption)
 												.symbolRenderingMode(.multicolor)
-											Text("\(String(format: "%.2f", m.powerCh1Voltage))V")
+											m.powerCh1Voltage.map { Text("\(String(format: "%.2f", $0))V") } ?? Text(Constants.nilValueIndicator)
 										}
 										HStack {
 											Image(systemName: "bolt.fill")
 												.font(.caption)
 												.symbolRenderingMode(.multicolor)
-											Text("\(String(format: "%.2f", m.powerCh1Current))mA")
+											m.powerCh1Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
 										}
 									}
 								}
@@ -145,13 +149,13 @@ struct PowerMetricsLog: View {
 											Image(systemName: "powerplug.fill")
 												.font(.caption)
 												.symbolRenderingMode(.multicolor)
-											Text("\(String(format: "%.2f", m.powerCh2Voltage))V")
+											m.powerCh2Voltage.map { Text("\(String(format: "%.2f", $0))V") } ?? Text(Constants.nilValueIndicator)
 										}
 										HStack {
 											Image(systemName: "bolt.fill")
 												.font(.caption)
 												.symbolRenderingMode(.multicolor)
-											Text("\(String(format: "%.2f", m.powerCh2Current))mA")
+											m.powerCh2Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
 										}
 									}
 								}
@@ -163,13 +167,13 @@ struct PowerMetricsLog: View {
 											Image(systemName: "powerplug.fill")
 												.font(.caption)
 												.symbolRenderingMode(.multicolor)
-											Text("\(String(format: "%.2f", m.powerCh3Voltage))V")
+											m.powerCh3Voltage.map { Text("\(String(format: "%.2f", $0))V") } ?? Text(Constants.nilValueIndicator)
 										}
 										HStack {
 											Image(systemName: "bolt.fill")
 												.font(.caption)
 												.symbolRenderingMode(.multicolor)
-											Text("\(String(format: "%.2f", m.powerCh3Current))mA")
+											m.powerCh3Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
 										}
 									}
 								}
@@ -185,27 +189,27 @@ struct PowerMetricsLog: View {
 				} else {
 					Table(powerMetrics, selection: $selection, sortOrder: $sortOrder) {
 						TableColumn("Ch1 Voltage") { dm in
-							Text("\(String(format: "%.2f", dm.powerCh1Voltage))V")
+							dm.powerCh1Voltage.map { Text("\(String(format: "%.2f", $0))V") } ?? Text(Constants.nilValueIndicator)
 						}
 						.width(min: 75)
 						TableColumn("Ch1 Current") { dm in
-							Text("\(String(format: "%.2f", dm.powerCh1Current))mA")
+							dm.powerCh1Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
 						}
 						.width(min: 75)
 						TableColumn("Ch2 Voltage") { dm in
-							Text("\(String(format: "%.2f", dm.powerCh2Voltage))V")
+							dm.powerCh2Voltage.map { Text("\(String(format: "%.2f", $0))V") } ?? Text(Constants.nilValueIndicator)
 						}
 						.width(min: 75)
 						TableColumn("Ch2 Current") { dm in
-							Text("\(String(format: "%.2f", dm.powerCh2Current))mA")
+							dm.powerCh2Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
 						}
 						.width(min: 75)
 						TableColumn("Ch3 Voltage") { dm in
-							Text("\(String(format: "%.2f", dm.powerCh3Voltage))V")
+							dm.powerCh3Voltage.map { Text("\(String(format: "%.2f", $0))V") } ?? Text(Constants.nilValueIndicator)
 						}
 						.width(min: 75)
 						TableColumn("Ch3 Current") { dm in
-							Text("\(String(format: "%.2f", dm.powerCh3Current))mA")
+							dm.powerCh3Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
 						}
 						.width(min: 75)
 						TableColumn("Timestamp") { dm in
