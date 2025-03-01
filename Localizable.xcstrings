@@ -2140,6 +2140,12 @@
     },
     "Available modem presets, default is Long Fast." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verfügbare Modemvoreinstellungen, Standard ist Hohe Reichweite - Schnell."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7134,6 +7140,12 @@
     },
     "Device Role" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gerät Rolle"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7729,6 +7741,12 @@
     "device.role.name.clientMute" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client (stumm)"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9051,6 +9069,12 @@
     },
     "Double Tap as Button" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doppeltes Antippen als Taste"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12008,6 +12032,12 @@
     },
     "Hourly Duty Cycle" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stündliche Sendebeschränkung"
+          }
+        }
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12436,6 +12466,12 @@
     },
     "Ignore MQTT" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MQTT ignorieren"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15414,6 +15450,12 @@
     },
     "Limit all periodic broadcast intervals especially telemetry and position. If you need to increase hops, do it on nodes at the edges, not the ones in the middle. MQTT is not advised when you are duty cycle restricted because the gateway node is then doing all the work." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Begrenzen Sie alle regelmäßigen Sendeintervalle, insbesondere Telemetrie und Position. Wenn Sie die Anzahl der Zwischenstationen (Hops) erhöhen müssen, tun Sie dies bei den Knoten an den Randbereichen, nicht bei denen in der Mitte. MQTT ist nicht empfohlen, wenn eine Sendebeschränkung vorliegt, da der Gateway-Knoten dann die Hauptarbeit übernimmt."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16045,6 +16087,12 @@
     "long.range.fast" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hohe Reichweite - Schnell"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16062,6 +16110,12 @@
     "long.range.moderate" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hohe Reichweite - Gemäßigt"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16079,6 +16133,12 @@
     "long.range.slow" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hohe Reichweite - Langsam"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16249,7 +16309,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Schlechte Signalstärke"
+            "value" : "Schwach"
           }
         },
         "en" : {
@@ -16272,7 +16332,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ordentliche Signalstärke"
+            "value" : "Ausreichend"
           }
         },
         "en" : {
@@ -16295,7 +16355,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gute Signalstärke"
+            "value" : "Stark"
           }
         },
         "en" : {
@@ -21297,6 +21357,12 @@
     },
     "Node Info Broadcast Interval" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knoten Info Broadcast Intervall"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21892,6 +21958,12 @@
     },
     "Ok to MQTT" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MQTT ist in Ordnung"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22926,6 +22998,12 @@
     },
     "Please connect to a radio to configure settings." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte verbinden Sie sich mit einem Endgerät, um die Einstellungen zu konfigurieren."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22943,6 +23021,12 @@
     "Please set a region" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte legen Sie eine Region fest"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23441,6 +23525,12 @@
     },
     "Presets" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voreinstellungen"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24104,6 +24194,12 @@
     },
     "Rebroadcast Mode" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rebroadcast Modus"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27179,6 +27275,12 @@
     },
     "Send a position on the primary channel when the user button is triple clicked." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senden der Position auf dem Hauptkanal, wenn die Benutzer-Taste dreimal betätigt wird."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27992,6 +28094,12 @@
     },
     "Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully. O hop broadcast messages will not get ACKs." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Legt die maximale Anzahl von Zwischenstationen (Hops) fest, Vorgabe ist 3. Eine Erhöhung der Hops vergrößert auch die Netzüberlastung und sollte mit Vorsicht verwendet werden. 0-Hop-Broadcast-Nachrichten erhalten keine ACKs."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30056,6 +30164,12 @@
     },
     "The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die letzten 4 Zeichen der MAC-Adresse des Geräts werden an den Kurznamen angehängt, um den BLE-Namen des Geräts festzulegen. Der Kurzname kann bis zu 4 Byte lang sein."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31380,6 +31494,12 @@
     },
     "Transmit Enabled" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senden Aktiviert"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31396,6 +31516,12 @@
     },
     "Treat double tap on supported accelerometers as a user button press." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doppeltes Antippen bei unterstützten Beschleunigungsmessern wird als Tastendruck behandelt."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31422,6 +31548,12 @@
     },
     "Triple Click Ad Hoc Ping" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dreifach-Klick für Ping"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32072,6 +32204,12 @@
     },
     "Use Preset" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voreinstellung verwenden"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32104,6 +32242,10 @@
     },
     "Used to create a shared key with a remote device." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wird verwendet, um einen gemeinsamen Schlüssel mit einem Remote-Gerät zu erstellen."
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32178,6 +32320,12 @@
     },
     "User Config" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benutzerkonfiguration"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32194,6 +32342,12 @@
     },
     "User Details" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benutzerdetails"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33067,6 +33221,12 @@
     },
     "Your region has a %lld%% hourly duty cycle, your radio will stop sending packets when it reaches the hourly limit." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihre Region hat eine stündliche Sendebeschränkung von %lld%%, Ihr Endgerät hört auf, Pakete zu senden, wenn es die stündliche Grenze erreicht."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
