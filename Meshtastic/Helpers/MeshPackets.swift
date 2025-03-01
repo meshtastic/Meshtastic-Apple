@@ -104,7 +104,7 @@ func moduleConfig (config: ModuleConfig, context: NSManagedObjectContext, nodeNu
 func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedObjectContext) -> MyInfoEntity? {
 
 	let logString = String.localizedStringWithFormat("mesh.log.myinfo %@".localized, String(myInfo.myNodeNum))
-	MeshLogger.log("ℹ️ \(logString)")
+	Logger.mesh.info("ℹ️ \(logString)")
 
 	let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
 	fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(myInfo.myNodeNum))
@@ -155,7 +155,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 	if channel.isInitialized && channel.hasSettings && channel.role != Channel.Role.disabled {
 
 		let logString = String.localizedStringWithFormat("mesh.log.channel.received %d %@".localized, channel.index, String(fromNum))
-		MeshLogger.log("🎛️ \(logString)")
+		Logger.mesh.info("🎛️ \(logString)")
 
 		let fetchedMyInfoRequest = MyInfoEntity.fetchRequest()
 		fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", fromNum)
@@ -210,7 +210,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPass
 
 	if metadata.isInitialized {
 		let logString = String.localizedStringWithFormat("mesh.log.device.metadata.received %@".localized, fromNum.toHex())
-		MeshLogger.log("🏷️ \(logString)")
+		Logger.mesh.info("🏷️ \(logString)")
 
 		let fetchedNodeRequest = NodeInfoEntity.fetchRequest()
 		fetchedNodeRequest.predicate = NSPredicate(format: "num == %lld", fromNum)
@@ -261,7 +261,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPass
 func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObjectContext) -> NodeInfoEntity? {
 
 	let logString = String.localizedStringWithFormat("mesh.log.nodeinfo.received %@".localized, String(nodeInfo.num))
-	MeshLogger.log("📟 \(logString)")
+	Logger.mesh.info("📟 \(logString)")
 
 	guard nodeInfo.num > 0 else { return nil }
 
@@ -472,7 +472,7 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				if !cmmc.messages.isEmpty {
 
 					let logString = String.localizedStringWithFormat("mesh.log.cannedmessages.messages.received %@".localized, packet.from.toHex())
-					MeshLogger.log("🥫 \(logString)")
+					Logger.mesh.info("🥫 \(logString)")
 
 					let fetchNodeRequest = NodeInfoEntity.fetchRequest()
 					fetchNodeRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
@@ -547,7 +547,7 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			let ringtone = adminMessage.getRingtoneResponse
 			upsertRtttlConfigPacket(ringtone: ringtone, nodeNum: Int64(packet.from), context: context)
 		} else {
-			MeshLogger.log("🕸️ MESH PACKET received Admin App UNHANDLED \((try? packet.decoded.jsonString()) ?? "JSON Decode Failure")")
+			Logger.mesh.error("🕸️ MESH PACKET received Admin App UNHANDLED \((try? packet.decoded.jsonString()) ?? "JSON Decode Failure")")
 		}
 		// Save an ack for the admin message log for each admin message response received as we stopped sending acks if there is also a response to reduce airtime.
 		adminResponseAck(packet: packet, context: context)
@@ -582,7 +582,7 @@ func adminResponseAck (packet: MeshPacket, context: NSManagedObjectContext) {
 func paxCounterPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.paxcounter %@".localized, String(packet.from))
-	MeshLogger.log("🧑‍🤝‍🧑 \(logString)")
+	Logger.mesh.info("🧑‍🤝‍🧑 \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
@@ -626,7 +626,7 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 
 		let routingErrorString = routingError?.display ?? "unknown".localized
 		let logString = String.localizedStringWithFormat("mesh.log.routing.message %@ %@".localized, String(packet.decoded.requestID), routingErrorString)
-		MeshLogger.log("🕸️ \(logString)")
+		Logger.mesh.info("🕸️ \(logString)")
 
 		let fetchMessageRequest = MessageEntity.fetchRequest()
 		fetchMessageRequest.predicate = NSPredicate(format: "messageId == %lld", Int64(packet.decoded.requestID))
@@ -687,7 +687,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 	if let telemetryMessage = try? Telemetry(serializedBytes: packet.decoded.payload) {
 
 		let logString = String.localizedStringWithFormat("mesh.log.telemetry.received %@".localized, String(packet.from))
-		MeshLogger.log("📈 \(logString)")
+		Logger.mesh.info("📈 \(logString)")
 
 		if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) && telemetryMessage.variant != Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
 			/// Other unhandled telemetry packets
@@ -872,7 +872,7 @@ func textMessageAppPacket(
 	}
 
 	if messageText?.count ?? 0 > 0 {
-		MeshLogger.log("💬 \("mesh.log.textmessage.received".localized)")
+		Logger.mesh.info("💬 \("mesh.log.textmessage.received".localized)")
 		let messageUsers = UserEntity.fetchRequest()
 		messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
 		do {
@@ -1033,7 +1033,7 @@ func textMessageAppPacket(
 func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.waypoint.received %@".localized, String(packet.from))
-	MeshLogger.log("📍 \(logString)")
+	Logger.mesh.info("📍 \(logString)")
 
 	let fetchWaypointRequest = WaypointEntity.fetchRequest()
 	fetchWaypointRequest.predicate = NSPredicate(format: "id == %lld", Int64(packet.id))

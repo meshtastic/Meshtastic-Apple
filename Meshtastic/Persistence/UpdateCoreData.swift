@@ -130,7 +130,7 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes
 func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.nodeinfo.received %@".localized, packet.from.toHex())
-	MeshLogger.log("📟 \(logString)")
+	Logger.mesh.info("📟 \(logString)")
 
 	guard packet.from > 0 else { return }
 
@@ -313,7 +313,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.position.received %@".localized, String(packet.from))
-	MeshLogger.log("📍 \(logString)")
+	Logger.mesh.info("📍 \(logString)")
 
 	let fetchNodePositionRequest = NodeInfoEntity.fetchRequest()
 	fetchNodePositionRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
@@ -407,7 +407,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 func upsertBluetoothConfigPacket(config: Config.BluetoothConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.bluetooth.config %@".localized, String(nodeNum))
-	MeshLogger.log("📶 \(logString)")
+	Logger.mesh.info("📶 \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -451,7 +451,7 @@ func upsertBluetoothConfigPacket(config: Config.BluetoothConfig, nodeNum: Int64,
 func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.device.config %@".localized, String(nodeNum))
-	MeshLogger.log("📟 \(logString)")
+	Logger.mesh.info("📟 \(logString)")
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
@@ -506,7 +506,7 @@ func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, sessi
 func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.display.config %@".localized, nodeNum.toHex())
-	MeshLogger.log("🖥️ \(logString)")
+	Logger.data.info("🖥️ \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -572,7 +572,7 @@ func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, ses
 func upsertLoRaConfigPacket(config: Config.LoRaConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.lora.config %@".localized, nodeNum.toHex())
-	MeshLogger.log("📻 \(logString)")
+	Logger.data.info("📻 \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", nodeNum)
@@ -643,7 +643,7 @@ func upsertLoRaConfigPacket(config: Config.LoRaConfig, nodeNum: Int64, sessionPa
 func upsertNetworkConfigPacket(config: Config.NetworkConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.network.config %@".localized, String(nodeNum))
-	MeshLogger.log("🌐 \(logString)")
+	Logger.data.info("🌐 \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -690,7 +690,7 @@ func upsertNetworkConfigPacket(config: Config.NetworkConfig, nodeNum: Int64, ses
 func upsertPositionConfigPacket(config: Config.PositionConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.position.config %@".localized, String(nodeNum))
-	MeshLogger.log("🗺️ \(logString)")
+	Logger.data.info("🗺️ \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -753,7 +753,7 @@ func upsertPositionConfigPacket(config: Config.PositionConfig, nodeNum: Int64, s
 
 func upsertPowerConfigPacket(config: Config.PowerConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 	let logString = String.localizedStringWithFormat("mesh.log.power.config %@".localized, String(nodeNum))
-	MeshLogger.log("🗺️ \(logString)")
+	Logger.data.info("🗺️ \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -805,7 +805,7 @@ func upsertPowerConfigPacket(config: Config.PowerConfig, nodeNum: Int64, session
 func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.security.config %@".localized, String(nodeNum))
-	MeshLogger.log("🛡️ \(logString)")
+	Logger.data.info("🛡️ \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -866,7 +866,7 @@ func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, s
 func upsertAmbientLightingModuleConfigPacket(config: ModuleConfig.AmbientLightingConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.ambientlighting.config %@".localized, String(nodeNum))
-	MeshLogger.log("🏮 \(logString)")
+	Logger.data.info("🏮 \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -919,7 +919,7 @@ func upsertAmbientLightingModuleConfigPacket(config: ModuleConfig.AmbientLightin
 func upsertCannedMessagesModuleConfigPacket(config: ModuleConfig.CannedMessageConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.cannedmessage.config %@".localized, String(nodeNum))
-	MeshLogger.log("🥫 \(logString)")
+	Logger.data.info("🥫 \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -978,7 +978,7 @@ func upsertCannedMessagesModuleConfigPacket(config: ModuleConfig.CannedMessageCo
 func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSensorConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.detectionsensor.config %@".localized, String(nodeNum))
-	MeshLogger.log("🕵️ \(logString)")
+	Logger.data.info("🕵️ \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -1035,7 +1035,7 @@ func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSenso
 func upsertExternalNotificationModuleConfigPacket(config: ModuleConfig.ExternalNotificationConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.externalnotification.config %@".localized, String(nodeNum))
-	MeshLogger.log("📣 \(logString)")
+	Logger.data.info("📣 \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -1104,7 +1104,7 @@ func upsertExternalNotificationModuleConfigPacket(config: ModuleConfig.ExternalN
 func upsertPaxCounterModuleConfigPacket(config: ModuleConfig.PaxcounterConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.paxcounter.config %@".localized, String(nodeNum))
-	MeshLogger.log("🧑‍🤝‍🧑 \(logString)")
+	Logger.data.info("🧑‍🤝‍🧑 \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -1146,7 +1146,7 @@ func upsertPaxCounterModuleConfigPacket(config: ModuleConfig.PaxcounterConfig, n
 func upsertRtttlConfigPacket(ringtone: String, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.ringtone.config %@".localized, String(nodeNum))
-	MeshLogger.log("⛰️ \(logString)")
+	Logger.data.info("⛰️ \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -1186,7 +1186,7 @@ func upsertRtttlConfigPacket(ringtone: String, nodeNum: Int64, sessionPasskey: D
 func upsertMqttModuleConfigPacket(config: ModuleConfig.MQTTConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.mqtt.config %@".localized, String(nodeNum))
-	MeshLogger.log("🌉 \(logString)")
+	Logger.data.info("🌉 \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -1248,7 +1248,7 @@ func upsertMqttModuleConfigPacket(config: ModuleConfig.MQTTConfig, nodeNum: Int6
 func upsertRangeTestModuleConfigPacket(config: ModuleConfig.RangeTestConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.rangetest.config %@".localized, String(nodeNum))
-	MeshLogger.log("⛰️ \(logString)")
+	Logger.data.info("⛰️ \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -1292,7 +1292,7 @@ func upsertRangeTestModuleConfigPacket(config: ModuleConfig.RangeTestConfig, nod
 func upsertSerialModuleConfigPacket(config: ModuleConfig.SerialConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.serial.config %@".localized, String(nodeNum))
-	MeshLogger.log("🤖 \(logString)")
+	Logger.data.info("🤖 \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -1347,7 +1347,7 @@ func upsertSerialModuleConfigPacket(config: ModuleConfig.SerialConfig, nodeNum: 
 func upsertStoreForwardModuleConfigPacket(config: ModuleConfig.StoreForwardConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.storeforward.config %@".localized, String(nodeNum))
-	MeshLogger.log("📬 \(logString)")
+	Logger.data.info("📬 \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -1395,7 +1395,7 @@ func upsertStoreForwardModuleConfigPacket(config: ModuleConfig.StoreForwardConfi
 func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.telemetry.config %@".localized, String(nodeNum))
-	MeshLogger.log("📈 \(logString)")
+	Logger.data.info("📈 \(logString)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
