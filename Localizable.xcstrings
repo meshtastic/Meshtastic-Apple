@@ -1455,23 +1455,6 @@
         }
       }
     },
-    "Airtime %@%%" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Време емитовања %@%%"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "广播时间 %@%%"
-          }
-        }
-      }
-    },
     "Alert" : {
       "localizations" : {
         "sr" : {
@@ -3528,23 +3511,6 @@
     },
     "Channel Utilization %@%%" : {
 
-    },
-    "Channel Utilization %@%% " : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Искоришћеност канала %@%%"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "频道利用率 %@%% "
-          }
-        }
-      }
     },
     "channel.role.disabled" : {
       "extractionState" : "migrated",
@@ -23313,23 +23279,6 @@
     "Pressure" : {
 
     },
-    "PRESSURE" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DRUCK"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ПРИТИСАК"
-          }
-        }
-      }
-    },
     "Primary" : {
       "localizations" : {
         "sr" : {
@@ -32279,23 +32228,6 @@
     "Volts %@" : {
 
     },
-    "Volts %@ " : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Volt %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Волти %@"
-          }
-        }
-      }
-    },
     "Waiting" : {
       "localizations" : {
         "de" : {
@@ -32541,23 +32473,6 @@
     },
     "Wind" : {
 
-    },
-    "WIND" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WIND"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ВЕТАР"
-          }
-        }
-      }
     },
     "Wind Direction" : {
       "localizations" : {
