@@ -261,13 +261,6 @@ struct Settings: View {
 
 	var developersSection: some View {
 		Section(header: Text("Developers")) {
-			NavigationLink(value: SettingsNavigationState.meshLog) {
-				Label {
-					Text("mesh.log")
-				} icon: {
-					Image(systemName: "list.bullet.rectangle")
-				}
-			}
 			NavigationLink(value: SettingsNavigationState.appFiles) {
 				Label {
 					Text("App Files")
@@ -472,8 +465,6 @@ struct Settings: View {
 					StoreForwardConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .telemetry:
 					TelemetryConfig(node: nodes.first(where: { $0.num == selectedNode }))
-				case .meshLog:
-					MeshLog()
 				case .debugLogs:
 					AppLog()
 				case .appFiles:

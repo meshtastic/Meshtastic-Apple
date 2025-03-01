@@ -119,7 +119,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			self.isConnected = false
 			self.isConnecting = false
 			self.lastConnectionError = "🚨 " + String.localizedStringWithFormat("Connection failed after %d attempts to connect to %@. You may need to forget your device under Settings > Bluetooth.".localized, timeoutTimerCount, name)
-			MeshLogger.log(lastConnectionError)
+			Logger.services.error("\(self.lastConnectionError)")
 			self.timeoutTimerCount = 0
 			self.startScanning()
 		} else {
@@ -485,7 +485,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 
 				let logString = String.localizedStringWithFormat("mesh.log.traceroute.sent %@".localized, destNum.toHex())
-				MeshLogger.log("🪧 \(logString)")
+				Logger.mesh.info("🪧 \(logString)")
 
 			} catch {
 
@@ -498,14 +498,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		guard connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected else { return }
 
 		if FROMRADIO_characteristic == nil {
-			MeshLogger.log("🚨 \("firmware.version.unsupported".localized)")
+			Logger.mesh.error("🚨 \("firmware.version.unsupported".localized)")
 			invalidVersion = true
 			return
 		} else {
 
 			let nodeName = connectedPeripheral?.peripheral.name ?? "unknown".localized
 			let logString = String.localizedStringWithFormat("mesh.log.wantconfig %@".localized, nodeName)
-			MeshLogger.log("🛎️ \(logString)")
+			Logger.mesh.info("🛎️ \(logString)")
 			// BLE Characteristics discovered, issue wantConfig
 			var toRadio: ToRadio = ToRadio()
 			configNonce += 1
@@ -767,7 +767,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 				}
 				// Log any other unknownApp calls
-				if !nowKnown { MeshLogger.log("🕸️ MESH PACKET received for Unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")") }
+				if !nowKnown { Logger.mesh.info("🕸️ MESH PACKET received for Unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")") }
 			case .textMessageApp, .detectionSensorApp:
 				textMessageAppPacket(
 					packet: decodedInfo.packet,
@@ -786,7 +786,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					appState: appState
 				)
 			case .remoteHardwareApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				Logger.mesh.info("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .positionApp:
 				upsertPositionPacket(packet: decodedInfo.packet, context: context)
 			case .waypointApp:
@@ -798,7 +798,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .adminApp:
 				adminAppPacket(packet: decodedInfo.packet, context: context)
 			case .replyApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Reply App handling as a text message")
+				Logger.mesh.info("🕸️ MESH PACKET received for Reply App handling as a text message")
 				textMessageAppPacket(
 					packet: decodedInfo.packet,
 					wantRangeTestPackets: wantRangeTestPackets,
@@ -807,16 +807,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					appState: appState
 				)
 			case .ipTunnelApp:
-				// MeshLogger.log("🕸️ MESH PACKET received for IP Tunnel App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-				MeshLogger.log("🕸️ MESH PACKET received for IP Tunnel App UNHANDLED UNHANDLED")
+				Logger.mesh.info("🕸️ MESH PACKET received for IP Tunnel App UNHANDLED UNHANDLED")
 			case .serialApp:
-				// MeshLogger.log("🕸️ MESH PACKET received for Serial App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-				MeshLogger.log("🕸️ MESH PACKET received for Serial App UNHANDLED UNHANDLED")
+				Logger.mesh.info("🕸️ MESH PACKET received for Serial App UNHANDLED UNHANDLED")
 			case .storeForwardApp:
 				if wantStoreAndForwardPackets {
 					storeAndForwardPacket(packet: decodedInfo.packet, connectedNodeNum: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context)
 				} else {
-					MeshLogger.log("🕸️ MESH PACKET received for Store and Forward App - Store and Forward is disabled.")
+					Logger.mesh.info("🕸️ MESH PACKET received for Store and Forward App - Store and Forward is disabled.")
 				}
 			case .rangeTestApp:
 				if wantRangeTestPackets {
@@ -828,28 +826,22 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						appState: appState
 					)
 				} else {
-					MeshLogger.log("🕸️ MESH PACKET received for Range Test App Range testing is disabled.")
+					Logger.mesh.info("🕸️ MESH PACKET received for Range Test App Range testing is disabled.")
 				}
 			case .telemetryApp:
 				if !invalidVersion { telemetryPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context) }
 			case .textMessageCompressedApp:
-				// MeshLogger.log("🕸️ MESH PACKET received for Text Message Compressed App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-				MeshLogger.log("🕸️ MESH PACKET received for Text Message Compressed App UNHANDLED")
+				Logger.mesh.info("🕸️ MESH PACKET received for Text Message Compressed App UNHANDLED")
 			case .zpsApp:
-				// MeshLogger.log("🕸️ MESH PACKET received for Zero Positioning System App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-				MeshLogger.log("🕸️ MESH PACKET received for Zero Positioning System App UNHANDLED")
+				Logger.mesh.info("🕸️ MESH PACKET received for Zero Positioning System App UNHANDLED")
 			case .privateApp:
-				// MeshLogger.log("🕸️ MESH PACKET received for Private App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-				MeshLogger.log("🕸️ MESH PACKET received for Private App UNHANDLED UNHANDLED")
+				Logger.mesh.info("🕸️ MESH PACKET received for Private App UNHANDLED UNHANDLED")
 			case .atakForwarder:
-				// MeshLogger.log("🕸️ MESH PACKET received for ATAK Forwarder App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-				MeshLogger.log("🕸️ MESH PACKET received for ATAK Forwarder App UNHANDLED UNHANDLED")
+				Logger.mesh.info("🕸️ MESH PACKET received for ATAK Forwarder App UNHANDLED UNHANDLED")
 			case .simulatorApp:
-				// MeshLogger.log("🕸️ MESH PACKET received for Simulator App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-				MeshLogger.log("🕸️ MESH PACKET received for Simulator App UNHANDLED UNHANDLED")
+				Logger.mesh.info("🕸️ MESH PACKET received for Simulator App UNHANDLED UNHANDLED")
 			case .audioApp:
-				// MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
-				MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED UNHANDLED")
+				Logger.mesh.info("🕸️ MESH PACKET received for Audio App UNHANDLED UNHANDLED")
 			case .tracerouteApp:
 				if let routingMessage = try? RouteDiscovery(serializedBytes: decodedInfo.packet.decoded.payload) {
 					let traceRoute = getTraceRoute(id: Int64(decodedInfo.packet.decoded.requestID), context: context)
@@ -996,25 +988,24 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						Logger.data.error("Error Updating Core Data TraceRouteHop: \(nsError, privacy: .public)")
 					}
 					let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.route %@".localized, routeString)
-					MeshLogger.log("🪧 \(logString)")
+					Logger.mesh.info("🪧 \(logString)")
 				}
 			case .neighborinfoApp:
 				if let neighborInfo = try? NeighborInfo(serializedBytes: decodedInfo.packet.decoded.payload) {
-					// MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED")
-					MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \(neighborInfo)")
+					Logger.mesh.info("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \((try? neighborInfo.jsonString()) ?? "JSON Decode Failure")")
 				}
 			case .paxcounterApp:
 				paxCounterPacket(packet: decodedInfo.packet, context: context)
 			case .mapReportApp:
-				MeshLogger.log("🕸️ MESH PACKET received Map Report App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				Logger.mesh.info("🕸️ MESH PACKET received Map Report App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .UNRECOGNIZED:
-				MeshLogger.log("🕸️ MESH PACKET received UNRECOGNIZED App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				Logger.mesh.info("🕸️ MESH PACKET received UNRECOGNIZED App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .max:
 				Logger.services.info("MAX PORT NUM OF 511")
 			case .atakPlugin:
-				MeshLogger.log("🕸️ MESH PACKET received for ATAK Plugin App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				Logger.mesh.info("🕸️ MESH PACKET received for ATAK Plugin App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .powerstressApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Power Stress App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				Logger.mesh.info("🕸️ MESH PACKET received for Power Stress App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			}
 
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
@@ -1099,7 +1090,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			}
 			let nodeName = connectedPeripheral?.peripheral.name ?? "unknown".localized
 			let logString = String.localizedStringWithFormat("mesh.log.textmessage.send.failed %@".localized, nodeName)
-			MeshLogger.log("🚫 \(logString)")
+			Logger.mesh.info("🚫 \(logString)")
 
 			success = false
 		} else if message.count < 1 {
@@ -1186,7 +1177,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 						let logString = String.localizedStringWithFormat("mesh.log.textmessage.sent %@ %@ %@".localized, String(newMessage.messageId), fromUserNum.toHex(), toUserNum.toHex())
 
-						MeshLogger.log("💬 \(logString)")
+						Logger.mesh.info("💬 \(logString)")
 						do {
 							try context.save()
 							Logger.data.info("💾 Saved a new sent message from \(self.connectedPeripheral.num.toHex(), privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
@@ -1233,7 +1224,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			return false
 		}
 		let logString = String.localizedStringWithFormat("mesh.log.waypoint.sent %@".localized, String(fromNodeNum))
-		MeshLogger.log("📍 \(logString)")
+		Logger.mesh.info("📍 \(logString)")
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
@@ -1752,7 +1743,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 							self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
 							let logString = String.localizedStringWithFormat("mesh.log.channel.sent %@ %d".localized, String(connectedPeripheral.num), chan.index)
-							MeshLogger.log("🎛️ \(logString)")
+							Logger.mesh.info("🎛️ \(logString)")
 						}
 					}
 					// Save the LoRa Config and the device will reboot
@@ -1781,7 +1772,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 						self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
 						let logString = String.localizedStringWithFormat("mesh.log.lora.config.sent %@".localized, String(connectedPeripheral.num))
-						MeshLogger.log("📻 \(logString)")
+						Logger.mesh.info("📻 \(logString)")
 					}
 
 					if self.connectedPeripheral != nil {
@@ -2701,7 +2692,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			let logString = String.localizedStringWithFormat("mesh.log.cannedmessages.messages.get %@".localized, String(connectedPeripheral.num))
-			MeshLogger.log("🥫 \(logString)")
+			Logger.mesh.info("🥫 \(logString)")
 			return true
 		}
 
@@ -3328,9 +3319,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			// Handle each of the store and forward request / response messages
 			switch storeAndForwardMessage.rr {
 			case .unset:
-				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
+				Logger.mesh.info("\("📮 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
 			case .routerError:
-				MeshLogger.log("☠️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
+				Logger.mesh.info("\("☠️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
 			case .routerHeartbeat:
 				/// When we get a router heartbeat we know there is a store and forward node on the network
 				/// Check if it is the primary S&F Router and save the timestamp of the last heartbeat so that we can show the request message history menu item on node long press if the router has been seen recently
@@ -3358,13 +3349,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						Logger.data.error("Save Store and Forward Router Error")
 					}
 				}
-				MeshLogger.log("💓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
+				Logger.mesh.info("\("💓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
 			case .routerPing:
-				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
+				Logger.mesh.info("\("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
 			case .routerPong:
-				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
+				Logger.mesh.info("\("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
 			case .routerBusy:
-				MeshLogger.log("🐝 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
+				Logger.mesh.info("\("🐝 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
 			case .routerHistory:
 				/// Set the Router History Last Request Value
 				guard let routerNode = getNodeInfo(id: Int64(packet.from), context: context) else {
@@ -3384,25 +3375,25 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					context.rollback()
 					Logger.data.error("Save Store and Forward Router Error")
 				}
-				MeshLogger.log("📜 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
+				Logger.mesh.info("\("📜 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
 			case .routerStats:
-				MeshLogger.log("📊 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
+				Logger.mesh.info("\("📊 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
 			case .clientError:
-				MeshLogger.log("☠️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
+				Logger.mesh.info("\("☠️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
 			case .clientHistory:
-				MeshLogger.log("📜 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
+				Logger.mesh.info("\("📜 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
 			case .clientStats:
-				MeshLogger.log("📊 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
+				Logger.mesh.info("\("📊 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
 			case .clientPing:
-				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
+				Logger.mesh.info("\("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
 			case .clientPong:
-				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
+				Logger.mesh.info("\("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
 			case .clientAbort:
-				MeshLogger.log("🛑 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
+				Logger.mesh.info("\("🛑 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
 			case .UNRECOGNIZED:
-				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
+				Logger.mesh.info("\("📮 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
 			case .routerTextDirect:
-				MeshLogger.log("💬 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
+				Logger.mesh.info("\("💬 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
 				textMessageAppPacket(
 					packet: packet,
 					wantRangeTestPackets: false,
@@ -3412,7 +3403,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					appState: appState
 				)
 			case .routerTextBroadcast:
-				MeshLogger.log("✉️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")
+				Logger.mesh.info("\("✉️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
 				textMessageAppPacket(
 					packet: packet,
 					wantRangeTestPackets: false,
