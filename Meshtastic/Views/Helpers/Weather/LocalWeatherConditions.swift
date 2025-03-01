@@ -116,24 +116,27 @@ struct WeatherConditionsCompactWidget: View {
 
 struct HumidityCompactWidget: View {
 	let humidity: Int
-	let dewPoint: String
+	let dewPoint: String?
 	var body: some View {
 		VStack(alignment: .leading) {
 			HStack(spacing: 5.0) {
 				Image(systemName: "humidity")
 					.foregroundColor(.accentColor)
 					.font(.callout)
-				Text("HUMIDITY")
+				Text("Humidity")
+					.textCase(.uppercase)
 					.font(.caption)
 			}
 			Text("\(humidity)%")
 				.font(.largeTitle)
 				.padding(.bottom, 5)
-			Text("The dew point is \(dewPoint) right now.")
-				.lineLimit(3)
-				.allowsTightening(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
-				.fixedSize(horizontal: false, vertical: true)
-				.font(.caption2)
+			if let dewPoint {
+				Text("The dew point is \(dewPoint) right now.")
+					.lineLimit(3)
+					.allowsTightening(true)
+					.fixedSize(horizontal: false, vertical: true)
+					.font(.caption2)
+			}
 		}
 		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120, idealHeight: 130, maxHeight: 140)
 		.padding()
@@ -151,7 +154,8 @@ struct PressureCompactWidget: View {
 				Image(systemName: "gauge")
 					.foregroundColor(.accentColor)
 					.font(.callout)
-				Text("PRESSURE")
+				Text("Pressure")
+					.textCase(.uppercase)
 					.font(.caption)
 			}
 			Text(pressure)
@@ -168,17 +172,21 @@ struct PressureCompactWidget: View {
 
 struct WindCompactWidget: View {
 	let speed: String
-	let gust: String
-	let direction: String
+	let gust: String?
+	let direction: String?
+
 	var body: some View {
+		let hasGust = ((gust ?? "").isEmpty == false)
 		VStack(alignment: .leading) {
-			Label { Text("WIND") } icon: { Image(systemName: "wind").foregroundColor(.accentColor) }
-			Text("\(direction)")
-				.font(gust.isEmpty ? .callout : .caption)
-				.padding(.bottom, 10)
+			Label { Text("Wind").textCase(.uppercase) } icon: { Image(systemName: "wind").foregroundColor(.accentColor) }
+			if let direction {
+				Text("\(direction)")
+					.font(!hasGust ? .callout : .caption)
+					.padding(.bottom, 10)
+			}
 			Text(speed)
-				.font(gust.isEmpty ? .system(size: 45) : .system(size: 35))
-			if !gust.isEmpty {
+				.font(!hasGust ? .system(size: 45) : .system(size: 35))
+			if let gust, !gust.isEmpty {
 				Text("Gusts \(gust)")
 			}
 		}

@@ -144,7 +144,7 @@ struct NodeDetail: View {
 						}
 					}
 
-					if let dm = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity, dm.uptimeSeconds > 0 {
+					if let dm = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity, let uptimeSeconds = dm.uptimeSeconds {
 						HStack {
 							Label {
 								Text("\("uptime".localized)")
@@ -156,7 +156,7 @@ struct NodeDetail: View {
 							Spacer()
 
 							let now = Date.now
-							let later = now + TimeInterval(dm.uptimeSeconds)
+							let later = now + TimeInterval(uptimeSeconds)
 							let uptime = (now..<later).formatted(.components(style: .narrow))
 							Text(uptime)
 								.textSelection(.enabled)
@@ -206,7 +206,13 @@ struct NodeDetail: View {
 						}
 					}
 				}
-				if node.hasPositions && UserDefaults.environmentEnableWeatherKit || node.hasEnvironmentMetrics {
+
+				// Note, as you add widgets, you should add to the `hasDataForLatestPositions` array
+				// This will make sure the "Environment" section is only displayed when the node has a position
+				// to use with WeatherKit, or has actual data in the most recent EnvironmentMetrics entity
+				// that will be rendered in this section.
+				if node.hasPositions && UserDefaults.environmentEnableWeatherKit
+					|| node.hasDataForLatestEnvironmentMetrics(attributes: ["iaq", "temperature", "relativeHumidity", "barometricPressure", "windSpeed"]) {
 					Section("Environment") {
 						if !node.hasEnvironmentMetrics {
 							LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
@@ -217,19 +223,27 @@ struct NodeDetail: View {
 										.padding(.vertical)
 								}
 								LazyVGrid(columns: gridItemLayout) {
-									WeatherConditionsCompactWidget(temperature: String(node.latestEnvironmentMetrics?.temperature.shortFormattedTemperature() ?? "99°"), symbolName: "cloud.sun", description: "TEMP")
-									if node.latestEnvironmentMetrics?.relativeHumidity ?? 0.0 > 0.0 {
-										HumidityCompactWidget(humidity: Int(node.latestEnvironmentMetrics?.relativeHumidity ?? 0.0), dewPoint: String(format: "%.0f", calculateDewPoint(temp: node.latestEnvironmentMetrics?.temperature ?? 0.0, relativeHumidity: node.latestEnvironmentMetrics?.relativeHumidity ?? 0.0)) + "°")
+									if let temperature = node.latestEnvironmentMetrics?.temperature?.shortFormattedTemperature() {
+										WeatherConditionsCompactWidget(temperature: String(temperature), symbolName: "cloud.sun", description: "TEMP")
 									}
-									if node.latestEnvironmentMetrics?.barometricPressure ?? 0.0 > 0.0 {
-										PressureCompactWidget(pressure: String(format: "%.2f", node.latestEnvironmentMetrics?.barometricPressure ?? 0.0), unit: "hPA", low: node.latestEnvironmentMetrics?.barometricPressure ?? 0.0 <= 1009.144)
+									if let humidity = node.latestEnvironmentMetrics?.relativeHumidity {
+										if let temperature = node.latestEnvironmentMetrics?.temperature {
+											let dewPoint = calculateDewPoint(temp: temperature, relativeHumidity: humidity)
+												.formatted(.number.precision(.fractionLength(0))) + "°"
+											HumidityCompactWidget(humidity: Int(humidity), dewPoint: dewPoint)
+										} else {
+											HumidityCompactWidget(humidity: Int(humidity), dewPoint: nil)
+										}
 									}
-									if node.latestEnvironmentMetrics?.windSpeed ?? 0.0 > 0.0 {
-										let windSpeed = Measurement(value: Double(node.latestEnvironmentMetrics?.windSpeed ?? 0.0), unit: UnitSpeed.metersPerSecond)
-										let windGust = Measurement(value: Double(node.latestEnvironmentMetrics?.windGust ?? 0.0), unit: UnitSpeed.metersPerSecond)
+									if let pressure = node.latestEnvironmentMetrics?.barometricPressure {
+										PressureCompactWidget(pressure: pressure.formatted(.number.precision(.fractionLength(2))), unit: "hPA", low: pressure <= 1009.144)
+									}
+									if let windSpeed = node.latestEnvironmentMetrics?.windSpeed {
+										let windSpeedMeasurement = Measurement(value: Double(windSpeed), unit: UnitSpeed.metersPerSecond)
+										let windGust = node.latestEnvironmentMetrics?.windGust.map { Measurement(value: Double($0), unit: UnitSpeed.metersPerSecond) }
 										let direction = cardinalValue(from: Double(node.latestEnvironmentMetrics?.windDirection ?? 0))
-										WindCompactWidget(speed: windSpeed.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))),
-														  gust: node.latestEnvironmentMetrics?.windGust ?? 0.0 > 0.0 ? windGust.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))) : "", direction: direction)
+										WindCompactWidget(speed: windSpeedMeasurement.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))),
+														  gust: node.latestEnvironmentMetrics?.windGust ?? 0.0 > 0.0 ? windGust?.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))) : "", direction: direction)
 									}
 								}
 								.padding(node.latestEnvironmentMetrics?.iaq ?? -1 > 0 ? .bottom : .vertical)

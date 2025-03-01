@@ -90,4 +90,15 @@ extension String {
 		let end = index(start, offsetBy: range.upperBound - range.lowerBound)
 		return String(self[start ..< end])
 	}
+
+	// Filter out variation selectors from the string
+	var withoutVariationSelectors: String {
+		return self.unicodeScalars
+			.filter { scalar in
+				return !scalar.properties.isVariationSelector
+			}
+			.compactMap { UnicodeScalar($0) }
+			.map { String($0) }
+			.joined()
+	}
 }
