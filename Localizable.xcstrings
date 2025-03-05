@@ -5543,6 +5543,9 @@
         }
       }
     },
+    "Confirm" : {
+
+    },
     "Connect to a Node" : {
       "localizations" : {
         "de" : {
@@ -29958,6 +29961,9 @@
           }
         }
       }
+    },
+    "The Router roles are designed for high vantage locations like mountaintops and towers. This node needs to be able to have a good direct connection to most of the nodes on the network or else this will significantly hurt the network." : {
+
     },
     "The secondary public key authorized to send admin messages to this node." : {
       "localizations" : {
