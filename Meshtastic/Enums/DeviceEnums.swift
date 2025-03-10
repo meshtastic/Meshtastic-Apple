@@ -144,6 +144,7 @@ enum RebroadcastModes: Int, CaseIterable, Identifiable {
 	case allSkipDecoding = 1
 	case localOnly = 2
 	case knownOnly = 3
+	case corePortnums = 4
 
 	var id: Int { self.rawValue }
 
@@ -157,6 +158,8 @@ enum RebroadcastModes: Int, CaseIterable, Identifiable {
 			return "Local Only"
 		case .knownOnly:
 			return "Known Only"
+		case .corePortnums:
+			return "Core Portnums Only"
 		}
 	}
 	var description: String {
@@ -169,6 +172,8 @@ enum RebroadcastModes: Int, CaseIterable, Identifiable {
 			return "Ignores observed messages from foreign meshes that are open or those which it cannot decrypt. Only rebroadcasts message on the nodes local primary / secondary channels."
 		case .knownOnly:
 			return "Ignores observed messages from foreign meshes like Local Only, but takes it step further by also ignoring messages from nodes not already in the node's known list."
+		case .corePortnums:
+			return "Only rebroadcasts packets from the core portnums: NodeInfo, Text, Position, Telemetry, and Routing."
 		}
 	}
 	func protoEnumValue() -> Config.DeviceConfig.RebroadcastMode {
@@ -182,6 +187,8 @@ enum RebroadcastModes: Int, CaseIterable, Identifiable {
 			return Config.DeviceConfig.RebroadcastMode.localOnly
 		case .knownOnly:
 			return Config.DeviceConfig.RebroadcastMode.knownOnly
+		case .corePortnums:
+			return Config.DeviceConfig.RebroadcastMode.corePortnumsOnly
 		}
 	}
 }

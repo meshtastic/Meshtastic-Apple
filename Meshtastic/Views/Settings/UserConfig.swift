@@ -75,11 +75,16 @@ struct UserConfig: View {
 							TextField("Short Name", text: $shortName)
 								.foregroundColor(.gray)
 								.onChange(of: shortName) {
-									var totalBytes = shortName.utf8.count
+									let newValue = shortName.withoutVariationSelectors
+									let totalBytes = newValue.utf8.count
 									// Only mess with the value if it is too big
 									if totalBytes > 4 {
+										// If too long, drop the last thing entered
 										shortName = String(shortName.dropLast())
-										totalBytes = shortName.utf8.count
+									} else if shortName != newValue {
+										// If not too long, make sure the stripped
+										// variant is placed back in text field if necessary
+										shortName = newValue
 									}
 								}
 								.foregroundColor(.gray)

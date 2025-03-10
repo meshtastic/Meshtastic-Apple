@@ -39,6 +39,19 @@ extension NodeInfoEntity {
 		let environmentMetrics = telemetries?.filter { ($0 as AnyObject).metricsType == 1 }
 		return environmentMetrics?.count ?? 0 > 0
 	}
+
+	func hasDataForLatestEnvironmentMetrics(attributes: [String]) -> Bool {
+		for attribute in attributes {
+			guard self.latestEnvironmentMetrics?.entity.attributesByName.keys.contains(attribute) ?? false else {
+				return false
+			}
+			if self.latestEnvironmentMetrics?.value(forKey: attribute) != nil {
+				return true
+			}
+		}
+		return false
+	}
+
 	var hasDetectionSensorMetrics: Bool {
 		return user?.sensorMessageList.count ?? 0 > 0
 	}

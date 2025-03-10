@@ -17,50 +17,50 @@ struct PowerMetrics: View {
 
 		LazyVGrid(columns: gridItemLayout) {
 
-			if metric.powerCh1Voltage != nil {
+			if let powerCh1Voltage = metric.powerCh1Voltage {
 				PowerMetricCompactWidget(
 					type: .voltage,
-					value: metric.powerCh1Voltage,
+					value: powerCh1Voltage,
 					title: "Channel 1 Voltage"
 				)
 			}
 
-			if metric.powerCh1Current != nil {
+			if let powerCh1Current = metric.powerCh1Current {
 				PowerMetricCompactWidget(
 					type: .current,
-					value: metric.powerCh1Current,
+					value: powerCh1Current,
 					title: "Channel 1 Current"
 				)
 			}
 
-			if metric.powerCh2Voltage != nil {
+			if let powerCh2Voltage = metric.powerCh2Voltage {
 				PowerMetricCompactWidget(
 					type: .voltage,
-					value: metric.powerCh2Voltage,
+					value: powerCh2Voltage,
 					title: "Channel 2 Voltage"
 				)
 			}
 
-			if metric.powerCh2Current != nil {
+			if let powerCh2Current = metric.powerCh2Current {
 				PowerMetricCompactWidget(
 					type: .current,
-					value: metric.powerCh2Current,
+					value: powerCh2Current,
 					title: "Channel 2 Current"
 				)
 			}
 
-			if metric.powerCh3Voltage != nil {
+			if let powerCh3Voltage = metric.powerCh3Voltage {
 				PowerMetricCompactWidget(
 					type: .voltage,
-					value: metric.powerCh3Voltage,
+					value: powerCh3Voltage,
 					title: "Channel 3 Voltage"
 				)
 			}
 
-			if metric.powerCh3Current != nil {
+			if let powerCh3Current = metric.powerCh3Current {
 				PowerMetricCompactWidget(
 					type: .current,
-					value: metric.powerCh3Current,
+					value: powerCh3Current,
 					title: "Channel 3 Current"
 				)
 			}

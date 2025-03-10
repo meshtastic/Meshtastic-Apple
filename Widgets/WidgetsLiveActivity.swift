@@ -42,11 +42,13 @@ struct WidgetsLiveActivity: Widget {
 							.foregroundStyle(.secondary)
 							.fixedSize()
 					}
-					Text("\(String(format: "Ch. Util: %.2f", context.state.channelUtilization))%")
+					// Text("\(context.state.channelUtilization.map { String(format: "Ch. Util: %.2f", $0) } ?? "--")%")
+					Text("Ch. Util: \(context.state.channelUtilization?.formatted(.number.precision(.fractionLength(2))) ?? Constants.nilValueIndicator)%")
 						.font(.caption2)
 						.foregroundStyle(.secondary)
 						.fixedSize()
-					Text("\(String(format: "Airtime: %.2f", context.state.airtime))%")
+					// Text("\(context.state.airtime.map { String(format: "Airtime: %.2f", $0) } ?? "--")%")
+					Text("Airtime: \(context.state.airtime?.formatted(.number.precision(.fractionLength(2))) ?? Constants.nilValueIndicator)%")
 						.font(.caption2)
 						.foregroundStyle(.secondary)
 						.fixedSize()
@@ -118,7 +120,7 @@ struct WidgetsLiveActivity: Widget {
 
 struct WidgetsLiveActivity_Previews: PreviewProvider {
 	static let attributes = MeshActivityAttributes(nodeNum: 123456789, name: "RAK Compact Rotary Handset Gray 8E6G")
-	static let state = MeshActivityAttributes.ContentState(uptimeSeconds: 600, channelUtilization: 1.2, airtime: 3.5, sentPackets: 12587, receivedPackets: 12555, badReceivedPackets: 800, dupeReceivedPackets: 100 , packetsSentRelay: 250, packetsCanceledRelay: 372, nodesOnline: 99, totalNodes: 100, timerRange: Date.now...Date(timeIntervalSinceNow: 300))
+	static let state = MeshActivityAttributes.ContentState(uptimeSeconds: 600, channelUtilization: 1.2, airtime: 3.5, sentPackets: 12587, receivedPackets: 12555, badReceivedPackets: 800, dupeReceivedPackets: 100, packetsSentRelay: 250, packetsCanceledRelay: 372, nodesOnline: 99, totalNodes: 100, timerRange: Date.now...Date(timeIntervalSinceNow: 300))
 
     static var previews: some View {
         attributes
@@ -140,9 +142,9 @@ struct LiveActivityView: View {
 	@Environment(\.isLuminanceReduced) var isLuminanceReduced
 
 	var nodeName: String
-	var uptimeSeconds: UInt32
-	var channelUtilization: Float
-	var airtime: Float
+	var uptimeSeconds: UInt32?
+	var channelUtilization: Float?
+	var airtime: Float?
 	var sentPackets: UInt32
 	var receivedPackets: UInt32
 	var badReceivedPackets: UInt32
@@ -179,9 +181,9 @@ struct NodeInfoView: View {
 	@Environment(\.isLuminanceReduced) var isLuminanceReduced
 
 	var nodeName: String
-	var uptimeSeconds: UInt32
-	var channelUtilization: Float
-	var airtime: Float
+	var uptimeSeconds: UInt32?
+	var channelUtilization: Float?
+	var airtime: Float?
 	var sentPackets: UInt32
 	var receivedPackets: UInt32
 	var badReceivedPackets: UInt32
@@ -199,7 +201,8 @@ struct NodeInfoView: View {
 				.font(nodeName.count > 14 ? .callout : .title3)
 				.fontWeight(.semibold)
 				.foregroundStyle(.tint)
-			Text("\(String(format: "Ch. Util: %.2f", channelUtilization))% \(String(format: "Airtime: %.2f", airtime))%")
+			// Text("\(channelUtilization.map { String(format: "Ch. Util: %.2f", $0 ) } ?? "--")% \(airtime.map { String(format: "Airtime: %.2f", $0) } ?? "--")%")
+			Text("Ch. Util: \(channelUtilization?.formatted(.number.precision(.fractionLength(2))) ?? Constants.nilValueIndicator)%")
 				.font(.caption)
 				.fontWeight(.medium)
 				.foregroundStyle(.secondary)
@@ -211,21 +214,21 @@ struct NodeInfoView: View {
 				.foregroundStyle(.secondary)
 				.opacity(isLuminanceReduced ? 0.8 : 1.0)
 				.fixedSize()
-			Text("Bad: \(badReceivedPackets) \(String(format: "Error Rate: %.2f", errorRate))%")
+			Text("Bad: \(badReceivedPackets) Error Rate: \(errorRate.formatted(.number.precision(.fractionLength(2))))%")
 				.font(.caption)
 				.fontWeight(.medium)
 				.foregroundStyle(.secondary)
 				.opacity(isLuminanceReduced ? 0.8 : 1.0)
 				.fixedSize()
 			if totalNodes >= 100 {
-				Text("\(String(format: "Connected: %d nodes online", nodesOnline))")
+				Text("Connected: \(nodesOnline) nodes online")
 					.font(.caption)
 					.fontWeight(.medium)
 					.foregroundStyle(.secondary)
 					.opacity(isLuminanceReduced ? 0.8 : 1.0)
 					.fixedSize()
 			} else {
-				Text("\(String(format: "Connected: %d of %d nodes online", nodesOnline, totalNodes))")
+				Text("Connected: \(nodesOnline) of \(totalNodes) nodes online")
 					.font(.caption)
 					.fontWeight(.medium)
 					.foregroundStyle(.secondary)

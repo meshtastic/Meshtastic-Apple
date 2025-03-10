@@ -2,7 +2,7 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {
-
+      "shouldTranslate" : false
     },
     "\t%@" : {
       "localizations" : {
@@ -35,6 +35,9 @@
           }
         }
       }
+    },
+    " %@%%" : {
+
     },
     ": %@" : {
       "localizations" : {
@@ -302,7 +305,7 @@
       "localizations" : {
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%1$@ може имати до %2$@ бајтова."
           }
         },
@@ -462,7 +465,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%@ Апликација ће се аутоматски поново повезати са жељеним радиом ако се врати у домет."
           }
         },
@@ -521,7 +524,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%@ Ова грешка обично не може да се поправи без заборављања уређаја испод подешавања > Блутут и поново повезивање са радиом."
           }
         },
@@ -616,10 +619,24 @@
       }
     },
     "%@mA" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@mA"
+          }
+        }
+      }
     },
     "%@V" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@V"
+          }
+        }
+      }
     },
     "%d" : {
       "localizations" : {
@@ -914,7 +931,7 @@
       "localizations" : {
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "2.4 GHz"
           }
         }
@@ -1059,10 +1076,24 @@
       }
     },
     "About" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "О"
+          }
+        }
+      }
     },
     "About Meshtastic" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "О Мештастику"
+          }
+        }
+      }
     },
     "Accuracy %@" : {
       "localizations" : {
@@ -1376,7 +1407,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "пре"
           }
         },
@@ -1434,7 +1465,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Време емитовања"
           }
         },
@@ -1448,22 +1479,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "廣播時間"
-          }
-        }
-      }
-    },
-    "Airtime %@%%" : {
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Време емитовања %@%%"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "广播时间 %@%%"
           }
         }
       }
@@ -1723,7 +1738,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Увек укључен"
           }
         },
@@ -1797,7 +1812,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Амбијентално осветљење"
           }
         },
@@ -1855,7 +1870,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Подешавања амбијенталног осветљења"
           }
         },
@@ -2069,7 +2084,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Да ли си сигуран?"
           }
         },
@@ -2092,7 +2107,7 @@
       "localizations" : {
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Аустралија / Нови Зеланд"
           }
         }
@@ -2170,7 +2185,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Доступни радио уређаји"
           }
         },
@@ -2314,7 +2329,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ниво батерије"
           }
         },
@@ -2404,7 +2419,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "BLE назив"
           }
         },
@@ -2462,7 +2477,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "BLE пин мора имати 6 цифара."
           }
         },
@@ -2610,7 +2625,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Блутут подешавања"
           }
         },
@@ -2668,7 +2683,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Блутут је искључен"
           }
         },
@@ -2791,7 +2806,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Бајтова"
           }
         },
@@ -2881,7 +2896,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Откажи"
           }
         },
@@ -2939,7 +2954,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Унапред припремљене поруке"
           }
         },
@@ -2997,7 +3012,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Подешавања унапред припремљених порука"
           }
         },
@@ -3243,22 +3258,64 @@
       }
     },
     "Ch1 Current" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Канал 1 струја"
+          }
+        }
+      }
     },
     "Ch1 Voltage" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Канал 1 напон"
+          }
+        }
+      }
     },
     "Ch2 Current" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Канал 2 струја"
+          }
+        }
+      }
     },
     "Ch2 Voltage" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Канал 2 напон"
+          }
+        }
+      }
     },
     "Ch3 Current" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Канал 3 струја"
+          }
+        }
+      }
     },
     "Ch3 Voltage" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Канал 3 напон"
+          }
+        }
+      }
     },
     "Channel" : {
       "localizations" : {
@@ -3300,7 +3357,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Канал"
           }
         },
@@ -3335,7 +3392,14 @@
       }
     },
     "Channel 1" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Канал 1"
+          }
+        }
+      }
     },
     "Channel 1 Included" : {
       "localizations" : {
@@ -3354,7 +3418,14 @@
       }
     },
     "Channel 2" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Канал 2"
+          }
+        }
+      }
     },
     "Channel 2 Included" : {
       "localizations" : {
@@ -3373,7 +3444,14 @@
       }
     },
     "Channel 3" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Канал 3"
+          }
+        }
+      }
     },
     "Channel 3 Included" : {
       "localizations" : {
@@ -3520,23 +3598,17 @@
       }
     },
     "Channel URL" : {
-
-    },
-    "Channel Utilization %@%% " : {
       "localizations" : {
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Искоришћеност канала %@%%"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "频道利用率 %@%% "
+            "value" : "Линк канала"
           }
         }
       }
+    },
+    "Channel Utilization %@%%" : {
+
     },
     "channel.role.disabled" : {
       "extractionState" : "migrated",
@@ -3908,7 +3980,7 @@
       "localizations" : {
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Кина"
           }
         }
@@ -3931,7 +4003,14 @@
       }
     },
     "Clear Log" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очисти логове"
+          }
+        }
+      }
     },
     "clear.app.data" : {
       "localizations" : {
@@ -4180,7 +4259,14 @@
       }
     },
     "Communicating" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Комуницирам"
+          }
+        }
+      }
     },
     "Config" : {
       "localizations" : {
@@ -6209,7 +6295,14 @@
       }
     },
     "Current" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Струја"
+          }
+        }
+      }
     },
     "Current Firmware Version: %@" : {
       "localizations" : {
@@ -6608,7 +6701,14 @@
       }
     },
     "Delete Power metrics?" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обрисати метрике снаге?"
+          }
+        }
+      }
     },
     "Description" : {
       "localizations" : {
@@ -7757,6 +7857,12 @@
             "state" : "translated",
             "value" : "Router Late"
           }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Рутер са кашњењем"
+          }
         }
       }
     },
@@ -8084,6 +8190,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Infrastructure node that always rebroadcasts packets once but only after all other modes, ensuring additional coverage for local clusters. Visible in Nodes list."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нод инфраструктуре који увек поново преноси пакете једном, али тек након свих других начина, обезбеђујући додатно покриће за локалне кластере. Видљив на листи нодова."
           }
         }
       }
@@ -12027,6 +12139,7 @@
       }
     },
     "HUMIDITY" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -17028,6 +17141,7 @@
       }
     },
     "mesh.log" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -20588,7 +20702,14 @@
       }
     },
     "Navigate to node" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пребаци се на чвор"
+          }
+        }
+      }
     },
     "Nearby Topics" : {
       "localizations" : {
@@ -21026,7 +21147,14 @@
       }
     },
     "No Power Metrics" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нема метрике снаге"
+          }
+        }
+      }
     },
     "no.nodes" : {
       "extractionState" : "manual",
@@ -23107,7 +23235,14 @@
       }
     },
     "Power" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Снага"
+          }
+        }
+      }
     },
     "Power Metrics" : {
       "localizations" : {
@@ -23120,10 +23255,24 @@
       }
     },
     "Power Metrics Log" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Логови метрике снаге"
+          }
+        }
+      }
     },
     "Power Metrics Log}" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Логови метрике снаге}"
+          }
+        }
+      }
     },
     "Power Off" : {
       "localizations" : {
@@ -23163,6 +23312,12 @@
             "state" : "translated",
             "value" : "Delete all power metrics?"
           }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обрисати све логове метрике снаге?"
+          }
         }
       }
     },
@@ -23173,6 +23328,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Power Metrics Log"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Логови метрике снаге"
           }
         }
       }
@@ -23300,21 +23461,8 @@
         }
       }
     },
-    "PRESSURE" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DRUCK"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ПРИТИСАК"
-          }
-        }
-      }
+    "Pressure" : {
+
     },
     "Primary" : {
       "localizations" : {
@@ -24872,7 +25020,14 @@
       }
     },
     "Route Recorder" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Снимач руте"
+          }
+        }
+      }
     },
     "Route recording paused" : {
       "localizations" : {
@@ -24921,7 +25076,14 @@
       }
     },
     "Routes" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Руте"
+          }
+        }
+      }
     },
     "routes.activitytype.biking" : {
       "extractionState" : "migrated",
@@ -26479,7 +26641,14 @@
       }
     },
     "Save Channel Settings" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сачувај подешавања канала"
+          }
+        }
+      }
     },
     "Save User Config to %@?" : {
       "localizations" : {
@@ -26765,7 +26934,14 @@
       }
     },
     "Select Channel" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Одабери канал"
+          }
+        }
+      }
     },
     "select.contact" : {
       "extractionState" : "manual",
@@ -26929,10 +27105,24 @@
       }
     },
     "Send ${messageContent} to ${nodeNumber}" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пошаљи ${messageContent} на ${nodeNumber}"
+          }
+        }
+      }
     },
     "Send a Direct Message" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пошаљи директну поруку"
+          }
+        }
+      }
     },
     "Send a Group Message" : {
       "localizations" : {
@@ -26961,7 +27151,14 @@
       }
     },
     "Send a message to a certain meshtastic node" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пошаљи поруку одређеном мештастик чвору"
+          }
+        }
+      }
     },
     "Send a position on the primary channel when the user button is triple clicked." : {
       "localizations" : {
@@ -28655,6 +28852,12 @@
     },
     "Store & Forward" : {
       "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сачувај и проследи"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28665,6 +28868,12 @@
     },
     "Store & Forward Config" : {
       "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сачувај и проследи подешавања"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28764,6 +28973,12 @@
             "state" : "translated",
             "value" : "מחובר למש"
           }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Претплаћен"
+          }
         }
       }
     },
@@ -28827,7 +29042,14 @@
       }
     },
     "Takes a Meshtastic channel URL and saves the channel settings." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Узима URL канала Meshtastic и чува подешавања канала."
+          }
+        }
+      }
     },
     "Tapback" : {
       "localizations" : {
@@ -30025,7 +30247,14 @@
       }
     },
     "The URL for the channel settings" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "URL за подешавања канала"
+          }
+        }
+      }
     },
     "There has been no response to a request for device metadata over the admin channel for this node." : {
       "localizations" : {
@@ -30280,7 +30509,14 @@
       }
     },
     "timestamp" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "временска ознака"
+          }
+        }
+      }
     },
     "Timestamp" : {
       "localizations" : {
@@ -31340,7 +31576,14 @@
       }
     },
     "unknown" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "непознато"
+          }
+        }
+      }
     },
     "Unknown" : {
       "localizations" : {
@@ -31775,7 +32018,14 @@
       }
     },
     "Uptime" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Време рада"
+          }
+        }
+      }
     },
     "Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead." : {
       "localizations" : {
@@ -31836,7 +32086,14 @@
       }
     },
     "Used to create a shared key with a remote device." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Користи се за креирање заједничког кључа са удаљеним уређајем."
+          }
+        }
+      }
     },
     "user" : {
       "localizations" : {
@@ -32260,23 +32517,17 @@
       }
     },
     "Voltage" : {
-
-    },
-    "Volts %@ " : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Volt %@"
-          }
-        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Волти %@"
+            "value" : "Напон"
           }
         }
       }
+    },
+    "Volts %@" : {
+
     },
     "Waiting" : {
       "localizations" : {
@@ -32503,7 +32754,14 @@
       }
     },
     "Whether or not use INPUT_PULLUP mode for GPIO pin. Only applicable if the board uses pull-up resistors on the pin" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Да ли се користи режим INPUT_PULLUP за GPIO пин. Примењује се само ако плоча користи pull-up отпорнике на пину."
+          }
+        }
+      }
     },
     "WiFi Options" : {
       "localizations" : {
@@ -32521,21 +32779,8 @@
         }
       }
     },
-    "WIND" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WIND"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ВЕТАР"
-          }
-        }
-      }
+    "Wind" : {
+
     },
     "Wind Direction" : {
       "localizations" : {
@@ -32732,10 +32977,24 @@
       }
     },
     "Your MQTT Server must support TLS." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ваш MQTT сервер мора подржавати TLS."
+          }
+        }
+      }
     },
     "Your node’s operating frequency is calculated based on the region, modem preset, and this field. When 0, the slot is automatically calculated based on the primary channel name." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оперативна фреквенција вашег нода се израчунава на основу региона, модемског пресета и овог поља. Када је 0, слот се аутоматски израчунава на основу назива примарног канала."
+          }
+        }
+      }
     },
     "Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned." : {
       "localizations" : {

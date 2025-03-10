@@ -15,9 +15,9 @@ struct MeshActivityAttributes: ActivityAttributes {
 	public typealias MeshActivityStatus = ContentState
 	public struct ContentState: Codable, Hashable {
 		// Dynamic stateful properties about your activity go here!
-		var uptimeSeconds: UInt32
-		var channelUtilization: Float
-		var airtime: Float
+		var uptimeSeconds: UInt32?
+		var channelUtilization: Float?
+		var airtime: Float?
 		var sentPackets: UInt32
 		var receivedPackets: UInt32
 		var badReceivedPackets: UInt32

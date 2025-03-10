@@ -49,7 +49,6 @@ enum SettingsNavigationState: String {
 	case security
 	case storeAndForward
 	case telemetry
-	case meshLog
 	case debugLogs
 	case appFiles
 	case firmwareUpdates

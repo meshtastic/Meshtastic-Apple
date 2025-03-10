@@ -56,25 +56,25 @@ struct EnvironmentMetricsLog: View {
 						// Add a table for mac and ipad
 						Table(environmentMetrics) {
 							TableColumn("Temperature") { em in
-								columnList.column(forAttribute: "temperature")?.body(em)
+								columnList.column(withId: "temperature")?.body(em)
 							}
 							TableColumn("Humidity") { em in
-								columnList.column(forAttribute: "relativeHumidity")?.body(em)
+								columnList.column(withId: "relativeHumidity")?.body(em)
 							}
 							TableColumn("Barometric Pressure") { em in
-								columnList.column(forAttribute: "barometricPressure")?.body(em)
+								columnList.column(withId: "barometricPressure")?.body(em)
 							}
 							TableColumn("Indoor Air Quality") { em in
-								columnList.column(forAttribute: "iaq")?.body(em)
+								columnList.column(withId: "iaq")?.body(em)
 							}
 							TableColumn("Wind Speed") { em in
-								columnList.column(forAttribute: "windSpeed")?.body(em)
+								columnList.column(withId: "windSpeed")?.body(em)
 							}
 							TableColumn("Wind Direction") { em in
-								columnList.column(forAttribute: "windDirection")?.body(em)
+								columnList.column(withId: "windDirection")?.body(em)
 							}
 							TableColumn("Timestamp") { em in
-								columnList.column(forAttribute: "time")?.body(em)
+								columnList.column(withId: "time")?.body(em)
 							}
 							.width(min: 180)
 						}
