@@ -19,6 +19,7 @@ extension MetricsSeriesList {
 				keyPath: \.temperature,
 				name: "Temperature",
 				abbreviatedName: "Temp",
+				minumumYAxisSpan: 50.0,
 				conversion: { t in t.map { Float($0.localeTemperature()) } },
 				foregroundStyle: { chartRange in
 					let locale = NSLocale.current as NSLocale
@@ -60,6 +61,7 @@ extension MetricsSeriesList {
 				keyPath: \.relativeHumidity,
 				name: "Relative Humidity",
 				abbreviatedName: "Hum",
+				initialYAxisRange: 0.0...100.0,
 				foregroundStyle: { _ in
 					.linearGradient(
 						colors: [Color(UIColor.purple.darker(componentDelta: 0.2)), .purple],
