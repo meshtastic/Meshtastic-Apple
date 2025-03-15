@@ -113,10 +113,8 @@ struct ChannelMessageList: View {
 							.id(message.messageId)
 							.onAppear {
 								if !message.read {
+									message.read = true
 									do {
-										for unreadMessage in channel.allPrivateMessages.filter({ !$0.read }) {
-											unreadMessage.read = true
-										}
 										try context.save()
 										Logger.data.info("📖 [App] Read message \(message.messageId) ")
 										appState.unreadChannelMessages = myInfo.unreadMessages
