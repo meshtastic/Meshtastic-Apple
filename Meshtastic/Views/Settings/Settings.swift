@@ -363,7 +363,7 @@ struct Settings: View {
 											.tag(Int(node.num))
 										} else if UserDefaults.enableAdministration && node.user?.pkiEncrypted ?? false {
 											Label {
-												Text("Request PKI Admin: \(node.user?.longName ?? "unknown".localized)")
+												Text("Request PKI Admin: \(node.user?.longName?.addingVariationSelectors ?? "unknown".localized)")
 											} icon: {
 												Image(systemName: "rectangle.and.hand.point.up.left")
 											}
@@ -395,7 +395,7 @@ struct Settings: View {
 								TipView(AdminChannelTip(), arrowEdge: .top)
 							} else {
 								if bleManager.connectedPeripheral != nil {
-									Text("Connected Node \(node?.user?.longName ?? "unknown".localized)")
+									Text("Connected Node \(node?.user?.longName?.addingVariationSelectors ?? "unknown".localized)")
 								}
 							}
 						}

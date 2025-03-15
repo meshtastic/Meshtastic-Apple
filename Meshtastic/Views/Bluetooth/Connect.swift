@@ -61,9 +61,9 @@ struct Connect: View {
 										.padding(.trailing)
 										VStack(alignment: .leading) {
 											if node != nil {
-												Text(connectedPeripheral.longName).font(.title2)
+												Text(connectedPeripheral.longName.addingVariationSelectors).font(.title2)
 											}
-											Text("BLE Name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name ?? "unknown".localized)")
+											Text("BLE Name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name?.addingVariationSelectors ?? "unknown".localized)")
 												.font(.callout).foregroundColor(Color.gray)
 											if node != nil {
 												Text("firmware.version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "unknown".localized)")
