@@ -111,7 +111,7 @@ extension String {
 		while index < scalars.endIndex {
 			let currentScalar = scalars[index]
 			result += String(currentScalar)
-			if currentScalar.properties.isEmoji && !currentScalar.properties.isEmojiPresentation {
+			if currentScalar.properties.isEmoji && !currentScalar.properties.isEmojiPresentation && !currentScalar.isASCII {
 				// Check if the next scalar is U+FE0F
 				let nextIndex = scalars.index(after: index)
 				if nextIndex < scalars.endIndex && scalars[nextIndex].value == 0xFE0F {
