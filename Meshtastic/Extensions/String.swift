@@ -101,4 +101,30 @@ extension String {
 			.map { String($0) }
 			.joined()
 	}
+
+	// Adds variation selectors to prefer the graphical form of emoji.
+	// Looks ahead to make sure that the variation selector is not already applied.
+	var addingVariationSelectors: String {
+		var result = ""
+		var scalars = self.unicodeScalars
+		var index = scalars.startIndex
+		while index < scalars.endIndex {
+			let currentScalar = scalars[index]
+			result += String(currentScalar)
+			if currentScalar.properties.isEmoji && !currentScalar.properties.isEmojiPresentation {
+				// Check if the next scalar is U+FE0F
+				let nextIndex = scalars.index(after: index)
+				if nextIndex < scalars.endIndex && scalars[nextIndex].value == 0xFE0F {
+					// Already has variation selector; skip the next scalar
+					index = nextIndex
+				} else {
+					// Append variation selector
+					result += String(UnicodeScalar(0xFE0F)!)
+				}
+			}
+			// Move to the next scalar
+			index = scalars.index(after: index)
+		}
+		return result
+	}
 }
