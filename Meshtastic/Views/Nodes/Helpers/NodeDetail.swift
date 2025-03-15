@@ -245,6 +245,26 @@ struct NodeDetail: View {
 										WindCompactWidget(speed: windSpeedMeasurement.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))),
 														  gust: node.latestEnvironmentMetrics?.windGust ?? 0.0 > 0.0 ? windGust?.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))) : "", direction: direction)
 									}
+									if let rainfall1h = node.latestEnvironmentMetrics?.rainfall1H {
+										let locale = NSLocale.current as NSLocale
+										let usesMetricSystem = locale.usesMetricSystem // Returns true for metric (mm), false for imperial (inches)
+										let unit = usesMetricSystem ? UnitLength.millimeters : UnitLength.inches
+										let unitLabel = usesMetricSystem ? "mm" : "in"
+										let measurement = Measurement(value: Double(rainfall1h), unit: UnitLength.millimeters)
+										let decimals = usesMetricSystem ? 0 : 1
+										let formattedRain = measurement.converted(to: unit).value.formatted(.number.precision(.fractionLength(decimals)))
+										RainfallCompactWidget(timespan: .rainfall1H, rainfall: formattedRain, unit: unitLabel)
+									}
+									if let rainfall24h = node.latestEnvironmentMetrics?.rainfall24H {
+										let locale = NSLocale.current as NSLocale
+										let usesMetricSystem = locale.usesMetricSystem // Returns true for metric (mm), false for imperial (inches)
+										let unit = usesMetricSystem ? UnitLength.millimeters : UnitLength.inches
+										let unitLabel = usesMetricSystem ? "mm" : "in"
+										let measurement = Measurement(value: Double(rainfall24h), unit: UnitLength.millimeters)
+										let decimals = usesMetricSystem ? 0 : 1
+										let formattedRain = measurement.converted(to: unit).value.formatted(.number.precision(.fractionLength(decimals)))
+										RainfallCompactWidget(timespan: .rainfall24H, rainfall: formattedRain, unit: unitLabel)
+									}
 									if let radiation = node.latestEnvironmentMetrics?.radiation {
 										RadiationCompactWidget(radiation: radiation.formatted(.number.precision(.fractionLength(1))), unit: "µR/hr")
 									}

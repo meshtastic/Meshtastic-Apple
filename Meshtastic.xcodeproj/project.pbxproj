@@ -20,6 +20,7 @@
 		233E99C32D849D7A00CC3A77 /* WeightCompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99C22D849D7A00CC3A77 /* WeightCompactWidget.swift */; };
 		233E99C52D84A0B600CC3A77 /* CompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99C42D84A0B600CC3A77 /* CompactWidget.swift */; };
 		233E99C72D84A70900CC3A77 /* SoilCompactWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99C62D84A70900CC3A77 /* SoilCompactWidgets.swift */; };
+		233E99CB2D85AAA900CC3A77 /* RainfallCompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99CA2D85AAA900CC3A77 /* RainfallCompactWidget.swift */; };
 		2344A2AB2D66974300170A77 /* ManagedAttributePropertyWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2344A2AA2D66973D00170A77 /* ManagedAttributePropertyWrapper.swift */; };
 		2344A2AF2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2344A2AD2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift */; };
 		2344A2B02D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2344A2AE2D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift */; };
@@ -296,6 +297,7 @@
 		233E99C22D849D7A00CC3A77 /* WeightCompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightCompactWidget.swift; sourceTree = "<group>"; };
 		233E99C42D84A0B600CC3A77 /* CompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompactWidget.swift; sourceTree = "<group>"; };
 		233E99C62D84A70900CC3A77 /* SoilCompactWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoilCompactWidgets.swift; sourceTree = "<group>"; };
+		233E99CA2D85AAA900CC3A77 /* RainfallCompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RainfallCompactWidget.swift; sourceTree = "<group>"; };
 		2344A2AA2D66973D00170A77 /* ManagedAttributePropertyWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedAttributePropertyWrapper.swift; sourceTree = "<group>"; };
 		2344A2AD2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TelemetryEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
 		2344A2AE2D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TelemetryEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
@@ -638,6 +640,7 @@
 				233E99C02D849D6000CC3A77 /* DistanceCompactWidget.swift */,
 				233E99C22D849D7A00CC3A77 /* WeightCompactWidget.swift */,
 				233E99C62D84A70900CC3A77 /* SoilCompactWidgets.swift */,
+				233E99CA2D85AAA900CC3A77 /* RainfallCompactWidget.swift */,
 			);
 			path = "Compact Widgets";
 			sourceTree = "<group>";
@@ -1528,6 +1531,7 @@
 				DD1BD0EE2C603C91008C0C70 /* CustomFormatters.swift in Sources */,
 				DD0BE3102CB9FDC4000BA445 /* DetectionSensorEnums.swift in Sources */,
 				DDD9E4E4284B208E003777C5 /* UserEntityExtension.swift in Sources */,
+				233E99CB2D85AAA900CC3A77 /* RainfallCompactWidget.swift in Sources */,
 				DD2553592855B52700E55709 /* PositionConfig.swift in Sources */,
 				DD97E96828EFE9A00056DDA4 /* About.swift in Sources */,
 				DDDB444029F79AB000EE2349 /* UserDefaults.swift in Sources */,
