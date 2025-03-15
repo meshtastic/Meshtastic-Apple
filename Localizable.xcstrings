@@ -12138,23 +12138,6 @@
         }
       }
     },
-    "HUMIDITY" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "LUFTFEUCHTIGKEIT"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ВЛАЖНОСТ"
-          }
-        }
-      }
-    },
     "hybrid" : {
       "extractionState" : "migrated",
       "localizations" : {
@@ -23608,6 +23591,9 @@
         }
       }
     },
+    "Radiation" : {
+
+    },
     "Radio Disconnected" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -28514,6 +28500,12 @@
         }
       }
     },
+    "Soil Moisture" : {
+
+    },
+    "Soil Temp" : {
+
+    },
     "Specifies how long the monitored GPIO should output." : {
       "localizations" : {
         "sr" : {
@@ -32676,6 +32668,9 @@
           }
         }
       }
+    },
+    "Weight" : {
+
     },
     "What does the lock mean?" : {
       "localizations" : {

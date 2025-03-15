@@ -73,6 +73,77 @@ extension MetricsColumnList {
 					}
 				}),
 
+			// Various Lux
+			MetricsTableColumn(
+				id: "lux",
+				keyPath: \.lux,
+				name: "Lux",
+				abbreviatedName: "Lux",
+				minWidth: 30, maxWidth: 50,
+				visible: false,
+				tableBody: { _, lux in
+					lux.map {
+						Text("\($0.formatted(.number.grouping(.never).precision(.fractionLength(1))))")
+					} ?? Text(Constants.nilValueIndicator)
+				}),
+
+			MetricsTableColumn(
+				id: "whiteLux",
+				keyPath: \.whiteLux,
+				name: "White Lux",
+				abbreviatedName: "White",
+				minWidth: 30, maxWidth: 50,
+				visible: false,
+				tableBody: { _, lux in
+					lux.map {
+						Text("\($0.formatted(.number.grouping(.never).precision(.fractionLength(1))))")
+					} ?? Text(Constants.nilValueIndicator)
+				}),
+
+			MetricsTableColumn(
+				id: "uvLux",
+				keyPath: \.uvLux,
+				name: "UV Lux",
+				abbreviatedName: "UV",
+				minWidth: 30, maxWidth: 50,
+				visible: false,
+				tableBody: { _, lux in
+					lux.map {
+						Text("\($0.formatted(.number.grouping(.never).precision(.fractionLength(1))))")
+					} ?? Text(Constants.nilValueIndicator)
+				}),
+
+			MetricsTableColumn(
+				id: "irLux",
+				keyPath: \.irLux,
+				name: "IR Lux",
+				abbreviatedName: "IR",
+				minWidth: 30, maxWidth: 50,
+				visible: false,
+				tableBody: { _, lux in
+					lux.map {
+						Text("\($0.formatted(.number.grouping(.never).precision(.fractionLength(1))))")
+					} ?? Text(Constants.nilValueIndicator)
+				}),
+
+			// Radiation
+			MetricsTableColumn(
+				id: "radiation",
+				keyPath: \.radiation,
+				name: "Radiation",
+				abbreviatedName: "☢️",
+				minWidth: 30, maxWidth: 50,
+				visible: false,
+				tableBody: { _, radiation in
+					radiation.map {
+						if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+							Text(verbatim: "\($0.formatted(.number.grouping(.never).precision(.fractionLength(1)))) µR/h")
+						} else {
+							Text("\($0.formatted(.number.grouping(.never).precision(.fractionLength(1))))")
+						}
+					} ?? Text(Constants.nilValueIndicator)
+				}),
+
 			// Wind Direction Series Configuration
 			MetricsTableColumn(
 				id: "windDirection",
@@ -125,6 +196,80 @@ extension MetricsColumnList {
 													.precision(.fractionLength(0))))
 						)
 					} ?? Text(verbatim: Constants.nilValueIndicator)
+				}),
+
+			// Weight
+			MetricsTableColumn(
+				id: "weight",
+				keyPath: \.weight,
+				name: "Weight",
+				abbreviatedName: "kg",
+				minWidth: 30, maxWidth: 60,
+				visible: false,
+				tableBody: { _, weight in
+					weight.map {
+						let weight = Measurement(
+							value: Double($0), unit: UnitMass.kilograms)
+						return Text(
+							weight.formatted(
+								.measurement(
+									width: .abbreviated,
+									numberFormatStyle: .number.grouping(.never)
+										.precision(
+										.fractionLength(0))))
+						)
+					} ?? Text(Constants.nilValueIndicator)
+				}),
+
+			// Distance sensor, often used for water level
+			MetricsTableColumn(
+				id: "distance",
+				keyPath: \.distance,
+				name: "Distance",
+				abbreviatedName: "Dist",
+				minWidth: 30, maxWidth: 50,
+				visible: false,
+				tableBody: { _, distance in
+					distance.map {
+						if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+							Text(verbatim: "\($0.formatted(.number.grouping(.never).precision(.fractionLength(1)))) mm")
+						} else {
+							Text("\($0.formatted(.number.grouping(.never).precision(.fractionLength(1))))")
+						}
+					} ?? Text(Constants.nilValueIndicator)
+				}),
+
+			// Soil Temperature
+			MetricsTableColumn(
+				id: "soilTemperature",
+				keyPath: \.soilTemperature,
+				name: "Soil Temperature",
+				abbreviatedName: "Soil Temp",
+				minWidth: 30, maxWidth: 50,
+				visible: false,
+				tableBody: { _, soilTemperature in
+					soilTemperature.map {
+						Text($0.formattedTemperature())
+					} ?? Text(verbatim: Constants.nilValueIndicator)
+
+				}),
+
+			// Soil Moisture
+			MetricsTableColumn(
+				id: "soilMoisture",
+				keyPath: \.soilMoisture,
+				name: "Soil Moisture",
+				abbreviatedName: "Moist",
+				minWidth: 30, maxWidth: 50,
+				visible: false,
+				tableBody: { _, moisture in
+					moisture.map {
+						if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+							Text("\($0.formatted(.number.grouping(.never).precision(.fractionLength(0))))%")
+						} else {
+							Text("\($0.formatted(.number.grouping(.never).precision(.fractionLength(0))))")
+						}
+					} ?? Text(Constants.nilValueIndicator)
 				}),
 
 			// Timestamp Series Configuration -- for use in table only

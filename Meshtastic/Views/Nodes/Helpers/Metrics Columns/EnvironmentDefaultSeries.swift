@@ -63,9 +63,9 @@ extension MetricsSeriesList {
 				abbreviatedName: "Hum",
 				initialYAxisRange: 0.0...100.0,
 				foregroundStyle: { _ in
-					.linearGradient(
-						colors: [Color(UIColor.purple.darker(componentDelta: 0.2)), .purple],
-						startPoint: .bottom, endPoint: .top
+						.linearGradient(
+							colors: [Color(UIColor.purple.darker(componentDelta: 0.2)), .purple],
+							startPoint: .bottom, endPoint: .top
 						)
 				},
 				chartBody: { series, _, time, humidity in
@@ -80,7 +80,7 @@ extension MetricsSeriesList {
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
-
+			
 			// Barometric Pressure Series Configuration
 			MetricsChartSeries(
 				id: "barometricPressure",
@@ -89,10 +89,10 @@ extension MetricsSeriesList {
 				abbreviatedName: "Bar",
 				visible: false,
 				foregroundStyle: { _ in
-					.linearGradient(
-						colors: [Color(UIColor.green.darker(componentDelta: 0.3)), .green],
-						startPoint: .bottom, endPoint: .top
-					)
+						.linearGradient(
+							colors: [Color(UIColor.green.darker(componentDelta: 0.3)), .green],
+							startPoint: .bottom, endPoint: .top
+						)
 				},
 				chartBody: { series, _, time, pressure in
 					if let pressure {
@@ -106,7 +106,7 @@ extension MetricsSeriesList {
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
-
+			
 			// Indoor Air Quality Series Configuration
 			MetricsChartSeries(
 				id: "iaq",
@@ -134,6 +134,241 @@ extension MetricsSeriesList {
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
+			
+			// Lux
+			MetricsChartSeries(
+				id: "lux",
+				keyPath: \.lux,
+				name: "Lux",
+				abbreviatedName: "Lux",
+				visible: false,
+				foregroundStyle: { _ in
+						.linearGradient(
+							colors: [Color(UIColor.cyan.lighter(componentDelta: 0.3)), .cyan],
+							startPoint: .bottom, endPoint: .top
+						)
+				},
+				chartBody: { series, _, time, lux in
+					if let lux {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, lux)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
+				}),
+
+			// White Lux
+			MetricsChartSeries(
+				id: "whiteLux",
+				keyPath: \.whiteLux,
+				name: "White Lux",
+				abbreviatedName: "White",
+				visible: false,
+				foregroundStyle: { _ in
+						.linearGradient(
+							colors: [Color(UIColor.cyan.lighter(componentDelta: 0.5)), Color(UIColor.cyan.lighter(componentDelta: 0.2))],
+							startPoint: .bottom, endPoint: .top
+						)
+				},
+				chartBody: { series, _, time, lux in
+					if let lux {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, lux)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
+				}),
+
+			// UV Lux
+			MetricsChartSeries(
+				id: "uvLux",
+				keyPath: \.uvLux,
+				name: "UV Lux",
+				abbreviatedName: "UV",
+				visible: false,
+				foregroundStyle: { _ in
+						.linearGradient(
+							colors: [Color(UIColor.systemIndigo.lighter(componentDelta: 0.4)), Color(UIColor.systemIndigo.lighter(componentDelta: 0.2))],
+							startPoint: .bottom, endPoint: .top
+						)
+				},
+				chartBody: { series, _, time, lux in
+					if let lux {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, lux)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
+				}),
+
+			// IR Lux
+			MetricsChartSeries(
+				id: "irLux",
+				keyPath: \.irLux,
+				name: "IR Lux",
+				abbreviatedName: "IR",
+				visible: false,
+				foregroundStyle: { _ in
+						.linearGradient(
+							colors: [Color(UIColor.red.darker(componentDelta: 0.5)), .red],
+							startPoint: .bottom, endPoint: .top
+						)
+				},
+				chartBody: { series, _, time, lux in
+					if let lux {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, lux)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
+				}),
+
+			// Radiation
+			MetricsChartSeries(
+				id: "radiation",
+				keyPath: \.radiation,
+				name: "Radiation",
+				abbreviatedName: "☢️",
+				minumumYAxisSpan: 20.0,
+				visible: false,
+				foregroundStyle: { _ in
+						.linearGradient(
+							colors: [Color(UIColor.orange.darker(componentDelta: 0.4)), .orange],
+							startPoint: .bottom, endPoint: .top
+						)
+				},
+				chartBody: { series, _, time, radiation in
+					if let radiation {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, radiation)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
+				}),
+
+			// Weight
+			MetricsChartSeries(
+				id: "weight",
+				keyPath: \.weight,
+				name: "Weight",
+				abbreviatedName: "kg",
+				visible: false,
+				foregroundStyle: { _ in
+						.linearGradient(
+							colors: [Color(UIColor.systemPink.darker(componentDelta: 0.5)), .pink],
+							startPoint: .bottom, endPoint: .top
+						)
+				},
+				chartBody: { series, _, time, weight in
+					if let weight {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, weight)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
+				}),
+
+			// Distance
+			MetricsChartSeries(
+				id: "distance",
+				keyPath: \.distance,
+				name: "Distance",
+				abbreviatedName: "Dist",
+				visible: false,
+				foregroundStyle: { _ in
+						.linearGradient(
+							colors: [Color(UIColor.systemTeal.darker(componentDelta: 0.7)), Color(UIColor.systemTeal)],
+							startPoint: .bottom, endPoint: .top
+						)
+				},
+				chartBody: { series, _, time, distance in
+					if let distance {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, distance)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
+				}),
+
+			// Soil Temperature
+			MetricsChartSeries(
+				id: "soilTemperature",
+				keyPath: \.soilTemperature,
+				name: "Soil Temperature",
+				abbreviatedName: "Soil Temp",
+				visible: false,
+				foregroundStyle: { _ in
+						.linearGradient(
+							colors: [Color(UIColor.brown.darker(componentDelta: 0.4)), .brown],
+							startPoint: .bottom, endPoint: .top
+						)
+				},
+				chartBody: { series, _, time, soilTemp in
+					if let soilTemp {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, soilTemp)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
+				}),
+
+			// Soil Temperature
+			MetricsChartSeries(
+				id: "soilMoisture",
+				keyPath: \.soilMoisture,
+				name: "Soil Moisture",
+				abbreviatedName: "Moist",
+				visible: false,
+				foregroundStyle: { _ in
+						.linearGradient(
+							colors: [Color(UIColor.blue.darker(componentDelta: 0.4)), .brown],
+							startPoint: .bottom, endPoint: .top
+						)
+				},
+				chartBody: { series, _, time, soilMoisture in
+					if let soilMoisture {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, soilMoisture)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
+				}),
 
 			// Combined Wind Speed and Direction Series Configuration -- For use in Chart only
 			MetricsChartSeries(
@@ -143,10 +378,10 @@ extension MetricsSeriesList {
 				abbreviatedName: "Speed/Dir",
 				visible: false,
 				foregroundStyle: { _ in
-					.linearGradient(
-						colors: [Color(UIColor.yellow.darker(componentDelta: 0.3)), Color(UIColor.yellow.darker(componentDelta: 0.1))],
-						startPoint: .bottom, endPoint: .top
-					)
+						.linearGradient(
+							colors: [Color(UIColor.yellow.darker(componentDelta: 0.3)), Color(UIColor.yellow.darker(componentDelta: 0.1))],
+							startPoint: .bottom, endPoint: .top
+						)
 				},
 				chartBody: { series, _, time, wsad in
 					if let wsad {
@@ -216,7 +451,7 @@ func generateStops(minTemp: Double, maxTemp: Double, tempUnit: UnitTemperature, 
 		((tempUnit == .celsius ? 20 : 68), .yellow),
 		((tempUnit == .celsius ? 30 : 86), .orange),
 		((tempUnit == .celsius ? 55 : 125), .red)
-		]
+	]
 	for (stopValue, color) in stopTargets {
 		let stopLocation = transform(stopValue, from: minTemp...maxTemp, to: 0...1)
 		gradientStops.append(Gradient.Stop(color: color.opacity(opacity), location: stopLocation))

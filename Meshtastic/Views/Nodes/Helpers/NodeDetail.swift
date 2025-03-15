@@ -246,7 +246,7 @@ struct NodeDetail: View {
 														  gust: node.latestEnvironmentMetrics?.windGust ?? 0.0 > 0.0 ? windGust?.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))) : "", direction: direction)
 									}
 									if let radiation = node.latestEnvironmentMetrics?.radiation {
-										RadiationCompactWidget(radiation: radiation.formatted(.number.precision(.fractionLength(2))), unit: "µR/hr")
+										RadiationCompactWidget(radiation: radiation.formatted(.number.precision(.fractionLength(1))), unit: "µR/hr")
 									}
 									if let weight = node.latestEnvironmentMetrics?.weight {
 										WeightCompactWidget(weight: weight.formatted(.number.precision(.fractionLength(1))), unit: "kg")

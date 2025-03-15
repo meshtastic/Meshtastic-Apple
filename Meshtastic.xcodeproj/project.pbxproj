@@ -11,6 +11,15 @@
 		231B3F222D087A4C0069A07D /* MetricsColumnList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F1F2D087A4C0069A07D /* MetricsColumnList.swift */; };
 		231B3F252D087C3C0069A07D /* EnvironmentDefaultColumns.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */; };
 		231B3F272D0885240069A07D /* MetricsColumnDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F262D0885240069A07D /* MetricsColumnDetail.swift */; };
+		233E99B62D849C3D00CC3A77 /* WeatherConditionsCompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99B52D849C3D00CC3A77 /* WeatherConditionsCompactWidget.swift */; };
+		233E99B82D849C6500CC3A77 /* HumidityCompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99B72D849C6500CC3A77 /* HumidityCompactWidget.swift */; };
+		233E99BA2D849C7000CC3A77 /* PressureCompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99B92D849C7000CC3A77 /* PressureCompactWidget.swift */; };
+		233E99BC2D849C8C00CC3A77 /* WindCompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99BB2D849C8C00CC3A77 /* WindCompactWidget.swift */; };
+		233E99BE2D849D3200CC3A77 /* RadiationCompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99BD2D849D3200CC3A77 /* RadiationCompactWidget.swift */; };
+		233E99C12D849D6000CC3A77 /* DistanceCompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99C02D849D6000CC3A77 /* DistanceCompactWidget.swift */; };
+		233E99C32D849D7A00CC3A77 /* WeightCompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99C22D849D7A00CC3A77 /* WeightCompactWidget.swift */; };
+		233E99C52D84A0B600CC3A77 /* CompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99C42D84A0B600CC3A77 /* CompactWidget.swift */; };
+		233E99C72D84A70900CC3A77 /* SoilCompactWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99C62D84A70900CC3A77 /* SoilCompactWidgets.swift */; };
 		2344A2AB2D66974300170A77 /* ManagedAttributePropertyWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2344A2AA2D66973D00170A77 /* ManagedAttributePropertyWrapper.swift */; };
 		2344A2AF2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2344A2AD2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift */; };
 		2344A2B02D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2344A2AE2D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift */; };
@@ -278,6 +287,15 @@
 		231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentDefaultColumns.swift; sourceTree = "<group>"; };
 		231B3F262D0885240069A07D /* MetricsColumnDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsColumnDetail.swift; sourceTree = "<group>"; };
 		233E99B32D84969500CC3A77 /* MeshtasticDataModelV 50.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 50.xcdatamodel"; sourceTree = "<group>"; };
+		233E99B52D849C3D00CC3A77 /* WeatherConditionsCompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherConditionsCompactWidget.swift; sourceTree = "<group>"; };
+		233E99B72D849C6500CC3A77 /* HumidityCompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumidityCompactWidget.swift; sourceTree = "<group>"; };
+		233E99B92D849C7000CC3A77 /* PressureCompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PressureCompactWidget.swift; sourceTree = "<group>"; };
+		233E99BB2D849C8C00CC3A77 /* WindCompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindCompactWidget.swift; sourceTree = "<group>"; };
+		233E99BD2D849D3200CC3A77 /* RadiationCompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadiationCompactWidget.swift; sourceTree = "<group>"; };
+		233E99C02D849D6000CC3A77 /* DistanceCompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistanceCompactWidget.swift; sourceTree = "<group>"; };
+		233E99C22D849D7A00CC3A77 /* WeightCompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightCompactWidget.swift; sourceTree = "<group>"; };
+		233E99C42D84A0B600CC3A77 /* CompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompactWidget.swift; sourceTree = "<group>"; };
+		233E99C62D84A70900CC3A77 /* SoilCompactWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoilCompactWidgets.swift; sourceTree = "<group>"; };
 		2344A2AA2D66973D00170A77 /* ManagedAttributePropertyWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedAttributePropertyWrapper.swift; sourceTree = "<group>"; };
 		2344A2AD2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TelemetryEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
 		2344A2AE2D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TelemetryEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
@@ -607,6 +625,23 @@
 			path = "Metrics Columns";
 			sourceTree = "<group>";
 		};
+		233E99B42D849C2D00CC3A77 /* Compact Widgets */ = {
+			isa = PBXGroup;
+			children = (
+				233E99C42D84A0B600CC3A77 /* CompactWidget.swift */,
+				233E99B72D849C6500CC3A77 /* HumidityCompactWidget.swift */,
+				233E99B52D849C3D00CC3A77 /* WeatherConditionsCompactWidget.swift */,
+				233E99B92D849C7000CC3A77 /* PressureCompactWidget.swift */,
+				233E99BB2D849C8C00CC3A77 /* WindCompactWidget.swift */,
+				DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */,
+				233E99BD2D849D3200CC3A77 /* RadiationCompactWidget.swift */,
+				233E99C02D849D6000CC3A77 /* DistanceCompactWidget.swift */,
+				233E99C22D849D7A00CC3A77 /* WeightCompactWidget.swift */,
+				233E99C62D84A70900CC3A77 /* SoilCompactWidgets.swift */,
+			);
+			path = "Compact Widgets";
+			sourceTree = "<group>";
+		};
 		2344A2AC2D66978000170A77 /* CoreData */ = {
 			isa = PBXGroup;
 			children = (
@@ -778,7 +813,6 @@
 			isa = PBXGroup;
 			children = (
 				DD5E523E298F5A9E00D21B61 /* AirQualityIndex.swift */,
-				DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */,
 				DDA9515D2BC6F56F00CEA535 /* IndoorAirQuality.swift */,
 				DD354FD82BD96A0B0061A25F /* IAQScale.swift */,
 				DD41A61429AB0035003C5A37 /* NodeWeatherForecast.swift */,
@@ -1039,6 +1073,7 @@
 		DDC2E18D26CE25CB0042C5E4 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				233E99B42D849C2D00CC3A77 /* Compact Widgets */,
 				DD6F65772C6EAB860053C113 /* Help */,
 				DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */,
 				DD3CC24B2C498D6C001BD3A2 /* BatteryCompact.swift */,
@@ -1407,7 +1442,9 @@
 				251926902C3CB44900249DF5 /* ClientHistoryButton.swift in Sources */,
 				DDD5BB102C285FB3007E03CA /* AppLogFilter.swift in Sources */,
 				2373AE172D0A26620086C749 /* EnvironmentDefaultSeries.swift in Sources */,
+				233E99B82D849C6500CC3A77 /* HumidityCompactWidget.swift in Sources */,
 				DD4640202AFF10F4002A5ECB /* WaypointForm.swift in Sources */,
+				233E99C12D849D6000CC3A77 /* DistanceCompactWidget.swift in Sources */,
 				DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */,
 				DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */,
 				DD15E4F32B8BA56E00654F61 /* PaxCounterConfig.swift in Sources */,
@@ -1437,6 +1474,7 @@
 				DDE9659C2B1C3B6A00531070 /* RouteRecorder.swift in Sources */,
 				B399E8A42B6F486400E4488E /* RetryButton.swift in Sources */,
 				DDB8F4102A9EE5B400230ECE /* Messages.swift in Sources */,
+				233E99C32D849D7A00CC3A77 /* WeightCompactWidget.swift in Sources */,
 				DDDB26482AACD6D1003AFCB7 /* NodeMapMapkit.swift in Sources */,
 				DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */,
 				DD1BD0F32C63C65E008C0C70 /* SecurityConfig.swift in Sources */,
@@ -1454,6 +1492,7 @@
 				DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */,
 				DD3619152B1EF9F900C41C8C /* LocationsHandler.swift in Sources */,
 				DD6F65792C6EADE60053C113 /* DirectMessagesHelp.swift in Sources */,
+				233E99B62D849C3D00CC3A77 /* WeatherConditionsCompactWidget.swift in Sources */,
 				25F5D5C02C3F6DA6008036E3 /* Router.swift in Sources */,
 				DDDB444A29F8AA3A00EE2349 /* CLLocationCoordinate2D.swift in Sources */,
 				25C49D902C471AEA0024FBD1 /* Constants.swift in Sources */,
@@ -1492,6 +1531,7 @@
 				DD2553592855B52700E55709 /* PositionConfig.swift in Sources */,
 				DD97E96828EFE9A00056DDA4 /* About.swift in Sources */,
 				DDDB444029F79AB000EE2349 /* UserDefaults.swift in Sources */,
+				233E99BA2D849C7000CC3A77 /* PressureCompactWidget.swift in Sources */,
 				DDB6ABE028B13AC700384BA1 /* DeviceEnums.swift in Sources */,
 				DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */,
 				D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */,
@@ -1501,6 +1541,7 @@
 				DDD5BB092C285DDC007E03CA /* AppLog.swift in Sources */,
 				BC5EBA3C2D002A2000C442FF /* MessageNodeIntent.swift in Sources */,
 				DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */,
+				233E99C52D84A0B600CC3A77 /* CompactWidget.swift in Sources */,
 				DDC1B81A2AB5377B00C71E39 /* MessagesTips.swift in Sources */,
 				DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */,
 				DDB75A112A059258006ED576 /* Url.swift in Sources */,
@@ -1536,6 +1577,7 @@
 				8D3F8A3F2D44BB02009EAAA4 /* PowerMetrics.swift in Sources */,
 				2519268A2C3BB1B200249DF5 /* ExchangePositionsButton.swift in Sources */,
 				DD86D40A287F04F100BAEB7A /* InvalidVersion.swift in Sources */,
+				233E99BE2D849D3200CC3A77 /* RadiationCompactWidget.swift in Sources */,
 				DDD94A502845C8F5004A87A0 /* DateTimeText.swift in Sources */,
 				DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */,
 				DD994B69295F88B60013760A /* IntervalEnums.swift in Sources */,
@@ -1567,12 +1609,14 @@
 				DDDB26442AAC0206003AFCB7 /* NodeDetail.swift in Sources */,
 				DD77093F2AA1B146007A8BF0 /* UIColor.swift in Sources */,
 				DDF6B2482A9AEBF500BA6931 /* StoreForwardConfig.swift in Sources */,
+				233E99C72D84A70900CC3A77 /* SoilCompactWidgets.swift in Sources */,
 				BCE2D3C92C7C377F008E6199 /* FactoryResetNodeIntent.swift in Sources */,
 				DD93800B2BA3F968008BEC06 /* NodeMapContent.swift in Sources */,
 				DD41582A28585C32009B0E59 /* RangeTestConfig.swift in Sources */,
 				DD1925B728CDA5A400720036 /* CannedMessagesConfigEnums.swift in Sources */,
 				DDDB444429F8A8DD00EE2349 /* Float.swift in Sources */,
 				DDAB580F2B0DAFBC00147258 /* LocationEntityExtension.swift in Sources */,
+				233E99BC2D849C8C00CC3A77 /* WindCompactWidget.swift in Sources */,
 				B3E905B12B71F7F300654D07 /* TextMessageField.swift in Sources */,
 				BC6B45FF2CB2F98900723CEB /* SaveChannelSettingsIntent.swift in Sources */,
 				D93068D72B8146690066FBC8 /* MessageText.swift in Sources */,
