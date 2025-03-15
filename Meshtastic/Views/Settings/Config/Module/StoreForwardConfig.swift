@@ -18,8 +18,8 @@ struct StoreForwardConfig: View {
 	@State var hasChanges: Bool = false
 	/// Enable the Store and Forward Module
 	@State var enabled = false
-	/// Is a S&F Router
-	@State var isRouter = false
+	/// Is a S&F Server
+	@State var isServer = false
 	/// Send a Heartbeat
 	@State var heartbeat: Bool = false
 	/// Number of Records
@@ -35,43 +35,19 @@ struct StoreForwardConfig: View {
 				ConfigHeader(title: "Store & Forward", config: \.storeForwardConfig, node: node, onAppear: setStoreAndForwardValues)
 
 				Section(header: Text("options")) {
-
 					Toggle(isOn: $enabled) {
 						Label("enabled", systemImage: "envelope.arrow.triangle.branch")
-						Text("Enables the store and forward module. Store and forward must be enabled on both client and router devices.")
+						Text("Enables the store and forward module.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
-					if enabled {
-						HStack {
-							Picker(selection: $isRouter, label: Text("Role")) {
-								Text("Client")
-									.tag(false)
-								Text("Router")
-									.tag(true)
-							}
-							.pickerStyle(SegmentedPickerStyle())
-							.padding(.top, 5)
-							.padding(.bottom, 5)
-						}
-						VStack {
-							if isRouter {
-								Text("Store and forward router devices require a ESP32 device with PSRAM.")
-									.foregroundColor(.gray)
-									.font(.callout)
-							} else {
-								Text("Store and forward clients can request history from routers on the network.")
-									.foregroundColor(.gray)
-									.font(.callout)
-							}
-						}
-					}
 				}
 
-				if isRouter {
-					Section(header: Text("Router Options")) {
+				if enabled {
+					Section(header: Text("Settings")) {
 						Toggle(isOn: $heartbeat) {
 							Label("storeforward.heartbeat", systemImage: "waveform.path.ecg")
+							Text("Send a heartbeat to advertise the server's presence.")
 						}
 						Picker("Number of records", selection: $records) {
 							Text("unset").tag(0)
@@ -81,7 +57,7 @@ struct StoreForwardConfig: View {
 							Text("100").tag(100)
 						}
 						.pickerStyle(DefaultPickerStyle())
-						Picker("History Return Max", selection: $historyReturnMax ) {
+						Picker("History Return Max", selection: $historyReturnMax) {
 							Text("unset").tag(0)
 							Text("25").tag(25)
 							Text("50").tag(50)
@@ -89,7 +65,7 @@ struct StoreForwardConfig: View {
 							Text("100").tag(100)
 						}
 						.pickerStyle(DefaultPickerStyle())
-						Picker("History Return Window", selection: $historyReturnWindow ) {
+						Picker("History Return Window", selection: $historyReturnWindow) {
 							Text("unset").tag(0)
 							Text("One Minute").tag(60)
 							Text("Five Minutes").tag(300)
@@ -101,6 +77,20 @@ struct StoreForwardConfig: View {
 						}
 						.pickerStyle(DefaultPickerStyle())
 					}
+
+					Section(header: Text("Server Option")) {
+						Toggle(isOn: $isServer) {
+							Label("Server", systemImage: "server.rack")
+							Text("Enable this device as a Store and Forward server. Requires an ESP32 device with PSRAM.")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.listRowSeparator(.visible)
+						if isServer {
+							Text("Store and forward servers require an ESP32 device with PSRAM or Linux Native.")
+								.foregroundColor(.gray)
+								.font(.callout)
+						}
+					}
 				}
 			}
 			.scrollDismissesKeyboard(.interactively)
@@ -110,18 +100,19 @@ struct StoreForwardConfig: View {
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 			if connectedNode != nil {
-				/// Let the user set isRouter for the connected node, for nodes on the mesh set isRouter based
+				/// Let the user set isServer for the connected node, for nodes on the mesh set isServer based
 				/// on receipt of a primary heartbeat
 				if connectedNode?.num ?? 0 == node?.num ?? -1 {
-					connectedNode?.storeForwardConfig?.isRouter = isRouter
+					connectedNode?.storeForwardConfig?.isServer = isServer
 					do {
 						try context.save()
 					} catch {
-						Logger.mesh.error("Failed to save isRouter: \(error.localizedDescription)")
+						Logger.mesh.error("Failed to save isServer: \(error.localizedDescription)")
 					}
 				}
 
 				var sfc = ModuleConfig.StoreForwardConfig()
+				sfc.isServer = isServer
 				sfc.enabled = self.enabled
 				sfc.heartbeat = self.heartbeat
 				sfc.records = UInt32(self.records)
@@ -171,8 +162,8 @@ struct StoreForwardConfig: View {
 		.onChange(of: enabled) { oldEnabled, newEnabled in
 			if oldEnabled != newEnabled && newEnabled != node!.storeForwardConfig!.enabled { hasChanges = true }
 		}
-		.onChange(of: isRouter) { oldIsRouter, newIsRouter in
-			if oldIsRouter != newIsRouter && newIsRouter != node!.storeForwardConfig!.isRouter { hasChanges = true }
+		.onChange(of: isServer) { oldIsServer, newIsServer in
+			if oldIsServer != newIsServer && newIsServer != node!.storeForwardConfig!.isServer { hasChanges = true }
 		}
 		.onChange(of: heartbeat) { oldHeartbeat, newHeartbeat in
 			if oldHeartbeat != newHeartbeat && newHeartbeat != node?.storeForwardConfig?.heartbeat ?? true { hasChanges = true }
@@ -187,9 +178,10 @@ struct StoreForwardConfig: View {
 			if oldHistoryReturnWindow != newHistoryReturnWindow && newHistoryReturnWindow != node!.storeForwardConfig?.historyReturnWindow ?? -1 { hasChanges = true }
 		}
 	}
+
 	func setStoreAndForwardValues() {
 		self.enabled = (node?.storeForwardConfig?.enabled ?? false)
-		self.isRouter = (node?.storeForwardConfig?.isRouter ?? false)
+		self.isServer = (node?.storeForwardConfig?.isServer ?? false)
 		self.heartbeat = (node?.storeForwardConfig?.heartbeat ?? true)
 		self.records = Int(node?.storeForwardConfig?.records ?? 50)
 		self.historyReturnMax = Int(node?.storeForwardConfig?.historyReturnMax ?? 100)
