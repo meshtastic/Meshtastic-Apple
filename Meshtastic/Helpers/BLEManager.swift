@@ -811,11 +811,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .serialApp:
 				Logger.mesh.info("🕸️ MESH PACKET received for Serial App UNHANDLED UNHANDLED")
 			case .storeForwardApp:
-				if wantStoreAndForwardPackets {
-					storeAndForwardPacket(packet: decodedInfo.packet, connectedNodeNum: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context)
-				} else {
-					Logger.mesh.info("🕸️ MESH PACKET received for Store and Forward App - Store and Forward is disabled.")
-				}
+				storeAndForwardPacket(packet: decodedInfo.packet, connectedNodeNum: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context)
 			case .rangeTestApp:
 				if wantRangeTestPackets {
 					textMessageAppPacket(

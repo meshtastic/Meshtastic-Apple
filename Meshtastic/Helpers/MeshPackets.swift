@@ -898,11 +898,14 @@ func textMessageAppPacket(
 			if packet.decoded.replyID > 0 {
 				newMessage.replyID = Int64(packet.decoded.replyID)
 			}
+			// Updated logic for handling toUser
 			if fetchedUsers.first(where: { $0.num == packet.to }) != nil && packet.to != Constants.maximumNodeNum {
 				if !storeForwardBroadcast {
 					newMessage.toUser = fetchedUsers.first(where: { $0.num == packet.to })
+				} else if storeForwardBroadcast {
+					// For S&F broadcast messages, treat as a channel message (not a DM)
+					newMessage.toUser = nil
 				} else {
-					/// Make a new to user if they are unknown
 					newMessage.toUser = createUser(num: Int64(truncatingIfNeeded: packet.to), context: context)
 				}
 			}
@@ -961,7 +964,7 @@ func textMessageAppPacket(
 							appState.unreadDirectMessages = newMessage.toUser?.unreadMessages ?? 0
 						}
 						if !(newMessage.fromUser?.mute ?? false) {
-							// Create an iOS Notification for the received DM message and schedule it immediately
+							// Create an iOS Notification for the received DM message
 							let manager = LocalNotificationManager()
 							manager.notifications = [
 								Notification(
@@ -983,18 +986,16 @@ func textMessageAppPacket(
 					} else if newMessage.fromUser != nil && newMessage.toUser == nil {
 						let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
 						fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedNode))
-
 						do {
 							let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
 							if !fetchedMyInfo.isEmpty {
 								appState.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
-
 								for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
 									if channel.index == newMessage.channel {
 										context.refresh(channel, mergeChanges: true)
 									}
 									if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications {
-										// Create an iOS Notification for the received private channel message and schedule it immediately
+										// Create an iOS Notification for the received channel message
 										let manager = LocalNotificationManager()
 										manager.notifications = [
 											Notification(
@@ -1007,7 +1008,8 @@ func textMessageAppPacket(
 												messageId: newMessage.messageId,
 												channel: newMessage.channel,
 												userNum: Int64(newMessage.fromUser?.userId ?? "0"),
-											    critical: critical)
+												critical: critical
+											)
 										]
 										manager.schedule()
 										Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
