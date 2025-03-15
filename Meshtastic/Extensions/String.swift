@@ -93,11 +93,24 @@ extension String {
 
 	// Filter out variation selectors from the string
 	var withoutVariationSelectors: String {
-		return self.unicodeScalars
-			.filter { scalar in
-				return !scalar.properties.isVariationSelector
+		var scalars: [UnicodeScalar] = []
+		var previousWasASCII = false
+
+		for scalar in self.unicodeScalars {
+			if scalar.properties.isVariationSelector {
+				// Only keep variation selector if the previous character was ASCII
+				if previousWasASCII {
+					scalars.append(scalar)
+				}
+				// No need to update previousWasASCII since variation selectors aren't characters
+				// Shouldn't have 2 in a row
+			} else {
+				scalars.append(scalar)
+				previousWasASCII = scalar.isASCII
 			}
-			.compactMap { UnicodeScalar($0) }
+		}
+
+		return scalars.compactMap { UnicodeScalar($0) }
 			.map { String($0) }
 			.joined()
 	}
@@ -106,7 +119,7 @@ extension String {
 	// Looks ahead to make sure that the variation selector is not already applied.
 	var addingVariationSelectors: String {
 		var result = ""
-		var scalars = self.unicodeScalars
+		let scalars = self.unicodeScalars
 		var index = scalars.startIndex
 		while index < scalars.endIndex {
 			let currentScalar = scalars[index]

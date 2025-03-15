@@ -341,7 +341,7 @@ struct Settings: View {
 										/// Connected Node
 										if node.num == bleManager.connectedPeripheral?.num ?? 0 {
 											Label {
-												Text("BLE: \(node.user?.longName ?? "unknown".localized)")
+												Text("BLE: \(node.user?.longName?.addingVariationSelectors ?? "unknown".localized)")
 											} icon: {
 												Image(systemName: "antenna.radiowaves.left.and.right")
 											}
@@ -370,7 +370,7 @@ struct Settings: View {
 											.tag(Int(node.num))
 										} else if !UserDefaults.enableAdministration {
 											Label {
-												Text("Request Legacy Admin: \(node.user?.longName ?? "unknown".localized)")
+												Text("Request Legacy Admin: \(node.user?.longName?.addingVariationSelectors ?? "unknown".localized)")
 											} icon: {
 												Image(systemName: "rectangle.and.hand.point.up.left")
 											}
