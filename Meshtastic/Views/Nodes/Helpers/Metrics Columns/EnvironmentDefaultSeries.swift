@@ -266,6 +266,98 @@ extension MetricsSeriesList {
 					}
 				}),
 
+			// Combined Wind Speed and Direction Series Configuration -- For use in Chart only
+			MetricsChartSeries(
+				id: "windSpeedAndDirection",
+				keyPath: \.windSpeedAndDirection,
+				name: "Wind Speed/Direction",
+				abbreviatedName: "Speed/Dir",
+				visible: false,
+				foregroundStyle: { _ in
+						.linearGradient(
+							colors: [Color(UIColor.yellow.darker(componentDelta: 0.3)), Color(UIColor.yellow.darker(componentDelta: 0.1))],
+							startPoint: .bottom, endPoint: .top
+						)
+				},
+				chartBody: { series, _, time, wsad in
+					if let wsad {
+						// debug data: var wsad = WindSpeedAndDirection(windSpeed:Float.random(in:0...25), windDirection: Int32.random(in:0..<3)*90 )
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, wsad.windSpeed)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+						PointMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, wsad.windSpeed)
+						)
+						.symbol {
+							if let wd = wsad.windDirection {
+								Image(systemName: "location.north.circle.fill")
+									.symbolRenderingMode(.palette)
+									.foregroundStyle(Color.white, Color(UIColor.yellow.darker(componentDelta: 0.3)))
+									.rotationEffect(
+										.degrees(Double(wd)))
+							}
+						}.foregroundStyle(.yellow)
+					}
+				}),
+
+			// Rainfaill 1-hour
+			MetricsChartSeries(
+				id: "rainfall1H",
+				keyPath: \.rainfall1H,
+				name: "Rainfall 1H",
+				abbreviatedName: "Rain 1H",
+				visible: false,
+				foregroundStyle: { _ in
+						.linearGradient(
+							colors: [Color(UIColor.systemBlue.darker(componentDelta: 0.5)), .blue],
+							startPoint: .bottom, endPoint: .top
+						)
+				},
+				chartBody: { series, _, time, rainfall in
+					if let rainfall {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, rainfall)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
+				}),
+
+			// Rainfaill 24-hour
+			MetricsChartSeries(
+				id: "rainfall24H",
+				keyPath: \.rainfall24H,
+				name: "Rainfall 24H",
+				abbreviatedName: "Rain 24H",
+				visible: false,
+				foregroundStyle: { _ in
+						.linearGradient(
+							colors: [Color(UIColor.systemBlue.darker(componentDelta: 0.5)), .cyan],
+							startPoint: .bottom, endPoint: .top
+						)
+				},
+				chartBody: { series, _, time, rainfall in
+					if let rainfall {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, rainfall)
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(StrokeStyle(lineWidth: 4))
+						.alignsMarkStylesWithPlotArea()
+					}
+				}),
+
 			// Weight
 			MetricsChartSeries(
 				id: "weight",
@@ -369,46 +461,6 @@ extension MetricsSeriesList {
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
-
-			// Combined Wind Speed and Direction Series Configuration -- For use in Chart only
-			MetricsChartSeries(
-				id: "windSpeedAndDirection",
-				keyPath: \.windSpeedAndDirection,
-				name: "Wind Speed/Direction",
-				abbreviatedName: "Speed/Dir",
-				visible: false,
-				foregroundStyle: { _ in
-						.linearGradient(
-							colors: [Color(UIColor.yellow.darker(componentDelta: 0.3)), Color(UIColor.yellow.darker(componentDelta: 0.1))],
-							startPoint: .bottom, endPoint: .top
-						)
-				},
-				chartBody: { series, _, time, wsad in
-					if let wsad {
-						// debug data: var wsad = WindSpeedAndDirection(windSpeed:Float.random(in:0...25), windDirection: Int32.random(in:0..<3)*90 )
-						LineMark(
-							x: .value("Time", time),
-							y: .value(series.abbreviatedName, wsad.windSpeed)
-						)
-						.interpolationMethod(.catmullRom)
-						.foregroundStyle(by: .value("Series", series.abbreviatedName))
-						.lineStyle(StrokeStyle(lineWidth: 4))
-						.alignsMarkStylesWithPlotArea()
-						PointMark(
-							x: .value("Time", time),
-							y: .value(series.abbreviatedName, wsad.windSpeed)
-						)
-						.symbol {
-							if let wd = wsad.windDirection {
-								Image(systemName: "location.north.circle.fill")
-									.symbolRenderingMode(.palette)
-									.foregroundStyle(Color.white, Color(UIColor.yellow.darker(componentDelta: 0.3)))
-									.rotationEffect(
-										.degrees(Double(wd)))
-							}
-						}.foregroundStyle(.yellow)
-					}
-				})
 		])
 	}
 }

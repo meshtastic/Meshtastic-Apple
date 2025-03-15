@@ -198,6 +198,52 @@ extension MetricsColumnList {
 					} ?? Text(verbatim: Constants.nilValueIndicator)
 				}),
 
+			// Rainfall 1-hour
+			MetricsTableColumn(
+				id: "rainfall1H",
+				keyPath: \.rainfall1H,
+				name: "Rainfall (1H)",
+				abbreviatedName: "Rain 1H",
+				minWidth: 30, maxWidth: 60,
+				visible: false,
+				tableBody: { _, rainfall in
+					rainfall.map {
+						let rain = Measurement(
+							value: Double($0), unit: UnitLength.millimeters)
+						return Text(
+							rain.formatted(
+								.measurement(
+									width: .abbreviated,
+									numberFormatStyle: .number.grouping(.never)
+										.precision(
+										.fractionLength(0))))
+						)
+					} ?? Text(Constants.nilValueIndicator)
+				}),
+			
+			// Rainfall 24-hour
+			MetricsTableColumn(
+				id: "rainfall24H",
+				keyPath: \.rainfall24H,
+				name: "Rainfall (24H)",
+				abbreviatedName: "Rain 24H",
+				minWidth: 30, maxWidth: 60,
+				visible: false,
+				tableBody: { _, rainfall in
+					rainfall.map {
+						let rain = Measurement(
+							value: Double($0), unit: UnitLength.millimeters)
+						return Text(
+							rain.formatted(
+								.measurement(
+									width: .abbreviated,
+									numberFormatStyle: .number.grouping(.never)
+										.precision(
+										.fractionLength(0))))
+						)
+					} ?? Text(Constants.nilValueIndicator)
+				}),
+
 			// Weight
 			MetricsTableColumn(
 				id: "weight",
