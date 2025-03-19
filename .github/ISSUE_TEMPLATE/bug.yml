@@ -8,6 +8,17 @@ body:
       value: |
         Thanks for taking the time to fill out this bug report!
 
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Before submitting
+      description: Please confirm you've completed the following steps
+      options:
+        - label: I have searched existing issues to make sure this bug hasn't already been reported
+          required: true
+        - label: I have updated to the latest version of the software to verify the issue still exists
+          required: true
+
   - type: input
     id: version
     attributes:
