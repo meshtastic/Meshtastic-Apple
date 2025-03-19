@@ -21,6 +21,7 @@ struct DeviceConfig: View {
 	@State private var isPresentingFactoryResetConfirm = false
 	@State var hasChanges = false
 	@State var deviceRole = 0
+	@State private var pendingDeviceRole = 0
 	@State var buzzerGPIO = 0
 	@State var buttonGPIO = 0
 	@State var rebroadcastMode = 0
@@ -29,6 +30,10 @@ struct DeviceConfig: View {
 	@State var ledHeartbeatEnabled = true
 	@State var tripleClickAsAdHocPing = true
 	@State var tzdef = ""
+	
+	@State private var showRouterWarning = false
+	@State private var confirmWarning = false
+
 
 	var body: some View {
 		VStack {
@@ -39,8 +44,36 @@ struct DeviceConfig: View {
 					VStack(alignment: .leading) {
 						Picker("Device Role", selection: $deviceRole ) {
 							ForEach(DeviceRoles.allCases) { dr in
-								Text(dr.name)
+								Text(dr.name).tag(dr.rawValue as Int)
 							}
+						}
+						.onChange(of: deviceRole) { oldValue, newValue in
+							if !confirmWarning {
+								if [2, 11].contains(newValue) {
+									pendingDeviceRole = newValue
+									deviceRole = oldValue // Reset selection until confirmed
+									showRouterWarning = true
+								}
+							} else {
+								confirmWarning = false
+							}
+						}
+						.confirmationDialog(
+							"Are you sure?",
+							isPresented: $showRouterWarning,
+							titleVisibility: .visible
+						) {
+
+							Button("Confirm") {
+								deviceRole = pendingDeviceRole
+								pendingDeviceRole = 0
+								confirmWarning = true
+							}
+							Button("Cancel", role: .cancel) {
+								pendingDeviceRole = 0
+							}
+						} message: {
+							Text("The Router roles are designed for high vantage locations like mountaintops and towers. This node needs to be able to have a good direct connection to most of the nodes on the network or else this will significantly hurt the network.")
 						}
 						Text(DeviceRoles(rawValue: deviceRole)?.description ?? "")
 							.foregroundColor(.gray)

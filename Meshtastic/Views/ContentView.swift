@@ -53,6 +53,5 @@ struct ContentView: View {
 			}
 			.tag(NavigationState.Tab.settings)
 		}
-		.toolbarBackground(.visible, for: .tabBar)
 	}
 }

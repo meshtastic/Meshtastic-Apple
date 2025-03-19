@@ -28,7 +28,7 @@ struct ConnectedDevice: View {
                             .imageScale(.large)
                             .foregroundColor(.green)
                             .symbolRenderingMode(.hierarchical)
-                        Text(name).font(name.isEmoji() ? .title : .callout).foregroundColor(.gray)
+						Text(name.addingVariationSelectors).font(name.isEmoji() ? .title : .callout).foregroundColor(.gray)
                     } else {
                         Image(systemName: "antenna.radiowaves.left.and.right.slash")
                             .imageScale(.medium)

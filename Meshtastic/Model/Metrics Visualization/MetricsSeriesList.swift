@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+
 class MetricsSeriesList: ObservableObject, RandomAccessCollection, RangeReplaceableCollection {
 
 	@Published var series: [MetricsChartSeries]
@@ -38,24 +39,85 @@ class MetricsSeriesList: ObservableObject, RandomAccessCollection, RangeReplacea
 		return nil
 	}
 
+	// Calculates the chartRange based on the series configuration and data provided
+	// Besides checkign the range of the data, this function also obeys some series-level
+	// configuraiton, such as:
+	//   1. starting with a desired fixed range
+	//   2. obeying a minimum span
 	func chartRange(forData data: [TelemetryEntity]) -> ClosedRange<Float> {
-		var lower: Float?
-		var upper: Float?
+		var globalLower: Float = .infinity
+		var globalUpper: Float = -.infinity
+
+		// Keep track of the range of each series
+		var range: [MetricsChartSeries: ClosedRange<Float>] = [:]
+
+		// Determine if there is an initial fixed range.
+		// The range might exapand past this initial range if the data goes beyond.
+		for aSeries in self.visible {
+			if let thisRange = aSeries.initialYAxisRange {
+				range[aSeries] = thisRange
+				if thisRange.upperBound > globalUpper {globalUpper = thisRange.upperBound}
+				if thisRange.lowerBound < globalLower {globalLower = thisRange.lowerBound}
+			}
+		}
+
+		// Iterate through all the data. It would be easier to iterate
+		// the series then the data, but this way we only iterate the data once
 		for te in data {
 			for aSeries in self.visible {
+				var seriesUpper = range[aSeries]?.upperBound ?? -.infinity
+				var seriesLower = range[aSeries]?.lowerBound ?? .infinity
+				
 				if let value = aSeries.valueFor(te) {
-					if value > (upper ?? -.infinity) {upper = value}
-					if value < (lower ?? .infinity) {lower = value}
+					// Update the global bounds
+					if value > globalUpper {globalUpper = value}
+					if value < globalLower {globalLower = value}
+					
+					// Update the series bounds if necessary
+					if value > seriesUpper || value < seriesLower {
+						if value > seriesUpper {
+							seriesUpper = value
+						}
+						if value < seriesLower {
+							seriesLower = value
+						}
+						if seriesUpper.isFinite && seriesLower.isFinite {
+							range[aSeries] = seriesLower...seriesUpper
+						}
+					}
 				}
 			}
 		}
-		
-		// Return default range if no data or nil
-		guard let lower, let upper else {
+
+		// Go through each series one last time to obey the minimum span
+		for aSeries in self.visible {
+			if let minimumSpan = aSeries.minumumYAxisSpan,
+			   let currentRange = range[aSeries] {
+				let currentSpan = currentRange.upperBound - currentRange.lowerBound
+				//Logger.data.info("Updated \(aSeries.id) to \(range[aSeries] ?? 0...0) span=\(currentSpan)")
+				if currentSpan < minimumSpan {
+					// Calculate the center of the range
+					let centerOfRange = currentRange.lowerBound + (currentSpan / 2)
+					let newLower = centerOfRange - (minimumSpan / 2.0)
+					let newUpper = centerOfRange + (minimumSpan / 2.0)
+
+					if newUpper > globalUpper {
+						globalUpper = newUpper
+					}
+					if newLower < globalLower {
+						globalLower = newLower
+					}
+				}
+			}
+		}
+
+		// Return default range if no data
+		if !globalLower.isFinite || !globalUpper.isFinite {
 			return 0.0...100.0
 		}
-		return lower...upper
+		return globalLower...globalUpper
 	}
+
 
 	// Collection conformance
 	typealias Index = Int

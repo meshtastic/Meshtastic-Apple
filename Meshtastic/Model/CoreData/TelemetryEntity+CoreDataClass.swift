@@ -42,5 +42,14 @@ public class TelemetryEntity: NSManagedObject, Identifiable {
 	@ManagedAttribute<Float>(attributeName: "windGust") public var windGust: Float?
 	@ManagedAttribute<Float>(attributeName: "windLull") public var windLull: Float?
 	@ManagedAttribute<Float>(attributeName: "windSpeed") public var windSpeed: Float?
+	@ManagedAttribute<Float>(attributeName: "irLux") public var irLux: Float?
+	@ManagedAttribute<Float>(attributeName: "lux") public var lux: Float?
+	@ManagedAttribute<Float>(attributeName: "uvLux") public var uvLux: Float?
+	@ManagedAttribute<Float>(attributeName: "whiteLux") public var whiteLux: Float?
+	@ManagedAttribute<Float>(attributeName: "radiation") public var radiation: Float?
+	@ManagedAttribute<Float>(attributeName: "rainfall1H") public var rainfall1H: Float?
+	@ManagedAttribute<Float>(attributeName: "rainfall24H") public var rainfall24H: Float?
+	@ManagedAttribute<Float>(attributeName: "soilTemperature") public var soilTemperature: Float?
+	@ManagedAttribute<UInt32>(attributeName: "soilMoisture") public var soilMoisture: UInt32?
 
 }

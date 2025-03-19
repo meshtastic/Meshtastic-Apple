@@ -50,12 +50,14 @@ struct UserConfig: View {
 
 							TextField("Long Name", text: $longName)
 								.onChange(of: longName) {
-									var totalBytes = longName.utf8.count
+									var newValue = longName.withoutVariationSelectors
+									var totalBytes = newValue.utf8.count
 									// Only mess with the value if it is too big
 									while totalBytes > (isLicensed ? 6 : 36) {
-										longName = String(longName.dropLast())
-										totalBytes = longName.utf8.count
+										newValue = String(newValue.dropLast())
+										totalBytes = newValue.utf8.count
 									}
+									longName = newValue
 								}
 						}
 						.keyboardType(.default)

@@ -38,12 +38,18 @@ class MetricsChartSeries: ObservableObject {
 	// Possibly converted to the proper units
 	let valueClosure: (TelemetryEntity) -> Float?
 
+	// Used for scaling the Y-axis
+	let initialYAxisRange: ClosedRange<Float>?
+	let minumumYAxisSpan: Float?
+	
 	// Main initializer
 	init<Value, ChartBody: ChartContent, ForegroundStyle: ShapeStyle>(
 		id: String,
 		keyPath: KeyPath<TelemetryEntity, Value>,
 		name: String,
 		abbreviatedName: String,
+		initialYAxisRange: ClosedRange<Float>? = nil,
+		minumumYAxisSpan: Float? = nil,
 		conversion: ((Value) -> Value)? = nil,
 		visible: Bool = true,
 		foregroundStyle: @escaping ((ClosedRange<Float>?) -> ForegroundStyle?) = { _ in nil },
@@ -54,6 +60,8 @@ class MetricsChartSeries: ObservableObject {
 		self.id = id
 		self.name = name
 		self.abbreviatedName = abbreviatedName
+		self.initialYAxisRange = initialYAxisRange
+		self.minumumYAxisSpan = minumumYAxisSpan
 		self.visible = visible
 
 		// By saving these closures, MetricsChartSeries can be type agnostic

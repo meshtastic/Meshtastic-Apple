@@ -264,7 +264,7 @@ struct NodeList: View {
 						columnVisibility: columnVisibility
 					)
 					.edgesIgnoringSafeArea([.leading, .trailing])
-					.navigationBarTitle(String(node.user?.longName ?? "unknown".localized), displayMode: .inline)
+					.navigationBarTitle(String(node.user?.longName?.addingVariationSelectors ?? "unknown".localized), displayMode: .inline)
 					.navigationBarItems(
 						trailing: ZStack {
 							if UIDevice.current.userInterfaceIdiom != .phone {

@@ -5629,6 +5629,9 @@
         }
       }
     },
+    "Confirm" : {
+
+    },
     "Connect to a Node" : {
       "localizations" : {
         "de" : {
@@ -12134,23 +12137,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Влажност"
-          }
-        }
-      }
-    },
-    "HUMIDITY" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "LUFTFEUCHTIGKEIT"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ВЛАЖНОСТ"
           }
         }
       }
@@ -23608,6 +23594,9 @@
         }
       }
     },
+    "Radiation" : {
+
+    },
     "Radio Disconnected" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -28514,6 +28503,12 @@
         }
       }
     },
+    "Soil Moisture" : {
+
+    },
+    "Soil Temp" : {
+
+    },
     "Specifies how long the monitored GPIO should output." : {
       "localizations" : {
         "sr" : {
@@ -30180,6 +30175,9 @@
           }
         }
       }
+    },
+    "The Router roles are designed for high vantage locations like mountaintops and towers. This node needs to be able to have a good direct connection to most of the nodes on the network or else this will significantly hurt the network." : {
+
     },
     "The secondary public key authorized to send admin messages to this node." : {
       "localizations" : {
@@ -32676,6 +32674,9 @@
           }
         }
       }
+    },
+    "Weight" : {
+
     },
     "What does the lock mean?" : {
       "localizations" : {

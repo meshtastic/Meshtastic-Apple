@@ -29,6 +29,8 @@ public struct ManagedAttribute<Value: Numeric> {
 			converter = { $0.int32Value as? Value }
 		} else if Value.self == Int64.self {
 			converter = { $0.int64Value as? Value }
+		} else if Value.self == UInt32.self {
+			converter = { $0.uint32Value as? Value }
 		} else {
 			fatalError("Unsupported type: \(Value.self)")
 		}
