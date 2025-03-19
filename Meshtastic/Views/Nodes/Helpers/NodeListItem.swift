@@ -64,7 +64,7 @@ struct NodeListItem: View {
 							let (image, color) = userKeyStatus
 							IconAndText(systemName: image,
 										imageColor: color,
-										text: node.user?.longName ?? "unknown".localized,
+										text: node.user?.longName?.addingVariationSelectors ?? "unknown".localized,
 										textColor: .primary)
 							if node.favorite {
 								Spacer()
