@@ -9314,6 +9314,9 @@
         }
       }
     },
+    "Enable this device as a Store and Forward server. Requires an ESP32 device with PSRAM." : {
+
+    },
     "enabled" : {
       "localizations" : {
         "de" : {
@@ -9410,7 +9413,11 @@
         }
       }
     },
+    "Enables the store and forward module." : {
+
+    },
     "Enables the store and forward module. Store and forward must be enabled on both client and router devices." : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
@@ -25056,6 +25063,7 @@
       }
     },
     "Router" : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
@@ -25066,6 +25074,7 @@
       }
     },
     "Router Options" : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
@@ -27140,6 +27149,9 @@
         }
       }
     },
+    "Send a heartbeat to advertise the server's presence." : {
+
+    },
     "Send a message to a certain meshtastic channel" : {
       "localizations" : {
         "sr" : {
@@ -27889,6 +27901,9 @@
         }
       }
     },
+    "Server Option" : {
+
+    },
     "Set" : {
       "localizations" : {
         "sr" : {
@@ -28046,6 +28061,9 @@
           }
         }
       }
+    },
+    "Settings" : {
+
     },
     "Share QR Code & Link" : {
       "localizations" : {
@@ -28883,6 +28901,7 @@
       }
     },
     "Store and forward clients can request history from routers on the network." : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
@@ -28893,6 +28912,7 @@
       }
     },
     "Store and forward router devices require a ESP32 device with PSRAM." : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
@@ -28901,6 +28921,9 @@
           }
         }
       }
+    },
+    "Store and forward servers require an ESP32 device with PSRAM or Linux Native." : {
+
     },
     "storeforward.heartbeat" : {
       "localizations" : {
