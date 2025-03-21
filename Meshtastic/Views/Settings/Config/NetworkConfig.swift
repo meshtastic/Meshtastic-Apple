@@ -24,66 +24,78 @@ struct NetworkConfig: View {
 	@State var ntpServer = ""
 	@State var ethEnabled = false
 	@State var ethMode = 0
+	@State var udpEnabled = false
 
 	var body: some View {
 		VStack {
 			Form {
 				ConfigHeader(title: "Network", config: \.networkConfig, node: node, onAppear: setNetworkValues)
 
-				if node != nil && node?.metadata?.hasWifi ?? false {
-					Section(header: Text("WiFi Options")) {
+				if let node {
+					if node.metadata?.hasWifi ?? false {
+						Section(header: Text("WiFi Options")) {
 
-						Toggle(isOn: $wifiEnabled) {
-							Label("enabled", systemImage: "wifi")
-							Text("Enabling WiFi will disable the bluetooth connection to the app.")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							Toggle(isOn: $wifiEnabled) {
+								Label("enabled", systemImage: "wifi")
+								Text("Enabling WiFi will disable the bluetooth connection to the app.")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
-						HStack {
-							Label("ssid", systemImage: "network")
-							TextField("ssid", text: $wifiSsid)
-								.foregroundColor(.gray)
-								.autocapitalization(.none)
-								.disableAutocorrection(true)
-								.onChange(of: wifiSsid) {
-									var totalBytes = wifiSsid.utf8.count
-									// Only mess with the value if it is too big
-									while totalBytes > 32 {
-										wifiSsid = String(wifiSsid.dropLast())
-										totalBytes = wifiSsid.utf8.count
+							HStack {
+								Label("ssid", systemImage: "network")
+								TextField("ssid", text: $wifiSsid)
+									.foregroundColor(.gray)
+									.autocapitalization(.none)
+									.disableAutocorrection(true)
+									.onChange(of: wifiSsid) {
+										var totalBytes = wifiSsid.utf8.count
+										// Only mess with the value if it is too big
+										while totalBytes > 32 {
+											wifiSsid = String(wifiSsid.dropLast())
+											totalBytes = wifiSsid.utf8.count
+										}
+										hasChanges = true
 									}
-									hasChanges = true
-								}
-								.foregroundColor(.gray)
-						}
-						.keyboardType(.default)
-						HStack {
-							Label("password", systemImage: "wallet.pass")
-							TextField("password", text: $wifiPsk)
-								.foregroundColor(.gray)
-								.autocapitalization(.none)
-								.disableAutocorrection(true)
-								.onChange(of: wifiPsk) {
-									var totalBytes = wifiPsk.utf8.count
-									// Only mess with the value if it is too big
-									while totalBytes > 63 {
-										wifiPsk = String(wifiPsk.dropLast())
-										totalBytes = wifiPsk.utf8.count
+									.foregroundColor(.gray)
+							}
+							.keyboardType(.default)
+							HStack {
+								Label("password", systemImage: "wallet.pass")
+								TextField("password", text: $wifiPsk)
+									.foregroundColor(.gray)
+									.autocapitalization(.none)
+									.disableAutocorrection(true)
+									.onChange(of: wifiPsk) {
+										var totalBytes = wifiPsk.utf8.count
+										// Only mess with the value if it is too big
+										while totalBytes > 63 {
+											wifiPsk = String(wifiPsk.dropLast())
+											totalBytes = wifiPsk.utf8.count
+										}
+										hasChanges = true
 									}
-									hasChanges = true
-								}
-								.foregroundColor(.gray)
+									.foregroundColor(.gray)
+							}
+							.keyboardType(.default)
 						}
-						.keyboardType(.default)
 					}
-				}
-				if node != nil && node?.metadata?.hasEthernet ?? false {
-					Section(header: Text("Ethernet Options")) {
-						Toggle(isOn: $ethEnabled) {
-							Label("enabled", systemImage: "network")
-							Text("Enabling Ethernet will disable the bluetooth connection to the app.")
+					if node.metadata?.hasEthernet ?? false {
+						Section(header: Text("Ethernet Options")) {
+							Toggle(isOn: $ethEnabled) {
+								Label("enabled", systemImage: "network")
+								Text("Enabling Ethernet will disable the bluetooth connection to the app.")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					}
+
+					if node.metadata?.hasEthernet ?? false || node.metadata?.hasWifi ?? false {
+						Section(header: Text("UDP Broadcast")) {
+							Toggle(isOn: $udpEnabled) {
+								Label("enabled", systemImage: "point.3.connected.trianglepath.dotted")
+								Text("Enable broadcasting packets via UDP over the local network.")
+							}
+						}
 					}
 				}
 			}
@@ -98,6 +110,7 @@ struct NetworkConfig: View {
 					network.wifiSsid = self.wifiSsid
 					network.wifiPsk = self.wifiPsk
 					network.ethEnabled = self.ethEnabled
+					network.enabledProtocols = self.udpEnabled ? UInt32(Config.NetworkConfig.ProtocolFlags.udpBroadcast.rawValue) : UInt32(Config.NetworkConfig.ProtocolFlags.noBroadcast.rawValue)
 					// network.addressMode = Config.NetworkConfig.AddressMode.dhcp
 
 					let adminMessageId =  bleManager.saveNetworkConfig(config: network, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
@@ -166,14 +179,30 @@ struct NetworkConfig: View {
 		}
 		.onChange(of: ethEnabled) { _, newEthEnabled in
 			if newEthEnabled != node?.networkConfig?.ethEnabled { hasChanges = true }
+		}.onChange(of: udpEnabled) {_, newUdpEnabled in
+			if let netConfig = node?.networkConfig {
+				let newValue: UInt32
+				if newUdpEnabled {
+					newValue = UInt32(netConfig.enabledProtocols) | UInt32(Config.NetworkConfig.ProtocolFlags.udpBroadcast.rawValue)
+				} else {
+					newValue = UInt32(netConfig.enabledProtocols) & ~UInt32(Config.NetworkConfig.ProtocolFlags.udpBroadcast.rawValue)
+				}
+				if netConfig.enabledProtocols != Int32(newValue) {
+					netConfig.enabledProtocols = Int32(newValue)
+					hasChanges = true
+				}
+			}
 		}
 	}
+
 	func setNetworkValues() {
 		self.wifiEnabled = node?.networkConfig?.wifiEnabled ?? false
 		self.wifiSsid = node?.networkConfig?.wifiSsid ?? ""
 		self.wifiPsk = node?.networkConfig?.wifiPsk ?? ""
 		self.wifiMode = Int(node?.networkConfig?.wifiMode ?? 0)
 		self.ethEnabled = node?.networkConfig?.ethEnabled ?? false
+		let enabledProtocols = UInt32(node?.networkConfig?.enabledProtocols ?? Int32(Config.NetworkConfig.ProtocolFlags.noBroadcast.rawValue))
+		self.udpEnabled = enabledProtocols & UInt32(Config.NetworkConfig.ProtocolFlags.udpBroadcast.rawValue) != 0
 		self.hasChanges = false
 	}
 }
