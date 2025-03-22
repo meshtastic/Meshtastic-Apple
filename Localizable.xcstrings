@@ -17727,7 +17727,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mappa della maglia"
+            "value" : "Mappa della mesh"
           }
         },
         "pl" : {
@@ -18449,7 +18449,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Registro di maglia"
+            "value" : "Registro di mesh"
           }
         },
         "pl" : {
@@ -30127,7 +30127,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mostra sulla mappa della maglia."
+            "value" : "Mostra sulla mappa della mesh."
           }
         },
         "sr" : {
@@ -35313,7 +35313,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La posizione attuale viene impostata come posizione fissa e trasmessa sulla maglia nell'intervallo di posizione."
+            "value" : "La posizione attuale viene impostata come posizione fissa e trasmessa sulla mesh nell'intervallo di posizione."
           }
         },
         "sr" : {
