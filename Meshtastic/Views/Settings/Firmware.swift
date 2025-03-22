@@ -138,7 +138,7 @@ struct Firmware: View {
 								.font(.callout)
 								.padding(.bottom)
 						} else {
-							Text("OTA Updates are not supported on the this NRF Device.")
+							Text("OTA Updates are not supported on this NRF Device.")
 								.font(.title3)
 							Link("Drag & Drop Firmware Update", destination: URL(string: "https://meshtastic.org/docs/getting-started/flashing-firmware/nrf52/drag-n-drop")!)
 								.font(.callout)
