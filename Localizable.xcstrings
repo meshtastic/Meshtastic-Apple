@@ -9301,6 +9301,9 @@
         }
       }
     },
+    "Enable broadcasting packets via UDP over the local network." : {
+
+    },
     "Enable Notifications" : {
       "localizations" : {
         "sr" : {
@@ -31501,6 +31504,9 @@
           }
         }
       }
+    },
+    "UDP Broadcast" : {
+
     },
     "Ukraine 433mhz" : {
       "extractionState" : "manual",

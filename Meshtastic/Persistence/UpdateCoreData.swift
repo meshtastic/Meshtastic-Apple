@@ -658,12 +658,14 @@ func upsertNetworkConfigPacket(config: Config.NetworkConfig, nodeNum: Int64, ses
 				newNetworkConfig.wifiSsid = config.wifiSsid
 				newNetworkConfig.wifiPsk = config.wifiPsk
 				newNetworkConfig.ethEnabled = config.ethEnabled
+				newNetworkConfig.enabledProtocols = Int32(config.enabledProtocols)
 				fetchedNode[0].networkConfig = newNetworkConfig
 			} else {
 				fetchedNode[0].networkConfig?.ethEnabled = config.ethEnabled
 				fetchedNode[0].networkConfig?.wifiEnabled = config.wifiEnabled
 				fetchedNode[0].networkConfig?.wifiSsid = config.wifiSsid
 				fetchedNode[0].networkConfig?.wifiPsk = config.wifiPsk
+				fetchedNode[0].networkConfig?.enabledProtocols = Int32(config.enabledProtocols)
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
