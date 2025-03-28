@@ -6367,6 +6367,9 @@
         }
       }
     },
+    "Currently showing modules that may not be supported by this node." : {
+
+    },
     "Currently the recommended way to update ESP32 devices is using the web flasher on a desktop computer from a chrome based browser. It does not work on mobile devices or over BLE." : {
       "localizations" : {
         "sr" : {
@@ -30354,6 +30357,9 @@
           }
         }
       }
+    },
+    "This node does not support any configurable modules." : {
+
     },
     "This will disable fixed position and remove the currently set position." : {
       "localizations" : {
