@@ -4,29 +4,31 @@ Thank you for considering contributing to Meshtastic! We appreciate your time an
 
 ## Table of Contents
 
-1. [Getting Started](#getting-started)
-2. [Development Workflow](#development-workflow)
-   - [Targeting `main`](#targeting-main)
-   - [Small, Incremental Changes](#small-incremental-changes)
-   - [Rebase Commits](#rebase-commits)
-3. [Creating a Branch](#creating-a-branch)
-4. [Making Changes](#making-changes)
-5. [Commit Messages](#commit-messages)
-6. [Merging Changes](#merging-changes)
-7. [Testing](#testing)
-8. [Code Review](#code-review)
-9. [Documentation](#documentation)
-10. [Style Guides](#style-guides)
+- [Contributing to Meshtastic](#contributing-to-meshtastic)
+  - [Table of Contents](#table-of-contents)
+  - [Getting Started](#getting-started)
+  - [Development Workflow](#development-workflow)
+    - [Targeting `main`](#targeting-main)
+    - [Small, Incremental Changes](#small-incremental-changes)
+    - [Rebase Commits](#rebase-commits)
+  - [Creating a Branch](#creating-a-branch)
+  - [Making Changes](#making-changes)
+  - [Commit Messages](#commit-messages)
+  - [Merging Changes](#merging-changes)
+  - [Testing](#testing)
+  - [Code Review](#code-review)
+  - [Documentation](#documentation)
+  - [Style Guides](#style-guides)
     - [Git Commit Messages](#git-commit-messages)
     - [Code Style](#code-style)
-11. [Community](#community)
+  - [Community](#community)
 
 ## Getting Started
 
-1. Fork the repository on GitLab.
+1. Fork the repository on GitHub.
 2. Clone your fork to your local machine:
    ```sh
-   git clone https://gitlab.com/<your-username>/Meshtastic-Apple.git
+   git clone https://github.com/<your-username>/Meshtastic-Apple.git
    ```
 3. Navigate to the project directory:
    ```sh
