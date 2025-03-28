@@ -226,6 +226,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPass
 			newMetadata.hasEthernet	= metadata.hasEthernet_p
 			newMetadata.role = Int32(metadata.role.rawValue)
 			newMetadata.positionFlags = Int32(metadata.positionFlags)
+			newMetadata.excludedModules = Int32(metadata.excludedModules)
 			// Swift does strings weird, this does work to get the version without the github hash
 			let lastDotIndex = metadata.firmwareVersion.lastIndex(of: ".")
 			var version = metadata.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: metadata.firmwareVersion))]
