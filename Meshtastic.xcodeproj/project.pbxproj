@@ -66,7 +66,6 @@
 		BCE2D3C52C7AE369008E6199 /* RestartNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C42C7AE369008E6199 /* RestartNodeIntent.swift */; };
 		BCE2D3C72C7B0D0A008E6199 /* ShortcutsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */; };
 		BCE2D3C92C7C377F008E6199 /* FactoryResetNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C82C7C377F008E6199 /* FactoryResetNodeIntent.swift */; };
-		C9697FA527933B8C00250207 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = C9697FA427933B8C00250207 /* SQLite */; };
 		D93068D32B8129510066FBC8 /* MessageContextMenuItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */; };
 		D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D42B812B700066FBC8 /* MessageDestination.swift */; };
 		D93068D72B8146690066FBC8 /* MessageText.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D62B8146690066FBC8 /* MessageText.swift */; };
@@ -588,7 +587,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				25A978BA2C13F8ED0003AAE7 /* MeshtasticProtobufs in Frameworks */,
-				C9697FA527933B8C00250207 /* SQLite in Frameworks */,
 				DD0D3D222A55CEB10066DB71 /* CocoaMQTT in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1252,7 +1250,6 @@
 			);
 			name = Meshtastic;
 			packageProductDependencies = (
-				C9697FA427933B8C00250207 /* SQLite */,
 				DD0D3D212A55CEB10066DB71 /* CocoaMQTT */,
 				25A978B92C13F8ED0003AAE7 /* MeshtasticProtobufs */,
 			);
@@ -1322,7 +1319,6 @@
 			);
 			mainGroup = DDC2E14B26CE248E0042C5E4;
 			packageReferences = (
-				C9697FA327933B8C00250207 /* XCRemoteSwiftPackageReference "SQLite.swift" */,
 				DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */,
 				25A978B82C13F8ED0003AAE7 /* XCLocalSwiftPackageReference "MeshtasticProtobufs" */,
 				259792242C2F10B600AD1659 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
@@ -2017,14 +2013,6 @@
 				minimumVersion = 1.26.0;
 			};
 		};
-		C9697FA327933B8C00250207 /* XCRemoteSwiftPackageReference "SQLite.swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/stephencelis/SQLite.swift.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.9.2;
-			};
-		};
 		DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/emqx/CocoaMQTT";
@@ -2043,11 +2031,6 @@
 		25A978BB2C13F90D0003AAE7 /* MeshtasticProtobufs */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MeshtasticProtobufs;
-		};
-		C9697FA427933B8C00250207 /* SQLite */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C9697FA327933B8C00250207 /* XCRemoteSwiftPackageReference "SQLite.swift" */;
-			productName = SQLite;
 		};
 		DD0D3D212A55CEB10066DB71 /* CocoaMQTT */ = {
 			isa = XCSwiftPackageProductDependency;
