@@ -61,9 +61,9 @@ struct Connect: View {
 										.padding(.trailing)
 										VStack(alignment: .leading) {
 											if node != nil {
-												Text(connectedPeripheral.longName).font(.title2)
+												Text(connectedPeripheral.longName.addingVariationSelectors).font(.title2)
 											}
-											Text("BLE Name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name ?? "unknown".localized)")
+											Text("BLE Name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name?.addingVariationSelectors ?? "unknown".localized)")
 												.font(.callout).foregroundColor(Color.gray)
 											if node != nil {
 												Text("firmware.version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "unknown".localized)")
@@ -120,7 +120,7 @@ struct Connect: View {
 										#endif
 										Text("Num: \(String(node!.num))")
 										Text("Short Name: \(node?.user?.shortName ?? "?")")
-										Text("Long Name: \(node?.user?.longName ?? "unknown".localized)")
+										Text("Long Name: \(node?.user?.longName?.addingVariationSelectors ?? "unknown".localized)")
 										Text("BLE RSSI: \(connectedPeripheral.rssi)")
 
 										Button {
@@ -333,7 +333,7 @@ struct Connect: View {
 		let localStats = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 4"))
 		let mostRecent = localStats?.lastObject as? TelemetryEntity
 
-		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName ?? "unknown")
+		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName?.addingVariationSelectors ?? "unknown")
 
 		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
 		let initialContentState = MeshActivityAttributes.ContentState(uptimeSeconds: UInt32(mostRecent?.uptimeSeconds ?? 0),

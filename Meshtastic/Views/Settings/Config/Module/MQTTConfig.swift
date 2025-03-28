@@ -230,31 +230,88 @@ struct MQTTConfig: View {
 			}
 			.scrollDismissesKeyboard(.interactively)
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.mqttConfig == nil)
-		}
 
-		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
-			if connectedNode != nil {
-				var mqtt = ModuleConfig.MQTTConfig()
-				mqtt.enabled = self.enabled
-				mqtt.proxyToClientEnabled = self.proxyToClientEnabled
-				mqtt.address = self.address
-				mqtt.username = self.username
-				mqtt.password = self.password
-				mqtt.root = self.root
-				mqtt.encryptionEnabled = self.encryptionEnabled
-				mqtt.jsonEnabled = self.jsonEnabled
-				mqtt.tlsEnabled = self.tlsEnabled
-				mqtt.mapReportingEnabled = self.mapReportingEnabled
-				mqtt.mapReportSettings.positionPrecision = UInt32(self.mapPositionPrecision)
-				mqtt.mapReportSettings.publishIntervalSecs = UInt32(self.mapPublishIntervalSecs)
-				let adminMessageId =  bleManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-				if adminMessageId > 0 {
-					// Should show a saved successfully alert once I know that to be true
-					// for now just disable the button after a successful save
-					hasChanges = false
-					goBack()
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
+				if connectedNode != nil {
+					var mqtt = ModuleConfig.MQTTConfig()
+					mqtt.enabled = self.enabled
+					mqtt.proxyToClientEnabled = self.proxyToClientEnabled
+					mqtt.address = self.address
+					mqtt.username = self.username
+					mqtt.password = self.password
+					mqtt.root = self.root
+					mqtt.encryptionEnabled = self.encryptionEnabled
+					mqtt.jsonEnabled = self.jsonEnabled
+					mqtt.tlsEnabled = self.tlsEnabled
+					mqtt.mapReportingEnabled = self.mapReportingEnabled
+					mqtt.mapReportSettings.positionPrecision = UInt32(self.mapPositionPrecision)
+					mqtt.mapReportSettings.publishIntervalSecs = UInt32(self.mapPublishIntervalSecs)
+					let adminMessageId =  bleManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					if adminMessageId > 0 {
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						goBack()
+					}
 				}
+			}.onChange(of: enabled) { _, newEnabled in
+				if newEnabled != node?.mqttConfig?.enabled { hasChanges = true }
+			}
+			.onChange(of: proxyToClientEnabled) { _, newProxyToClientEnabled in
+				if newProxyToClientEnabled {
+					jsonEnabled = false
+					tlsEnabled = false
+				}
+				if newProxyToClientEnabled != node?.mqttConfig?.proxyToClientEnabled { hasChanges = true }
+			}
+			.onChange(of: address) { _, newAddress in
+				if newAddress != node?.mqttConfig?.address ?? "" { hasChanges = true }
+			}
+			.onChange(of: username) { _, newUsername in
+				if newUsername != node?.mqttConfig?.username ?? "" { hasChanges = true }
+			}
+			.onChange(of: password) { _, newPassword in
+				if newPassword != node?.mqttConfig?.password ?? "" { hasChanges = true }
+			}
+			.onChange(of: root) { _, newRoot in
+				if newRoot != node?.mqttConfig?.root ?? "" { hasChanges = true }
+			}
+			.onChange(of: selectedTopic) { _, newSelectedTopic in
+				root = newSelectedTopic
+			}
+			.onChange(of: encryptionEnabled) { _, newEncryptionEnabled in
+				if newEncryptionEnabled != node?.mqttConfig?.encryptionEnabled { hasChanges = true }
+			}
+			.onChange(of: jsonEnabled) { _, newJsonEnabled in
+				if newJsonEnabled {
+					proxyToClientEnabled = false
+				}
+				if newJsonEnabled != node?.mqttConfig?.jsonEnabled { hasChanges = true }
+			}
+			.onChange(of: tlsEnabled) { _, newTlsEnabled in
+				if address.lowercased() == "mqtt.meshtastic.org" {
+					tlsEnabled = false
+				} else {
+					if newTlsEnabled != node?.mqttConfig?.tlsEnabled { hasChanges = true }
+				}
+			}
+			.onChange(of: mqttConnected) { _, newMqttConnected in
+				if newMqttConnected == false {
+					if bleManager.mqttProxyConnected {
+						bleManager.mqttManager.disconnect()
+					}
+				} else {
+					if !bleManager.mqttProxyConnected && node != nil {
+						bleManager.mqttManager.connectFromConfigSettings(node: node!)
+					}
+				}
+			}
+			.onChange(of: mapReportingEnabled) { _, newMapReportingEnabled in
+				if newMapReportingEnabled != node?.mqttConfig?.mapReportingEnabled { hasChanges = true }
+			}
+			.onChange(of: mapPublishIntervalSecs) { _, newMapPublishIntervalSecs in
+				if newMapPublishIntervalSecs != node?.mqttConfig?.mapPublishIntervalSecs ?? -1 { hasChanges = true }
 			}
 		}
 		.navigationTitle("mqtt.config")
@@ -267,64 +324,6 @@ struct MQTTConfig: View {
 				)
 			}
 		)
-		.onChange(of: enabled) { _, newEnabled in
-			if newEnabled != node?.mqttConfig?.enabled { hasChanges = true }
-		}
-		.onChange(of: proxyToClientEnabled) { _, newProxyToClientEnabled in
-			if newProxyToClientEnabled {
-				jsonEnabled = false
-				tlsEnabled = false
-			}
-			if newProxyToClientEnabled != node?.mqttConfig?.proxyToClientEnabled { hasChanges = true }
-		}
-		.onChange(of: address) { newAddress in
-			if newAddress != node?.mqttConfig?.address ?? "" { hasChanges = true }
-		}
-		.onChange(of: username) { newUsername in
-			if newUsername != node?.mqttConfig?.username ?? "" { hasChanges = true }
-		}
-		.onChange(of: password) { newPassword in
-			if newPassword != node?.mqttConfig?.password ?? "" { hasChanges = true }
-		}
-		.onChange(of: root) { _, newRoot in
-			if newRoot != node?.mqttConfig?.root ?? "" { hasChanges = true }
-		}
-		.onChange(of: selectedTopic) { _, newSelectedTopic in
-			root = newSelectedTopic
-		}
-		.onChange(of: encryptionEnabled) { _, newEncryptionEnabled in
-			if newEncryptionEnabled != node?.mqttConfig?.encryptionEnabled { hasChanges = true }
-		}
-		.onChange(of: jsonEnabled) { _, newJsonEnabled in
-			if newJsonEnabled {
-				proxyToClientEnabled = false
-			}
-			if newJsonEnabled != node?.mqttConfig?.jsonEnabled { hasChanges = true }
-		}
-		.onChange(of: tlsEnabled) { _, newTlsEnabled in
-			if address.lowercased() == "mqtt.meshtastic.org" {
-				tlsEnabled = false
-			} else {
-				if newTlsEnabled != node?.mqttConfig?.tlsEnabled { hasChanges = true }
-			}
-		}
-		.onChange(of: mqttConnected) { _, newMqttConnected in
-			if newMqttConnected == false {
-				if bleManager.mqttProxyConnected {
-					bleManager.mqttManager.disconnect()
-				}
-			} else {
-				if !bleManager.mqttProxyConnected && node != nil {
-					bleManager.mqttManager.connectFromConfigSettings(node: node!)
-				}
-			}
-		}
-		.onChange(of: mapReportingEnabled) { _, newMapReportingEnabled in
-			if newMapReportingEnabled != node?.mqttConfig?.mapReportingEnabled { hasChanges = true }
-		}
-		.onChange(of: mapPublishIntervalSecs) { _, newMapPublishIntervalSecs in
-			if newMapPublishIntervalSecs != node?.mqttConfig?.mapPublishIntervalSecs ?? -1 { hasChanges = true }
-		}
 		.onFirstAppear {
 			// Need to request a MqttModuleConfig from the remote node before allowing changes
 			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
@@ -348,6 +347,7 @@ struct MQTTConfig: View {
 			}
 		}
 	}
+
 	func setMqttValues() {
 
 		nearbyTopics = []

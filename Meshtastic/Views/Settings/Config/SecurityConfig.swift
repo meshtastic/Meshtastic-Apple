@@ -25,9 +25,9 @@ struct SecurityConfig: View {
 	@State var hasValidPublicKey: Bool = false
 	@State var privateKey = ""
 	@State var hasValidPrivateKey: Bool = false
-	@State var adminKey = ""
-	@State var adminKey2 = ""
-	@State var adminKey3 = ""
+	@State var adminKey: String = ""
+	@State var adminKey2: String = ""
+	@State var adminKey3: String = ""
 	@State var hasValidAdminKey: Bool = true
 	@State var hasValidAdminKey2: Bool = true
 	@State var hasValidAdminKey3: Bool = true
@@ -259,9 +259,9 @@ struct SecurityConfig: View {
 	func setSecurityValues() {
 		self.publicKey = node?.securityConfig?.publicKey?.base64EncodedString() ?? ""
 		self.privateKey = node?.securityConfig?.privateKey?.base64EncodedString() ?? ""
-		self.adminKey = node?.securityConfig?.adminKey?.base64EncodedString() ?? ""
-		self.adminKey2 = node?.securityConfig?.adminKey2?.base64EncodedString() ?? ""
-		self.adminKey3 = node?.securityConfig?.adminKey3?.base64EncodedString() ?? ""
+		self.adminKey = node?.securityConfig?.adminKey?.base64EncodedString(options: .lineLength64Characters) ?? ""
+		self.adminKey2 = node?.securityConfig?.adminKey2?.base64EncodedString(options: .lineLength64Characters) ?? ""
+		self.adminKey3 = node?.securityConfig?.adminKey3?.base64EncodedString(options: .lineLength64Characters) ?? ""
 		self.isManaged = node?.securityConfig?.isManaged ?? false
 		self.serialEnabled = node?.securityConfig?.serialEnabled ?? false
 		self.debugLogApiEnabled = node?.securityConfig?.debugLogApiEnabled ?? false
