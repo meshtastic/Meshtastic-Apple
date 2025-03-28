@@ -22204,6 +22204,7 @@
       }
     },
     "OTA Updates are not supported on the this NRF Device." : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
@@ -22218,6 +22219,9 @@
           }
         }
       }
+    },
+    "OTA Updates are not supported on this NRF Device." : {
+
     },
     "OTA Updates are not supported on your platform." : {
       "localizations" : {

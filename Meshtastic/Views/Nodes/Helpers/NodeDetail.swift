@@ -163,7 +163,7 @@ struct NodeDetail: View {
 						}
 					}
 
-					if let firstHeard = node.firstHeard, firstHeard.timeIntervalSince1970 > 0 {
+					if let firstHeard = node.firstHeard, firstHeard.timeIntervalSince1970 > 0 && firstHeard < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
 						HStack {
 							Label {
 								Text("First heard")
@@ -184,7 +184,7 @@ struct NodeDetail: View {
 						}
 					}
 
-					if let lastHeard = node.lastHeard, lastHeard.timeIntervalSince1970 > 0 {
+					if let lastHeard = node.lastHeard, lastHeard.timeIntervalSince1970 > 0 && lastHeard < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
 						HStack {
 							Label {
 								Text("Last heard")
@@ -195,8 +195,10 @@ struct NodeDetail: View {
 							Spacer()
 
 							if dateFormatRelative, let text = Self.relativeFormatter.string(for: lastHeard) {
-								Text(text)
-									.textSelection(.enabled)
+								if lastHeard.formatted() != "unknown.age".localized {
+									Text(text)
+										.textSelection(.enabled)
+								}
 							} else {
 								Text(lastHeard.formatted())
 									.textSelection(.enabled)
