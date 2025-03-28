@@ -76,6 +76,7 @@
     <entity name="DeviceMetadataEntity" representedClassName="DeviceMetadataEntity" syncable="YES" codeGenerationType="class">
         <attribute name="canShutdown" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="deviceStateVersion" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="excludedModules" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="firmwareVersion" optional="YES" attributeType="String"/>
         <attribute name="hasBluetooth" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="hasEthernet" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
