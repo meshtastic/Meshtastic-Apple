@@ -16,6 +16,6 @@
 - [ ] My code adheres to the project's coding and style guidelines.
 - [ ] I have conducted a self-review of my code.
 - [ ] I have commented my code, particularly in complex areas.
-- [ ] I have made corresponding changes to the documentation.
+- [ ] I have verified whether these changes require an update to existing documentation or if new documentation is needed, and created an issue in the [docs repo](http://github.com/meshtastic/meshtastic/issues) if applicable.
 - [ ] I have tested the change to ensure that it works as intended.
 
