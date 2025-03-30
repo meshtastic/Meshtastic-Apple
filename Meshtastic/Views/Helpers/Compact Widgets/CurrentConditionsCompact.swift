@@ -17,6 +17,7 @@ struct CurrentConditionsCompact: View {
 			.symbolRenderingMode(.multicolor)
 	}
 }
+
 struct CurrentConditionsCompact_Previews: PreviewProvider {
 	static var previews: some View {
 

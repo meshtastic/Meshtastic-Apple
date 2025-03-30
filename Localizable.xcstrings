@@ -2203,22 +2203,6 @@
         }
       }
     },
-    "Backup Database" : {
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Резервна база података"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "备份数据库"
-          }
-        }
-      }
-    },
     "Bandwidth" : {
       "localizations" : {
         "de" : {
@@ -5629,6 +5613,9 @@
         }
       }
     },
+    "Confirm" : {
+
+    },
     "Connect to a Node" : {
       "localizations" : {
         "de" : {
@@ -6363,6 +6350,9 @@
           }
         }
       }
+    },
+    "Currently showing modules that may not be supported by this node." : {
+
     },
     "Currently the recommended way to update ESP32 devices is using the web flasher on a desktop computer from a chrome based browser. It does not work on mobile devices or over BLE." : {
       "localizations" : {
@@ -9298,6 +9288,9 @@
         }
       }
     },
+    "Enable broadcasting packets via UDP over the local network." : {
+
+    },
     "Enable Notifications" : {
       "localizations" : {
         "sr" : {
@@ -12134,23 +12127,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Влажност"
-          }
-        }
-      }
-    },
-    "HUMIDITY" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "LUFTFEUCHTIGKEIT"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ВЛАЖНОСТ"
           }
         }
       }
@@ -17136,71 +17112,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mesh 即時活動"
-          }
-        }
-      }
-    },
-    "mesh.log" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesh Log"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesh Log"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Journal du maillage"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "יומן מש"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dziennik Sieci"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Log do Mesh"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesh-logg"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Логови мреже"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesh 日志"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesh 紀錄檔"
           }
         }
       }
@@ -22214,21 +22125,8 @@
         }
       }
     },
-    "OTA Updates are not supported on the this NRF Device." : {
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ОТА ажурирања нису подржана на овом NRF уређају."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OTA 更新不支持 NRF 设备"
-          }
-        }
-      }
+    "OTA Updates are not supported on this NRF Device." : {
+
     },
     "OTA Updates are not supported on your platform." : {
       "localizations" : {
@@ -23608,6 +23506,9 @@
         }
       }
     },
+    "Radiation" : {
+
+    },
     "Radio Disconnected" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -24690,22 +24591,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Поновно покретање на чвор на који сте повезани"
-          }
-        }
-      }
-    },
-    "restore" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wiederherstellen"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Обнова"
           }
         }
       }
@@ -28514,6 +28399,12 @@
         }
       }
     },
+    "Soil Moisture" : {
+
+    },
+    "Soil Temp" : {
+
+    },
     "Specifies how long the monitored GPIO should output." : {
       "localizations" : {
         "sr" : {
@@ -30181,6 +30072,9 @@
         }
       }
     },
+    "The Router roles are designed for high vantage locations like mountaintops and towers. This node needs to be able to have a good direct connection to most of the nodes on the network or else this will significantly hurt the network." : {
+
+    },
     "The secondary public key authorized to send admin messages to this node." : {
       "localizations" : {
         "de" : {
@@ -30353,6 +30247,9 @@
           }
         }
       }
+    },
+    "This node does not support any configurable modules." : {
+
     },
     "This will disable fixed position and remove the currently set position." : {
       "localizations" : {
@@ -31503,6 +31400,9 @@
           }
         }
       }
+    },
+    "UDP Broadcast" : {
+
     },
     "Ukraine 433mhz" : {
       "extractionState" : "manual",
@@ -32676,6 +32576,9 @@
           }
         }
       }
+    },
+    "Weight" : {
+
     },
     "What does the lock mean?" : {
       "localizations" : {

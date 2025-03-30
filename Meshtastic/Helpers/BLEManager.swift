@@ -690,24 +690,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						connectedPeripheral.longName = myInfo?.bleName ?? "unknown".localized
 						let newConnection = Int64(UserDefaults.preferredPeripheralNum) != Int64(decodedInfo.myInfo.myNodeNum)
 						if newConnection {
-							let container = NSPersistentContainer(name: "Meshtastic")
-							if let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-								let databasePath = url.appendingPathComponent("backup")
-									.appendingPathComponent("\(UserDefaults.preferredPeripheralNum)")
-									.appendingPathComponent("Meshtastic.sqlite")
-								if FileManager.default.fileExists(atPath: databasePath.path) {
-									do {
-										disconnectPeripheral(reconnect: false)
-										try container.restorePersistentStore(from: databasePath)
-										UserDefaults.preferredPeripheralNum = Int(myInfo?.myNodeNum ?? 0)
-										context.refreshAllObjects()
-										Logger.data.notice("🗂️ Restored Core data for /\(UserDefaults.preferredPeripheralNum, privacy: .public)")
-										connectTo(peripheral: peripheral)
-									} catch {
-										Logger.data.error("🗂️ Restore Core data copy error: \(error, privacy: .public)")
-									}
-								}
-							}
+							// Onboard a new device connection here
 						}
 					}
 					tryClearExistingChannels()
@@ -1006,6 +989,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				Logger.mesh.info("🕸️ MESH PACKET received for ATAK Plugin App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .powerstressApp:
 				Logger.mesh.info("🕸️ MESH PACKET received for Power Stress App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+			case .reticulumTunnelApp:
+				Logger.mesh.info("🕸️ MESH PACKET received for Reticulum Tunnel App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			}
 
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
