@@ -196,8 +196,7 @@ struct Settings: View {
 				}
 			}
 
-			if let node = nodes.first(where: { $0.num == preferredNodeNum }),
-				node.metadata?.hasWifi ?? false, isModuleSupported(.extnotifConfig) {
+			if isModuleSupported(.extnotifConfig) {
 				NavigationLink(value: SettingsNavigationState.externalNotification) {
 					Label {
 						Text("external.notification")
@@ -247,8 +246,7 @@ struct Settings: View {
 				}
 			}
 
-			if let node = nodes.first(where: { $0.num == preferredNodeNum }),
-				node.metadata?.hasWifi ?? false, isModuleSupported(.serialConfig) {
+			if isModuleSupported(.serialConfig) {
 				NavigationLink(value: SettingsNavigationState.serial) {
 					Label {
 						Text("serial")
