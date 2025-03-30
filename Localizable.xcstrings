@@ -2204,6 +2204,7 @@
       }
     },
     "Backup Database" : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
@@ -24694,6 +24695,7 @@
       }
     },
     "restore" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

@@ -25,34 +25,6 @@ struct AppData: View {
 				GPSStatus()
 			}
 			Divider()
-			Button(action: {
-				let container = NSPersistentContainer(name: "Meshtastic")
-				guard let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-					Logger.data.error("nil File path for back")
-					return
-				}
-				do {
-					try container.copyPersistentStores(to: url.appendingPathComponent("backup").appendingPathComponent("\(UserDefaults.preferredPeripheralNum)"), overwriting: true)
-					loadFiles()
-					Logger.data.notice("🗂️ Made a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
-				} catch {
-					Logger.data.error("🗂️ Core data backup copy error: \(error, privacy: .public)")
-				}
-			}) {
-				Label {
-					Text("Backup Database")
-						.font(idiom == .phone ? .callout : .title)
-				} icon: {
-					Image(systemName: "cylinder.split.1x2")
-						.symbolRenderingMode(.hierarchical)
-						.font(idiom == .phone ? .callout : .title)
-						.frame(width: 35)
-				}
-			}
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			Divider()
 		}
 
 		List(files, id: \.self) { file in
@@ -62,20 +34,6 @@ struct AppData: View {
 						Label {
 							Text("Node Core Data Backup \(file.pathComponents[(idiom == .phone || idiom == .pad) ? 9 : 10])/\(file.lastPathComponent) - \(file.creationDate?.formatted() ?? "") - \(file.fileSizeString)")
 								.swipeActions {
-									Button(role: .none) {
-										bleManager.disconnectPeripheral(reconnect: false)
-										let container = NSPersistentContainer(name: "Meshtastic")
-										do {
-											try container.restorePersistentStore(from: file.absoluteURL)
-											UserDefaults.preferredPeripheralId = ""
-											UserDefaults.preferredPeripheralNum = Int(file.pathComponents[(idiom == .phone || idiom == .pad) ? 9 : 10]) ?? 0
-											Logger.data.notice("🗂️ Restored a core data backup to backup/\(UserDefaults.preferredPeripheralNum, privacy: .public)")
-										} catch {
-											Logger.data.error("🗂️ Core data restore copy error: \(error, privacy: .public)")
-										}
-									} label: {
-										Label("restore", systemImage: "arrow.counterclockwise")
-									}
 									Button(role: .destructive) {
 										do {
 											try FileManager.default.removeItem(at: file)

@@ -214,18 +214,6 @@ struct Connect: View {
 												if let connectedPeripheral = bleManager.connectedPeripheral, connectedPeripheral.peripheral.state == CBPeripheralState.connected {
 													bleManager.disconnectPeripheral()
 												}
-												let container = NSPersistentContainer(name: "Meshtastic")
-												guard let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-													Logger.data.error("nil File path for back")
-													return
-												}
-												do {
-													try container.copyPersistentStores(to: url.appendingPathComponent("backup").appendingPathComponent("\(UserDefaults.preferredPeripheralNum)"), overwriting: true)
-													Logger.data.notice("🗂️ Made a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
-
-												} catch {
-													Logger.data.error("🗂️ Core data backup copy error: \(error, privacy: .public)")
-												}
 												clearCoreDataDatabase(context: context, includeRoutes: false)
 											}
 											UserDefaults.preferredPeripheralId = selectedPeripherialId
