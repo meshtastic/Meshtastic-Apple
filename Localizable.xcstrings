@@ -2203,23 +2203,6 @@
         }
       }
     },
-    "Backup Database" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Резервна база података"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "备份数据库"
-          }
-        }
-      }
-    },
     "Bandwidth" : {
       "localizations" : {
         "de" : {
@@ -17133,71 +17116,6 @@
         }
       }
     },
-    "mesh.log" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesh Log"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesh Log"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Journal du maillage"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "יומן מש"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dziennik Sieci"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Log do Mesh"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesh-logg"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Логови мреже"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesh 日志"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesh 紀錄檔"
-          }
-        }
-      }
-    },
     "mesh.log.ambientlighting.config %@" : {
       "extractionState" : "migrated",
       "localizations" : {
@@ -22207,23 +22125,6 @@
         }
       }
     },
-    "OTA Updates are not supported on the this NRF Device." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ОТА ажурирања нису подржана на овом NRF уређају."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OTA 更新不支持 NRF 设备"
-          }
-        }
-      }
-    },
     "OTA Updates are not supported on this NRF Device." : {
 
     },
@@ -24690,23 +24591,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Поновно покретање на чвор на који сте повезани"
-          }
-        }
-      }
-    },
-    "restore" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wiederherstellen"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Обнова"
           }
         }
       }
