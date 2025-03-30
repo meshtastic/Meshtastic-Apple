@@ -227,8 +227,7 @@ struct Settings: View {
 				}
 			}
 
-			if let node = nodes.first(where: { $0.num == preferredNodeNum }),
-			   node.metadata?.hasWifi ?? false, isModuleSupported(.paxcounterConfig) {
+			if isModuleSupported(.paxcounterConfig) {
 				NavigationLink(value: SettingsNavigationState.paxCounter) {
 					Label {
 						Text("config.module.paxcounter.settings")
