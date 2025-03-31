@@ -5635,6 +5635,9 @@
         }
       }
     },
+    "Connect to new radio?" : {
+
+    },
     "connected" : {
       "localizations" : {
         "de" : {
@@ -5842,6 +5845,9 @@
           }
         }
       }
+    },
+    "Connecting to a new radio will clear all app data on the phone." : {
+
     },
     "Connection Attempt %lld of 10" : {
       "localizations" : {
