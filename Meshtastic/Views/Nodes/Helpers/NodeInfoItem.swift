@@ -22,12 +22,12 @@ struct NodeInfoItem: View {
 					if user.hwModel != "UNSET" {
 						VStack(alignment: .center) {
 							Spacer()
-							Image(systemName: currentDevice?.activelySupported ?? false ? "checkmark.seal.fill" : "x.circle")
+							Image(systemName: currentDevice?.activelySupported ?? false ? "checkmark.seal.fill" : "seal.fill")
 								.resizable()
 								.aspectRatio(contentMode: .fill)
 								.frame(width: 75, height: 75)
 								.foregroundStyle(currentDevice?.activelySupported ?? false ? .green : .red)
-							Text( currentDevice?.activelySupported ?? false ? "Supported" : "Unsupported")
+							Text( currentDevice?.activelySupported ?? false ? "Full Support" : "Community Support")
 								.foregroundStyle(.gray)
 								.font(.callout)
 						}
