@@ -24,6 +24,7 @@ struct Connect: View {
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
 	@State var liveActivityStarted = false
+	@State var presentingSwitchPreferredPeripheral = false
 	@State var selectedPeripherialId = ""
 
 	init () {
@@ -214,10 +215,11 @@ struct Connect: View {
 												if let connectedPeripheral = bleManager.connectedPeripheral, connectedPeripheral.peripheral.state == CBPeripheralState.connected {
 													bleManager.disconnectPeripheral()
 												}
-												clearCoreDataDatabase(context: context, includeRoutes: false)
+												presentingSwitchPreferredPeripheral = true
+												selectedPeripherialId = peripheral.peripheral.identifier.uuidString
+											} else {
+												self.bleManager.connectTo(peripheral: peripheral.peripheral)
 											}
-											UserDefaults.preferredPeripheralId = selectedPeripherialId
-											self.bleManager.connectTo(peripheral: peripheral.peripheral)
 										}) {
 											Text(peripheral.name).font(.callout)
 										}
@@ -228,6 +230,21 @@ struct Connect: View {
 									}.padding([.bottom, .top])
 								}
 							}
+							.confirmationDialog("Connecting to a new radio will clear all app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
+								Button("Connect to new radio?", role: .destructive) {
+									UserDefaults.preferredPeripheralId = selectedPeripherialId
+									UserDefaults.preferredPeripheralNum = 0
+									if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
+										bleManager.disconnectPeripheral()
+									}
+									clearCoreDataDatabase(context: context, includeRoutes: false)
+									let radio = bleManager.peripherals.first(where: { $0.peripheral.identifier.uuidString == selectedPeripherialId })
+									if radio != nil {
+										bleManager.connectTo(peripheral: radio!.peripheral)
+									}
+								}
+							}
+							.textCase(nil)
 						}
 
 					} else {
