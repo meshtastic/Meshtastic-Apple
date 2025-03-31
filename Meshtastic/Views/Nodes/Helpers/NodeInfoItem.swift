@@ -22,7 +22,7 @@ struct NodeInfoItem: View {
 					if user.hwModel != "UNSET" {
 						VStack(alignment: .center) {
 							Spacer()
-							Image(systemName: currentDevice?.activelySupported ?? false ? "checkmark.seal.fill" : "xmark.seal")
+							Image(systemName: currentDevice?.activelySupported ?? false ? "checkmark.seal.fill" : "seal.fill")
 								.resizable()
 								.aspectRatio(contentMode: .fill)
 								.frame(width: 75, height: 75)
