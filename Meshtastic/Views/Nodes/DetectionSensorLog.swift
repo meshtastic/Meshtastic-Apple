@@ -135,7 +135,7 @@ struct DetectionSensorLog: View {
 					self.isExporting = false
 					Logger.services.info("Detection Sensor metrics log download succeeded.")
 				case .failure(let error):
-					Logger.services.error("Detection Sensor log download failed: \(error.localizedDescription).")
+					Logger.services.error("Detection Sensor log download failed: \(error.localizedDescription, privacy: .public).")
 				}
 			}
 		)

@@ -176,7 +176,7 @@ struct PaxCounterLog: View {
 					) {
 						Button("paxcounter.delete", role: .destructive) {
 							if clearPax(destNum: node.num, context: context) {
-								Logger.services.info("Cleared Pax Counter for \(node.num)")
+								Logger.services.info("Cleared Pax Counter for \(node.num, privacy: .public)")
 							} else {
 								Logger.services.error("Clear Pax Counter Log Failed")
 							}
@@ -216,7 +216,7 @@ struct PaxCounterLog: View {
 					self.isExporting = false
 					Logger.services.info("PAX Counter log download succeeded")
 				case .failure(let error):
-					Logger.services.error("PAX Counter log download failed: \(error.localizedDescription)")
+					Logger.services.error("PAX Counter log download failed: \(error.localizedDescription, privacy: .public)")
 				}
 			}
 		)

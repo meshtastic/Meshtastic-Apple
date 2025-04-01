@@ -69,7 +69,7 @@ import OSLog
 					}
 				}
 			} catch {
-				Logger.services.error("💥 [App] Could not start location updates: \(error.localizedDescription)")
+				Logger.services.error("💥 [App] Could not start location updates: \(error.localizedDescription, privacy: .public)")
 			}
 			return
 		}

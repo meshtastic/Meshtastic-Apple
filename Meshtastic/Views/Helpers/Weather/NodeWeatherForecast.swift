@@ -35,7 +35,7 @@ struct NodeWeatherForecastView: View {
 					)
 				})
 			} catch {
-				Logger.services.error("Could not load weather: \(error.localizedDescription)")
+				Logger.services.error("Could not load weather: \(error.localizedDescription, privacy: .public)")
 			}
 		}
 	}

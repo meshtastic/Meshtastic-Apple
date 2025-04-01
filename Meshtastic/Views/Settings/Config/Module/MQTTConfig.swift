@@ -357,7 +357,7 @@ struct MQTTConfig: View {
 			defaultTopic = "msh/" + (region?.topic ?? "UNSET")
 			geocoder.reverseGeocodeLocation(LocationsHandler.shared.locationsArray.first!, completionHandler: {(placemarks, error) in
 				if let error {
-					Logger.services.error("Failed to reverse geocode location: \(error.localizedDescription)")
+					Logger.services.error("Failed to reverse geocode location: \(error.localizedDescription, privacy: .public)")
 					return
 				}
 

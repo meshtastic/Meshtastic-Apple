@@ -104,7 +104,7 @@ func moduleConfig (config: ModuleConfig, context: NSManagedObjectContext, nodeNu
 func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedObjectContext) -> MyInfoEntity? {
 
 	let logString = String.localizedStringWithFormat("mesh.log.myinfo %@".localized, String(myInfo.myNodeNum))
-	Logger.mesh.info("ℹ️ \(logString)")
+	Logger.mesh.info("ℹ️ \(logString, privacy: .public)")
 
 	let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
 	fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(myInfo.myNodeNum))
@@ -155,7 +155,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 	if channel.isInitialized && channel.hasSettings && channel.role != Channel.Role.disabled {
 
 		let logString = String.localizedStringWithFormat("mesh.log.channel.received %d %@".localized, channel.index, String(fromNum))
-		Logger.mesh.info("🎛️ \(logString)")
+		Logger.mesh.info("🎛️ \(logString, privacy: .public)")
 
 		let fetchedMyInfoRequest = MyInfoEntity.fetchRequest()
 		fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", fromNum)
@@ -194,7 +194,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				} catch {
 					Logger.data.error("💥 Failed to save channel: \(error.localizedDescription, privacy: .public)")
 				}
-				Logger.data.info("💾 Updated MyInfo channel \(channel.index) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
+				Logger.data.info("💾 Updated MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum, privacy: .public)")
 			} else if channel.role.rawValue > 0 {
 				Logger.data.error("💥Trying to save a channel to a MyInfo that does not exist: \(fromNum.toHex(), privacy: .public)")
 			}
@@ -210,7 +210,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPass
 
 	if metadata.isInitialized {
 		let logString = String.localizedStringWithFormat("mesh.log.device.metadata.received %@".localized, fromNum.toHex())
-		Logger.mesh.info("🏷️ \(logString)")
+		Logger.mesh.info("🏷️ \(logString, privacy: .public)")
 
 		let fetchedNodeRequest = NodeInfoEntity.fetchRequest()
 		fetchedNodeRequest.predicate = NSPredicate(format: "num == %lld", fromNum)
@@ -262,7 +262,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPass
 func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObjectContext) -> NodeInfoEntity? {
 
 	let logString = String.localizedStringWithFormat("mesh.log.nodeinfo.received %@".localized, String(nodeInfo.num))
-	Logger.mesh.info("📟 \(logString)")
+	Logger.mesh.info("📟 \(logString, privacy: .public)")
 
 	guard nodeInfo.num > 0 else { return nil }
 
@@ -350,12 +350,12 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				}
 				do {
 					try context.save()
-					Logger.data.info("💾 Saved a new Node Info For: \(String(nodeInfo.num))")
+					Logger.data.info("💾 Saved a new Node Info For: \(String(nodeInfo.num), privacy: .public)")
 					return newNode
 				} catch {
 					context.rollback()
 					let nsError = error as NSError
-					Logger.data.error("Error Saving Core Data NodeInfoEntity: \(nsError)")
+					Logger.data.error("Error Saving Core Data NodeInfoEntity: \(nsError, privacy: .public)")
 				}
 			} catch {
 				Logger.data.error("Fetch MyInfo Error")
@@ -473,7 +473,7 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				if !cmmc.messages.isEmpty {
 
 					let logString = String.localizedStringWithFormat("mesh.log.cannedmessages.messages.received %@".localized, packet.from.toHex())
-					Logger.mesh.info("🥫 \(logString)")
+					Logger.mesh.info("🥫 \(logString, privacy: .public)")
 
 					let fetchNodeRequest = NodeInfoEntity.fetchRequest()
 					fetchNodeRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
@@ -548,7 +548,7 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			let ringtone = adminMessage.getRingtoneResponse
 			upsertRtttlConfigPacket(ringtone: ringtone, nodeNum: Int64(packet.from), context: context)
 		} else {
-			Logger.mesh.error("🕸️ MESH PACKET received Admin App UNHANDLED \((try? packet.decoded.jsonString()) ?? "JSON Decode Failure")")
+			Logger.mesh.error("🕸️ MESH PACKET received Admin App UNHANDLED \((try? packet.decoded.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 		}
 		// Save an ack for the admin message log for each admin message response received as we stopped sending acks if there is also a response to reduce airtime.
 		adminResponseAck(packet: packet, context: context)
@@ -573,17 +573,17 @@ func adminResponseAck (packet: MeshPacket, context: NSManagedObjectContext) {
 			do {
 				try context.save()
 			} catch {
-				Logger.data.error("Failed to save admin message response as an ack: \(error.localizedDescription)")
+				Logger.data.error("Failed to save admin message response as an ack: \(error.localizedDescription, privacy: .public)")
 			}
 		}
 	} catch {
-		Logger.data.error("Failed to fetch admin message by requestID: \(error.localizedDescription)")
+		Logger.data.error("Failed to fetch admin message by requestID: \(error.localizedDescription, privacy: .public)")
 	}
 }
 func paxCounterPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.paxcounter %@".localized, String(packet.from))
-	Logger.mesh.info("🧑‍🤝‍🧑 \(logString)")
+	Logger.mesh.info("🧑‍🤝‍🧑 \(logString, privacy: .public)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
@@ -608,7 +608,7 @@ func paxCounterPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				do {
 					try context.save()
 				} catch {
-					Logger.data.error("Failed to save pax: \(error.localizedDescription)")
+					Logger.data.error("Failed to save pax: \(error.localizedDescription, privacy: .public)")
 				}
 			} else {
 				Logger.data.info("Node Info Not Found")
@@ -627,7 +627,7 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 
 		let routingErrorString = routingError?.display ?? "unknown".localized
 		let logString = String.localizedStringWithFormat("mesh.log.routing.message %@ %@".localized, String(packet.decoded.requestID), routingErrorString)
-		Logger.mesh.info("🕸️ \(logString)")
+		Logger.mesh.info("🕸️ \(logString, privacy: .public)")
 
 		let fetchMessageRequest = MessageEntity.fetchRequest()
 		fetchMessageRequest.predicate = NSPredicate(format: "messageId == %lld", Int64(packet.decoded.requestID))
@@ -674,11 +674,11 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 				return
 			}
 			try context.save()
-			Logger.data.info("💾 ACK Saved for Message: \(packet.decoded.requestID)")
+			Logger.data.info("💾 ACK Saved for Message: \(packet.decoded.requestID, privacy: .public)")
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
-			Logger.data.error("Error Saving ACK for message: \(packet.id) Error: \(nsError)")
+			Logger.data.error("Error Saving ACK for message: \(packet.id, privacy: .public) Error: \(nsError, privacy: .public)")
 		}
 	}
 }
@@ -688,7 +688,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 	if let telemetryMessage = try? Telemetry(serializedBytes: packet.decoded.payload) {
 
 		let logString = String.localizedStringWithFormat("mesh.log.telemetry.received %@".localized, String(packet.from))
-		Logger.mesh.info("📈 \(logString)")
+		Logger.mesh.info("📈 \(logString, privacy: .public)")
 
 		if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) && telemetryMessage.variant != Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
 			/// Other unhandled telemetry packets
@@ -782,7 +782,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 			}
 			try context.save()
 
-			Logger.data.info("💾 [TelemetryEntity] of type \(MetricsTypes(rawValue: Int(telemetry.metricsType))?.name ?? "Unknown Metrics Type") Saved for Node: \(packet.from.toHex())")
+			Logger.data.info("💾 [TelemetryEntity] of type \(MetricsTypes(rawValue: Int(telemetry.metricsType))?.name ?? "Unknown Metrics Type", privacy: .public) Saved for Node: \(packet.from.toHex(), privacy: .public)")
 			if telemetry.metricsType == 0 {
 				// Connected Device Metrics
 				// ------------------------
@@ -883,7 +883,7 @@ func textMessageAppPacket(
 	}
 
 	if messageText?.count ?? 0 > 0 {
-		Logger.mesh.info("💬 \("mesh.log.textmessage.received".localized)")
+		Logger.mesh.info("💬 \("mesh.log.textmessage.received".localized, privacy: .public)")
 		let messageUsers = UserEntity.fetchRequest()
 		messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
 		do {
@@ -959,7 +959,7 @@ func textMessageAppPacket(
 			var messageSaved = false
 			do {
 				try context.save()
-				Logger.data.info("💾 Saved a new message for \(newMessage.messageId)")
+				Logger.data.info("💾 Saved a new message for \(newMessage.messageId, privacy: .public)")
 				messageSaved = true
 
 				if messageSaved {
@@ -989,7 +989,7 @@ func textMessageAppPacket(
 								)
 							]
 							manager.schedule()
-							Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
+							Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized, privacy: .public)")
 						}
 					} else if newMessage.fromUser != nil && newMessage.toUser == nil {
 						let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
@@ -1021,7 +1021,7 @@ func textMessageAppPacket(
 											    critical: critical)
 										]
 										manager.schedule()
-										Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
+										Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized, privacy: .public)")
 									}
 								}
 							}
@@ -1033,7 +1033,7 @@ func textMessageAppPacket(
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("Failed to save new MessageEntity \(nsError)")
+				Logger.data.error("Failed to save new MessageEntity \(nsError, privacy: .public)")
 			}
 		} catch {
 			Logger.data.error("Fetch Message To and From Users Error")
@@ -1044,7 +1044,7 @@ func textMessageAppPacket(
 func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.waypoint.received %@".localized, String(packet.from))
-	Logger.mesh.info("📍 \(logString)")
+	Logger.mesh.info("📍 \(logString, privacy: .public)")
 
 	let fetchWaypointRequest = WaypointEntity.fetchRequest()
 	fetchWaypointRequest.predicate = NSPredicate(format: "id == %lld", Int64(packet.id))
@@ -1071,7 +1071,7 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				waypoint.created = Date()
 				do {
 					try context.save()
-					Logger.data.info("💾 Added Node Waypoint App Packet For: \(waypoint.id)")
+					Logger.data.info("💾 Added Node Waypoint App Packet For: \(waypoint.id, privacy: .public)")
 					let manager = LocalNotificationManager()
 					let icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
 					let latitude = Double(waypoint.latitudeI) / 1e7
@@ -1086,12 +1086,12 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 							path: "meshtastic:///map?waypointid=\(waypoint.id)"
 						)
 					]
-					Logger.data.debug("meshtastic:///map?waypointid=\(waypoint.id)")
+					Logger.data.debug("meshtastic:///map?waypointid=\(waypoint.id, privacy: .public)")
 					manager.schedule()
 				} catch {
 					context.rollback()
 					let nsError = error as NSError
-					Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError)")
+					Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
 				}
 			} else {
 				fetchedWaypoint[0].id = Int64(packet.id)
@@ -1109,11 +1109,11 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				fetchedWaypoint[0].lastUpdated = Date()
 				do {
 					try context.save()
-					Logger.data.info("💾 Updated Node Waypoint App Packet For: \(fetchedWaypoint[0].id)")
+					Logger.data.info("💾 Updated Node Waypoint App Packet For: \(fetchedWaypoint[0].id, privacy: .public)")
 				} catch {
 					context.rollback()
 					let nsError = error as NSError
-					Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError)")
+					Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
 				}
 			}
 		}

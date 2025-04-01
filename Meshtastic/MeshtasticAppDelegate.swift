@@ -97,10 +97,10 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		if let targetValue = userInfo["target"] as? String,
 		   let deepLink = userInfo["path"] as? String,
 		   let url = URL(string: deepLink) {
-			Logger.services.info("userNotificationCenter didReceiveResponse \(targetValue) \(deepLink)")
+			Logger.services.info("userNotificationCenter didReceiveResponse \(targetValue, privacy: .public) \(deepLink, privacy: .public)")
 			router?.route(url: url)
 		} else {
-			Logger.services.error("Failed to handle notification response: \(userInfo)")
+			Logger.services.error("Failed to handle notification response: \(userInfo, privacy: .public)")
 		}
 		completionHandler()
 	}

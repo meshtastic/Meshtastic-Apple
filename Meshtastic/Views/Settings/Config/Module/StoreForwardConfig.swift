@@ -117,7 +117,7 @@ struct StoreForwardConfig: View {
 					do {
 						try context.save()
 					} catch {
-						Logger.mesh.error("Failed to save isRouter: \(error.localizedDescription)")
+						Logger.mesh.error("Failed to save isRouter: \(error.localizedDescription, privacy: .public)")
 					}
 				}
 

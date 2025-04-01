@@ -64,7 +64,7 @@ struct LocalWeatherConditions: View {
 						attributionLogo = colorScheme == .light ? attribution.combinedMarkLightURL : attribution.combinedMarkDarkURL
 					}
 				} catch {
-					Logger.services.error("Could not gather weather information: \(error.localizedDescription)")
+					Logger.services.error("Could not gather weather information: \(error.localizedDescription, privacy: .public)")
 					condition = .clear
 					symbolName = "cloud.fill"
 				}

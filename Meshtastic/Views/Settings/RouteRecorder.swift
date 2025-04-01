@@ -188,7 +188,7 @@ struct RouteRecorder: View {
 										} catch {
 											context.rollback()
 											let nsError = error as NSError
-											Logger.data.error("Error Saving RouteEntity from the Route Recorder \(nsError)")
+											Logger.data.error("Error Saving RouteEntity from the Route Recorder \(nsError, privacy: .public)")
 										}
 									} label: {
 										Label("start", systemImage: "play")
@@ -246,7 +246,7 @@ struct RouteRecorder: View {
 										} catch {
 											context.rollback()
 											let nsError = error as NSError
-											Logger.data.error("Error Saving RouteEntity from the Route Recorder \(nsError)")
+											Logger.data.error("Error Saving RouteEntity from the Route Recorder \(nsError, privacy: .public)")
 										}
 										isShowingDetails = false
 									} label: {
@@ -298,11 +298,10 @@ struct RouteRecorder: View {
 								do {
 									try context.save()
 									Logger.data.info("💾 Saved a new route location")
-									// logger.info("💾 Updated Canned Messages Messages For: \(fetchedNode[0].num)")
 								} catch {
 									context.rollback()
 									let nsError = error as NSError
-									Logger.data.error("Error Saving LocationEntity from the Route Recorder \(nsError)")
+									Logger.data.error("Error Saving LocationEntity from the Route Recorder \(nsError, privacy: .public)")
 								}
 							}
 						}

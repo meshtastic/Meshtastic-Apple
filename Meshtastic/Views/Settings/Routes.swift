@@ -64,7 +64,7 @@ struct Routes: View {
 							var latIndex = -1
 							var longIndex = -1
 							for index in headers!.indices {
-								Logger.services.debug("\(index): \( headers![index])")
+								Logger.services.debug("\(index, privacy: .public): \( headers![index], privacy: .public)")
 								if headers![index].trimmingCharacters(in: .whitespaces) == "Latitude" {
 									latIndex = index
 								} else if headers![index].trimmingCharacters(in: .whitespaces) == "Longitude" {
@@ -94,7 +94,7 @@ struct Routes: View {
 								do {
 									try context.save()
 								} catch let error as NSError {
-									Logger.services.error("\(error.localizedDescription)")
+									Logger.services.error("\(error.localizedDescription, privacy: .public)")
 									isShowingBadFileAlert = true
 								}
 							} else {
@@ -103,11 +103,11 @@ struct Routes: View {
 
 						} catch {
 							// TODO: deal with errors
-							Logger.services.error("\(error.localizedDescription)")
+							Logger.services.error("\(error.localizedDescription, privacy: .public)")
 						}
 
 					} catch {
-						Logger.services.error("CSV Import Error: \(error.localizedDescription)")
+						Logger.services.error("CSV Import Error: \(error.localizedDescription, privacy: .public)")
 					}
 				}
 				List(routes, id: \.self, selection: $selectedRoute) { route in
@@ -151,7 +151,7 @@ struct Routes: View {
 							do {
 								try context.save()
 							} catch let error as NSError {
-								Logger.data.error("\(error.localizedDescription)")
+								Logger.data.error("\(error.localizedDescription, privacy: .public)")
 							}
 						} label: {
 							Label("delete", systemImage: "trash")
@@ -227,7 +227,7 @@ struct Routes: View {
 								} catch {
 									context.rollback()
 									let nsError = error as NSError
-									Logger.data.error("Error Saving RouteEntity from the Route Editor \(nsError)")
+									Logger.data.error("Error Saving RouteEntity from the Route Editor \(nsError, privacy: .public)")
 								}
 							}
 							.buttonStyle(.bordered)
@@ -300,7 +300,7 @@ struct Routes: View {
 							self.isExporting = false
 							Logger.services.info("Route log download succeeded.")
 						case .failure(let error):
-							Logger.services.error("Route log download failed: \(error.localizedDescription).")
+							Logger.services.error("Route log download failed: \(error.localizedDescription, privacy: .public).")
 						}
 					}
 				)

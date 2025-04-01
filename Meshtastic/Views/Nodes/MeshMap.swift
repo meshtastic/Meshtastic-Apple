@@ -115,7 +115,7 @@ struct MeshMap: View {
 								editingWaypoint!.longitudeI = Int32((newWaypointCoord?.longitude ?? 0) * 1e7)
 								editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
 								editingWaypoint!.id = 0
-								Logger.services.debug("Long press occured at Lat: \(coordinate.latitude) Long: \(coordinate.longitude)")
+								Logger.services.debug("Long press occured at Lat: \(coordinate.latitude, privacy: .public) Long: \(coordinate.longitude, privacy: .public)")
 							default: return
 							}
 					})

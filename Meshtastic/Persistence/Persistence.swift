@@ -48,7 +48,7 @@ class PersistenceController {
 
 			if let error = error as NSError? {
 
-				Logger.data.error("CoreData Error: \(error.localizedDescription). Now attempting to truncate CoreData database.  All app data will be lost.")
+				Logger.data.error("CoreData Error: \(error.localizedDescription, privacy: .public). Now attempting to truncate CoreData database.  All app data will be lost.")
 				self.clearDatabase()
 			}
 		})
@@ -65,11 +65,11 @@ class PersistenceController {
 			 do {
 				 try persistentStoreCoordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
 			 } catch let error {
-				 Logger.data.error("Failed to re-create CoreData database: \(error.localizedDescription)")
+				 Logger.data.error("Failed to re-create CoreData database: \(error.localizedDescription, privacy: .public)")
 			 }
 
 		} catch let error {
-			Logger.data.error("Failed to destroy CoreData database, delete the app and re-install to clear data. Attempted to clear persistent store: \(error.localizedDescription)")
+			Logger.data.error("Failed to destroy CoreData database, delete the app and re-install to clear data. Attempted to clear persistent store: \(error.localizedDescription, privacy: .public)")
 		}
 	}
 }
