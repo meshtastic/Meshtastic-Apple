@@ -103,7 +103,7 @@ struct StoreForwardConfig: View {
 				/// Let the user set isServer for the connected node, for nodes on the mesh set isServer based
 				/// on receipt of a primary heartbeat
 				if connectedNode?.num ?? 0 == node?.num ?? -1 {
-					connectedNode?.storeForwardConfig?.isServer = isServer
+					connectedNode?.storeForwardConfig?.isRouter = isServer
 					do {
 						try context.save()
 					} catch {
@@ -163,7 +163,7 @@ struct StoreForwardConfig: View {
 			if oldEnabled != newEnabled && newEnabled != node!.storeForwardConfig!.enabled { hasChanges = true }
 		}
 		.onChange(of: isServer) { oldIsServer, newIsServer in
-			if oldIsServer != newIsServer && newIsServer != node!.storeForwardConfig!.isServer { hasChanges = true }
+			if oldIsServer != newIsServer && newIsServer != node!.storeForwardConfig!.isRouter { hasChanges = true }
 		}
 		.onChange(of: heartbeat) { oldHeartbeat, newHeartbeat in
 			if oldHeartbeat != newHeartbeat && newHeartbeat != node?.storeForwardConfig?.heartbeat ?? true { hasChanges = true }
@@ -181,7 +181,7 @@ struct StoreForwardConfig: View {
 
 	func setStoreAndForwardValues() {
 		self.enabled = (node?.storeForwardConfig?.enabled ?? false)
-		self.isServer = (node?.storeForwardConfig?.isServer ?? false)
+		self.isServer = (node?.storeForwardConfig?.isRouter ?? false)
 		self.heartbeat = (node?.storeForwardConfig?.heartbeat ?? true)
 		self.records = Int(node?.storeForwardConfig?.records ?? 50)
 		self.historyReturnMax = Int(node?.storeForwardConfig?.historyReturnMax ?? 100)

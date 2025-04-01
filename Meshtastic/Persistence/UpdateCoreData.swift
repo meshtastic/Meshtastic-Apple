@@ -1361,7 +1361,7 @@ func upsertStoreForwardModuleConfigPacket(config: ModuleConfig.StoreForwardConfi
 				newConfig.records = Int32(config.records)
 				newConfig.historyReturnMax = Int32(config.historyReturnMax)
 				newConfig.historyReturnWindow = Int32(config.historyReturnWindow)
-				newConfig.isServer = config.isServer
+				newConfig.isRouter = config.isServer
 				fetchedNode[0].storeForwardConfig = newConfig
 			} else {
 				fetchedNode[0].storeForwardConfig?.enabled = config.enabled
