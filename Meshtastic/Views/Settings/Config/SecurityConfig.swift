@@ -22,7 +22,6 @@ struct SecurityConfig: View {
 
 	@State var hasChanges = false
 	@State var publicKey = ""
-	@State var hasValidPublicKey: Bool = false
 	@State var privateKey = ""
 	@State var hasValidPrivateKey: Bool = false
 	@State var adminKey: String = ""
@@ -45,11 +44,14 @@ struct SecurityConfig: View {
 				Section(header: Text("Admin & Direct Message Keys")) {
 					VStack(alignment: .leading) {
 						Label("Public Key", systemImage: "key")
-						SecureInput("Public Key", text: $publicKey, isValid: $hasValidPublicKey)
-							.background(
-								RoundedRectangle(cornerRadius: 10.0)
-									.stroke(hasValidPublicKey ?	Color.clear : Color.red, lineWidth: 2.0)
-							)
+						Text(publicKey)
+							.font(idiom == .phone ? .caption : .callout)
+							.allowsTightening(true)
+							.monospaced()
+							.keyboardType(.alphabet)
+							.foregroundStyle(.tertiary)
+							.disableAutocorrection(true)
+							.textSelection(.enabled)
 						Text("Sent out to other nodes on the mesh to allow them to compute a shared secret key.")
 							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
@@ -144,15 +146,6 @@ struct SecurityConfig: View {
 		.onChange(of: adminChannelEnabled) { _, newAdminChannelEnabled in
 			if newAdminChannelEnabled != node?.securityConfig?.adminChannelEnabled { hasChanges = true }
 		}
-		.onChange(of: publicKey) {
-			let tempKey = Data(base64Encoded: publicKey) ?? Data()
-			if tempKey.count == 32 {
-				hasValidPublicKey = true
-			} else {
-				hasValidPublicKey = false
-			}
-			hasChanges = true
-		}
 		.onChange(of: privateKey) {
 			let tempKey = Data(base64Encoded: privateKey) ?? Data()
 			if tempKey.count == 32 {
@@ -222,7 +215,7 @@ struct SecurityConfig: View {
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 
-			if !hasValidPublicKey || !hasValidPrivateKey || !hasValidAdminKey {
+			if !hasValidPrivateKey || !hasValidAdminKey || !hasValidAdminKey2 || !hasValidAdminKey3 {
 				return
 			}
 
