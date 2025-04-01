@@ -24,6 +24,7 @@ struct Connect: View {
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
 	@State var liveActivityStarted = false
+	@State var presentingSwitchPreferredPeripheral = false
 	@State var selectedPeripherialId = ""
 
 	init () {
@@ -34,7 +35,7 @@ struct Connect: View {
 				   if success {
 					   Logger.services.info("Notifications are all set!")
 				   } else if let error = error {
-					   Logger.services.error("\(error.localizedDescription)")
+					   Logger.services.error("\(error.localizedDescription, privacy: .public)")
 				   }
 			   }
 		   }
@@ -61,9 +62,9 @@ struct Connect: View {
 										.padding(.trailing)
 										VStack(alignment: .leading) {
 											if node != nil {
-												Text(connectedPeripheral.longName).font(.title2)
+												Text(connectedPeripheral.longName.addingVariationSelectors).font(.title2)
 											}
-											Text("BLE Name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name ?? "unknown".localized)")
+											Text("BLE Name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name?.addingVariationSelectors ?? "unknown".localized)")
 												.font(.callout).foregroundColor(Color.gray)
 											if node != nil {
 												Text("firmware.version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "unknown".localized)")
@@ -120,7 +121,7 @@ struct Connect: View {
 										#endif
 										Text("Num: \(String(node!.num))")
 										Text("Short Name: \(node?.user?.shortName ?? "?")")
-										Text("Long Name: \(node?.user?.longName ?? "unknown".localized)")
+										Text("Long Name: \(node?.user?.longName?.addingVariationSelectors ?? "unknown".localized)")
 										Text("BLE RSSI: \(connectedPeripheral.rssi)")
 
 										Button {
@@ -214,22 +215,11 @@ struct Connect: View {
 												if let connectedPeripheral = bleManager.connectedPeripheral, connectedPeripheral.peripheral.state == CBPeripheralState.connected {
 													bleManager.disconnectPeripheral()
 												}
-												let container = NSPersistentContainer(name: "Meshtastic")
-												guard let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-													Logger.data.error("nil File path for back")
-													return
-												}
-												do {
-													try container.copyPersistentStores(to: url.appendingPathComponent("backup").appendingPathComponent("\(UserDefaults.preferredPeripheralNum)"), overwriting: true)
-													Logger.data.notice("🗂️ Made a core data backup to backup/\(UserDefaults.preferredPeripheralNum)")
-
-												} catch {
-													Logger.data.error("🗂️ Core data backup copy error: \(error, privacy: .public)")
-												}
-												clearCoreDataDatabase(context: context, includeRoutes: false)
+												presentingSwitchPreferredPeripheral = true
+												selectedPeripherialId = peripheral.peripheral.identifier.uuidString
+											} else {
+												self.bleManager.connectTo(peripheral: peripheral.peripheral)
 											}
-											UserDefaults.preferredPeripheralId = selectedPeripherialId
-											self.bleManager.connectTo(peripheral: peripheral.peripheral)
 										}) {
 											Text(peripheral.name).font(.callout)
 										}
@@ -240,6 +230,21 @@ struct Connect: View {
 									}.padding([.bottom, .top])
 								}
 							}
+							.confirmationDialog("Connecting to a new radio will clear all app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
+								Button("Connect to new radio?", role: .destructive) {
+									UserDefaults.preferredPeripheralId = selectedPeripherialId
+									UserDefaults.preferredPeripheralNum = 0
+									if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
+										bleManager.disconnectPeripheral()
+									}
+									clearCoreDataDatabase(context: context, includeRoutes: false)
+									let radio = bleManager.peripherals.first(where: { $0.peripheral.identifier.uuidString == selectedPeripherialId })
+									if radio != nil {
+										bleManager.connectTo(peripheral: radio!.peripheral)
+									}
+								}
+							}
+							.textCase(nil)
 						}
 
 					} else {
@@ -319,7 +324,7 @@ struct Connect: View {
 						isUnsetRegion = false
 					}
 				} catch {
-					Logger.data.error("💥 Error fetching node info: \(error.localizedDescription)")
+					Logger.data.error("💥 Error fetching node info: \(error.localizedDescription, privacy: .public)")
 				}
 			}
 		}
@@ -333,7 +338,7 @@ struct Connect: View {
 		let localStats = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 4"))
 		let mostRecent = localStats?.lastObject as? TelemetryEntity
 
-		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName ?? "unknown")
+		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName?.addingVariationSelectors ?? "unknown")
 
 		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
 		let initialContentState = MeshActivityAttributes.ContentState(uptimeSeconds: UInt32(mostRecent?.uptimeSeconds ?? 0),
@@ -356,7 +361,7 @@ struct Connect: View {
 																		  pushType: nil)
 			Logger.services.info("Requested MyActivity live activity. ID: \(myActivity.id)")
 		} catch {
-			Logger.services.error("Error requesting live activity: \(error.localizedDescription)")
+			Logger.services.error("Error requesting live activity: \(error.localizedDescription, privacy: .public)")
 		}
 	}
 

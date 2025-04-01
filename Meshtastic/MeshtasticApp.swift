@@ -55,7 +55,7 @@ struct MeshtasticAppleApp: App {
 					.presentationDragIndicator(.visible)
 			}
 			.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
-				Logger.mesh.debug("URL received \(userActivity)")
+				Logger.mesh.debug("URL received \(userActivity, privacy: .public)")
 				self.incomingUrl = userActivity.webpageURL
 
 				if (self.incomingUrl?.absoluteString.lowercased().contains("meshtastic.org/e/#")) != nil {
@@ -72,18 +72,18 @@ struct MeshtasticAppleApp: App {
 							}
 							self.channelSettings = cs
 						}
-						Logger.services.debug("Add Channel \(self.addChannels)")
+						Logger.services.debug("Add Channel \(self.addChannels, privacy: .public)")
 					}
 					self.saveChannels = true
 					Logger.mesh.debug("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link")")
 				}
 				if self.saveChannels {
-					Logger.mesh.debug("User wants to open Channel Settings URL: \(String(describing: self.incomingUrl!.relativeString))")
+					Logger.mesh.debug("User wants to open Channel Settings URL: \(String(describing: self.incomingUrl!.relativeString), privacy: .public)")
 				}
 			}
 			.onOpenURL(perform: { (url) in
 
-				Logger.mesh.debug("Some sort of URL was received \(url)")
+				Logger.mesh.debug("Some sort of URL was received \(url, privacy: .public)")
 				self.incomingUrl = url
 				if url.absoluteString.lowercased().contains("meshtastic.org/e/#") {
 					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
@@ -99,10 +99,10 @@ struct MeshtasticAppleApp: App {
 							}
 							self.channelSettings = cs
 						}
-						Logger.services.debug("Add Channel \(self.addChannels)")
+						Logger.services.debug("Add Channel \(self.addChannels, privacy: .public)")
 					}
 					self.saveChannels = true
-					Logger.mesh.debug("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link")")
+					Logger.mesh.debug("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link", privacy: .public)")
 				} else if url.absoluteString.lowercased().contains("meshtastic:///") {
 					appState.router.route(url: url)
 				}

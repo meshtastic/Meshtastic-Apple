@@ -19,20 +19,20 @@ struct NavigateToButton: View {
 					Logger.services.error("NavigateToAction: Selected node does not exist")
 					return
 				}
-				
-				Logger.services.info("Fetching NodeInfoEntity for userNum: \(userNum)")
-				
+			
+				Logger.services.info("Fetching NodeInfoEntity for userNum: \(userNum, privacy: .public)")
+			
 				let fetchRequest: NSFetchRequest<NodeInfoEntity> = NSFetchRequest(entityName: "NodeInfoEntity")
 				fetchRequest.predicate = NSPredicate(format: "num == %lld", Int64(userNum))
-				
+			
 				do {
 					let fetchedNodes = try PersistenceController.shared.container.viewContext.fetch(fetchRequest)
-					
+				
 					guard let nodeInfo = fetchedNodes.first else {
-						Logger.services.error("NavigateToAction: Node with userNum \(userNum) not found in Core Data")
+						Logger.services.error("NavigateToAction: Node with userNum \(userNum, privacy: .public) not found in Core Data")
 						return
 					}
-					
+
 					if let latitude = nodeInfo.latestPosition?.latitude,
 					   let longitude = nodeInfo.latestPosition?.longitude {
 						if let url = URL(string: "maps://?saddr=&daddr=\(latitude),\(longitude)") {
@@ -41,10 +41,10 @@ struct NavigateToButton: View {
 							Logger.services.error("Failed to create URL for navigation")
 						}
 					} else {
-						Logger.services.warning("NavigateToAction: Node \(userNum) has invalid or missing coordinates")
+						Logger.services.warning("NavigateToAction: Node \(userNum, privacy: .public) has invalid or missing coordinates")
 					}
 				} catch {
-					Logger.services.error("NavigateToAction: Failed to fetch node with userNum \(userNum): \(error.localizedDescription)")
+					Logger.services.error("NavigateToAction: Failed to fetch node with userNum \(userNum, privacy: .public): \(error.localizedDescription, privacy: .public)")
 				}
 			} label: {
 				Label {

@@ -41,7 +41,7 @@ struct DeleteNodeButton: View {
 						id: node.num,
 						context: context
 					) else {
-						Logger.data.error("Unable to find node info to delete node \(node.num)")
+						Logger.data.error("Unable to find node info to delete node \(node.num, privacy: .public)")
 						return
 					}
 					let success = bleManager.removeNode(
@@ -49,7 +49,7 @@ struct DeleteNodeButton: View {
 						connectedNodeNum: connectedNode.num
 					)
 					if !success {
-						Logger.data.error("Failed to delete node \(deleteNode.user?.longName ?? "unknown".localized)")
+						Logger.data.error("Failed to delete node \(deleteNode.user?.longName ?? "unknown".localized, privacy: .public)")
 					} else {
 						dismiss()
 					}
