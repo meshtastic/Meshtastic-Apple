@@ -88,11 +88,11 @@ import OSLog
 				return false
 			}
 			if location.horizontalAccuracy < 0 {
-				Logger.services.info("📍 [App] Smart Position - Bad Location: Horizontal Accuracy: \(location.horizontalAccuracy) \(location, privacy: .private)")
+				Logger.services.info("📍 [App] Smart Position - Bad Location: Horizontal Accuracy: \(location.horizontalAccuracy) \(location, privacy: .private(mask: .hash))")
 				return false
 			}
 			if location.horizontalAccuracy > 5 {
-				Logger.services.info("📍 [App] Smart Position - Bad Location: Horizontal Accuracy: \(location.horizontalAccuracy) \(location, privacy: .private)")
+				Logger.services.info("📍 [App] Smart Position - Bad Location: Horizontal Accuracy: \(location.horizontalAccuracy) \(location, privacy: .private(mask: .hash))")
 				return false
 			}
 		}
