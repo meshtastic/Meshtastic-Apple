@@ -149,7 +149,15 @@ struct Connect: View {
 										Text("Short Name: \(node?.user?.shortName ?? "?")")
 										Text("Long Name: \(node?.user?.longName?.addingVariationSelectors ?? "unknown".localized)")
 										Text("BLE RSSI: \(connectedPeripheral.rssi)")
-
+										
+										Button(role: .destructive) {
+											if let connectedPeripheral = bleManager.connectedPeripheral,
+											   connectedPeripheral.peripheral.state == .connected {
+												bleManager.disconnectPeripheral(reconnect: false)
+											}
+										} label: {
+											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+										}
 										Button {
 											if !bleManager.sendShutdown(fromUser: node!.user!, toUser: node!.user!, adminIndex: node!.myInfo!.adminIndex) {
 												Logger.mesh.error("Shutdown Failed")
