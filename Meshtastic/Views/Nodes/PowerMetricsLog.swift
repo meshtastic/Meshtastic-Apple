@@ -272,7 +272,7 @@ struct PowerMetricsLog: View {
 				ContentUnavailableView("No Power Metrics", systemImage: "slash.circle")
 			}
 		}
-		.navigationTitle("Power Metrics Log}")
+		.navigationTitle("Power Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 			ZStack {
