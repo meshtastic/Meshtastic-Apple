@@ -37,7 +37,7 @@ struct RetryButton: View {
 				do {
 					try context.save()
 				} catch {
-					Logger.data.error("Failed to delete message \(messageID): \(error.localizedDescription)")
+					Logger.data.error("Failed to delete message \(messageID, privacy: .public): \(error.localizedDescription, privacy: .public)")
 				}
 				if !bleManager.sendMessage(
 					message: payload,
@@ -47,7 +47,7 @@ struct RetryButton: View {
 					replyID: replyID
 				) {
 					// Best effort, unlikely since we already checked BLE state
-					Logger.services.warning("Failed to resend message \(messageID)")
+					Logger.services.warning("Failed to resend message \(messageID, privacy: .public)")
 				} else {
 					switch destination {
 					case .user:

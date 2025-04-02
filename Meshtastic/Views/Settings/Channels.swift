@@ -186,11 +186,11 @@ struct Channels: View {
 						if channel.role != Channel.Role.disabled {
 							do {
 								try context.save()
-								Logger.data.info("💾 Saved Channel: \(channel.settings.name)")
+								Logger.data.info("💾 Saved Channel: \(channel.settings.name, privacy: .public)")
 							} catch {
 								context.rollback()
 								let nsError = error as NSError
-								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError)")
+								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
 							}
 						} else {
 							let objects = selectedChannel?.allPrivateMessages ?? []
@@ -203,11 +203,11 @@ struct Channels: View {
 							context.delete(selectedChannel!)
 							do {
 								try context.save()
-								Logger.data.info("💾 Deleted Channel: \(channel.settings.name)")
+								Logger.data.info("💾 Deleted Channel: \(channel.settings.name, privacy: .public)")
 							} catch {
 								context.rollback()
 								let nsError = error as NSError
-								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError)")
+								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
 							}
 						}
 						let adminMessageId =  bleManager.saveChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)

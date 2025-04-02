@@ -75,7 +75,7 @@ class LocalNotificationManager {
 
             UNUserNotificationCenter.current().add(request) { error in
 				if let error {
-					Logger.services.error("Error Scheduling Notification: \(error.localizedDescription)")
+					Logger.services.error("Error Scheduling Notification: \(error.localizedDescription, privacy: .public)")
 				}
             }
         }

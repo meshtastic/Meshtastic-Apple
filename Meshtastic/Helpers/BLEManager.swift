@@ -119,7 +119,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			self.isConnected = false
 			self.isConnecting = false
 			self.lastConnectionError = "🚨 " + String.localizedStringWithFormat("Connection failed after %d attempts to connect to %@. You may need to forget your device under Settings > Bluetooth.".localized, timeoutTimerCount, name)
-			Logger.services.error("\(self.lastConnectionError)")
+			Logger.services.error("\(self.lastConnectionError, privacy: .public)")
 			self.timeoutTimerCount = 0
 			self.startScanning()
 		} else {
@@ -295,7 +295,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		} else {
 			// Disconnected without error which indicates user intent to disconnect
 			// Happens when swiping to disconnect
-			Logger.services.info("ℹ️ [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized, privacy: .public): \(String(describing: "User Initiated Disconnect".localized))")
+			Logger.services.info("ℹ️ [BLE] Disconnected: \(peripheral.name ?? "Unknown".localized, privacy: .public): \(String(describing: "User Initiated Disconnect".localized), privacy: .public)")
 		}
 		// Start a scan so the disconnected peripheral is moved to the peripherals[] if it is awake
 		self.startScanning()
@@ -485,7 +485,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 
 				let logString = String.localizedStringWithFormat("mesh.log.traceroute.sent %@".localized, destNum.toHex())
-				Logger.mesh.info("🪧 \(logString)")
+				Logger.mesh.info("🪧 \(logString, privacy: .public)")
 
 			} catch {
 
@@ -498,14 +498,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		guard connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected else { return }
 
 		if FROMRADIO_characteristic == nil {
-			Logger.mesh.error("🚨 \("firmware.version.unsupported".localized)")
+			Logger.mesh.error("🚨 \("firmware.version.unsupported".localized, privacy: .public)")
 			invalidVersion = true
 			return
 		} else {
 
 			let nodeName = connectedPeripheral?.peripheral.name ?? "unknown".localized
 			let logString = String.localizedStringWithFormat("mesh.log.wantconfig %@".localized, nodeName)
-			Logger.mesh.info("🛎️ \(logString)")
+			Logger.mesh.info("🛎️ \(logString, privacy: .public)")
 			// BLE Characteristics discovered, issue wantConfig
 			var toRadio: ToRadio = ToRadio()
 			configNonce += 1
@@ -537,7 +537,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				if let coordsMatch = try CommonRegex.COORDS_REGEX.firstMatch(in: logString) {
 					log = "\(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces))"
 					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-					Logger.radio.debug("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0.replacingOccurrences(of: "[,]", with: "", options: .regularExpression), privacy: .private) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
+					Logger.radio.debug("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0.replacingOccurrences(of: "[,]", with: "", options: .regularExpression), privacy: .private(mask: .none)) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
 				} else {
 					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
 					Logger.radio.debug("🕵🏻‍♂️ \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
@@ -750,7 +750,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 				}
 				// Log any other unknownApp calls
-				if !nowKnown { Logger.mesh.info("🕸️ MESH PACKET received for Unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")") }
+				if !nowKnown { Logger.mesh.info("🕸️ MESH PACKET received for Unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)") }
 			case .textMessageApp, .detectionSensorApp:
 				textMessageAppPacket(
 					packet: decodedInfo.packet,
@@ -769,7 +769,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					appState: appState
 				)
 			case .remoteHardwareApp:
-				Logger.mesh.info("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				Logger.mesh.info("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			case .positionApp:
 				upsertPositionPacket(packet: decodedInfo.packet, context: context)
 			case .waypointApp:
@@ -794,11 +794,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .serialApp:
 				Logger.mesh.info("🕸️ MESH PACKET received for Serial App UNHANDLED UNHANDLED")
 			case .storeForwardApp:
-				if wantStoreAndForwardPackets {
-					storeAndForwardPacket(packet: decodedInfo.packet, connectedNodeNum: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context)
-				} else {
-					Logger.mesh.info("🕸️ MESH PACKET received for Store and Forward App - Store and Forward is disabled.")
-				}
+				storeAndForwardPacket(packet: decodedInfo.packet, connectedNodeNum: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context)
 			case .rangeTestApp:
 				if wantRangeTestPackets {
 					textMessageAppPacket(
@@ -971,33 +967,33 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						Logger.data.error("Error Updating Core Data TraceRouteHop: \(nsError, privacy: .public)")
 					}
 					let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.route %@".localized, routeString)
-					Logger.mesh.info("🪧 \(logString)")
+					Logger.mesh.info("🪧 \(logString, privacy: .public)")
 				}
 			case .neighborinfoApp:
 				if let neighborInfo = try? NeighborInfo(serializedBytes: decodedInfo.packet.decoded.payload) {
-					Logger.mesh.info("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \((try? neighborInfo.jsonString()) ?? "JSON Decode Failure")")
+					Logger.mesh.info("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \((try? neighborInfo.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				}
 			case .paxcounterApp:
 				paxCounterPacket(packet: decodedInfo.packet, context: context)
 			case .mapReportApp:
-				Logger.mesh.info("🕸️ MESH PACKET received Map Report App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				Logger.mesh.info("🕸️ MESH PACKET received Map Report App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			case .UNRECOGNIZED:
-				Logger.mesh.info("🕸️ MESH PACKET received UNRECOGNIZED App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				Logger.mesh.info("🕸️ MESH PACKET received UNRECOGNIZED App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			case .max:
 				Logger.services.info("MAX PORT NUM OF 511")
 			case .atakPlugin:
-				Logger.mesh.info("🕸️ MESH PACKET received for ATAK Plugin App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				Logger.mesh.info("🕸️ MESH PACKET received for ATAK Plugin App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			case .powerstressApp:
-				Logger.mesh.info("🕸️ MESH PACKET received for Power Stress App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				Logger.mesh.info("🕸️ MESH PACKET received for Power Stress App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			case .reticulumTunnelApp:
-				Logger.mesh.info("🕸️ MESH PACKET received for Reticulum Tunnel App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				Logger.mesh.info("🕸️ MESH PACKET received for Reticulum Tunnel App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			}
 
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
 				invalidVersion = false
 				lastConnectionError = ""
 				isSubscribed = true
-				Logger.mesh.info("🤜 [BLE] Want Config Complete. ID:\(decodedInfo.configCompleteID)")
+				Logger.mesh.info("🤜 [BLE] Want Config Complete. ID:\(decodedInfo.configCompleteID, privacy: .public)")
 				if sendTime() {
 				}
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
@@ -1031,7 +1027,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						}
 
 					} catch {
-						Logger.data.error("Failed to find a node info for the connected node \(error.localizedDescription)")
+						Logger.data.error("Failed to find a node info for the connected node \(error.localizedDescription, privacy: .public)")
 					}
 				}
 
@@ -1075,7 +1071,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			}
 			let nodeName = connectedPeripheral?.peripheral.name ?? "unknown".localized
 			let logString = String.localizedStringWithFormat("mesh.log.textmessage.send.failed %@".localized, nodeName)
-			Logger.mesh.info("🚫 \(logString)")
+			Logger.mesh.info("🚫 \(logString, privacy: .public)")
 
 			success = false
 		} else if message.count < 1 {
@@ -1162,7 +1158,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 						let logString = String.localizedStringWithFormat("mesh.log.textmessage.sent %@ %@ %@".localized, String(newMessage.messageId), fromUserNum.toHex(), toUserNum.toHex())
 
-						Logger.mesh.info("💬 \(logString)")
+						Logger.mesh.info("💬 \(logString, privacy: .public)")
 						do {
 							try context.save()
 							Logger.data.info("💾 Saved a new sent message from \(self.connectedPeripheral.num.toHex(), privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
@@ -1209,7 +1205,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			return false
 		}
 		let logString = String.localizedStringWithFormat("mesh.log.waypoint.sent %@".localized, String(fromNodeNum))
-		Logger.mesh.info("📍 \(logString)")
+		Logger.mesh.info("📍 \(logString, privacy: .public)")
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
@@ -1373,7 +1369,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			let logString = String.localizedStringWithFormat("mesh.log.sharelocation %@".localized, String(fromNodeNum))
-			Logger.services.debug("📍 \(logString)")
+			Logger.services.debug("📍 \(logString, privacy: .public)")
 			return true
 		} else {
 			Logger.services.error("Device no longer connected. Unable to send position information.")
@@ -1689,7 +1685,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 									}
 								}
 							} catch {
-								Logger.data.error("Failed to find a node MyInfo to save these channels to: \(error.localizedDescription)")
+								Logger.data.error("Failed to find a node MyInfo to save these channels to: \(error.localizedDescription, privacy: .public)")
 							}
 						}
 
@@ -1728,7 +1724,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 							self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
 							let logString = String.localizedStringWithFormat("mesh.log.channel.sent %@ %d".localized, String(connectedPeripheral.num), chan.index)
-							Logger.mesh.info("🎛️ \(logString)")
+							Logger.mesh.info("🎛️ \(logString, privacy: .public)")
 						}
 					}
 					// Save the LoRa Config and the device will reboot
@@ -1757,7 +1753,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 						self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
 						let logString = String.localizedStringWithFormat("mesh.log.lora.config.sent %@".localized, String(connectedPeripheral.num))
-						Logger.mesh.info("📻 \(logString)")
+						Logger.mesh.info("📻 \(logString, privacy: .public)")
 					}
 
 					if self.connectedPeripheral != nil {
@@ -1834,7 +1830,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				Logger.data.error("🚫 Error deleting node from core data: \(nsError)")
+				Logger.data.error("🚫 Error deleting node from core data: \(nsError, privacy: .public)")
 			}
 		}
 		return false
@@ -2677,7 +2673,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			let logString = String.localizedStringWithFormat("mesh.log.cannedmessages.messages.get %@".localized, String(connectedPeripheral.num))
-			Logger.mesh.info("🥫 \(logString)")
+			Logger.mesh.info("🥫 \(logString, privacy: .public)")
 			return true
 		}
 
@@ -3257,7 +3253,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			Logger.mesh.debug("\(adminDescription)")
+			Logger.mesh.debug("\(adminDescription, privacy: .public)")
 			return true
 		}
 		return false
@@ -3454,7 +3450,7 @@ extension BLEManager: CBCentralManagerDelegate {
 		default:
 			status = "default"
 		}
-		Logger.services.info("📜 [BLE] Bluetooth status: \(status)")
+		Logger.services.info("📜 [BLE] Bluetooth status: \(status, privacy: .public)")
 	}
 
 	// Called each time a peripheral is discovered

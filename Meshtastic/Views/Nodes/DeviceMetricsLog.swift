@@ -211,7 +211,7 @@ struct DeviceMetricsLog: View {
 					) {
 						Button("device.metrics.delete", role: .destructive) {
 							if clearTelemetry(destNum: node.num, metricsType: 0, context: context) {
-								Logger.data.notice("Cleared Device Metrics for \(node.num)")
+								Logger.data.notice("Cleared Device Metrics for \(node.num, privacy: .public)")
 							} else {
 								Logger.data.error("Clear Device Metrics Log Failed")
 							}
@@ -257,7 +257,7 @@ struct DeviceMetricsLog: View {
 					self.isExporting = false
 					Logger.services.info("Device metrics log download succeeded.")
 				case .failure(let error):
-					Logger.services.error("Device metrics log download failed: \(error.localizedDescription)")
+					Logger.services.error("Device metrics log download failed: \(error.localizedDescription, privacy: .public)")
 				}
 			}
 		)

@@ -16,7 +16,7 @@ class AppIntentErrors {
 		var localizedStringResource: LocalizedStringResource {
 			switch self {
 			case let .message(message):
-				Logger.services.error("App Intent: \(message)")
+				Logger.services.error("App Intent: \(message,privacy: .public)")
 				return "Error: \(message)"
 			case .notConnected:
 				Logger.services.error("App Intent: No Connected Node")

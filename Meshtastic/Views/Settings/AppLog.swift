@@ -178,7 +178,7 @@ struct AppLog: View {
 					self.isExporting = false
 					Logger.services.info("Application log download succeeded.")
 				case .failure(let error):
-					Logger.services.error("Application log download failed: \(error.localizedDescription)")
+					Logger.services.error("Application log download failed: \(error.localizedDescription, privacy: .public)")
 				}
 			}
 		)

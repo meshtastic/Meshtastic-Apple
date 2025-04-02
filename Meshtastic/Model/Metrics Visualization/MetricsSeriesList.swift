@@ -94,7 +94,6 @@ class MetricsSeriesList: ObservableObject, RandomAccessCollection, RangeReplacea
 			if let minimumSpan = aSeries.minumumYAxisSpan,
 			   let currentRange = range[aSeries] {
 				let currentSpan = currentRange.upperBound - currentRange.lowerBound
-				//Logger.data.info("Updated \(aSeries.id) to \(range[aSeries] ?? 0...0) span=\(currentSpan)")
 				if currentSpan < minimumSpan {
 					// Calculate the center of the range
 					let centerOfRange = currentRange.lowerBound + (currentSpan / 2)
@@ -117,7 +116,6 @@ class MetricsSeriesList: ObservableObject, RandomAccessCollection, RangeReplacea
 		}
 		return globalLower...globalUpper
 	}
-
 
 	// Collection conformance
 	typealias Index = Int

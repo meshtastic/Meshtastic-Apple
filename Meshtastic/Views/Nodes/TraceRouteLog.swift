@@ -64,7 +64,7 @@ struct TraceRouteLog: View {
 								do {
 									try context.save()
 								} catch let error as NSError {
-									Logger.data.error("\(error.localizedDescription)")
+									Logger.data.error("\(error.localizedDescription, privacy: .public)")
 								}
 							} label: {
 								Label("delete", systemImage: "trash")

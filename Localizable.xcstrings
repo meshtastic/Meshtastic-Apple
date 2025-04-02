@@ -5718,6 +5718,9 @@
         }
       }
     },
+    "Connected Radio" : {
+
+    },
     "connected.radio" : {
       "localizations" : {
         "de" : {
@@ -9316,6 +9319,9 @@
         }
       }
     },
+    "Enable this device as a Store and Forward server. Requires an ESP32 device with PSRAM." : {
+
+    },
     "enabled" : {
       "localizations" : {
         "de" : {
@@ -9412,21 +9418,8 @@
         }
       }
     },
-    "Enables the store and forward module. Store and forward must be enabled on both client and router devices." : {
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Омогућава модул за чување и пренос. Чување и пренос мора бити омогућено на оба уређаја, клијенту и рутеру."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "启用存储和转发模块。客户端和路由器设备都必须启用存储和转发功能。"
-          }
-        }
-      }
+    "Enables the store and forward module." : {
+
     },
     "Enabling Ethernet will disable the bluetooth connection to the app." : {
       "localizations" : {
@@ -24952,26 +24945,6 @@
         }
       }
     },
-    "Router" : {
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Рутер"
-          }
-        }
-      }
-    },
-    "Router Options" : {
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Опције рутера"
-          }
-        }
-      }
-    },
     "Routes" : {
       "localizations" : {
         "sr" : {
@@ -27037,6 +27010,9 @@
         }
       }
     },
+    "Send a heartbeat to advertise the server's presence." : {
+
+    },
     "Send a message to a certain meshtastic channel" : {
       "localizations" : {
         "sr" : {
@@ -27786,6 +27762,9 @@
         }
       }
     },
+    "Server Option" : {
+
+    },
     "Set" : {
       "localizations" : {
         "sr" : {
@@ -27943,6 +27922,9 @@
           }
         }
       }
+    },
+    "Settings" : {
+
     },
     "Share QR Code & Link" : {
       "localizations" : {
@@ -28295,6 +28277,9 @@
           }
         }
       }
+    },
+    "Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press start the live activity." : {
+
     },
     "Shut Down" : {
       "localizations" : {
@@ -28785,25 +28770,8 @@
         }
       }
     },
-    "Store and forward clients can request history from routers on the network." : {
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Клијенти за складиштење и прослеђивање могу затражити историју од рутера на мрежи."
-          }
-        }
-      }
-    },
-    "Store and forward router devices require a ESP32 device with PSRAM." : {
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Рутер за складиштење и прослеђивање захтева ESP32 уређај са PSRAM."
-          }
-        }
-      }
+    "Store and forward servers require an ESP32 device with PSRAM or Linux Native." : {
+
     },
     "storeforward.heartbeat" : {
       "localizations" : {
@@ -30497,134 +30465,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Време и формат"
-          }
-        }
-      }
-    },
-    "tip.bluetooth.connect.message" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shows information for the Lora radio currently connected via bluetooth. You can swipe left to disconnect the radio and long press to view stats or start the live activity."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press to view stats or start the live activity."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Affiche les informations de la radio Lora connectée via le bluetooth. Vous pouvez faire un glissé vers la gauche pour déconnecter la radio et un appui long pour voir les statistiques ou démarrer l'activité en direct."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מראה מידע אודות מכשיר המשטסטיק המחובר כעת לבלוטוס. ניתן לגרור שמאלה להתנתקות או לחיצה ארוכה לראות סטטיסטיקה או להתחיל פעילות."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shows information for the Lora radio currently connected via bluetooth. You can swipe left to disconnect the radio and long press to view stats or start the live activity."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mostra informações para o rádio LoRa conectado via bluetooth. Você pode deslizar para a esquerda para desconectar o rádio e pressionar por um longo período para ver estatísticas ou iniciar a atividade ao vivo."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Visar information för LoRa-radion ansluten via bluetooth. Du kan svepa åt vänster för att koppla från radion och långtryck för att visa statistik eller starta liveaktivitet."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Приказује информације за LoRA радио повезан преко Блутута. Можете превући лево да бисте одспојили радио и дуго притиснути да бисте погледали статистику или започели активност у реалном времену."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "显示当前通过蓝牙连接的 Lora 电台的信息。您可以向左滑动断开电台，长按查看统计信息或开始实时活动。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "顯示目前通過藍芽連接的 Lora 電台的信息。您可以向左滑動斷開電台，長按查看統計訊息或開始即時活動。"
-          }
-        }
-      }
-    },
-    "tip.bluetooth.connect.title" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connected LoRa Radio"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connected Radio"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Radio connectée"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מכשיר מחובר"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connected LoRa Radio"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rádio Conectado"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ansluten Radio"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Радио повезан"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "电台已连接"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "連接到 LoRa 電台"
           }
         }
       }

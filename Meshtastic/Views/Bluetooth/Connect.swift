@@ -35,7 +35,7 @@ struct Connect: View {
 				   if success {
 					   Logger.services.info("Notifications are all set!")
 				   } else if let error = error {
-					   Logger.services.error("\(error.localizedDescription)")
+					   Logger.services.error("\(error.localizedDescription, privacy: .public)")
 				   }
 			   }
 		   }
@@ -324,7 +324,7 @@ struct Connect: View {
 						isUnsetRegion = false
 					}
 				} catch {
-					Logger.data.error("💥 Error fetching node info: \(error.localizedDescription)")
+					Logger.data.error("💥 Error fetching node info: \(error.localizedDescription, privacy: .public)")
 				}
 			}
 		}
@@ -361,7 +361,7 @@ struct Connect: View {
 																		  pushType: nil)
 			Logger.services.info("Requested MyActivity live activity. ID: \(myActivity.id)")
 		} catch {
-			Logger.services.error("Error requesting live activity: \(error.localizedDescription)")
+			Logger.services.error("Error requesting live activity: \(error.localizedDescription, privacy: .public)")
 		}
 	}
 
