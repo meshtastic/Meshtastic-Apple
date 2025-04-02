@@ -23162,16 +23162,6 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Логови метрике снаге"
-          }
-        }
-      }
-    },
-    "Power Metrics Log}" : {
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
             "value" : "Логови метрике снаге}"
           }
         }
