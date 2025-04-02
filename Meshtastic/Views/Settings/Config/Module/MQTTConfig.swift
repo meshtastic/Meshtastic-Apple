@@ -64,17 +64,41 @@ struct MQTTConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
-					if enabled && proxyToClientEnabled && node?.mqttConfig?.proxyToClientEnabled ?? false == true {
-						Toggle(isOn: $mqttConnected) {
-							Label(mqttConnected ? "mqtt.disconnect".localized : "mqtt.connect".localized, systemImage: "server.rack")
+					if enabled && proxyToClientEnabled && node?.mqttConfig?.proxyToClientEnabled ?? false {
+						VStack(alignment: .leading, spacing: 8) {
+							Button(action: {
+								mqttConnected.toggle()
+							}) {
+								HStack {
+									Image(systemName: "server.rack")
+										.foregroundColor(mqttConnected ? .red : .green)
+									Text(mqttConnected ? "mqtt.disconnect".localized : "mqtt.connect".localized)
+										.fontWeight(.medium)
+									Spacer()
+									// Connection status indicator
+									Circle()
+										.frame(width: 10, height: 10)
+										.foregroundColor(mqttConnected ? .green : .gray)
+								}
+								.padding(.vertical, 8)
+								.padding(.horizontal, 12)
+								.background(
+									RoundedRectangle(cornerRadius: 8)
+										.fill(mqttConnected ? Color.red.opacity(0.1) : Color.green.opacity(0.1))
+								)
+							}
+							.buttonStyle(PlainButtonStyle()) // Removes default button styling
+							// Error message display
 							if bleManager.mqttError.count > 0 {
 								Text(bleManager.mqttError)
-									.fixedSize(horizontal: false, vertical: true)
+									.font(.caption)
 									.foregroundColor(.red)
+									.lineLimit(2)
+									.fixedSize(horizontal: false, vertical: true)
+									.transition(.opacity) // Smooth appearance
 							}
-
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.animation(.easeInOut(duration: 0.2), value: mqttConnected) // Smooth state transitions
 					}
 
 					Toggle(isOn: $encryptionEnabled) {
