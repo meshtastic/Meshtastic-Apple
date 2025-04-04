@@ -543,7 +543,7 @@
 	"images": [
 	  "t-watch-s3.svg"
 	],
-	"partitionScheme": "16MB"
+	"partitionScheme": "8MB"
   },
   {
 	"hwModel": 52,
@@ -845,25 +845,32 @@
 	"hwModelSlug": "THINKNODE_M1",
 	"platformioTarget": "thinknode_m1",
 	"architecture": "nrf52840",
-	"activelySupported": false,
+	"activelySupported": true,
 	"supportLevel": 1,
 	"displayName": "ThinkNode M1",
 	"tags": [
 	  "Elecrow"
 	],
-	"requiresDfu": true
+	"requiresDfu": true,
+	"images": [
+	  "thinknode_m1.svg"
+	],
+	"hasInkHud": true
   },
   {
 	"hwModel": 90,
 	"hwModelSlug": "THINKNODE_M2",
 	"platformioTarget": "thinknode_m2",
 	"architecture": "esp32-s3",
-	"activelySupported": false,
+	"activelySupported": true,
 	"supportLevel": 1,
 	"displayName": "ThinkNode M2",
 	"tags": [
 	  "Elecrow"
 	],
-	"requiresDfu": false
+	"requiresDfu": false,
+	"images": [
+	  "thinknode_m2.svg"
+	]
   }
 ]

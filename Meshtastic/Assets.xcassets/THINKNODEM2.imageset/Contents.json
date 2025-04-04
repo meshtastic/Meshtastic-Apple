@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "thinknode_m2.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
