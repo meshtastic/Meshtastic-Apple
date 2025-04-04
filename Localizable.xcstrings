@@ -15150,6 +15150,9 @@
         }
       }
     },
+    "Jump to present" : {
+
+    },
     "Key" : {
       "localizations" : {
         "de" : {
@@ -23168,6 +23171,7 @@
       }
     },
     "Power Metrics Log}" : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
