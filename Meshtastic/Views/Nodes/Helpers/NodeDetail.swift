@@ -520,6 +520,7 @@ struct NodeDetail: View {
 				}
 			}
 			.listStyle(.insetGrouped)
+			.navigationBarTitle(String(node.user?.longName?.addingVariationSelectors ?? "unknown".localized), displayMode: .inline)
 		}
 	}
 }

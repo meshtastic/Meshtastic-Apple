@@ -48,7 +48,7 @@ struct ChannelMessageList: View {
 							HStack(alignment: .bottom) {
 								if currentUser { Spacer(minLength: 50) }
 								if !currentUser {
-									CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 44)
+									CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 44, node: getNodeInfo(id: Int64(message.fromUser?.num ?? 0), context: context))
 										.padding(.all, 5)
 										.offset(y: -7)
 								}
@@ -160,8 +160,8 @@ struct ChannelMessageList: View {
 		.toolbar {
 			ToolbarItem(placement: .principal) {
 				HStack {
-					CircleText(text: String(channel.index), color: .accentColor, circleSize: 44).fixedSize()
-					Text(String(channel.name ?? "unknown".localized).camelCaseToWords()).font(.headline)
+						CircleText(text: String(channel.index), color: .accentColor, circleSize: 44).fixedSize()
+						Text(String(channel.name ?? "unknown".localized).camelCaseToWords()).font(.headline)
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {
