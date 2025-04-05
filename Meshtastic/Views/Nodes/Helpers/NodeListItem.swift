@@ -64,7 +64,7 @@ struct NodeListItem: View {
 							let (image, color) = userKeyStatus
 							IconAndText(systemName: image,
 										imageColor: color,
-										text: node.user?.longName ?? "unknown".localized,
+										text: node.user?.longName?.addingVariationSelectors ?? "unknown".localized,
 										textColor: .primary)
 							if node.favorite {
 								Spacer()
@@ -77,10 +77,10 @@ struct NodeListItem: View {
 										imageColor: .green,
 										text: "connected".localized)
 						}
-						if node.lastHeard?.timeIntervalSince1970 ?? 0 > 0 {
+						if node.lastHeard?.timeIntervalSince1970 ?? 0 > 0 && node.lastHeard! < Calendar.current.date(byAdding: .year, value: 1, to: Date())!{
 							IconAndText(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill",
 										imageColor: node.isOnline ? .green : .orange,
-										text: node.lastHeard?.formatted() ?? "unknown")
+										text: node.lastHeard?.formatted() ?? "unknown.age".localized)
 						}
 						let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
 						IconAndText(systemName: role?.systemName ?? "figure",

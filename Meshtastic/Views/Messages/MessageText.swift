@@ -37,14 +37,28 @@ struct MessageText: View {
 						HStack {
 							Spacer()
 							Image(systemName: "lock.circle.fill")
-								.symbolRenderingMode(.palette)
-								.foregroundStyle(.white, .green)
-								.font(.system(size: 20))
-								.offset(x: 8, y: 8)
+							.symbolRenderingMode(.palette)
+							.foregroundStyle(.white, .green)
+							.font(.system(size: 20))
+							.offset(x: 8, y: 8)
 						}
 					}
 				}
+				let isStoreAndForward = message.portNum == Int32(PortNum.storeForwardApp.rawValue)
 				let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
+				if isStoreAndForward {
+					VStack(alignment: .trailing) {
+						Spacer()
+						HStack {
+							Spacer()
+							Image(systemName: "envelope.circle.fill")
+							.symbolRenderingMode(.palette)
+							.foregroundStyle(.white, .gray)
+							.font(.system(size: 20))
+							.offset(x: 8, y: 8)
+						}
+					}
+				}
 				if tapBackDestination.overlaySensorMessage {
 					VStack {
 						isDetectionSensorMessage ? Image(systemName: "sensor.fill")
@@ -59,6 +73,7 @@ struct MessageText: View {
 				} else {
 					EmptyView()
 				}
+				
 			}
 			.contextMenu {
 				MessageContextMenuItems(
@@ -79,7 +94,7 @@ struct MessageText: View {
 					do {
 						try context.save()
 					} catch {
-						Logger.data.error("Failed to delete message \(message.messageId): \(error.localizedDescription)")
+						Logger.data.error("Failed to delete message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
 					}
 				}
 				Button("Cancel", role: .cancel) {}

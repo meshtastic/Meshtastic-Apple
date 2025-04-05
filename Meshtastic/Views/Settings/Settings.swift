@@ -8,6 +8,7 @@
 import SwiftUI
 import OSLog
 import TipKit
+import MeshtasticProtobufs
 
 struct Settings: View {
 	@Environment(\.managedObjectContext) var context
@@ -25,9 +26,20 @@ struct Settings: View {
 
 	@State private var selectedNode: Int = 0
 	@State private var preferredNodeNum: Int = 0
+	@State private var moduleOverride: Bool = false
 
 	@ObservedObject
 	var router: Router
+
+	// MARK: Helper
+
+	private func isModuleSupported(_ module: ExcludedModules) -> Bool {
+		return moduleOverride || Int(nodes.first(where: { $0.num == preferredNodeNum })?.metadata?.excludedModules ?? Int32.zero) & module.rawValue == 0
+	}
+
+	private func isAnySupported(_ modules: [ExcludedModules]) -> Bool {
+		return modules.map(isModuleSupported).contains(true)
+	}
 
 	// MARK: Views
 
@@ -153,57 +165,68 @@ struct Settings: View {
 	}
 
 	var moduleConfigurationSection: some View {
-		Section("module.configuration") {
-			NavigationLink(value: SettingsNavigationState.ambientLighting) {
-				Label {
-					Text("Ambient Lighting")
-				} icon: {
-					Image(systemName: "light.max")
+		Section {
+			if isModuleSupported(.ambientlightingConfig) {
+				NavigationLink(value: SettingsNavigationState.ambientLighting) {
+					Label {
+						Text("Ambient Lighting")
+					} icon: {
+						Image(systemName: "light.max")
+					}
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.cannedMessages) {
-				Label {
-					Text("Canned Messages")
-				} icon: {
-					Image(systemName: "list.bullet.rectangle.fill")
+			if isModuleSupported(.cannedmsgConfig) {
+				NavigationLink(value: SettingsNavigationState.cannedMessages) {
+					Label {
+						Text("Canned Messages")
+					} icon: {
+						Image(systemName: "list.bullet.rectangle.fill")
+					}
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.detectionSensor) {
-				Label {
-					Text("detection.sensor")
-				} icon: {
-					Image(systemName: "sensor")
+			if isModuleSupported(.detectionsensorConfig) {
+				NavigationLink(value: SettingsNavigationState.detectionSensor) {
+					Label {
+						Text("detection.sensor")
+					} icon: {
+						Image(systemName: "sensor")
+					}
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.externalNotification) {
-				Label {
-					Text("external.notification")
-				} icon: {
-					Image(systemName: "megaphone")
+			if isModuleSupported(.extnotifConfig) {
+				NavigationLink(value: SettingsNavigationState.externalNotification) {
+					Label {
+						Text("external.notification")
+					} icon: {
+						Image(systemName: "megaphone")
+					}
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.mqtt) {
-				Label {
-					Text("mqtt")
-				} icon: {
-					Image(systemName: "dot.radiowaves.up.forward")
+			if isModuleSupported(.mqttConfig) {
+				NavigationLink(value: SettingsNavigationState.mqtt) {
+					Label {
+						Text("mqtt")
+					} icon: {
+						Image(systemName: "dot.radiowaves.up.forward")
+					}
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.rangeTest) {
-				Label {
-					Text("range.test")
-				} icon: {
-					Image(systemName: "point.3.connected.trianglepath.dotted")
+			if isModuleSupported(.rangetestConfig) {
+				NavigationLink(value: SettingsNavigationState.rangeTest) {
+					Label {
+						Text("range.test")
+					} icon: {
+						Image(systemName: "point.3.connected.trianglepath.dotted")
+					}
 				}
 			}
 
-			if let node = nodes.first(where: { $0.num == preferredNodeNum }),
-				node.metadata?.hasWifi ?? false {
+			if isModuleSupported(.paxcounterConfig) {
 				NavigationLink(value: SettingsNavigationState.paxCounter) {
 					Label {
 						Text("config.module.paxcounter.settings")
@@ -213,36 +236,60 @@ struct Settings: View {
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.ringtone) {
-				Label {
-					Text("ringtone")
-				} icon: {
-					Image(systemName: "music.note.list")
+			if isModuleSupported(.audioConfig) {
+				NavigationLink(value: SettingsNavigationState.ringtone) {
+					Label {
+						Text("ringtone")
+					} icon: {
+						Image(systemName: "music.note.list")
+					}
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.serial) {
-				Label {
-					Text("serial")
-				} icon: {
-					Image(systemName: "terminal")
+			if isModuleSupported(.serialConfig) {
+				NavigationLink(value: SettingsNavigationState.serial) {
+					Label {
+						Text("serial")
+					} icon: {
+						Image(systemName: "terminal")
+					}
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.storeAndForward) {
-				Label {
-					Text("Store & Forward")
-				} icon: {
-					Image(systemName: "envelope.arrow.triangle.branch")
+			if isModuleSupported(.storeforwardConfig) {
+				NavigationLink(value: SettingsNavigationState.storeAndForward) {
+					Label {
+						Text("Store & Forward")
+					} icon: {
+						Image(systemName: "envelope.arrow.triangle.branch")
+					}
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.telemetry) {
-				Label {
-					Text("telemetry")
-				} icon: {
-					Image(systemName: "chart.xyaxis.line")
+			if isModuleSupported(.telemetryConfig) {
+				NavigationLink(value: SettingsNavigationState.telemetry) {
+					Label {
+						Text("telemetry")
+					} icon: {
+						Image(systemName: "chart.xyaxis.line")
+					}
 				}
+			}
+
+			// Update this list with the modules that are shown above. If all are not supported
+			// Then show a message.
+			if !isAnySupported([.ambientlightingConfig, .cannedmsgConfig,
+								.detectionsensorConfig, .extnotifConfig,
+								.mqttConfig, .rangetestConfig, .paxcounterConfig,
+								.audioConfig, .serialConfig, .storeforwardConfig,
+								.telemetryConfig]) {
+				Text("This node does not support any configurable modules.")
+			}
+		} header: {
+			Text("module.configuration")
+		} footer: {
+			if moduleOverride {
+				Text("Currently showing modules that may not be supported by this node.")
 			}
 		}
 	}
@@ -341,7 +388,7 @@ struct Settings: View {
 										/// Connected Node
 										if node.num == bleManager.connectedPeripheral?.num ?? 0 {
 											Label {
-												Text("BLE: \(node.user?.longName ?? "unknown".localized)")
+												Text("BLE: \(node.user?.longName?.addingVariationSelectors ?? "unknown".localized)")
 											} icon: {
 												Image(systemName: "antenna.radiowaves.left.and.right")
 											}
@@ -363,14 +410,14 @@ struct Settings: View {
 											.tag(Int(node.num))
 										} else if UserDefaults.enableAdministration && node.user?.pkiEncrypted ?? false {
 											Label {
-												Text("Request PKI Admin: \(node.user?.longName ?? "unknown".localized)")
+												Text("Request PKI Admin: \(node.user?.longName?.addingVariationSelectors ?? "unknown".localized)")
 											} icon: {
 												Image(systemName: "rectangle.and.hand.point.up.left")
 											}
 											.tag(Int(node.num))
 										} else if !UserDefaults.enableAdministration {
 											Label {
-												Text("Request Legacy Admin: \(node.user?.longName ?? "unknown".localized)")
+												Text("Request Legacy Admin: \(node.user?.longName?.addingVariationSelectors ?? "unknown".localized)")
 											} icon: {
 												Image(systemName: "rectangle.and.hand.point.up.left")
 											}
@@ -395,7 +442,7 @@ struct Settings: View {
 								TipView(AdminChannelTip(), arrowEdge: .top)
 							} else {
 								if bleManager.connectedPeripheral != nil {
-									Text("Connected Node \(node?.user?.longName ?? "unknown".localized)")
+									Text("Connected Node \(node?.user?.longName?.addingVariationSelectors ?? "unknown".localized)")
 								}
 							}
 						}
@@ -497,7 +544,10 @@ struct Settings: View {
 			}
 			.navigationTitle("settings")
 			.navigationBarItems(
-				leading: MeshtasticLogo()
+				leading: MeshtasticLogo().onLongPressGesture(minimumDuration: 1.0) {
+					self.moduleOverride.toggle()
+					UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+				}
 			)
 		}
 	}

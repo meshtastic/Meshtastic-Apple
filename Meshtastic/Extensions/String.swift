@@ -93,12 +93,51 @@ extension String {
 
 	// Filter out variation selectors from the string
 	var withoutVariationSelectors: String {
-		return self.unicodeScalars
-			.filter { scalar in
-				return !scalar.properties.isVariationSelector
+		var scalars: [UnicodeScalar] = []
+		var previousWasASCII = false
+
+		for scalar in self.unicodeScalars {
+			if scalar.properties.isVariationSelector {
+				// Only keep variation selector if the previous character was ASCII
+				if previousWasASCII {
+					scalars.append(scalar)
+				}
+				// No need to update previousWasASCII since variation selectors aren't characters
+				// Shouldn't have 2 in a row
+			} else {
+				scalars.append(scalar)
+				previousWasASCII = scalar.isASCII
 			}
-			.compactMap { UnicodeScalar($0) }
+		}
+
+		return scalars.compactMap { UnicodeScalar($0) }
 			.map { String($0) }
 			.joined()
+	}
+
+	// Adds variation selectors to prefer the graphical form of emoji.
+	// Looks ahead to make sure that the variation selector is not already applied.
+	var addingVariationSelectors: String {
+		var result = ""
+		let scalars = self.unicodeScalars
+		var index = scalars.startIndex
+		while index < scalars.endIndex {
+			let currentScalar = scalars[index]
+			result += String(currentScalar)
+			if currentScalar.properties.isEmoji && !currentScalar.properties.isEmojiPresentation && !currentScalar.isASCII {
+				// Check if the next scalar is U+FE0F
+				let nextIndex = scalars.index(after: index)
+				if nextIndex < scalars.endIndex && scalars[nextIndex].value == 0xFE0F {
+					// Already has variation selector; skip the next scalar
+					index = nextIndex
+				} else {
+					// Append variation selector
+					result += String(UnicodeScalar(0xFE0F)!)
+				}
+			}
+			// Move to the next scalar
+			index = scalars.index(after: index)
+		}
+		return result
 	}
 }

@@ -10,17 +10,17 @@ import Foundation
 extension Date {
 
 	var lastHeard: String {
-		if timeIntervalSince1970 > 0 {
+		if self.timeIntervalSince1970 > 0 && self < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
 			formatted()
 		} else {
-			"unknown"
+			"unknown.age".localized
 		}
 	}
 
 	func formattedDate(format: String) -> String {
 		let dateformat = DateFormatter()
 		dateformat.dateFormat = format
-		if self > Calendar.current.date(byAdding: .year, value: -5, to: Date())! {
+		if self.timeIntervalSince1970 > 0 && self < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
 			return dateformat.string(from: self)
 		} else {
 			return "unknown.age".localized

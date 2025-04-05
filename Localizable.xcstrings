@@ -4990,6 +4990,9 @@
         }
       }
     },
+    "Community Support" : {
+
+    },
     "Config" : {
       "localizations" : {
         "it" : {
@@ -6232,6 +6235,9 @@
         }
       }
     },
+    "Confirm" : {
+
+    },
     "Connect to a Node" : {
       "localizations" : {
         "de" : {
@@ -6253,6 +6259,9 @@
           }
         }
       }
+    },
+    "Connect to new radio?" : {
+
     },
     "connected" : {
       "localizations" : {
@@ -6333,6 +6342,9 @@
           }
         }
       }
+    },
+    "Connected Radio" : {
+
     },
     "connected.radio" : {
       "localizations" : {
@@ -6449,6 +6461,9 @@
           }
         }
       }
+    },
+    "Connecting to a new radio will clear all app data on the phone." : {
+
     },
     "Connection Attempt %lld of 10" : {
       "localizations" : {
@@ -7023,6 +7038,9 @@
           }
         }
       }
+    },
+    "Currently showing modules that may not be supported by this node." : {
+
     },
     "Currently the recommended way to update ESP32 devices is using the web flasher on a desktop computer from a chrome based browser. It does not work on mobile devices or over BLE." : {
       "localizations" : {
@@ -10146,6 +10164,9 @@
         }
       }
     },
+    "Enable broadcasting packets via UDP over the local network." : {
+
+    },
     "Enable Notifications" : {
       "localizations" : {
         "it" : {
@@ -10167,6 +10188,9 @@
           }
         }
       }
+    },
+    "Enable this device as a Store and Forward server. Requires an ESP32 device with PSRAM." : {
+
     },
     "enabled" : {
       "localizations" : {
@@ -11795,6 +11819,9 @@
           }
         }
       }
+    },
+    "Full Support" : {
+
     },
     "gas" : {
       "localizations" : {
@@ -23396,7 +23423,7 @@
         }
       }
     },
-    "OTA Updates are not supported on the this NRF Device." : {
+    "OTA Updates are not supported on this NRF Device." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -25039,6 +25066,9 @@
           }
         }
       }
+    },
+    "Radiation" : {
+
     },
     "Radio Disconnected" : {
       "localizations" : {
@@ -28760,6 +28790,9 @@
         }
       }
     },
+    "Send a heartbeat to advertise the server's presence." : {
+
+    },
     "Send a message to a certain meshtastic channel" : {
       "localizations" : {
         "it" : {
@@ -29582,6 +29615,9 @@
         }
       }
     },
+    "Server Option" : {
+
+    },
     "Set" : {
       "localizations" : {
         "it" : {
@@ -29745,6 +29781,9 @@
           }
         }
       }
+    },
+    "Settings" : {
+
     },
     "Share QR Code & Link" : {
       "localizations" : {
@@ -30160,6 +30199,9 @@
         }
       }
     },
+    "Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press start the live activity." : {
+
+    },
     "Shut Down" : {
       "localizations" : {
         "de" : {
@@ -30327,6 +30369,12 @@
           }
         }
       }
+    },
+    "Soil Moisture" : {
+
+    },
+    "Soil Temp" : {
+
     },
     "Specifies how long the monitored GPIO should output." : {
       "localizations" : {
@@ -30746,6 +30794,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Рутер за складиштење и прослеђивање захтева ESP32 уређај са PSRAM."
+          }
+        }
+      }
+    },
+    "Store and forward servers require an ESP32 device with PSRAM or Linux Native." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Store and forward servers require an ESP32 device with PSRAM or Linux Native."
           }
         }
       }
@@ -32132,6 +32190,9 @@
         }
       }
     },
+    "The Router roles are designed for high vantage locations like mountaintops and towers. This node needs to be able to have a good direct connection to most of the nodes on the network or else this will significantly hurt the network." : {
+
+    },
     "The secondary public key authorized to send admin messages to this node." : {
       "localizations" : {
         "de" : {
@@ -32381,6 +32442,9 @@
           }
         }
       }
+    },
+    "This node does not support any configurable modules." : {
+
     },
     "This will disable fixed position and remove the currently set position." : {
       "localizations" : {
@@ -33601,6 +33665,9 @@
           }
         }
       }
+    },
+    "UDP Broadcast" : {
+
     },
     "Ukraine 433mhz" : {
       "localizations" : {
@@ -34949,6 +35016,9 @@
           }
         }
       }
+    },
+    "Weight" : {
+
     },
     "What does the lock mean?" : {
       "localizations" : {

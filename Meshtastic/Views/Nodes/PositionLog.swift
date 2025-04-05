@@ -163,7 +163,7 @@ struct PositionLog: View {
 							Logger.services.info("Position log download succeeded.")
 							self.isExporting = false
 						case .failure(let error):
-							Logger.services.error("Position log download failed: \(error.localizedDescription)")
+							Logger.services.error("Position log download failed: \(error.localizedDescription, privacy: .public)")
 						}
 					}
 				)

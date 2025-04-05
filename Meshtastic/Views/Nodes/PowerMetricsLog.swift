@@ -243,7 +243,7 @@ struct PowerMetricsLog: View {
 					) {
 						Button("Delete Power metrics?", role: .destructive) {
 							if clearTelemetry(destNum: node.num, metricsType: 2, context: context) {
-								Logger.data.notice("Cleared Power Metrics for \(node.num)")
+								Logger.data.notice("Cleared Power Metrics for \(node.num, privacy: .public)")
 							} else {
 								Logger.data.error("Clear Power Metrics Log Failed")
 							}
@@ -272,7 +272,7 @@ struct PowerMetricsLog: View {
 				ContentUnavailableView("No Power Metrics", systemImage: "slash.circle")
 			}
 		}
-		.navigationTitle("Power Metrics Log}")
+		.navigationTitle("Power Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 			ZStack {
@@ -289,7 +289,7 @@ struct PowerMetricsLog: View {
 					self.isExporting = false
 					Logger.services.info("Power metrics log download succeeded.")
 				case .failure(let error):
-					Logger.services.error("Power metrics log download failed: \(error.localizedDescription)")
+					Logger.services.error("Power metrics log download failed: \(error.localizedDescription, privacy: .public)")
 				}
 			}
 		)

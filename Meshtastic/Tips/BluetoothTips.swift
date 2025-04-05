@@ -13,10 +13,10 @@ struct BluetoothConnectionTip: Tip {
 		return "tip.bluetooth.connect"
 	}
 	var title: Text {
-		Text("tip.bluetooth.connect.title")
+		Text("Connected Radio")
 	}
 	var message: Text? {
-		Text("tip.bluetooth.connect.message")
+		Text("Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press start the live activity.")
 	}
 	var image: Image? {
 		Image(systemName: "flipphone")

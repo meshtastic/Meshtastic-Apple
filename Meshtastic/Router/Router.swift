@@ -44,7 +44,7 @@ class Router: ObservableObject {
 		} else if components.path.hasPrefix("/settings") {
 			routeSettings(components)
 		} else {
-			Logger.services.warning("Failed to route url: \(url)")
+			Logger.services.warning("Failed to route url: \(url, privacy: .public)")
 		}
 	}
 

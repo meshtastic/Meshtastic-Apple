@@ -177,7 +177,7 @@ struct EnvironmentMetricsLog: View {
 					self.isExporting = false
 					Logger.services.info("Environment metrics log download succeeded.")
 				case .failure(let error):
-					Logger.services.error("Environment metrics log download failed: \(error.localizedDescription)")
+					Logger.services.error("Environment metrics log download failed: \(error.localizedDescription, privacy: .public)")
 				}
 			}
 		)
