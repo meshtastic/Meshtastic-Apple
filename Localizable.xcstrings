@@ -4991,7 +4991,14 @@
       }
     },
     "Community Support" : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supporto alla community"
+          }
+        }
+      }
     },
     "Config" : {
       "localizations" : {
@@ -6236,7 +6243,14 @@
       }
     },
     "Confirm" : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conferma"
+          }
+        }
+      }
     },
     "Connect to a Node" : {
       "localizations" : {
@@ -6261,7 +6275,14 @@
       }
     },
     "Connect to new radio?" : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collegare alla nuova radio?"
+          }
+        }
+      }
     },
     "connected" : {
       "localizations" : {
@@ -6344,7 +6365,14 @@
       }
     },
     "Connected Radio" : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radio connessa"
+          }
+        }
+      }
     },
     "connected.radio" : {
       "localizations" : {
@@ -6463,7 +6491,14 @@
       }
     },
     "Connecting to a new radio will clear all app data on the phone." : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La connessione a una nuova radio cancellerà tutti i dati delle app sul telefono."
+          }
+        }
+      }
     },
     "Connection Attempt %lld of 10" : {
       "localizations" : {
@@ -7040,7 +7075,14 @@
       }
     },
     "Currently showing modules that may not be supported by this node." : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attualmente mostra i moduli che potrebbero non essere supportati da questo nodo."
+          }
+        }
+      }
     },
     "Currently the recommended way to update ESP32 devices is using the web flasher on a desktop computer from a chrome based browser. It does not work on mobile devices or over BLE." : {
       "localizations" : {
@@ -10165,7 +10207,14 @@
       }
     },
     "Enable broadcasting packets via UDP over the local network." : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abilita la trasmissione di pacchetti via UDP sulla rete locale."
+          }
+        }
+      }
     },
     "Enable Notifications" : {
       "localizations" : {
@@ -10190,7 +10239,14 @@
       }
     },
     "Enable this device as a Store and Forward server. Requires an ESP32 device with PSRAM." : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abilita questo dispositivo come server Store and Forward. Richiede un dispositivo ESP32 con PSRAM."
+          }
+        }
+      }
     },
     "enabled" : {
       "localizations" : {
@@ -11821,7 +11877,14 @@
       }
     },
     "Full Support" : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supporto completo"
+          }
+        }
+      }
     },
     "gas" : {
       "localizations" : {
@@ -25068,7 +25131,14 @@
       }
     },
     "Radiation" : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radiazioni"
+          }
+        }
+      }
     },
     "Radio Disconnected" : {
       "localizations" : {
@@ -28791,7 +28861,14 @@
       }
     },
     "Send a heartbeat to advertise the server's presence." : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invia un heartbeat per pubblicizzare la presenza del server."
+          }
+        }
+      }
     },
     "Send a message to a certain meshtastic channel" : {
       "localizations" : {
@@ -29616,7 +29693,14 @@
       }
     },
     "Server Option" : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opzione server"
+          }
+        }
+      }
     },
     "Set" : {
       "localizations" : {
@@ -29783,7 +29867,14 @@
       }
     },
     "Settings" : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impostazioni"
+          }
+        }
+      }
     },
     "Share QR Code & Link" : {
       "localizations" : {
@@ -30200,7 +30291,14 @@
       }
     },
     "Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press start the live activity." : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra le informazioni relative alla radio Lora collegata via bluetooth. È possibile scorrere il dito verso sinistra per scollegare la radio e premere a lungo per avviare l'attività live."
+          }
+        }
+      }
     },
     "Shut Down" : {
       "localizations" : {
@@ -30371,10 +30469,24 @@
       }
     },
     "Soil Moisture" : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Umidità del suolo"
+          }
+        }
+      }
     },
     "Soil Temp" : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temperatura del suolo"
+          }
+        }
+      }
     },
     "Specifies how long the monitored GPIO should output." : {
       "localizations" : {
@@ -30804,6 +30916,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Store and forward servers require an ESP32 device with PSRAM or Linux Native."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I server Store and Forward richiedono un dispositivo ESP32 con PSRAM o Linux Native."
           }
         }
       }
@@ -32191,7 +32309,14 @@
       }
     },
     "The Router roles are designed for high vantage locations like mountaintops and towers. This node needs to be able to have a good direct connection to most of the nodes on the network or else this will significantly hurt the network." : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I ruoli di router sono progettati per posizioni elevate, come le cime delle montagne e le torri. Questo nodo deve essere in grado di avere una buona connessione diretta con la maggior parte dei nodi della rete, altrimenti danneggia significativamente la rete."
+          }
+        }
+      }
     },
     "The secondary public key authorized to send admin messages to this node." : {
       "localizations" : {
@@ -32444,7 +32569,14 @@
       }
     },
     "This node does not support any configurable modules." : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo nodo non supporta alcun modulo configurabile."
+          }
+        }
+      }
     },
     "This will disable fixed position and remove the currently set position." : {
       "localizations" : {
@@ -33667,7 +33799,14 @@
       }
     },
     "UDP Broadcast" : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trasmissione UDP"
+          }
+        }
+      }
     },
     "Ukraine 433mhz" : {
       "localizations" : {
@@ -35018,7 +35157,14 @@
       }
     },
     "Weight" : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peso"
+          }
+        }
+      }
     },
     "What does the lock mean?" : {
       "localizations" : {
