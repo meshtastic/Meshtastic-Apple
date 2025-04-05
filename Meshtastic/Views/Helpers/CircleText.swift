@@ -19,11 +19,10 @@ struct CircleText: View {
 							circleContent
 						}
 					}
+
 			} else {
 				circleContent
-			
 		}
-			
 	}
 
 	var circleContent: some View {
