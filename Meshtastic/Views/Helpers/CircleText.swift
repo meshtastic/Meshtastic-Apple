@@ -13,14 +13,15 @@ struct CircleText: View {
 	var node: NodeInfoEntity? = nil
 	
 	var body: some View {
-		NavigationStack{
 			if let node = node {
-				NavigationLink(destination: NodeDetail(node: node)) {
-					circleContent
-				}
+					NavigationStack{
+						NavigationLink(destination: NodeDetail(node: node)) {
+							circleContent
+						}
+					}
 			} else {
 				circleContent
-			}
+			
 		}
 			
 	}
