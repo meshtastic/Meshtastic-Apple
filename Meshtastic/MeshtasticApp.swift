@@ -38,6 +38,8 @@ struct MeshtasticAppleApp: App {
 
 		// Wire up router
 		self.appDelegate.router = appState.router
+		// Show Tips
+		try? Tips.resetDatastore()
 	}
 
     var body: some Scene {
@@ -55,7 +57,7 @@ struct MeshtasticAppleApp: App {
 					.presentationDragIndicator(.visible)
 			}
 			.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
-				Logger.mesh.debug("URL received \(userActivity)")
+				Logger.mesh.debug("URL received \(userActivity, privacy: .public)")
 				self.incomingUrl = userActivity.webpageURL
 
 				if (self.incomingUrl?.absoluteString.lowercased().contains("meshtastic.org/e/#")) != nil {
@@ -72,18 +74,18 @@ struct MeshtasticAppleApp: App {
 							}
 							self.channelSettings = cs
 						}
-						Logger.services.debug("Add Channel \(self.addChannels)")
+						Logger.services.debug("Add Channel \(self.addChannels, privacy: .public)")
 					}
 					self.saveChannels = true
 					Logger.mesh.debug("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link")")
 				}
 				if self.saveChannels {
-					Logger.mesh.debug("User wants to open Channel Settings URL: \(String(describing: self.incomingUrl!.relativeString))")
+					Logger.mesh.debug("User wants to open Channel Settings URL: \(String(describing: self.incomingUrl!.relativeString), privacy: .public)")
 				}
 			}
 			.onOpenURL(perform: { (url) in
 
-				Logger.mesh.debug("Some sort of URL was received \(url)")
+				Logger.mesh.debug("Some sort of URL was received \(url, privacy: .public)")
 				self.incomingUrl = url
 				if url.absoluteString.lowercased().contains("meshtastic.org/e/#") {
 					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
@@ -99,21 +101,15 @@ struct MeshtasticAppleApp: App {
 							}
 							self.channelSettings = cs
 						}
-						Logger.services.debug("Add Channel \(self.addChannels)")
+						Logger.services.debug("Add Channel \(self.addChannels, privacy: .public)")
 					}
 					self.saveChannels = true
-					Logger.mesh.debug("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link")")
+					Logger.mesh.debug("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link", privacy: .public)")
 				} else if url.absoluteString.lowercased().contains("meshtastic:///") {
 					appState.router.route(url: url)
 				}
 			})
 			.task {
-				#if DEBUG
-				/// Optionally, call `Tips.resetDatastore()` before `Tips.configure()` to reset the state of all tips. This will allow tips to re-appear even after they have been dismissed by the user.
-				/// This is for testing only, and should not be enabled in release builds.
-				try? Tips.resetDatastore()
-				#endif
-
 				try? Tips.configure(
 					[
 						// Reset which tips have been shown and what parameters have been tracked, useful during testing and for this sample project

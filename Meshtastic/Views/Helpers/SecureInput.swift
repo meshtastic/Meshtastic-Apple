@@ -55,7 +55,7 @@ struct SecureInput: View {
 				}) {
 					Image(systemName: self.isSecure ? "eye.slash" : "eye")
 						.accentColor(.secondary)
-				}
+				}.buttonStyle(BorderlessButtonStyle())
 			}
 		}
 	}

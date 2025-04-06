@@ -530,7 +530,7 @@ struct PositionConfig: View {
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
-			Logger.data.error("Error Saving Position Config Entity \(nsError)")
+			Logger.data.error("Error Saving Position Config Entity \(nsError, privacy: .public)")
 		}
 	}
 
@@ -550,7 +550,7 @@ struct PositionConfig: View {
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
-			Logger.data.error("Error Saving Position Config Entity \(nsError)")
+			Logger.data.error("Error Saving Position Config Entity \(nsError, privacy: .public)")
 		}
 	}
 }

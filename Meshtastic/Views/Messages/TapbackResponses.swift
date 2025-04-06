@@ -31,10 +31,10 @@ struct TapbackResponses: View {
 							tapback.read = true
 							do {
 								try context.save()
-								Logger.data.info("📖 Read tapback \(tapback.messageId) ")
+								Logger.data.info("📖 Read tapback \(tapback.messageId, privacy: .public) ")
 								onRead()
 							} catch {
-								Logger.data.error("Failed to read tapback \(tapback.messageId): \(error.localizedDescription)")
+								Logger.data.error("Failed to read tapback \(tapback.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
 							}
 						}
 					}

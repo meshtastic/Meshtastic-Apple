@@ -16,7 +16,7 @@ struct CircleText: View {
             Circle()
                 .fill(color)
                 .frame(width: circleSize, height: circleSize)
-			Text(text)
+			Text(text.addingVariationSelectors)
 				.frame(width: circleSize * 0.9, height: circleSize * 0.9, alignment: .center)
 				.foregroundColor(color.isLight() ? .black : .white)
 				.minimumScaleFactor(0.001)

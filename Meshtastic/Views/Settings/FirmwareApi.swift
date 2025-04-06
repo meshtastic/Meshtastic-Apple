@@ -62,7 +62,7 @@ class Api: ObservableObject {
 						completion(deviceHardware)
 					}
 				} catch {
-					Logger.services.error("JSON decode failure: \(error.localizedDescription)")
+					Logger.services.error("JSON decode failure: \(error.localizedDescription, privacy: .public)")
 				}
 				return
 			}
@@ -82,7 +82,7 @@ class Api: ObservableObject {
 						completion(firmwareReleases)
 					}
 				} catch {
-					Logger.services.error("JSON decode failure: \(error.localizedDescription)")
+					Logger.services.error("JSON decode failure: \(error.localizedDescription, privacy: .public)")
 				}
 				return
 			}

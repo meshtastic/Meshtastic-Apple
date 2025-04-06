@@ -115,12 +115,15 @@ struct ChannelMessageList: View {
 								if !message.read {
 									message.read = true
 									do {
+										for unreadMessage in channel.allPrivateMessages.filter({ !$0.read }) {
+											unreadMessage.read = true
+										}
 										try context.save()
-										Logger.data.info("📖 [App] Read message \(message.messageId) ")
+										Logger.data.info("📖 [App] Read message \(message.messageId, privacy: .public) ")
 										appState.unreadChannelMessages = myInfo.unreadMessages
 										context.refresh(myInfo, mergeChanges: true)
 									} catch {
-										Logger.data.error("Failed to read message \(message.messageId): \(error.localizedDescription)")
+										Logger.data.error("Failed to read message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
 									}
 								}
 							}
