@@ -1512,7 +1512,19 @@
     "2.4 Ghz" : {
       "extractionState" : "manual",
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2.4 Ghz"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2.4 GHz"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "2.4 GHz"
@@ -1534,7 +1546,8 @@
             "value" : "7"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "8" : {
       "localizations" : {
@@ -1550,7 +1563,8 @@
             "value" : "8"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "25" : {
       "localizations" : {
@@ -1566,7 +1580,8 @@
             "value" : "25"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "50" : {
       "localizations" : {
@@ -1582,7 +1597,8 @@
             "value" : "50"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "75" : {
       "localizations" : {
@@ -1598,7 +1614,8 @@
             "value" : "75"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "100" : {
       "localizations" : {
@@ -1614,11 +1631,24 @@
             "value" : "100"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "128 bit" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "128 bit"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "128 bit"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "128 bit"
@@ -1634,7 +1664,19 @@
     },
     "256 bit" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "256 bit"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "256 bit"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "256 bit"
@@ -1650,30 +1692,66 @@
     },
     "A Trace Route was sent, no response has been received." : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Praćenje rute je poslato, nikakav odgovor nije primljen."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Трејсрут је послат, али одговор није примљен."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Praćenje rute je poslato, nikakav odgovor nije primljen."
           }
         }
       }
     },
     "About" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O nama"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "О"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O nama"
           }
         }
       }
     },
     "About Meshtastic" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Meštastiku"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "О Мештастику"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Meštastiku"
           }
         }
       }
@@ -1686,40 +1764,88 @@
             "value" : "Genauigkeit %@"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tačnost %@"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Прецизност %@"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tačnost %@"
           }
         }
       }
     },
     "Ack SNR: %@ dB" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potvrda SNR: %@ dB"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ack SNR: %@ dB"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potvrda SNR: %@ dB"
           }
         }
       }
     },
     "Ack Time: %@" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vreme potvrde: %@"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ack време: %@"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vreme potvrde: %@"
           }
         }
       }
     },
     "Acknowledged by another node" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potvrđeno od strane drugog čvora"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Потврђен од стране другог чвора"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potvrđeno od strane drugog čvora"
           }
         }
       }
@@ -1732,10 +1858,22 @@
             "value" : "Aktionen"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Akcije"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Акције"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Akcije"
           }
         }
       }
@@ -5496,6 +5634,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Battery"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baterija"
           }
         },
         "pl" : {
@@ -31902,71 +32046,6 @@
         }
       }
     },
-    "twitter" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Twitter"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Twitter"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Twitter"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "טוויטר"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Twitter"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Twitter"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Twitter"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "X.com"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Twitter"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Twitter"
-          }
-        }
-      }
-    },
     "Two Hours" : {
       "localizations" : {
         "sr" : {
@@ -33255,10 +33334,22 @@
     },
     "Whether or not use INPUT_PULLUP mode for GPIO pin. Only applicable if the board uses pull-up resistors on the pin" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koristi li INPUT_PULLUP način rada za GPIO pin. Primjenjivo samo ako ploča koristi pull-up otpornike na pinu"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Да ли се користи режим INPUT_PULLUP за GPIO пин. Примењује се само ако плоча користи pull-up отпорнике на пину."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Da li koristiti INPUT_PULLUP režim za GPIO pin ili ne. Primenljivo samo ako ploča koristi pull-up otpornike na pinu"
           }
         }
       }
@@ -33271,20 +33362,44 @@
             "value" : "WiFi Optionen"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WiFi opcije"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Опције вајфаја"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WiFi opcije"
           }
         }
       }
     },
     "Wind" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vjetar"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ветар"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vetar"
           }
         }
       }
@@ -33297,10 +33412,22 @@
             "value" : "Windrichtung"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pravac vjetra"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Правац ветра"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pravac vetra"
           }
         }
       }
@@ -33313,17 +33440,41 @@
             "value" : "Windgeschwindigkeit"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brzina vjetra"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Брзина ветра"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brzina vetra"
           }
         }
       }
     },
     "x" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "x"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "x"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "x"
@@ -33339,7 +33490,19 @@
             "value" : "X: %1$@, Y: %2$d"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "X: %1$@, Y: %2$d"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "X: %1$@, Y: %2$d"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "X: %1$@, Y: %2$d"
@@ -33361,7 +33524,19 @@
             "value" : "X: %1$@, Y: %2$f"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "X: %1$@, Y: %2$f"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "X: %1$@, Y: %2$f"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "X: %1$@, Y: %2$f"
@@ -33383,7 +33558,19 @@
             "value" : "X: %1$@, Y: %2$lld"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "X: %1$@, Y: %2$lld"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "X: %1$@, Y: %2$lld"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "X: %1$@, Y: %2$lld"
@@ -33399,7 +33586,19 @@
     },
     "y" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "y"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "y"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "y"
@@ -33421,20 +33620,44 @@
             "value" : "Gestern"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juče"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Јуче"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juče"
           }
         }
       }
     },
     "You can also update your Meshtastic device over bluetooth using the Nordic DFU app." : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Takođe možete ažurirati svoj Meshtastic uređaj preko bluetooth-a koristeći Nordic DFU aplikaciju."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Такође можете ажурирати свој Мештастик уређај преко блутута користећи Nordic DFU апликацију."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Takođe možete ažurirati svoj Meshtastic uređaj preko bluetooth-a koristeći Nordic DFU aplikaciju."
           }
         },
         "zh-Hans" : {
@@ -33447,10 +33670,22 @@
     },
     "Your current location will be set as the fixed position and broadcast over the mesh on the position interval." : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaša trenutna lokacija će biti postavljena kao fiksna pozicija i emitovana preko mreže u intervalu pozicije."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ваша тренутна позиција ће бити постављена као фиксна позиција и емитована преко мреже на интервалу позиције."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaša trenutna lokacija će biti postavljena kao fiksna pozicija i emitovana preko mreže u intervalu pozicije."
           }
         },
         "zh-Hans" : {
@@ -33469,10 +33704,22 @@
             "value" : "Deine Firmware ist aktuell"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaš firmver je ažuran"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ваш фирмвер је на најновијој верзији"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaš firmver je ažuran"
           }
         },
         "zh-Hans" : {
@@ -33485,30 +33732,66 @@
     },
     "Your MQTT Server must support TLS." : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaš MQTT server mora podržavati TLS."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ваш MQTT сервер мора подржавати TLS."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaš MQTT server mora podržavati TLS."
           }
         }
       }
     },
     "Your node’s operating frequency is calculated based on the region, modem preset, and this field. When 0, the slot is automatically calculated based on the primary channel name." : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radna frekvencija vašeg čvora se izračunava na osnovu regiona, unapred podešenog modema i ovog polja. Kada je 0, slot se automatski izračunava na osnovu naziva primarnog kanala."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Оперативна фреквенција вашег нода се израчунава на основу региона, модемског пресета и овог поља. Када је 0, слот се аутоматски израчунава на основу назива примарног канала."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radna frekvencija vašeg čvora se izračunava na osnovu regiona, unapred podešenog modema i ovog polja. Kada je 0, slot se automatski izračunava na osnovu naziva primarnog kanala."
           }
         }
       }
     },
     "Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned." : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaša pozicija je poslata sa zahtevom za odgovor sa njihovom pozicijom. Primićete obaveštenje kada pozicija bude vraćena."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ваша позиција је послата са захтевом за одговор са њиховом позицијом. Добићете обавештење када се позиција врати."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaša pozicija je poslata sa zahtevom za odgovor sa njihovom pozicijom. Primićete obaveštenje kada pozicija bude vraćena."
           }
         },
         "zh-Hans" : {
@@ -33521,10 +33804,22 @@
     },
     "Your region has a %lld%% duty cycle. MQTT is not advised when you are duty cycle restricted, the extra traffic will quickly overwhelm your LoRa mesh." : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaš region ima %lld%% radni ciklus. MQTT se ne preporučuje kada ste ograničeni radnim ciklusom, dodatni saobraćaj će brzo preopteretiti vašu LoRa mrežu."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ваш регион има %lld%% циклус рада. MQTT се не препоручује када сте ограничени циклусом рада, јер ће додатни саобраћај брзо преоптеретити вашу LoRa мрежу."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaš region ima %lld%% radni ciklus. MQTT se ne preporučuje kada ste ograničeni radnim ciklusom, dodatni saobraćaj će brzo preopteretiti vašu LoRa mrežu."
           }
         },
         "zh-Hans" : {
@@ -33537,10 +33832,22 @@
     },
     "Your region has a %lld%% hourly duty cycle, your radio will stop sending packets when it reaches the hourly limit." : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaš region ima %lld%% satni radni ciklus, vaš radio će prestati sa slanjem paketa kada dostigne satno ograničenje."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ваш регион има %lld%% радни циклус по сату, ваш радио ће престати да шаље пакете када достигне ограничење по сату."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaš region ima %lld%% satni radni ciklus, vaš radio će prestati sa slanjem paketa kada dostigne satno ograničenje."
           }
         }
       }
