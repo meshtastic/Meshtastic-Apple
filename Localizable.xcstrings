@@ -6,7 +6,19 @@
     },
     "\t%@" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\t%@"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\t%@"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "\t%@"
@@ -22,10 +34,22 @@
     },
     " %@" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : " %@"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : " %@"
           }
         },
         "zh-Hans" : {
@@ -38,7 +62,19 @@
     },
     " %@%%" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : " %@%%"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : " %@%%"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : " %@%%"
@@ -48,7 +84,19 @@
     },
     ": %@" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ": %@"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ": %@"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : ": %@"
@@ -64,7 +112,19 @@
     },
     ": %d" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ": %d"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ": %d"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : ": %d"
@@ -80,10 +140,22 @@
     },
     "(Re)define PIN_GPS_EN for your board." : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(Re)definišite PIN_GPS_EN za vašu ploču."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "(Поново)дефинишите PIN_GPS_EN за своју плочу."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(Re)definišite PIN_GPS_EN za vašu ploču."
           }
         },
         "zh-Hans" : {
@@ -96,7 +168,19 @@
     },
     "%@" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@"
@@ -118,7 +202,19 @@
             "value" : "%1$@ - %2$@"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ - %2$@"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ - %2$@"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ - %2$@"
@@ -140,7 +236,19 @@
             "value" : "%1$@ - %2$@ - %3$@"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ - %2$@ - %3$@"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ - %2$@ - %3$@"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ - %2$@ - %3$@"
@@ -162,10 +270,22 @@
             "value" : "%1$@ - %2$@ Towards  %3$@ Back"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ - %2$@ Towards  %3$@ Back"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ - %2$@ Одлазних скокова %3$@ Долазних скокова"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ - %2$@ Towards  %3$@ Back"
           }
         },
         "zh-Hans" : {
@@ -184,10 +304,22 @@
             "value" : "%@ - Keine Antwort"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ - No Response"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ - Нема одговора"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ - No Response"
           }
         },
         "zh-Hans" : {
@@ -206,10 +338,22 @@
             "value" : "%@ - Nicht gesendet"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ - Not Sent"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ - Није послато"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ - Not Sent"
           }
         },
         "zh-Hans" : {
@@ -228,7 +372,19 @@
             "value" : "%1$@ (%2$@)"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@)"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@)"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ (%2$@)"
@@ -250,7 +406,19 @@
             "value" : "%1$@ %2$@"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ %2$@"
@@ -272,7 +440,19 @@
             "value" : "%1$@ %2$lld"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$lld"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$lld"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ %2$lld"
@@ -294,10 +474,22 @@
             "value" : "%@ entfernt"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ udaljen"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ удаљено"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ udaljen"
           }
         },
         "zh-Hans" : {
@@ -310,10 +502,22 @@
     },
     "%@ can be up to %@ bytes long." : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ može biti dugačak do %@ bajtova."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ може имати до %2$@ бајтова."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ može biti dugačak do %@ bajtova."
           }
         },
         "zh-Hans" : {
@@ -326,10 +530,22 @@
     },
     "%@ Channels?" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Kanala?"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ Канали?"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Kanala?"
           }
         },
         "zh-Hans" : {
@@ -342,10 +558,22 @@
     },
     "%@ config data was requested over the admin channel but no response has been returned from the remote node." : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ konfiguracioni podaci su zatraženi preko administratorskog kanala, ali nije dobijen nikakav odgovor od udaljenog čvora."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ конфигурациони подаци су затражени преко административног канала, али никакав одговор није враћен са удаљеног чвора."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ konfiguracioni podaci su zatraženi preko administratorskog kanala, ali nije dobijen nikakav odgovor od udaljenog čvora."
           }
         },
         "zh-Hans" : {
@@ -358,7 +586,19 @@
     },
     "%@ dB" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ dB"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ dB"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ dB"
@@ -393,6 +633,12 @@
             "value" : "%@ בבקשה נסה שנית להתחבר למכשיר ובדוק את הקוד."
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Molimo pokušajte da se ponovo povežete i pažljivo proverite PIN."
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -415,6 +661,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ Покушајте поново да се повежете и пажљиво проверите ПИН."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Molimo pokušajte da se ponovo povežete i pažljivo proverite PIN."
           }
         },
         "zh-Hans" : {
@@ -452,6 +704,12 @@
             "value" : "%@ האפליקציה תנסה אוטומטית להתחבר מחדש למכשיר המועדף אם ייראה."
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Aplikacija će se automatski ponovo povezati sa preferiranim radiom ako ponovo dođe u domet."
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -474,6 +732,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ Апликација ће се аутоматски поново повезати са жељеним радиом ако се врати у домет."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Aplikacija će se automatski ponovo povezati sa preferiranim radiom ako ponovo dođe u domet."
           }
         },
         "zh-Hans" : {
@@ -511,6 +775,12 @@
             "value" : "%@ שגיאה זו בדרך כלל אינה ניתנת לתיקון ללא שכחחת המכשיר בהגדרות מכשיר > בלוטוס ואז להתחבר מחדש למכשיר."
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Ova greška obično ne može biti popravljena bez brisanja uređaja pod Podešavanja > Bluetooth i ponovnog povezivanja sa radiom."
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -535,6 +805,12 @@
             "value" : "%@ Ова грешка обично не може да се поправи без заборављања уређаја испод подешавања > Блутут и поново повезивање са радиом."
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Ova greška obično ne može biti popravljena bez brisanja uređaja pod Podešavanja > Bluetooth i ponovnog povezivanja sa radiom."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -557,7 +833,19 @@
             "value" : "%1$@, %2$@"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@, %2$@"
@@ -579,7 +867,19 @@
             "value" : "%1$@: %2$lld / %3$lld"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$lld / %3$lld"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$lld / %3$lld"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@: %2$lld / %3$lld"
@@ -595,7 +895,19 @@
     },
     "%@%%" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@%%"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@%%"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@%%"
@@ -611,7 +923,19 @@
     },
     "%@°F" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@°F"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@°F"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@°F"
@@ -627,7 +951,19 @@
     },
     "%@mA" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@mA"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@mA"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@mA"
@@ -637,7 +973,19 @@
     },
     "%@V" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@V"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@V"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@V"
@@ -647,7 +995,19 @@
     },
     "%d" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%d"
@@ -687,6 +1047,36 @@
             }
           }
         },
+        "hr" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%d skokova"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%d skok"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%d skokova"
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Direktno"
+                }
+              }
+            }
+          }
+        },
         "sr" : {
           "variations" : {
             "plural" : {
@@ -717,6 +1107,36 @@
             }
           }
         },
+        "sr-Latn" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%d skokova"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%d skok"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%d skokova"
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Direktno"
+                }
+              }
+            }
+          }
+        },
         "zh-Hans" : {
           "variations" : {
             "plural" : {
@@ -739,7 +1159,19 @@
     },
     "%d%%" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d%%"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d%%"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%d%%"
@@ -755,7 +1187,19 @@
     },
     "%lf" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lf"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lf"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lf"
@@ -771,7 +1215,19 @@
     },
     "%lld" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld"
@@ -793,37 +1249,85 @@
             "value" : "%lld oder weniger Hops entfernt"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ili manje skokova udaljeno"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld или мање скокова"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ili manje skokova udaljeno"
           }
         }
       }
     },
     "%lld Readings Total" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Ukupno očitavanja"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Укупно %lld читања"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Ukupno očitavanja"
           }
         }
       }
     },
     "%lld Total Detection Events" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Ukupno događaja detekcije"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Укупно %lld догађаја детекције"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Ukupno događaja detekcije"
           }
         }
       }
     },
     "%lld%%" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%%"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%%"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld%%"
@@ -845,10 +1349,22 @@
             "value" : "%llddb Übertragungsleistung"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%llddb Snaga emitovanja"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%llddb снага преноса"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%llddb Snaga emitovanja"
           }
         },
         "zh-Hans" : {
@@ -867,17 +1383,41 @@
             "value" : "%llddBm Übertragungsleistung"
           }
         },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%llddBm Snaga emitovanja"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%llddBm снага преноса"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%llddBm Snaga emitovanja"
           }
         }
       }
     },
     "< 1%" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "< 1%"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "< 1%"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "< 1%"
@@ -893,17 +1433,41 @@
     },
     "🦕 End of life Version 🦖 ☄️" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🦕 Verzija na kraju životnog veka 🦖 ☄️"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "🦕 Верзија за крај живота 🦖 ☄"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🦕 Verzija na kraju životnog veka 🦖 ☄️"
           }
         }
       }
     },
     "1 byte" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 byte"
+          }
+        },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 byte"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "1 byte"
@@ -919,10 +1483,22 @@
     },
     "1 hop away" : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 skok udaljen"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "1 hop away"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 skok udaljen"
           }
         },
         "zh-Hans" : {
@@ -32971,10 +33547,22 @@
     },
     "Your route file must have both Latitude and Longitude columns and headers." : {
       "localizations" : {
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaša datoteka rute mora imati i kolone i zaglavlja za geografsku širinu i geografsku dužinu."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ваша датотека руте мора имати колоне и заглавља и ширину и дужину."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaša datoteka rute mora imati i kolone i zaglavlja za geografsku širinu i geografsku dužinu."
           }
         }
       }
