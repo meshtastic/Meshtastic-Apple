@@ -37,7 +37,14 @@
       }
     },
     " %@%%" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : " %@%%"
+          }
+        }
+      }
     },
     ": %@" : {
       "localizations" : {
@@ -3608,7 +3615,14 @@
       }
     },
     "Channel Utilization %@%%" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Искоришћеност канала  %@%%"
+          }
+        }
+      }
     },
     "channel.role.disabled" : {
       "extractionState" : "migrated",
@@ -12138,23 +12152,6 @@
         }
       }
     },
-    "HUMIDITY" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "LUFTFEUCHTIGKEIT"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ВЛАЖНОСТ"
-          }
-        }
-      }
-    },
     "hybrid" : {
       "extractionState" : "migrated",
       "localizations" : {
@@ -17136,71 +17133,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mesh 即時活動"
-          }
-        }
-      }
-    },
-    "mesh.log" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesh Log"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesh Log"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Journal du maillage"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "יומן מש"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dziennik Sieci"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Log do Mesh"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesh-logg"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Логови мреже"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesh 日志"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesh 紀錄檔"
           }
         }
       }
@@ -23462,7 +23394,14 @@
       }
     },
     "Pressure" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Притисак"
+          }
+        }
+      }
     },
     "Primary" : {
       "localizations" : {
@@ -32527,7 +32466,14 @@
       }
     },
     "Volts %@" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Волти  %@"
+          }
+        }
+      }
     },
     "Waiting" : {
       "localizations" : {
@@ -32780,7 +32726,14 @@
       }
     },
     "Wind" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ветар"
+          }
+        }
+      }
     },
     "Wind Direction" : {
       "localizations" : {
