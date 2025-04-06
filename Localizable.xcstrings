@@ -4267,7 +4267,14 @@
       }
     },
     "Community Support" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подршка заједнице"
+          }
+        }
+      }
     },
     "Config" : {
       "localizations" : {
@@ -5631,7 +5638,14 @@
       }
     },
     "Confirm" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Потврди"
+          }
+        }
+      }
     },
     "Connect to a Node" : {
       "localizations" : {
@@ -5650,7 +5664,14 @@
       }
     },
     "Connect to new radio?" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повезати се на нови радио?"
+          }
+        }
+      }
     },
     "connected" : {
       "localizations" : {
@@ -5731,9 +5752,6 @@
           }
         }
       }
-    },
-    "Connected Radio" : {
-
     },
     "connected.radio" : {
       "localizations" : {
@@ -5864,7 +5882,14 @@
       }
     },
     "Connecting to a new radio will clear all app data on the phone." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повезивање са новим радио уређајем ће очистити све локалне податке апликације на телефону."
+          }
+        }
+      }
     },
     "Connection Attempt %lld of 10" : {
       "localizations" : {
@@ -6378,7 +6403,14 @@
       }
     },
     "Currently showing modules that may not be supported by this node." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тренутно се приказују модули које овај чвор можда не подржава."
+          }
+        }
+      }
     },
     "Currently the recommended way to update ESP32 devices is using the web flasher on a desktop computer from a chrome based browser. It does not work on mobile devices or over BLE." : {
       "localizations" : {
@@ -9315,7 +9347,14 @@
       }
     },
     "Enable broadcasting packets via UDP over the local network." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Омогућите емитовање пакета путем UDP-а преко локалне мреже."
+          }
+        }
+      }
     },
     "Enable Notifications" : {
       "localizations" : {
@@ -9334,7 +9373,14 @@
       }
     },
     "Enable this device as a Store and Forward server. Requires an ESP32 device with PSRAM." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Омогућите овај уређај као сервер за складиштење и прослеђивање. Захтева ESP32 уређај са PSRAM-ом."
+          }
+        }
+      }
     },
     "enabled" : {
       "localizations" : {
@@ -9433,7 +9479,14 @@
       }
     },
     "Enables the store and forward module." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Омогућава модул за складиштење и прослеђивање."
+          }
+        }
+      }
     },
     "Enabling Ethernet will disable the bluetooth connection to the app." : {
       "localizations" : {
@@ -10691,7 +10744,14 @@
       }
     },
     "Full Support" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Потпуна подршка"
+          }
+        }
+      }
     },
     "gas" : {
       "extractionState" : "manual",
@@ -22145,7 +22205,14 @@
       }
     },
     "OTA Updates are not supported on this NRF Device." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OTA ажурирања нису подржана на овом NRF уређају."
+          }
+        }
+      }
     },
     "OTA Updates are not supported on your platform." : {
       "localizations" : {
@@ -23533,7 +23600,14 @@
       }
     },
     "Radiation" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Радијација"
+          }
+        }
+      }
     },
     "Radio Disconnected" : {
       "extractionState" : "manual",
@@ -27032,7 +27106,14 @@
       }
     },
     "Send a heartbeat to advertise the server's presence." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пошаљите откуцај срца да бисте рекламирали присуство сервера."
+          }
+        }
+      }
     },
     "Send a message to a certain meshtastic channel" : {
       "localizations" : {
@@ -27784,7 +27865,14 @@
       }
     },
     "Server Option" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Опција сервера"
+          }
+        }
+      }
     },
     "Set" : {
       "localizations" : {
@@ -27943,9 +28031,6 @@
           }
         }
       }
-    },
-    "Settings" : {
-
     },
     "Share QR Code & Link" : {
       "localizations" : {
@@ -28300,7 +28385,14 @@
       }
     },
     "Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press start the live activity." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приказује информације за Lora радио повезан преко Bluetooth-а. Можете превући улево да бисте прекинули везу са радиом, а дугим притиском покрећете „уживо“ активност."
+          }
+        }
+      }
     },
     "Shut Down" : {
       "localizations" : {
@@ -28418,10 +28510,24 @@
       }
     },
     "Soil Moisture" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Влага земљишта"
+          }
+        }
+      }
     },
     "Soil Temp" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Температура земљиша"
+          }
+        }
+      }
     },
     "Specifies how long the monitored GPIO should output." : {
       "localizations" : {
@@ -28792,7 +28898,14 @@
       }
     },
     "Store and forward servers require an ESP32 device with PSRAM or Linux Native." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сервери за складиштење и прослеђивање захтевају ESP32 уређај са PSRAM-ом или Линук native-ом."
+          }
+        }
+      }
     },
     "storeforward.heartbeat" : {
       "localizations" : {
@@ -30074,7 +30187,14 @@
       }
     },
     "The Router roles are designed for high vantage locations like mountaintops and towers. This node needs to be able to have a good direct connection to most of the nodes on the network or else this will significantly hurt the network." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Улоге рутера су дизајниране за локације са високим погледом као што су врхови планина и куле. Овај чвор мора бити у могућности да има добру директну везу са већином чворова на мрежи или ће то значајно наштетити мрежи."
+          }
+        }
+      }
     },
     "The secondary public key authorized to send admin messages to this node." : {
       "localizations" : {
@@ -30250,7 +30370,14 @@
       }
     },
     "This node does not support any configurable modules." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Овај чвор не подржава ниједан конфигурабилан модул."
+          }
+        }
+      }
     },
     "This will disable fixed position and remove the currently set position." : {
       "localizations" : {
@@ -31275,7 +31402,14 @@
       }
     },
     "UDP Broadcast" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UDP емитовање"
+          }
+        }
+      }
     },
     "Ukraine 433mhz" : {
       "extractionState" : "manual",
@@ -32458,7 +32592,14 @@
       }
     },
     "Weight" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тежина"
+          }
+        }
+      }
     },
     "What does the lock mean?" : {
       "localizations" : {
