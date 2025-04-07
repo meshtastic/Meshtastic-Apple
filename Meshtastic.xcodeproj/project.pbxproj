@@ -1282,6 +1282,8 @@
 				se,
 				"pt-PT",
 				sr,
+				"sr-Latn",
+				hr,
 			);
 			mainGroup = DDC2E14B26CE248E0042C5E4;
 			packageReferences = (
