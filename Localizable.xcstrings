@@ -1459,6 +1459,12 @@
             "state" : "translated",
             "value" : "高级设备 GPS"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "進階裝置 GPS"
+          }
         }
       }
     },
@@ -4717,7 +4723,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "人流計數器"
+            "value" : "PAX 計數器"
           }
         }
       }
@@ -4775,7 +4781,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "人流計數器設定"
+            "value" : "PAX 計數器設定"
           }
         }
       }
@@ -7385,6 +7391,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "设备 GPS"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "裝置 GPS"
           }
         }
       }
@@ -15866,6 +15878,12 @@
             "state" : "translated",
             "value" : "LED 状态"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LED 狀態燈"
+          }
         }
       }
     },
@@ -19270,7 +19288,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "收到串列模組設定：%@"
+            "value" : "收到序列模組設定：%@"
           }
         }
       }
@@ -23116,7 +23134,8 @@
             "value" : "ВајФај"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "Perform a factory reset on the node you are connected to" : {
       "localizations" : {
@@ -23706,6 +23725,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "位置将由设备 GPS 提供，如果选择禁用或不存在，则可以设置固定位置。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "裝置的 GPS 會提供定位資訊，如果選擇「已停用」或「無此功能」，則可以手動設定固定位置。"
           }
         }
       }
@@ -27819,6 +27844,12 @@
             "state" : "translated",
             "value" : "发送间隔"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "傳送頻率"
+          }
         }
       }
     },
@@ -27965,7 +27996,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "串口"
+            "value" : "序列"
           }
         }
       }
@@ -27982,6 +28013,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Серијска конзола"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "序列主控台"
           }
         }
       }
@@ -28061,7 +28098,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "串口設定"
+            "value" : "序列設定"
           }
         }
       }
@@ -28252,12 +28289,6 @@
             "state" : "translated",
             "value" : "Protobufs"
           }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Protobufs"
-          }
         }
       }
     },
@@ -28317,12 +28348,6 @@
             "state" : "translated",
             "value" : "简单"
           }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "簡單"
-          }
         }
       }
     },
@@ -28381,12 +28406,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "文本消息"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "文本訊息"
           }
         }
       }
@@ -30799,6 +30818,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Стање LED диоде (укључено/искључено)"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LED狀態燈開關"
           }
         }
       }
