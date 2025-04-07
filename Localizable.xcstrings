@@ -854,6 +854,12 @@
             "state" : "translated",
             "value" : "%lld или мање скокова"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 或更少的Hops以外"
+          }
         }
       }
     },
@@ -1350,6 +1356,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Додај у омиљене"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加入最愛"
           }
         }
       }
@@ -6595,6 +6607,12 @@
             "state" : "translated",
             "value" : "无法找到节点"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "找不到節點"
+          }
         }
       }
     },
@@ -9399,6 +9417,12 @@
             "state" : "translated",
             "value" : "距离"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "距離"
+          }
         }
       }
     },
@@ -9935,7 +9959,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "加密"
+            "value" : "已加密"
           }
         }
       }
@@ -9959,6 +9983,12 @@
             "state" : "translated",
             "value" : "加密"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已加密"
+          }
         }
       }
     },
@@ -9974,6 +10004,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "启用加密"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加密已啟用"
           }
         }
       }
@@ -10527,6 +10563,12 @@
             "state" : "translated",
             "value" : "Омиљени"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最愛"
+          }
         }
       }
     },
@@ -10542,6 +10584,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Омиљени"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最愛"
           }
         }
       }
@@ -10611,6 +10659,12 @@
             "state" : "translated",
             "value" : "Пронађи контакт"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜尋聯絡人"
+          }
         }
       }
     },
@@ -10626,6 +10680,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пронађи чвор"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜尋節點"
           }
         }
       }
@@ -12359,6 +12419,12 @@
             "state" : "translated",
             "value" : "Скокови удаљености"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hops 以外"
+          }
         }
       }
     },
@@ -12374,6 +12440,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Удаљено %d скокова"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hops 以外 %d"
           }
         }
       }
@@ -12391,6 +12463,12 @@
             "state" : "translated",
             "value" : "Скокови удаљености:"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hops 以外:"
+          }
         }
       }
     },
@@ -12406,6 +12484,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Скокови удаљености: %d"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hops 以外: %d"
           }
         }
       }
@@ -12925,6 +13009,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "忽略"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已忽略"
           }
         }
       }
@@ -16686,9 +16776,14 @@
             "state" : "translated",
             "value" : "LoRa"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LoRa"
+          }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "lora.config" : {
       "localizations" : {
@@ -20441,6 +20536,12 @@
             "state" : "translated",
             "value" : "Минимум раздаљине"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最短距離"
+          }
         }
       }
     },
@@ -20697,6 +20798,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MQTT"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "MQTT"
@@ -22520,6 +22627,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "На мрежи"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在線"
           }
         }
       }
@@ -25076,6 +25189,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "从忽略中删除"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從忽略中移除"
           }
         }
       }
@@ -32968,6 +33087,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "通过 MQTT"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "經由 Mqtt"
           }
         }
       }
