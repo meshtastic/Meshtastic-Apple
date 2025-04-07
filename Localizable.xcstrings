@@ -18,7 +18,8 @@
             "value" : "\t%@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     " %@" : {
       "localizations" : {
@@ -34,10 +35,11 @@
             "value" : " %@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     " %@%%" : {
-
+      "shouldTranslate" : false
     },
     ": %@" : {
       "localizations" : {
@@ -53,7 +55,8 @@
             "value" : ": %@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     ": %d" : {
       "localizations" : {
@@ -69,7 +72,8 @@
             "value" : ": %d"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "(Re)define PIN_GPS_EN for your board." : {
       "localizations" : {
@@ -107,7 +111,8 @@
             "value" : "%@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ - %@" : {
       "localizations" : {
@@ -129,7 +134,8 @@
             "value" : "%1$@ - %2$@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ - %@ - %@" : {
       "localizations" : {
@@ -151,7 +157,8 @@
             "value" : "%1$@ - %2$@ - %3$@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ - %@ Towards  %@ Back" : {
       "localizations" : {
@@ -251,7 +258,8 @@
             "value" : "%1$@ (%2$@)"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ %@" : {
       "localizations" : {
@@ -273,7 +281,8 @@
             "value" : "%1$@ %2$@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ %lld" : {
       "localizations" : {
@@ -295,7 +304,8 @@
             "value" : "%1$@ %2$lld"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ away" : {
       "localizations" : {
@@ -347,6 +357,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ 频道?"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 頻道？"
           }
         }
       }
@@ -581,7 +597,8 @@
             "value" : "%1$@, %2$@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@: %lld / %lld" : {
       "localizations" : {
@@ -603,7 +620,8 @@
             "value" : "%1$@: %2$lld / %3$lld"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@%%" : {
       "localizations" : {
@@ -619,7 +637,8 @@
             "value" : "%@%%"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@°F" : {
       "localizations" : {
@@ -635,7 +654,8 @@
             "value" : "%@°F"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@mA" : {
       "localizations" : {
@@ -645,7 +665,8 @@
             "value" : "%@mA"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@V" : {
       "localizations" : {
@@ -655,7 +676,8 @@
             "value" : "%@V"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%d" : {
       "localizations" : {
@@ -671,7 +693,8 @@
             "value" : "%d"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%d Hops" : {
       "localizations" : {
@@ -746,6 +769,24 @@
               }
             }
           }
+        },
+        "zh-Hant-TW" : {
+          "variations" : {
+            "plural" : {
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%d Hops"
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "直連"
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -763,7 +804,8 @@
             "value" : "%d%%"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%lf" : {
       "localizations" : {
@@ -779,7 +821,8 @@
             "value" : "%lf"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%lld" : {
       "localizations" : {
@@ -795,7 +838,8 @@
             "value" : "%lld"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%lld or less hops away" : {
       "localizations" : {
@@ -979,7 +1023,8 @@
             "value" : "7"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "8" : {
       "localizations" : {
@@ -995,7 +1040,8 @@
             "value" : "8"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "25" : {
       "localizations" : {
@@ -1011,7 +1057,8 @@
             "value" : "25"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "50" : {
       "localizations" : {
@@ -1027,7 +1074,8 @@
             "value" : "50"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "75" : {
       "localizations" : {
@@ -1043,7 +1091,8 @@
             "value" : "75"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "100" : {
       "localizations" : {
@@ -1059,7 +1108,8 @@
             "value" : "100"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "128 bit" : {
       "localizations" : {
@@ -1101,6 +1151,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Трејсрут је послат, али одговор није примљен."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已發送 Trace Route，但未收到任何回應。"
           }
         }
       }
@@ -1167,7 +1223,8 @@
             "value" : "Ack SNR: %@ dB"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "Ack Time: %@" : {
       "localizations" : {
@@ -1175,6 +1232,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ack време: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ack 時間: %@"
           }
         }
       }
@@ -1185,6 +1248,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Потврђен од стране другог чвора"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已被其他節點確認接收。"
           }
         }
       }
@@ -1201,6 +1270,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Акције"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "動作"
           }
         }
       }
@@ -1345,6 +1420,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "管理员"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遠端管理"
           }
         }
       }
@@ -1968,6 +2049,12 @@
             "state" : "translated",
             "value" : "这是一个开源、离网、分布式 Mesh 网络，可在价格低廉的低功率无线电设备上运行。"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一個開源、離線運作、去中心化的網狀網路，運行於平價且低功耗的無線電設備上。"
+          }
         }
       }
     },
@@ -2000,6 +2087,12 @@
             "state" : "translated",
             "value" : "App 数据"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App 資料"
+          }
         }
       }
     },
@@ -2016,6 +2109,12 @@
             "state" : "translated",
             "value" : "App 文件"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App 檔案"
+          }
         }
       }
     },
@@ -2031,6 +2130,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "App 设置"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App 設定"
           }
         }
       }
@@ -2049,7 +2154,8 @@
             "value" : "Apple Apps"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "Approximate Location" : {
       "localizations" : {
@@ -6856,6 +6962,12 @@
             "state" : "translated",
             "value" : "删除所有环境指标？"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刪除所有環境資料？"
+          }
         }
       }
     },
@@ -7289,6 +7401,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "设备由 Mesh 管理员管理，用户无法访问任何设备设置。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "裝置由 Mesh 遠端管理，使用者無法存取任何裝置設定。"
           }
         }
       }
@@ -9285,6 +9403,12 @@
             "state" : "translated",
             "value" : "文档"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文檔"
+          }
         }
       }
     },
@@ -9348,6 +9472,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "拖放升级固件文档"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拖放更新韌體操作說明"
           }
         }
       }
@@ -9693,6 +9823,12 @@
             "state" : "translated",
             "value" : "启用以太网将禁用应用程序的蓝牙连接。"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用乙太網路後，將會停用與應用程式的藍牙連線。"
+          }
         }
       }
     },
@@ -9708,6 +9844,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "启用 WiFi 将禁用应用程序的蓝牙连接。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用 Wi-Fi 後，將會停用與應用程式的藍牙連線。"
           }
         }
       }
@@ -9859,6 +10001,12 @@
             "state" : "translated",
             "value" : "环境"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "環境"
+          }
         }
       }
     },
@@ -9881,6 +10029,12 @@
             "state" : "translated",
             "value" : "环境"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "環境"
+          }
         }
       }
     },
@@ -9896,6 +10050,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "环境指标日志"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "環境數據記錄"
           }
         }
       }
@@ -15722,6 +15882,12 @@
             "state" : "translated",
             "value" : "Стари начин администрације"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "舊版遠端管理"
+          }
         }
       }
     },
@@ -21337,6 +21503,12 @@
             "state" : "translated",
             "value" : "没有环境指标"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無環境數據"
+          }
         }
       }
     },
@@ -22353,6 +22525,12 @@
             "state" : "translated",
             "value" : "打开设置"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打開設定"
+          }
         }
       }
     },
@@ -23203,6 +23381,12 @@
             "state" : "translated",
             "value" : "基于 PKI 的节点管理，需要 2.5 以上版本的固件"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "基於 PKI 的遠端管理，需搭配 2.5 版以上的韌體。"
+          }
         }
       }
     },
@@ -23218,6 +23402,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "请连接电台以修改配置。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請先連接裝置來進行設定。"
           }
         }
       }
@@ -23527,6 +23717,12 @@
             "state" : "translated",
             "value" : "Снага"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電源"
+          }
         }
       }
     },
@@ -23536,6 +23732,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Мерни подаци о снази"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電源指標"
           }
         }
       }
@@ -23547,15 +23749,11 @@
             "state" : "translated",
             "value" : "Логови метрике снаге"
           }
-        }
-      }
-    },
-    "Power Metrics Log}" : {
-      "localizations" : {
-        "sr" : {
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Логови метрике снаге}"
+            "value" : "電源指標紀錄"
           }
         }
       }
@@ -23564,8 +23762,14 @@
       "localizations" : {
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Искључи"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關機"
           }
         }
       }
@@ -23574,8 +23778,14 @@
       "localizations" : {
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Опције снаге"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電源選項"
           }
         }
       }
@@ -23604,6 +23814,12 @@
             "state" : "translated",
             "value" : "Обрисати све логове метрике снаге?"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刪除所有電源指標紀錄？"
+          }
         }
       }
     },
@@ -23620,6 +23836,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Логови метрике снаге"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電源指標紀錄"
           }
         }
       }
@@ -23644,14 +23866,20 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Genaue Position"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Прецизне локације"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "精確位置"
           }
         }
       }
@@ -23826,6 +24054,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "项目信息"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "專案資訊"
           }
         }
       }
@@ -24573,6 +24807,12 @@
             "state" : "translated",
             "value" : "区域"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "區域"
+          }
         }
       }
     },
@@ -24737,6 +24977,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Даљинска администрација за: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在為 %@ 執行遠端設定"
           }
         }
       }
@@ -24932,6 +25178,12 @@
             "state" : "translated",
             "value" : "重置 App 设置"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重置 App 設定"
+          }
         }
       }
     },
@@ -25065,6 +25317,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "审查应用程序"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "為應用程式留下評價"
           }
         }
       }
@@ -32593,6 +32851,7 @@
       }
     },
     "Version: %@ (%@) " : {
+      "comment" : "In the \"About\" under \"Apple Apps\"",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -32616,6 +32875,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "版本号: %1$@ (%2$@) "
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版本: %1$@ (%2$@) "
           }
         }
       }
@@ -32976,6 +33241,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "什么是 Meshtastic?"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "什麼是 Meshtastic？"
           }
         }
       }
