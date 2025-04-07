@@ -1891,6 +1891,12 @@
             "state" : "translated",
             "value" : "Активан"
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktivan"
+          }
         }
       }
     },
@@ -1908,6 +1914,12 @@
             "value" : "Активност"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktivnost"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1923,6 +1935,12 @@
             "state" : "translated",
             "value" : "Додај канал"
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodaj kanal"
+          }
         }
       }
     },
@@ -1932,6 +1950,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Додај канале"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodaj kanale"
           }
         }
       }
@@ -1949,6 +1973,12 @@
             "state" : "translated",
             "value" : "Додај у омиљене"
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodaj u omiljene"
+          }
         }
       }
     },
@@ -1958,6 +1988,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Додатна помоћ"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodatna pomoć"
           }
         },
         "zh-Hans" : {
@@ -1974,6 +2010,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Адреса"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adresa"
           }
         },
         "zh-Hans" : {
@@ -1998,6 +2040,12 @@
             "value" : "Админ и кључеви директних порука"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ključevi admin i direktnih poruka"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2012,6 +2060,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Администрација"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administracija"
           }
         },
         "zh-Hans" : {
@@ -2030,6 +2084,12 @@
             "value" : "Напредно"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Napredno"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2044,6 +2104,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Напредне поставке GPS уређаја"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Napredna GPS podešavanja uređaja"
           }
         },
         "zh-Hans" : {
@@ -2062,6 +2128,12 @@
             "value" : "Напредне GPIO опције"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Napredne GPIO opcije"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2078,6 +2150,12 @@
             "value" : "Напредне поставке позиционих заставица"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Napredne postavke pozicionih zastavica"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2087,7 +2165,6 @@
       }
     },
     "ago" : {
-      "comment" : "Three hours ago = Три сата пре",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -2130,6 +2207,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "пре"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pre"
           }
         },
         "zh-Hans" : {
@@ -2190,6 +2273,12 @@
             "value" : "Време емитовања"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vreme emitovanja"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2211,6 +2300,12 @@
             "state" : "translated",
             "value" : "Узбуна"
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upozorenje"
+          }
         }
       }
     },
@@ -2220,6 +2315,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Упозорите GPIO зујалицу када примите звоно"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upozorite GPIO zujalicu kada primite zvono"
           }
         },
         "zh-Hans" : {
@@ -2237,6 +2338,12 @@
             "state" : "translated",
             "value" : "Упозорите GPIO зујалицу када примите поруку"
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upozorite GPIO zujalicu kada primite poruku"
+          }
         }
       }
     },
@@ -2246,6 +2353,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Упозорите GPIO вибра мотор када примите звоно"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upozorite GPIO vibracioni motor kada primite zvono"
           }
         },
         "zh-Hans" : {
@@ -2263,6 +2376,12 @@
             "state" : "translated",
             "value" : "Упозорите GPIO вибра мотор када примите поруку"
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upozorite GPIO vibracioni motor kada primite poruku"
+          }
         }
       }
     },
@@ -2272,6 +2391,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Упозори када примиш звоно"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upozori kada primiš zvono"
           }
         },
         "zh-Hans" : {
@@ -2288,6 +2413,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Упозори када примиш поруку"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upozori kada primiš poruku"
           }
         }
       }
@@ -2306,6 +2437,12 @@
             "value" : "Сви"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sve"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2320,6 +2457,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сви подаци о уређају и апликацији ће бити избрисани."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Svi podaci o uređaju i aplikaciji će biti izbrisani."
           }
         },
         "zh-Hans" : {
@@ -5664,6 +5807,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Батерија"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baterija"
           }
         },
         "zh-Hans" : {
@@ -29702,7 +29851,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Претплаћен"
+            "value" : "Повезан"
           }
         }
       }
@@ -32261,6 +32410,12 @@
             "value" : "Непозната старост"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nepoznato vreme aktivnosti"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32325,6 +32480,12 @@
             "value" : "Уклони"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nije postavljeno"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32346,6 +32507,12 @@
             "state" : "translated",
             "value" : "Није подржано"
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nije podržan"
+          }
         }
       }
     },
@@ -32355,6 +32522,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Горе Доле 1"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gore Dole 1"
           }
         },
         "zh-Hans" : {
@@ -32371,6 +32544,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Интервал ажурирања"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interval ažuriranja"
           }
         }
       }
@@ -32423,6 +32602,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ажурирај твој фирмвер"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ažirirajte Vaš firmver"
           }
         },
         "zh-Hans" : {
@@ -32489,6 +32674,12 @@
             "value" : "Интервал ажурирања"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interval ažuriranja"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32510,6 +32701,12 @@
             "state" : "translated",
             "value" : "Ажурирани подаци о статистици чвора."
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ažurirani podaci o statistici čvora."
+          }
         }
       }
     },
@@ -32526,6 +32723,12 @@
             "state" : "translated",
             "value" : "Ажуриран: %@"
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ažuriran: %@"
+          }
         }
       }
     },
@@ -32535,6 +32738,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Укључен узлазни канал"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uplink omogućen"
           }
         },
         "zh-Hans" : {
@@ -32576,6 +32785,12 @@
             "state" : "translated",
             "value" : "Време рада"
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vreme rada"
+          }
         }
       }
     },
@@ -32586,6 +32801,12 @@
             "state" : "translated",
             "value" : "Време рада"
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vreme rada"
+          }
         }
       }
     },
@@ -32595,6 +32816,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Користи PWM излаз (као што је RAK звучник) за мелодије уместо укључивања/искључивања излаза. Ово ће игнорисати подешавања излаза, трајање излаза и активна подешавања и користити подешавање GPIO опције звучника у конфигурацији уређаја."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koristi PWM izlaz (poput RAK zujalice) za melodije umesto uključi/isključi izlaza. Ovo će ignorisati podešavanja izlaza, trajanja izlaza i aktivnosti, i umesto toga koristiti GPIO opciju zujalice iz konfiguracije uređaja."
           }
         },
         "zh-Hans" : {
@@ -32612,6 +32839,12 @@
             "state" : "translated",
             "value" : "Користи I2S као звучник"
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koristi I2S kao zujalicu"
+          }
         }
       }
     },
@@ -32621,6 +32854,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Користи предефинисано подешавање"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koristi predefinisano"
           }
         },
         "zh-Hans" : {
@@ -32639,6 +32878,12 @@
             "value" : "Користи PWM звучник"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koristi PWM zujalicu"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32653,6 +32898,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Користи се за креирање заједничког кључа са удаљеним уређајем."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koristi se za kreiranje deljenog ključa sa udaljenim uređajem."
           }
         }
       }
@@ -32707,6 +32958,12 @@
             "value" : "Корисник"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Korisnik"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32729,6 +32986,12 @@
             "value" : "Корисничка подешавања"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podešavanja korisnika"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32743,6 +33006,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Кориснички детаљи"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Korisnički detalji"
           }
         },
         "zh-Hans" : {
@@ -32761,6 +33030,12 @@
             "value" : "ИД корисника"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Korisnički ID"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32776,6 +33051,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Корисник је покренуо прекид везе"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prekid veze na zahtev korisnika"
           }
         },
         "zh-Hans" : {
@@ -32837,6 +33118,12 @@
             "value" : "Кориснички детаљи"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Korisnički detalji"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32858,6 +33145,12 @@
             "state" : "translated",
             "value" : "Користи pull-up отпорник"
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koristi pull-up otpornik"
+          }
         }
       }
     },
@@ -32867,6 +33160,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Користи мрежну везу на вашем телефону за повезивање са MQTT."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilizes the network connection on your phone to connect to MQTT."
           }
         },
         "zh-Hans" : {
@@ -32890,6 +33189,12 @@
             "state" : "translated",
             "value" : "Правац возила"
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Smer kretanja vozila"
+          }
         }
       }
     },
@@ -32906,6 +33211,12 @@
             "state" : "translated",
             "value" : "Брзина возила"
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brzina vozila"
+          }
         }
       }
     },
@@ -32921,6 +33232,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Верзија %1$@ укључује значајне оптимизације мреже и обимне измене уређаја и клијентских апликација. Подржане су само верзије чворова %2$@ и новије."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verzija %1$@ uključuje značajna mrežna unapređenja i opsežne promene na uređajima i klijentskim aplikacijama. Podržani su samo čvorovi verzije %2$@ i noviji."
           }
         },
         "zh-Hans" : {
@@ -32951,6 +33268,12 @@
             "value" : "Верзија: %1$@ (%2$@) "
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verzija: %1$@ (%2$@) "
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32973,6 +33296,12 @@
             "state" : "translated",
             "value" : "Веома дугачки домет - Споро"
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veoma veliki domet - sporo"
+          }
         }
       }
     },
@@ -32989,6 +33318,12 @@
             "state" : "translated",
             "value" : "Преко LoRA"
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preko Lore"
+          }
         }
       }
     },
@@ -33004,6 +33339,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Преко MQTT-а"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preko MQTT-a"
           }
         },
         "zh-Hans" : {
@@ -33064,6 +33405,12 @@
             "value" : "Напон"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Napon"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33085,6 +33432,12 @@
             "state" : "translated",
             "value" : "Напон"
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Napon"
+          }
         }
       }
     },
@@ -33094,6 +33447,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Волти  %@"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volti %@"
           }
         }
       }
@@ -33148,6 +33507,12 @@
             "value" : "Чекам. . ."
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Čekam. . ."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33169,6 +33534,12 @@
             "state" : "translated",
             "value" : "Чека се на потврду пријема..."
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Čekanje na potvrdu..."
+          }
         }
       }
     },
@@ -33178,6 +33549,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пробуди екран додиром или покретом"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probudi ekran na dodir ili pokret"
           }
         }
       }
@@ -33194,6 +33571,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Опције за тачке пута"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opcije putne tačke"
           }
         }
       }
@@ -33212,6 +33595,12 @@
             "value" : "Временски услови"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vremenski uslovi"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33227,6 +33616,12 @@
             "state" : "translated",
             "value" : "Веб флашер"
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veb flexer"
+          }
         }
       }
     },
@@ -33236,6 +33631,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Вебсајт"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vebsajt"
           }
         },
         "zh-Hans" : {
@@ -33253,6 +33654,12 @@
             "state" : "translated",
             "value" : "Тежина"
           }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Težina"
+          }
         }
       }
     },
@@ -33268,6 +33675,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Шта значи закључавање?"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Šta znači zaključavanje?"
           }
         },
         "zh-Hans" : {
@@ -33292,6 +33705,12 @@
             "value" : "Шта је Мештастик?"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Šta je Meštastnik?"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33308,6 +33727,12 @@
             "value" : "Шта ради режим лиценцираног оператера:\n* Поставља име чвора на ваш позивни знак\n* Емитује информације о чвору сваких 10 минута\n* Превазилази фреквенцију, циклус рада и излазну снагу\n* Онемогућава енкрипцију"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Licencirani operator režim radi sledeće:\n*Postavlja ime čvora na vaš pozivni znak\n* Emituje informacije o čvoru svakih 10 minuta\n* Prekida frekvenciju, radni ciklus i snagu prenosa\n* Onemogućava enkripciju"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33322,6 +33747,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Када користите у GPIO режиму, задржите излаз укључен овако дуго."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kada koristite u GPIO režimu, držite izlaz uključen ovoliko dugo."
           }
         },
         "zh-Hans" : {
