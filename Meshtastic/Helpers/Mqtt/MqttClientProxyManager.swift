@@ -40,8 +40,8 @@ class MqttClientProxyManager {
 
 		if let host = host {
 			let port = defaultServerPort
-			var username = node.mqttConfig?.username
-			var password = node.mqttConfig?.password
+			let username = node.mqttConfig?.username
+			let password = node.mqttConfig?.password
 			// if host == defaultServerAddress {
 				//username = ProcessInfo.processInfo.environment["PUBLIC_MQTT_USERNAME"]
 				//password = ProcessInfo.processInfo.environment["PUBLIC_MQTT_PASSWORD"]
@@ -130,6 +130,9 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 			self.disconnect()
 		}
 	}
+	func mqtt(_ mqtt: CocoaMQTT, didReceive trust: SecTrust, completionHandler: @escaping (Bool) -> Void) {
+			completionHandler(true)
+		}
 	func mqttDidDisconnect(_ mqtt: CocoaMQTT, withError err: Error?) {
 		Logger.mqtt.debug("📲 [MQTT Client Proxy] disconnected: \(err?.localizedDescription ?? "", privacy: .public)")
 		if let error = err {
