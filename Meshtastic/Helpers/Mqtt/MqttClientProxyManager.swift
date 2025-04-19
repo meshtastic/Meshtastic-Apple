@@ -40,8 +40,8 @@ class MqttClientProxyManager {
 
 		if let host = host {
 			let port = defaultServerPort
-			var username = node.mqttConfig?.username
-			var password = node.mqttConfig?.password
+			let username = node.mqttConfig?.username
+			let password = node.mqttConfig?.password
 			// if host == defaultServerAddress {
 				//username = ProcessInfo.processInfo.environment["PUBLIC_MQTT_USERNAME"]
 				//password = ProcessInfo.processInfo.environment["PUBLIC_MQTT_PASSWORD"]
@@ -128,6 +128,25 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 			Logger.services.error("📲 [MQTT Client Proxy] \(errorDescription, privacy: .public)")
 			delegate?.onMqttError(message: errorDescription)
 			self.disconnect()
+		}
+	}
+	func mqtt(_ mqtt: CocoaMQTT, didReceive trust: SecTrust, completionHandler: @escaping (Bool) -> Void) {
+		var isValid = false
+		#if canImport(Security)
+		if #available(macOS 10.15, iOS 13.0, *) {
+			isValid = SecTrustEvaluateWithError(trust, nil)
+		} else {
+			var result: SecTrustResultType = .invalid
+			let status = SecTrustEvaluate(trust, &result)
+			isValid = (status == errSecSuccess) && (result == .unspecified || result == .proceed)
+		}
+		#endif
+		if isValid {
+			Logger.mqtt.info("📲 [MQTT Client Proxy] TLS validation succeeded.")
+			completionHandler(true)
+		} else {
+			Logger.mqtt.warning("📲 [MQTT Client Proxy] TLS validation failed.")
+			completionHandler(true)
 		}
 	}
 	func mqttDidDisconnect(_ mqtt: CocoaMQTT, withError err: Error?) {
