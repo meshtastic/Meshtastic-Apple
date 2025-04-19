@@ -131,8 +131,24 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 		}
 	}
 	func mqtt(_ mqtt: CocoaMQTT, didReceive trust: SecTrust, completionHandler: @escaping (Bool) -> Void) {
-			completionHandler(true)
+		var isValid = false
+		#if canImport(Security)
+		if #available(macOS 10.15, iOS 13.0, *) {
+			isValid = SecTrustEvaluateWithError(trust, nil)
+		} else {
+			var result: SecTrustResultType = .invalid
+			let status = SecTrustEvaluate(trust, &result)
+			isValid = (status == errSecSuccess) && (result == .unspecified || result == .proceed)
 		}
+		#endif
+		if isValid {
+			Logger.mqtt.info("📲 [MQTT Client Proxy] TLS validation succeeded.")
+			completionHandler(true)
+		} else {
+			Logger.mqtt.error("📲 [MQTT Client Proxy] TLS validation failed.")
+			completionHandler(false)
+		}
+	}
 	func mqttDidDisconnect(_ mqtt: CocoaMQTT, withError err: Error?) {
 		Logger.mqtt.debug("📲 [MQTT Client Proxy] disconnected: \(err?.localizedDescription ?? "", privacy: .public)")
 		if let error = err {
