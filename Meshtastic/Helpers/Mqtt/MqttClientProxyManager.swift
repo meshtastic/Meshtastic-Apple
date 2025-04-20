@@ -8,6 +8,7 @@
 import Foundation
 import CocoaMQTT
 import OSLog
+import Security
 
 protocol MqttClientProxyManagerDelegate: AnyObject {
 	func onMqttConnected()
@@ -131,16 +132,7 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 		}
 	}
 	func mqtt(_ mqtt: CocoaMQTT, didReceive trust: SecTrust, completionHandler: @escaping (Bool) -> Void) {
-		var isValid = false
-		#if canImport(Security)
-		if #available(macOS 10.15, iOS 13.0, *) {
-			isValid = SecTrustEvaluateWithError(trust, nil)
-		} else {
-			var result: SecTrustResultType = .invalid
-			let status = SecTrustEvaluate(trust, &result)
-			isValid = (status == errSecSuccess) && (result == .unspecified || result == .proceed)
-		}
-		#endif
+		let isValid = SecTrustEvaluateWithError(trust, nil)
 		if isValid {
 			Logger.mqtt.info("📲 [MQTT Client Proxy] TLS validation succeeded.")
 			completionHandler(true)
