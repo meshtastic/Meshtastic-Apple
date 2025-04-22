@@ -30,6 +30,7 @@ struct MQTTConfig: View {
 	@State var mqttConnected: Bool = false
 	@State var defaultTopic = "msh/US"
 	@State var nearbyTopics = [String]()
+	@State var mapReportingOptIn = false
 	@State var mapReportingEnabled = false
 	@State var mapPublishIntervalSecs = 3600
 	@State var mapPositionPrecision: Double = 14.0
@@ -92,9 +93,17 @@ struct MQTTConfig: View {
 				}
 
 				Section(header: Text("Map Report")) {
+					Text("Consent to Share Unencrypted Location Data via MQTT")
+						.font(.title2)
+					Text("By enabling this feature, you acknowledge and expressly consent to the transmission of your device’s real-time geographic location over the MQTT protocol without encryption. This location data may be used for purposes such as live map reporting, device tracking, and related telemetry functions.")
+					Text("Please be advised that because MQTT transmission is not encrypted by default, your location data may be stored permanently and displayed by third parties. Meshtastic does not assume responsibility for any such unauthorized access or disclosure resulting from unencrypted transmission.")
+					Toggle(isOn: $mapReportingOptIn) {
+						Label("I have read and understand the above. I voluntarily consent to the unencrypted transmission of my location data via MQTT for map reporting purposes.", systemImage: "hand.raised")
 
+					}
 					Toggle(isOn: $mapReportingEnabled) {
 						Label("enabled", systemImage: "map")
+						Text("By enabling the map report your node will periodically send a totally unencrypted packet to the configured MQTT server irrigardness of any channel specific uplink and downling MQTT Settings. This report includes short and long name, position, hardware model, role, firmware version, LoRa region, modem preset and primary channel name")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					if mapReportingEnabled {

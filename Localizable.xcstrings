@@ -3338,6 +3338,12 @@
         }
       }
     },
+    "By enabling the map report your node will periodically send a totally unencrypted packet to the configured MQTT server irrigardness of any channel specific uplink and downling MQTT Settings. This report includes short and long name, position, hardware model, role, firmware version, LoRa region, modem preset and primary channel name" : {
+
+    },
+    "By enabling this feature, you acknowledge and expressly consent to the transmission of your device’s real-time geographic location over the MQTT protocol without encryption. This location data may be used for purposes such as live map reporting, device tracking, and related telemetry functions." : {
+
+    },
     "Bytes" : {
       "localizations" : {
         "de" : {
@@ -6585,6 +6591,9 @@
           }
         }
       }
+    },
+    "Consent to Share Unencrypted Location Data via MQTT" : {
+
     },
     "contacts" : {
       "localizations" : {
@@ -13647,6 +13656,9 @@
           }
         }
       }
+    },
+    "I have read and understand the above. I voluntarily consent to the unencrypted transmission of my location data via MQTT for map reporting purposes." : {
+
     },
     "IAQ" : {
       "localizations" : {
@@ -24254,6 +24266,9 @@
         }
       }
     },
+    "Please be advised that because MQTT transmission is not encrypted by default, your location data may be stored permanently and displayed by third parties. Meshtastic does not assume responsibility for any such unauthorized access or disclosure resulting from unencrypted transmission." : {
+
+    },
     "Please connect to a radio to configure settings." : {
       "localizations" : {
         "it" : {
@@ -24670,22 +24685,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Логови метрике снаге"
-          }
-        }
-      }
-    },
-    "Power Metrics Log}" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Registro delle metriche di potenza}"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Логови метрике снаге}"
           }
         }
       }
