@@ -34,7 +34,7 @@ struct ChannelMessageList: View {
 				ZStack(alignment: .bottomTrailing) {
 					ScrollView {
 						LazyVStack {
-							ForEach( channel.allPrivateMessages ) { (message: MessageEntity) in
+							ForEach(channel.allPrivateMessages) { (message: MessageEntity) in
 								let currentUser: Bool = (Int64(preferredPeripheralNum) == message.fromUser?.num ? true : false)
 								if message.replyID > 0 {
 									let messageReply = channel.allPrivateMessages.first(where: { $0.messageId == message.replyID })
@@ -49,6 +49,14 @@ struct ChannelMessageList: View {
 											.symbolRenderingMode(.hierarchical)
 											.imageScale(.large).foregroundColor(.accentColor)
 											.padding(.trailing)
+									}
+								}
+								HStack(alignment: .bottom) {
+									if currentUser { Spacer(minLength: 50) }
+									if !currentUser {
+										CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 44, node: getNodeInfo(id: Int64(message.fromUser?.num ?? 0), context: context))
+											.padding(.all, 5)
+											.offset(y: -7)
 									}
 								}
 								HStack(alignment: .bottom) {
@@ -215,8 +223,8 @@ struct ChannelMessageList: View {
 		.toolbar {
 			ToolbarItem(placement: .principal) {
 				HStack {
-					CircleText(text: String(channel.index), color: .accentColor, circleSize: 44).fixedSize()
-					Text(String(channel.name ?? "unknown".localized).camelCaseToWords()).font(.headline)
+						CircleText(text: String(channel.index), color: .accentColor, circleSize: 44).fixedSize()
+						Text(String(channel.name ?? "unknown".localized).camelCaseToWords()).font(.headline)
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {
