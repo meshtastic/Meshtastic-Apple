@@ -1278,9 +1278,7 @@
 				pl,
 				he,
 				fr,
-				"zh-Hant-TW",
 				se,
-				"pt-PT",
 				sr,
 				it,
 			);
