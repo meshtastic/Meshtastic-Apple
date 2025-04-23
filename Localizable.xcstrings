@@ -8692,6 +8692,12 @@
         }
       }
     },
+    "Disconnect Node" : {
+
+    },
+    "Disconnect the currently connected node" : {
+
+    },
     "Dismiss" : {
       "localizations" : {
         "de" : {
@@ -23168,6 +23174,7 @@
       }
     },
     "Power Metrics Log}" : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {
