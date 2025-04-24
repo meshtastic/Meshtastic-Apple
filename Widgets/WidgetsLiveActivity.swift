@@ -31,23 +31,21 @@ struct WidgetsLiveActivity: Widget {
         } dynamicIsland: { context in
             DynamicIsland {
 				DynamicIslandExpandedRegion(.leading) {
-					if context.state.totalNodes >= 100 {
-						Text("100+ online")
+					if context.state.totalNodes > 0 {
+						Text("  \(context.state.nodesOnline) online")
 							.font(.callout)
 							.foregroundStyle(.secondary)
 							.fixedSize()
 					} else {
-						Text("\(context.state.nodesOnline) of \(context.state.totalNodes) online")
+						Text("  ")
 							.font(.callout)
 							.foregroundStyle(.secondary)
 							.fixedSize()
 					}
-					// Text("\(context.state.channelUtilization.map { String(format: "Ch. Util: %.2f", $0) } ?? "--")%")
 					Text("Ch. Util: \(context.state.channelUtilization?.formatted(.number.precision(.fractionLength(2))) ?? Constants.nilValueIndicator)%")
 						.font(.caption2)
 						.foregroundStyle(.secondary)
 						.fixedSize()
-					// Text("\(context.state.airtime.map { String(format: "Airtime: %.2f", $0) } ?? "--")%")
 					Text("Airtime: \(context.state.airtime?.formatted(.number.precision(.fractionLength(2))) ?? Constants.nilValueIndicator)%")
 						.font(.caption2)
 						.foregroundStyle(.secondary)
