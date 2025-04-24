@@ -7004,28 +7004,6 @@
         }
       }
     },
-    "Delete all map tiles?" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancellare tutte le tessere della mappa?"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Избрисати све плочице мапе?"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "删除所有瓦片地图？"
-          }
-        }
-      }
-    },
     "Delete all positions?" : {
       "localizations" : {
         "it" : {
@@ -17082,80 +17060,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "地图报告"
-          }
-        }
-      }
-    },
-    "Map Tile Data" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dati delle piastrelle della mappa"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Подаци плочица мапе"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "瓦片地图数据"
-          }
-        }
-      }
-    },
-    "map.tiles.delete" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete All Map Tiles"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Supprimer toutes les tuiles de carte"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מחק כל חלקי מפה שמורים"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancellare tutte le tessere della mappa"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Usuń Wszystkie Kafle Mapy"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Radera Alla Kartplattor"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Обриши све плочице мапе"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "删除所有瓦片地图"
           }
         }
       }
