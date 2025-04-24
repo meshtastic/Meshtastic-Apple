@@ -164,7 +164,7 @@ struct LiveActivityView: View {
 				.frame(minWidth: 25, idealWidth: 45, maxWidth: 55)
 			Spacer()
 			NodeInfoView(isLuminanceReduced: _isLuminanceReduced, nodeName: nodeName, uptimeSeconds: uptimeSeconds, channelUtilization: channelUtilization, airtime: airtime, sentPackets: sentPackets, receivedPackets: receivedPackets, badReceivedPackets: badReceivedPackets,
-				dupeReceivedPackets: dupeReceivedPackets, packetsSentRelay: packetsSentRelay, packetsCanceledRelay: packetsCanceledRelay, nodesOnline: nodesOnline, totalNodes: totalNodes, timerRange: timerRange)
+				dupeReceivedPackets: dupeReceivedPackets, packetsSentRelay: packetsSentRelay, packetsCanceledRelay: packetsCanceledRelay, nodesOnline: nodesOnline, timerRange: timerRange)
 			Spacer()
 		}
 		.tint(.primary)
@@ -189,7 +189,6 @@ struct NodeInfoView: View {
 	var packetsSentRelay: UInt32
 	var packetsCanceledRelay: UInt32
 	var nodesOnline: UInt32
-	var totalNodes: UInt32
 	var timerRange: ClosedRange<Date>
 
 	var body: some View {
@@ -218,21 +217,14 @@ struct NodeInfoView: View {
 				.foregroundStyle(.secondary)
 				.opacity(isLuminanceReduced ? 0.8 : 1.0)
 				.fixedSize()
-			if totalNodes >= 100 {
-				Text("Connected: \(nodesOnline) nodes online")
-					.font(.caption)
-					.fontWeight(.medium)
-					.foregroundStyle(.secondary)
-					.opacity(isLuminanceReduced ? 0.8 : 1.0)
-					.fixedSize()
-			} else {
-				Text("Connected: \(nodesOnline) of \(totalNodes) nodes online")
-					.font(.caption)
-					.fontWeight(.medium)
-					.foregroundStyle(.secondary)
-					.opacity(isLuminanceReduced ? 0.8 : 1.0)
-					.fixedSize()
-			}
+
+			Text("Connected: \(nodesOnline) nodes online")
+				.font(.caption)
+				.fontWeight(.medium)
+				.foregroundStyle(.secondary)
+				.opacity(isLuminanceReduced ? 0.8 : 1.0)
+				.fixedSize()
+			
 			let now = Date()
 			Text("Last Heard: \(now.formatted())")
 				.font(.caption)
