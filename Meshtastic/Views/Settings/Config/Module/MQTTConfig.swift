@@ -93,20 +93,30 @@ struct MQTTConfig: View {
 				}
 
 				Section(header: Text("Map Report")) {
-					Text("Consent to Share Unencrypted Location Data via MQTT")
-						.font(.title2)
-					Text("By enabling this feature, you acknowledge and expressly consent to the transmission of your device’s real-time geographic location over the MQTT protocol without encryption. This location data may be used for purposes such as live map reporting, device tracking, and related telemetry functions.")
-					Text("Please be advised that because MQTT transmission is not encrypted by default, your location data may be stored permanently and displayed by third parties. Meshtastic does not assume responsibility for any such unauthorized access or disclosure resulting from unencrypted transmission.")
-					Toggle(isOn: $mapReportingOptIn) {
-						Label("I have read and understand the above. I voluntarily consent to the unencrypted transmission of my location data via MQTT for map reporting purposes.", systemImage: "hand.raised")
-
-					}
 					Toggle(isOn: $mapReportingEnabled) {
 						Label("enabled", systemImage: "map")
-						Text("By enabling the map report your node will periodically send a totally unencrypted packet to the configured MQTT server irrigardness of any channel specific uplink and downling MQTT Settings. This report includes short and long name, position, hardware model, role, firmware version, LoRa region, modem preset and primary channel name")
+						Text("Your node will periodically send an unencrypted map report packet to the configured MQTT server, this includes id, short and long name, approximate location, hardware model, role, firmware version, LoRa region, modem preset and primary channel name.")
+							.foregroundColor(.gray)
+							.font(.caption)
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					if mapReportingEnabled {
+						Text("Consent to Share Unencrypted Node Data via MQTT")
+						Text("By enabling this feature, you acknowledge and expressly consent to the transmission of your device’s real-time geographic location over the MQTT protocol without encryption. This location data may be used for purposes such as live map reporting, device tracking, and related telemetry functions.")
+							.foregroundColor(.gray)
+							.font(.caption)
+						Text("Please be advised that because the map report is not encrypted, your data may be stored and displayed permanently by third parties. Meshtastic does not assume responsibility for any such storage, display or disclosure of this data.")
+							.foregroundColor(.gray)
+							.font(.caption)
+						Toggle(isOn: $mapReportingOptIn) {
+							Label("I have read and understand the above. I voluntarily consent to the unencrypted transmission of my node data via MQTT.", systemImage: "hand.raised")
+								.foregroundColor(.gray)
+								.font(.callout)
+
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					}
+					if mapReportingEnabled && mapReportingOptIn {
 						Picker("Map Publish Interval", selection: $mapPublishIntervalSecs ) {
 							ForEach(UpdateIntervals.allCases) { ui in
 								if ui.rawValue >= 3600 {
@@ -117,6 +127,9 @@ struct MQTTConfig: View {
 						.pickerStyle(DefaultPickerStyle())
 						VStack(alignment: .leading) {
 							Label("Approximate Location", systemImage: "location.slash.circle.fill")
+							Text("To comply with privacy laws like CCPA and GDPR, we avoid sharing exact location data. Instead, we use anonymized or approximate (imprecise) location information to protect your privacy.")
+								.foregroundColor(.gray)
+								.font(.callout)
 							Slider(value: $mapPositionPrecision, in: 11...14, step: 1) {
 							} minimumValueLabel: {
 								Image(systemName: "minus")
@@ -253,7 +266,7 @@ struct MQTTConfig: View {
 					mqtt.encryptionEnabled = self.encryptionEnabled
 					mqtt.jsonEnabled = self.jsonEnabled
 					mqtt.tlsEnabled = self.tlsEnabled
-					mqtt.mapReportingEnabled = self.mapReportingEnabled
+					mqtt.mapReportingEnabled = (self.mapReportingEnabled && self.mapReportingOptIn)
 					mqtt.mapReportSettings.positionPrecision = UInt32(self.mapPositionPrecision)
 					mqtt.mapReportSettings.publishIntervalSecs = UInt32(self.mapPublishIntervalSecs)
 					let adminMessageId =  bleManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
