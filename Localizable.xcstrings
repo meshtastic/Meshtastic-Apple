@@ -1884,6 +1884,12 @@
             "state" : "translated",
             "value" : "Дозволи захтеве позиција"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允許請求位置"
+          }
         }
       }
     },
@@ -7725,6 +7731,12 @@
             "state" : "translated",
             "value" : "检测传感器配置"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檢測感應器設定"
+          }
         }
       }
     },
@@ -10394,7 +10406,14 @@
       }
     },
     "Enable this device as a Store and Forward server. Requires an ESP32 device with PSRAM." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用此裝置作為儲存與轉送伺服器。需使用具備 PSRAM 的 ESP32 裝置。"
+          }
+        }
+      }
     },
     "enabled" : {
       "localizations" : {
@@ -10499,7 +10518,14 @@
       }
     },
     "Enables the store and forward module." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用儲存與轉送（Store and Forward）模組"
+          }
+        }
+      }
     },
     "Enabling Ethernet will disable the bluetooth connection to the app." : {
       "localizations" : {
@@ -13382,7 +13408,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "跳數距離 %d"
+            "value" : "%d 個跳數"
           }
         }
       }
@@ -18123,7 +18149,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "LOW"
+            "value" : "低"
           }
         }
       }
@@ -23243,7 +23269,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "節點號碼"
+            "value" : "節點編號"
           }
         }
       }
@@ -27313,6 +27339,12 @@
             "state" : "translated",
             "value" : "Путања назад: %@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "路徑（返）: %@"
+          }
         }
       }
     },
@@ -27376,6 +27408,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Рута: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "路徑（往）: %@ "
           }
         }
       }
@@ -29602,7 +29640,14 @@
       }
     },
     "Send a heartbeat to advertise the server's presence." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "發送心跳訊號來宣告伺服器的存在。"
+          }
+        }
+      }
     },
     "Send a message to a certain meshtastic channel" : {
       "localizations" : {
@@ -30594,7 +30639,14 @@
       }
     },
     "Settings" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定"
+          }
+        }
+      }
     },
     "Share QR Code & Link" : {
       "localizations" : {
@@ -31538,6 +31590,12 @@
             "state" : "translated",
             "value" : "储存 & 转发"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "儲存與轉送"
+          }
         }
       }
     },
@@ -31554,11 +31612,24 @@
             "state" : "translated",
             "value" : "储存 & 转发设置"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "儲存與轉送設定"
+          }
         }
       }
     },
     "Store and forward servers require an ESP32 device with PSRAM or Linux Native." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "儲存與轉送伺服器需要使用具有 PSRAM 的 ESP32 裝置或是原生 Linux 系統。"
+          }
+        }
+      }
     },
     "storeforward.heartbeat" : {
       "localizations" : {
@@ -31619,7 +31690,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "發送心跳包"
+            "value" : "發送心跳訊號(Heartbeat)"
           }
         }
       }
