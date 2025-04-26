@@ -42,11 +42,11 @@ struct CannedMessagesConfig: View {
 			Form {
 				ConfigHeader(title: "Canned messages", config: \.cannedMessageConfig, node: node, onAppear: setCannedMessagesValues)
 
-				Section(header: Text("options")) {
+				Section(header: Text("Options")) {
 
 					Toggle(isOn: $enabled) {
 
-						Label("enabled", systemImage: "list.bullet.rectangle.fill")
+						Label("Enabled", systemImage: "list.bullet.rectangle.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 

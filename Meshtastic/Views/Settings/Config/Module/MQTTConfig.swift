@@ -30,6 +30,7 @@ struct MQTTConfig: View {
 	@State var mqttConnected: Bool = false
 	@State var defaultTopic = "msh/US"
 	@State var nearbyTopics = [String]()
+	@State var mapReportingOptIn = false
 	@State var mapReportingEnabled = false
 	@State var mapPublishIntervalSecs = 3600
 	@State var mapPositionPrecision: Double = 14.0
@@ -50,10 +51,10 @@ struct MQTTConfig: View {
 
 				ConfigHeader(title: "MQTT", config: \.mqttConfig, node: node, onAppear: setMqttValues)
 
-				Section(header: Text("options")) {
+				Section(header: Text("Options")) {
 
 					Toggle(isOn: $enabled) {
-						Label("enabled", systemImage: "dot.radiowaves.up.forward")
+						Label("Enabled", systemImage: "dot.radiowaves.up.forward")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
@@ -66,7 +67,7 @@ struct MQTTConfig: View {
 
 					if enabled && proxyToClientEnabled && node?.mqttConfig?.proxyToClientEnabled ?? false == true {
 						Toggle(isOn: $mqttConnected) {
-							Label(mqttConnected ? "mqtt.disconnect".localized : "mqtt.connect".localized, systemImage: "server.rack")
+							Label("Connect to MQTT via Proxy", systemImage: "server.rack")
 							if bleManager.mqttError.count > 0 {
 								Text(bleManager.mqttError)
 									.fixedSize(horizontal: false, vertical: true)
@@ -92,12 +93,30 @@ struct MQTTConfig: View {
 				}
 
 				Section(header: Text("Map Report")) {
-
 					Toggle(isOn: $mapReportingEnabled) {
-						Label("enabled", systemImage: "map")
+						Label("Enabled", systemImage: "map")
+						Text("Your node will periodically send an unencrypted map report packet to the configured MQTT server, this includes id, short and long name, approximate location, hardware model, role, firmware version, LoRa region, modem preset and primary channel name.")
+							.foregroundColor(.gray)
+							.font(.caption)
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					if mapReportingEnabled {
+						Text("Consent to Share Unencrypted Node Data via MQTT")
+						Text("By enabling this feature, you acknowledge and expressly consent to the transmission of your device’s real-time geographic location over the MQTT protocol without encryption. This location data may be used for purposes such as live map reporting, device tracking, and related telemetry functions.")
+							.foregroundColor(.gray)
+							.font(.caption)
+						Text("Please be advised that because the map report is not encrypted, your data may be stored and displayed permanently by third parties. Meshtastic does not assume responsibility for any such storage, display or disclosure of this data.")
+							.foregroundColor(.gray)
+							.font(.caption)
+						Toggle(isOn: $mapReportingOptIn) {
+							Label("I have read and understand the above. I voluntarily consent to the unencrypted transmission of my node data via MQTT.", systemImage: "hand.raised")
+								.foregroundColor(.gray)
+								.font(.callout)
+
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					}
+					if mapReportingEnabled && mapReportingOptIn {
 						Picker("Map Publish Interval", selection: $mapPublishIntervalSecs ) {
 							ForEach(UpdateIntervals.allCases) { ui in
 								if ui.rawValue >= 3600 {
@@ -108,6 +127,9 @@ struct MQTTConfig: View {
 						.pickerStyle(DefaultPickerStyle())
 						VStack(alignment: .leading) {
 							Label("Approximate Location", systemImage: "location.slash.circle.fill")
+							Text("To comply with privacy laws like CCPA and GDPR, we avoid sharing exact location data. Instead, we use anonymized or approximate (imprecise) location information to protect your privacy.")
+								.foregroundColor(.gray)
+								.font(.callout)
 							Slider(value: $mapPositionPrecision, in: 11...14, step: 1) {
 							} minimumValueLabel: {
 								Image(systemName: "minus")
@@ -178,8 +200,8 @@ struct MQTTConfig: View {
 					.autocorrectionDisabled()
 					if address != "mqtt.meshtastic.org" {
 						HStack {
-							Label("mqtt.username", systemImage: "person.text.rectangle")
-							TextField("mqtt.username", text: $username)
+							Label("Username", systemImage: "person.text.rectangle")
+							TextField("Username", text: $username)
 								.foregroundColor(.gray)
 								.autocapitalization(.none)
 								.disableAutocorrection(true)
@@ -197,8 +219,8 @@ struct MQTTConfig: View {
 						.keyboardType(.default)
 						.scrollDismissesKeyboard(.interactively)
 						HStack {
-							Label("password", systemImage: "wallet.pass")
-							TextField("password", text: $password)
+							Label("Password", systemImage: "wallet.pass")
+							TextField("Password", text: $password)
 								.foregroundColor(.gray)
 								.autocapitalization(.none)
 								.disableAutocorrection(true)
@@ -244,7 +266,7 @@ struct MQTTConfig: View {
 					mqtt.encryptionEnabled = self.encryptionEnabled
 					mqtt.jsonEnabled = self.jsonEnabled
 					mqtt.tlsEnabled = self.tlsEnabled
-					mqtt.mapReportingEnabled = self.mapReportingEnabled
+					mqtt.mapReportingEnabled = (self.mapReportingEnabled && self.mapReportingOptIn)
 					mqtt.mapReportSettings.positionPrecision = UInt32(self.mapPositionPrecision)
 					mqtt.mapReportSettings.publishIntervalSecs = UInt32(self.mapPublishIntervalSecs)
 					let adminMessageId =  bleManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
@@ -266,6 +288,10 @@ struct MQTTConfig: View {
 				if newProxyToClientEnabled != node?.mqttConfig?.proxyToClientEnabled { hasChanges = true }
 			}
 			.onChange(of: address) { _, newAddress in
+				if address.lowercased() == "mqtt.meshtastic.org" {
+					username = "meshdev"
+					password = "large4cats"
+				}
 				if newAddress != node?.mqttConfig?.address ?? "" { hasChanges = true }
 			}
 			.onChange(of: username) { _, newUsername in

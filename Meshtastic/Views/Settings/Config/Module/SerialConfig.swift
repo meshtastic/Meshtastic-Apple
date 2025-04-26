@@ -33,10 +33,10 @@ struct SerialConfig: View {
 			Form {
 				ConfigHeader(title: "Serial", config: \.serialConfig, node: node, onAppear: setSerialValues)
 
-				Section(header: Text("options")) {
+				Section(header: Text("Options")) {
 
 					Toggle(isOn: $enabled) {
-						Label("enabled", systemImage: "terminal")
+						Label("Enabled", systemImage: "terminal")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
