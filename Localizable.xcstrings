@@ -12257,6 +12257,12 @@
             "state" : "translated",
             "value" : "从 App Store 获取 NRF DFU"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從 App Store 下載 NRF DFU"
+          }
         }
       }
     },
@@ -19014,6 +19020,12 @@
             "state" : "translated",
             "value" : "Ambient Lighting module config received: %@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ambient Lighting module config received: %@"
+          }
         }
       }
     },
@@ -19073,6 +19085,12 @@
             "state" : "translated",
             "value" : "Bluetooth config received: %@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth config received: %@"
+          }
         }
       }
     },
@@ -19122,6 +19140,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canned Message module config received: %@"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Canned Message module config received: %@"
@@ -19179,6 +19203,12 @@
             "state" : "translated",
             "value" : "Requested Canned Messages Module Messages for node: %@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requested Canned Messages Module Messages for node: %@"
+          }
         }
       }
     },
@@ -19232,6 +19262,12 @@
             "state" : "translated",
             "value" : "Canned Messages Messages Received For: %@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canned Messages Messages Received For: %@"
+          }
         }
       }
     },
@@ -19281,6 +19317,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sent a Channel for: %@ Channel Index %d"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sent a Channel for: %@ Channel Index %d"
@@ -20051,7 +20093,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "收到節點訊息: %@"
+            "value" : "收到節點資訊: %@"
           }
         }
       }
@@ -20140,6 +20182,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Конфигурација PAX бројача примљена: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAX Counter config received: %@"
           }
         }
       }
@@ -20299,6 +20347,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Конфигурација напајања примљена: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Power config received: %@"
           }
         }
       }
@@ -21408,6 +21462,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meshtastic чвор %@ је поделио канале са вама."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meshtastic 節點 %@ 向您分享頻道資訊"
           }
         }
       }
@@ -25418,6 +25478,12 @@
             "state" : "translated",
             "value" : "Напајано"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用電源"
+          }
         }
       }
     },
@@ -29278,6 +29344,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Изабери тип разговора"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇對話類型"
           }
         }
       }
