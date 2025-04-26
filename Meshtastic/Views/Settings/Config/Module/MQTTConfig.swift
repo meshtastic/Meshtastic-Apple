@@ -51,10 +51,10 @@ struct MQTTConfig: View {
 
 				ConfigHeader(title: "MQTT", config: \.mqttConfig, node: node, onAppear: setMqttValues)
 
-				Section(header: Text("options")) {
+				Section(header: Text("Options")) {
 
 					Toggle(isOn: $enabled) {
-						Label("enabled", systemImage: "dot.radiowaves.up.forward")
+						Label("Enabled", systemImage: "dot.radiowaves.up.forward")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
@@ -94,7 +94,7 @@ struct MQTTConfig: View {
 
 				Section(header: Text("Map Report")) {
 					Toggle(isOn: $mapReportingEnabled) {
-						Label("enabled", systemImage: "map")
+						Label("Enabled", systemImage: "map")
 						Text("Your node will periodically send an unencrypted map report packet to the configured MQTT server, this includes id, short and long name, approximate location, hardware model, role, firmware version, LoRa region, modem preset and primary channel name.")
 							.foregroundColor(.gray)
 							.font(.caption)

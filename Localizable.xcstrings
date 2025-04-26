@@ -9799,7 +9799,7 @@
         }
       }
     },
-    "enabled" : {
+    "Enabled" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21656,7 +21656,7 @@
         }
       }
     },
-    "options" : {
+    "Options" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {

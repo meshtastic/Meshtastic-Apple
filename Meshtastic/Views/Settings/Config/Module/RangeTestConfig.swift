@@ -27,9 +27,9 @@ struct RangeTestConfig: View {
 			Form {
 				ConfigHeader(title: "Range", config: \.rangeTestConfig, node: node, onAppear: setRangeTestValues)
 
-				Section(header: Text("options")) {
+				Section(header: Text("Options")) {
 					Toggle(isOn: $enabled) {
-						Label("enabled", systemImage: "figure.walk")
+						Label("Enabled", systemImage: "figure.walk")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)

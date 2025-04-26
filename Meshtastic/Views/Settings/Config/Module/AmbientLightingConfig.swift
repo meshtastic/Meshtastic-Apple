@@ -30,7 +30,7 @@ struct AmbientLightingConfig: View {
 			Form {
 				ConfigHeader(title: "Ambient Lighting", config: \.ambientLightingConfig, node: node, onAppear: setAmbientLightingConfigValue)
 
-				Section(header: Text("options")) {
+				Section(header: Text("Options")) {
 
 					Toggle(isOn: $ledState) {
 						Label("LED State", systemImage: ledState ? "lightbulb.led.fill" : "lightbulb.led")
