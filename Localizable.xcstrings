@@ -1951,6 +1951,12 @@
             "state" : "translated",
             "value" : "收到铃声时发出警报 GPIO 蜂鸣器"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接收鈴鐺通知時觸發 GPIO 蜂鳴器警報"
+          }
         }
       }
     },
@@ -1960,6 +1966,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Упозорите GPIO зујалицу када примите поруку"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接收訊息時觸發 GPIO 蜂鳴器警報"
           }
         }
       }
@@ -1977,6 +1989,12 @@
             "state" : "translated",
             "value" : "收到铃声时提醒 GPIO 振动电机"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接收鈴鐺通知時觸發 GPIO 振動馬達警報"
+          }
         }
       }
     },
@@ -1986,6 +2004,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Упозорите GPIO вибра мотор када примите поруку"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接收訊息時觸發 GPIO 振動馬達警報"
           }
         }
       }
@@ -2003,6 +2027,12 @@
             "state" : "translated",
             "value" : "收到铃声时发出警报"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接收鈴鐺通知時觸發通知"
+          }
         }
       }
     },
@@ -2012,6 +2042,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Упозори када примиш поруку"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接收訊息時觸發通知"
           }
         }
       }
@@ -2846,6 +2882,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "气压"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大氣壓力"
           }
         }
       }
@@ -3853,6 +3895,12 @@
             "state" : "translated",
             "value" : "Интервал карусела"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輪播時間間隔"
+          }
         }
       }
     },
@@ -4712,6 +4760,12 @@
             "state" : "translated",
             "value" : "通过二维码添加的频道无法保存。添加频道时，名称必须唯一。"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從 QR Code 新增的頻道未成功儲存。新增頻道時，頻道名稱不能重複。"
+          }
         }
       }
     },
@@ -4727,6 +4781,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "图表"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "圖表"
           }
         }
       }
@@ -6756,7 +6816,14 @@
       }
     },
     "Connecting to a new radio will clear all app data on the phone." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "連接到新的設備時，手機上的 App 資料將會被清除。"
+          }
+        }
+      }
     },
     "Connection Attempt %lld of 10" : {
       "localizations" : {
@@ -6994,6 +7061,12 @@
             "state" : "translated",
             "value" : "控制类型"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "控制模式"
+          }
         }
       }
     },
@@ -7009,6 +7082,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "控制设备上闪烁的 LED。 对大多数设备而言，这将控制最多 4 个 LED 中的一个，充电指示灯和 GPS 状态灯无法控制。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "控制裝置上的閃爍 LED。對於大多數裝置而言，這將能控制最多 4 顆 LED 其中之一，但充電指示燈和 GPS 指示燈無法被控制。"
           }
         }
       }
@@ -7357,6 +7436,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "目前，更新 ESP32 设备的推荐方法是在电脑上使用基于 Chrome 浏览器的 Web Flasher。该方法不适用于移动设备或通过 BLE 进行更新。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前建議使用電腦透過以 Chrome 為基礎的瀏覽器，使用網頁刷機工具來更新 ESP32 裝置。此方法無法在行動裝置上或透過 BLE 使用。"
           }
         }
       }
@@ -7814,6 +7899,12 @@
             "state" : "translated",
             "value" : "Откривање"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檢測感測器"
+          }
         }
       }
     },
@@ -7823,6 +7914,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Догађај откривања"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檢測感測器事件"
           }
         }
       }
@@ -7855,6 +7952,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "检测传感器信息以文本信息的形式接收。如果启用通知功能，则每收到一条检测信息都会收到一条通知，并显示相应的未读信息。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "偵測感測器的訊息會以文字訊息的形式接收。若啟用通知功能，每當接收到偵測訊息時，您將會收到一則通知，並顯示對應的未讀訊息標記。"
           }
         }
       }
@@ -10315,6 +10418,12 @@
             "state" : "translated",
             "value" : "双击作为按钮"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將雙擊作為按鈕使用"
+          }
         }
       }
     },
@@ -10413,6 +10522,12 @@
             "state" : "translated",
             "value" : "Постави ознаку на мапама"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在地圖上放置圖釘"
+          }
         }
       }
     },
@@ -10502,6 +10617,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Повећање надморске висине"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "爬升高度"
           }
         }
       }
@@ -10616,7 +10737,14 @@
       }
     },
     "Enable broadcasting packets via UDP over the local network." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用透過本地網路以 UDP 廣播封包。"
+          }
+        }
+      }
     },
     "Enable Notifications" : {
       "localizations" : {
@@ -10650,7 +10778,7 @@
         }
       }
     },
-    "enabled" : {
+    "Enabled" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12158,6 +12286,12 @@
             "state" : "translated",
             "value" : "За све"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "對所有人"
+          }
         }
       }
     },
@@ -12173,6 +12307,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "За мене"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "對自己"
           }
         }
       }
@@ -12244,6 +12384,12 @@
             "state" : "translated",
             "value" : "友好名称"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "友善名稱"
+          }
         }
       }
     },
@@ -12259,6 +12405,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "用于格式化发送到 Mesh 网络的信息的友好名称。例如名称为 “运动”时，发送的信息为 “检测到运动”。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用來格式化發送到 Mesh 網路的友善名稱。例如：名稱設定為「移動」，則傳送的訊息將會是「偵測到移動」。"
           }
         }
       }
@@ -13311,6 +13463,12 @@
             "state" : "translated",
             "value" : "群聊"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "群組訊息"
+          }
         }
       }
     },
@@ -13320,6 +13478,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Јаки удари ветра %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "陣風 %@"
           }
         }
       }
@@ -13754,6 +13918,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "按下用户按钮或收到消息后屏幕保持亮屏的时间。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用者按下按鈕或收到訊息後，螢幕維持亮起的時間長度。"
           }
         }
       }
@@ -17288,6 +17458,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "LED 心跳"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LED 心跳燈 (Heartbeat)"
           }
         }
       }
@@ -22487,206 +22663,18 @@
         }
       }
     },
-    "mqtt.connect" : {
-      "extractionState" : "migrated",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verbunden mit MQTT"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connect to MQTT"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connecter à MQTT"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "התחבר ל-MQTT"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connect to MQTT"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Conectar ao MQTT"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anslut till MQTT"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Повежи се на MQTT"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "连接至 MQTT"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "連線到 MQTT"
-          }
-        }
-      }
-    },
-    "mqtt.disconnect" : {
-      "extractionState" : "migrated",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Trennen von MQTT"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Disconnect from MQTT"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Déconnecter le MQTT"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "התנתק מ-MQTT"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Disconnect from MQTT"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Desconectar do MQTT"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Koppla från MQTT"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Развежи се од MQTT"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "断开 MQTT 连接"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "是否與 MQTT 連接"
-          }
-        }
-      }
-    },
-    "mqtt.username" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Benutzername"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Username"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nom d'utilisateur"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שם משתמש"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nazwa użytkownika"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nome de Utilizador"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Användarnamn"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Корисничко име"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "用户名称"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "用戶名稱"
-          }
-        }
-      }
-    },
     "Must be a single emoji" : {
       "localizations" : {
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Мора бити један емотикон"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "必須只使用一個表情符號"
           }
         }
       }
@@ -24457,10 +24445,16 @@
             "state" : "translated",
             "value" : "Опциони GPIO"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可選 GPIO"
+          }
         }
       }
     },
-    "options" : {
+    "Options" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -25478,6 +25472,12 @@
             "state" : "translated",
             "value" : "Неуспела размена позиција"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "位置交換失敗"
+          }
         }
       }
     },
@@ -25487,6 +25487,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Захтевана размена позиција"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已請求位置交換"
           }
         }
       }
@@ -25812,6 +25818,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Снага екрана"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電源畫面"
           }
         }
       }
@@ -26222,6 +26234,12 @@
             "state" : "translated",
             "value" : "Радио веза је прекинута"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已斷線"
+          }
         }
       }
     },
@@ -26623,6 +26641,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Поново покрени чвор?"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重啟節點？"
           }
         }
       }
@@ -27138,6 +27162,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Уклони"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除"
           }
         }
       }
