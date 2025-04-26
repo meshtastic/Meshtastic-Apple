@@ -17,6 +17,12 @@
             "state" : "translated",
             "value" : "\t%@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\t%@"
+          }
         }
       }
     },
@@ -33,11 +39,24 @@
             "state" : "translated",
             "value" : " %@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
         }
       }
     },
     " %@%%" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : " %@%%"
+          }
+        }
+      }
     },
     ": %@" : {
       "localizations" : {
@@ -48,6 +67,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ": %@"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : ": %@"
@@ -64,6 +89,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ": %d"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : ": %d"
@@ -106,6 +137,12 @@
             "state" : "translated",
             "value" : "%@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
         }
       }
     },
@@ -128,6 +165,12 @@
             "state" : "translated",
             "value" : "%1$@ - %2$@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ - %2$@"
+          }
         }
       }
     },
@@ -146,6 +189,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ - %2$@ - %3$@"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ - %2$@ - %3$@"
@@ -256,6 +305,12 @@
             "state" : "translated",
             "value" : "%1$@ (%2$@)"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@)"
+          }
         }
       }
     },
@@ -278,6 +333,12 @@
             "state" : "translated",
             "value" : "%1$@ %2$@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@"
+          }
         }
       }
     },
@@ -296,6 +357,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$lld"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ %2$lld"
@@ -406,6 +473,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ dB"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ dB"
@@ -609,6 +682,12 @@
             "state" : "translated",
             "value" : "%1$@, %2$@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@"
+          }
         }
       }
     },
@@ -631,6 +710,12 @@
             "state" : "translated",
             "value" : "%1$@: %2$lld / %3$lld"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$lld / %3$lld"
+          }
         }
       }
     },
@@ -643,6 +728,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@%%"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@%%"
@@ -663,6 +754,12 @@
             "state" : "translated",
             "value" : "%@°F"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@°F"
+          }
         }
       }
     },
@@ -673,12 +770,24 @@
             "state" : "translated",
             "value" : "%@mA"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@mA"
+          }
         }
       }
     },
     "%@V" : {
       "localizations" : {
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@V"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@V"
@@ -695,6 +804,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%d"
@@ -809,6 +924,12 @@
             "state" : "translated",
             "value" : "%d%%"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d%%"
+          }
         }
       }
     },
@@ -825,6 +946,12 @@
             "state" : "translated",
             "value" : "%lf"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lf"
+          }
         }
       }
     },
@@ -837,6 +964,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld"
@@ -911,6 +1044,12 @@
             "state" : "translated",
             "value" : "%lld%%"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%%"
+          }
         }
       }
     },
@@ -977,6 +1116,12 @@
             "state" : "translated",
             "value" : "< 1%"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "< 1%"
+          }
         }
       }
     },
@@ -1005,6 +1150,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 byte"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "1 byte"
@@ -1042,6 +1193,12 @@
             "state" : "translated",
             "value" : "2.4 GHz"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2.4 Ghz"
+          }
         }
       }
     },
@@ -1054,6 +1211,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "7"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "7"
@@ -1074,6 +1237,12 @@
             "state" : "translated",
             "value" : "8"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "8"
+          }
         }
       }
     },
@@ -1086,6 +1255,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "25"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "25"
@@ -1106,6 +1281,12 @@
             "state" : "translated",
             "value" : "50"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "50"
+          }
         }
       }
     },
@@ -1118,6 +1299,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "75"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "75"
@@ -1138,6 +1325,12 @@
             "state" : "translated",
             "value" : "100"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "100"
+          }
         }
       }
     },
@@ -1154,6 +1347,12 @@
             "state" : "translated",
             "value" : "128 bit"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "128 bit"
+          }
         }
       }
     },
@@ -1166,6 +1365,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "256 bit"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "256 bit"
@@ -1246,6 +1451,12 @@
     "Ack SNR: %@ dB" : {
       "localizations" : {
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ack SNR: %@ dB"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ack SNR: %@ dB"
@@ -2301,6 +2512,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Apps"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apple Apps"
@@ -4521,6 +4738,12 @@
             "state" : "translated",
             "value" : "ПУЊ"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "充電中"
+          }
         }
       }
     },
@@ -4550,6 +4773,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "清除"
@@ -7438,6 +7667,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Избрисати све позиције?"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刪除所有位置資料？"
           }
         }
       }
@@ -13346,6 +13581,12 @@
             "state" : "translated",
             "value" : "高"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高"
+          }
         }
       }
     },
@@ -13900,7 +14141,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Icon"
+            "value" : "圖示"
           }
         }
       }
@@ -16817,6 +17058,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "JSON 模式提供受限且未加密的 MQTT 輸出，適用於在本地端整合 Home Assistant。"
+          }
+        }
+      }
+    },
+    "Jump to present" : {
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跳至最新訊息"
           }
         }
       }
@@ -22533,6 +22784,12 @@
             "state" : "translated",
             "value" : "名称"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名稱"
+          }
         }
       }
     },
@@ -22554,6 +22811,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "名称必须少于 30 字节"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名稱必須小於 30 bytes 。"
           }
         }
       }
@@ -22580,6 +22843,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Теме у окружењу"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "鄰近的主題"
           }
         }
       }
@@ -22661,6 +22930,12 @@
             "state" : "translated",
             "value" : "网络状态 橙色"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "網路狀態 橘"
+          }
         }
       }
     },
@@ -22676,6 +22951,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "网络状态 红色"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "網路狀態 紅"
           }
         }
       }
@@ -23054,6 +23335,12 @@
             "state" : "translated",
             "value" : "Нема позиција"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有位置"
+          }
         }
       }
     },
@@ -23151,6 +23438,12 @@
             "state" : "translated",
             "value" : "Чвор"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節點"
+          }
         }
       }
     },
@@ -23173,6 +23466,12 @@
             "state" : "translated",
             "value" : "节点核心数据备份 %1$@/%2$@ - %3$@ - %4$@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Node Core Data Backup %1$@/%2$@ - %3$@ - %4$@"
+          }
         }
       }
     },
@@ -23188,6 +23487,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Чвор нема позиције"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節點沒有位置資訊"
           }
         }
       }
@@ -23334,7 +23639,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "距離達 %@ 以內"
+            "value" : "距離%@以內"
           }
         }
       }
@@ -23469,6 +23774,12 @@
             "state" : "translated",
             "value" : "Није валидна датотека путања"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不是一個有效的路徑檔案"
+          }
         }
       }
     },
@@ -23549,6 +23860,12 @@
             "state" : "translated",
             "value" : "Белешке"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "筆記"
+          }
         }
       }
     },
@@ -23564,6 +23881,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Број: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Num: %@"
           }
         }
       }
@@ -23860,6 +24183,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ok to MQTT"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ok to MQTT"
@@ -24566,6 +24895,12 @@
             "state" : "translated",
             "value" : "БЛЕ"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BLE"
+          }
         }
       }
     },
@@ -24705,6 +25040,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ВајФај"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WiFi"
           }
         }
       }
@@ -24936,6 +25277,12 @@
             "state" : "translated",
             "value" : "Пин %lld"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pin %lld"
+          }
         }
       }
     },
@@ -24946,6 +25293,12 @@
             "state" : "translated",
             "value" : "Пин А"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pin A"
+          }
         }
       }
     },
@@ -24955,6 +25308,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пин Б"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pin B"
           }
         }
       }
@@ -25209,6 +25568,12 @@
             "state" : "translated",
             "value" : "Позиција послата"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "位置資料已送出"
+          }
         }
       }
     },
@@ -25307,6 +25672,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "У кругу %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 之內"
           }
         }
       }
@@ -27466,6 +27837,12 @@
             "state" : "translated",
             "value" : "自行车"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自行車"
+          }
         }
       }
     },
@@ -27500,6 +27877,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "驾驶"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開車"
           }
         }
       }
@@ -27705,6 +28088,12 @@
             "state" : "translated",
             "value" : "步行"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "步行"
+          }
         }
       }
     },
@@ -27739,6 +28128,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "徒步"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "登山"
           }
         }
       }
@@ -27804,6 +28199,12 @@
             "state" : "translated",
             "value" : "滑雪"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "滑雪"
+          }
         }
       }
     },
@@ -27835,6 +28236,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "步行"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "步行"
@@ -28693,6 +29100,12 @@
             "state" : "translated",
             "value" : "RSSI %@ dBm"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RSSI %@ dBm"
+          }
         }
       }
     },
@@ -28703,12 +29116,24 @@
             "state" : "translated",
             "value" : "RSSI %ddB"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RSSI %ddB"
+          }
         }
       }
     },
     "RSSI %llddB" : {
       "localizations" : {
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RSSI %llddB"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "RSSI %llddB"
@@ -29071,6 +29496,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "保存用户配置到 %@？"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將使用者設定儲存到 %@？"
           }
         }
       }
@@ -30407,6 +30838,12 @@
             "state" : "translated",
             "value" : "文本消息"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文字訊息"
+          }
         }
       }
     },
@@ -30480,6 +30917,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Подеси"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定"
           }
         }
       }
@@ -30959,6 +31402,12 @@
             "state" : "translated",
             "value" : "Прикажи узбуне"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示通知"
+          }
         }
       }
     },
@@ -30974,6 +31423,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Прикажи узбуне"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示通知"
           }
         }
       }
@@ -31035,6 +31490,12 @@
             "state" : "translated",
             "value" : "Прикажи на мапи меш мреже."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 Mesh 地圖上顯示"
+          }
         }
       }
     },
@@ -31083,6 +31544,12 @@
             "state" : "translated",
             "value" : "Искључи"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關機"
+          }
         }
       }
     },
@@ -31099,6 +31566,12 @@
             "state" : "translated",
             "value" : "Искључити чвор?"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關機？"
+          }
         }
       }
     },
@@ -31114,6 +31587,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Искључити чвор?"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關機？"
           }
         }
       }
@@ -31180,6 +31659,12 @@
             "state" : "translated",
             "value" : "SNR"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SNR"
+          }
         }
       }
     },
@@ -31190,12 +31675,24 @@
             "state" : "translated",
             "value" : "SNR %@ dB"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SNR %@ dB"
+          }
         }
       }
     },
     "SNR %@dB" : {
       "localizations" : {
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SNR %@dB"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "SNR %@dB"
@@ -34114,6 +34611,12 @@
             "state" : "translated",
             "value" : "Укупно"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "總共"
+          }
         }
       }
     },
@@ -34316,6 +34819,12 @@
             "state" : "translated",
             "value" : "Покушај поново"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請再試一次"
+          }
         }
       }
     },
@@ -34401,7 +34910,14 @@
       }
     },
     "UDP Broadcast" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UDP 廣播"
+          }
+        }
+      }
     },
     "Ukraine 433mhz" : {
       "extractionState" : "manual",
@@ -35955,6 +36471,12 @@
             "state" : "translated",
             "value" : "x"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "x"
+          }
         }
       }
     },
@@ -35973,6 +36495,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "X: %1$@, Y: %2$d"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "X: %1$@, Y: %2$d"
@@ -35999,6 +36527,12 @@
             "state" : "translated",
             "value" : "X: %1$@, Y: %2$f"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "X: %1$@, Y: %2$f"
+          }
         }
       }
     },
@@ -36021,6 +36555,12 @@
             "state" : "translated",
             "value" : "X: %1$@, Y: %2$lld"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "X: %1$@, Y: %2$lld"
+          }
         }
       }
     },
@@ -36033,6 +36573,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "y"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "y"
