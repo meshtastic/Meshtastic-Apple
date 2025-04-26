@@ -326,7 +326,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ 遠"
+            "value" : "距離%@"
           }
         }
       }
@@ -861,7 +861,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld 個挑數以內"
+            "value" : "%lld 個跳數以內"
           }
         }
       }
@@ -1029,7 +1029,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一個跳數遠"
+            "value" : "距離一個跳數"
           }
         }
       }
@@ -2369,7 +2369,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "你確定要將此節點恢復原廠設定嗎？"
+            "value" : "您確定要將此節點恢復原廠設定嗎？"
           }
         }
       }
@@ -2427,7 +2427,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "是否確定？"
+            "value" : "您確定嗎？"
           }
         }
       }
@@ -2482,7 +2482,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "可用的數據機預設值，預設為 Long Fast"
+            "value" : "可用的數據機預設組態，預設為 Long Fast"
           }
         }
       }
@@ -10154,7 +10154,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "拖放（Drag & Drop）是更新 NRF 裝置韌體的建議方式。如果你的 iPhone 或 iPad 是 USB-C 版本，可以直接使用一般的 USB-C 充電線。若是 Lightning 裝置，則需要使用 Apple 的 Lightning 對 USB 相機轉接器。"
+            "value" : "拖放（Drag & Drop）是更新 NRF 裝置韌體的建議方式。如果您的 iPhone 或 iPad 是 USB-C 版本，可以直接使用一般的 USB-C 充電線。若是 Lightning 裝置，則需要使用 Apple 的 Lightning 對 USB 相機轉接器。"
           }
         }
       }
@@ -11248,7 +11248,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "要將你的裝置與應用程式恢復原廠設定嗎？"
+            "value" : "要將您的裝置與應用程式恢復原廠設定嗎？"
           }
         }
       }
@@ -16850,7 +16850,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "金鑰大小"
+            "value" : "金鑰長度"
           }
         }
       }
@@ -17098,7 +17098,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "請限制所有定期廣播的間隔時間，特別是遙測（telemetry）和位置（position）指標。如果需要增加跳數（hops），應該在網路邊緣的節點上進行，而不是在中間的節點。當你受到頻率使用限制（duty cycle）時，不建議使用 MQTT，因為此時閘道節點（gateway）會承擔所有負載。"
+            "value" : "請限制所有定期廣播的間隔時間，特別是遙測（telemetry）和位置（position）指標。如果需要增加跳數（hops），應該在網路邊緣的節點上進行，而不是在中間的節點。當您受到頻率使用限制（duty cycle）時，不建議使用 MQTT，因為此時閘道節點（gateway）會承擔所有負載。"
           }
         }
       }
@@ -25302,7 +25302,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "啟用位置"
+            "value" : "發送位置"
           }
         }
       }
@@ -28712,7 +28712,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "接收增益強化（RX Boosted Gain）"
+            "value" : "訊號接收增益（RX Boosted Gain）"
           }
         }
       }
@@ -29636,6 +29636,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "当用户按钮被点击三次时，在主通道上发送定位。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "當使用者按鈕被連續按下三次時，透過主要頻道傳送位置資料。"
           }
         }
       }
@@ -34131,7 +34137,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "路由追蹤（Trace Route）已被限速。你每 30 秒最多只能發送一次路由追蹤請求。"
+            "value" : "路由追蹤（Trace Route）已被限速。您每 30 秒最多只能發送一次路由追蹤請求。"
           }
         }
       }
@@ -35764,7 +35770,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "持照操作員模式的功能如下：\n* 將節點名稱自動設定為你的業餘無線電呼號\n* 每 10 分鐘定期廣播節點資訊（如位置、狀態等）\n* 自動覆蓋頻率、頻率使用時間限制及發射功率設定，符合當地業餘無線電規範\n* 關閉通訊加密功能，以符合透明通訊的法規要求"
+            "value" : "持照操作員模式的功能如下：\n* 將節點名稱自動設定為您的業餘無線電呼號\n* 每 10 分鐘定期廣播節點資訊（如位置、狀態等）\n* 自動覆蓋頻率、頻率使用時間限制及發射功率設定，符合當地業餘無線電規範\n* 關閉通訊加密功能，以符合透明通訊的法規要求"
           }
         }
       }
@@ -36144,7 +36150,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "你的地區每小時的頻率使用限制為 %lld%%，當無線電達到該上限時，將會停止傳送封包。"
+            "value" : "您的地區每小時的頻率使用限制為 %lld%%，當無線電達到該上限時，將會停止傳送封包。"
           }
         }
       }
