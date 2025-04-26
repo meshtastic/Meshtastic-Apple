@@ -13842,6 +13842,12 @@
             "state" : "translated",
             "value" : "IAQ %lld"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IAQ %lld"
+          }
         }
       }
     },
@@ -16806,7 +16812,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "金耀"
+            "value" : "金鑰"
           }
         }
       }
