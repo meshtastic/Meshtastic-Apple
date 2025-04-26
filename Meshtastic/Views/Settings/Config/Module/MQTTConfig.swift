@@ -67,7 +67,7 @@ struct MQTTConfig: View {
 
 					if enabled && proxyToClientEnabled && node?.mqttConfig?.proxyToClientEnabled ?? false == true {
 						Toggle(isOn: $mqttConnected) {
-							Label(mqttConnected ? "mqtt.disconnect".localized : "mqtt.connect".localized, systemImage: "server.rack")
+							Label("Connect to MQTT via Proxy", systemImage: "server.rack")
 							if bleManager.mqttError.count > 0 {
 								Text(bleManager.mqttError)
 									.fixedSize(horizontal: false, vertical: true)
@@ -200,8 +200,8 @@ struct MQTTConfig: View {
 					.autocorrectionDisabled()
 					if address != "mqtt.meshtastic.org" {
 						HStack {
-							Label("mqtt.username", systemImage: "person.text.rectangle")
-							TextField("mqtt.username", text: $username)
+							Label("Username", systemImage: "person.text.rectangle")
+							TextField("Username", text: $username)
 								.foregroundColor(.gray)
 								.autocapitalization(.none)
 								.disableAutocorrection(true)
@@ -219,8 +219,8 @@ struct MQTTConfig: View {
 						.keyboardType(.default)
 						.scrollDismissesKeyboard(.interactively)
 						HStack {
-							Label("password", systemImage: "wallet.pass")
-							TextField("password", text: $password)
+							Label("Password", systemImage: "wallet.pass")
+							TextField("Password", text: $password)
 								.foregroundColor(.gray)
 								.autocapitalization(.none)
 								.disableAutocorrection(true)
@@ -288,6 +288,10 @@ struct MQTTConfig: View {
 				if newProxyToClientEnabled != node?.mqttConfig?.proxyToClientEnabled { hasChanges = true }
 			}
 			.onChange(of: address) { _, newAddress in
+				if address.lowercased() == "mqtt.meshtastic.org" {
+					username = "meshdev"
+					password = "large4cats"
+				}
 				if newAddress != node?.mqttConfig?.address ?? "" { hasChanges = true }
 			}
 			.onChange(of: username) { _, newUsername in
