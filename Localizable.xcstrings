@@ -336,7 +336,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ 跳數遠"
+            "value" : "%@ 遠"
           }
         }
       }
@@ -397,6 +397,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已通过管理频道请求 %@ 配置数据，但远程节点未返回任何响应。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "透過管理通道請求 %@ 組態資料，但遠端節點未回應。"
           }
         }
       }
@@ -590,7 +596,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ 這個錯誤通常無法自動修復，你需要在系統設定的藍芽選項中忽略該節點並重新配對。"
+            "value" : "%@ 這個錯誤通常無法自動修復，您需要在系統設定的藍芽選項中忽略該節點並重新配對。"
           }
         }
       }
@@ -794,7 +800,7 @@
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%d Hops"
+                  "value" : "%d 跳數"
                 }
               },
               "zero" : {
@@ -876,7 +882,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld 或更少的Hops以外"
+            "value" : "%lld 個挑數以內"
           }
         }
       }
@@ -888,6 +894,12 @@
             "state" : "translated",
             "value" : "Укупно %lld читања"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 筆讀數總計"
+          }
         }
       }
     },
@@ -897,6 +909,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Укупно %lld догађаја детекције"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 次偵測事件總計"
           }
         }
       }
@@ -915,7 +933,8 @@
             "value" : "%lld%%"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%llddb Transmit Power" : {
       "localizations" : {
@@ -936,6 +955,12 @@
             "state" : "translated",
             "value" : "发射功率 %llddb"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "發射功率 %lld db"
+          }
         }
       }
     },
@@ -951,6 +976,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%llddBm снага преноса"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "發射功率 %lld dBm"
           }
         }
       }
@@ -1017,6 +1048,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "1 跳"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一個跳數遠"
           }
         }
       }
@@ -1180,7 +1217,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已發送 Trace Route，但未收到任何回應。"
+            "value" : "已發送追蹤路由（Trace Route），但未收到任何回應。"
           }
         }
       }
@@ -1261,7 +1298,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ack 時間: %@"
+            "value" : "確認時間: %@"
           }
         }
       }
@@ -1277,7 +1314,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已被其他節點確認接收。"
+            "value" : "已被其他節點確認接收"
           }
         }
       }
@@ -1317,6 +1354,12 @@
             "state" : "translated",
             "value" : "Активан"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在線"
+          }
         }
       }
     },
@@ -1339,6 +1382,12 @@
             "state" : "translated",
             "value" : "活动"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "活動"
+          }
         }
       }
     },
@@ -1349,6 +1398,12 @@
             "state" : "translated",
             "value" : "Додај канал"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "增加頻道"
+          }
         }
       }
     },
@@ -1358,6 +1413,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Додај канале"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "增加頻道"
           }
         }
       }
@@ -1397,6 +1458,12 @@
             "state" : "translated",
             "value" : "其他帮助"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更多幫助"
+          }
         }
       }
     },
@@ -1409,6 +1476,12 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地址"
+          }
+        },
+        "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "地址"
@@ -1434,6 +1507,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "管理员 & 私信密钥"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理與直接訊息加密金鑰"
           }
         }
       }
@@ -1538,6 +1617,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "高级位置标志"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "進階位置標記"
           }
         }
       }
@@ -1666,6 +1751,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Узбуна"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "發送提醒"
           }
         }
       }
@@ -1811,6 +1902,12 @@
             "state" : "translated",
             "value" : "Дозволите контролу долазног уређаја над небезбедним старим администраторским каналом."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允許經由不安全的傳統管理通道接收裝置控制指令。"
+          }
         }
       }
     },
@@ -1831,6 +1928,12 @@
             "state" : "translated",
             "value" : "Висина"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高度"
+          }
         }
       }
     },
@@ -1846,6 +1949,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Висина"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高度"
           }
         }
       }
@@ -1863,6 +1972,12 @@
             "state" : "translated",
             "value" : "Висина %@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高度 %@"
+          }
         }
       }
     },
@@ -1873,6 +1988,12 @@
             "state" : "translated",
             "value" : "Висинска геоидна сепарација"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大地分離高度（Altitude Geoidal Separation）"
+          }
         }
       }
     },
@@ -1882,6 +2003,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Надморска висина је средњи ниво мора"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高度為平均海平面高度"
           }
         }
       }
@@ -1939,12 +2066,11 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "常亮"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "Always point north" : {
       "localizations" : {
@@ -2224,6 +2350,12 @@
             "state" : "translated",
             "value" : "Приближна локација"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大略位置"
+          }
         }
       }
     },
@@ -2239,6 +2371,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "你确定删除这条消息么？"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您確定要刪除這則訊息嗎？"
           }
         }
       }
@@ -2261,6 +2399,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "你确定要初始化这个节点么？"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你確定要將此節點恢復原廠設定嗎？"
           }
         }
       }
@@ -2373,7 +2517,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "可用的 Modem 預設值，預設為 Long Fast"
+            "value" : "可用的數據機預設值，預設為 Long Fast"
           }
         }
       }
@@ -2455,6 +2599,12 @@
             "state" : "translated",
             "value" : "带宽"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頻寬"
+          }
         }
       }
     },
@@ -2470,6 +2620,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bar"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "格"
           }
         }
       }
@@ -2598,6 +2754,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "波特率"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "鮑率（Baud）"
           }
         }
       }
@@ -2731,6 +2893,12 @@
             "state" : "translated",
             "value" : "BLE RSSI: %lld"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "藍牙訊號強度（RSSI）：%lld"
+          }
         }
       }
     },
@@ -2746,6 +2914,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "BLE: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "藍牙名稱：%@"
           }
         }
       }
@@ -2937,6 +3111,12 @@
             "state" : "translated",
             "value" : "广播间隔"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "廣播間隔"
+          }
         }
       }
     },
@@ -2952,6 +3132,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "按钮 GPIO"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按鈕 GPIO"
           }
         }
       }
@@ -2969,6 +3155,12 @@
             "state" : "translated",
             "value" : "购买完整的电台"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "購買完整套件"
+          }
         }
       }
     },
@@ -2984,6 +3176,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "蜂鸣器 GPIO"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "蜂鳴器 GPIO"
           }
         }
       }
@@ -3489,6 +3687,12 @@
             "state" : "translated",
             "value" : "分类"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分類"
+          }
         }
       }
     },
@@ -3883,6 +4087,12 @@
             "state" : "translated",
             "value" : "频道详情"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頻道資料"
+          }
         }
       }
     },
@@ -3959,11 +4169,24 @@
             "state" : "translated",
             "value" : "Линк канала"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頻道網址"
+          }
         }
       }
     },
     "Channel Utilization %@%%" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頻道利用率 %@%%"
+          }
+        }
+      }
     },
     "channel.role.disabled" : {
       "extractionState" : "migrated",
@@ -4662,11 +4885,24 @@
             "state" : "translated",
             "value" : "Комуницирам"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通訊中"
+          }
         }
       }
     },
     "Community Support" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "社群支援"
+          }
+        }
+      }
     },
     "Config" : {
       "localizations" : {
@@ -5522,7 +5758,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "之後"
+            "value" : "間隔之後"
           }
         }
       }
@@ -6022,6 +6258,12 @@
             "state" : "translated",
             "value" : "配置预设"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定預設組態"
+          }
         }
       }
     },
@@ -6038,11 +6280,24 @@
             "state" : "translated",
             "value" : "Конфигуриши"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定"
+          }
         }
       }
     },
     "Confirm" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認"
+          }
+        }
+      }
     },
     "Connect to a Node" : {
       "localizations" : {
@@ -6057,11 +6312,24 @@
             "state" : "translated",
             "value" : "Повежите се са чвором"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在連接節點"
+          }
         }
       }
     },
     "Connect to new radio?" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "連接新的節點？"
+          }
+        }
+      }
     },
     "connected" : {
       "localizations" : {
@@ -6140,11 +6408,24 @@
             "state" : "translated",
             "value" : "Повезани чвор %@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已連接的節點 %@"
+          }
         }
       }
     },
     "Connected Radio" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已連接的節點"
+          }
+        }
+      }
     },
     "connected.radio" : {
       "localizations" : {
@@ -6296,6 +6577,12 @@
             "state" : "translated",
             "value" : "连接尝试 %lld，共 10 次"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "嘗試連接 %lld / 10"
+          }
         }
       }
     },
@@ -6359,7 +6646,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "嘗試連接%d失敗，你可能需要在系统設定的藍芽選項中忽略該節點。"
+            "value" : "嘗試連接%d失敗，您可能需要在系统設定的藍芽選項中忽略該節點。"
           }
         }
       }
@@ -6561,6 +6848,12 @@
             "state" : "translated",
             "value" : "Координате"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "經緯度"
+          }
         }
       }
     },
@@ -6583,6 +6876,12 @@
             "state" : "translated",
             "value" : "坐标 %1$@, %2$@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "經緯度 %@, %@"
+          }
         }
       }
     },
@@ -6598,6 +6897,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Координате:"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "經緯度："
           }
         }
       }
@@ -6743,6 +7048,12 @@
             "state" : "translated",
             "value" : "Струја"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電流"
+          }
         }
       }
     },
@@ -6815,11 +7126,24 @@
             "state" : "translated",
             "value" : "Тренутно: %lld"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電流：%lld"
+          }
         }
       }
     },
     "Currently showing modules that may not be supported by this node." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前顯示的模組可能不受此節點支援。"
+          }
+        }
+      }
     },
     "Currently the recommended way to update ESP32 devices is using the web flasher on a desktop computer from a chrome based browser. It does not work on mobile devices or over BLE." : {
       "localizations" : {
@@ -7116,7 +7440,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "刪除所有環境資料？"
+            "value" : "刪除所有環境指標？"
           }
         }
       }
@@ -7234,7 +7558,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "刪除電源資料？"
+            "value" : "刪除電源指標？"
           }
         }
       }
@@ -7303,6 +7627,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Логови сензора откривања"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檢測感測器紀錄"
           }
         }
       }
@@ -7476,6 +7806,12 @@
             "state" : "translated",
             "value" : "检测传感器日志"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檢測感測器紀錄"
+          }
         }
       }
     },
@@ -7491,6 +7827,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "开发者"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開發者"
           }
         }
       }
@@ -8921,7 +9263,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "優先廣播遙測資料。"
+            "value" : "優先廣播遙測指標。"
           }
         }
       }
@@ -9172,6 +9514,12 @@
             "state" : "translated",
             "value" : "私信帮助"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "私訊功能使用指南"
+          }
         }
       }
     },
@@ -9188,6 +9536,12 @@
             "state" : "translated",
             "value" : "私聊使用新的公钥基础设施进行加密。需要 2.5 或更高版本的固件。"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "私訊已使用新的公開金鑰基礎設施進行加密，需韌體版本 2.5 或更高版本才能支援。"
+          }
         }
       }
     },
@@ -9203,6 +9557,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "私聊使用频道的共享密钥。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "私訊使用共用金鑰進行加密傳輸。"
           }
         }
       }
@@ -9763,7 +10123,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Downlink 已啟用"
+            "value" : "啟用下行（Downlink）"
           }
         }
       }
@@ -9824,6 +10184,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "拖放是更新 NRF 设备固件的推荐方式。如果您的 iPhone 或 iPad 是 USB-C 接口，则可以使用普通的 USB-C 充电线；如果是 Lightning 设备，则需要使用 Apple Lightning to USB 摄像头适配器。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拖放（Drag & Drop）是更新 NRF 裝置韌體的建議方式。如果你的 iPhone 或 iPad 是 USB-C 版本，可以直接使用一般的 USB-C 充電線。若是 Lightning 裝置，則需要使用 Apple 的 Lightning 對 USB 相機轉接器。"
           }
         }
       }
@@ -10157,6 +10523,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "启用检测传感器模块，需要在装有传感器的节点和要接收检测传感器文本信息或查看检测传感器日志和图表的任何节点上启用该模块。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用偵測感測器模組。此功能需在裝有感測器的節點及希望接收偵測感測器文字訊息或瀏覽偵測日誌與圖表的節點上同時啟用。"
           }
         }
       }
@@ -10522,6 +10894,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ESP 32 OTA 更新正在进行中，请单击下面的按钮向您的设备发送重新启动进入 OTA 管理信息。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ESP32 的 OTA 更新功能尚在開發中，請點擊下方按鈕以傳送重新啟動至 OTA 管理模式的訊息至您的裝置。"
           }
         }
       }
@@ -10901,6 +11279,12 @@
             "state" : "translated",
             "value" : "Вратите уређај и апликацију на фабричка подешавања?"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要將你的裝置與應用程式恢復原廠設定嗎？"
+          }
         }
       }
     },
@@ -10991,6 +11375,12 @@
             "state" : "translated",
             "value" : "收藏夹和有最近信息的节点会显示在联系人列表的顶部。"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已加為最愛的聯絡人與最近有訊息的節點會顯示在聯絡人清單的最上方。"
+          }
         }
       }
     },
@@ -11021,7 +11411,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "十五分鐘"
+            "value" : "15 分鐘"
           }
         }
       }
@@ -11032,6 +11422,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Складиште података"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檔案儲存"
           }
         }
       }
@@ -11358,6 +11754,12 @@
             "state" : "translated",
             "value" : "Прво откривање"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "首次通訊"
+          }
         }
       }
     },
@@ -11378,7 +11780,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "五分鐘"
+            "value" : "5 分鐘"
           }
         }
       }
@@ -11470,6 +11872,12 @@
             "state" : "translated",
             "value" : "Окрени екран"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻轉畫面"
+          }
         }
       }
     },
@@ -11479,6 +11887,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Окрени екран вертикално"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將螢幕畫面垂直翻轉顯示"
           }
         }
       }
@@ -11495,6 +11909,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "对于除地图报告外的所有 MQTT 功能，您还必须为希望通过 MQTT 桥接的每个信道设置上行和下行链路。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "除了地圖回報之外，若要使用其他所有 MQTT 功能，您必須為每個想透過 MQTT 橋接的頻道設定上行（Uplink）與下行（Downlink）參數。"
           }
         }
       }
@@ -11560,6 +11980,12 @@
             "state" : "translated",
             "value" : "Измена фреквенције"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頻率覆寫（Frequency Override）"
+          }
         }
       }
     },
@@ -11569,6 +11995,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Фреквенцијски слот"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頻率槽位"
           }
         }
       }
@@ -11809,6 +12241,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Набавите прилагођене водоотпорне соларне и детекционе сензорске рутер чворове, алуминијумске десктоп чворове и издржљиве мобилне уређаје."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提供客製化防水太陽能感測路由器節點、鋁製桌面節點，以及耐候型手持裝置。"
           }
         }
       }
@@ -12614,6 +13052,12 @@
             "state" : "translated",
             "value" : "不存在"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無模組"
+          }
         }
       }
     },
@@ -12678,6 +13122,12 @@
             "state" : "translated",
             "value" : "Смер"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "朝向"
+          }
         }
       }
     },
@@ -12687,6 +13137,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Смер: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "朝向：%@"
           }
         }
       }
@@ -12751,7 +13207,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "接收"
+            "value" : "通訊"
           }
         }
       }
@@ -12816,7 +13272,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "最後通訊時間"
+            "value" : "最後通訊"
           }
         }
       }
@@ -12854,7 +13310,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "隱藏通知"
+            "value" : "靜音通知"
           }
         }
       }
@@ -12870,7 +13326,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "隱藏通知"
+            "value" : "靜音通知"
           }
         }
       }
@@ -12934,7 +13390,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hops 以外"
+            "value" : "跳數"
           }
         }
       }
@@ -12956,7 +13412,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hops 以外 %d"
+            "value" : "跳數距離 %d"
           }
         }
       }
@@ -12978,7 +13434,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hops 以外:"
+            "value" : "跳數距離："
           }
         }
       }
@@ -13000,7 +13456,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hops 以外: %d"
+            "value" : "跳數距離：%d"
           }
         }
       }
@@ -13078,6 +13534,12 @@
             "state" : "translated",
             "value" : "设备指标通过网格发送的频率。默认为 30 分钟。"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "裝置指標透過網狀網路發送的頻率。預設為每 30 分鐘一次。"
+          }
         }
       }
     },
@@ -13093,6 +13555,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "通过网格发送功率指标的频率。默认为 30 分钟。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電力指標透過網狀網路發送的頻率。預設為每 30 分鐘一次。"
           }
         }
       }
@@ -13110,6 +13578,12 @@
             "state" : "translated",
             "value" : "通过网格发送传感器指标的频率。默认为 30 分钟。"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "感測器數據透過網狀網路發送的頻率。預設為每 30 分鐘一次。\n"
+          }
         }
       }
     },
@@ -13126,6 +13600,12 @@
             "state" : "translated",
             "value" : "尝试获取 GPS 定位的频率。"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "嘗試取得 GPS 位置的頻率。"
+          }
         }
       }
     },
@@ -13141,6 +13621,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "无论是否检测到，向网格发送检测传感器状态的频率。默认为从不。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不論是否偵測到事件，將偵測感測器狀態發送至網狀網路的頻率。預設為「從不」。"
           }
         }
       }
@@ -13463,6 +13949,12 @@
             "state" : "translated",
             "value" : "如果难以访问设备的重置按钮，请在此进入 DFU 模式。"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "若無法輕易按下裝置的重置按鈕，可於此進入 DFU 模式。"
+          }
         }
       }
     },
@@ -13494,6 +13986,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "如果默认区域话题太忙，您可以选择一个更本地化的话题。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如果預設的區域主題過於繁忙，您可以選擇一個較在地的主題。"
           }
         }
       }
@@ -13532,6 +14030,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "忽略节点"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "忽略該節點"
           }
         }
       }
@@ -14372,7 +14876,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "十八小時"
+            "value" : "18 小時"
           }
         }
       }
@@ -14395,7 +14899,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "七十二小時"
+            "value" : "72 小時"
           }
         }
       }
@@ -14460,7 +14964,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "十五分鐘"
+            "value" : "15 分鐘"
           }
         }
       }
@@ -14525,7 +15029,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "十五秒"
+            "value" : "15 秒"
           }
         }
       }
@@ -14590,7 +15094,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "五小時"
+            "value" : "5 小時"
           }
         }
       }
@@ -14655,7 +15159,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "五分鐘"
+            "value" : "5 分鐘"
           }
         }
       }
@@ -14720,7 +15224,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "五秒"
+            "value" : "5 秒"
           }
         }
       }
@@ -14850,7 +15354,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "四十五秒"
+            "value" : "45 秒"
           }
         }
       }
@@ -14915,7 +15419,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "四小時"
+            "value" : "4 小時"
           }
         }
       }
@@ -14980,7 +15484,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "四秒"
+            "value" : "4 秒"
           }
         }
       }
@@ -15045,7 +15549,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一小時"
+            "value" : "1 小時"
           }
         }
       }
@@ -15110,7 +15614,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一分鐘"
+            "value" : "1 分鐘"
           }
         }
       }
@@ -15175,7 +15679,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一秒"
+            "value" : "1 秒"
           }
         }
       }
@@ -15305,7 +15809,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "六小時"
+            "value" : "6 小時"
           }
         }
       }
@@ -15370,7 +15874,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "十分鐘"
+            "value" : "10 分鐘"
           }
         }
       }
@@ -15435,7 +15939,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "十秒"
+            "value" : "10 秒"
           }
         }
       }
@@ -15500,7 +16004,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "三十分鐘"
+            "value" : "30 分鐘"
           }
         }
       }
@@ -15565,7 +16069,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "三十秒"
+            "value" : "30 秒"
           }
         }
       }
@@ -15630,7 +16134,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "三十六小時"
+            "value" : "36 小時"
           }
         }
       }
@@ -15695,7 +16199,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "三小時"
+            "value" : "3 小時"
           }
         }
       }
@@ -15760,7 +16264,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "三秒"
+            "value" : "3 秒"
           }
         }
       }
@@ -15825,7 +16329,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "十二小時"
+            "value" : "12 小時"
           }
         }
       }
@@ -15890,7 +16394,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "二十秒"
+            "value" : "20 秒"
           }
         }
       }
@@ -15955,7 +16459,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "二十五秒"
+            "value" : "25 秒"
           }
         }
       }
@@ -16020,7 +16524,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "二十四小時"
+            "value" : "24 小時"
           }
         }
       }
@@ -16085,7 +16589,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "兩小時"
+            "value" : "2 小時"
           }
         }
       }
@@ -16150,7 +16654,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "兩分鐘"
+            "value" : "2 分鐘"
           }
         }
       }
@@ -16215,7 +16719,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "兩秒"
+            "value" : "2 秒"
           }
         }
       }
@@ -16239,6 +16743,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "倒置顶栏，用于双色显示"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "雙色螢幕（頂部工具列反轉配色）"
           }
         }
       }
@@ -16301,6 +16811,12 @@
             "state" : "translated",
             "value" : "JSON 模式是一种有限的、未加密的 MQTT 输出，用于与家庭助理进行本地集成"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JSON 模式提供受限且未加密的 MQTT 輸出，適用於在本地端整合 Home Assistant。"
+          }
         }
       }
     },
@@ -16327,7 +16843,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "按鍵"
+            "value" : "金耀"
           }
         }
       }
@@ -16354,6 +16870,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Величина кључа"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "金鑰大小"
           }
         }
       }
@@ -16465,6 +16987,12 @@
             "state" : "translated",
             "value" : "最后听到"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最後通訊"
+          }
         }
       }
     },
@@ -16486,6 +17014,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "纬度"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "緯度"
           }
         }
       }
@@ -16563,6 +17097,12 @@
             "state" : "translated",
             "value" : "持证操作员"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "持照操作員"
+          }
         }
       }
     },
@@ -16578,6 +17118,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "限制所有周期性广播间隔，尤其是遥测和位置。如果需要增加跳数，请在边缘节点而不是中间节点上进行。在占空比受限的情况下，不建议使用 MQTT，因为网关节点会承担所有工作。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請限制所有定期廣播的間隔時間，特別是遙測（telemetry）和位置（position）指標。如果需要增加跳數（hops），應該在網路邊緣的節點上進行，而不是在中間的節點。當你受到頻率使用限制（duty cycle）時，不建議使用 MQTT，因為此時閘道節點（gateway）會承擔所有負載。"
           }
         }
       }
@@ -16609,7 +17155,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在加載紀錄⋯⋯"
+            "value" : "正在載入紀錄⋯⋯"
           }
         }
       }
@@ -17195,7 +17741,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Long Name"
+            "value" : "完整名稱"
           }
         }
       }
@@ -17223,7 +17769,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Long Name: %@"
+            "value" : "完整名稱：%@"
           }
         }
       }
@@ -17337,6 +17883,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "经度"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "緯度"
           }
         }
       }
@@ -17580,7 +18132,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "無"
+            "value" : "未知"
           }
         }
       }
@@ -17789,6 +18341,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "地图报告"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地圖回報"
           }
         }
       }
@@ -20220,7 +20778,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "收到遠測模組設定: %@"
+            "value" : "收到遙測模組設定: %@"
           }
         }
       }
@@ -20285,7 +20843,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "收到遠測資料: %@"
+            "value" : "收到遙測指標: %@"
           }
         }
       }
@@ -20998,6 +21556,12 @@
             "state" : "translated",
             "value" : "Опције статуса поруке"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "訊息狀態選項"
+          }
         }
       }
     },
@@ -21060,7 +21624,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "詳細訊息"
+            "value" : "詳細資訊"
           }
         }
       }
@@ -21142,6 +21706,12 @@
             "state" : "translated",
             "value" : "Поруке"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "訊息"
+          }
         }
       }
     },
@@ -21158,6 +21728,12 @@
             "state" : "translated",
             "value" : "Поруке се раздвајају са |"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用「 | 」來隔開訊息"
+          }
         }
       }
     },
@@ -21167,6 +21743,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Метрика"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "公制"
           }
         }
       }
@@ -21205,6 +21787,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Минимални интервал"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最短時間間隔"
           }
         }
       }
@@ -21305,6 +21893,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "模型"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "型號"
           }
         }
       }
@@ -21916,6 +22510,12 @@
             "state" : "translated",
             "value" : "Пребаци се на чвор"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "導航至該節點"
+          }
         }
       }
     },
@@ -22102,6 +22702,12 @@
             "state" : "translated",
             "value" : "Никада"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "永不"
+          }
         }
       }
     },
@@ -22113,6 +22719,12 @@
             "state" : "translated",
             "value" : "Нови чвор"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新節點"
+          }
         }
       }
     },
@@ -22123,6 +22735,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Откривен је нови чвор"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已發現新節點"
           }
         }
       }
@@ -22256,6 +22874,12 @@
             "state" : "translated",
             "value" : "Нема повезаног чвора"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有已連接的節點"
+          }
         }
       }
     },
@@ -22265,6 +22889,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Нема метрика уређаја."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有裝置指標"
           }
         }
       }
@@ -22378,6 +23008,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Нема метрике снаге"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有電源指標"
           }
         }
       }
@@ -22530,6 +23166,12 @@
             "state" : "translated",
             "value" : "Интервал емитовања информација о чвору"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節點資訊廣播間隔"
+          }
         }
       }
     },
@@ -22546,6 +23188,12 @@
             "state" : "translated",
             "value" : "Мапа чворова"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節點地圖"
+          }
         }
       }
     },
@@ -22561,6 +23209,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Број чвора"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節點號碼"
           }
         }
       }
@@ -22894,6 +23548,12 @@
             "state" : "translated",
             "value" : "Број записа"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "記錄數量"
+          }
         }
       }
     },
@@ -22909,6 +23569,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Број сателита"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "衛星數量"
           }
         }
       }
@@ -23121,6 +23787,12 @@
             "state" : "translated",
             "value" : "ОК"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
         }
       }
     },
@@ -23158,6 +23830,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "OLED 类型"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OLED 類型"
           }
         }
       }
@@ -23240,6 +23918,12 @@
             "state" : "translated",
             "value" : "业余无线电使用需要固件 2.0.20 或更高版本。请务必参考当地法规，并联系当地业余频率协调人员咨询相关问题。"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "持照操作員的需使用韌體版本 2.0.20 或以上。請務必參考當地法規，若有疑問，請聯繫當地的業餘無線電頻率協調單位。"
+          }
         }
       }
     },
@@ -23256,6 +23940,12 @@
             "state" : "translated",
             "value" : "Један сат"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 小時"
+          }
         }
       }
     },
@@ -23271,6 +23961,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Једна минута"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 分鐘"
           }
         }
       }
@@ -23339,6 +24035,12 @@
             "state" : "translated",
             "value" : "Оптимизовано за двобојне дисплеје"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "為雙色螢幕最佳化"
+          }
         }
       }
     },
@@ -23354,6 +24056,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "包含的字段越多，信息就越大，导致通讯时间更长，丢包风险更高"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "組合位置訊息時可選擇加入的可選欄位。加入的欄位越多，訊息體積越大，將導致空中傳輸時間增加，並提高封包遺失的風險。"
           }
         }
       }
@@ -23471,7 +24179,14 @@
       }
     },
     "OTA Updates are not supported on this NRF Device." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此 NRF 裝置不支援 OTA（無線）更新。"
+          }
+        }
+      }
     },
     "OTA Updates are not supported on your platform." : {
       "localizations" : {
@@ -23486,6 +24201,12 @@
             "state" : "translated",
             "value" : "OTA 更新不支持你的平台"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您的平台不支援 OTA（無線）更新。"
+          }
         }
       }
     },
@@ -23495,6 +24216,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Остали извори података"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "其他資料來源"
           }
         }
       }
@@ -23511,6 +24238,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Излаз дебаговања уживо преко серијског интерфејса, прегледајте и извозите логове уређаја са редукованим позицијама преко блутута."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "透過序列埠輸出即時偵錯記錄，並可透過藍芽檢視與匯出經位置隱藏處理的裝置日誌。"
           }
         }
       }
@@ -23551,6 +24284,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Премаши аутоматско откривање OLED екрана."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "覆寫自動偵測 OLED 螢幕。"
           }
         }
       }
@@ -23929,6 +24668,12 @@
             "state" : "translated",
             "value" : "Изврши фабричко ресетовање чвора на који сте повезани"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "對目前連線的節點執行恢復原廠設定。"
+          }
         }
       }
     },
@@ -24224,6 +24969,12 @@
             "state" : "translated",
             "value" : "Молимо изаберите регион"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請設定地區"
+          }
         }
       }
     },
@@ -24334,6 +25085,12 @@
             "state" : "translated",
             "value" : "Заставице позиције"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "位置標記"
+          }
         }
       }
     },
@@ -24343,6 +25100,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Логови позиција"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "位置紀錄"
           }
         }
       }
@@ -24354,6 +25117,12 @@
             "state" : "translated",
             "value" : "Дневник позиција %lld тачака"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "位置紀錄 %lld 個紀錄"
+          }
         }
       }
     },
@@ -24363,6 +25132,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пакети позиција"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "位置封包"
           }
         }
       }
@@ -24494,6 +25269,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "启用定位"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用位置"
           }
         }
       }
@@ -24772,6 +25553,12 @@
             "state" : "translated",
             "value" : "预设"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "預設組態"
+          }
         }
       }
     },
@@ -24786,7 +25573,14 @@
       }
     },
     "Pressure" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "氣壓"
+          }
+        }
+      }
     },
     "Primary" : {
       "localizations" : {
@@ -24794,6 +25588,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Основни"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主要"
           }
         }
       }
@@ -24817,6 +25617,12 @@
             "state" : "translated",
             "value" : "一级管理员密钥"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主要管理公鑰"
+          }
         }
       }
     },
@@ -24826,6 +25632,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Основни GPIO"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主要 GPIO"
           }
         }
       }
@@ -24848,6 +25660,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "私钥"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "私鑰"
           }
         }
       }
@@ -24893,6 +25711,12 @@
             "state" : "translated",
             "value" : "公钥"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "公鑰"
+          }
         }
       }
     },
@@ -24908,6 +25732,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "公钥加密"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "公鑰加密"
           }
         }
       }
@@ -24925,6 +25755,12 @@
             "state" : "translated",
             "value" : "公钥不匹配"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "公鑰與已知不符"
+          }
         }
       }
     },
@@ -24934,6 +25770,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "PWD"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電源"
           }
         }
       }
@@ -25431,6 +26273,12 @@
             "state" : "translated",
             "value" : "转播模式"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中繼轉發模式"
+          }
         }
       }
     },
@@ -25503,7 +26351,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "收到確認"
+            "value" : "已接收確認"
           }
         }
       }
@@ -25652,6 +26500,12 @@
             "state" : "translated",
             "value" : "Пре подне"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上午"
+          }
         }
       }
     },
@@ -25680,6 +26534,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Вече"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下午"
           }
         }
       }
@@ -25710,6 +26570,12 @@
             "state" : "translated",
             "value" : "Подне"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中午"
+          }
         }
       }
     },
@@ -25739,6 +26605,12 @@
             "state" : "translated",
             "value" : "Јутро"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "早晨"
+          }
         }
       }
     },
@@ -25767,6 +26639,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ноћ"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "夜晚"
           }
         }
       }
@@ -25846,6 +26724,12 @@
             "state" : "translated",
             "value" : "Уклони из омиљених"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從最愛中移除"
+          }
         }
       }
     },
@@ -25877,6 +26761,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Замени канале"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更換頻道"
           }
         }
       }
@@ -25940,7 +26830,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "回復"
+            "value" : "回覆"
           }
         }
       }
@@ -25971,6 +26861,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Захтева да уређај има акцелерометар."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要您的裝置內建加速度感測器。"
           }
         }
       }
@@ -26016,6 +26912,12 @@
             "state" : "translated",
             "value" : "Ресетовање базе чворова (NodeDB)"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重置 NodeDB"
+          }
         }
       }
     },
@@ -26031,6 +26933,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Поновно покретање"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重啟"
           }
         }
       }
@@ -26922,7 +27830,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "確認"
+            "value" : "已確認"
           }
         }
       }
@@ -27117,7 +28025,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "收到否認"
+            "value" : "收到 NACK（否定確認）"
           }
         }
       }
@@ -27532,6 +28440,12 @@
             "state" : "translated",
             "value" : "Шифровано слање није успело"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加密傳送失敗"
+          }
         }
       }
     },
@@ -27560,6 +28474,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "未知的公钥"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未知公鑰"
           }
         }
       }
@@ -27754,6 +28674,12 @@
             "state" : "translated",
             "value" : "Појачање пријемника"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接收增益強化（RX Boosted Gain）"
+          }
         }
       }
     },
@@ -27900,6 +28826,12 @@
             "state" : "translated",
             "value" : "Сателита"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "衛星"
+          }
         }
       }
     },
@@ -27916,6 +28848,12 @@
             "state" : "translated",
             "value" : "Процена броја сателита %lld"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "衛星估計數：%lld 顆"
+          }
         }
       }
     },
@@ -27931,6 +28869,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сателити на видику: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前可見衛星：%@ 顆"
           }
         }
       }
@@ -28012,6 +28956,12 @@
             "state" : "translated",
             "value" : "Сачувај"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "儲存"
+          }
         }
       }
     },
@@ -28021,6 +28971,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сачувај подешавања канала"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "儲存頻道設定"
           }
         }
       }
@@ -28157,6 +29113,12 @@
             "state" : "translated",
             "value" : "Претражи"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜尋"
+          }
         }
       }
     },
@@ -28167,6 +29129,12 @@
             "state" : "translated",
             "value" : "Други"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "秒"
+          }
         }
       }
     },
@@ -28176,6 +29144,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Секундарни"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次要"
           }
         }
       }
@@ -28199,6 +29173,12 @@
             "state" : "translated",
             "value" : "二级管理员密钥"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次要管理公鑰"
+          }
         }
       }
     },
@@ -28220,6 +29200,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "安全"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安全性"
           }
         }
       }
@@ -28243,6 +29229,12 @@
             "state" : "translated",
             "value" : "安全配置"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安全性設定"
+          }
         }
       }
     },
@@ -28265,6 +29257,12 @@
             "state" : "translated",
             "value" : "安全配置需要固件版本 2.5+"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安全性設定需要韌體版本 2.5 以上"
+          }
         }
       }
     },
@@ -28281,6 +29279,12 @@
             "state" : "translated",
             "value" : "Одабери канал"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇一個頻道"
+          }
         }
       }
     },
@@ -28290,6 +29294,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Изабери разговор"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇一個對話"
           }
         }
       }
@@ -28311,6 +29321,12 @@
             "state" : "translated",
             "value" : "Изабери пут праћења кроз мрежу"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇一個追蹤路由（Trace Route）紀錄"
+          }
         }
       }
     },
@@ -28320,6 +29336,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Одабери канал"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇頻道"
           }
         }
       }
@@ -28466,6 +29488,12 @@
             "state" : "translated",
             "value" : "Пошаљи"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "發送"
+          }
         }
       }
     },
@@ -28502,6 +29530,12 @@
             "state" : "translated",
             "value" : "Пошаљи директну поруку"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "發送私訊"
+          }
         }
       }
     },
@@ -28517,6 +29551,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пошаљи групну поруку"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "發送群組訊息"
           }
         }
       }
@@ -28633,6 +29673,12 @@
             "state" : "translated",
             "value" : "发送铃声"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "傳送鈴鐺圖示"
+          }
         }
       }
     },
@@ -28687,6 +29733,12 @@
             "state" : "translated",
             "value" : "传感器指标"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "傳感器數據"
+          }
         }
       }
     },
@@ -28735,6 +29787,12 @@
             "state" : "translated",
             "value" : "Послато другим чворовима на меш мрежи како би им омогућило да израчунају заједнички тајни кључ."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "傳送到網路上的其他節點，以便共同計算一組共享私鑰。"
+          }
         }
       }
     },
@@ -28751,6 +29809,12 @@
             "state" : "translated",
             "value" : "Број секвенце"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "序列編號"
+          }
         }
       }
     },
@@ -28766,6 +29830,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Секвенца: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "序列: %@"
           }
         }
       }
@@ -28868,6 +29938,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Серијска конзола преко Stream API-ја."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "透過串流 API 的序列主控台。"
           }
         }
       }
@@ -29266,6 +30342,12 @@
             "state" : "translated",
             "value" : "Сервер"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "伺服器"
+          }
         }
       }
     },
@@ -29282,11 +30364,24 @@
             "state" : "translated",
             "value" : "Адреса сервера"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "伺服器地址"
+          }
         }
       }
     },
     "Server Option" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "伺服器選項"
+          }
+        }
+      }
     },
     "Set" : {
       "localizations" : {
@@ -29468,6 +30563,12 @@
             "state" : "translated",
             "value" : "Дели QR код и линк"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分享 QR Code 及連結"
+          }
         }
       }
     },
@@ -29612,6 +30713,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Дељени кључ"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "共用金鑰"
           }
         }
       }
@@ -29808,6 +30915,12 @@
             "state" : "translated",
             "value" : "Прикажи на екрану уређаја"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在裝置螢幕上顯示"
+          }
         }
       }
     },
@@ -29850,7 +30963,14 @@
       }
     },
     "Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press start the live activity." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示透過藍牙連接的 LoRa 裝置資訊。您可以向左滑動來斷開裝置，長按則可啟動即時活動。"
+          }
+        }
+      }
     },
     "Shut Down" : {
       "localizations" : {
@@ -29907,6 +31027,12 @@
             "state" : "translated",
             "value" : "Сигнал %@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "訊號%@"
+          }
         }
       }
     },
@@ -29940,6 +31066,12 @@
             "state" : "translated",
             "value" : "Паметно позиционирање"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "智慧位置"
+          }
         }
       }
     },
@@ -29951,7 +31083,8 @@
             "value" : "SNR"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "SNR %@ dB" : {
       "localizations" : {
@@ -29961,7 +31094,8 @@
             "value" : "SNR %@ dB"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "SNR %@dB" : {
       "localizations" : {
@@ -29971,13 +31105,28 @@
             "value" : "SNR %@dB"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "Soil Moisture" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "土壤溼度"
+          }
+        }
+      }
     },
     "Soil Temp" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "土壤溫度"
+          }
+        }
+      }
     },
     "Specifies how long the monitored GPIO should output." : {
       "localizations" : {
@@ -30002,6 +31151,12 @@
             "state" : "translated",
             "value" : "Брзина"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "速度"
+          }
         }
       }
     },
@@ -30018,6 +31173,12 @@
             "state" : "translated",
             "value" : "Брзина %@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "速度 %@"
+          }
         }
       }
     },
@@ -30033,6 +31194,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Брзина: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "速度：%@"
           }
         }
       }
@@ -30427,6 +31594,12 @@
             "state" : "translated",
             "value" : "Претплаћен"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已建立連線"
+          }
         }
       }
     },
@@ -30507,6 +31680,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Узима URL канала Meshtastic и чува подешавања канала."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輸入一個 Meshtastic 頻道網址，並儲存該頻道的設定。"
           }
         }
       }
@@ -31344,6 +32523,12 @@
             "state" : "translated",
             "value" : "Темп."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "溫度"
+          }
         }
       }
     },
@@ -31360,6 +32545,12 @@
             "state" : "translated",
             "value" : "Температура"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "溫度"
+          }
         }
       }
     },
@@ -31375,6 +32566,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Десет пинута"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10 分鐘"
           }
         }
       }
@@ -31398,6 +32595,12 @@
             "state" : "translated",
             "value" : "三级管理员密钥"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第三組管理公鑰"
+          }
         }
       }
     },
@@ -31414,6 +32617,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "TFT екрани у пуној боји"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TFT全彩螢幕"
           }
         }
       }
@@ -31447,6 +32656,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Време чекања пре него што сматрамо да је ваш пакет завршен."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在將您的封包視為已完成之前需等待的時間長度。"
           }
         }
       }
@@ -31496,6 +32711,12 @@
             "state" : "translated",
             "value" : "Најбржа брзина којом ће се ажурирати позиција уколико је задовољен минимални услов за растојање."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "當達到最短距離變化時，位置更新傳送的最短間隔時間"
+          }
         }
       }
     },
@@ -31511,6 +32732,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "用于在设备屏幕上显示 GPS 坐标的格式。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用於在裝置螢幕上顯示 GPS 座標的格式。"
           }
         }
       }
@@ -31544,6 +32771,12 @@
             "state" : "translated",
             "value" : "Максимални интервал који може протећи без да чвор емитује позицију."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節點在未廣播位置資訊時允許的最長間隔時間"
+          }
         }
       }
     },
@@ -31576,6 +32809,12 @@
             "state" : "translated",
             "value" : "智能位置广播考虑的最小距离变化（以米为单位）。"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "觸發智慧位置廣播時需達到的最小距離變化（以公尺為單位）"
+          }
         }
       }
     },
@@ -31591,6 +32830,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "该节点的最新公钥与之前记录的公钥不匹配。您可以删除该节点，让它重新交换公钥，但这也可能表明存在更严重的安全问题。通过其他可信渠道联系用户，以确定公钥更改是否是由于出厂重置或其他故意行为造成的。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此節點最新的公開金鑰與先前記錄的不符。您可以刪除此節點並讓它重新交換金鑰，但這也可能代表出現了更嚴重的安全問題。請透過其他可信的聯絡方式與該使用者確認金鑰變更是否因為恢復原廠設定或其他有意的操作所導致。"
           }
         }
       }
@@ -31614,6 +32859,12 @@
             "state" : "translated",
             "value" : "授权向该节点发送管理信息的一级管理员公钥。"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "被授權向此節點發送管理訊息的主要公鑰。"
+          }
         }
       }
     },
@@ -31630,6 +32881,12 @@
             "state" : "translated",
             "value" : "公钥与记录的公钥不匹配。您可以删除节点，让它重新交换公钥，但这可能表明存在更严重的安全问题。通过其他可信渠道联系用户，以确定公钥更改是否是由于出厂重置或其他故意行为造成的。"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "公開金鑰與原先記錄的不符。您可以刪除此節點並讓它重新交換金鑰，但這可能表示存在更嚴重的安全問題。請透過其他可信的聯絡方式與該使用者確認，此次金鑰變更是否因為恢復原廠設定或其他有意的操作所造成。"
+          }
         }
       }
     },
@@ -31645,6 +32902,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "使用电台的地区。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您將使用無線電的地區。"
           }
         }
       }
@@ -31693,6 +32956,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "授权向该节点发送管理信息的二级管理员公钥。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "被授權向此節點發送管理訊息的次要公鑰。"
           }
         }
       }
@@ -31743,6 +33012,12 @@
             "state" : "translated",
             "value" : "授权向该节点发送管理信息的三级管理员公钥。"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "被授權向此節點發送管理訊息的第三公鑰。"
+          }
         }
       }
     },
@@ -31773,6 +33048,12 @@
             "state" : "translated",
             "value" : "Ова подешавања ће %@ канале. Тренутна LoRA конфигурација ће бити замењена. Ако дође до значајних промена у LoRA конфигурацији, уређај ће се поново покренути."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這些設定將會 %@ 頻道。當前的 LoRa 設定將被取代，若 LoRa 設定有重大變更，裝置將會重新啟動。"
+          }
         }
       }
     },
@@ -31789,6 +33070,12 @@
             "state" : "translated",
             "value" : "Тридесет минута"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30 分鐘"
+          }
         }
       }
     },
@@ -31798,6 +33085,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Овај разговор ће бити обрисан."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此對話紀錄將會被刪除。"
           }
         }
       }
@@ -31809,6 +33102,12 @@
             "state" : "translated",
             "value" : "Ово може потрајати. Одговор ће се појавити у евиденцији трасе праћења за чвор којем је послат."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這可能需要一段時間，回應將會顯示在被發送節點的路由追蹤紀錄中。"
+          }
         }
       }
     },
@@ -31818,6 +33117,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ово може потрајати. Одговор ће се појавити у евиденцији трасе праћења за чвор којем је послат."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這可能需要一段時間。回應將會顯示在被發送節點的路由追蹤紀錄中。"
           }
         }
       }
@@ -31902,6 +33207,12 @@
             "state" : "translated",
             "value" : "Време"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "時間"
+          }
         }
       }
     },
@@ -31917,6 +33228,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Временски жиг"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "時間戳記"
           }
         }
       }
@@ -31934,6 +33251,12 @@
             "state" : "translated",
             "value" : "Временска зона"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "時區"
+          }
         }
       }
     },
@@ -31949,6 +33272,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Временска зона за датуме на екрану уређаја и у евиденцији."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用於裝置螢幕顯示與日誌記錄日期的時區設定"
           }
         }
       }
@@ -32012,7 +33341,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "超時"
+            "value" : "逾時長度"
           }
         }
       }
@@ -32023,6 +33352,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "временска ознака"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "時間戳記"
           }
         }
       }
@@ -32097,6 +33432,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Време и формат"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "時序與格式"
           }
         }
       }
@@ -32626,6 +33967,12 @@
             "state" : "translated",
             "value" : "启用 TLS"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用 TLS"
+          }
         }
       }
     },
@@ -32667,7 +34014,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trace Route"
+            "value" : "追蹤路由（Trace Route）"
           }
         }
       }
@@ -32683,7 +34030,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trace Route 紀錄"
+            "value" : "追蹤路由（Trace Route）紀錄"
           }
         }
       }
@@ -32699,7 +34046,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trace Route 已送出"
+            "value" : "追蹤路由（Trace Route）已送出"
           }
         }
       }
@@ -32715,7 +34062,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trace Route 已送給 %@"
+            "value" : "追蹤路由（Trace Route）已送給 %@"
           }
         }
       }
@@ -32731,7 +34078,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "給 %@ 的 Trace Route 未送出。"
+            "value" : "給 %@ 的追蹤路由（Trace Route）未送出。"
           }
         }
       }
@@ -32742,6 +34089,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Праћење руте комуникације је било ограничено по брзини. Можете послати захтев за праћење руте комуникације највише једном у сваких тридесет секунди."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "路由追蹤（Trace Route）已被限速。你每 30 秒最多只能發送一次路由追蹤請求。"
           }
         }
       }
@@ -32924,6 +34277,12 @@
             "state" : "translated",
             "value" : "Два сата"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2 小時"
+          }
         }
       }
     },
@@ -32983,6 +34342,12 @@
             "state" : "translated",
             "value" : "Уклони са фаворита"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除最愛"
+          }
         }
       }
     },
@@ -33025,6 +34390,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "непознато"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未知"
           }
         }
       }
@@ -33260,6 +34631,12 @@
             "state" : "translated",
             "value" : "Интервал ажурирања"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新間隔"
+          }
         }
       }
     },
@@ -33430,6 +34807,12 @@
             "state" : "translated",
             "value" : "启用上传"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用上行（Uplink）"
+          }
         }
       }
     },
@@ -33464,6 +34847,12 @@
             "state" : "translated",
             "value" : "Време рада"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已開機時間"
+          }
         }
       }
     },
@@ -33473,6 +34862,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Време рада"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已開機時間"
           }
         }
       }
@@ -33516,6 +34911,12 @@
             "state" : "translated",
             "value" : "使用预设"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用預設組態"
+          }
         }
       }
     },
@@ -33541,6 +34942,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Користи се за креирање заједничког кључа са удаљеним уређајем."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用於與遠端裝置建立共用金鑰。"
           }
         }
       }
@@ -33780,6 +35187,12 @@
             "state" : "translated",
             "value" : "利用手机上的网络连接到 MQTT。"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "透過手機的網路連線來連接至 MQTT 伺服器。"
+          }
         }
       }
     },
@@ -33796,6 +35209,12 @@
             "state" : "translated",
             "value" : "Правац возила"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "載具朝向"
+          }
         }
       }
     },
@@ -33811,6 +35230,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Брзина возила"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "載具速度"
           }
         }
       }
@@ -34036,7 +35461,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ 伏特"
+            "value" : "%@ V"
           }
         }
       }
@@ -34112,6 +35537,12 @@
             "state" : "translated",
             "value" : "Чека се на потврду пријема..."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "等待確認中⋯⋯"
+          }
         }
       }
     },
@@ -34121,6 +35552,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пробуди екран додиром или покретом"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輕觸或移動時喚醒螢幕"
           }
         }
       }
@@ -34209,7 +35646,14 @@
       }
     },
     "Weight" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重量"
+          }
+        }
+      }
     },
     "What does the lock mean?" : {
       "localizations" : {
@@ -34229,6 +35673,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "锁意味着什么？"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "鎖頭圖示代表什麼意思？"
           }
         }
       }
@@ -34273,6 +35723,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "业余无线电模式的作用：\n* 将节点名称设置为您的呼号 \n* 每 10 分钟广播一次节点信息 \n* 覆盖频率、占空比和发射功率 \n* 禁用加密"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "持照操作員模式的功能如下：\n* 將節點名稱自動設定為你的業餘無線電呼號\n* 每 10 分鐘定期廣播節點資訊（如位置、狀態等）\n* 自動覆蓋頻率、頻率使用時間限制及發射功率設定，符合當地業餘無線電規範\n* 關閉通訊加密功能，以符合透明通訊的法規要求"
           }
         }
       }
@@ -34326,7 +35782,14 @@
       }
     },
     "Wind" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "風"
+          }
+        }
+      }
     },
     "Wind Direction" : {
       "localizations" : {
@@ -34340,6 +35803,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Правац ветра"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "風向"
           }
         }
       }
@@ -34356,6 +35825,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Брзина ветра"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "風速"
           }
         }
       }
@@ -34391,7 +35866,8 @@
             "value" : "X: %1$@, Y: %2$d"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "X: %@, Y: %f" : {
       "localizations" : {
@@ -34413,7 +35889,8 @@
             "value" : "X: %1$@, Y: %2$f"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "X: %@, Y: %lld" : {
       "localizations" : {
@@ -34435,7 +35912,8 @@
             "value" : "X: %1$@, Y: %2$lld"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "y" : {
       "localizations" : {
@@ -34489,6 +35967,12 @@
             "state" : "translated",
             "value" : "您还可以使用 Nordic DFU 应用程序通过蓝牙更新 Meshtastic 设备。"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您亦可透過藍牙，使用 Nordic DFU 應用程式來更新您的 Meshtastic 裝置。"
+          }
         }
       }
     },
@@ -34504,6 +35988,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "您当前的位置将被设置为固定位置，并以定位间隔向 Mesh 网络广播。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您的目前位置將被設定為固定位置，並按照位置廣播間隔在Mesh網路中定期發送。"
           }
         }
       }
@@ -34543,6 +36033,12 @@
             "state" : "translated",
             "value" : "Ваш MQTT сервер мора подржавати TLS."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您所使用的 MQTT 伺服器需支援 TLS 加密傳輸。"
+          }
         }
       }
     },
@@ -34552,6 +36048,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Оперативна фреквенција вашег нода се израчунава на основу региона, модемског пресета и овог поља. Када је 0, слот се аутоматски израчунава на основу назива примарног канала."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您的節點運作頻率是根據地區、數據機預設值，以及此欄位共同計算得出。當此欄位設為 0 時，系統會根據主要頻道名稱自動計算頻率槽位。"
           }
         }
       }
@@ -34569,6 +36071,12 @@
             "state" : "translated",
             "value" : "您的位置已发送，并请求对方回复其位置。位置返回后，您将收到通知。"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您的位置已發送並附帶回傳位置的請求。當對方回傳其位置時，系統將通知您。"
+          }
         }
       }
     },
@@ -34585,6 +36093,12 @@
             "state" : "translated",
             "value" : "您所在地区的占空比为 %lld%%。在占空比受限的情况下，不建议使用 MQTT，因为额外的流量会很快压垮您的 LoRa 网格。"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您所在地區的占空比限制為 %lld%%。在占空比受限的情況下，不建議啟用 MQTT，因為額外的通訊流量可能迅速造成您的 LoRa 網狀網路過載。"
+          }
         }
       }
     },
@@ -34595,6 +36109,12 @@
             "state" : "translated",
             "value" : "Ваш регион има %lld%% радни циклус по сату, ваш радио ће престати да шаље пакете када достигне ограничење по сату."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的地區每小時的頻率使用限制為 %lld%%，當無線電達到該上限時，將會停止傳送封包。"
+          }
         }
       }
     },
@@ -34604,6 +36124,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ваша датотека руте мора имати колоне и заглавља и ширину и дужину."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您的路線檔案必須包含緯度（Latitude）與經度（Longitude）欄位及其標題。"
           }
         }
       }
