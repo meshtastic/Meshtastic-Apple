@@ -62,6 +62,7 @@
 		BCB613832C672A2600485544 /* MessageChannelIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613822C672A2600485544 /* MessageChannelIntent.swift */; };
 		BCB613852C68703800485544 /* NodePositionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613842C68703800485544 /* NodePositionIntent.swift */; };
 		BCB613872C69A0FB00485544 /* AppIntentErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613862C69A0FB00485544 /* AppIntentErrors.swift */; };
+		BCDDFA9A2DBB180D0065189C /* ScrollToBottomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */; };
 		BCE2D3C32C7ADF42008E6199 /* ShutDownNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C22C7ADF42008E6199 /* ShutDownNodeIntent.swift */; };
 		BCE2D3C52C7AE369008E6199 /* RestartNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C42C7AE369008E6199 /* RestartNodeIntent.swift */; };
 		BCE2D3C72C7B0D0A008E6199 /* ShortcutsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */; };
@@ -324,6 +325,7 @@
 		BCB613822C672A2600485544 /* MessageChannelIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageChannelIntent.swift; sourceTree = "<group>"; };
 		BCB613842C68703800485544 /* NodePositionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodePositionIntent.swift; sourceTree = "<group>"; };
 		BCB613862C69A0FB00485544 /* AppIntentErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntentErrors.swift; sourceTree = "<group>"; };
+		BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollToBottomButton.swift; sourceTree = "<group>"; };
 		BCE2D3C22C7ADF42008E6199 /* ShutDownNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShutDownNodeIntent.swift; sourceTree = "<group>"; };
 		BCE2D3C42C7AE369008E6199 /* RestartNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestartNodeIntent.swift; sourceTree = "<group>"; };
 		BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsProvider.swift; sourceTree = "<group>"; };
@@ -1107,6 +1109,7 @@
 				DDDB26412AABF655003AFCB7 /* NodeListItem.swift */,
 				DDDCD56F2BB26F5C00BE6B60 /* NodeListFilter.swift */,
 				251926882C3BAF2E00249DF5 /* Actions */,
+				BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1545,6 +1548,7 @@
 				DDA9515E2BC6F56F00CEA535 /* IndoorAirQuality.swift in Sources */,
 				DDDB444E29F8AB0E00EE2349 /* Int.swift in Sources */,
 				DD3CC6BC28E366DF00FA9159 /* Meshtastic.xcdatamodeld in Sources */,
+				BCDDFA9A2DBB180D0065189C /* ScrollToBottomButton.swift in Sources */,
 				DDC4C9FF2A8D982900CE201C /* DetectionSensorConfig.swift in Sources */,
 				2344A2AF2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift in Sources */,
 				2344A2B02D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift in Sources */,

@@ -20,115 +20,172 @@ struct UserMessageList: View {
 	// View State Items
 	@ObservedObject var user: UserEntity
 	@State private var replyMessageId: Int64 = 0
+	
+	// Scroll state
+	@State private var showScrollToBottomButton = false
+	@State private var hasReachedBottom = false
+	@State private var gotFirstUnreadMessage: Bool = false
 
 	var body: some View {
 		VStack {
 			ScrollViewReader { scrollView in
-				ScrollView {
-					LazyVStack {
-						ForEach( user.messageList ) { (message: MessageEntity) in
-							if user.num != bleManager.connectedPeripheral?.num ?? -1 {
-								let currentUser: Bool = (Int64(UserDefaults.preferredPeripheralNum) == message.fromUser?.num ?? -1 ? true : false)
+				ZStack(alignment: .bottomTrailing) {
+					ScrollView {
+						LazyVStack {
+							ForEach( user.messageList ) { (message: MessageEntity) in
+								if user.num != bleManager.connectedPeripheral?.num ?? -1 {
+									let currentUser: Bool = (Int64(UserDefaults.preferredPeripheralNum) == message.fromUser?.num ?? -1 ? true : false)
 
-								if message.replyID > 0 {
-									let messageReply = user.messageList.first(where: { $0.messageId == message.replyID })
-									HStack {
-										Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
-											.padding(10)
-											.overlay(
-												RoundedRectangle(cornerRadius: 18)
-													.stroke(Color.blue, lineWidth: 0.5)
-											)
-										Image(systemName: "arrowshape.turn.up.left.fill")
-											.symbolRenderingMode(.hierarchical)
-											.imageScale(.large).foregroundColor(.accentColor)
-											.padding(.trailing)
+									if message.replyID > 0 {
+										let messageReply = user.messageList.first(where: { $0.messageId == message.replyID })
+										HStack {
+											Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
+												.padding(10)
+												.overlay(
+													RoundedRectangle(cornerRadius: 18)
+														.stroke(Color.blue, lineWidth: 0.5)
+												)
+											Image(systemName: "arrowshape.turn.up.left.fill")
+												.symbolRenderingMode(.hierarchical)
+												.imageScale(.large).foregroundColor(.accentColor)
+												.padding(.trailing)
+										}
 									}
-								}
-								HStack(alignment: .top) {
-									if currentUser { Spacer(minLength: 50) }
-									VStack(alignment: currentUser ? .trailing : .leading) {
-										HStack {
-											MessageText(
-												message: message,
-												tapBackDestination: .user(user),
-												isCurrentUser: currentUser
-											) {
-												self.replyMessageId = message.messageId
-												self.messageFieldFocused = true
-											}
-
-											if currentUser && message.canRetry || (message.receivedACK && !message.realACK) {
-												RetryButton(message: message, destination: .user(user))
-											}
-										}
-
-										TapbackResponses(message: message) {
-											appState.unreadDirectMessages = user.unreadMessages
-										}
-
-										HStack {
-											let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
-											if currentUser && message.receivedACK {
-												// Ack Received
-												if message.realACK {
-													Text("\(ackErrorVal?.display ?? "Empty Ack Error")")
-														.font(.caption2)
-														.foregroundStyle(ackErrorVal?.color ?? Color.secondary)
-												} else {
-													Text("Acknowledged by another node").font(.caption2).foregroundColor(.orange)
+									HStack(alignment: .top) {
+										if currentUser { Spacer(minLength: 50) }
+										VStack(alignment: currentUser ? .trailing : .leading) {
+											HStack {
+												MessageText(
+													message: message,
+													tapBackDestination: .user(user),
+													isCurrentUser: currentUser
+												) {
+													self.replyMessageId = message.messageId
+													self.messageFieldFocused = true
 												}
-											} else if currentUser && message.ackError == 0 {
-												// Empty Error
-												Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.yellow)
-											} else if currentUser && message.ackError > 0 {
-												Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
-													.foregroundStyle(ackErrorVal?.color ?? Color.red)
-													.font(.caption2)
+
+												if currentUser && message.canRetry || (message.receivedACK && !message.realACK) {
+													RetryButton(message: message, destination: .user(user))
+												}
+											}
+
+											TapbackResponses(message: message) {
+												appState.unreadDirectMessages = user.unreadMessages
+											}
+
+											HStack {
+												let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
+												if currentUser && message.receivedACK {
+													// Ack Received
+													if message.realACK {
+														Text("\(ackErrorVal?.display ?? "Empty Ack Error")")
+															.font(.caption2)
+															.foregroundStyle(ackErrorVal?.color ?? Color.secondary)
+													} else {
+														Text("Acknowledged by another node").font(.caption2).foregroundColor(.orange)
+													}
+												} else if currentUser && message.ackError == 0 {
+													// Empty Error
+													Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.yellow)
+												} else if currentUser && message.ackError > 0 {
+													Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
+														.foregroundStyle(ackErrorVal?.color ?? Color.red)
+														.font(.caption2)
+												}
 											}
 										}
-									}
-									.padding(.bottom)
-									.id(user.messageList.firstIndex(of: message))
+										.padding(.bottom)
+										.id(user.messageList.firstIndex(of: message))
 
-									if !currentUser {
-										Spacer(minLength: 50)
+										if !currentUser {
+											Spacer(minLength: 50)
+										}
 									}
-								}
-								.padding([.leading, .trailing])
-								.frame(maxWidth: .infinity)
-								.id(message.messageId)
-								.onAppear {
-									if !message.read {
-										message.read = true
-										do {
-											try context.save()
-											Logger.data.info("📖 [App] Read message \(message.messageId, privacy: .public) ")
-											appState.unreadDirectMessages = user.unreadMessages
-
-										} catch {
-											Logger.data.error("Failed to read message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
+									.padding([.leading, .trailing])
+									.frame(maxWidth: .infinity)
+									.id(message.messageId)
+									.onAppear {
+										if gotFirstUnreadMessage {
+											if !message.read {
+												message.read = true
+												do {
+													for unreadMessage in user.messageList.filter({ !$0.read }) {
+														unreadMessage.read = true
+													}
+													try context.save()
+													Logger.data.info("📖 [App] Read message \(message.messageId, privacy: .public) ")
+													appState.unreadDirectMessages = user.unreadMessages
+												} catch {
+													Logger.data.error("Failed to read message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
+												}
+											}
+											// Check if we've reached the bottom message
+											if message.messageId == user.messageList.last?.messageId {
+												hasReachedBottom = true
+												showScrollToBottomButton = false
+											}
 										}
 									}
 								}
 							}
+							// Invisible spacer to detect reaching bottom
+							Color.clear
+								.frame(height: 1)
+								.id("bottomAnchor")
+								.onAppear {
+									hasReachedBottom = true
+									showScrollToBottomButton = false
+								}
 						}
 					}
-				}
-				.scrollDismissesKeyboard(.interactively)
-				.onFirstAppear {
-					withAnimation {
-						scrollView.scrollTo(user.messageList.last?.messageId ?? 0, anchor: .bottom)
+					.scrollDismissesKeyboard(.interactively)
+					.onFirstAppear {
+						// Find first unread message
+						if let firstUnreadMessageId = user.messageList.first(where: { !$0.read })?.messageId {
+							withAnimation {
+								scrollView.scrollTo(firstUnreadMessageId, anchor: .top)
+								showScrollToBottomButton = true
+							}
+						} else {
+							// If no unread messages, scroll to bottom
+							withAnimation {
+								scrollView.scrollTo(user.messageList.last?.messageId ?? 0, anchor: .bottom)
+								hasReachedBottom = true
+							}
+						}
+						gotFirstUnreadMessage = true
 					}
-				}
-				.onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
-					withAnimation {
-						scrollView.scrollTo(user.messageList.last?.messageId ?? 0, anchor: .bottom)
+					.onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
+						withAnimation {
+							scrollView.scrollTo(user.messageList.last?.messageId ?? 0, anchor: .bottom)
+							hasReachedBottom = true
+							showScrollToBottomButton = false
+						}
 					}
-				}
-				.onChange(of: user.messageList) {
-					withAnimation {
-						scrollView.scrollTo(user.messageList.last?.messageId ?? 0, anchor: .bottom)
+					.onChange(of: user.messageList) {
+						if hasReachedBottom {
+							withAnimation {
+								scrollView.scrollTo(user.messageList.last?.messageId ?? 0, anchor: .bottom)
+							}
+						} else {
+							showScrollToBottomButton = true
+						}
+					}
+					
+					// Scroll to bottom button
+					if showScrollToBottomButton {
+						Button {
+							withAnimation {
+								scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+								hasReachedBottom = true
+								showScrollToBottomButton = false
+							}
+						} label: {
+							ScrollToBottomButtonView()
+						}
+						.padding(.bottom, 8)
+						.padding(.trailing, 16)
+						.transition(.opacity)
 					}
 				}
 			}
