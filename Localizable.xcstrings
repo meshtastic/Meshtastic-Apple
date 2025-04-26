@@ -2,7 +2,7 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {
-      "shouldTranslate" : false
+
     },
     "\t%@" : {
       "localizations" : {
@@ -18,8 +18,7 @@
             "value" : "\t%@"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     " %@" : {
       "localizations" : {
@@ -35,11 +34,10 @@
             "value" : " %@"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     " %@%%" : {
-      "shouldTranslate" : false
+
     },
     ": %@" : {
       "localizations" : {
@@ -55,8 +53,7 @@
             "value" : ": %@"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     ": %d" : {
       "localizations" : {
@@ -72,8 +69,7 @@
             "value" : ": %d"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "(Re)define PIN_GPS_EN for your board." : {
       "localizations" : {
@@ -111,8 +107,7 @@
             "value" : "%@"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "%@ - %@" : {
       "localizations" : {
@@ -134,8 +129,7 @@
             "value" : "%1$@ - %2$@"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "%@ - %@ - %@" : {
       "localizations" : {
@@ -157,8 +151,7 @@
             "value" : "%1$@ - %2$@ - %3$@"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "%@ - %@ Towards  %@ Back" : {
       "localizations" : {
@@ -264,8 +257,7 @@
             "value" : "%1$@ (%2$@)"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "%@ %@" : {
       "localizations" : {
@@ -287,8 +279,7 @@
             "value" : "%1$@ %2$@"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "%@ %lld" : {
       "localizations" : {
@@ -310,8 +301,7 @@
             "value" : "%1$@ %2$lld"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "%@ away" : {
       "localizations" : {
@@ -421,8 +411,7 @@
             "value" : "%@ dB"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "%@ Please try connecting again and check the PIN carefully." : {
       "extractionState" : "migrated",
@@ -621,8 +610,7 @@
             "value" : "%1$@, %2$@"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "%@: %lld / %lld" : {
       "localizations" : {
@@ -644,8 +632,7 @@
             "value" : "%1$@: %2$lld / %3$lld"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "%@%%" : {
       "localizations" : {
@@ -661,8 +648,7 @@
             "value" : "%@%%"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "%@°F" : {
       "localizations" : {
@@ -678,8 +664,7 @@
             "value" : "%@°F"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "%@mA" : {
       "localizations" : {
@@ -689,8 +674,7 @@
             "value" : "%@mA"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "%@V" : {
       "localizations" : {
@@ -700,8 +684,7 @@
             "value" : "%@V"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "%d" : {
       "localizations" : {
@@ -717,8 +700,7 @@
             "value" : "%d"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "%d Hops" : {
       "localizations" : {
@@ -828,8 +810,7 @@
             "value" : "%d%%"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "%lf" : {
       "localizations" : {
@@ -845,8 +826,7 @@
             "value" : "%lf"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "%lld" : {
       "localizations" : {
@@ -862,8 +842,7 @@
             "value" : "%lld"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "%lld or less hops away" : {
       "localizations" : {
@@ -933,8 +912,7 @@
             "value" : "%lld%%"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "%llddb Transmit Power" : {
       "localizations" : {
@@ -1000,8 +978,7 @@
             "value" : "< 1%"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "🦕 End of life Version 🦖 ☄️" : {
       "localizations" : {
@@ -1033,8 +1010,7 @@
             "value" : "1 byte"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "1 hop away" : {
       "localizations" : {
@@ -1067,8 +1043,7 @@
             "value" : "2.4 GHz"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "7" : {
       "localizations" : {
@@ -1084,8 +1059,7 @@
             "value" : "7"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "8" : {
       "localizations" : {
@@ -1101,8 +1075,7 @@
             "value" : "8"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "25" : {
       "localizations" : {
@@ -1118,8 +1091,7 @@
             "value" : "25"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "50" : {
       "localizations" : {
@@ -1135,8 +1107,7 @@
             "value" : "50"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "75" : {
       "localizations" : {
@@ -1152,8 +1123,7 @@
             "value" : "75"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "100" : {
       "localizations" : {
@@ -1169,8 +1139,7 @@
             "value" : "100"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "128 bit" : {
       "localizations" : {
@@ -1186,8 +1155,7 @@
             "value" : "128 bit"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "256 bit" : {
       "localizations" : {
@@ -1203,8 +1171,7 @@
             "value" : "256 bit"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "A Trace Route was sent, no response has been received." : {
       "localizations" : {
@@ -1284,8 +1251,7 @@
             "value" : "Ack SNR: %@ dB"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "Ack Time: %@" : {
       "localizations" : {
@@ -2334,8 +2300,7 @@
             "value" : "Apple Apps"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "Approximate Location" : {
       "localizations" : {
@@ -12431,8 +12396,7 @@
             "value" : "GPS EN GPIO"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "GPS Format" : {
       "localizations" : {
@@ -13879,8 +13843,7 @@
             "value" : "IAQ %lld"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "Icon" : {
       "localizations" : {
@@ -24652,8 +24615,7 @@
             "value" : "ВајФај"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "Perform a factory reset on the node you are connected to" : {
       "localizations" : {
@@ -31083,8 +31045,7 @@
             "value" : "SNR"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "SNR %@ dB" : {
       "localizations" : {
@@ -31094,8 +31055,7 @@
             "value" : "SNR %@ dB"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "SNR %@dB" : {
       "localizations" : {
@@ -31105,8 +31065,7 @@
             "value" : "SNR %@dB"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "Soil Moisture" : {
       "localizations" : {
@@ -35620,8 +35579,7 @@
             "value" : "Веб флашер"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "Website" : {
       "localizations" : {
@@ -35843,8 +35801,7 @@
             "value" : "x"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "X: %@, Y: %d" : {
       "localizations" : {
@@ -35866,8 +35823,7 @@
             "value" : "X: %1$@, Y: %2$d"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "X: %@, Y: %f" : {
       "localizations" : {
@@ -35889,8 +35845,7 @@
             "value" : "X: %1$@, Y: %2$f"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "X: %@, Y: %lld" : {
       "localizations" : {
@@ -35912,8 +35867,7 @@
             "value" : "X: %1$@, Y: %2$lld"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "y" : {
       "localizations" : {
@@ -35929,8 +35883,7 @@
             "value" : "y"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "Yesterday" : {
       "localizations" : {
