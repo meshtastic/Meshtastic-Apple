@@ -220,7 +220,8 @@
             "value" : "%1$@ - %2$@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ - %@ - %@" : {
       "localizations" : {
@@ -254,7 +255,8 @@
             "value" : "%1$@ - %2$@ - %3$@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ - %@ Towards  %@ Back" : {
       "localizations" : {
@@ -390,7 +392,8 @@
             "value" : "%1$@ (%2$@)"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ %@" : {
       "localizations" : {
@@ -424,7 +427,8 @@
             "value" : "%1$@ %2$@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ %lld" : {
       "localizations" : {
@@ -458,7 +462,8 @@
             "value" : "%1$@ %2$lld"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ away" : {
       "localizations" : {
@@ -692,13 +697,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%@ Aplikacja automatycznie ponownie połączy się z preferowanym radiem, jeśli wróci w zasięg."
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%@ Appen kommer automatiskt att återansluta till den föredragna radion om den kommer inom räckhåll igen."
           }
         },
@@ -750,13 +755,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%@ Ten błąd zwykle nie może być naprawiony bez zapomnienia urządzenia w Ustawienia > Bluetooth i ponownego połączenia z radiem."
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%@ Detta fel kan vanligtvis inte åtgärdas utan att glömma enheten under Inställningar > Bluetooth och återansluta till radion."
           }
         },
@@ -846,7 +851,8 @@
             "value" : "%1$@: %2$lld / %3$lld"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@%%" : {
       "localizations" : {
@@ -2236,7 +2242,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "זמן אוויר"
           }
         },
@@ -2248,13 +2254,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Czas nadawania"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Sändningstid"
           }
         },
@@ -2700,7 +2706,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "תמיד דלוק"
           }
         },
@@ -2712,13 +2718,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Zawsze włączone"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Alltid på"
           }
         },
@@ -2786,7 +2792,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "תאורת סביבה"
           }
         },
@@ -2804,7 +2810,7 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Omgivningsbelysning"
           }
         },
@@ -2844,7 +2850,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "הגדרות תאורת סביבה"
           }
         },
@@ -2862,7 +2868,7 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Konfiguration av omgivningsbelysning"
           }
         },
@@ -3166,7 +3172,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "האם אתה בטוח?"
           }
         },
@@ -3178,13 +3184,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Jesteś pewny?"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Är du säker?"
           }
         },
@@ -3302,7 +3308,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "מכשירים זמינים"
           }
         },
@@ -3314,13 +3320,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Dostępne radia"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Tillgängliga radioapparater"
           }
         },
@@ -3490,13 +3496,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Poziom naładowania baterii"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Batterinivå"
           }
         },
@@ -3592,7 +3598,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "שם בלוטוס"
           }
         },
@@ -3604,13 +3610,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Nazwa BLE"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "BLE-namn"
           }
         },
@@ -3650,7 +3656,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "קוד בלוטוס חייבת להיות בת 6 ספרות."
           }
         },
@@ -3662,13 +3668,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Pin BLE musi mieć długość 6 cyfr."
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "BLE-PIN måste vara 6 siffror lång."
           }
         },
@@ -3822,7 +3828,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "הגדרות בלוטוס"
           }
         },
@@ -3834,13 +3840,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Konfiguracja Bluetooth"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Bluetooth-konfiguration"
           }
         },
@@ -3880,7 +3886,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "בלוטוס כבוי"
           }
         },
@@ -3892,13 +3898,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Bluetooth jest wyłączony"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Bluetooth är avstängt"
           }
         },
@@ -4060,7 +4066,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "בייטים"
           }
         },
@@ -4072,13 +4078,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Bajty"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Bytes"
           }
         },
@@ -4174,7 +4180,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "בטל"
           }
         },
@@ -4186,13 +4192,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Anuluj"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Avbryt"
           }
         },
@@ -4232,7 +4238,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "הודעות קבועות"
           }
         },
@@ -4244,13 +4250,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Gotowe wiadomości"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Fördefinierade meddelanden"
           }
         },
@@ -4290,7 +4296,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "הגדרות הודעות קבועות"
           }
         },
@@ -4302,13 +4308,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Konfiguracja gotowych wiadomości"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Konfiguration av fördefinierade meddelanden"
           }
         },
@@ -4536,7 +4542,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "ערוץ"
           }
         },
@@ -4548,13 +4554,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Kanał"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Kanal"
           }
         },
@@ -5006,43 +5012,43 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Kanalbelegung"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Utilisation du canal"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "שימוש ערוץ"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Utilizzo del canale"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Wykorzystanie kanału"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Kanalutnyttjande"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Искоришћеност канала"
           }
         },
@@ -5092,7 +5098,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "ערוצים"
           }
         },
@@ -5104,13 +5110,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Kanały"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Kanaler"
           }
         },
@@ -5266,43 +5272,43 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "App Daten löschen"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Effacer les données de l'application"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "אפס הגדרות אפליקציה"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Cancella i dati dell'app"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Wyczyść dane aplikacji"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Rensa appdata"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Очисти податке апликације"
           }
         },
@@ -5486,49 +5492,49 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Schließen"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Fermer"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "סגור"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Chiudere"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Zamknij"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Stäng"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Затвори"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "关闭"
           }
         },
@@ -7876,14 +7882,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Standard"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Default"
           }
         },
         "fr" : {
@@ -7906,13 +7906,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Domyślny"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Standard"
           }
         },
@@ -9808,7 +9808,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "מכשיר תשתית להרחבת המש על ידי העברת הודעות עם דאטה נוסף מינימלי."
           }
         },
@@ -9820,13 +9820,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Przekaźnik - Pakiety siatki będą preferować trasowanie przez ten węzeł. Ta rola eliminuje niepotrzebny nadmiar, taki jak NodeInfo, DeviceTelemetry i inne pakiety siatki, skutkując tym, że urządzenie nie będzie widoczne jako część sieci. Proszę zobaczyć tryb Rebroadcast dla dodatkowych ustawień specyficznych dla tej roli."
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Infrastrukturnod för att utöka nätverkstäckningen genom att vidarebefordra meddelanden med minimal overhead. Syns inte i Noder-listan."
           }
         },
@@ -9872,7 +9872,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "מכשיר תשתית להרחבת המש על ידי העברת הודעות. מופיע ברשימת מכשירים."
           }
         },
@@ -9884,13 +9884,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Router - Pakiety siatki będą preferować trasowanie przez ten węzeł. Zakłada, że urządzenie będzie działać samodzielnie, umieszczone w miejscu z przewagą zasięgu. UWAGA: Radia BLE/Wi-Fi i ekran OLED zostaną uśpione."
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Infrastrukturnod för att utöka nätverkstäckningen genom att vidarebefordra meddelanden. Synlig i Noder-listan."
           }
         },
@@ -9954,7 +9954,7 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Kombination av både ROUTER och CLIENT. Inte för mobila enheter."
           }
         },
@@ -10488,7 +10488,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "כבוי"
           }
         },
@@ -10500,13 +10500,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Wyłączony"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Inaktiverad"
           }
         },
@@ -10546,7 +10546,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "התנתק"
           }
         },
@@ -10558,13 +10558,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Rozłącz"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Koppla från"
           }
         },
@@ -10604,7 +10604,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "סגור מקלדת"
           }
         },
@@ -10616,13 +10616,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Zamknij"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Stäng"
           }
         },
@@ -10662,7 +10662,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "צג מכשיר"
           }
         },
@@ -10674,13 +10674,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Wyświetlacz (Ekran Urządzenia)"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Skärm"
           }
         },
@@ -11310,7 +11310,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "מופעל"
           }
         },
@@ -11322,13 +11322,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Włączony"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Aktiverad"
           }
         },
@@ -11500,49 +11500,49 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Verschlüsselt"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Encrypté"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "מוצפן"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Crittografato"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Zaszyfrowany"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Krypterad"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Шифровано"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "加密"
           }
         },
@@ -12566,7 +12566,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "סיים"
           }
         },
@@ -12578,13 +12578,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Finish"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Avsluta"
           }
         },
@@ -12720,7 +12720,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "גרסת קושחה"
           }
         },
@@ -12732,13 +12732,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Wersja Oprogramowania"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Firmwareversion"
           }
         },
@@ -12892,7 +12892,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "קוד קבוע"
           }
         },
@@ -12904,13 +12904,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Stały PIN"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Fast PIN"
           }
         },
@@ -15334,25 +15334,25 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Include"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Inclure"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "כלול"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Includere"
           }
         },
@@ -15364,19 +15364,19 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Inkludera"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Укључите"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "包含"
           }
         },
@@ -15462,7 +15462,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Индија"
           }
         },
@@ -18008,13 +18008,13 @@
       "localizations" : {
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Corea"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Кореја"
           }
         },
@@ -19570,43 +19570,43 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Manuelle Konfiguration"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Configuration manuelle"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "הגדרה ידנית"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Configurazione manuale"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Konfiguracja ręczna"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Manuell konfiguration"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ручна конфигурација"
           }
         },
@@ -24308,13 +24308,13 @@
       "localizations" : {
         "fr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Absent"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "לא קיים"
           }
         },
@@ -24326,7 +24326,7 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Inte närvarande"
           }
         },
@@ -26728,7 +26728,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "עיקרי"
           }
         },
@@ -26740,13 +26740,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Podstawowy"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Primär"
           }
         },
@@ -27106,13 +27106,13 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "RAK Drehimpulsgeber Modul"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Module d'encodage rotatif RAK"
           }
         },
@@ -27124,14 +27124,14 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Modulo encoder rotativo RAK"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Moduł kodera obrotowego RAK"
+            "state" : "translated",
+            "value" : "Kodera obrotowego RAK"
           }
         },
         "se" : {
@@ -28086,7 +28086,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "תגובה"
           }
         },
@@ -28098,13 +28098,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Odpowiedz"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Svara"
           }
         },
@@ -31760,70 +31760,6 @@
         }
       }
     },
-    "serial.mode.default" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Standard"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Default"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Défaut"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ברירת מחדל"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Predefinito"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Domyślny"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Standard"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Основни"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "默认"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "預設"
-          }
-        }
-      }
-    },
     "serial.mode.nmea" : {
       "localizations" : {
         "de" : {
@@ -33792,7 +33728,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "תגובה מהירה"
           }
         },
@@ -33804,13 +33740,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Odpowiedź na stuknięcie"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Svarsreaktion"
           }
         },
@@ -35716,19 +35652,19 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Zeitlimit erreicht"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Délai d'expiration"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "זמן קצוב"
           }
         },
@@ -35740,13 +35676,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Limit czasu"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Tidsgräns överskriden"
           }
         },
@@ -35786,7 +35722,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "שעה/תאריך"
           }
         },
@@ -35798,13 +35734,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Znacznik czasu"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Tidsstämpel"
           }
         },
@@ -36888,13 +36824,13 @@
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Inconnu"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "לא ידוע"
           }
         },
@@ -36906,13 +36842,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Nieznany"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Okänd"
           }
         },
@@ -37712,19 +37648,19 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Benutzername"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Nom d'utilisateur"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "שם משתמש"
           }
         },
@@ -37736,13 +37672,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Nazwa użytkownika"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Användarnamn"
           }
         },
@@ -38046,13 +37982,13 @@
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Tension"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "וולטז'"
           }
         },
@@ -38064,13 +38000,13 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Napięcie"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Spänning"
           }
         },

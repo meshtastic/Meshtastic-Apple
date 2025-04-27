@@ -118,7 +118,7 @@ enum SerialModeTypes: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .default:
-			return "serial.mode.default".localized
+			return "Default".localized
 		case .simple:
 			return "serial.mode.simple".localized
 		case .proto:
