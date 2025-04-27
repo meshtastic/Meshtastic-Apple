@@ -542,7 +542,7 @@ struct Settings: View {
 					}
 				}
 			}
-			.navigationTitle("settings")
+			.navigationTitle("Settings")
 			.navigationBarItems(
 				leading: MeshtasticLogo().onLongPressGesture(minimumDuration: 1.0) {
 					self.moduleOverride.toggle()

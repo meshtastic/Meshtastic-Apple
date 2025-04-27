@@ -54,7 +54,7 @@ struct ContentView: View {
 				router: appState.router
 			)
 			.tabItem {
-				Label("settings", systemImage: "gear")
+				Label("Settings", systemImage: "gear")
 					.font(.title)
 			}
 			.tag(NavigationState.Tab.settings)
