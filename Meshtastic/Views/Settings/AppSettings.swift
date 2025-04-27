@@ -8,7 +8,6 @@ import OSLog
 struct AppSettings: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	@ObservedObject var tileManager = OfflineTileManager.shared
 	@State var totalDownloadedTileSize = ""
 	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var isPresentingDeleteMapTilesConfirm = false
@@ -85,31 +84,7 @@ struct AppSettings: View {
 							.foregroundColor(.red)
 					}
 				}
-				if totalDownloadedTileSize != "0MB" {
-					Section(header: Text("Map Tile Data")) {
-						Button {
-							isPresentingDeleteMapTilesConfirm = true
-						} label: {
-							Label("\("map.tiles.delete".localized) (\(totalDownloadedTileSize))", systemImage: "trash")
-								.foregroundColor(.red)
-						}
-						.confirmationDialog(
-							"Are you sure?",
-							isPresented: $isPresentingDeleteMapTilesConfirm,
-							titleVisibility: .visible
-						) {
-							Button("Delete all map tiles?", role: .destructive) {
-								tileManager.removeAll()
-								totalDownloadedTileSize = tileManager.getAllDownloadedSize()
-								Logger.services.debug("delete all tiles")
-							}
-						}
-					}
-				}
 			}
-			.onAppear(perform: {
-				totalDownloadedTileSize = tileManager.getAllDownloadedSize()
-			})
 		}
 		.navigationTitle("App Settings")
 		.navigationBarItems(trailing:

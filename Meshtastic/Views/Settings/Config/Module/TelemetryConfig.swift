@@ -64,7 +64,7 @@ struct TelemetryConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 					Toggle(isOn: $environmentMeasurementEnabled) {
-						Label("enabled", systemImage: "chart.xyaxis.line")
+						Label("Enabled", systemImage: "chart.xyaxis.line")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Toggle(isOn: $environmentScreenEnabled) {
@@ -78,7 +78,7 @@ struct TelemetryConfig: View {
 				}
 				Section(header: Text("Power Options")) {
 					Toggle(isOn: $powerMeasurementEnabled) {
-						Label("enabled", systemImage: "bolt")
+						Label("Enabled", systemImage: "bolt")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)

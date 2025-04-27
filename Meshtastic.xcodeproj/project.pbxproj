@@ -63,6 +63,7 @@
 		BCB613852C68703800485544 /* NodePositionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613842C68703800485544 /* NodePositionIntent.swift */; };
 		BCB613872C69A0FB00485544 /* AppIntentErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613862C69A0FB00485544 /* AppIntentErrors.swift */; };
 		BCD93CBA2D9E11A2006C9214 /* DisconnectNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */; };
+    BCDDFA9A2DBB180D0065189C /* ScrollToBottomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */; };
 		BCE2D3C32C7ADF42008E6199 /* ShutDownNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C22C7ADF42008E6199 /* ShutDownNodeIntent.swift */; };
 		BCE2D3C52C7AE369008E6199 /* RestartNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C42C7AE369008E6199 /* RestartNodeIntent.swift */; };
 		BCE2D3C72C7B0D0A008E6199 /* ShortcutsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */; };
@@ -177,8 +178,6 @@
 		DDB6CCFB2AAF805100945AF6 /* NodeMapSwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6CCFA2AAF805100945AF6 /* NodeMapSwiftUI.swift */; };
 		DDB75A0F2A05920E006ED576 /* FileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A0E2A05920E006ED576 /* FileManager.swift */; };
 		DDB75A112A059258006ED576 /* Url.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A102A059258006ED576 /* Url.swift */; };
-		DDB75A142A0593E2006ED576 /* OfflineTileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A132A0593E2006ED576 /* OfflineTileManager.swift */; };
-		DDB75A162A0594AD006ED576 /* TileOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A152A0594AD006ED576 /* TileOverlay.swift */; };
 		DDB75A1A2A05EB67006ED576 /* alpha.png in Resources */ = {isa = PBXBuildFile; fileRef = DDB75A192A05EB67006ED576 /* alpha.png */; };
 		DDB75A1E2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A1D2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift */; };
 		DDB75A212A12B954006ED576 /* LoRaSignalStrength.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A202A12B954006ED576 /* LoRaSignalStrength.swift */; };
@@ -328,6 +327,7 @@
 		BCB613842C68703800485544 /* NodePositionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodePositionIntent.swift; sourceTree = "<group>"; };
 		BCB613862C69A0FB00485544 /* AppIntentErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntentErrors.swift; sourceTree = "<group>"; };
 		BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisconnectNodeIntent.swift; sourceTree = "<group>"; };
+    BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollToBottomButton.swift; sourceTree = "<group>"; };
 		BCE2D3C22C7ADF42008E6199 /* ShutDownNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShutDownNodeIntent.swift; sourceTree = "<group>"; };
 		BCE2D3C42C7AE369008E6199 /* RestartNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestartNodeIntent.swift; sourceTree = "<group>"; };
 		BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsProvider.swift; sourceTree = "<group>"; };
@@ -477,8 +477,6 @@
 		DDB759E12A04B264006ED576 /* MeshtasticDataModelV12.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV12.xcdatamodel; sourceTree = "<group>"; };
 		DDB75A0E2A05920E006ED576 /* FileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManager.swift; sourceTree = "<group>"; };
 		DDB75A102A059258006ED576 /* Url.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Url.swift; sourceTree = "<group>"; };
-		DDB75A132A0593E2006ED576 /* OfflineTileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineTileManager.swift; sourceTree = "<group>"; };
-		DDB75A152A0594AD006ED576 /* TileOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileOverlay.swift; sourceTree = "<group>"; };
 		DDB75A192A05EB67006ED576 /* alpha.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = alpha.png; sourceTree = "<group>"; };
 		DDB75A1D2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignalStrengthIndicator.swift; sourceTree = "<group>"; };
 		DDB75A1F2A10766D006ED576 /* MeshtasticDataModelV13.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV13.xcdatamodel; sourceTree = "<group>"; };
@@ -921,15 +919,6 @@
 			path = Map;
 			sourceTree = "<group>";
 		};
-		DDB75A122A0593CD006ED576 /* Map */ = {
-			isa = PBXGroup;
-			children = (
-				DDB75A132A0593E2006ED576 /* OfflineTileManager.swift */,
-				DDB75A152A0594AD006ED576 /* TileOverlay.swift */,
-			);
-			path = Map;
-			sourceTree = "<group>";
-		};
 		DDC2E14B26CE248E0042C5E4 = {
 			isa = PBXGroup;
 			children = (
@@ -1067,7 +1056,6 @@
 			isa = PBXGroup;
 			children = (
 				DDD43FE12A78C86B0083A3E9 /* Mqtt */,
-				DDB75A122A0593CD006ED576 /* Map */,
 				DDAF8C5226EB1DF10058C060 /* BLEManager.swift */,
 				DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */,
 				DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */,
@@ -1124,6 +1112,7 @@
 				DDDB26412AABF655003AFCB7 /* NodeListItem.swift */,
 				DDDCD56F2BB26F5C00BE6B60 /* NodeListFilter.swift */,
 				251926882C3BAF2E00249DF5 /* Actions */,
+				BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1281,10 +1270,9 @@
 				pl,
 				he,
 				fr,
-				"zh-Hant-TW",
 				se,
-				"pt-PT",
 				sr,
+				it,
 			);
 			mainGroup = DDC2E14B26CE248E0042C5E4;
 			packageReferences = (
@@ -1450,7 +1438,6 @@
 				DDDB444229F8A88700EE2349 /* Double.swift in Sources */,
 				DDF45C342BC1A48E005ED5F2 /* MQTTIcon.swift in Sources */,
 				DDA9515A2BC6624100CEA535 /* TelemetryWeather.swift in Sources */,
-				DDB75A162A0594AD006ED576 /* TileOverlay.swift in Sources */,
 				DD1BD0EB2C601795008C0C70 /* CLLocation.swift in Sources */,
 				DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */,
 				DD3CC6BE28E4CD9800FA9159 /* BatteryGauge.swift in Sources */,
@@ -1525,7 +1512,6 @@
 				DD6F65762C6EA5490053C113 /* AckErrors.swift in Sources */,
 				DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */,
 				DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */,
-				DDB75A142A0593E2006ED576 /* OfflineTileManager.swift in Sources */,
 				DDB75A1E2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift in Sources */,
 				DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */,
 				DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */,
@@ -1566,6 +1552,7 @@
 				DDA9515E2BC6F56F00CEA535 /* IndoorAirQuality.swift in Sources */,
 				DDDB444E29F8AB0E00EE2349 /* Int.swift in Sources */,
 				DD3CC6BC28E366DF00FA9159 /* Meshtastic.xcdatamodeld in Sources */,
+				BCDDFA9A2DBB180D0065189C /* ScrollToBottomButton.swift in Sources */,
 				DDC4C9FF2A8D982900CE201C /* DetectionSensorConfig.swift in Sources */,
 				2344A2AF2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift in Sources */,
 				2344A2B02D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift in Sources */,
@@ -1809,7 +1796,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.5.22;
+				MARKETING_VERSION = 2.5.23;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1843,7 +1830,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.5.22;
+				MARKETING_VERSION = 2.5.23;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1875,7 +1862,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.5.22;
+				MARKETING_VERSION = 2.5.23;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1908,7 +1895,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.5.22;
+				MARKETING_VERSION = 2.5.23;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

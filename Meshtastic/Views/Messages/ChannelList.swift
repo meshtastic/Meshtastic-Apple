@@ -24,7 +24,7 @@ struct ChannelList: View {
 
 	@State private var isPresentingTraceRouteSentAlert = false
 
-	var restrictedChannels = ["gpio", "mqtt", "serial"]
+	var restrictedChannels = ["gpio", "mqtt", "serial", "admin"]
 
 	@ViewBuilder
 	private func makeChannelRow(
