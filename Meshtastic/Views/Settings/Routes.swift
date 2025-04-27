@@ -184,7 +184,7 @@ struct Routes: View {
 							}
 
 							Toggle(isOn: $enabled) {
-								Label("enabled", systemImage: "point.topleft.filled.down.to.point.bottomright.curvepath")
+								Label("Enabled", systemImage: "point.topleft.filled.down.to.point.bottomright.curvepath")
 								Text("Show on the mesh map.")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))

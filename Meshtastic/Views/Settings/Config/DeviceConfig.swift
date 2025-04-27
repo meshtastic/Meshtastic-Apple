@@ -40,7 +40,7 @@ struct DeviceConfig: View {
 			Form {
 				ConfigHeader(title: "Device", config: \.deviceConfig, node: node, onAppear: setDeviceValues)
 
-				Section(header: Text("options")) {
+				Section(header: Text("Options")) {
 					VStack(alignment: .leading) {
 						Picker("Device Role", selection: $deviceRole ) {
 							ForEach(DeviceRoles.allCases) { dr in

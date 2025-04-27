@@ -39,10 +39,10 @@ struct ExternalNotificationConfig: View {
 			Form {
 				ConfigHeader(title: "External notification", config: \.externalNotificationConfig, node: node, onAppear: setExternalNotificationValues)
 
-				Section(header: Text("options")) {
+				Section(header: Text("Options")) {
 
 					Toggle(isOn: $enabled) {
-						Label("enabled", systemImage: "megaphone")
+						Label("Enabled", systemImage: "megaphone")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 

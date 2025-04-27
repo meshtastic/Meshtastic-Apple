@@ -47,10 +47,10 @@ struct DetectionSensorConfig: View {
 			Form {
 				ConfigHeader(title: "Detection Sensor", config: \.detectionSensorConfig, node: node, onAppear: setDetectionSensorValues)
 
-				Section(header: Text("options")) {
+				Section(header: Text("Options")) {
 
 					Toggle(isOn: $enabled) {
-						Label("enabled", systemImage: "dot.radiowaves.right")
+						Label("Enabled", systemImage: "dot.radiowaves.right")
 						Text("Enables the detection sensor module, it needs to be enabled on both the node with the sensor, and any nodes that you want to receive detection sensor text messages or view the detection sensor log and chart.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
