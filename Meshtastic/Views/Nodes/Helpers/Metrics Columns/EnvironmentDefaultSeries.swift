@@ -80,7 +80,7 @@ extension MetricsSeriesList {
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
-			
+
 			// Barometric Pressure Series Configuration
 			MetricsChartSeries(
 				id: "barometricPressure",
@@ -106,7 +106,7 @@ extension MetricsSeriesList {
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
-			
+
 			// Indoor Air Quality Series Configuration
 			MetricsChartSeries(
 				id: "iaq",
@@ -134,7 +134,7 @@ extension MetricsSeriesList {
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
-			
+
 			// Lux
 			MetricsChartSeries(
 				id: "lux",
@@ -460,7 +460,7 @@ extension MetricsSeriesList {
 						.lineStyle(StrokeStyle(lineWidth: 4))
 						.alignsMarkStylesWithPlotArea()
 					}
-				}),
+				})
 		])
 	}
 }

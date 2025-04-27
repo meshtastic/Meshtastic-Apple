@@ -41,7 +41,6 @@ class MetricsChartSeries: ObservableObject {
 	// Used for scaling the Y-axis
 	let initialYAxisRange: ClosedRange<Float>?
 	let minumumYAxisSpan: Float?
-	
 	// Main initializer
 	init<Value, ChartBody: ChartContent, ForegroundStyle: ShapeStyle>(
 		id: String,

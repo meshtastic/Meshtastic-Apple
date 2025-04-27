@@ -77,7 +77,7 @@ struct NodeListItem: View {
 										imageColor: .green,
 										text: "connected".localized)
 						}
-						if node.lastHeard?.timeIntervalSince1970 ?? 0 > 0 && node.lastHeard! < Calendar.current.date(byAdding: .year, value: 1, to: Date())!{
+						if node.lastHeard?.timeIntervalSince1970 ?? 0 > 0 && node.lastHeard! < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
 							IconAndText(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill",
 										imageColor: node.isOnline ? .green : .orange,
 										text: node.lastHeard?.formatted() ?? "unknown.age".localized)

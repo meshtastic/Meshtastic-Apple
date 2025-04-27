@@ -14,19 +14,16 @@ struct ChannelMessageList: View {
 	@EnvironmentObject var appState: AppState
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-
 	// Keyboard State
 	@FocusState var messageFieldFocused: Bool
-
 	@ObservedObject var myInfo: MyInfoEntity
 	@ObservedObject var channel: ChannelEntity
 	@State private var replyMessageId: Int64 = 0
 	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
-	
 	// Scroll state
-		@State private var showScrollToBottomButton = false
-		@State private var hasReachedBottom = false
-		@State private var gotFirstUnreadMessage: Bool = false
+	@State private var showScrollToBottomButton = false
+	@State private var hasReachedBottom = false
+	@State private var gotFirstUnreadMessage: Bool = false
 
 	var body: some View {
 		VStack {
@@ -118,7 +115,7 @@ struct ChannelMessageList: View {
 								.frame(maxWidth: .infinity)
 								.id(message.messageId)
 								.onAppear {
-									if gotFirstUnreadMessage{
+									if gotFirstUnreadMessage {
 										if !message.read {
 											message.read = true
 											do {
@@ -184,7 +181,6 @@ struct ChannelMessageList: View {
 							showScrollToBottomButton = true
 						}
 					}
-					
 					// Scroll to bottom button
 					if showScrollToBottomButton {
 						Button {

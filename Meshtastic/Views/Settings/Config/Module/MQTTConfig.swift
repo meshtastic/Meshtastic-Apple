@@ -388,7 +388,6 @@ struct MQTTConfig: View {
 				}
 
 				if let placemarks = placemarks, let placemark = placemarks.first {
-					let cc = locale.region?.identifier ?? "UNK"
 					/// Country Topic unless your region is a country
 					if !(region?.isCountry ?? false) {
 						let countryTopic = defaultTopic + "/" + (placemark.isoCountryCode ?? "")

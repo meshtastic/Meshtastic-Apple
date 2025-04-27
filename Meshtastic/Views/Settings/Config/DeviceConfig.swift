@@ -30,10 +30,8 @@ struct DeviceConfig: View {
 	@State var ledHeartbeatEnabled = true
 	@State var tripleClickAsAdHocPing = true
 	@State var tzdef = ""
-	
 	@State private var showRouterWarning = false
 	@State private var confirmWarning = false
-
 
 	var body: some View {
 		VStack {

@@ -250,7 +250,7 @@ struct RouteRecorder: View {
 										}
 										isShowingDetails = false
 									} label: {
-										Label("finish", systemImage: "flag.checkered")
+										Label("Finish", systemImage: "flag.checkered")
 									}
 									.buttonStyle(.bordered)
 									.buttonBorderShape(.capsule)
@@ -261,7 +261,7 @@ struct RouteRecorder: View {
 								Button(role: .cancel) {
 									isShowingDetails = false
 								} label: {
-									Label("close", systemImage: "xmark")
+									Label("Close", systemImage: "xmark")
 								}
 								.buttonStyle(.bordered)
 								.buttonBorderShape(.capsule)

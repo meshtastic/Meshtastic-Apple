@@ -120,7 +120,7 @@ struct NodeDetail: View {
 					if let metadata = node.metadata {
 						HStack {
 							Label {
-								Text("firmware.version")
+								Text("Firmware Version")
 							} icon: {
 								Image(systemName: "memorychip")
 									.symbolRenderingMode(.multicolor)
@@ -214,7 +214,7 @@ struct NodeDetail: View {
 				// to use with WeatherKit, or has actual data in the most recent EnvironmentMetrics entity
 				// that will be rendered in this section.
 				if node.hasPositions && UserDefaults.environmentEnableWeatherKit
-					|| node.hasDataForLatestEnvironmentMetrics(attributes: ["iaq", "temperature", "relativeHumidity", "barometricPressure", "windSpeed", "radiation", "weight", "distance", "soilTemperature", "soilMoisture"]) {
+					|| node.hasDataForLatestEnvironmentMetrics(attributes: ["iaq", "temperature", "relativeHumidity", "barometricPressure", "windSpeed", "radiation", "weight", "Distance", "soilTemperature", "soilMoisture"]) {
 					Section("Environment") {
 						if !node.hasEnvironmentMetrics {
 							LocalWeatherConditions(location: node.latestPosition?.nodeLocation)

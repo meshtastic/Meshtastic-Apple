@@ -65,8 +65,6 @@ struct PositionLog: View {
 						.width(min: 180)
 					}
 					.textSelection(.enabled)
-
-
 				} else {
 					ScrollView {
 						// Use a grid on iOS as a table only shows a single column

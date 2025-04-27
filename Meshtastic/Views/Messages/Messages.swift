@@ -35,7 +35,7 @@ struct Messages: View {
 			List(selection: $router.navigationState.messages) {
 				NavigationLink(value: MessagesNavigationState.channels()) {
 					Label {
-						Text("channels")
+						Text("Channels")
 							.badge(unreadChannelMessages)
 							.font(.title2)
 							.padding()

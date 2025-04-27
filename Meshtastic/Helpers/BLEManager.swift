@@ -579,7 +579,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
 
 		if let error {
-
 			Logger.services.error("🚫 [BLE] didUpdateValueFor Characteristic error \(error.localizedDescription, privacy: .public)")
 			let errorCode = (error as NSError).code
 			if errorCode == 5 || errorCode == 15 {
@@ -633,14 +632,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			} catch {
 				Logger.services.error("💥 \(error.localizedDescription, privacy: .public) \(characteristic.value!, privacy: .public)")
 			}
-
 			// Publish mqttClientProxyMessages received on the from radio
 			if decodedInfo.payloadVariant == FromRadio.OneOf_PayloadVariant.mqttClientProxyMessage(decodedInfo.mqttClientProxyMessage) {
-				let message = CocoaMQTTMessage(
-					topic: decodedInfo.mqttClientProxyMessage.topic,
-					payload: [UInt8](decodedInfo.mqttClientProxyMessage.data),
-					retained: decodedInfo.mqttClientProxyMessage.retained
-				)
+				let message = CocoaMQTTMessage(topic: decodedInfo.mqttClientProxyMessage.topic, payload: [UInt8](decodedInfo.mqttClientProxyMessage.data), retained: decodedInfo.mqttClientProxyMessage.retained)
 				mqttManager.mqttClientProxy?.publish(message)
 			} else if decodedInfo.payloadVariant == FromRadio.OneOf_PayloadVariant.clientNotification(decodedInfo.clientNotification) {
 				if decodedInfo.clientNotification.hasReplyID {
@@ -782,13 +776,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				adminAppPacket(packet: decodedInfo.packet, context: context)
 			case .replyApp:
 				Logger.mesh.info("🕸️ MESH PACKET received for Reply App handling as a text message")
-				textMessageAppPacket(
-					packet: decodedInfo.packet,
-					wantRangeTestPackets: wantRangeTestPackets,
-					connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0),
-					context: context,
-					appState: appState
-				)
+				textMessageAppPacket(packet: decodedInfo.packet, wantRangeTestPackets: wantRangeTestPackets, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context, appState: appState)
 			case .ipTunnelApp:
 				Logger.mesh.info("🕸️ MESH PACKET received for IP Tunnel App UNHANDLED UNHANDLED")
 			case .serialApp:
@@ -3448,7 +3436,7 @@ extension BLEManager: CBCentralManagerDelegate {
 		case .unsupported:
 			status = "BLE is unsupported"
 		default:
-			status = "default"
+			status = "Default".localized
 		}
 		Logger.services.info("📜 [BLE] Bluetooth status: \(status, privacy: .public)")
 	}
