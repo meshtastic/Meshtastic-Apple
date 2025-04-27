@@ -23,7 +23,7 @@ enum ConfigPresets: Int, CaseIterable, Identifiable {
 		case .rakRotaryEncoder:
 			return "canned.messages.preset.rakrotary".localized
 		case .cardKB:
-			return "canned.messages.preset.cardkb".localized
+			return "M5 Stack Card KB / RAK Keypad".localized
 		}
 	}
 }

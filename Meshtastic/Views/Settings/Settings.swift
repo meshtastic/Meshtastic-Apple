@@ -78,7 +78,7 @@ struct Settings: View {
 
 			NavigationLink(value: SettingsNavigationState.channels) {
 				Label {
-					Text("channels")
+					Text("Channels")
 				} icon: {
 					Image(systemName: "fibrechannel")
 				}

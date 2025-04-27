@@ -110,9 +110,9 @@ enum GpsMode: Int, CaseIterable, Equatable {
 	var description: String {
 		switch self {
 		case .disabled:
-			return "gpsmode.disabled".localized
+			return "Disabled".localized
 		case .enabled:
-			return "gpsmode.enabled".localized
+			return "Eenabled".localized
 		case .notPresent:
 			return "gpsmode.notPresent".localized
 		}

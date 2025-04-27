@@ -120,7 +120,7 @@ struct NodeDetail: View {
 					if let metadata = node.metadata {
 						HStack {
 							Label {
-								Text("firmware.version")
+								Text("Firmware Version")
 							} icon: {
 								Image(systemName: "memorychip")
 									.symbolRenderingMode(.multicolor)

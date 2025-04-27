@@ -250,7 +250,7 @@ struct RouteRecorder: View {
 										}
 										isShowingDetails = false
 									} label: {
-										Label("finish", systemImage: "flag.checkered")
+										Label("Finish", systemImage: "flag.checkered")
 									}
 									.buttonStyle(.bordered)
 									.buttonBorderShape(.capsule)

@@ -154,6 +154,6 @@ struct ChannelList: View {
 				.listStyle(.plain)
 			}
 		}
-		.navigationTitle("channels")
+		.navigationTitle("Channels")
 	}
 }
