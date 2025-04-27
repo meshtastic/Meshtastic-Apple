@@ -2,7 +2,7 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {
-
+      "shouldTranslate" : false
     },
     "\t%@" : {
       "localizations" : {
@@ -5232,7 +5232,7 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Canali"
           }
         },
@@ -5250,7 +5250,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Канали"
           }
         },
@@ -10668,7 +10668,7 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Disattivato"
           }
         },
@@ -10686,7 +10686,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Онемогућено"
           }
         },
@@ -10726,7 +10726,7 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Disconnessione"
           }
         },
@@ -10744,7 +10744,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Прекините везу"
           }
         },
@@ -10784,7 +10784,7 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Sospendere"
           }
         },
@@ -10802,7 +10802,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Отпусти"
           }
         },
@@ -10842,7 +10842,7 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Display"
           }
         },
@@ -10860,7 +10860,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Приказ"
           }
         },
@@ -11554,7 +11554,7 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Abilitato"
           }
         },
@@ -11572,7 +11572,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Омогућено"
           }
         },
@@ -12850,7 +12850,7 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Fine"
           }
         },
@@ -12868,7 +12868,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Заврши"
           }
         },
@@ -13004,7 +13004,7 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Versione del firmware"
           }
         },
@@ -13022,7 +13022,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Верзија фирмвера"
           }
         },
@@ -13176,7 +13176,7 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "PIN fisso"
           }
         },
@@ -13194,7 +13194,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Фиксни ПИН"
           }
         },
@@ -18126,13 +18126,13 @@
       "localizations" : {
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Giappone"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Јапан"
           }
         },
@@ -24558,7 +24558,7 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Non presente"
           }
         },
@@ -24570,7 +24570,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Није пристуно"
           }
         },
@@ -24582,7 +24582,7 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "無模組"
           }
         }
@@ -26972,7 +26972,7 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Primario"
           }
         },
@@ -26990,7 +26990,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Примарни"
           }
         },
@@ -28272,7 +28272,7 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Risposta"
           }
         },
@@ -28290,7 +28290,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Одговори"
           }
         },
@@ -30272,7 +30272,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Русија"
           }
         },
@@ -33922,7 +33922,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Тајван"
           }
         },
@@ -33978,7 +33978,7 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Risposta di Tapback"
           }
         },
@@ -33996,7 +33996,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Реакција додиром"
           }
         },
@@ -34978,13 +34978,13 @@
       "localizations" : {
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Thailandia"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Тајланд"
           }
         },
@@ -35932,7 +35932,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Временско ограничење"
           }
         },
@@ -35990,7 +35990,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Временска ознака"
           }
         },
@@ -36996,19 +36996,19 @@
       "localizations" : {
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Stati Uniti"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Сједињене Америчке државе"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "美國"
           }
         }
@@ -37080,7 +37080,7 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Sconosciuto"
           }
         },
@@ -37098,7 +37098,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Непознато"
           }
         },
@@ -37110,7 +37110,7 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "未知"
           }
         }
@@ -37910,7 +37910,7 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Nome utente"
           }
         },
@@ -37928,7 +37928,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Корисничко име"
           }
         },
@@ -37940,7 +37940,7 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "使用者名稱"
           }
         }
@@ -38238,7 +38238,7 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Tensione"
           }
         },
@@ -38256,7 +38256,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Напон"
           }
         },
@@ -38268,7 +38268,7 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "電壓"
           }
         }
