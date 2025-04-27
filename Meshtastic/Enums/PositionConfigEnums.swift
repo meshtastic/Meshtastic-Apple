@@ -114,7 +114,7 @@ enum GpsMode: Int, CaseIterable, Equatable {
 		case .enabled:
 			return "Eenabled".localized
 		case .notPresent:
-			return "gpsmode.notPresent".localized
+			return "Not Present".localized
 		}
 	}
 	func protoEnumValue() -> Config.PositionConfig.GpsMode {

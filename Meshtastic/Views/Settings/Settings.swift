@@ -209,7 +209,7 @@ struct Settings: View {
 			if isModuleSupported(.mqttConfig) {
 				NavigationLink(value: SettingsNavigationState.mqtt) {
 					Label {
-						Text("mqtt")
+						Text("MQTT")
 					} icon: {
 						Image(systemName: "dot.radiowaves.up.forward")
 					}

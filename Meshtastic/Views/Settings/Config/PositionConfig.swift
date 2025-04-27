@@ -210,7 +210,7 @@ struct PositionConfig: View {
 			}
 
 			Toggle(isOn: $includeTimestamp) { // 128
-				Label("timestamp", systemImage: "clock")
+				Label("Timestamp", systemImage: "clock")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 			.onChange(of: includeTimestamp) { _, newIncludeTimestamp in

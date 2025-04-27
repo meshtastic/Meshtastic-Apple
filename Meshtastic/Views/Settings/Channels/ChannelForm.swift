@@ -30,7 +30,7 @@ struct ChannelForm: View {
 			Form {
 				Section(header: Text("channel details")) {
 					HStack {
-						Text("name")
+						Text("Name")
 						Spacer()
 						TextField(
 							"Channel Name",
@@ -170,7 +170,7 @@ struct ChannelForm: View {
 						}
 					}
 				}
-				Section(header: Text("mqtt")) {
+				Section(header: Text("MQTT")) {
 					Toggle(isOn: $uplink) {
 						Label("Uplink Enabled", systemImage: "arrowshape.up")
 					}

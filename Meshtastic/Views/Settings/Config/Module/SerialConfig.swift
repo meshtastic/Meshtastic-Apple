@@ -53,7 +53,7 @@ struct SerialConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
-					Picker("timeout", selection: $timeout ) {
+					Picker("Timeout", selection: $timeout ) {
 						ForEach(SerialTimeoutIntervals.allCases) { sti in
 							Text(sti.description)
 						}
