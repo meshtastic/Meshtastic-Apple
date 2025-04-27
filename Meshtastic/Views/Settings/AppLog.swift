@@ -270,4 +270,4 @@ extension AppLog {
 	}
 }
 
-extension OSLogEntry: Identifiable { }
+extension OSLogEntry: @retroactive Identifiable { }

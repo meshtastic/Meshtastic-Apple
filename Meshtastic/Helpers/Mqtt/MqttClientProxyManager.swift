@@ -43,18 +43,13 @@ class MqttClientProxyManager {
 			let port = defaultServerPort
 			let username = node.mqttConfig?.username
 			let password = node.mqttConfig?.password
-			// if host == defaultServerAddress {
-				//username = ProcessInfo.processInfo.environment["PUBLIC_MQTT_USERNAME"]
-				//password = ProcessInfo.processInfo.environment["PUBLIC_MQTT_PASSWORD"]
-			// }
 			let root = node.mqttConfig?.root?.count ?? 0 > 0 ? node.mqttConfig?.root : "msh"
 			let prefix = root!
 			topic = prefix + "/2/e" + "/#"
-			let qos = CocoaMQTTQoS(rawValue: UInt8(1))!
-			connect(host: host, port: port, useSsl: useSsl, username: username, password: password, topic: topic, qos: qos, cleanSession: true)
+			connect(host: host, port: port, useSsl: useSsl, username: username, password: password, topic: topic)
 		}
 	}
-	func connect(host: String, port: Int, useSsl: Bool, username: String?, password: String?, topic: String?, qos: CocoaMQTTQoS, cleanSession: Bool) {
+	func connect(host: String, port: Int, useSsl: Bool, username: String?, password: String?, topic: String?) {
 		guard !host.isEmpty else {
 			delegate?.onMqttDisconnected()
 			return
@@ -67,7 +62,7 @@ class MqttClientProxyManager {
 			mqttClient.username = username
 			mqttClient.password = password
 			mqttClient.keepAlive = 60
-			mqttClient.cleanSession = cleanSession
+			mqttClient.cleanSession = true
 			if debugLog {
 				mqttClient.logLevel = .debug
 			}

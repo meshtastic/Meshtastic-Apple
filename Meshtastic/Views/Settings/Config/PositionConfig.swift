@@ -139,7 +139,6 @@ struct PositionConfig: View {
 				ForEach(GpsMode.allCases, id: \.self) { at in
 					Text(at.description)
 						.tag(at.id)
-
 				}
 			}
 			.pickerStyle(SegmentedPickerStyle())
@@ -314,7 +313,6 @@ struct PositionConfig: View {
 				.font(.caption)
 		}
 	}
-
 	var saveButton: some View {
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			if fixedPosition && !supportedVersion {
@@ -399,11 +397,7 @@ struct PositionConfig: View {
 		.navigationTitle("position.config")
 		.navigationBarItems(
 			trailing: ZStack {
-				ConnectedDevice(
-					bluetoothOn: bleManager.isSwitchedOn,
-					deviceConnected: bleManager.connectedPeripheral != nil,
-					name: bleManager.connectedPeripheral?.shortName ?? "?"
-				)
+				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: bleManager.connectedPeripheral?.shortName ?? "?")
 			}
 		)
 		.onFirstAppear {

@@ -23,7 +23,7 @@ struct PositionPopover: View {
 	var body: some View {
 		// Node Color from node.num
 		let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
-		NavigationStack{
+		NavigationStack {
 		VStack {
 			HStack {
 				ZStack {
@@ -105,7 +105,6 @@ struct PositionPopover: View {
 								.foregroundColor(.primary)
 								.font(idiom == .phone ? .callout : .body)
 						}
-						
 					} icon: {
 						Image(systemName: "mountain.2.fill")
 							.symbolRenderingMode(.hierarchical)
@@ -180,7 +179,6 @@ struct PositionPopover: View {
 					}
 					.padding(.bottom, 5)
 					if position.nodePosition?.viaMqtt ?? false {
-						
 						Label {
 							Text("MQTT")
 								.font(idiom == .phone ? .callout : .body)
