@@ -230,7 +230,7 @@ struct Channels: View {
 					Button {
 						goBack()
 					} label: {
-						Label("close", systemImage: "xmark")
+						Label("Close", systemImage: "xmark")
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)

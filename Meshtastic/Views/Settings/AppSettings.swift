@@ -43,7 +43,7 @@ struct AppSettings: View {
 					Button {
 						isPresentingCoreDataResetConfirm = true
 					} label: {
-						Label("clear.app.data", systemImage: "trash")
+						Label("Clear App Data", systemImage: "trash")
 							.foregroundColor(.red)
 					}
 					.confirmationDialog(
