@@ -74,7 +74,7 @@ struct NodeInfoItem: View {
 				}
 				Spacer()
 				if user.hwModel != "UNSET" {
-					Text(String(node.user?.hwDisplayName ?? (node.user?.hwModel ?? "unset".localized)))
+					Text(String(node.user?.hwDisplayName ?? (node.user?.hwModel ?? "Unset".localized)))
 				} else {
 					Text(String("incomplete".localized))
 				}

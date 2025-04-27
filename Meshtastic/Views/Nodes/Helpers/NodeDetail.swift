@@ -127,7 +127,7 @@ struct NodeDetail: View {
 							}
 							Spacer()
 
-							Text(metadata.firmwareVersion ?? "unknown".localized)
+							Text(metadata.firmwareVersion ?? "Unknown".localized)
 						}
 					}
 
@@ -520,7 +520,7 @@ struct NodeDetail: View {
 				}
 			}
 			.listStyle(.insetGrouped)
-			.navigationBarTitle(String(node.user?.longName?.addingVariationSelectors ?? "unknown".localized), displayMode: .inline)
+			.navigationBarTitle(String(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized), displayMode: .inline)
 		}
 	}
 }

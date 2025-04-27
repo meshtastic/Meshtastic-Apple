@@ -226,7 +226,7 @@ struct NodeList: View {
 						if deleteNode != nil {
 							let success = bleManager.removeNode(node: deleteNode!, connectedNodeNum: Int64(bleManager.connectedPeripheral?.num ?? -1))
 							if !success {
-								Logger.data.error("Failed to delete node \(deleteNode?.user?.longName ?? "unknown".localized, privacy: .public)")
+								Logger.data.error("Failed to delete node \(deleteNode?.user?.longName ?? "Unknown".localized, privacy: .public)")
 							}
 						}
 					}

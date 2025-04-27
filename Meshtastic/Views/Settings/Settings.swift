@@ -148,7 +148,7 @@ struct Settings: View {
 
 			NavigationLink(value: SettingsNavigationState.position) {
 				Label {
-					Text("position")
+					Text("Position")
 				} icon: {
 					Image(systemName: "location")
 				}
@@ -156,7 +156,7 @@ struct Settings: View {
 
 			NavigationLink(value: SettingsNavigationState.power) {
 				Label {
-					Text("config.power.settings")
+					Text("Power")
 				} icon: {
 					Image(systemName: "bolt.fill")
 				}
@@ -388,14 +388,14 @@ struct Settings: View {
 										/// Connected Node
 										if node.num == bleManager.connectedPeripheral?.num ?? 0 {
 											Label {
-												Text("BLE: \(node.user?.longName?.addingVariationSelectors ?? "unknown".localized)")
+												Text("BLE: \(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
 											} icon: {
 												Image(systemName: "antenna.radiowaves.left.and.right")
 											}
 											.tag(Int(node.num))
 										} else if node.canRemoteAdmin && UserDefaults.enableAdministration && node.sessionPasskey != nil { /// Nodes using the new PKI system
 											Label {
-												Text("Remote PKI Admin: \(node.user?.longName ?? "unknown".localized)")
+												Text("Remote PKI Admin: \(node.user?.longName ?? "Unknown".localized)")
 											} icon: {
 												Image(systemName: "av.remote")
 											}
@@ -403,21 +403,21 @@ struct Settings: View {
 											.tag(Int(node.num))
 										} else if  !UserDefaults.enableAdministration && node.metadata != nil { /// Nodes using the old admin system
 											Label {
-												Text("Remote Legacy Admin: \(node.user?.longName ?? "unknown".localized)")
+												Text("Remote Legacy Admin: \(node.user?.longName ?? "Unknown".localized)")
 											} icon: {
 												Image(systemName: "av.remote")
 											}
 											.tag(Int(node.num))
 										} else if UserDefaults.enableAdministration && node.user?.pkiEncrypted ?? false {
 											Label {
-												Text("Request PKI Admin: \(node.user?.longName?.addingVariationSelectors ?? "unknown".localized)")
+												Text("Request PKI Admin: \(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
 											} icon: {
 												Image(systemName: "rectangle.and.hand.point.up.left")
 											}
 											.tag(Int(node.num))
 										} else if !UserDefaults.enableAdministration {
 											Label {
-												Text("Request Legacy Admin: \(node.user?.longName?.addingVariationSelectors ?? "unknown".localized)")
+												Text("Request Legacy Admin: \(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
 											} icon: {
 												Image(systemName: "rectangle.and.hand.point.up.left")
 											}
@@ -442,7 +442,7 @@ struct Settings: View {
 								TipView(AdminChannelTip(), arrowEdge: .top)
 							} else {
 								if bleManager.connectedPeripheral != nil {
-									Text("Connected Node \(node?.user?.longName?.addingVariationSelectors ?? "unknown".localized)")
+									Text("Connected Node \(node?.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
 								}
 							}
 						}

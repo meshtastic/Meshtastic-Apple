@@ -103,7 +103,7 @@ struct CannedMessagesConfig: View {
 						Picker("Pin A", selection: $inputbrokerPinA) {
 							ForEach(0..<49) {
 								if $0 == 0 {
-									Text("unset")
+									Text("Unset")
 								} else {
 									Text("Pin \($0)")
 								}
@@ -118,7 +118,7 @@ struct CannedMessagesConfig: View {
 						Picker("Pin B", selection: $inputbrokerPinB) {
 							ForEach(0..<49) {
 								if $0 == 0 {
-									Text("unset")
+									Text("Unset")
 								} else {
 									Text("Pin \($0)")
 								}
@@ -133,7 +133,7 @@ struct CannedMessagesConfig: View {
 						Picker("Press Pin", selection: $inputbrokerPinPress) {
 							ForEach(0..<49) {
 								if $0 == 0 {
-									Text("unset")
+									Text("Unset")
 								} else {
 									Text("Pin \($0)")
 								}

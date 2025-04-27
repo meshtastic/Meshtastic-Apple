@@ -49,7 +49,7 @@ struct DeleteNodeButton: View {
 						connectedNodeNum: connectedNode.num
 					)
 					if !success {
-						Logger.data.error("Failed to delete node \(deleteNode.user?.longName ?? "unknown".localized, privacy: .public)")
+						Logger.data.error("Failed to delete node \(deleteNode.user?.longName ?? "Unknown".localized, privacy: .public)")
 					} else {
 						dismiss()
 					}
