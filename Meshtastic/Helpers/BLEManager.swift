@@ -3448,7 +3448,7 @@ extension BLEManager: CBCentralManagerDelegate {
 		case .unsupported:
 			status = "BLE is unsupported"
 		default:
-			status = "default"
+			status = "Default".localized
 		}
 		Logger.services.info("📜 [BLE] Bluetooth status: \(status, privacy: .public)")
 	}

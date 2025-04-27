@@ -31,7 +31,7 @@ enum SerialBaudRates: Int, CaseIterable, Identifiable {
 		switch self {
 
 		case .baudDefault:
-			return "default".localized
+			return "Default".localized
 		case .baud110:
 			return "110 Baud"
 		case .baud300:
