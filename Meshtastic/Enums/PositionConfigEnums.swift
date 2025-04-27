@@ -112,7 +112,7 @@ enum GpsMode: Int, CaseIterable, Equatable {
 		case .disabled:
 			return "Disabled".localized
 		case .enabled:
-			return "Eenabled".localized
+			return "Enabled".localized
 		case .notPresent:
 			return "Not Present".localized
 		}
