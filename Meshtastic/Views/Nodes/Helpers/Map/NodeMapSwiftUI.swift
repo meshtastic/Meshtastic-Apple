@@ -189,7 +189,7 @@ struct NodeMapSwiftUI: View {
 						UIApplication.shared.isIdleTimerDisabled = false
 					}
 				}}
-			.navigationBarTitle(String((node.user?.shortName ?? "unknown".localized) + (" \(node.positions?.count ?? 0) points")), displayMode: .inline)
+			.navigationBarTitle(String((node.user?.shortName ?? "Unknown".localized) + (" \(node.positions?.count ?? 0) points")), displayMode: .inline)
 			.navigationBarItems(trailing:
 									ZStack {
 				ConnectedDevice(

@@ -30,8 +30,9 @@ struct MQTTConfig: View {
 	@State var mqttConnected: Bool = false
 	@State var defaultTopic = "msh/US"
 	@State var nearbyTopics = [String]()
-	@State var mapReportingOptIn = false
 	@State var mapReportingEnabled = false
+	@State var mapReportingOptIn = false
+	//@AppStorage("mapReportingOptIn") private var  mapReportingOptIn: Bool = false
 	@State var mapPublishIntervalSecs = 3600
 	@State var mapPositionPrecision: Double = 14.0
 

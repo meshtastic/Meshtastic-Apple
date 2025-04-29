@@ -625,7 +625,7 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 
 		let routingError = RoutingError(rawValue: routingMessage.errorReason.rawValue)
 
-		let routingErrorString = routingError?.display ?? "unknown".localized
+		let routingErrorString = routingError?.display ?? "Unknown".localized
 		let logString = String.localizedStringWithFormat("mesh.log.routing.message %@ %@".localized, String(packet.decoded.requestID), routingErrorString)
 		Logger.mesh.info("🕸️ \(logString, privacy: .public)")
 
@@ -972,7 +972,7 @@ func textMessageAppPacket(
 							manager.notifications = [
 								Notification(
 									id: ("notification.id.\(newMessage.messageId)"),
-									title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
+									title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
 									subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 									content: messageText!,
 									target: "messages",
@@ -984,7 +984,7 @@ func textMessageAppPacket(
 								)
 							]
 							manager.schedule()
-							Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized, privacy: .public)")
+							Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown".localized, privacy: .public)")
 						}
 					} else if newMessage.fromUser != nil && newMessage.toUser == nil {
 						let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
@@ -1003,7 +1003,7 @@ func textMessageAppPacket(
 										manager.notifications = [
 											Notification(
 												id: ("notification.id.\(newMessage.messageId)"),
-												title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
+												title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
 												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 												content: messageText!,
 												target: "messages",
@@ -1015,7 +1015,7 @@ func textMessageAppPacket(
 											)
 										]
 										manager.schedule()
-										Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized, privacy: .public)")
+										Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown".localized, privacy: .public)")
 									}
 								}
 							}

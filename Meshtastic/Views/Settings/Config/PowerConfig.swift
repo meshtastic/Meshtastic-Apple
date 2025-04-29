@@ -50,7 +50,7 @@ struct PowerConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 				}
 			} header: {
-				Text("config.power.settings")
+				Text("Power")
 			}
 			if currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3 {
 				Section {

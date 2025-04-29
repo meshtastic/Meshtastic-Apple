@@ -114,7 +114,7 @@ struct PositionConfig: View {
 					Picker("Minimum Distance", selection: $broadcastSmartMinimumDistance) {
 						ForEach(10..<151) {
 							if $0 == 0 {
-								Text("unset")
+								Text("Unset")
 							} else {
 								if $0.isMultiple(of: 5) {
 									Text("\($0)")
@@ -282,7 +282,7 @@ struct PositionConfig: View {
 			Picker("GPS Receive GPIO", selection: $rxGpio) {
 				ForEach(0..<49) {
 					if $0 == 0 {
-						Text("unset")
+						Text("Unset")
 					} else {
 						Text("Pin \($0)")
 					}
@@ -292,7 +292,7 @@ struct PositionConfig: View {
 			Picker("GPS Transmit GPIO", selection: $txGpio) {
 				ForEach(0..<49) {
 					if $0 == 0 {
-						Text("unset")
+						Text("Unset")
 					} else {
 						Text("Pin \($0)")
 					}
@@ -302,7 +302,7 @@ struct PositionConfig: View {
 			Picker("GPS EN GPIO", selection: $gpsEnGpio) {
 				ForEach(0..<49) {
 					if $0 == 0 {
-						Text("unset")
+						Text("Unset")
 					} else {
 						Text("Pin \($0)")
 					}

@@ -128,7 +128,7 @@ struct ChannelForm: View {
 					}
 				}
 
-				Section(header: Text("position")) {
+				Section(header: Text("Position")) {
 					VStack(alignment: .leading) {
 						Toggle(isOn: $positionsEnabled) {
 							Label(channelRole == 1 ? "Positions Enabled" : "Allow Position Requests", systemImage: positionsEnabled ? "mappin" : "mappin.slash")

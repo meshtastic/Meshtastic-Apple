@@ -50,7 +50,7 @@ struct StoreForwardConfig: View {
 							Text("Send a heartbeat to advertise the server's presence.")
 						}
 						Picker("Number of records", selection: $records) {
-							Text("unset").tag(0)
+							Text("Unset").tag(0)
 							Text("25").tag(25)
 							Text("50").tag(50)
 							Text("75").tag(75)
@@ -58,7 +58,7 @@ struct StoreForwardConfig: View {
 						}
 						.pickerStyle(DefaultPickerStyle())
 						Picker("History Return Max", selection: $historyReturnMax) {
-							Text("unset").tag(0)
+							Text("Unset").tag(0)
 							Text("25").tag(25)
 							Text("50").tag(50)
 							Text("75").tag(75)
@@ -66,7 +66,7 @@ struct StoreForwardConfig: View {
 						}
 						.pickerStyle(DefaultPickerStyle())
 						Picker("History Return Window", selection: $historyReturnWindow) {
-							Text("unset").tag(0)
+							Text("Unset").tag(0)
 							Text("One Minute").tag(60)
 							Text("Five Minutes").tag(300)
 							Text("Ten Minutes").tag(600)

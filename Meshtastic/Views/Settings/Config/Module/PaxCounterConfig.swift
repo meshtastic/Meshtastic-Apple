@@ -32,7 +32,7 @@ struct PaxCounterConfig: View {
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				.listRowSeparator(.visible)
 				if enabled {
-					Picker("config.module.paxcounter.updateinterval", selection: $paxcounterUpdateInterval) {
+					Picker("Update Interval", selection: $paxcounterUpdateInterval) {
 						ForEach(UpdateIntervals.allCases) { at in
 							if at.rawValue >= 300 {
 								Text(at.description)

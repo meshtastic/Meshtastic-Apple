@@ -147,7 +147,7 @@ struct DeviceConfig: View {
 					Picker("Button GPIO", selection: $buttonGPIO) {
 						ForEach(0..<49) {
 							if $0 == 0 {
-								Text("unset")
+								Text("Unset")
 							} else {
 								Text("Pin \($0)")
 							}
@@ -157,7 +157,7 @@ struct DeviceConfig: View {
 					Picker("Buzzer GPIO", selection: $buzzerGPIO) {
 						ForEach(0..<49) {
 							if $0 == 0 {
-								Text("unset")
+								Text("Unset")
 							} else {
 								Text("Pin \($0)")
 							}

@@ -166,7 +166,7 @@ enum SerialTimeoutIntervals: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .unset:
-			return "unset".localized
+			return "Unset".localized
 		case .oneSecond:
 			return "interval.one.second".localized
 		case .fiveSeconds:
