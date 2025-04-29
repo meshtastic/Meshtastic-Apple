@@ -111,7 +111,7 @@ Spacer()
 				Button {
 					dismiss()
 				} label: {
-					Label("close", systemImage: "xmark")
+					Label("Close", systemImage: "xmark")
 				}
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)

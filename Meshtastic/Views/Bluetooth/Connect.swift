@@ -67,7 +67,7 @@ struct Connect: View {
 											Text("BLE Name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name?.addingVariationSelectors ?? "unknown".localized)")
 												.font(.callout).foregroundColor(Color.gray)
 											if node != nil {
-												Text("firmware.version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "unknown".localized)")
+												Text("Firmware Version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "unknown".localized)")
 													.font(.callout).foregroundColor(Color.gray)
 											}
 											if bleManager.isSubscribed {

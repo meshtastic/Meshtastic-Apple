@@ -29,9 +29,9 @@ struct BluetoothConfig: View {
 		Form {
 			ConfigHeader(title: "Bluetooth", config: \.bluetoothConfig, node: node, onAppear: setBluetoothValues)
 
-			Section(header: Text("options")) {
+			Section(header: Text("Options")) {
 				Toggle(isOn: $enabled) {
-					Label("enabled", systemImage: "antenna.radiowaves.left.and.right")
+					Label("Enabled", systemImage: "antenna.radiowaves.left.and.right")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				Picker("Pairing Mode", selection: $mode ) {

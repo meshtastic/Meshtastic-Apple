@@ -19,11 +19,11 @@ struct UserDefault<T: Decodable> {
 
 	var wrappedValue: T {
 		get {
-			if defaultValue as? any RawRepresentable != nil {
+			if defaultValue is any RawRepresentable {
 				let storedValue = UserDefaults.standard.object(forKey: key.rawValue)
 
 				guard let storedValue,
-				let jsonString = (storedValue as? String != nil) ? "\"\(storedValue)\"" : "\(storedValue)",
+				let jsonString = (storedValue is String) ? "\"\(storedValue)\"" : "\(storedValue)",
 				let data = jsonString.data(using: .utf8),
 				let value = (try? JSONDecoder().decode(T.self, from: data)) else { return defaultValue }
 
@@ -117,24 +117,6 @@ extension UserDefaults {
 
 	@UserDefault(.enableMapPointsOfInterest, defaultValue: false)
 	static var enableMapPointsOfInterest: Bool
-
-	@UserDefault(.enableOfflineMaps, defaultValue: false)
-	static var enableOfflineMaps: Bool
-
-	@UserDefault(.mapTileServer, defaultValue: .openStreetMap)
-	static var mapTileServer: MapTileServer
-
-	@UserDefault(.enableOverlayServer, defaultValue: false)
-	static var enableOverlayServer: Bool
-
-	@UserDefault(.mapOverlayServer, defaultValue: .baseReReflectivityCurrent)
-	static var mapOverlayServer: MapOverlayServer
-
-	@UserDefault(.mapTilesAboveLabels, defaultValue: false)
-	static var mapTilesAboveLabels: Bool
-
-	@UserDefault(.mapUseLegacy, defaultValue: false)
-	static var mapUseLegacy: Bool
 
 	@UserDefault(.enableDetectionNotifications, defaultValue: false)
 	static var enableDetectionNotifications: Bool

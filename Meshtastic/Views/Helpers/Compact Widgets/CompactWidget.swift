@@ -31,7 +31,7 @@ import SwiftUI
 			WeightCompactWidget(weight: "123", unit: "kg")
 			SoilTemperatureCompactWidget(temperature: "23", unit: "°C")
 			SoilMoistureCompactWidget(moisture: "23", unit: "%")
-			
+
 			let rain: Float = 10.1
 			let locale = NSLocale.current as NSLocale
 			let usesMetricSystem = locale.usesMetricSystem // Returns true for metric (mm), false for imperial (inches)

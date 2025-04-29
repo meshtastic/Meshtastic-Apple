@@ -16,7 +16,7 @@ struct RadiationCompactWidget: View {
 			HStack(alignment: .firstTextBaseline) {
 				Text(verbatim: "☢")
 					.font(.system(size: 30, design: .monospaced))
-					.foregroundColor(.accentColor)
+					.tint(.accentColor)
 				Text("Radiation")
 					.textCase(.uppercase)
 					.font(.callout)

@@ -24,7 +24,7 @@ struct RtttlConfig: View {
 			Form {
 				ConfigHeader(title: "ringtone", config: \.rtttlConfig, node: node, onAppear: setRtttLConfigValue)
 
-				Section(header: Text("options")) {
+				Section(header: Text("Options")) {
 					HStack {
 						Label("ringtone", systemImage: "music.quarternote.3")
 						TextField("config.ringtone.label", text: $ringtone, axis: .vertical)

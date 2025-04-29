@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "seeed_xiao_nrf52_kit.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

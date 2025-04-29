@@ -30,17 +30,15 @@ struct DeviceConfig: View {
 	@State var ledHeartbeatEnabled = true
 	@State var tripleClickAsAdHocPing = true
 	@State var tzdef = ""
-	
 	@State private var showRouterWarning = false
 	@State private var confirmWarning = false
-
 
 	var body: some View {
 		VStack {
 			Form {
 				ConfigHeader(title: "Device", config: \.deviceConfig, node: node, onAppear: setDeviceValues)
 
-				Section(header: Text("options")) {
+				Section(header: Text("Options")) {
 					VStack(alignment: .leading) {
 						Picker("Device Role", selection: $deviceRole ) {
 							ForEach(DeviceRoles.allCases) { dr in

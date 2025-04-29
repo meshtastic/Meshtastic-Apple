@@ -33,10 +33,10 @@ struct SerialConfig: View {
 			Form {
 				ConfigHeader(title: "Serial", config: \.serialConfig, node: node, onAppear: setSerialValues)
 
-				Section(header: Text("options")) {
+				Section(header: Text("Options")) {
 
 					Toggle(isOn: $enabled) {
-						Label("enabled", systemImage: "terminal")
+						Label("Enabled", systemImage: "terminal")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
@@ -53,7 +53,7 @@ struct SerialConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
-					Picker("timeout", selection: $timeout ) {
+					Picker("Timeout", selection: $timeout ) {
 						ForEach(SerialTimeoutIntervals.allCases) { sti in
 							Text(sti.description)
 						}

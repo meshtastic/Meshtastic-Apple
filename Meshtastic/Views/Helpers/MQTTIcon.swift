@@ -29,7 +29,7 @@ struct MQTTIcon: View {
 			VStack(spacing: 0.5) {
 				Text("Topic: \(topic)".localized)
 					.padding(20)
-				Button("close", action: { self.isPopoverOpen = false }).padding([.bottom], 20)
+				Button("Close", action: { self.isPopoverOpen = false }).padding([.bottom], 20)
 			}
 			.presentationCompactAdaptation(.popover)
 		})

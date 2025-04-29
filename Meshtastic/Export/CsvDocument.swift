@@ -20,13 +20,10 @@ struct CsvDocument: FileDocument {
 	}
 
 	init(configuration: ReadConfiguration) throws {
-
 		if let data = configuration.file.regularFileContents {
-
-			csvData = String(decoding: data, as: UTF8.self)
+			csvData = String(data: data, encoding: .utf8) ?? ""
 
 		} else {
-
 			throw CocoaError(.fileReadCorruptFile)
 		}
 	}

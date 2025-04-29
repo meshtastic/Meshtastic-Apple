@@ -34,9 +34,9 @@ struct StoreForwardConfig: View {
 			Form {
 				ConfigHeader(title: "Store & Forward", config: \.storeForwardConfig, node: node, onAppear: setStoreAndForwardValues)
 
-				Section(header: Text("options")) {
+				Section(header: Text("Options")) {
 					Toggle(isOn: $enabled) {
-						Label("enabled", systemImage: "envelope.arrow.triangle.branch")
+						Label("Enabled", systemImage: "envelope.arrow.triangle.branch")
 						Text("Enables the store and forward module.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))

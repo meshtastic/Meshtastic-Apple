@@ -11,6 +11,12 @@ struct ContentView: View {
 	@ObservedObject
 	var router: Router
 
+	init(appState: AppState, router: Router) {
+		self.appState = appState
+		self.router = router
+		UITabBar.appearance().scrollEdgeAppearance = UITabBarAppearance(idiom: .unspecified)
+	}
+
 	var body: some View {
 		TabView(selection: $appState.router.navigationState.selectedTab) {
 			Messages(
@@ -48,7 +54,7 @@ struct ContentView: View {
 				router: appState.router
 			)
 			.tabItem {
-				Label("settings", systemImage: "gear")
+				Label("Settings", systemImage: "gear")
 					.font(.title)
 			}
 			.tag(NavigationState.Tab.settings)

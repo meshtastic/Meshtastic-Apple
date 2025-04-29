@@ -31,7 +31,7 @@ enum SerialBaudRates: Int, CaseIterable, Identifiable {
 		switch self {
 
 		case .baudDefault:
-			return "default".localized
+			return "Default".localized
 		case .baud110:
 			return "110 Baud"
 		case .baud300:
@@ -118,7 +118,7 @@ enum SerialModeTypes: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .default:
-			return "serial.mode.default".localized
+			return "Default".localized
 		case .simple:
 			return "serial.mode.simple".localized
 		case .proto:

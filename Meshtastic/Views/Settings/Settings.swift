@@ -78,7 +78,7 @@ struct Settings: View {
 
 			NavigationLink(value: SettingsNavigationState.channels) {
 				Label {
-					Text("channels")
+					Text("Channels")
 				} icon: {
 					Image(systemName: "fibrechannel")
 				}
@@ -209,7 +209,7 @@ struct Settings: View {
 			if isModuleSupported(.mqttConfig) {
 				NavigationLink(value: SettingsNavigationState.mqtt) {
 					Label {
-						Text("mqtt")
+						Text("MQTT")
 					} icon: {
 						Image(systemName: "dot.radiowaves.up.forward")
 					}
@@ -542,7 +542,7 @@ struct Settings: View {
 					}
 				}
 			}
-			.navigationTitle("settings")
+			.navigationTitle("Settings")
 			.navigationBarItems(
 				leading: MeshtasticLogo().onLongPressGesture(minimumDuration: 1.0) {
 					self.moduleOverride.toggle()

@@ -13,7 +13,7 @@ struct MessagesTip: Tip {
 	   return "tip.messages"
    }
    var title: Text {
-	   Text("tip.messages.title")
+	   Text("Messages")
    }
    var message: Text? {
 	   Text("tip.messages.message")

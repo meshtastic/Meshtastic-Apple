@@ -165,7 +165,7 @@ struct DeviceMetricsLog: View {
 							// dm.voltage.map { Text("\(String(format: "%.2f", $0))") } ?? Text("--")
 							Text("\(dm.voltage?.formatted(.number.precision(.fractionLength(2))) ?? Constants.nilValueIndicator)")
 						}
-						TableColumn("channel.utilization") { dm in
+						TableColumn("Channel Utilization") { dm in
 							dm.channelUtilization.map { channelUtilization in
 								// Text("\(String(format: "%.2f", channelUtilization))%")
 								Text("\(channelUtilization.formatted(.number.precision(.fractionLength(2))))%")

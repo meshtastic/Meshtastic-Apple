@@ -26,7 +26,7 @@ struct PaxCounterConfig: View {
 
 			Section {
 				Toggle(isOn: $enabled) {
-					Label("enabled", systemImage: "figure.walk.motion")
+					Label("Enabled", systemImage: "figure.walk.motion")
 					Text("config.module.paxcounter.enabled.description")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -46,7 +46,7 @@ struct PaxCounterConfig: View {
 						.font(.callout)
 				}
 			} header: {
-				Text("options")
+				Text("Options")
 			}
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.powerConfig == nil)
