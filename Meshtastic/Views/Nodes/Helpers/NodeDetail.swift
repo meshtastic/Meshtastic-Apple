@@ -147,7 +147,7 @@ struct NodeDetail: View {
 					if let dm = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity, let uptimeSeconds = dm.uptimeSeconds {
 						HStack {
 							Label {
-								Text("\("uptime".localized)")
+								Text("\("Uptime".localized)")
 							} icon: {
 								Image(systemName: "checkmark.circle.fill")
 									.foregroundColor(.green)
