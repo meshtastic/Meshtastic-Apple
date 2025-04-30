@@ -727,7 +727,7 @@
         }
       }
     },
-    "%@ This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio." : {
+    "%@ This error usually cannot be fixed without forgetting the device under Settings > Bluetooth and re-connecting to the radio." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
