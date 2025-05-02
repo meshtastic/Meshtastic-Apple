@@ -28,6 +28,8 @@ struct ChannelMessageList: View {
 		@State private var hasReachedBottom = false
 		@State private var gotFirstUnreadMessage: Bool = false
 
+		@State private var messageToHighlight: Int64 = 0
+
 	var body: some View {
 		VStack {
 			ScrollViewReader { scrollView in
@@ -39,16 +41,33 @@ struct ChannelMessageList: View {
 								if message.replyID > 0 {
 									let messageReply = channel.allPrivateMessages.first(where: { $0.messageId == message.replyID })
 									HStack {
-										Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
-											.padding(10)
-											.overlay(
-												RoundedRectangle(cornerRadius: 18)
-													.stroke(Color.blue, lineWidth: 0.5)
-											)
-										Image(systemName: "arrowshape.turn.up.left.fill")
-											.symbolRenderingMode(.hierarchical)
-											.imageScale(.large).foregroundColor(.accentColor)
-											.padding(.trailing)
+										Button {
+											if let messageNum = messageReply?.messageId {
+												withAnimation(.easeInOut(duration: 0.5)) {
+													messageToHighlight = messageNum
+												}
+												scrollView.scrollTo(messageNum, anchor: .center)
+												
+												// Reset highlight after delay
+												Task {
+													try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+													withAnimation(.easeInOut(duration: 0.5)) {
+														messageToHighlight = -1
+													}
+												}
+											}
+										} label: {
+											Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
+												.padding(10)
+												.overlay(
+													RoundedRectangle(cornerRadius: 18)
+														.stroke(Color.blue, lineWidth: 0.5)
+												)
+											Image(systemName: "arrowshape.turn.up.left.fill")
+												.symbolRenderingMode(.hierarchical)
+												.imageScale(.large).foregroundColor(.accentColor)
+												.padding(.trailing)
+										}
 									}
 								}
 								HStack(alignment: .bottom) {
@@ -113,6 +132,12 @@ struct ChannelMessageList: View {
 									if !currentUser {
 										Spacer(minLength: 50)
 									}
+								}
+
+								.overlay {
+									RoundedRectangle(cornerRadius: 10)
+										.stroke(.blue, lineWidth: 2)
+										.opacity(((messageToHighlight  == message.messageId) || (replyMessageId == message.messageId)) ? 1 : 0)
 								}
 								.padding([.leading, .trailing])
 								.frame(maxWidth: .infinity)

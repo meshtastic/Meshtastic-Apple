@@ -28,59 +28,75 @@ struct TextMessageField: View {
 		#endif
 
 		HStack(alignment: .top) {
-			ZStack {
-				TextField("message", text: $typingMessage, axis: .vertical)
-					.onChange(of: typingMessage) { _, value in
-						totalBytes = value.utf8.count
-						// Only mess with the value if it is too big
-						while totalBytes > Self.maxbytes {
-							typingMessage = String(typingMessage.dropLast())
-							totalBytes = typingMessage.utf8.count
-						}
-					}
-					.keyboardType(.default)
-					.toolbar {
-						ToolbarItemGroup(placement: .keyboard) {
-							Button("Dismiss") {
-								isFocused = false
+				if replyMessageId != 0 {
+					
+					HStack {
+						Button {
+							withAnimation(.easeInOut(duration: 0.2)) {
+								replyMessageId = 0
 							}
-							.font(.subheadline)
+							isFocused = false
+						} label : {
+							Image(systemName: "x.circle.fill")
+						}
+						Text("Replying to a message")
 
-							if destination.showAlertButton {
+					}
+			}
+				ZStack {
+					TextField("message", text: $typingMessage, axis: .vertical)
+						.onChange(of: typingMessage) { _, value in
+							totalBytes = value.utf8.count
+							// Only mess with the value if it is too big
+							while totalBytes > Self.maxbytes {
+								typingMessage = String(typingMessage.dropLast())
+								totalBytes = typingMessage.utf8.count
+							}
+						}
+						.keyboardType(.default)
+						.toolbar {
+							ToolbarItemGroup(placement: .keyboard) {
+								Button("Dismiss") {
+									isFocused = false
+								}
+								.font(.subheadline)
+								
+								if destination.showAlertButton {
+									Spacer()
+									AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
+								}
+								
 								Spacer()
-								AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
+								RequestPositionButton(action: requestPosition)
+								TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes)
 							}
-
-							Spacer()
-							RequestPositionButton(action: requestPosition)
-							TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes)
 						}
-					}
-					.padding(.horizontal, 8)
-					.focused($isFocused)
-					.multilineTextAlignment(.leading)
-					.frame(minHeight: 50)
-					.keyboardShortcut(.defaultAction)
-					.onSubmit {
-					#if targetEnvironment(macCatalyst)
-						sendMessage()
-					#endif
-					}
-
-				Text(typingMessage)
-					.opacity(0)
-					.padding(.all, 0)
+						.padding(.horizontal, 8)
+						.focused($isFocused)
+						.multilineTextAlignment(.leading)
+						.frame(minHeight: 50)
+						.keyboardShortcut(.defaultAction)
+						.onSubmit {
+#if targetEnvironment(macCatalyst)
+							sendMessage()
+#endif
+						}
+					
+					Text(typingMessage)
+						.opacity(0)
+						.padding(.all, 0)
+				}
+				.overlay(RoundedRectangle(cornerRadius: 20).stroke(.tertiary, lineWidth: 1))
+				.padding(.bottom, 15)
+				
+				Button(action: sendMessage) {
+					Image(systemName: "arrow.up.circle.fill")
+						.font(.largeTitle)
+						.foregroundColor(.accentColor)
+				}
 			}
-			.overlay(RoundedRectangle(cornerRadius: 20).stroke(.tertiary, lineWidth: 1))
-			.padding(.bottom, 15)
-
-			Button(action: sendMessage) {
-				Image(systemName: "arrow.up.circle.fill")
-					.font(.largeTitle)
-					.foregroundColor(.accentColor)
-			}
-		}
-		.padding(.all, 15)
+			.padding(.all, 15)
+		
 	}
 
 	private func requestPosition() {
