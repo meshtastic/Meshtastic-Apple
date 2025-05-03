@@ -144,7 +144,8 @@ enum RebroadcastModes: Int, CaseIterable, Identifiable {
 	case allSkipDecoding = 1
 	case localOnly = 2
 	case knownOnly = 3
-	case corePortnums = 4
+	case none = 4
+	case corePortnums = 5
 
 	var id: Int { self.rawValue }
 
@@ -158,6 +159,8 @@ enum RebroadcastModes: Int, CaseIterable, Identifiable {
 			return "Local Only"
 		case .knownOnly:
 			return "Known Only"
+		case .none:
+			return "None"
 		case .corePortnums:
 			return "Core Portnums Only"
 		}
@@ -172,6 +175,8 @@ enum RebroadcastModes: Int, CaseIterable, Identifiable {
 			return "Ignores observed messages from foreign meshes that are open or those which it cannot decrypt. Only rebroadcasts message on the nodes local primary / secondary channels."
 		case .knownOnly:
 			return "Ignores observed messages from foreign meshes like Local Only, but takes it step further by also ignoring messages from nodes not already in the node's known list."
+		case .none:
+			return "Only permitted for SENSOR, TRACKER and TAK_TRACKER roles, this will inhibit all rebroadcasts, not unlike CLIENT_MUTE role."
 		case .corePortnums:
 			return "Only rebroadcasts packets from the core portnums: NodeInfo, Text, Position, Telemetry, and Routing."
 		}
@@ -187,6 +192,8 @@ enum RebroadcastModes: Int, CaseIterable, Identifiable {
 			return Config.DeviceConfig.RebroadcastMode.localOnly
 		case .knownOnly:
 			return Config.DeviceConfig.RebroadcastMode.knownOnly
+		case .none:
+			return Config.DeviceConfig.RebroadcastMode.none
 		case .corePortnums:
 			return Config.DeviceConfig.RebroadcastMode.corePortnumsOnly
 		}
