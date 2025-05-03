@@ -93,7 +93,7 @@ struct UserList: View {
 										Image(systemName: "lock.open.fill")
 											.foregroundColor(.yellow)
 									}
-									Text(user.longName ?? "unknown".localized)
+									Text(user.longName ?? "Unknown".localized)
 										.font(.headline)
 										.allowsTightening(true)
 									Spacer()

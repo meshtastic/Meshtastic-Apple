@@ -24,7 +24,7 @@ struct DateTimeText: View {
 		if dateTime != nil && dateTime! >= sixMonthsAgo! {
 			Text(" \(dateTime!.formattedDate(format: dateFormatString))")
 		} else {
-			Text("unknown.age")
+			Text("Unknown Age")
 		}
 	}
 }

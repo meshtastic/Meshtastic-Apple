@@ -153,7 +153,7 @@ struct DisplayConfig: View {
 			}
 		}
 
-		.navigationTitle("display.config")
+		.navigationTitle("Display Config")
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(

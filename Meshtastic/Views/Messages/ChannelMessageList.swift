@@ -60,7 +60,7 @@ struct ChannelMessageList: View {
 										let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
 
 										if !currentUser && message.fromUser != nil {
-											Text("\(message.fromUser?.longName ?? "unknown".localized ) (\(message.fromUser?.userId ?? "?"))")
+											Text("\(message.fromUser?.longName ?? "Unknown".localized ) (\(message.fromUser?.userId ?? "?"))")
 												.font(.caption)
 												.foregroundColor(.gray)
 												.offset(y: 8)
@@ -212,7 +212,7 @@ struct ChannelMessageList: View {
 			ToolbarItem(placement: .principal) {
 				HStack {
 					CircleText(text: String(channel.index), color: .accentColor, circleSize: 44).fixedSize()
-					Text(String(channel.name ?? "unknown".localized).camelCaseToWords()).font(.headline)
+					Text(String(channel.name ?? "Unknown".localized).camelCaseToWords()).font(.headline)
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {

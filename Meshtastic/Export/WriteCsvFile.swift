@@ -14,7 +14,7 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 	if metricsType == 0 {
 		// Create Device Metrics Header
-		csvString = "\("battery.level".localized), \("Voltage".localized), \("Channel Utilization".localized), \("airtime".localized), \("uptime".localized), \("Timestamp".localized)"
+		csvString = "\("battery.level".localized), \("Voltage".localized), \("Channel Utilization".localized), \("airtime".localized), \("Uptime".localized), \("Timestamp".localized)"
 		for dm in telemetry where dm.metricsType == 0 {
 			csvString += "\n"
 			csvString += dm.batteryLevel?.formatted(.number.grouping(.never)) ?? ""
@@ -27,7 +27,7 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 			csvString += ", "
 			csvString += dm.uptimeSeconds?.formatted(.number.grouping(.never)) ?? ""
 			csvString += ", "
-			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
+			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized
 		}
 	} else if metricsType == 1 {
 		// Create Environment Telemetry Header
@@ -44,7 +44,7 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 			csvString += ", "
 			csvString += dm.gasResistance?.formatted(.number.grouping(.never)) ?? ""
 			csvString += ", "
-			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
+			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized
 		}
 	} else if metricsType == 2 {
 		// Create Power Metrics Header
@@ -63,7 +63,7 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 			csvString += ", "
 			csvString += dm.powerCh3Current?.formatted(.number.grouping(.never)) ?? ""
 			csvString += ", "
-			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
+			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized
 		}
 	}
 	return csvString
@@ -121,7 +121,7 @@ func paxToCsvFile(pax: [PaxCounterEntity]) -> String {
 		csvString += ", "
 		csvString += String(p.uptime)
 		csvString += ", "
-		csvString += p.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
+		csvString += p.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized
 	}
 	return csvString
 }
@@ -150,7 +150,7 @@ func positionToCsvFile(positions: [PositionEntity]) -> String {
 		csvString += ", "
 		csvString += String(pos.snr)
 		csvString += ", "
-		csvString += pos.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
+		csvString += pos.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized
 	}
 	return csvString
 }

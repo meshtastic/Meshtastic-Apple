@@ -29,7 +29,7 @@ struct TextMessageField: View {
 
 		HStack(alignment: .top) {
 			ZStack {
-				TextField("message", text: $typingMessage, axis: .vertical)
+				TextField("Message", text: $typingMessage, axis: .vertical)
 					.onChange(of: typingMessage) { _, value in
 						totalBytes = value.utf8.count
 						// Only mess with the value if it is too big

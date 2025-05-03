@@ -727,7 +727,7 @@
         }
       }
     },
-    "%@ This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio." : {
+    "%@ This error usually cannot be fixed without forgetting the device under Settings > Bluetooth and re-connecting to the radio." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2226,6 +2226,52 @@
         }
       }
     },
+    "After" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dopo"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efter"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Након"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "之後"
+          }
+        }
+      }
+    },
     "Airtime" : {
       "localizations" : {
         "de" : {
@@ -3484,7 +3530,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "רמת סוללה"
           }
         },
@@ -5674,122 +5720,6 @@
         }
       }
     },
-    "config.module.paxcounter.enabled.description" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quando è abilitato, il modulo PAX Counter conta il numero di persone che passano utilizzando il WiFi e il Bluetooth. Per il funzionamento del contatore PAX, sia il WiFI che il Bluetooth devono essere disattivati."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "När aktiverad räknar PAX-räknarmodulen antalet personer som passerar med WiFi och Bluetooth. Både WiFi och Bluetooth måste vara aktiverade för att PAX-räknaren ska fungera."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Када је омогућен, модул бројача пролазника броји број људи који пролазе користећи ВајФај и Блутут. И ВајФај и Блутут морају бити онемогућени да би бројач пролазника радио."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "启用 PAX 计数器模块时，通过使用 WiFi 和蓝牙来计算经过的人数。为了使 PAX 计数器正常工作，必须将 WiFi 和蓝牙都禁用。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "啟用後，人流計數器模組將透過 WiFi 和藍牙計算經過的人數。必須停用 WiFi 和藍牙才能讓 PAX 計數器正常工作。"
-          }
-        }
-      }
-    },
-    "config.module.paxcounter.settings" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX Counter"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX Counter"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX Counter"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Contatore PAX"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX Counter"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX Räknare"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Бројач пролазника"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX 计数器"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX 計數器"
-          }
-        }
-      }
-    },
     "config.module.paxcounter.title" : {
       "localizations" : {
         "de" : {
@@ -5844,64 +5774,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "PAX 計數器設定"
-          }
-        }
-      }
-    },
-    "config.module.paxcounter.updateinterval" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Update Interval"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Update Interval"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Update Interval"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Intervallo di aggiornamento"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Update Interval"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Uppdateringsintervall"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Интервал ажурирања"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "更新间隔"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "更新時間間隔"
           }
         }
       }
@@ -6232,116 +6104,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "電池"
-          }
-        }
-      }
-    },
-    "config.power.settings" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Strom"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Power"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Power"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Potenza"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Power"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ström"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Снага"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "电源"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "休眠"
-          }
-        }
-      }
-    },
-    "config.power.shutdown.after.secs" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nach"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "After"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "After"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dopo"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "After"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Efter"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Након"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "之後"
           }
         }
       }
@@ -7882,7 +7644,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Standard"
           }
         },
@@ -7912,7 +7674,7 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Standard"
           }
         },
@@ -10704,6 +10466,58 @@
         }
       }
     },
+    "Display Config" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuration de l'écran"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "הגדרות צג"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurazione del display"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguracja Wyświetlacza"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skärmkonfiguration"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подешавања приказа"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "屏幕配置"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "螢幕設定"
+          }
+        }
+      }
+    },
     "Display Fahrenheit" : {
       "localizations" : {
         "it" : {
@@ -10784,64 +10598,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "顯示單位"
-          }
-        }
-      }
-    },
-    "display.config" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Display Config"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuration de l'écran"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות צג"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configurazione del display"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konfiguracja Wyświetlacza"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Skärmkonfiguration"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Подешавања приказа"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "屏幕配置"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "螢幕設定"
           }
         }
       }
@@ -11070,17 +10826,11 @@
         }
       }
     },
-    "echo" : {
+    "Echo" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Echo"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Echo"
           }
         },
@@ -11104,7 +10854,7 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Echo"
           }
         },
@@ -11128,7 +10878,7 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Echo"
           }
         }
@@ -11882,12 +11632,6 @@
     },
     "European Union 433MHz" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "European Union 433MHz"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11910,12 +11654,6 @@
     },
     "European Union 868MHz" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "European Union 868MHz"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14660,7 +14398,7 @@
         }
       }
     },
-    "How often sensor metrics are sent out over the mesh. Default is 30 minutes." : {
+    "How often environment metrics are sent out over the mesh. Default is 30 minutes." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -18542,70 +18280,6 @@
         }
       }
     },
-    "log.message" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nachricht"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Message"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Message"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Message"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Messaggio"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Message"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Message"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Порука"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Message"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Message"
-          }
-        }
-      }
-    },
     "log.process" : {
       "localizations" : {
         "de" : {
@@ -18918,6 +18592,28 @@
         }
       }
     },
+    "Long Range - Fast" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A lungo raggio - Veloce"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дугачки домет - Брзо"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Long Range - Fast"
+          }
+        }
+      }
+    },
     "Long Name" : {
       "localizations" : {
         "de" : {
@@ -19014,30 +18710,24 @@
         }
       }
     },
-    "long.range.fast" : {
+    "Long Range - Slow" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Long Range - Fast"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A lungo raggio - Veloce"
+            "value" : "Lungo raggio - Lento"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Дугачки домет - Брзо"
+            "value" : "Дугачки домет - Споро"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Long Range - Fast"
+            "value" : "Long Range - Slow"
           }
         }
       }
@@ -19066,34 +18756,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Long Range - Moderate"
-          }
-        }
-      }
-    },
-    "long.range.slow" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Long Range - Slow"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lungo raggio - Lento"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Дугачки домет - Споро"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Long Range - Slow"
           }
         }
       }
@@ -22474,70 +22136,6 @@
         }
       }
     },
-    "message" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nachricht"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Message"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Message"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הודעה"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Messaggio"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wiadomość"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Meddelande"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Порука"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "消息"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "訊息"
-          }
-        }
-      }
-    },
     "Message" : {
       "localizations" : {
         "de" : {
@@ -22922,7 +22520,7 @@
         }
       }
     },
-    "mode" : {
+    "Mode" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -22930,15 +22528,9 @@
             "value" : "Modus"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mode"
-          }
-        },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Mode"
           }
         },
@@ -25340,28 +24932,12 @@
         }
       }
     },
-    "password" : {
-      "localizations" : {
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "密碼"
-          }
-        }
-      }
-    },
     "Password" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Passwort"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Password"
           }
         },
         "fr" : {
@@ -25372,7 +24948,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "סיסמא"
           }
         },
@@ -25474,6 +25050,58 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "暫停"
+          }
+        }
+      }
+    },
+    "PAX Counter" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "PAX Counter"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAX Counter"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contatore PAX"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "PAX Counter"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAX Räknare"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Бројач пролазника"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAX 计数器"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAX 計數器"
           }
         }
       }
@@ -26046,7 +25674,7 @@
         }
       }
     },
-    "position" : {
+    "Position" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -26432,10 +26060,34 @@
     },
     "Power" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strom"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Power"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Potenza"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Power"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ström"
           }
         },
         "sr" : {
@@ -26444,10 +26096,16 @@
             "value" : "Снага"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "电源"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "電源"
+            "value" : "休眠"
           }
         }
       }
@@ -26983,7 +26641,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "DIPARTIMENTO DELLA DIFESA"
+            "value" : "Alimentato"
           }
         },
         "sr" : {
@@ -27118,7 +26776,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "RAK Rotary Encoder Module"
           }
         },
@@ -27136,13 +26794,13 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "RAK Rotary Encoder-modul"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "RAK Rotary енкодер модул"
           }
         },
@@ -28411,17 +28069,14 @@
       }
     },
     "ringtone" : {
+
+    },
+    "Ringtone" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Klingelton"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ringtone"
           }
         },
         "fr" : {
@@ -31420,7 +31075,7 @@
         }
       }
     },
-    "Sensor Metrics" : {
+    "Environment Metrics" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -31576,17 +31231,11 @@
         }
       }
     },
-    "serial" : {
+    "Serial" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Serial"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Serial"
           }
         },
@@ -32246,12 +31895,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Einstellungen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings"
           }
         },
         "fr" : {
@@ -33206,7 +32849,7 @@
         }
       }
     },
-    "standard" : {
+    "Standard" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -35670,7 +35313,7 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Timeout"
           }
         },
@@ -35728,7 +35371,7 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Timestamp"
           }
         },
@@ -36792,28 +36435,6 @@
         }
       }
     },
-    "unknown" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "sconosciuto"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "непознато"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未知"
-          }
-        }
-      }
-    },
     "Unknown" : {
       "localizations" : {
         "de" : {
@@ -36872,18 +36493,12 @@
         }
       }
     },
-    "unknown.age" : {
+    "Unknown Age" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Unbekanntes alter"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unknown Age"
           }
         },
         "fr" : {
@@ -36936,15 +36551,9 @@
         }
       }
     },
-    "unset" : {
+    "Unset" : {
       "localizations" : {
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unset"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Unset"
@@ -37278,63 +36887,35 @@
         }
       }
     },
-    "uptime" : {
+    "Uptime" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Uptime"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Uptime"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Tempo di attività"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Drifttid"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Време рада"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "已開機時間"
-          }
-        }
-      }
-    },
-    "Uptime" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tempo di attività"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Време рада"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "已開機時間"
           }
         }
@@ -37468,18 +37049,12 @@
         }
       }
     },
-    "user" : {
+    "User" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Benutzer"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "User"
           }
         },
         "fr" : {
@@ -37976,7 +37551,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Voltage"
           }
         },
@@ -38052,12 +37627,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Warte..."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Waiting. . ."
           }
         },
         "fr" : {
@@ -38374,6 +37943,58 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "持照操作員模式的功能如下：\n* 將節點名稱自動設定為您的業餘無線電呼號\n* 每 10 分鐘定期廣播節點資訊（如位置、狀態等）\n* 自動覆蓋頻率、頻率使用時間限制及發射功率設定，符合當地業餘無線電規範\n* 關閉通訊加密功能，以符合透明通訊的法規要求"
+          }
+        }
+      }
+    },
+    "When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quando è abilitato, il modulo PAX Counter conta il numero di persone che passano utilizzando il WiFi e il Bluetooth. Per il funzionamento del contatore PAX, sia il WiFI che il Bluetooth devono essere disattivati."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work."
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "När aktiverad räknar PAX-räknarmodulen antalet personer som passerar med WiFi och Bluetooth. Både WiFi och Bluetooth måste vara aktiverade för att PAX-räknaren ska fungera."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Када је омогућен, модул бројача пролазника броји број људи који пролазе користећи ВајФај и Блутут. И ВајФај и Блутут морају бити онемогућени да би бројач пролазника радио."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用 PAX 计数器模块时，通过使用 WiFi 和蓝牙来计算经过的人数。为了使 PAX 计数器正常工作，必须将 WiFi 和蓝牙都禁用。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用後，人流計數器模組將透過 WiFi 和藍牙計算經過的人數。必須停用 WiFi 和藍牙才能讓 PAX 計數器正常工作。"
           }
         }
       }

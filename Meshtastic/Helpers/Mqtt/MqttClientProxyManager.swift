@@ -46,7 +46,12 @@ class MqttClientProxyManager {
 			let root = node.mqttConfig?.root?.count ?? 0 > 0 ? node.mqttConfig?.root : "msh"
 			let prefix = root!
 			topic = prefix + "/2/e" + "/#"
-			connect(host: host, port: port, useSsl: useSsl, username: username, password: password, topic: topic)
+			// Require opt in to map report terms to connect
+			if node.mqttConfig?.mapReportingEnabled ?? false && UserDefaults.mapReportingOptIn || !(node.mqttConfig?.mapReportingEnabled ?? false) {
+				connect(host: host, port: port, useSsl: useSsl, username: username, password: password, topic: topic)
+			} else {
+				delegate?.onMqttError(message: "MQTT Map Reporting Terms need to be accepted.")
+			}
 		}
 	}
 	func connect(host: String, port: Int, useSsl: Bool, username: String?, password: String?, topic: String?) {

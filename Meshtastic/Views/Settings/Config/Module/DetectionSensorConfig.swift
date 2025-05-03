@@ -108,7 +108,7 @@ struct DetectionSensorConfig: View {
 						Picker("GPIO Pin to monitor", selection: $monitorPin) {
 							ForEach(0..<49) {
 								if $0 == 0 {
-									Text("unset")
+									Text("Unset")
 								} else {
 									Text("Pin \($0)")
 								}

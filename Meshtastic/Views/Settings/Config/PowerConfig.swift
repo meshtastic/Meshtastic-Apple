@@ -42,7 +42,7 @@ struct PowerConfig: View {
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				if shutdownOnPowerLoss {
-					Picker("config.power.shutdown.after.secs", selection: $shutdownAfterSecs) {
+					Picker("After", selection: $shutdownAfterSecs) {
 						ForEach(PowerIntervals.allCases) { at in
 							Text(at.description)
 						}
@@ -50,7 +50,7 @@ struct PowerConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 				}
 			} header: {
-				Text("config.power.settings")
+				Text("Power")
 			}
 			if currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3 {
 				Section {

@@ -19,7 +19,7 @@ enum MeshMapTypes: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .standard:
-			return "standard".localized
+			return "Standard".localized
 		case .mutedStandard:
 			return "standard.muted".localized
 		case .hybrid:

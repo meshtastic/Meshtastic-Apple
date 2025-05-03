@@ -30,8 +30,8 @@ struct MQTTConfig: View {
 	@State var mqttConnected: Bool = false
 	@State var defaultTopic = "msh/US"
 	@State var nearbyTopics = [String]()
-	@State var mapReportingOptIn = false
 	@State var mapReportingEnabled = false
+	@AppStorage("mapReportingOptIn") private var mapReportingOptIn: Bool = false
 	@State var mapPublishIntervalSecs = 3600
 	@State var mapPositionPrecision: Double = 14.0
 
@@ -266,7 +266,7 @@ struct MQTTConfig: View {
 					mqtt.encryptionEnabled = self.encryptionEnabled
 					mqtt.jsonEnabled = self.jsonEnabled
 					mqtt.tlsEnabled = self.tlsEnabled
-					mqtt.mapReportingEnabled = (self.mapReportingEnabled && self.mapReportingOptIn)
+					mqtt.mapReportingEnabled = self.mapReportingEnabled
 					mqtt.mapReportSettings.positionPrecision = UInt32(self.mapPositionPrecision)
 					mqtt.mapReportSettings.publishIntervalSecs = UInt32(self.mapPublishIntervalSecs)
 					let adminMessageId =  bleManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

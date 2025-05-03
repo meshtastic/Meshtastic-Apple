@@ -200,7 +200,7 @@ struct Routes: View {
 							.foregroundColor(Color.gray)
 						}
 						.onAppear {
-							name = selectedRoute?.name ?? "unknown".localized
+							name = selectedRoute?.name ?? "Unknown".localized
 							notes = selectedRoute?.notes ?? ""
 							enabled = selectedRoute?.enabled ?? false
 							color = Color(UIColor(hex: UInt32(selectedRoute?.color ?? 0)))

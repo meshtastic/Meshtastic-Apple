@@ -35,7 +35,7 @@ struct AppLog: View {
 
 			if idiom == .phone {
 				Table(logs, selection: $selection, sortOrder: $sortOrder) {
-					TableColumn("log.message", value: \.composedMessage) { value in
+					TableColumn("Message", value: \.composedMessage) { value in
 						Text(value.composedMessage)
 							.foregroundStyle(value.level.color)
 							.font(.caption)
@@ -86,7 +86,7 @@ struct AppLog: View {
 					.width(min: 85, max: 110)
 					TableColumn("log.category", value: \.category)
 						.width(min: 80, max: 130)
-					TableColumn("log.message", value: \.composedMessage) { value in
+					TableColumn("Message", value: \.composedMessage) { value in
 						Text(value.composedMessage)
 							.foregroundStyle(value.level.color)
 							.font(.body)

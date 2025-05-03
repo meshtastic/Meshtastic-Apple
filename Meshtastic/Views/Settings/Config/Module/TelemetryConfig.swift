@@ -46,7 +46,7 @@ struct TelemetryConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 						.listRowSeparator(.visible)
-					Picker("Sensor Metrics", selection: $environmentUpdateInterval ) {
+					Picker("Environment Metrics", selection: $environmentUpdateInterval ) {
 						ForEach(UpdateIntervals.allCases) { ui in
 							if ui.rawValue >= 900 {
 								Text(ui.description)
@@ -55,7 +55,7 @@ struct TelemetryConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(.hidden)
-					Text("How often sensor metrics are sent out over the mesh. Default is 30 minutes.")
+					Text("How often environment metrics are sent out over the mesh. Default is 30 minutes.")
 						.foregroundColor(.gray)
 						.font(.callout)
 				}

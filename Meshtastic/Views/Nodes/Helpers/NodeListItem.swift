@@ -64,7 +64,7 @@ struct NodeListItem: View {
 							let (image, color) = userKeyStatus
 							IconAndText(systemName: image,
 										imageColor: color,
-										text: node.user?.longName?.addingVariationSelectors ?? "unknown".localized,
+										text: node.user?.longName?.addingVariationSelectors ?? "Unknown".localized,
 										textColor: .primary)
 							if node.favorite {
 								Spacer()
@@ -80,11 +80,11 @@ struct NodeListItem: View {
 						if node.lastHeard?.timeIntervalSince1970 ?? 0 > 0 && node.lastHeard! < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
 							IconAndText(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill",
 										imageColor: node.isOnline ? .green : .orange,
-										text: node.lastHeard?.formatted() ?? "unknown.age".localized)
+										text: node.lastHeard?.formatted() ?? "Unknown Age".localized)
 						}
 						let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
 						IconAndText(systemName: role?.systemName ?? "figure",
-									text: "Role: \(role?.name ?? "unknown".localized)")
+									text: "Role: \(role?.name ?? "Unknown".localized)")
 						if node.isStoreForwardRouter {
 							IconAndText(systemName: "envelope.arrow.triangle.branch",
 										renderingMode: .multicolor,

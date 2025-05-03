@@ -127,7 +127,7 @@ struct NodeDetail: View {
 							}
 							Spacer()
 
-							Text(metadata.firmwareVersion ?? "unknown".localized)
+							Text(metadata.firmwareVersion ?? "Unknown".localized)
 						}
 					}
 
@@ -147,7 +147,7 @@ struct NodeDetail: View {
 					if let dm = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity, let uptimeSeconds = dm.uptimeSeconds {
 						HStack {
 							Label {
-								Text("\("uptime".localized)")
+								Text("\("Uptime".localized)")
 							} icon: {
 								Image(systemName: "checkmark.circle.fill")
 									.foregroundColor(.green)
@@ -195,7 +195,7 @@ struct NodeDetail: View {
 							Spacer()
 
 							if dateFormatRelative, let text = Self.relativeFormatter.string(for: lastHeard) {
-								if lastHeard.formatted() != "unknown.age".localized {
+								if lastHeard.formatted() != "Unknown Age".localized {
 									Text(text)
 										.textSelection(.enabled)
 								}
@@ -520,7 +520,7 @@ struct NodeDetail: View {
 				}
 			}
 			.listStyle(.insetGrouped)
-			.navigationBarTitle(String(node.user?.longName?.addingVariationSelectors ?? "unknown".localized), displayMode: .inline)
+			.navigationBarTitle(String(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized), displayMode: .inline)
 		}
 	}
 }
