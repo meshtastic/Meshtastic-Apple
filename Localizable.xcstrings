@@ -14398,7 +14398,7 @@
         }
       }
     },
-    "How often sensor metrics are sent out over the mesh. Default is 30 minutes." : {
+    "How often environment metrics are sent out over the mesh. Default is 30 minutes." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -31075,7 +31075,7 @@
         }
       }
     },
-    "Sensor Metrics" : {
+    "Environment Metrics" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
