@@ -195,7 +195,7 @@ struct NodeDetail: View {
 							Spacer()
 
 							if dateFormatRelative, let text = Self.relativeFormatter.string(for: lastHeard) {
-								if lastHeard.formatted() != "unknown.age".localized {
+								if lastHeard.formatted() != "Unknown Age".localized {
 									Text(text)
 										.textSelection(.enabled)
 								}

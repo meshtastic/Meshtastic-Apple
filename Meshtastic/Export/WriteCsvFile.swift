@@ -27,7 +27,7 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 			csvString += ", "
 			csvString += dm.uptimeSeconds?.formatted(.number.grouping(.never)) ?? ""
 			csvString += ", "
-			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
+			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized
 		}
 	} else if metricsType == 1 {
 		// Create Environment Telemetry Header
@@ -44,7 +44,7 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 			csvString += ", "
 			csvString += dm.gasResistance?.formatted(.number.grouping(.never)) ?? ""
 			csvString += ", "
-			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
+			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized
 		}
 	} else if metricsType == 2 {
 		// Create Power Metrics Header
@@ -63,7 +63,7 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 			csvString += ", "
 			csvString += dm.powerCh3Current?.formatted(.number.grouping(.never)) ?? ""
 			csvString += ", "
-			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
+			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized
 		}
 	}
 	return csvString
@@ -121,7 +121,7 @@ func paxToCsvFile(pax: [PaxCounterEntity]) -> String {
 		csvString += ", "
 		csvString += String(p.uptime)
 		csvString += ", "
-		csvString += p.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
+		csvString += p.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized
 	}
 	return csvString
 }
@@ -150,7 +150,7 @@ func positionToCsvFile(positions: [PositionEntity]) -> String {
 		csvString += ", "
 		csvString += String(pos.snr)
 		csvString += ", "
-		csvString += pos.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
+		csvString += pos.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized
 	}
 	return csvString
 }

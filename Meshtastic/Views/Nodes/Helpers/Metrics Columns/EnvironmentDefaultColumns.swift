@@ -333,7 +333,7 @@ extension MetricsColumnList {
 						.replacingOccurrences(of: ",", with: "")
 					Text(
 						time?.formattedDate(format: dateFormatString)
-							?? "unknown.age".localized
+							?? "Unknown Age".localized
 					)
 				})
 		])

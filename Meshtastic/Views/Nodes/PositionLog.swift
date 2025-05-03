@@ -60,7 +60,7 @@ struct PositionLog: View {
 							Text("\(String(format: "%.2f", position.snr)) dB")
 						}
 						TableColumn("Time Stamp") { position in
-							Text(position.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+							Text(position.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
 						}
 						.width(min: 180)
 					}
@@ -105,7 +105,7 @@ struct PositionLog: View {
 											.font(.caption2)
 										Text(altitude.formatted())
 											.font(.caption2)
-										Text(mappin.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+										Text(mappin.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
 											.font(.caption2)
 									}
 								}

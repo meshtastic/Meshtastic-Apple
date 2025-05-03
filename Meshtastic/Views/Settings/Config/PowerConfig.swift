@@ -42,7 +42,7 @@ struct PowerConfig: View {
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				if shutdownOnPowerLoss {
-					Picker("config.power.shutdown.after.secs", selection: $shutdownAfterSecs) {
+					Picker("After", selection: $shutdownAfterSecs) {
 						ForEach(PowerIntervals.allCases) { at in
 							Text(at.description)
 						}

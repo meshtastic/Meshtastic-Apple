@@ -108,7 +108,7 @@ struct Settings: View {
 		Section("device.configuration") {
 			NavigationLink(value: SettingsNavigationState.user) {
 				Label {
-					Text("user")
+					Text("User")
 				} icon: {
 					Image(systemName: "person.crop.rectangle.fill")
 				}
@@ -229,7 +229,7 @@ struct Settings: View {
 			if isModuleSupported(.paxcounterConfig) {
 				NavigationLink(value: SettingsNavigationState.paxCounter) {
 					Label {
-						Text("config.module.paxcounter.settings")
+						Text("PAX Counter")
 					} icon: {
 						Image(systemName: "figure.walk.motion")
 					}
@@ -239,7 +239,7 @@ struct Settings: View {
 			if isModuleSupported(.audioConfig) {
 				NavigationLink(value: SettingsNavigationState.ringtone) {
 					Label {
-						Text("ringtone")
+						Text("Ringtone")
 					} icon: {
 						Image(systemName: "music.note.list")
 					}
@@ -249,7 +249,7 @@ struct Settings: View {
 			if isModuleSupported(.serialConfig) {
 				NavigationLink(value: SettingsNavigationState.serial) {
 					Label {
-						Text("serial")
+						Text("Serial")
 					} icon: {
 						Image(systemName: "terminal")
 					}

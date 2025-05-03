@@ -291,9 +291,9 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 	var description: String {
     		switch self {
 		case .longFast:
-			return "long.range.fast".localized
+			return "Lomg Range - Fast".localized
 		case .longSlow:
-			return "long.range.slow".localized
+			return "Long Range - Slow".localized
 		case .longModerate:
 			return "long.range.moderate".localized
 		case .vLongSlow:

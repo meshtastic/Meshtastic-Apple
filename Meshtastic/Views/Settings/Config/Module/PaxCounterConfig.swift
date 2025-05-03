@@ -27,7 +27,7 @@ struct PaxCounterConfig: View {
 			Section {
 				Toggle(isOn: $enabled) {
 					Label("Enabled", systemImage: "figure.walk.motion")
-					Text("config.module.paxcounter.enabled.description")
+					Text("When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work.")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				.listRowSeparator(.visible)

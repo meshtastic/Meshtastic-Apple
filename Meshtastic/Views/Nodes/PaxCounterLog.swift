@@ -105,7 +105,7 @@ struct PaxCounterLog: View {
 							Text(components)
 						}
 						TableColumn("Timestamp") { pc in
-							Text(pc.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+							Text(pc.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
 						}
 						.width(min: 180)
 					}
@@ -149,7 +149,7 @@ struct PaxCounterLog: View {
 									let components = (now..<later).formatted(.components(style: .condensedAbbreviated))
 									Text(components)
 										.font(.caption)
-									Text(pc.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+									Text(pc.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
 										.font(.caption)
 								}
 							}

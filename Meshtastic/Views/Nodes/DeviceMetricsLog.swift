@@ -121,7 +121,7 @@ struct DeviceMetricsLog: View {
 					Table(deviceMetrics, selection: $selection, sortOrder: $sortOrder) {
 						TableColumn("Battery Level") { dm in
 							HStack {
-								Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+								Text(dm.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
 									.font(.caption)
 									.fontWeight(.semibold)
 								Spacer()
@@ -188,7 +188,7 @@ struct DeviceMetricsLog: View {
 						}
 						.width(min: 100)
 						TableColumn("Timestamp") { dm in
-							Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+							Text(dm.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
 						}
 						.width(min: 180)
 					}
