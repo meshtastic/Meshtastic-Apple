@@ -3056,6 +3056,9 @@
         }
       }
     },
+    "App Notifications" : {
+
+    },
     "App Settings" : {
       "localizations" : {
         "it" : {
@@ -6534,6 +6537,9 @@
         }
       }
     },
+    "Configure notification permissions" : {
+
+    },
     "Confirm" : {
       "localizations" : {
         "it" : {
@@ -7028,6 +7034,9 @@
         }
       }
     },
+    "Continue to next step" : {
+
+    },
     "Control Type" : {
       "localizations" : {
         "it" : {
@@ -7371,6 +7380,9 @@
           }
         }
       }
+    },
+    "Critical Alerts" : {
+
     },
     "Current" : {
       "localizations" : {
@@ -11000,6 +11012,9 @@
         }
       }
     },
+    "Enable MQTT" : {
+
+    },
     "Enable Notifications" : {
       "localizations" : {
         "it" : {
@@ -11424,6 +11439,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "環境"
+          }
+        }
+      }
+    },
+    "Environment Metrics" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metriche dei sensori"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Метрике сензора"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "传感器指标"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "傳感器數據"
           }
         }
       }
@@ -13114,6 +13157,9 @@
         }
       }
     },
+    "Get started" : {
+
+    },
     "Get the latest alpha firmware" : {
       "localizations" : {
         "it" : {
@@ -14370,34 +14416,6 @@
         }
       }
     },
-    "How often power metrics are sent out over the mesh. Default is 30 minutes." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Con quale frequenza vengono inviate le metriche di potenza attraverso la rete. L'impostazione predefinita è 30 minuti."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Колико често се метрике снаге шаљу преко мреже. Подразумевано је 30 минута."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "通过网格发送功率指标的频率。默认为 30 分钟。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "電力指標透過網狀網路發送的頻率。預設為每 30 分鐘一次。"
-          }
-        }
-      }
-    },
     "How often environment metrics are sent out over the mesh. Default is 30 minutes." : {
       "localizations" : {
         "it" : {
@@ -14422,6 +14440,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "感測器數據透過網狀網路發送的頻率。預設為每 30 分鐘一次。\n"
+          }
+        }
+      }
+    },
+    "How often power metrics are sent out over the mesh. Default is 30 minutes." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con quale frequenza vengono inviate le metriche di potenza attraverso la rete. L'impostazione predefinita è 30 minuti."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Колико често се метрике снаге шаљу преко мреже. Подразумевано је 30 минута."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通过网格发送功率指标的频率。默认为 30 分钟。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電力指標透過網狀網路發送的頻率。預設為每 30 分鐘一次。"
           }
         }
       }
@@ -18592,28 +18638,6 @@
         }
       }
     },
-    "Long Range - Fast" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A lungo raggio - Veloce"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Дугачки домет - Брзо"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Long Range - Fast"
-          }
-        }
-      }
-    },
     "Long Name" : {
       "localizations" : {
         "de" : {
@@ -18706,6 +18730,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "長按可將聯絡人加入最愛、靜音或刪除對話。"
+          }
+        }
+      }
+    },
+    "Long Range - Fast" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A lungo raggio - Veloce"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дугачки домет - Брзо"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Long Range - Fast"
           }
         }
       }
@@ -22086,6 +22132,9 @@
         }
       }
     },
+    "Meshtastic" : {
+
+    },
     "Meshtastic Node %@ has shared channels with you" : {
       "localizations" : {
         "de" : {
@@ -22113,6 +22162,9 @@
           }
         }
       }
+    },
+    "Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from Settings > App Settings > Open Settings." : {
+
     },
     "Meshtastic® Copyright Meshtastic LLC" : {
       "localizations" : {
@@ -25421,6 +25473,9 @@
           }
         }
       }
+    },
+    "Phone Location" : {
+
     },
     "phone.gps" : {
       "localizations" : {
@@ -31019,6 +31074,9 @@
         }
       }
     },
+    "Send Notifications" : {
+
+    },
     "Send Reboot OTA" : {
       "localizations" : {
         "it" : {
@@ -31071,34 +31129,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "傳送頻率"
-          }
-        }
-      }
-    },
-    "Environment Metrics" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Metriche dei sensori"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Метрике сензора"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "传感器指标"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "傳感器數據"
           }
         }
       }
@@ -31802,6 +31832,9 @@
           }
         }
       }
+    },
+    "Set up later" : {
+
     },
     "set.region" : {
       "localizations" : {
@@ -37850,6 +37883,9 @@
           }
         }
       }
+    },
+    "Welcome to" : {
+
     },
     "What does the lock mean?" : {
       "localizations" : {
