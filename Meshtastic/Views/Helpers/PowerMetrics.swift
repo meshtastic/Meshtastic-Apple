@@ -69,8 +69,8 @@ struct PowerMetrics: View {
 }
 
 enum PowerMetricType: String {
-	case current = "current"
-	case voltage = "voltage"
+	case current = "Current"
+	case voltage = "Voltage"
 }
 
 struct PowerMetricCompactWidget: View {

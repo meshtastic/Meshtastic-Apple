@@ -124,7 +124,7 @@ struct LogDetail: View {
 
 						/// message
 						Label {
-							Text("log.message".localized + ":")
+							Text("Message".localized + ":")
 								.font(idiom == .phone ? .caption : .title)
 								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
 							Text(log.composedMessage)
@@ -151,7 +151,7 @@ struct LogDetail: View {
 			Button {
 				dismiss()
 			} label: {
-				Label("close", systemImage: "xmark")
+				Label("Close", systemImage: "xmark")
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)

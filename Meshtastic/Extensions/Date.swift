@@ -13,7 +13,7 @@ extension Date {
 		if self.timeIntervalSince1970 > 0 && self < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
 			formatted()
 		} else {
-			"unknown.age".localized
+			"Unknown Age".localized
 		}
 	}
 
@@ -23,7 +23,7 @@ extension Date {
 		if self.timeIntervalSince1970 > 0 && self < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
 			return dateformat.string(from: self)
 		} else {
-			return "unknown.age".localized
+			return "Unknown Age".localized
 		}
 	}
 	func relativeTimeOfDay() -> String {

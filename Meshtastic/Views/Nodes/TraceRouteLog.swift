@@ -37,14 +37,14 @@ struct TraceRouteLog: View {
 				VStack {
 					List(node.traceRoutes?.reversed() as? [TraceRouteEntity] ?? [], id: \.self, selection: $selectedRoute) { route in
 						Label {
-							let routeTime = route.time?.formatted() ?? "unknown".localized
+							let routeTime = route.time?.formatted() ?? "Unknown".localized
 							if route.response && route.hopsTowards == route.hopsBack {
 								let hopString = String(localized: "\(route.hopsTowards) Hops")
 								Text("\(routeTime) - \(hopString)")
 									.font(.caption)
 							} else if route.response {
 								let hopTowardsString = String(localized: "\(route.hopsTowards) Hops")
-								let hopBackString = route.hopsBack >= 0 ? String(localized: "\(route.hopsBack) Hops") : String(localized: "unknown")
+								let hopBackString = route.hopsBack >= 0 ? String(localized: "\(route.hopsBack) Hops") : String(localized: "Unknown")
 								Text("\(routeTime) - \(hopTowardsString) Towards  \(hopBackString) Back")
 									.font(.caption)
 							} else if route.sent {
@@ -78,14 +78,14 @@ struct TraceRouteLog: View {
 					if selectedRoute != nil {
 						if selectedRoute?.response ?? false && selectedRoute?.hopsTowards ?? 0 >= 0 {
 							Label {
-								Text("Route: \(selectedRoute?.routeText ?? "unknown".localized)")
+								Text("Route: \(selectedRoute?.routeText ?? "Unknown".localized)")
 							} icon: {
 								Image(systemName: "signpost.right")
 									.symbolRenderingMode(.hierarchical)
 							}
 							.font(.title3)
 							Label {
-								Text("Route Back: \(selectedRoute?.routeBackText ?? "unknown".localized)")
+								Text("Route Back: \(selectedRoute?.routeBackText ?? "Unknown".localized)")
 							} icon: {
 								Image(systemName: "signpost.left")
 									.symbolRenderingMode(.hierarchical)
@@ -94,7 +94,7 @@ struct TraceRouteLog: View {
 						} else if !(selectedRoute?.sent ?? true) {
 								Label {
 									VStack {
-										Text("Trace route to \(selectedRoute?.node?.user?.longName ?? "unknown".localized) was not sent.")
+										Text("Trace route to \(selectedRoute?.node?.user?.longName ?? "Unknown".localized) was not sent.")
 											.font(idiom == .phone ? .body : .largeTitle)
 											.fontWeight(.semibold)
 										Text("Trace Route was rate limited. You can send a trace route a maximum of once every thirty seconds.")
@@ -109,7 +109,7 @@ struct TraceRouteLog: View {
 						} else {
 							   Label {
 								   VStack {
-									   Text("Trace route sent to \(selectedRoute?.node?.user?.longName ?? "unknown".localized)")
+									   Text("Trace route sent to \(selectedRoute?.node?.user?.longName ?? "Unknown".localized)")
 										   .font(idiom == .phone ? .body : .largeTitle)
 										   .fontWeight(.semibold)
 									   Text("A Trace Route was sent, no response has been received.")

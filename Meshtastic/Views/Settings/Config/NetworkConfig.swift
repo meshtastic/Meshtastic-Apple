@@ -60,8 +60,8 @@ struct NetworkConfig: View {
 							}
 							.keyboardType(.default)
 							HStack {
-								Label("password", systemImage: "wallet.pass")
-								TextField("password", text: $wifiPsk)
+								Label("Password", systemImage: "wallet.pass")
+								TextField("Password", text: $wifiPsk)
 									.foregroundColor(.gray)
 									.autocapitalization(.none)
 									.disableAutocorrection(true)

@@ -25,7 +25,7 @@ struct ContentView: View {
 				unreadDirectMessages: $appState.unreadDirectMessages
 			)
 			.tabItem {
-				Label("messages", systemImage: "message")
+				Label("Messages", systemImage: "message")
 			}
 			.tag(NavigationState.Tab.messages)
 			.badge(appState.totalUnreadMessages)
@@ -54,7 +54,7 @@ struct ContentView: View {
 				router: appState.router
 			)
 			.tabItem {
-				Label("settings", systemImage: "gear")
+				Label("Settings", systemImage: "gear")
 					.font(.title)
 			}
 			.tag(NavigationState.Tab.settings)

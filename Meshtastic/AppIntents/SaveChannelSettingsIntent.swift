@@ -29,12 +29,9 @@ struct SaveChannelSettingsIntent: AppIntent {
 		if channelUrl.absoluteString.lowercased().contains("meshtastic.org/e/#") {
 			// Split the URL to get the portion after "#"
 			let components = channelUrl.absoluteString.components(separatedBy: "#")
-			
 			// Add channels flag based on the URL query parameter (if present)
 			let addChannels = Bool(channelUrl["add"] ?? "false") ?? false
-			
 			var channelSettings: String?
-			
 			// Extract the Base64 encoded channel settings (after "#")
 			if let lastComponent = components.last {
 				channelSettings = lastComponent.components(separatedBy: "?").first // Ignore any query parameters
@@ -44,7 +41,6 @@ struct SaveChannelSettingsIntent: AppIntent {
 			if let channelSettings = channelSettings {
 				// Call the BLEManager to save the channel settings
 				let saveResult = BLEManager.shared.saveChannelSet(base64UrlString: channelSettings, addChannels: addChannels)
-				
 				if !saveResult {
 					throw AppIntentErrors.AppIntentError.message("Failed to save the channel settings.")
 				}

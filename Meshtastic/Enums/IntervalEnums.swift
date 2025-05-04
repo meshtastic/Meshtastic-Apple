@@ -22,7 +22,7 @@ enum NagIntervals: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .unset:
-			return "unset".localized
+			return "Unset".localized
 		case .oneSecond:
 			return "interval.one.second".localized
 		case .fiveSeconds:
@@ -59,7 +59,7 @@ enum OutputIntervals: Int, CaseIterable, Identifiable {
 
 		switch self {
 		case .unset:
-			return "unset".localized
+			return "Unset".localized
 		case .oneSecond:
 			return "interval.one.second".localized
 		case .twoSeconds:

@@ -224,7 +224,7 @@ struct NodeInfoView: View {
 				.foregroundStyle(.secondary)
 				.opacity(isLuminanceReduced ? 0.8 : 1.0)
 				.fixedSize()
-			
+
 			let now = Date()
 			Text("Last Heard: \(now.formatted())")
 				.font(.caption)

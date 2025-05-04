@@ -120,14 +120,14 @@ struct NodeDetail: View {
 					if let metadata = node.metadata {
 						HStack {
 							Label {
-								Text("firmware.version")
+								Text("Firmware Version")
 							} icon: {
 								Image(systemName: "memorychip")
 									.symbolRenderingMode(.multicolor)
 							}
 							Spacer()
 
-							Text(metadata.firmwareVersion ?? "unknown".localized)
+							Text(metadata.firmwareVersion ?? "Unknown".localized)
 						}
 					}
 
@@ -147,7 +147,7 @@ struct NodeDetail: View {
 					if let dm = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity, let uptimeSeconds = dm.uptimeSeconds {
 						HStack {
 							Label {
-								Text("\("uptime".localized)")
+								Text("\("Uptime".localized)")
 							} icon: {
 								Image(systemName: "checkmark.circle.fill")
 									.foregroundColor(.green)
@@ -195,7 +195,7 @@ struct NodeDetail: View {
 							Spacer()
 
 							if dateFormatRelative, let text = Self.relativeFormatter.string(for: lastHeard) {
-								if lastHeard.formatted() != "unknown.age".localized {
+								if lastHeard.formatted() != "Unknown Age".localized {
 									Text(text)
 										.textSelection(.enabled)
 								}
@@ -214,7 +214,7 @@ struct NodeDetail: View {
 				// to use with WeatherKit, or has actual data in the most recent EnvironmentMetrics entity
 				// that will be rendered in this section.
 				if node.hasPositions && UserDefaults.environmentEnableWeatherKit
-					|| node.hasDataForLatestEnvironmentMetrics(attributes: ["iaq", "temperature", "relativeHumidity", "barometricPressure", "windSpeed", "radiation", "weight", "distance", "soilTemperature", "soilMoisture"]) {
+					|| node.hasDataForLatestEnvironmentMetrics(attributes: ["iaq", "temperature", "relativeHumidity", "barometricPressure", "windSpeed", "radiation", "weight", "Distance", "soilTemperature", "soilMoisture"]) {
 					Section("Environment") {
 						if !node.hasEnvironmentMetrics {
 							LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
@@ -520,7 +520,7 @@ struct NodeDetail: View {
 				}
 			}
 			.listStyle(.insetGrouped)
-			.navigationBarTitle(String(node.user?.longName?.addingVariationSelectors ?? "unknown".localized), displayMode: .inline)
+			.navigationBarTitle(String(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized), displayMode: .inline)
 		}
 	}
 }

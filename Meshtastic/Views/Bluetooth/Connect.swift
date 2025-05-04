@@ -64,10 +64,10 @@ struct Connect: View {
 											if node != nil {
 												Text(connectedPeripheral.longName.addingVariationSelectors).font(.title2)
 											}
-											Text("BLE Name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name?.addingVariationSelectors ?? "unknown".localized)")
+											Text("BLE Name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name?.addingVariationSelectors ?? "Unknown".localized)")
 												.font(.callout).foregroundColor(Color.gray)
 											if node != nil {
-												Text("firmware.version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "unknown".localized)")
+												Text("Firmware Version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "Unknown".localized)")
 													.font(.callout).foregroundColor(Color.gray)
 											}
 											if bleManager.isSubscribed {
@@ -121,7 +121,7 @@ struct Connect: View {
 										#endif
 										Text("Num: \(String(node!.num))")
 										Text("Short Name: \(node?.user?.shortName ?? "?")")
-										Text("Long Name: \(node?.user?.longName?.addingVariationSelectors ?? "unknown".localized)")
+										Text("Long Name: \(node?.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
 										Text("BLE RSSI: \(connectedPeripheral.rssi)")
 
 										Button {

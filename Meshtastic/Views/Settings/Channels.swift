@@ -230,7 +230,7 @@ struct Channels: View {
 					Button {
 						goBack()
 					} label: {
-						Label("close", systemImage: "xmark")
+						Label("Close", systemImage: "xmark")
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
@@ -279,7 +279,7 @@ struct Channels: View {
 				.padding()
 			}
 		}
-		.navigationTitle("channels")
+		.navigationTitle("Channels")
 		.navigationBarItems(trailing:
 		ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")

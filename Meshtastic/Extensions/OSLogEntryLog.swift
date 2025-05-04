@@ -18,7 +18,7 @@ extension OSLogEntryLog.Level {
 		case .notice: "⚠️ Notice"
 		case .error: "🚨 Error"
 		case .fault: "💥 Fault"
-		@unknown default: "default"
+		@unknown default: "Default".localized
 		}
 	}
 	var color: Color {

@@ -98,14 +98,14 @@ struct PaxCounterLog: View {
 						TableColumn("paxcounter.total") { pc in
 							Text("\(pc.wifi + pc.ble)")
 						}
-						TableColumn("uptime") { pc in
+						TableColumn("Uptime") { pc in
 							let now = Date.now
 							let later = now + TimeInterval(pc.uptime)
 							let components = (now..<later).formatted(.components(style: .condensedAbbreviated))
 							Text(components)
 						}
 						TableColumn("Timestamp") { pc in
-							Text(pc.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+							Text(pc.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
 						}
 						.width(min: 180)
 					}
@@ -149,7 +149,7 @@ struct PaxCounterLog: View {
 									let components = (now..<later).formatted(.components(style: .condensedAbbreviated))
 									Text(components)
 										.font(.caption)
-									Text(pc.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+									Text(pc.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
 										.font(.caption)
 								}
 							}

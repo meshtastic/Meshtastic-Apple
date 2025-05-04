@@ -14,7 +14,6 @@ struct AboutMeshtastic: View {
 	var body: some View {
 
 		VStack {
-
 			List {
 				Section(header: Text("What is Meshtastic?")) {
 					Text("An open source, off-grid, decentralized, mesh network that runs on affordable, low-power radios.")
@@ -44,7 +43,7 @@ struct AboutMeshtastic: View {
 					Button("Review the app") {
 						if let scene = UIApplication.shared.connectedScenes
 							.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
-							SKStoreReviewController.requestReview(in: scene)
+							AppStore.requestReview(in: scene)
 						}
 					}
 					.font(.title2)

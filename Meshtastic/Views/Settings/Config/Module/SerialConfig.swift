@@ -41,7 +41,7 @@ struct SerialConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
 					Toggle(isOn: $echo) {
-						Label("echo", systemImage: "repeat")
+						Label("Echo", systemImage: "repeat")
 						Text("If set, any packets you send will be echoed back to your device.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -53,7 +53,7 @@ struct SerialConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
-					Picker("timeout", selection: $timeout ) {
+					Picker("Timeout", selection: $timeout ) {
 						ForEach(SerialTimeoutIntervals.allCases) { sti in
 							Text(sti.description)
 						}
@@ -64,7 +64,7 @@ struct SerialConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 
-					Picker("mode", selection: $mode ) {
+					Picker("Mode", selection: $mode ) {
 						ForEach(SerialModeTypes.allCases) { smt in
 							Text(smt.description)
 						}
@@ -76,7 +76,7 @@ struct SerialConfig: View {
 					Picker("Receive data (rxd) GPIO pin", selection: $rxd) {
 						ForEach(0..<49) {
 							if $0 == 0 {
-								Text("unset")
+								Text("Unset")
 							} else {
 								Text("Pin \($0)")
 							}
@@ -88,7 +88,7 @@ struct SerialConfig: View {
 					Picker("Transmit data (txd) GPIO pin", selection: $txd) {
 						ForEach(0..<49) {
 							if $0 == 0 {
-								Text("unset")
+								Text("Unset")
 							} else {
 								Text("Pin \($0)")
 							}

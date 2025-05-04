@@ -14,19 +14,16 @@ struct ChannelMessageList: View {
 	@EnvironmentObject var appState: AppState
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-
 	// Keyboard State
 	@FocusState var messageFieldFocused: Bool
-
 	@ObservedObject var myInfo: MyInfoEntity
 	@ObservedObject var channel: ChannelEntity
 	@State private var replyMessageId: Int64 = 0
 	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
-	
 	// Scroll state
-		@State private var showScrollToBottomButton = false
-		@State private var hasReachedBottom = false
-		@State private var gotFirstUnreadMessage: Bool = false
+	@State private var showScrollToBottomButton = false
+	@State private var hasReachedBottom = false
+	@State private var gotFirstUnreadMessage: Bool = false
 
 		@State private var messageToHighlight: Int64 = 0
 
@@ -82,7 +79,7 @@ struct ChannelMessageList: View {
 										let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
 
 										if !currentUser && message.fromUser != nil {
-											Text("\(message.fromUser?.longName ?? "unknown".localized ) (\(message.fromUser?.userId ?? "?"))")
+											Text("\(message.fromUser?.longName ?? "Unknown".localized ) (\(message.fromUser?.userId ?? "?"))")
 												.font(.caption)
 												.foregroundColor(.gray)
 												.offset(y: 8)
@@ -143,7 +140,7 @@ struct ChannelMessageList: View {
 								.frame(maxWidth: .infinity)
 								.id(message.messageId)
 								.onAppear {
-									if gotFirstUnreadMessage{
+									if gotFirstUnreadMessage {
 										if !message.read {
 											message.read = true
 											do {
@@ -209,7 +206,6 @@ struct ChannelMessageList: View {
 							showScrollToBottomButton = true
 						}
 					}
-					
 					// Scroll to bottom button
 					if showScrollToBottomButton {
 						Button {
@@ -241,7 +237,7 @@ struct ChannelMessageList: View {
 			ToolbarItem(placement: .principal) {
 				HStack {
 					CircleText(text: String(channel.index), color: .accentColor, circleSize: 44).fixedSize()
-					Text(String(channel.name ?? "unknown".localized).camelCaseToWords()).font(.headline)
+					Text(String(channel.name ?? "Unknown".localized).camelCaseToWords()).font(.headline)
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {

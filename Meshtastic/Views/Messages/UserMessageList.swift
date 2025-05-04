@@ -20,7 +20,6 @@ struct UserMessageList: View {
 	// View State Items
 	@ObservedObject var user: UserEntity
 	@State private var replyMessageId: Int64 = 0
-	
 	// Scroll state
 	@State private var showScrollToBottomButton = false
 	@State private var hasReachedBottom = false
@@ -195,7 +194,6 @@ struct UserMessageList: View {
 							showScrollToBottomButton = true
 						}
 					}
-					
 					// Scroll to bottom button
 					if showScrollToBottomButton {
 						Button {

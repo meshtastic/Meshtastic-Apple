@@ -30,10 +30,8 @@ struct DeviceConfig: View {
 	@State var ledHeartbeatEnabled = true
 	@State var tripleClickAsAdHocPing = true
 	@State var tzdef = ""
-	
 	@State private var showRouterWarning = false
 	@State private var confirmWarning = false
-
 
 	var body: some View {
 		VStack {
@@ -149,7 +147,7 @@ struct DeviceConfig: View {
 					Picker("Button GPIO", selection: $buttonGPIO) {
 						ForEach(0..<49) {
 							if $0 == 0 {
-								Text("unset")
+								Text("Unset")
 							} else {
 								Text("Pin \($0)")
 							}
@@ -159,7 +157,7 @@ struct DeviceConfig: View {
 					Picker("Buzzer GPIO", selection: $buzzerGPIO) {
 						ForEach(0..<49) {
 							if $0 == 0 {
-								Text("unset")
+								Text("Unset")
 							} else {
 								Text("Pin \($0)")
 							}
