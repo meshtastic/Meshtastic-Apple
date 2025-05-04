@@ -15,54 +15,38 @@ struct TextMessageField: View {
 	@State private var sendPositionWithMessage = false
 
 	var body: some View {
-		#if targetEnvironment(macCatalyst)
-		HStack {
-			if destination.showAlertButton {
+		VStack {
+			#if targetEnvironment(macCatalyst)
+			HStack {
+				if destination.showAlertButton {
+					Spacer()
+					AlertButton { typingMessage += "🔔 Alert Bell! \u{7}" }
+				}
 				Spacer()
-				AlertButton { typingMessage += "🔔 Alert Bell! \u{7}" }
+				RequestPositionButton(action: requestPosition)
+				TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes).padding(.trailing)
 			}
-			Spacer()
-			RequestPositionButton(action: requestPosition)
-			TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes).padding(.trailing)
-		}
-		#endif
+			#endif
 
-		HStack(alignment: .top) {
+			HStack(alignment: .top) {
 				if replyMessageId != 0 {
-					
 					HStack {
 						Button {
 							withAnimation(.easeInOut(duration: 0.2)) {
 								replyMessageId = 0
 							}
 							isFocused = false
-						} label : {
+						} label: {
 							Image(systemName: "x.circle.fill")
 						}
 						Text("Replying to a message")
-
 					}
-			}
+				}
+
 				ZStack {
 					TextField("message", text: $typingMessage, axis: .vertical)
 						.onChange(of: typingMessage) { _, value in
 							totalBytes = value.utf8.count
-							// Only mess with the value if it is too big
-							while totalBytes > Self.maxbytes {
-								typingMessage = String(typingMessage.dropLast())
-								totalBytes = typingMessage.utf8.count
-							}
-						}
-						}
-						Text("Replying to a message")
-
-					}
-			}
-				ZStack {
-					TextField("message", text: $typingMessage, axis: .vertical)
-						.onChange(of: typingMessage) { _, value in
-							totalBytes = value.utf8.count
-							// Only mess with the value if it is too big
 							while totalBytes > Self.maxbytes {
 								typingMessage = String(typingMessage.dropLast())
 								totalBytes = typingMessage.utf8.count
@@ -75,12 +59,12 @@ struct TextMessageField: View {
 									isFocused = false
 								}
 								.font(.subheadline)
-								
+
 								if destination.showAlertButton {
 									Spacer()
 									AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
 								}
-								
+
 								Spacer()
 								RequestPositionButton(action: requestPosition)
 								TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes)
@@ -92,18 +76,18 @@ struct TextMessageField: View {
 						.frame(minHeight: 50)
 						.keyboardShortcut(.defaultAction)
 						.onSubmit {
-#if targetEnvironment(macCatalyst)
+							#if targetEnvironment(macCatalyst)
 							sendMessage()
-#endif
+							#endif
 						}
-					
+
 					Text(typingMessage)
 						.opacity(0)
 						.padding(.all, 0)
 				}
 				.overlay(RoundedRectangle(cornerRadius: 20).stroke(.tertiary, lineWidth: 1))
 				.padding(.bottom, 15)
-				
+
 				Button(action: sendMessage) {
 					Image(systemName: "arrow.up.circle.fill")
 						.font(.largeTitle)
@@ -111,13 +95,13 @@ struct TextMessageField: View {
 				}
 			}
 			.padding(.all, 15)
-		
+		}
 	}
 
 	private func requestPosition() {
 		let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
 		sendPositionWithMessage = true
-		typingMessage =  "📍 " + userLongName + " \(destination.positionShareMessage)."
+		typingMessage = "📍 " + userLongName + " \(destination.positionShareMessage)."
 	}
 
 	private func sendMessage() {
