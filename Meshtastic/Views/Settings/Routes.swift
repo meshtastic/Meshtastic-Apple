@@ -215,7 +215,7 @@ struct Routes: View {
 							.buttonBorderShape(.capsule)
 							.controlSize(.large)
 
-							Button("save") {
+							Button("Save") {
 								selectedRoute?.name = name
 								selectedRoute?.notes = notes
 								selectedRoute?.enabled = enabled

@@ -12,7 +12,7 @@ struct SaveConfigButton: View {
 		Button {
 			isPresentingSaveConfirm = true
 		} label: {
-			Label("save", systemImage: "square.and.arrow.down")
+			Label("Save", systemImage: "square.and.arrow.down")
 		}
 		.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
 		.buttonStyle(.bordered)
