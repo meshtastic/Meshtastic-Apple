@@ -1101,7 +1101,7 @@ func upsertExternalNotificationModuleConfigPacket(config: ModuleConfig.ExternalN
 
 func upsertPaxCounterModuleConfigPacket(config: ModuleConfig.PaxcounterConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("mesh.log.paxcounter.config %@".localized, String(nodeNum))
+	let logString = String.localizedStringWithFormat("PAX Counter config received: %@".localized, String(nodeNum))
 	Logger.data.info("🧑‍🤝‍🧑 \(logString, privacy: .public)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()

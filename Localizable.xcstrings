@@ -5721,62 +5721,7 @@
       }
     },
     "config.module.paxcounter.title" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX Counter Config"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX Counter Config"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX Counter Config"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configurazione del contatore PAX"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX Counter Config"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX Räknare Konfiguration"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Подешавања бројача пролазника"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX 计数器配置"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX 計數器設定"
-          }
-        }
-      }
+
     },
     "config.module.paxcounter.updateinterval.description" : {
       "localizations" : {
@@ -11428,6 +11373,34 @@
         }
       }
     },
+    "Environment Metrics" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metriche dei sensori"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Метрике сензора"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "传感器指标"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "傳感器數據"
+          }
+        }
+      }
+    },
     "Environment Metrics Log" : {
       "localizations" : {
         "it" : {
@@ -14370,34 +14343,6 @@
         }
       }
     },
-    "How often power metrics are sent out over the mesh. Default is 30 minutes." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Con quale frequenza vengono inviate le metriche di potenza attraverso la rete. L'impostazione predefinita è 30 minuti."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Колико често се метрике снаге шаљу преко мреже. Подразумевано је 30 минута."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "通过网格发送功率指标的频率。默认为 30 分钟。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "電力指標透過網狀網路發送的頻率。預設為每 30 分鐘一次。"
-          }
-        }
-      }
-    },
     "How often environment metrics are sent out over the mesh. Default is 30 minutes." : {
       "localizations" : {
         "it" : {
@@ -14422,6 +14367,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "感測器數據透過網狀網路發送的頻率。預設為每 30 分鐘一次。\n"
+          }
+        }
+      }
+    },
+    "How often power metrics are sent out over the mesh. Default is 30 minutes." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con quale frequenza vengono inviate le metriche di potenza attraverso la rete. L'impostazione predefinita è 30 minuti."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Колико често се метрике снаге шаљу преко мреже. Подразумевано је 30 минута."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通过网格发送功率指标的频率。默认为 30 分钟。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電力指標透過網狀網路發送的頻率。預設為每 30 分鐘一次。"
           }
         }
       }
@@ -18592,28 +18565,6 @@
         }
       }
     },
-    "Long Range - Fast" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A lungo raggio - Veloce"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Дугачки домет - Брзо"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Long Range - Fast"
-          }
-        }
-      }
-    },
     "Long Name" : {
       "localizations" : {
         "de" : {
@@ -18706,6 +18657,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "長按可將聯絡人加入最愛、靜音或刪除對話。"
+          }
+        }
+      }
+    },
+    "Long Range - Fast" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A lungo raggio - Veloce"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дугачки домет - Брзо"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Long Range - Fast"
           }
         }
       }
@@ -20874,40 +20847,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "PAX Counter message received from: %@"
-          }
-        }
-      }
-    },
-    "mesh.log.paxcounter.config %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX Counter config received: %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configurazione del contatore PAX ricevuta: %@"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX-räknarkonfiguration mottagen: %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Конфигурација PAX бројача примљена: %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX Counter config received: %@"
           }
         }
       }
@@ -25102,6 +25041,98 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "PAX 計數器"
+          }
+        }
+      }
+    },
+    "PAX Counter Config" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAX Counter Config"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAX Counter Config"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAX Counter Config"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurazione del contatore PAX"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAX Counter Config"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAX Räknare Konfiguration"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подешавања бројача пролазника"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAX 计数器配置"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAX 計數器設定"
+          }
+        }
+      }
+    },
+    "PAX Counter config received: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAX Counter config received: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurazione del contatore PAX ricevuta: %@"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAX-räknarkonfiguration mottagen: %@"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Конфигурација PAX бројача примљена: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAX Counter config received: %@"
           }
         }
       }
@@ -31071,34 +31102,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "傳送頻率"
-          }
-        }
-      }
-    },
-    "Environment Metrics" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Metriche dei sensori"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Метрике сензора"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "传感器指标"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "傳感器數據"
           }
         }
       }
