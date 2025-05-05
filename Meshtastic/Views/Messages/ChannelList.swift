@@ -144,7 +144,7 @@ struct ChannelList: View {
 										context.refresh(myInfo, mergeChanges: true)
 										channelSelection = nil
 									} label: {
-										Text("delete")
+										Text("Delete")
 									}
 								}
 						}
