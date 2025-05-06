@@ -15191,6 +15191,26 @@
         }
       }
     },
+    "Ignores observed messages from foreign meshes like Local Only, but takes it step further by also ignoring messages from nodes not already in the node's known list." : {
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "忽略來自其他 Mesh 的訊息（像 Local Only 那樣），並更進一步連來自不在該節點已知清單中的節點所發出的訊息也一併忽略。"
+          }
+        }
+      }
+    },
+    "Ignores observed messages from foreign meshes that are open or those which it cannot decrypt. Only rebroadcasts message on the nodes local primary / secondary channels." : {
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "忽略來自其他 Mesh 的訊息（例如開放的或無法解密的），只會在該節點的本地主要／次要頻道上重新轉發訊息。"
+          }
+        }
+      }
+    },
     "Import Route" : {
       "localizations" : {
         "it" : {
@@ -24867,6 +24887,26 @@
         }
       }
     },
+    "Only permitted for SENSOR, TRACKER and TAK_TRACKER roles, this will inhibit all rebroadcasts, not unlike CLIENT_MUTE role." : {
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "僅允許用於 SENSOR、TRACKER 和 TAK_TRACKER 角色，啟用後會禁止所有訊息的重新廣播，效果類似於 CLIENT_MUTE 角色。"
+          }
+        }
+      }
+    },
+    "Only rebroadcasts packets from the core portnums: NodeInfo, Text, Position, Telemetry, and Routing." : {
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "僅會重傳來自核心 portnum 的封包：NodeInfo、Text、Position、Telemetry 和 Routing"
+          }
+        }
+      }
+    },
     "Open Settings" : {
       "localizations" : {
         "de" : {
@@ -27555,6 +27595,16 @@
         }
       }
     },
+    "Rebroadcast any observed message, if it was on our private channel or from another mesh with the same lora params." : {
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只要是在私人頻道上，或是來自使用相同 LoRa 參數的其他 Mesh 的訊息，都會進行重新廣播。"
+          }
+        }
+      }
+    },
     "Rebroadcast Mode" : {
       "localizations" : {
         "it" : {
@@ -29556,6 +29606,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "訊號接收增益（RX Boosted Gain）"
+          }
+        }
+      }
+    },
+    "Same as behavior as ALL but skips packet decoding and simply rebroadcasts them. Only available in Repeater role. Setting this on any other roles will result in ALL behavior." : {
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "行為與 ALL 相同，但會略過封包解碼，直接重新廣播。僅在 Repeater 角色中可用；若設定於其他角色，則會自動採用 ALL 的行為。"
           }
         }
       }
