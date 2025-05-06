@@ -183,16 +183,6 @@ struct WaypointForm: View {
 					.padding(.bottom)
 
 					Button(role: .cancel) {
-						if waypoint.id == 0 {
-								// New, unsent waypoint created by the user: delete it
-								bleManager.context.delete(waypoint)
-								do {
-									try bleManager.context.save()
-								} catch {
-									bleManager.context.rollback()
-									Logger.mesh.error("Failed to save context on waypoint deletion: \(error)")
-								}
-							}
 						dismiss()
 					} label: {
 						Label("Cancel", systemImage: "x.circle")
