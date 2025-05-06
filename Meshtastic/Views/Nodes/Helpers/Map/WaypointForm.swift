@@ -235,7 +235,7 @@ struct WaypointForm: View {
 							})
 						}
 					label: {
-						Label("delete", systemImage: "trash")
+						Label("Delete", systemImage: "trash")
 							.foregroundColor(.red)
 					}
 					.buttonStyle(.bordered)

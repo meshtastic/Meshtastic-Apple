@@ -222,7 +222,7 @@ struct DeviceMetricsLog: View {
 						exportString = telemetryToCsvFile(telemetry: deviceMetrics, metricsType: 0)
 						isExporting = true
 					} label: {
-						Label("save", systemImage: "square.and.arrow.down")
+						Label("Save", systemImage: "square.and.arrow.down")
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
