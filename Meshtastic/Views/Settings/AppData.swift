@@ -41,7 +41,7 @@ struct AppData: View {
 											Logger.services.error("🗑️ Delete file error: \(error, privacy: .public)")
 										}
 									} label: {
-										Label("delete", systemImage: "trash")
+										Label("Delete", systemImage: "trash")
 									}
 								}
 						} icon: {
@@ -61,7 +61,7 @@ struct AppData: View {
 											Logger.services.error("🗑️ Delete file error: \(error, privacy: .public)")
 										}
 									} label: {
-										Label("delete", systemImage: "trash")
+										Label("Delete", systemImage: "trash")
 									}
 								}
 						} icon: {

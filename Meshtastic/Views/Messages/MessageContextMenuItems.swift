@@ -104,7 +104,7 @@ struct MessageContextMenuItems: View {
 		Button(role: .destructive) {
 			isShowingDeleteConfirmation = true
 		} label: {
-			Text("delete")
+			Text("Delete")
 			Image(systemName: "trash")
 		}
 	}

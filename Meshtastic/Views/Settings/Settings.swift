@@ -105,7 +105,7 @@ struct Settings: View {
 	}
 
 	var deviceConfigurationSection: some View {
-		Section("device.configuration") {
+		Section("Device Configuration") {
 			NavigationLink(value: SettingsNavigationState.user) {
 				Label {
 					Text("User")

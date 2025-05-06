@@ -187,7 +187,7 @@ struct UserList: View {
 								deleteUserMessages(user: userSelection!, context: context)
 								context.refresh(node!.user!, mergeChanges: true)
 							} label: {
-								Text("delete")
+								Text("Delete")
 							}
 						}
 					}

@@ -45,7 +45,7 @@ struct RangeTestConfig: View {
 						.font(.callout)
 
 					Toggle(isOn: $save) {
-						Label("save", systemImage: "square.and.arrow.down.fill")
+						Label("Save", systemImage: "square.and.arrow.down.fill")
 						Text("Saves a CSV with the range test message details, currently only available on ESP32 devices with a web server.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))

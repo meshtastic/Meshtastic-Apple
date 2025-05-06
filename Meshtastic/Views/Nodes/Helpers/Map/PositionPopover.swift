@@ -52,7 +52,7 @@ struct PositionPopover: View {
 					/// Time
 					Label {
 						if idiom != .phone {
-							Text("heard".localized + ":")
+							Text("Heard".localized + ":")
 						}
 						Text(position.time?.lastHeard ?? "unknown")
 							.foregroundColor(.primary)

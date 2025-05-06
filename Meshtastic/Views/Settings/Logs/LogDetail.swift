@@ -107,7 +107,7 @@ struct LogDetail: View {
 						/// Category
 						Label {
 							HStack {
-								Text("log.category".localized + ":")
+								Text("Category".localized + ":")
 									.font(idiom == .phone ? .caption : .title)
 									.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
 								Text(log.category)
