@@ -22261,6 +22261,9 @@
         }
       }
     },
+    "message" : {
+
+    },
     "Message" : {
       "localizations" : {
         "de" : {
@@ -28416,6 +28419,9 @@
           }
         }
       }
+    },
+    "Replying to a message" : {
+
     },
     "Request Legacy Admin: %@" : {
       "localizations" : {
