@@ -227,6 +227,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			let myInfoEntity = MyInfoEntity(context: context)
 			myInfoEntity.myNodeNum = Int64(packet.from)
 			myInfoEntity.rebootCount = 0
+			newNode.myInfo = myInfoEntity
 			do {
 				try context.save()
 				Logger.data.info("💾 [NodeInfo] Saved a NodeInfo for node number: \(packet.from.toHex(), privacy: .public)")
@@ -236,7 +237,6 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				let nsError = error as NSError
 				Logger.data.error("💥 [MyInfoEntity] Error Inserting New Core Data: \(nsError, privacy: .public)")
 			}
-			newNode.myInfo = myInfoEntity
 
 		} else {
 			// Update an existing node
@@ -1101,7 +1101,7 @@ func upsertExternalNotificationModuleConfigPacket(config: ModuleConfig.ExternalN
 
 func upsertPaxCounterModuleConfigPacket(config: ModuleConfig.PaxcounterConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("mesh.log.paxcounter.config %@".localized, String(nodeNum))
+	let logString = String.localizedStringWithFormat("PAX Counter config received: %@".localized, String(nodeNum))
 	Logger.data.info("🧑‍🤝‍🧑 \(logString, privacy: .public)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()

@@ -187,7 +187,7 @@ struct PaxCounterLog: View {
 						exportString = paxToCsvFile(pax: pax)
 						isExporting = true
 					} label: {
-						Label("save", systemImage: "square.and.arrow.down")
+						Label("Save", systemImage: "square.and.arrow.down")
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)

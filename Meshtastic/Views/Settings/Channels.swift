@@ -219,7 +219,7 @@ struct Channels: View {
 							hasChanges = false
 						}
 					} label: {
-						Label("save", systemImage: "square.and.arrow.down")
+						Label("Save", systemImage: "square.and.arrow.down")
 					}
 					.disabled(bleManager.connectedPeripheral == nil)// || !hasChanges)// !hasValidKey)
 					.buttonStyle(.bordered)

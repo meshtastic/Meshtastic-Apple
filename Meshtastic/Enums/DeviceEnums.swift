@@ -168,17 +168,17 @@ enum RebroadcastModes: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .all:
-			return "Rebroadcast any observed message, if it was on our private channel or from another mesh with the same lora params."
+			return "Rebroadcast any observed message, if it was on our private channel or from another mesh with the same lora params.".localized
 		case .allSkipDecoding:
-			return "Same as behavior as ALL but skips packet decoding and simply rebroadcasts them. Only available in Repeater role. Setting this on any other roles will result in ALL behavior."
+			return "Same as behavior as ALL but skips packet decoding and simply rebroadcasts them. Only available in Repeater role. Setting this on any other roles will result in ALL behavior.".localized
 		case .localOnly:
-			return "Ignores observed messages from foreign meshes that are open or those which it cannot decrypt. Only rebroadcasts message on the nodes local primary / secondary channels."
+			return "Ignores observed messages from foreign meshes that are open or those which it cannot decrypt. Only rebroadcasts message on the nodes local primary / secondary channels.".localized
 		case .knownOnly:
-			return "Ignores observed messages from foreign meshes like Local Only, but takes it step further by also ignoring messages from nodes not already in the node's known list."
+			return "Ignores observed messages from foreign meshes like Local Only, but takes it step further by also ignoring messages from nodes not already in the node's known list.".localized
 		case .none:
-			return "Only permitted for SENSOR, TRACKER and TAK_TRACKER roles, this will inhibit all rebroadcasts, not unlike CLIENT_MUTE role."
+			return "Only permitted for SENSOR, TRACKER and TAK_TRACKER roles, this will inhibit all rebroadcasts, not unlike CLIENT_MUTE role.".localized
 		case .corePortnums:
-			return "Only rebroadcasts packets from the core portnums: NodeInfo, Text, Position, Telemetry, and Routing."
+			return "Only rebroadcasts packets from the core portnums: NodeInfo, Text, Position, Telemetry, and Routing.".localized
 		}
 	}
 	func protoEnumValue() -> Config.DeviceConfig.RebroadcastMode {

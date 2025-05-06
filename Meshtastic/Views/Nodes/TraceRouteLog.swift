@@ -67,7 +67,7 @@ struct TraceRouteLog: View {
 									Logger.data.error("\(error.localizedDescription, privacy: .public)")
 								}
 							} label: {
-								Label("delete", systemImage: "trash")
+								Label("Delete", systemImage: "trash")
 							}
 						}
 					}

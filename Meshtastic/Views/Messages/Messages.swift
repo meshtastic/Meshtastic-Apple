@@ -65,7 +65,7 @@ struct Messages: View {
 
 				TipView(MessagesTip(), arrowEdge: .top)
 			}
-			.navigationTitle("messages")
+			.navigationTitle("Messages")
 			.navigationBarTitleDisplayMode(.large)
 			.navigationBarItems(leading: MeshtasticLogo())
 		} content: {

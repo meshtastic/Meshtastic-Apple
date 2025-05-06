@@ -154,7 +154,7 @@ struct Routes: View {
 								Logger.data.error("\(error.localizedDescription, privacy: .public)")
 							}
 						} label: {
-							Label("delete", systemImage: "trash")
+							Label("Delete", systemImage: "trash")
 						}
 					}
 
@@ -215,7 +215,7 @@ struct Routes: View {
 							.buttonBorderShape(.capsule)
 							.controlSize(.large)
 
-							Button("save") {
+							Button("Save") {
 								selectedRoute?.name = name
 								selectedRoute?.notes = notes
 								selectedRoute?.enabled = enabled
@@ -279,7 +279,7 @@ struct Routes: View {
 								exportString = routeToCsvFile(locations: selectedRoute!.locations!.array as? [LocationEntity] ?? [])
 								isExporting = true
 							} label: {
-								Label("export", systemImage: "square.and.arrow.down")
+								Label("Export", systemImage: "square.and.arrow.down")
 							}
 							.buttonStyle(.bordered)
 							.buttonBorderShape(.capsule)

@@ -32,31 +32,31 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		switch self {
 
 		case .none:
-			return "routing.acknowledged".localized
+			return "Acknowledged".localized
 		case .noRoute:
-			return "routing.noroute".localized
+			return "No Route".localized
 		case .gotNak:
-			return "routing.gotnak".localized
+			return "Received a negative acknowledgment".localized
 		case .timeout:
-			return "routing.timeout".localized
+			return "Timeout".localized
 		case .noInterface:
-			return "routing.nointerface".localized
+			return "No Interface".localized
 		case .maxRetransmit:
-			return "routing.maxretransmit".localized
+			return "Max Retransmission Reached".localized
 		case .noChannel:
-			return "routing.nochannel".localized
+			return "No Channel".localized
 		case .tooLarge:
-			return "routing.toolarge".localized
+			return "The packet is too large".localized
 		case .noResponse:
-			return "routing.noresponse".localized
+			return "No Response".localized
 		case .dutyCycleLimit:
-			return "routing.dutycyclelimit".localized
+			return "Regional Duty Cycle Limit Reached".localized
 		case .badRequest:
-			return "routing.badRequest".localized
+			return "Bad Request".localized
 		case .notAuthorized:
-			return "routing.notauthorized".localized
+			return "Not Authorized".localized
 		case .pkiFailed:
-			return "routing.pkifailed".localized
+			return "Encrypted Send Failed".localized
 		case .pkiUnknownPubkey:
 			return "Unknown public key".localized
 		case .adminBadSessionKey:

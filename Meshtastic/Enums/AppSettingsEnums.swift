@@ -21,15 +21,15 @@ enum MeshMapTypes: Int, CaseIterable, Identifiable {
 		case .standard:
 			return "Standard".localized
 		case .mutedStandard:
-			return "standard.muted".localized
+			return "Standard Muted".localized
 		case .hybrid:
-			return "hybrid".localized
+			return "Hybrid".localized
 		case .hybridFlyover:
-			return "hybrid.flyover".localized
+			return "Hybrid Flyover".localized
 		case .satellite:
-			return "satellite".localized
+			return "Satellite".localized
 		case .satelliteFlyover:
-			return "satellite.flyover".localized
+			return "Satellite Flyover".localized
 		}
 	}
 	func MKMapTypeValue() -> MKMapType {
