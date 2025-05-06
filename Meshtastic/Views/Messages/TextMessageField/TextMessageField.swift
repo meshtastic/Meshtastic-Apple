@@ -44,7 +44,7 @@ struct TextMessageField: View {
 				}
 
 				ZStack {
-					TextField("message", text: $typingMessage, axis: .vertical)
+					TextField("Message", text: $typingMessage, axis: .vertical)
 						.onChange(of: typingMessage) { _, value in
 							totalBytes = value.utf8.count
 							while totalBytes > Self.maxbytes {
