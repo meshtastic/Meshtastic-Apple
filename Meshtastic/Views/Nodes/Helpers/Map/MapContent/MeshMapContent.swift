@@ -20,7 +20,7 @@ struct MeshMapContent: MapContent {
 	@Binding var selectedMapLayer: MapLayer
 	// Map Configuration
 	@Binding var selectedPosition: PositionEntity?
-	@AppStorage("enableMapWaypoints") private var showWaypoints = false
+	@AppStorage("enableMapWaypoints") private var showWaypoints = true
 	@Binding var selectedWaypoint: WaypointEntity?
 
 	@FetchRequest(fetchRequest: PositionEntity.allPositionsFetchRequest(), animation: .easeIn)
