@@ -98,7 +98,7 @@ extension UserDefaults {
 	@UserDefault(.meshMapDistance, defaultValue: 800000)
 	static var meshMapDistance: Double
 
-	@UserDefault(.enableMapWaypoints, defaultValue: false)
+	@UserDefault(.enableMapWaypoints, defaultValue: true)
 	static var enableMapWaypoints: Bool
 
 	@UserDefault(.enableMapRecentering, defaultValue: false)

@@ -16,7 +16,7 @@ struct NodeMapContent: MapContent {
 	/// Map State User Defaults
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
-	@AppStorage("enableMapWaypoints") private var showWaypoints = false
+	@AppStorage("enableMapWaypoints") private var showWaypoints = true
 	@AppStorage("enableMapConvexHull") private var showConvexHull = false
 	@AppStorage("enableMapTraffic") private var showTraffic: Bool = false
 	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = false

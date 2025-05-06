@@ -20,7 +20,7 @@ struct MeshMapContent: MapContent {
 	@Binding var selectedMapLayer: MapLayer
 	// Map Configuration
 	@Binding var selectedPosition: PositionEntity?
-	@AppStorage("enableMapWaypoints") private var showWaypoints = false
+	@AppStorage("enableMapWaypoints") private var showWaypoints = true
 	@Binding var selectedWaypoint: WaypointEntity?
 
 	@FetchRequest(fetchRequest: PositionEntity.allPositionsFetchRequest(), animation: .easeIn)
@@ -74,9 +74,9 @@ struct MeshMapContent: MapContent {
 						}
 					}
 				}
-				.onTapGesture { _ in
+				.highPriorityGesture(TapGesture().onEnded { _ in
 					selectedPosition = (selectedPosition == position ? nil : position)
-				}
+				})
 			}
 			/// Node History and Route Lines for favorites
 			if let nodePosition = position.nodePosition,
@@ -186,7 +186,7 @@ struct MeshMapContent: MapContent {
 					LazyVStack {
 						ZStack {
 							CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 40)
-								.onTapGesture(perform: { _ in
+								.highPriorityGesture(TapGesture().onEnded { _ in
 									selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
 								})
 						}
