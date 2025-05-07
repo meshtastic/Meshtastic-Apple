@@ -1104,7 +1104,7 @@ func waypointPacket(packet: MeshPacket, context: NSManagedObjectContext) {
 				if existingWaypoint.locked == 0 || existingWaypoint.locked == packet.from {
 					let currentTime = Int64(Date().timeIntervalSince1970)
 					if waypointMessage.expire > 0 && waypointMessage.expire <= currentTime {
-						BLEManager.shared.context.delete(existingWaypoint)
+						context.delete(existingWaypoint)
 						do {
 							try context.save()
 							Logger.data.info("💾 Deleted a waypoint")
@@ -1113,26 +1113,27 @@ func waypointPacket(packet: MeshPacket, context: NSManagedObjectContext) {
 							let nsError = error as NSError
 							Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
 						}
-					}
-					existingWaypoint.name = waypointMessage.name
-					existingWaypoint.longDescription = waypointMessage.description_p
-					existingWaypoint.latitudeI = waypointMessage.latitudeI
-					existingWaypoint.longitudeI = waypointMessage.longitudeI
-					existingWaypoint.icon = Int64(waypointMessage.icon)
-					existingWaypoint.locked = Int64(waypointMessage.lockedTo)
-					if waypointMessage.expire >= 1 {
-						existingWaypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
 					} else {
-						existingWaypoint.expire = nil
-					}
-					existingWaypoint.lastUpdated = Date()
-					do {
-						try context.save()
-						Logger.data.info("💾 Updated Node Waypoint App Packet For: \(existingWaypoint.id, privacy: .public)")
-					} catch {
-						context.rollback()
-						let nsError = error as NSError
-						Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
+						existingWaypoint.name = waypointMessage.name
+						existingWaypoint.longDescription = waypointMessage.description_p
+						existingWaypoint.latitudeI = waypointMessage.latitudeI
+						existingWaypoint.longitudeI = waypointMessage.longitudeI
+						existingWaypoint.icon = Int64(waypointMessage.icon)
+						existingWaypoint.locked = Int64(waypointMessage.lockedTo)
+						if waypointMessage.expire >= 1 {
+							existingWaypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
+						} else {
+							existingWaypoint.expire = nil
+						}
+						existingWaypoint.lastUpdated = Date()
+						do {
+							try context.save()
+							Logger.data.info("💾 Updated Node Waypoint App Packet For: \(existingWaypoint.id, privacy: .public)")
+						} catch {
+							context.rollback()
+							let nsError = error as NSError
+							Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
+						}
 					}
 				}
 			}
