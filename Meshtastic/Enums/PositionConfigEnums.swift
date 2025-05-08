@@ -73,29 +73,29 @@ enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .thirtySeconds:
-			return "interval.thirty.seconds".localized
+			return "Thirty Seconds".localized
 		case .oneMinute:
-			return "interval.one.minute".localized
+			return "One Minute".localized
 		case .twoMinutes:
-			return "interval.two.minutes".localized
+			return "Two Minutes".localized
 		case .fiveMinutes:
-			return "interval.five.minutes".localized
+			return "Five Minutes".localized
 		case .tenMinutes:
-			return "interval.ten.minutes".localized
+			return "Ten Minutes".localized
 		case .fifteenMinutes:
-			return "interval.fifteen.minutes".localized
+			return "Fifteen Minutes".localized
 		case .thirtyMinutes:
-			return "interval.thirty.minutes".localized
+			return "Thirty Minutes".localized
 		case .oneHour:
-			return "interval.one.hour".localized
+			return "One Hour".localized
 		case .sixHours:
-			return "interval.six.hours".localized
+			return "Six Hours".localized
 		case .twelveHours:
-			return "interval.twelve.hours".localized
+			return "Twelve Hours".localized
 		case .twentyFourHours:
-			return "interval.twentyfour.hours".localized
+			return "Twenty Four Hours".localized
 		case .maxInt32:
-			return "on.boot".localized
+			return "On Boot Only".localized
 		}
 	}
 }

@@ -75,11 +75,11 @@ struct AppLog: View {
 				}
 			} else {
 				Table(logs, selection: $selection, sortOrder: $sortOrder) {
-					TableColumn("log.time") { value in
+					TableColumn("Time") { value in
 						Text(value.date.formatted(dateFormatStyle))
 					}
 					.width(min: 125, max: 150)
-					TableColumn("log.level") { value in
+					TableColumn("Level") { value in
 						Text(value.level.description)
 							.foregroundStyle(value.level.color)
 					}
