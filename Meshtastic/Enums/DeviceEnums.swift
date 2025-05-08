@@ -152,17 +152,17 @@ enum RebroadcastModes: Int, CaseIterable, Identifiable {
 	var name: String {
 		switch self {
 		case .all:
-			return "All"
+			return "All".localized
 		case .allSkipDecoding:
-			return "All Skip Decoding"
+			return "All Skip Decoding".localized
 		case .localOnly:
-			return "Local Only"
+			return "Local Only".localized
 		case .knownOnly:
-			return "Known Only"
+			return "Known Only".localized
 		case .none:
-			return "None"
+			return "None".localized
 		case .corePortnums:
-			return "Core Portnums Only"
+			return "Core Portnums Only".localized
 		}
 	}
 	var description: String {

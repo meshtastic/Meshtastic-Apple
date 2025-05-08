@@ -45,7 +45,7 @@ enum InputEventChars: Int, CaseIterable, Identifiable {
 		switch self {
 
 		case .none:
-			return "inputevent.none".localized
+			return "None".localized
 		case .up:
 			return "inputevent.up".localized
 		case .down:
