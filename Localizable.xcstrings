@@ -2293,12 +2293,6 @@
             "value" : "Nach"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "After"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3439,12 +3433,6 @@
     },
     "Bad Request" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Bad Request"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4553,22 +4541,10 @@
             "value" : "Category"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Category"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Categoria"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Category"
           }
         },
         "sr" : {
@@ -5547,21 +5523,15 @@
     },
     "Client" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Client"
-          }
-        },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Cliente"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Клијент"
           }
         },
@@ -8476,12 +8446,6 @@
             "value" : "Gerätekonfiguration"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Device Configuration"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10866,12 +10830,6 @@
     },
     "Echo" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Echo"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11788,7 +11746,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ausrufezeichen"
           }
         },
@@ -11800,7 +11758,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "סימן קריאה"
           }
         },
@@ -11818,13 +11776,13 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Utropstecken"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Узвичник"
           }
         },
@@ -11910,19 +11868,7 @@
     },
     "Export" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Export"
-          }
-        },
         "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Export"
-          }
-        },
-        "he" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Export"
@@ -11932,12 +11878,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Esportazione"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Export"
           }
         },
         "sr" : {
@@ -13996,12 +13936,6 @@
     },
     "HaHa" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "HaHa"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -14010,25 +13944,19 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "חחח"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "HaHa"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "HaHa"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Хахаха"
           }
         },
@@ -14180,7 +14108,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Herz"
           }
         },
@@ -14192,13 +14120,13 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "לב"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Cuore"
           }
         },
@@ -14210,13 +14138,13 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Hjärta"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Срце"
           }
         },
@@ -15398,15 +15326,9 @@
             "value" : "Incomplete"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Incomplete"
-          }
-        },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Incompleto"
           }
         },
@@ -15438,12 +15360,6 @@
     },
     "India" : {
       "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "India"
-          }
-        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23119,7 +23035,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Kein Kanal"
           }
         },
@@ -23131,13 +23047,13 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "אין ערוץ"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Nessun canale"
           }
         },
@@ -23149,13 +23065,13 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ingen kanal"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Нема канала"
           }
         },
@@ -23255,7 +23171,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Keine Schnittstelle"
           }
         },
@@ -23267,13 +23183,13 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "אין ממשק"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Nessuna interfaccia"
           }
         },
@@ -23285,13 +23201,13 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Inget gränssnitt"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Нема интерфејса"
           }
         },
@@ -23313,7 +23229,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Keine PIN (geht einfach)"
           }
         },
@@ -23325,13 +23241,13 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "ללא קוד (פשוט עובד)"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Nessun PIN (funziona e basta)"
           }
         },
@@ -23343,13 +23259,13 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ingen PIN (Bara fungerar)"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Нема ПИН-а (само ради)"
           }
         },
@@ -23421,7 +23337,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Keine Antwort"
           }
         },
@@ -23433,13 +23349,13 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "אין תגובה"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Nessuna risposta"
           }
         },
@@ -23451,13 +23367,13 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Inget svar"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Нема одговора"
           }
         },
@@ -23479,7 +23395,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Keine Route"
           }
         },
@@ -23491,13 +23407,13 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "אין מסלול"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Nessun percorso"
           }
         },
@@ -23509,13 +23425,13 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ingen rutt"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Нема руте"
           }
         },
@@ -23919,55 +23835,55 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Keins"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Aucun"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "ללא"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Nessuno"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Brak"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ingen"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ништа"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "无"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "無"
           }
         }
@@ -23999,7 +23915,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Nicht authorisiert"
           }
         },
@@ -24011,31 +23927,31 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "לא מאושר"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Non autorizzato"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Nieautoryzowany"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Inte auktoriserad"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Није ауторизовано"
           }
         },
@@ -25221,12 +25137,6 @@
     },
     "PAX Counter" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "PAX Counter"
-          }
-        },
         "he" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25273,12 +25183,6 @@
     },
     "PAX Counter Config" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "PAX Counter Config"
-          }
-        },
         "he" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25867,13 +25771,13 @@
       "localizations" : {
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Impostare una regione"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Молимо изаберите регион"
           }
         },
@@ -25911,7 +25815,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Kacke"
           }
         },
@@ -25923,13 +25827,13 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "חרא"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Cacca"
           }
         },
@@ -25941,13 +25845,13 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Bajs"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Кака"
           }
         },
@@ -25967,12 +25871,6 @@
     },
     "Position" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Position"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -25995,12 +25893,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pozycja"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Position"
           }
         },
         "sr" : {
@@ -27005,7 +26897,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Fragezeichen"
           }
         },
@@ -27017,7 +26909,7 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "סימן שאלה"
           }
         },
@@ -27035,13 +26927,13 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Frågetecken"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Знак питања"
           }
         },
@@ -27351,7 +27243,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Neustart"
           }
         },
@@ -27363,13 +27255,13 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "התחל מחדש"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Riavvio"
           }
         },
@@ -27381,13 +27273,13 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Starta om"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Поновно покретање"
           }
         },
@@ -27409,7 +27301,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Knoten neustarten?"
           }
         },
@@ -27421,13 +27313,13 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "התחל מכשיר מחדש??"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Riavviare il nodo?"
           }
         },
@@ -27439,13 +27331,13 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Starta om nod?"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Поново покрени чвор?"
           }
         },
@@ -29439,12 +29331,6 @@
     },
     "Russia" : {
       "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Russia"
-          }
-        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29495,7 +29381,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Satellit"
           }
         },
@@ -29507,14 +29393,8 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "לווין"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Satellite"
           }
         },
         "pl" : {
@@ -29525,13 +29405,13 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Satellit"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Сателит"
           }
         },
@@ -29551,12 +29431,6 @@
     },
     "Satellite Flyover" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Satellite Flyover"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29565,13 +29439,13 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "לווין בשמיים"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Sorvolo satellitare"
           }
         },
@@ -29583,13 +29457,13 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Satellitöverflygning"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Прелет сателита"
           }
         },
@@ -29973,7 +29847,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Sekundär"
           }
         },
@@ -29985,13 +29859,13 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "משני"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Secondario"
           }
         },
@@ -30003,13 +29877,13 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Sekundär"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Секундарни"
           }
         },
@@ -30863,12 +30737,6 @@
     },
     "Serial" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Serial"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32481,12 +32349,6 @@
     },
     "Standard" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Standard"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -32495,14 +32357,8 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "סטנדרטי"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Standard"
           }
         },
         "pl" : {
@@ -32511,15 +32367,9 @@
             "value" : "Standardowy"
           }
         },
-        "se" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Standard"
-          }
-        },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Стандардно"
           }
         },
@@ -32539,12 +32389,6 @@
     },
     "Standard Muted" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Standard Muted"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32553,13 +32397,13 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "סטנדרתי-השתק"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Standard Silenzioso"
           }
         },
@@ -32571,13 +32415,13 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Standard Muted"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Стандардно мутирано"
           }
         },
@@ -32995,12 +32839,6 @@
     },
     "Taiwan" : {
       "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Taiwan"
-          }
-        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33825,7 +33663,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Das Paket ist zu groß"
           }
         },
@@ -33837,13 +33675,13 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "ההודעה ארוכה/גדולה מידי"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Il pacchetto è troppo grande"
           }
         },
@@ -33855,13 +33693,13 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Paketet är för stort"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Пакет је превелики"
           }
         },
@@ -34411,7 +34249,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Daumen runter"
           }
         },
@@ -34423,13 +34261,13 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "אגודל למטה"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Pollici in giù"
           }
         },
@@ -34441,13 +34279,13 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Tummen ner"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Палац доле"
           }
         },
@@ -34469,7 +34307,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Daumen hoch"
           }
         },
@@ -34481,13 +34319,13 @@
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "אגודל למעלה"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Pollici in su"
           }
         },
@@ -34499,13 +34337,13 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Tummen upp"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Лајк"
           }
         },
@@ -35781,12 +35619,6 @@
     },
     "Unknown" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Unknown"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36233,12 +36065,6 @@
     },
     "Uptime" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Uptime"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37071,7 +36897,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Welle"
           }
         },
@@ -37081,15 +36907,9 @@
             "value" : "Wave"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Wave"
-          }
-        },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Onda"
           }
         },
@@ -37101,13 +36921,13 @@
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Vinka"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Махање"
           }
         },
@@ -37351,12 +37171,6 @@
     },
     "When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work." : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work."
-          }
-        },
         "he" : {
           "stringUnit" : {
             "state" : "translated",
