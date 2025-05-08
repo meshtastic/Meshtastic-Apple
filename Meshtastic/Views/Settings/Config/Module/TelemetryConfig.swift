@@ -124,7 +124,7 @@ struct TelemetryConfig: View {
 					}
 				}
 			}
-			.navigationTitle("telemetry.config")
+			.navigationTitle("Telemetry Config")
 			.navigationBarItems(
 				trailing: ZStack {
 					ConnectedDevice(

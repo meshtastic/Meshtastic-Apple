@@ -8891,18 +8891,12 @@
         }
       }
     },
-    "device" : {
+    "Device" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gerät"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Device"
           }
         },
         "fr" : {
@@ -16255,15 +16249,9 @@
         }
       }
     },
-    "logging" : {
+    "Logging" : {
       "localizations" : {
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Logging"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Logging"
@@ -17349,18 +17337,12 @@
         }
       }
     },
-    "mesh.log.bluetooth.config %@" : {
+    "Bluetooth config received: %@" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bluetooth Konfiguration empfangen: %@"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bluetooth config received: %@"
           }
         },
         "fr" : {
@@ -17703,18 +17685,12 @@
         }
       }
     },
-    "mesh.log.device.config %@" : {
+    "Device config received: %@" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gerätekonfiguration empfangen: %@"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Device config received: %@"
           }
         },
         "fr" : {
@@ -18935,18 +18911,12 @@
         }
       }
     },
-    "mesh.log.telemetry.config %@" : {
+    "Telemetry module config received: %@" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Telemetrie Modul Konfiguration empfangen: %@"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Telemetry module config received: %@"
           }
         },
         "fr" : {
@@ -20172,18 +20142,12 @@
         }
       }
     },
-    "module.configuration" : {
+    "Module Configuration" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Modul Konfiguration"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Module Configuration"
           }
         },
         "fr" : {
@@ -20680,18 +20644,12 @@
         }
       }
     },
-    "network" : {
+    "Network" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Netzwerk"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Network"
           }
         },
         "fr" : {
@@ -21692,18 +21650,12 @@
         }
       }
     },
-    "nodelist.filter.distance %@" : {
+    "up to %@ away" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "bis zu %@ entfernt"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "up to %@ away"
           }
         },
         "fr" : {
@@ -30875,18 +30827,12 @@
         }
       }
     },
-    "telemetry" : {
+    "Telemetry" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Telemetrie (Sensoren)"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Telemetry (Sensors)"
           }
         },
         "fr" : {
@@ -30939,18 +30885,12 @@
         }
       }
     },
-    "telemetry.config" : {
+    "Telemetry Config" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Telemetrie Einstellungen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Telemetry Config"
           }
         },
         "fr" : {
