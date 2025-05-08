@@ -124,7 +124,7 @@ struct Settings: View {
 
 			NavigationLink(value: SettingsNavigationState.device) {
 				Label {
-					Text("device")
+					Text("Device")
 				} icon: {
 					Image(systemName: "flipphone")
 				}
@@ -140,7 +140,7 @@ struct Settings: View {
 
 			NavigationLink(value: SettingsNavigationState.network) {
 				Label {
-					Text("network")
+					Text("Network")
 				} icon: {
 					Image(systemName: "network")
 				}
@@ -269,7 +269,7 @@ struct Settings: View {
 			if isModuleSupported(.telemetryConfig) {
 				NavigationLink(value: SettingsNavigationState.telemetry) {
 					Label {
-						Text("telemetry")
+						Text("Telemetry")
 					} icon: {
 						Image(systemName: "chart.xyaxis.line")
 					}
@@ -286,7 +286,7 @@ struct Settings: View {
 				Text("This node does not support any configurable modules.")
 			}
 		} header: {
-			Text("module.configuration")
+			Text("Module Configuration")
 		} footer: {
 			if moduleOverride {
 				Text("Currently showing modules that may not be supported by this node.")
@@ -295,7 +295,7 @@ struct Settings: View {
 	}
 
 	var loggingSection: some View {
-		Section(header: Text("logging")) {
+		Section(header: Text("Logging")) {
 			NavigationLink(value: SettingsNavigationState.debugLogs) {
 				Label {
 					Text("Logs")
