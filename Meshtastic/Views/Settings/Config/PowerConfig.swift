@@ -32,8 +32,8 @@ struct PowerConfig: View {
 			Section {
 				if (currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3) || (currentDevice?.architecture == .nrf52840 && (node?.deviceConfig?.role ?? 0 == 5 || node?.deviceConfig?.role ?? 0 == 6)) {
 					Toggle(isOn: $isPowerSaving) {
-						Label("config.power.saving", systemImage: "bolt")
-						Text("config.power.saving.description")
+						Label("Power Saving", systemImage: "bolt")
+						Text("Will sleep everything as much as possible, for the tracker and sensor role this will also include the lora radio. Don't use this setting if you want to use your device with the phone apps or are using a device without a user button.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}

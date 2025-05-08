@@ -42,8 +42,8 @@ struct NetworkConfig: View {
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
 							HStack {
-								Label("ssid", systemImage: "network")
-								TextField("ssid", text: $wifiSsid)
+								Label("SSID", systemImage: "network")
+								TextField("SSID", text: $wifiSsid)
 									.foregroundColor(.gray)
 									.autocapitalization(.none)
 									.disableAutocorrection(true)

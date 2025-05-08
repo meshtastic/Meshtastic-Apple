@@ -13,10 +13,10 @@
 		return "tip.channels.share"
 	}
 	var title: Text {
-		Text("tip.channels.share.title")
+		Text("Sharing Meshtastic Channels")
 	}
 	var message: Text? {
-		Text("tip.channels.share.message")
+		Text("A Meshtastic QR code contains the LoRa config and channel values needed for radios to communicate. You can share a complete channel configuration using the Replace Channels option, if you choose Add Channels your shared channels will be added to the channels on the receiving radio.")
 	}
 	var image: Image? {
 		Image(systemName: "qrcode")
@@ -29,10 +29,10 @@ struct CreateChannelsTip: Tip {
 	   return "tip.channels.create"
    }
    var title: Text {
-	   Text("tip.channels.create.title")
+	   Text("Manage Channels")
    }
    var message: Text? {
-	   Text("tip.channels.create.message")
+	   Text("Most data on your mesh is sent over the primary channel. You can set up secondary channels to create additional messaging groups secured by their own key. [Channel config tips](https://meshtastic.org/docs/configuration/tips/)")
    }
    var image: Image? {
 	   Image(systemName: "fibrechannel")

@@ -75,7 +75,7 @@ struct NodeListItem: View {
 						if connected {
 							IconAndText(systemName: "antenna.radiowaves.left.and.right.circle.fill",
 										imageColor: .green,
-										text: "connected".localized)
+										text: "Connected".localized)
 						}
 						if node.lastHeard?.timeIntervalSince1970 ?? 0 > 0 && node.lastHeard! < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
 							IconAndText(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill",
