@@ -30,7 +30,8 @@
             "value" : "\t%@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     " %@" : {
       "localizations" : {
@@ -58,7 +59,8 @@
             "value" : "%@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     " %@%%" : {
       "localizations" : {
@@ -74,7 +76,8 @@
             "value" : " %@%%"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     ": %@" : {
       "localizations" : {
@@ -102,7 +105,8 @@
             "value" : ": %@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     ": %d" : {
       "localizations" : {
@@ -130,7 +134,8 @@
             "value" : ": %d"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "(Re)define PIN_GPS_EN for your board." : {
       "localizations" : {
@@ -186,7 +191,8 @@
             "value" : "%@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ - %@" : {
       "localizations" : {
@@ -1983,6 +1989,52 @@
         }
       }
     },
+    "ADC Override" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ADC Override"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ADC Override"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Override ADC"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ADC Override"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ADC-överskrivning"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Преписивање ADC-а"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ADC校正"
+          }
+        }
+      }
+    },
     "Add Channel" : {
       "localizations" : {
         "it" : {
@@ -2318,6 +2370,92 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "之後"
+          }
+        }
+      }
+    },
+    "After config values save the node will reboot." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach dem Ändern der Einstellungen wird das Gerät neu starten."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une fois la configuration sauvegardée, le noeud redémarrera."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "לאחר שמירת הגדרות המכשיר יתחיל מחדש."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dopo il salvataggio dei valori di configurazione, il nodo si riavvia."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Po zapisaniu wartości konfiguracji węzeł zostanie zrestartowany."
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efter att konfigurationsvärdena sparats kommer noden att starta om."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Након што сачувате вредности конфигурације, чвор ће се поново покренути."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "节点将会在保存配置后重启。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節點將會在設定儲存後重啟。"
+          }
+        }
+      }
+    },
+    "Afternoon" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nachmittag"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomeriggio"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пре подне"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上午"
           }
         }
       }
@@ -3684,6 +3822,58 @@
         }
       }
     },
+    "Battery" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batterie"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Battery"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batteria"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Battery"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batteri"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Батерија"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "电池"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電池"
+          }
+        }
+      }
+    },
     "Battery Level" : {
       "localizations" : {
         "de" : {
@@ -3794,6 +3984,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "鮑率（Baud）"
+          }
+        }
+      }
+    },
+    "BLE" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BLE"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BLE"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "БЛЕ"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BLE"
           }
         }
       }
@@ -5985,110 +6203,6 @@
         }
       }
     },
-    "config.power.adc.multiplier" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Multiplier"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Multiplier"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Multiplier"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Moltiplicatore"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Multiplier"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Multiplikator"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Мултипликатор"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "修正倍數"
-          }
-        }
-      }
-    },
-    "config.power.adc.override" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ADC Override"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ADC Override"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ADC Override"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Override ADC"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ADC Override"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ADC-överskrivning"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Преписивање ADC-а"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ADC校正"
-          }
-        }
-      }
-    },
     "config.power.saving" : {
       "localizations" : {
         "de" : {
@@ -6195,64 +6309,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "此設定會讓裝置盡可能休眠，包括 LoRa 無線電（用於 Tracker 和 Sensor 角色）。若您要搭配手機 App，或裝置沒有用戶按鈕，請不要使用此設定。"
-          }
-        }
-      }
-    },
-    "config.power.section.battery" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Batterie"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Battery"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Battery"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Batteria"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Battery"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Batteri"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Батерија"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "电池"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "電池"
           }
         }
       }
@@ -6531,70 +6587,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "鈴聲"
-          }
-        }
-      }
-    },
-    "config.save.confirm" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nach dem Ändern der Einstellungen wird das Gerät neu starten."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "After config values save the node will reboot."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Une fois la configuration sauvegardée, le noeud redémarrera."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "לאחר שמירת הגדרות המכשיר יתחיל מחדש."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dopo il salvataggio dei valori di configurazione, il nodo si riavvia."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Po zapisaniu wartości konfiguracji węzeł zostanie zrestartowany."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Efter att konfigurationsvärdena sparats kommer noden att starta om."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Након што сачувате вредности конфигурације, чвор ће се поново покренути."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "节点将会在保存配置后重启。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "節點將會在設定儲存後重啟。"
           }
         }
       }
@@ -7113,18 +7105,12 @@
         }
       }
     },
-    "contacts %@" : {
+    "Contacts (%@)" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kontakte (%@)"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Contacts (%@)"
           }
         },
         "fr" : {
@@ -11909,6 +11895,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "歐盟 868MHz"
+          }
+        }
+      }
+    },
+    "Evening" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abend"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sera"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вече"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下午"
           }
         }
       }
@@ -20554,6 +20568,40 @@
         }
       }
     },
+    "Midday" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mittag"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Midday"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mezzogiorno"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подне"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中午"
+          }
+        }
+      }
+    },
     "Minimum Distance" : {
       "localizations" : {
         "de" : {
@@ -20832,6 +20880,34 @@
         }
       }
     },
+    "Morning" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Morgen"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mattina"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Јутро"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "早晨"
+          }
+        }
+      }
+    },
     "MQTT" : {
       "localizations" : {
         "it" : {
@@ -20984,6 +21060,52 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "MQTT 設定"
+          }
+        }
+      }
+    },
+    "Multiplier" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Multiplier"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Multiplier"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moltiplicatore"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Multiplier"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Multiplikator"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мултипликатор"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "修正倍數"
           }
         }
       }
@@ -21458,6 +21580,92 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "有更新的韌體可供使用"
+          }
+        }
+      }
+    },
+    "Nighttime" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nacht"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notte"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ноћ"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "夜晚"
+          }
+        }
+      }
+    },
+    "NMEA Positions" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NMEA Positionen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Positions NMEA"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "מיקומי NMEA"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posizioni NMEA"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pozycje NMEA"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NMEA-positioner"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NMEA позиције"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NMEA 位置"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NMEA 位置"
           }
         }
       }
@@ -22888,61 +23096,55 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Eine Stunde"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "One Hour"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Une heure"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "שעה אחת"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Un'ora"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Jedna Godzina"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "En Timme"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Један сат"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "一小时"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "1 小時"
           }
         }
@@ -23786,40 +23988,6 @@
         }
       }
     },
-    "paxcounter.ble" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "БЛЕ"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE"
-          }
-        }
-      }
-    },
     "paxcounter.content.unavailable" : {
       "localizations" : {
         "en" : {
@@ -23918,74 +24086,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "PAX 計數器日誌"
-          }
-        }
-      }
-    },
-    "paxcounter.total" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Total PAX"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Totale PAX"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Totalt PAX"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Укупно PAX"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX 總數"
-          }
-        }
-      }
-    },
-    "paxcounter.wifi" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiFi"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiFi"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiFi"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ВајФај"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiFi"
           }
         }
       }
@@ -25312,6 +25412,64 @@
         }
       }
     },
+    "Protobufs" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protobufs"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protobufs"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protobufs"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protobufs"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protobufy"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protobufs"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Протобафови"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protobufs"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protobufs"
+          }
+        }
+      }
+    },
     "Public Key" : {
       "localizations" : {
         "de" : {
@@ -26282,176 +26440,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已達到頻道占用循環週期發射上限"
-          }
-        }
-      }
-    },
-    "relativetimeofday.afternoon" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nachmittag"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Afternoon"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pomeriggio"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Пре подне"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "上午"
-          }
-        }
-      }
-    },
-    "relativetimeofday.evening" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abend"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Evening"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sera"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Вече"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "下午"
-          }
-        }
-      }
-    },
-    "relativetimeofday.midday" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mittag"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Midday"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mezzogiorno"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Подне"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "中午"
-          }
-        }
-      }
-    },
-    "relativetimeofday.morning" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Morgen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Morning"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mattina"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Јутро"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "早晨"
-          }
-        }
-      }
-    },
-    "relativetimeofday.nighttime" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nacht"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nighttime"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Notte"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ноћ"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "夜晚"
           }
         }
       }
@@ -29551,262 +29539,6 @@
         }
       }
     },
-    "serial.mode.nmea" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NMEA Positionen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NMEA Positions"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Positions NMEA"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מיקומי NMEA"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Posizioni NMEA"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pozycje NMEA"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NMEA-positioner"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NMEA позиције"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NMEA 位置"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NMEA 位置"
-          }
-        }
-      }
-    },
-    "serial.mode.proto" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Protobufs"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Protobufs"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Protobufs"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Protobufs"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Protobufs"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Protobufy"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Protobufs"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Протобафови"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Protobufs"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Protobufs"
-          }
-        }
-      }
-    },
-    "serial.mode.simple" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Einfach"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Simple"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Simple"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "פשוט"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Semplice"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prosty"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enkel"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Једноставни"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "简单"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "簡易"
-          }
-        }
-      }
-    },
-    "serial.mode.txtmsg" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Textnachricht"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Text Message"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Message texte"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הודעת טקסט"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Messaggio di testo"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wiadomość tekstowa"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Textmeddelande"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Текстуална порука"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "文本消息"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "文字訊息"
-          }
-        }
-      }
-    },
     "Series" : {
       "localizations" : {
         "it" : {
@@ -30705,6 +30437,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "訊號%@"
+          }
+        }
+      }
+    },
+    "Simple" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einfach"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simple"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "פשוט"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semplice"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prosty"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enkel"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Једноставни"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "简单"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "簡易"
           }
         }
       }
@@ -32017,6 +31807,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "第三組管理公鑰"
+          }
+        }
+      }
+    },
+    "Text Message" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Textnachricht"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message texte"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "הודעת טקסט"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Messaggio di testo"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiadomość tekstowa"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Textmeddelande"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Текстуална порука"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文本消息"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文字訊息"
           }
         }
       }
@@ -33797,70 +33645,6 @@
         }
       }
     },
-    "tip.messages.message" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Du kannst Kanalnachrichten (Gruppenchats) und Direktnachrichten senden und empfangen. Bei jeder Nachricht kannst du lange drücken, um verfügbare Aktionen wie Kopieren, Antworten, Tapback und Löschen sowie Zustelldetails anzuzeigen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You can send and receive channel (group chats) and direct messages.  From any message you can long press to see available actions like copy, reply, tapback and delete as well as delivery details."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vous pouvez envoyer et recevoir des canaux (chats de groupe) et des messages directs. Depuis n’importe quel message, vous pouvez faire un appui long pour voir les actions possibles comme copier, répondre, tapback et supprimer ainsi que les détails de l'envoi."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ניתן לשלוח הודעות ערוץ (קבוצות צ'אט) והודעות פרטיות. על הודעה ניתן לעשות לחיצה ארוכה בכדי לראות פעולות אפשריות כגון העתק, הגב, תגובה מהירה, מחק ובנוסף לראות מצב שליחה."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "È possibile inviare e ricevere messaggi di canale (chat di gruppo) e messaggi diretti.  Da qualsiasi messaggio è possibile premere a lungo per visualizzare le azioni disponibili, come copia, risposta, tapback e cancellazione, nonché i dettagli di consegna."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You can send and receive channel (group chats) and direct messages.  From any message you can long press to see available actions like copy, reply, tapback and delete as well as delivery details."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Du kan skicka och ta emot kanalmeddelanden (gruppchatt) och direkta meddelanden. Från alla meddelanden kan du långtrycka för att se tillgängliga åtgärder som kopiera, svara, tapback och radera samt leveransdetaljer."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Можете слати и примати поруке у каналима (групним четовима) и директне поруке. Из било које поруке можете дуго притиснути да бисте видели доступне радње као што су копирање, одговор, реакција и брисање, као и детаље о испоруци."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "您可以发送和接收群聊或私聊消息。在任何消息中，您都可以长按查看可用的操作，如复制、回复、拍一拍、删除以及投递详情。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "您可以傳送及接收頻道（群組聊天）和私人訊息。對任何訊息長按，可顯示操作選單，包括複製、回覆、表情回應、刪除及傳送詳情等功能。"
-          }
-        }
-      }
-    },
     "TLS Enabled" : {
       "localizations" : {
         "it" : {
@@ -33945,6 +33729,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "總共"
+          }
+        }
+      }
+    },
+    "Total PAX" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Totale PAX"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Totalt PAX"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Укупно PAX"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAX 總數"
           }
         }
       }
@@ -34645,27 +34457,21 @@
     },
     "Unhealthy" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unhealthy"
-          }
-        },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Non sano"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Нездраво"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "不健康"
           }
         }
@@ -36441,6 +36247,34 @@
         }
       }
     },
+    "WiFi" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WiFi"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WiFi"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ВајФај"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WiFi"
+          }
+        }
+      }
+    },
     "WiFi Options" : {
       "localizations" : {
         "de" : {
@@ -36748,6 +36582,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "您亦可透過藍牙，使用 Nordic DFU 應用程式來更新您的 Meshtastic 裝置。"
+          }
+        }
+      }
+    },
+    "You can send and receive channel (group chats) and direct messages.  From any message you can long press to see available actions like copy, reply, tapback and delete as well as delivery details." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du kannst Kanalnachrichten (Gruppenchats) und Direktnachrichten senden und empfangen. Bei jeder Nachricht kannst du lange drücken, um verfügbare Aktionen wie Kopieren, Antworten, Tapback und Löschen sowie Zustelldetails anzuzeigen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous pouvez envoyer et recevoir des canaux (chats de groupe) et des messages directs. Depuis n’importe quel message, vous pouvez faire un appui long pour voir les actions possibles comme copier, répondre, tapback et supprimer ainsi que les détails de l'envoi."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ניתן לשלוח הודעות ערוץ (קבוצות צ'אט) והודעות פרטיות. על הודעה ניתן לעשות לחיצה ארוכה בכדי לראות פעולות אפשריות כגון העתק, הגב, תגובה מהירה, מחק ובנוסף לראות מצב שליחה."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "È possibile inviare e ricevere messaggi di canale (chat di gruppo) e messaggi diretti.  Da qualsiasi messaggio è possibile premere a lungo per visualizzare le azioni disponibili, come copia, risposta, tapback e cancellazione, nonché i dettagli di consegna."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can send and receive channel (group chats) and direct messages.  From any message you can long press to see available actions like copy, reply, tapback and delete as well as delivery details."
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du kan skicka och ta emot kanalmeddelanden (gruppchatt) och direkta meddelanden. Från alla meddelanden kan du långtrycka för att se tillgängliga åtgärder som kopiera, svara, tapback och radera samt leveransdetaljer."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Можете слати и примати поруке у каналима (групним четовима) и директне поруке. Из било које поруке можете дуго притиснути да бисте видели доступне радње као што су копирање, одговор, реакција и брисање, као и детаље о испоруци."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您可以发送和接收群聊或私聊消息。在任何消息中，您都可以长按查看可用的操作，如复制、回复、拍一拍、删除以及投递详情。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您可以傳送及接收頻道（群組聊天）和私人訊息。對任何訊息長按，可顯示操作選單，包括複製、回覆、表情回應、刪除及傳送詳情等功能。"
           }
         }
       }

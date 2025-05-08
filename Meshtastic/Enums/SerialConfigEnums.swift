@@ -120,15 +120,15 @@ enum SerialModeTypes: Int, CaseIterable, Identifiable {
 		case .default:
 			return "Default".localized
 		case .simple:
-			return "serial.mode.simple".localized
+			return "Simple".localized
 		case .proto:
-			return "serial.mode.proto".localized
+			return "Protobufs".localized
 		case .txtmsg:
-			return "serial.mode.txtmsg".localized
+			return "Text Message".localized
 		case .nmea:
-			return "serial.mode.nmea".localized
+			return "NMEA Positions".localized
 		case .caltopo:
-			return "serial.mode.caltopo".localized
+			return "CALTOPO".localized
 		}
 	}
 	func protoEnumValue() -> ModuleConfig.SerialConfig.Serial_Mode {

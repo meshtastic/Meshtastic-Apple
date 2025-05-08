@@ -16,7 +16,7 @@ struct MessagesTip: Tip {
 	   Text("Messages")
    }
    var message: Text? {
-	   Text("tip.messages.message")
+	   Text("You can send and receive channel (group chats) and direct messages.  From any message you can long press to see available actions like copy, reply, tapback and delete as well as delivery details.")
    }
    var image: Image? {
 	   Image(systemName: "bubble.left.and.bubble.right")

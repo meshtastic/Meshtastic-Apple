@@ -194,7 +194,7 @@ struct UserList: View {
 				}
 			}
 			.listStyle(.plain)
-			.navigationTitle(String.localizedStringWithFormat("contacts %@".localized, String(users.count == 0 ? 0 : users.count)))
+			.navigationTitle(String.localizedStringWithFormat("Contacts (%@)".localized, String(users.count == 0 ? 0 : users.count)))
 			.sheet(isPresented: $editingFilters) {
 				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isPkiEncrypted: $isPkiEncrypted, isFavorite: $isFavorite, isIgnored: $isIgnored, isEnvironment: $isEnvironment, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
 			}

@@ -186,7 +186,7 @@ struct UserConfig: View {
 						}
 					}
 				} message: {
-					Text("config.save.confirm")
+					Text("After config values save the node will reboot.")
 				}
 			}
 			Spacer()
