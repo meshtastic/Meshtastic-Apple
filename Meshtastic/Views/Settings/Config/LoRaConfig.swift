@@ -304,6 +304,9 @@ struct LoRaConfig: View {
 		}
 	}
 	func setLoRaValues() {
+		if node?.loRaConfig?.modemPreset ?? 0 == 2 {
+			node?.loRaConfig?.modemPreset = 0
+		}
 		self.hopLimit = Int(node?.loRaConfig?.hopLimit ?? 3)
 		self.region = Int(node?.loRaConfig?.regionCode ?? 0)
 		self.usePreset = node?.loRaConfig?.usePreset ?? true

@@ -21,17 +21,17 @@ enum GpsFormats: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .gpsFormatDec:
-			return "gpsformat.dec".localized
+			return "Decimal Degrees Format".localized
 		case .gpsFormatDms:
-			return "gpsformat.dms".localized
+			return "Degrees Minutes Seconds".localized
 		case .gpsFormatUtm:
-			return "gpsformat.utm".localized
+			return "Universal Transverse Mercator".localized
 		case .gpsFormatMgrs:
-			return "gpsformat.mgrs".localized
+			return "Military Grid Reference System".localized
 		case .gpsFormatOlc:
-			return "gpsformat.olc".localized
+			return "Open Location Code (aka Plus Codes)".localized
 		case .gpsFormatOsgr:
-			return "gpsformat.osgr".localized
+			return "Ordnance Survey Grid Reference".localized
 		}
 	}
 	func protoEnumValue() -> Config.DisplayConfig.GpsCoordinateFormat {

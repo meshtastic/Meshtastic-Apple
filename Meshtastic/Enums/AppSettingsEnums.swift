@@ -80,9 +80,9 @@ enum UserTrackingModes: Int, CaseIterable, Identifiable {
 		case .none:
 			return "map.usertrackingmode.none".localized
 		case .follow:
-			return "map.usertrackingmode.follow".localized
+			return "Follow".localized
 		case .followWithHeading:
-			return "map.usertrackingmode.followwithheading".localized
+			return "Follow with heading".localized
 		}
 	}
 	var icon: String {

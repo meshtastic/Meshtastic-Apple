@@ -209,7 +209,7 @@ struct DeviceMetricsLog: View {
 						isPresented: $isPresentingClearLogConfirm,
 						titleVisibility: .visible
 					) {
-						Button("device.metrics.delete", role: .destructive) {
+						Button("Delete all device metrics?", role: .destructive) {
 							if clearTelemetry(destNum: node.num, metricsType: 0, context: context) {
 								Logger.data.notice("Cleared Device Metrics for \(node.num, privacy: .public)")
 							} else {

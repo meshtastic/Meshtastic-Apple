@@ -44,7 +44,7 @@ struct PaxCounterLog: View {
 										y: .value("y", (point.wifi + point.ble))
 									)
 								}
-								.accessibilityLabel("paxcounter.total")
+								.accessibilityLabel("Total PAX")
 								.accessibilityValue("X: \(point.time!), Y: \(point.wifi + point.ble)")
 								.foregroundStyle(paxChartColor)
 								.interpolationMethod(.cardinal)
@@ -55,7 +55,7 @@ struct PaxCounterLog: View {
 										y: .value("y", point.wifi)
 									)
 								}
-								.accessibilityLabel("paxcounter.wifi")
+								.accessibilityLabel("WiFi")
 								.accessibilityValue("X: \(point.time!), Y: \(point.wifi)")
 								.foregroundStyle(wifiChartColor)
 
@@ -65,7 +65,7 @@ struct PaxCounterLog: View {
 										y: .value("y", point.ble)
 									)
 								}
-								.accessibilityLabel("paxcounter.ble")
+								.accessibilityLabel("BLE")
 								.accessibilityValue("X: \(point.time!), Y: \(point.ble)")
 								.foregroundStyle(bleChartColor)
 							}
@@ -76,9 +76,9 @@ struct PaxCounterLog: View {
 						.chartXAxis(.automatic)
 						.chartYScale(domain: 0...maxValue)
 						.chartForegroundStyleScale([
-							"paxcounter.ble".localized: .blue,
-							"paxcounter.wifi".localized: .orange,
-							"paxcounter.total".localized: .green
+							"BLE".localized: .blue,
+							"WiFi".localized: .orange,
+							"Total PAX".localized: .green
 						])
 						.chartLegend(position: .automatic, alignment: .bottom)
 					}
@@ -89,13 +89,13 @@ struct PaxCounterLog: View {
 				if UIScreen.main.bounds.size.width > 768 && (UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
 					// Add a table for mac and ipad
 					Table(pax) {
-						TableColumn("paxcounter.ble") { pc in
+						TableColumn("BLE") { pc in
 							Text("\(pc.ble)")
 						}
-						TableColumn("paxcounter.wifi") { pc in
+						TableColumn("WiFi") { pc in
 							Text("\(pc.wifi)")
 						}
-						TableColumn("paxcounter.total") { pc in
+						TableColumn("Total PAX") { pc in
 							Text("\(pc.wifi + pc.ble)")
 						}
 						TableColumn("Uptime") { pc in
@@ -120,10 +120,10 @@ struct PaxCounterLog: View {
 						]
 						LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 							GridRow {
-								Text("paxcounter.ble")
+								Text("BLE")
 									.font(.caption)
 									.fontWeight(.bold)
-								Text("paxcounter.wifi")
+								Text("WiFi")
 									.font(.caption)
 									.fontWeight(.bold)
 								Text("Total")

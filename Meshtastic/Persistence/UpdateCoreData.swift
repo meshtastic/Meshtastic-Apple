@@ -863,7 +863,7 @@ func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, s
 
 func upsertAmbientLightingModuleConfigPacket(config: ModuleConfig.AmbientLightingConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("mesh.log.ambientlighting.config %@".localized, String(nodeNum))
+	let logString = String.localizedStringWithFormat("Ambient Lighting module config received: %@".localized, String(nodeNum))
 	Logger.data.info("🏮 \(logString, privacy: .public)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()

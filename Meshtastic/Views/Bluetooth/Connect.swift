@@ -32,7 +32,7 @@ struct Connect: View {
 			VStack {
 				List {
 					if bleManager.isSwitchedOn {
-						Section(header: Text("connected.radio").font(.title)) {
+						Section(header: Text("Connected Radio").font(.title)) {
 							if let connectedPeripheral = bleManager.connectedPeripheral, connectedPeripheral.peripheral.state == .connected {
 								TipView(BluetoothConnectionTip(), arrowEdge: .bottom)
 								VStack(alignment: .leading) {
@@ -125,7 +125,7 @@ struct Connect: View {
 										NavigationLink {
 											LoRaConfig(node: node)
 										} label: {
-											Label("set.region", systemImage: "globe.americas.fill")
+											Label("Set LoRa Region", systemImage: "globe.americas.fill")
 												.foregroundColor(.red)
 												.font(.title)
 										}
@@ -142,7 +142,7 @@ struct Connect: View {
 											.frame(width: 60, height: 60)
 											.padding(.trailing)
 										if bleManager.timeoutTimerCount == 0 {
-											Text("connecting")
+											Text("Connecting . .")
 												.font(.title2)
 												.foregroundColor(.orange)
 										} else {
