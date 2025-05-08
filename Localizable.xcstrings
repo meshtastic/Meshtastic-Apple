@@ -3176,6 +3176,64 @@
         }
       }
     },
+    "App connected or stand alone messaging device." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client (Standard) - Mit App verbundener Client."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Application connectée ou appareil de messagerie autonome."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "אפליקציה מחוברת או מכשיר תקשורת עצמאי."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dispositivo di messaggistica collegato all'app o indipendente."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klient (domyślnie) - Klient połączony z aplikacją."
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appansluten eller fristående meddelandeenhet."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Апликација повезана или самостални уређај за размену порука."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连接 App 或独立的消息发送设备。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可連接 App 或作為獨立運作的訊息裝置。"
+          }
+        }
+      }
+    },
     "App Data" : {
       "localizations" : {
         "it" : {
@@ -4386,6 +4444,180 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "廣播間隔"
+          }
+        }
+      }
+    },
+    "Broadcasts GPS position packets as priority." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sendet GPS-Positionspakete mit Priorität."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transmet les paquets de positions GPS en priorité."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "משדר מיקום GPS בעדיפות גבוהה."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trasmette i pacchetti di posizione GPS come priorità."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tracker - Do użytku z urządzeniami przeznaczonymi jako śledzenie GPS. Pakiety pozycyjne wysyłane z tego urządzenia będą miały wyższy priorytet, z nadawaniem pozycji co dwie minuty. Inteligentna transmisja pozycji będzie domyślnie wyłączona."
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sänder ut GPS-positionspaket som prioritet."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Емитује пакете са GPS позицијом као приоритет."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "定位模式 - 用于作为 GPS 跟踪器。从该设备发送的定位数据包优先级较高，每两分钟广播一次。智能位置广播默认为关闭。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "優先傳送 GPS 位置封包。"
+          }
+        }
+      }
+    },
+    "Broadcasts location as message to default channel regularly for to assist with device recovery." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sendet den Standort regelmäßig als Nachricht an den Standardkanal, um die Suche nach dem Gerät zu unterstützen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transmet régulièrement la position par message dans le canal par défaut pour vous aider à retrouver l'appareil."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "משדר מיקום כהודעה לערוץ ברירת מחדל לעיתים קבועות בכדי לסייע במציאת המכשיר."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trasmette regolarmente la posizione come messaggio al canale predefinito per assistere il recupero del dispositivo."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Broadcasts location as message to default channel regularly for to assist with device recovery."
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sänder regelbundet ut plats som meddelande till standardkanalen för att underlätta återhämtning av enheten."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Редовно емитује локацију као поруку подразумеваном каналу ради помоћи при проналаску уређаја."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "定期向默认信道发送位置信息，以协助设备恢复。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "裝置會定期把位置廣播到預設頻道，方便找回遺失設備。\n"
+          }
+        }
+      }
+    },
+    "Broadcasts telemetry packets as priority." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sendet Telemetriepakete mit Priorität."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transmet les paquets de télémétrie en priorité."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "משדר טלמטריה בעדיפות גבוהה."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trasmette i pacchetti di telemetria come priorità."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Broadcasts telemetry packets as priority."
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sänder ut telemetripaket som prioritet."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Емитује телеметријске пакете као приоритет."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将遥测数据包优先广播。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "優先廣播遙測指標。"
           }
         }
       }
@@ -5844,6 +6076,40 @@
         }
       }
     },
+    "Client Hidden" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client - Versteckt"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cliente Nascosto"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скривени клијент"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "客户端隐藏"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client Hidden"
+          }
+        }
+      }
+    },
     "Client History" : {
       "localizations" : {
         "it" : {
@@ -5896,6 +6162,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "客戶端歷史紀錄請求已送出"
+          }
+        }
+      }
+    },
+    "Client Mute" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cliente Muto"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Клијент мутиран"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "客户端静默"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client Mute"
           }
         }
       }
@@ -8749,6 +9043,122 @@
         }
       }
     },
+    "Device that does not forward packets from other devices." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gerät, das keine Pakete von anderen Geräten weiterleitet."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appareil ne transmettant pas les paquets provenant d'autres appareils."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "מכשיר שאינו מעביר הודעות ממכשירים אחרים הלאה."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dispositivo che non inoltra pacchetti da altri dispositivi."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyciszenie klienta - To samo, co klient, z wyjątkiem pakietów, które nie przeskakują przez ten węzeł, nie przyczynia się do routingu pakietów dla siatki."
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhet som inte vidarebefordrar paket från andra enheter."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Уређај који не прослеђује пакете примљене од других уређаја."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不转发其他设备数据包的设备。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "裝置不會轉發來自其他設備的封包。"
+          }
+        }
+      }
+    },
+    "Device that only broadcasts as needed for stealth or power savings." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gerät, das nur bei Bedarf sendet, um nicht entdeckt zu werden oder Strom zu sparen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appareil ne diffusant que si nécessaire pour la discrétion et l'économie d'énergie."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "מכשיר שרק משדר לפי צורך בכדי לחסוך בחשמל או לשמור על חשאיות."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dispositivo che trasmette solo quando è necessario, per non dare nell'occhio o per risparmiare energia."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : " Used for nodes that \"only speak when spoken to\" Turns all of the routine broadcasts but allows for ad-hoc communication. Still rebroadcasts, but with local only rebroadcast mode (known meshes only). Can be used for private operation or to dramatically reduce airtime / power consumption."
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhet som endast sänder ut när det behövs för stealth eller energibesparing."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Уређај који емитује само по потреби ради прикривености или уштеде енергије."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只在需要时才广播的设备，以达到隐蔽或省电的目的。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "裝置僅在必要時廣播，以達到隱蔽性或節能目的。"
+          }
+        }
+      }
+    },
     "device.config" : {
       "localizations" : {
         "de" : {
@@ -8931,1166 +9341,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "裝置指標紀錄檔"
-          }
-        }
-      }
-    },
-    "device.role.client" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Client (Standard) - Mit App verbundener Client."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App connected or stand alone messaging device."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Application connectée ou appareil de messagerie autonome."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אפליקציה מחוברת או מכשיר תקשורת עצמאי."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dispositivo di messaggistica collegato all'app o indipendente."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Klient (domyślnie) - Klient połączony z aplikacją."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Appansluten eller fristående meddelandeenhet."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Апликација повезана или самостални уређај за размену порука."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "连接 App 或独立的消息发送设备。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "可連接 App 或作為獨立運作的訊息裝置。"
-          }
-        }
-      }
-    },
-    "device.role.clienthidden" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gerät, das nur bei Bedarf sendet, um nicht entdeckt zu werden oder Strom zu sparen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Device that only broadcasts as needed for stealth or power savings."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Appareil ne diffusant que si nécessaire pour la discrétion et l'économie d'énergie."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מכשיר שרק משדר לפי צורך בכדי לחסוך בחשמל או לשמור על חשאיות."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dispositivo che trasmette solo quando è necessario, per non dare nell'occhio o per risparmiare energia."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " Used for nodes that \"only speak when spoken to\" Turns all of the routine broadcasts but allows for ad-hoc communication. Still rebroadcasts, but with local only rebroadcast mode (known meshes only). Can be used for private operation or to dramatically reduce airtime / power consumption."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enhet som endast sänder ut när det behövs för stealth eller energibesparing."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Уређај који емитује само по потреби ради прикривености или уштеде енергије."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "只在需要时才广播的设备，以达到隐蔽或省电的目的。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "裝置僅在必要時廣播，以達到隱蔽性或節能目的。"
-          }
-        }
-      }
-    },
-    "device.role.clientmute" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gerät, das keine Pakete von anderen Geräten weiterleitet."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Device that does not forward packets from other devices."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Appareil ne transmettant pas les paquets provenant d'autres appareils."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מכשיר שאינו מעביר הודעות ממכשירים אחרים הלאה."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dispositivo che non inoltra pacchetti da altri dispositivi."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wyciszenie klienta - To samo, co klient, z wyjątkiem pakietów, które nie przeskakują przez ten węzeł, nie przyczynia się do routingu pakietów dla siatki."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enhet som inte vidarebefordrar paket från andra enheter."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Уређај који не прослеђује пакете примљене од других уређаја."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "不转发其他设备数据包的设备。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "裝置不會轉發來自其他設備的封包。"
-          }
-        }
-      }
-    },
-    "device.role.lostandfound" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sendet den Standort regelmäßig als Nachricht an den Standardkanal, um die Suche nach dem Gerät zu unterstützen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Broadcasts location as message to default channel regularly for to assist with device recovery."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Transmet régulièrement la position par message dans le canal par défaut pour vous aider à retrouver l'appareil."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "משדר מיקום כהודעה לערוץ ברירת מחדל לעיתים קבועות בכדי לסייע במציאת המכשיר."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Trasmette regolarmente la posizione come messaggio al canale predefinito per assistere il recupero del dispositivo."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Broadcasts location as message to default channel regularly for to assist with device recovery."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sänder regelbundet ut plats som meddelande till standardkanalen för att underlätta återhämtning av enheten."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Редовно емитује локацију као поруку подразумеваном каналу ради помоћи при проналаску уређаја."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "定期向默认信道发送位置信息，以协助设备恢复。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "裝置會定期把位置廣播到預設頻道，方便找回遺失設備。\n"
-          }
-        }
-      }
-    },
-    "device.role.name.clientHidden" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Client - Versteckt"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Client Hidden"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cliente Nascosto"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Скривени клијент"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "客户端隐藏"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Client Hidden"
-          }
-        }
-      }
-    },
-    "device.role.name.clientMute" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Client Mute"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cliente Muto"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Клијент мутиран"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "客户端静默"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Client Mute"
-          }
-        }
-      }
-    },
-    "device.role.name.lostAndFound" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tracker"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lost and Found"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Oggetti smarriti"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Изгубљено и нађено"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "失物招领"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lost and Found"
-          }
-        }
-      }
-    },
-    "device.role.name.repeater" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Repeater"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Repeater"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ripetitore"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Поновљач"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "中继"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Repeater"
-          }
-        }
-      }
-    },
-    "device.role.name.router" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Router"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Router"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Router"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Рутер"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "路由"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Router"
-          }
-        }
-      }
-    },
-    "device.role.name.routerClient" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Router & Client"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Router & Client"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Router & Client"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Рутер и клијент"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "路由 & 客户端"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Router & Client"
-          }
-        }
-      }
-    },
-    "device.role.name.routerlate" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Router mit Verzögerung"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Router Late"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Router tardivo"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Рутер са кашњењем"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Router Late"
-          }
-        }
-      }
-    },
-    "device.role.name.sensor" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sensor"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sensor"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sensore"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Сензор"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "传感器"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sensor"
-          }
-        }
-      }
-    },
-    "device.role.name.tak" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TAK"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TAK"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TAK"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TAK"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TAK"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TAK"
-          }
-        }
-      }
-    },
-    "device.role.name.takTracker" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TAK Tracker"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TAK Tracker"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tracker TAK"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ТАК Трекер"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TAK 追踪器"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TAK Tracker"
-          }
-        }
-      }
-    },
-    "device.role.name.tracker" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tracker"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tracker"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tracker"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Трекер"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "追踪器"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tracker"
-          }
-        }
-      }
-    },
-    "device.role.repeater" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Infrastruktur-Knoten nur auf einem Turm oder einer Bergspitze. Nicht für Dächer oder mobile Knoten verwenden. Übermittelt Nachrichten mit minimalem Mehraufwand. Nicht sichtbar in der Knotenliste."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Infrastructure node on a tower or mountain top only.  Not to be used for roofs or mobile nodes. Relays messages with minimal overhead. Not visible in Nodes list."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Noeud d'infrastructure qui étend la couverture du réseau en relayant les messages avec un minimum de surcharge. Invisible dans la liste des noeuds."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מכשיר תשתית להרחבת המש על ידי העברת הודעות עם דאטה נוסף מינימלי."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nodo infrastrutturale solo su una torre o sulla cima di una montagna.  Non deve essere utilizzato per tetti o nodi mobili. Trasmette i messaggi con un overhead minimo. Non visibile nell'elenco dei nodi."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Przekaźnik - Pakiety siatki będą preferować trasowanie przez ten węzeł. Ta rola eliminuje niepotrzebny nadmiar, taki jak NodeInfo, DeviceTelemetry i inne pakiety siatki, skutkując tym, że urządzenie nie będzie widoczne jako część sieci. Proszę zobaczyć tryb Rebroadcast dla dodatkowych ustawień specyficznych dla tej roli."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Infrastrukturnod för att utöka nätverkstäckningen genom att vidarebefordra meddelanden med minimal overhead. Syns inte i Noder-listan."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Инфраструктурни чвор само на торњу или врху планине. Није намењен за кровове или мобилне чворове. Прослеђује поруке уз минимално оптерећење. Није видљив у листи чворова."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "仅用于塔顶或山顶的基础设施节点。 不得用于屋顶或移动节点。以最小的开销中继信息。在节点列表中不可见。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "僅適用於安裝於塔台或山頂。不適用於屋頂或移動式節點。具備高效的訊息轉發能力，資源消耗極低。此類節點不會顯示於節點列表中。"
-          }
-        }
-      }
-    },
-    "device.role.router" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Router - Mesh Pakete werden bevorzugt über diesen Knoten gerouted. Dieser Knoten wird nicht von einer Client App benutzt. WLAN, Bluetooth und Display sind aus."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Infrastructure node on a tower or mountain top only.  Not to be used for roofs or mobile nodes.  Needs exceptional coverage. Visible in Nodes list."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Noeud d'infrastructure qui étend la couverture du réseau en relayant les messages. Visible dans la liste des noeuds."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מכשיר תשתית להרחבת המש על ידי העברת הודעות. מופיע ברשימת מכשירים."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nodo infrastrutturale solo su una torre o sulla cima di una montagna.  Non deve essere utilizzato per tetti o nodi mobili.  Necessita di una copertura eccezionale. Visibile nell'elenco dei nodi."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Router - Pakiety siatki będą preferować trasowanie przez ten węzeł. Zakłada, że urządzenie będzie działać samodzielnie, umieszczone w miejscu z przewagą zasięgu. UWAGA: Radia BLE/Wi-Fi i ekran OLED zostaną uśpione."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Infrastrukturnod för att utöka nätverkstäckningen genom att vidarebefordra meddelanden. Synlig i Noder-listan."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Инфраструктурни чвор само на торњу или врху планине.  Не користи се за кровове или мобилне чворове.  Потребна му је изузетна покривеност. Видљиво на листи чворова."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "仅用于塔顶或山顶的基础设施节点。 不得用于屋顶或移动节点。 需要特殊的覆盖范围。在节点列表中可见。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "僅適用於安裝於塔台或山頂的基礎設施節點。不適用於屋頂或移動式節點，需具備卓越的訊號覆蓋能力。此類節點會顯示於節點列表中。"
-          }
-        }
-      }
-    },
-    "device.role.routerclient" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Router Client - Mesh Pakete werden bevorzugt über diesen Knoten gerouted. Der Router Client kann parallel auch von einer Client-App genutzt werden."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deprecated role use client."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Combinaison des modes ROUTER et CLIENT. Pas pour les appareils mobiles."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "קומבינציה של ROUTER וCLIENT. לא למכשירים ניידים."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ruolo deprecato utilizzare il client."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kombination av både ROUTER och CLIENT. Inte för mobila enheter."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Застарело. Користи клијент ролу."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已废弃的角色，使用客户端。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已不再使用，請選擇 Client。"
-          }
-        }
-      }
-    },
-    "device.role.routerlate" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Infrastrukturknoten, der Pakete immer nur einmal weiterleitet, aber erst nach allen anderen Betriebsarten, um eine zusätzliche Abdeckung für lokale Cluster zu gewährleisten. Sichtbar in der Liste der Knoten."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Infrastructure node that always rebroadcasts packets once but only after all other modes, ensuring additional coverage for local clusters. Visible in Nodes list."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nodo infrastruttura che ritrasmette sempre i pacchetti una volta, ma solo dopo tutte le altre modalità, garantendo una copertura aggiuntiva per i cluster locali. Visibile nell'elenco dei nodi."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Нод инфраструктуре који увек поново преноси пакете једном, али тек након свих других начина, обезбеђујући додатно покриће за локалне кластере. Видљив на листи нодова."
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "基礎設施節點，會在所有其他模式完成轉發後，固定將封包重新轉發一次，以確保鄰近節點群擁有額外的覆蓋範圍。此節點會顯示於節點列表中。"
-          }
-        }
-      }
-    },
-    "device.role.sensor" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sendet Telemetriepakete mit Priorität."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Broadcasts telemetry packets as priority."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Transmet les paquets de télémétrie en priorité."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "משדר טלמטריה בעדיפות גבוהה."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Trasmette i pacchetti di telemetria come priorità."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Broadcasts telemetry packets as priority."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sänder ut telemetripaket som prioritet."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Емитује телеметријске пакете као приоритет."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "将遥测数据包优先广播。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "優先廣播遙測指標。"
-          }
-        }
-      }
-    },
-    "device.role.tak" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Optimiert für ATAK-Systemkommunikation, verringert die Anzahl der Routineübertragungen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Optimized for ATAK system communication, reduces routine broadcasts."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Optimisé pour le système de communication ATAK, diminue les émissions de routine."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מותאם למערכת ATAK, מקטין תקשורת קבועה."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ottimizzato per la comunicazione del sistema ATAK, riduce le trasmissioni di routine."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Optimized for ATAK system communication, reduces routine broadcasts."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Optimerad för kommunikation med ATAK-systemet, minskar rutinutsändningar."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Оптимизован за комуникацију са ATAK системом, смањује рутинске емисије."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "针对 ATAK 系统通信进行优化，减少常规广播。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "為 ATAK 系統通訊最佳化，並減少例行廣播頻率。"
-          }
-        }
-      }
-    },
-    "device.role.taktracker" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aktiviert automatische TAK-PLI-Übertragungen und verringert die Anzahl der Routineübertragungen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enables automatic TAK PLI broadcasts and reduces routine broadcasts."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enables automatic TAK PLI broadcasts and reduces routine broadcasts."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enables automatic TAK PLI broadcasts and reduces routine broadcasts."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abilita le trasmissioni automatiche di TAK PLI e riduce le trasmissioni di routine."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enables automatic TAK PLI broadcasts and reduces routine broadcasts."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aktiverar automatiska TAK PLI-utsändningar och minskar rutinutsändningar."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Омогућава аутоматске TAK PLI емисије и смањује рутинске емисије."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "启用自动 TAK PLI（Position Location Information）广播，并减少常规广播。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "啟用自動傳送 TAK PLI 資訊，並降低例行廣播頻率。"
-          }
-        }
-      }
-    },
-    "device.role.tracker" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sendet GPS-Positionspakete mit Priorität."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Broadcasts GPS position packets as priority."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Transmet les paquets de positions GPS en priorité."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "משדר מיקום GPS בעדיפות גבוהה."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Trasmette i pacchetti di posizione GPS come priorità."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tracker - Do użytku z urządzeniami przeznaczonymi jako śledzenie GPS. Pakiety pozycyjne wysyłane z tego urządzenia będą miały wyższy priorytet, z nadawaniem pozycji co dwie minuty. Inteligentna transmisja pozycji będzie domyślnie wyłączona."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sänder ut GPS-positionspaket som prioritet."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Емитује пакете са GPS позицијом као приоритет."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "定位模式 - 用于作为 GPS 跟踪器。从该设备发送的定位数据包优先级较高，每两分钟广播一次。智能位置广播默认为关闭。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "優先傳送 GPS 位置封包。"
           }
         }
       }
@@ -11271,6 +10521,64 @@
         }
       }
     },
+    "Enables automatic TAK PLI broadcasts and reduces routine broadcasts." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktiviert automatische TAK-PLI-Übertragungen und verringert die Anzahl der Routineübertragungen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enables automatic TAK PLI broadcasts and reduces routine broadcasts."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enables automatic TAK PLI broadcasts and reduces routine broadcasts."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abilita le trasmissioni automatiche di TAK PLI e riduce le trasmissioni di routine."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enables automatic TAK PLI broadcasts and reduces routine broadcasts."
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktiverar automatiska TAK PLI-utsändningar och minskar rutinutsändningar."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Омогућава аутоматске TAK PLI емисије и смањује рутинске емисије."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用自动 TAK PLI（Position Location Information）广播，并减少常规广播。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用自動傳送 TAK PLI 資訊，並降低例行廣播頻率。"
+          }
+        }
+      }
+    },
     "Enables devices with native I2S audio output to use the RTTTL over speaker like a buzzer. T-Watch S3 and T-Deck for example have this capability." : {
       "localizations" : {
         "it" : {
@@ -11971,8 +11279,8 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Punto esclamativo"
+            "state" : "translated",
+            "value" : "Esclamativo"
           }
         },
         "pl" : {
@@ -16073,6 +15381,150 @@
         }
       }
     },
+    "Infrastructure node on a tower or mountain top only.  Not to be used for roofs or mobile nodes.  Needs exceptional coverage. Visible in Nodes list." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Router - Mesh Pakete werden bevorzugt über diesen Knoten gerouted. Dieser Knoten wird nicht von einer Client App benutzt. WLAN, Bluetooth und Display sind aus."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noeud d'infrastructure qui étend la couverture du réseau en relayant les messages. Visible dans la liste des noeuds."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "מכשיר תשתית להרחבת המש על ידי העברת הודעות. מופיע ברשימת מכשירים."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nodo infrastrutturale solo su una torre o sulla cima di una montagna.  Non deve essere utilizzato per tetti o nodi mobili.  Necessita di una copertura eccezionale. Visibile nell'elenco dei nodi."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Router - Pakiety siatki będą preferować trasowanie przez ten węzeł. Zakłada, że urządzenie będzie działać samodzielnie, umieszczone w miejscu z przewagą zasięgu. UWAGA: Radia BLE/Wi-Fi i ekran OLED zostaną uśpione."
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Infrastrukturnod för att utöka nätverkstäckningen genom att vidarebefordra meddelanden. Synlig i Noder-listan."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Инфраструктурни чвор само на торњу или врху планине.  Не користи се за кровове или мобилне чворове.  Потребна му је изузетна покривеност. Видљиво на листи чворова."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仅用于塔顶或山顶的基础设施节点。 不得用于屋顶或移动节点。 需要特殊的覆盖范围。在节点列表中可见。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "僅適用於安裝於塔台或山頂的基礎設施節點。不適用於屋頂或移動式節點，需具備卓越的訊號覆蓋能力。此類節點會顯示於節點列表中。"
+          }
+        }
+      }
+    },
+    "Infrastructure node on a tower or mountain top only.  Not to be used for roofs or mobile nodes. Relays messages with minimal overhead. Not visible in Nodes list." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Infrastruktur-Knoten nur auf einem Turm oder einer Bergspitze. Nicht für Dächer oder mobile Knoten verwenden. Übermittelt Nachrichten mit minimalem Mehraufwand. Nicht sichtbar in der Knotenliste."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noeud d'infrastructure qui étend la couverture du réseau en relayant les messages avec un minimum de surcharge. Invisible dans la liste des noeuds."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "מכשיר תשתית להרחבת המש על ידי העברת הודעות עם דאטה נוסף מינימלי."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nodo infrastrutturale solo su una torre o sulla cima di una montagna.  Non deve essere utilizzato per tetti o nodi mobili. Trasmette i messaggi con un overhead minimo. Non visibile nell'elenco dei nodi."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przekaźnik - Pakiety siatki będą preferować trasowanie przez ten węzeł. Ta rola eliminuje niepotrzebny nadmiar, taki jak NodeInfo, DeviceTelemetry i inne pakiety siatki, skutkując tym, że urządzenie nie będzie widoczne jako część sieci. Proszę zobaczyć tryb Rebroadcast dla dodatkowych ustawień specyficznych dla tej roli."
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Infrastrukturnod för att utöka nätverkstäckningen genom att vidarebefordra meddelanden med minimal overhead. Syns inte i Noder-listan."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Инфраструктурни чвор само на торњу или врху планине. Није намењен за кровове или мобилне чворове. Прослеђује поруке уз минимално оптерећење. Није видљив у листи чворова."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仅用于塔顶或山顶的基础设施节点。 不得用于屋顶或移动节点。以最小的开销中继信息。在节点列表中不可见。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "僅適用於安裝於塔台或山頂。不適用於屋頂或移動式節點。具備高效的訊息轉發能力，資源消耗極低。此類節點不會顯示於節點列表中。"
+          }
+        }
+      }
+    },
+    "Infrastructure node that always rebroadcasts packets once but only after all other modes, ensuring additional coverage for local clusters. Visible in Nodes list." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Infrastrukturknoten, der Pakete immer nur einmal weiterleitet, aber erst nach allen anderen Betriebsarten, um eine zusätzliche Abdeckung für lokale Cluster zu gewährleisten. Sichtbar in der Liste der Knoten."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nodo infrastruttura che ritrasmette sempre i pacchetti una volta, ma solo dopo tutte le altre modalità, garantendo una copertura aggiuntiva per i cluster locali. Visibile nell'elenco dei nodi."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нод инфраструктуре који увек поново преноси пакете једном, али тек након свих других начина, обезбеђујући додатно покриће за локалне кластере. Видљив на листи нодова."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "基礎設施節點，會在所有其他模式完成轉發後，固定將封包重新轉發一次，以確保鄰近節點群擁有額外的覆蓋範圍。此節點會顯示於節點列表中。"
+          }
+        }
+      }
+    },
     "Inputs" : {
       "localizations" : {
         "it" : {
@@ -17279,6 +16731,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "LoRa 設定"
+          }
+        }
+      }
+    },
+    "Lost and Found" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tracker"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oggetti smarriti"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изгубљено и нађено"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "失物招领"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lost and Found"
           }
         }
       }
@@ -20576,12 +20062,6 @@
             "value" : "Mittag"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Midday"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23096,55 +22576,55 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Eine Stunde"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Une heure"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "שעה אחת"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Un'ora"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Jedna Godzina"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "En Timme"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Један сат"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "一小时"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "1 小時"
           }
         }
@@ -23344,6 +22824,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "打開設定"
+          }
+        }
+      }
+    },
+    "Optimized for ATAK system communication, reduces routine broadcasts." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optimiert für ATAK-Systemkommunikation, verringert die Anzahl der Routineübertragungen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optimisé pour le système de communication ATAK, diminue les émissions de routine."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "מותאם למערכת ATAK, מקטין תקשורת קבועה."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ottimizzato per la comunicazione del sistema ATAK, riduce le trasmissioni di routine."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optimized for ATAK system communication, reduces routine broadcasts."
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optimerad för kommunikation med ATAK-systemet, minskar rutinutsändningar."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оптимизован за комуникацију са ATAK системом, смањује рутинске емисије."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "针对 ATAK 系统通信进行优化，减少常规广播。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "為 ATAK 系統通訊最佳化，並減少例行廣播頻率。"
           }
         }
       }
@@ -23816,15 +23354,9 @@
         }
       }
     },
-    "pause" : {
+    "Pause" : {
       "localizations" : {
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pause"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pause"
@@ -25604,8 +25136,8 @@
         },
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Punto interrogativo"
+            "state" : "translated",
+            "value" : "Interrogativo"
           }
         },
         "pl" : {
@@ -26616,6 +26148,40 @@
         }
       }
     },
+    "Repeater" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeater"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripetitore"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поновљач"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中继"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeater"
+          }
+        }
+      }
+    },
     "Replace Channels" : {
       "localizations" : {
         "it" : {
@@ -26883,18 +26449,12 @@
         }
       }
     },
-    "resume" : {
+    "Resume" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fortsetzen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Resume"
           }
         },
         "fr" : {
@@ -27346,6 +26906,68 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "路徑（往）: %@ "
+          }
+        }
+      }
+    },
+    "Router" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Router"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Router"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Рутер"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "路由"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Router"
+          }
+        }
+      }
+    },
+    "Router Late" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Router mit Verzögerung"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Router tardivo"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Рутер са кашњењем"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Router Late"
           }
         }
       }
@@ -29235,6 +28857,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "傳送頻率"
+          }
+        }
+      }
+    },
+    "Sensor" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensor"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensore"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сензор"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "传感器"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensor"
           }
         }
       }
@@ -31393,6 +31049,74 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "臺灣 🇹🇼"
+          }
+        }
+      }
+    },
+    "TAK" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TAK"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TAK"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TAK"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TAK"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TAK"
+          }
+        }
+      }
+    },
+    "TAK Tracker" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TAK Tracker"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tracker TAK"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ТАК Трекер"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TAK 追踪器"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TAK Tracker"
           }
         }
       }
@@ -33893,6 +33617,46 @@
         }
       }
     },
+    "Tracker" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tracker"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tracker"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tracker"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Трекер"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追踪器"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tracker"
+          }
+        }
+      }
+    },
     "Traffic" : {
       "localizations" : {
         "de" : {
@@ -34459,19 +34223,19 @@
       "localizations" : {
         "it" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Non sano"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Нездраво"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "不健康"
           }
         }

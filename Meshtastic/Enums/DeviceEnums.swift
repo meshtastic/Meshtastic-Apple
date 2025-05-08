@@ -21,7 +21,6 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 	case takTracker = 10
 	case repeater = 4
 	case router = 2
-	case routerClient = 3
 	case routerLate = 11
 
 	var id: Int { self.rawValue }
@@ -30,56 +29,52 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 		case .client:
 			return "Client".localized
 		case .clientMute:
-			return "device.role.name.clientMute".localized
+			return "Client Mute".localized
 		case .router:
-			return "device.role.name.router".localized
-		case .routerClient:
-			return "device.role.name.routerClient".localized
+			return "Router".localized
 		case .repeater:
-			return "device.role.name.repeater".localized
+			return "Repeater".localized
 		case .tracker:
-			return "device.role.name.tracker".localized
+			return "Tracker".localized
 		case .sensor:
-			return "device.role.name.sensor".localized
+			return "Sensor".localized
 		case .tak:
-			return "device.role.name.tak".localized
+			return "TAK".localized
 		case .takTracker:
-			return "device.role.name.takTracker".localized
+			return "TAK Tracker".localized
 		case .clientHidden:
-			return "device.role.name.clientHidden".localized
+			return "Client Hidden".localized
 		case .lostAndFound:
-			return "device.role.name.lostAndFound".localized
+			return "Lost and Found".localized
 		case .routerLate:
-			return "device.role.name.routerlate".localized
+			return "Router Late".localized
 		}
 
 	}
 	var description: String {
 		switch self {
 		case .client:
-			return "device.role.client".localized
+			return "App connected or stand alone messaging device.".localized
 		case .clientMute:
-			return "device.role.clientmute".localized
+			return "Device that does not forward packets from other devices.".localized
 		case .router:
-			return "device.role.router".localized
-		case .routerClient:
-			return "device.role.routerclient".localized
+			return "Infrastructure node on a tower or mountain top only.  Not to be used for roofs or mobile nodes.  Needs exceptional coverage. Visible in Nodes list.".localized
 		case .repeater:
-			return "device.role.repeater".localized
+			return "Infrastructure node on a tower or mountain top only.  Not to be used for roofs or mobile nodes. Relays messages with minimal overhead. Not visible in Nodes list.".localized
 		case .tracker:
-			return "device.role.tracker".localized
+			return "Broadcasts GPS position packets as priority.".localized
 		case .sensor:
-			return "device.role.sensor".localized
+			return "Broadcasts telemetry packets as priority.".localized
 		case .tak:
-			return "device.role.tak".localized
+			return "Optimized for ATAK system communication, reduces routine broadcasts.".localized
 		case .takTracker:
-			return "device.role.taktracker".localized
+			return "Enables automatic TAK PLI broadcasts and reduces routine broadcasts.".localized
 		case .clientHidden:
-			return "device.role.clienthidden".localized
+			return "Device that only broadcasts as needed for stealth or power savings.".localized
 		case .lostAndFound:
-			return "device.role.lostandfound".localized
+			return "Broadcasts location as message to default channel regularly for to assist with device recovery.".localized
 		case .routerLate:
-			return "device.role.routerlate".localized
+			return "Infrastructure node that always rebroadcasts packets once but only after all other modes, ensuring additional coverage for local clusters. Visible in Nodes list.".localized
 		}
 	}
 
@@ -89,7 +84,7 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "apps.iphone"
 		case .clientMute:
 			return "speaker.slash"
-		case .router, .routerClient, .routerLate:
+		case .router, .routerLate:
 			return "wifi.router"
 		case .repeater:
 			return "repeat"
@@ -116,8 +111,6 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return Config.DeviceConfig.Role.clientMute
 		case .router:
 			return Config.DeviceConfig.Role.router
-		case .routerClient:
-			return Config.DeviceConfig.Role.routerClient
 		case .repeater:
 			return Config.DeviceConfig.Role.repeater
 		case .tracker:
