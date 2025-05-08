@@ -15,7 +15,7 @@ struct RestartNodeIntent: AppIntent {
 
 	func perform() async throws -> some IntentResult {
 
-		try await requestConfirmation(result: .result(dialog: "Reboot Node?"))
+		try await requestConfirmation(result: .result(dialog: "Reboot node?"))
 
 		if !BLEManager.shared.isConnected {
 			throw AppIntentErrors.AppIntentError.notConnected

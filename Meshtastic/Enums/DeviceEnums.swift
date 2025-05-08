@@ -28,7 +28,7 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 	var name: String {
 		switch self {
 		case .client:
-			return "device.role.name.client".localized
+			return "Client".localized
 		case .clientMute:
 			return "device.role.name.clientMute".localized
 		case .router:

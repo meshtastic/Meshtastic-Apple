@@ -499,14 +499,14 @@ struct NodeDetail: View {
 							showingRebootConfirm = true
 						} label: {
 							Label(
-								"reboot",
+								"Reboot",
 								systemImage: "arrow.triangle.2.circlepath"
 							)
 						}.confirmationDialog(
 							"Are you sure?",
 							isPresented: $showingRebootConfirm
 						) {
-							Button("reboot.node", role: .destructive) {
+							Button("Reboot node?", role: .destructive) {
 								if !bleManager.sendReboot(
 									fromUser: connectedNode.user!,
 									toUser: node.user!,
