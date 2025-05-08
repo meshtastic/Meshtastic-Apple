@@ -168,19 +168,19 @@ enum SerialTimeoutIntervals: Int, CaseIterable, Identifiable {
 		case .unset:
 			return "Unset".localized
 		case .oneSecond:
-			return "interval.one.second".localized
+			return "One Second".localized
 		case .fiveSeconds:
-			return "interval.five.seconds".localized
+			return "Five Seconds".localized
 		case .tenSeconds:
-			return "interval.ten.seconds".localized
+			return "Ten Seconds".localized
 		case .fifteenSeconds:
-			return "interval.fifteen.seconds".localized
+			return "Thirty Seconds".localized
 		case .thirtySeconds:
-			return "interval.thirty.seconds".localized
+			return "Thirty Seconds".localized
 		case .oneMinute:
-			return "interval.one.minute".localized
+			return "One Minute".localized
 		case .fiveMinutes:
-			return "interval.five.minutes".localized
+			return "Five Minutes".localized
 		}
 	}
 }

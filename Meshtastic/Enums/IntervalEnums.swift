@@ -24,19 +24,19 @@ enum NagIntervals: Int, CaseIterable, Identifiable {
 		case .unset:
 			return "Unset".localized
 		case .oneSecond:
-			return "interval.one.second".localized
+			return "One Second".localized
 		case .fiveSeconds:
-			return "interval.five.seconds".localized
+			return "Five Seconds".localized
 		case .tenSeconds:
-			return "interval.ten.seconds".localized
+			return "Ten Seconds".localized
 		case .fifteenSeconds:
-			return "interval.fifteen.seconds".localized
+			return "Fifteen Seconds".localized
 		case .thirtySeconds:
-			return "interval.thirty.seconds".localized
+			return "Thirty Seconds".localized
 		case .oneMinute:
-			return "interval.one.minute".localized
+			return "One Minute".localized
 		case .fiveMinutes:
-			return "interval.five.minutes".localized
+			return "Five Minutes".localized
 		}
 	}
 }
@@ -61,23 +61,23 @@ enum OutputIntervals: Int, CaseIterable, Identifiable {
 		case .unset:
 			return "Unset".localized
 		case .oneSecond:
-			return "interval.one.second".localized
+			return "One Second".localized
 		case .twoSeconds:
-			return "interval.two.seconds".localized
+			return "Two Seconds".localized
 		case .threeSeconds:
-			return "interval.three.seconds".localized
+			return "Three Seconds".localized
 		case .fourSeconds:
-			return "interval.four.seconds".localized
+			return "Four Seconds".localized
 		case .fiveSeconds:
-			return "interval.five.seconds".localized
+			return "Five Seconds".localized
 		case .tenSeconds:
-			return "interval.ten.seconds".localized
+			return "Ten Seconds".localized
 		case .fifteenSeconds:
-			return "interval.fifteen.seconds".localized
+			return "Fifteen Seconds".localized
 		case .thirtySeconds:
-			return "interval.thirty.seconds".localized
+			return "Thirty Seconds".localized
 		case .oneMinute:
-			return "interval.one.minute".localized
+			return "One Minute".localized
 		}
 	}
 }
@@ -100,25 +100,25 @@ enum SenderIntervals: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .off:
-			return "off".localized
+			return "Off".localized
 		case .fifteenSeconds:
-			return "interval.fifteen.seconds".localized
+			return "Fifteen Seconds".localized
 		case .thirtySeconds:
-			return "interval.thirty.seconds".localized
+			return "Thirty Seconds".localized
 		case .fortyFiveSeconds:
-			return "interval.fortyfive.seconds".localized
+			return "Forty Five Seconds".localized
 		case .oneMinute:
-			return "interval.one.minute".localized
+			return "One Minute".localized
 		case .fiveMinutes:
-			return "interval.five.minutes".localized
+			return "Five Minutes".localized
 		case .tenMinutes:
-			return "interval.ten.minutes".localized
+			return "Ten Minutes".localized
 		case .fifteenMinutes:
-			return "interval.fifteen.minutes".localized
+			return "Fifteen Minutes".localized
 		case .thirtyMinutes:
-			return "interval.thirty.minutes".localized
+			return "Thirty Minutes".localized
 		case .oneHour:
-			return "interval.one.hour".localized
+			return "One Hour".localized
 		}
 	}
 }
@@ -153,49 +153,49 @@ enum UpdateIntervals: Int, CaseIterable, Identifiable {
 
 		switch self {
 		case .tenSeconds:
-			return "interval.ten.seconds".localized
+			return "Ten Seconds".localized
 		case .fifteenSeconds:
-			return "interval.fifteen.seconds".localized
+			return "Fifteen Seconds".localized
 		case .thirtySeconds:
-			return "interval.thirty.seconds".localized
+			return "Thirty Seconds".localized
 		case .fortyFiveSeconds:
-			return "interval.fortyfive.seconds".localized
+			return "Forty Five Seconds".localized
 		case .oneMinute:
-			return "interval.one.minute".localized
+			return "One Minute".localized
 		case .twoMinutes:
-			return "interval.two.minutes".localized
+			return "Two Minutes".localized
 		case .fiveMinutes:
-			return "interval.five.minutes".localized
+			return "Five Minutes".localized
 		case .tenMinutes:
-			return "interval.ten.minutes".localized
+			return "Ten Minutes".localized
 		case .fifteenMinutes:
-			return "interval.fifteen.minutes".localized
+			return "Fifteen Minutes".localized
 		case .thirtyMinutes:
-			return "interval.thirty.minutes".localized
+			return "Thirty Minutes".localized
 		case .oneHour:
-			return "interval.one.hour".localized
+			return "One Hour".localized
 		case .twoHours:
-			return "interval.two.hours".localized
+			return "Two Hours".localized
 		case .threeHours:
-			return "interval.three.hours".localized
+			return "Three Hours".localized
 		case .fourHours:
-			return "interval.four.hours".localized
+			return "Four Hours".localized
 		case .fiveHours:
-			return "interval.five.hours".localized
+			return "Five Hours".localized
 		case .sixHours:
-			return "interval.six.hours".localized
+			return "Six Hours".localized
 		case .twelveHours:
-			return "interval.twelve.hours".localized
+			return "Twelve Hours".localized
 		case .eighteenHours:
-			return "interval.eighteen.hours".localized
+			return "Eighteen Hours".localized
 		case .twentyFourHours:
-			return "interval.twentyfour.hours".localized
+			return "Twenty Four Hours".localized
 		case .thirtySixHours:
-			return "interval.thirtysix.hours".localized
+			return "Thirty Six Hours".localized
 		case .fortyeightHours:
-			return "interval.fortyeight.hours".localized
+			return "Forty Eight Hours".localized
 		case .seventyTwoHours:
-			return "interval.seventytwo.hours".localized
+			return "Seventy Two Hours".localized
 		}
 	}
 }

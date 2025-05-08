@@ -45,10 +45,10 @@ struct AdminChannelTip: Tip {
 	   return "tip.channel.admin"
    }
    var title: Text {
-	   Text("tip.channel.admin.title")
+	   Text("Administration Enabled")
    }
    var message: Text? {
-	   Text("tip.channel.admin.message")
+	   Text("Select a node from the drop down to manage connected or remote devices.")
    }
    var image: Image? {
 	   Image(systemName: "fibrechannel")

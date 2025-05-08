@@ -49,21 +49,21 @@ enum ScreenOnIntervals: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .fifteenSeconds:
-			return "interval.fifteen.seconds".localized
+			return "Fifteen Seconds".localized
 		case .thirtySeconds:
-			return "interval.thirty.seconds".localized
+			return "Thirty Seconds".localized
 		case .oneMinute:
-			return "interval.one.minute".localized
+			return "One Minute".localized
 		case .fiveMinutes:
-			return "interval.five.minutes".localized
+			return "Five Minutes".localized
 		case .tenMinutes:
-			return "interval.ten.minutes".localized
+			return "Ten Minutes".localized
 		case .fifteenMinutes:
-			return "interval.fifteen.minutes".localized
+			return "Fifteen Minutes".localized
 		case .thirtyMinutes:
-			return "interval.thirty.minutes".localized
+			return "Thirty Minutes".localized
 		case .oneHour:
-			return "interval.one.hour".localized
+			return "One Hour".localized
 		case .max:
 			return "Always On".localized
 		}
@@ -87,17 +87,17 @@ enum ScreenCarouselIntervals: Int, CaseIterable, Identifiable {
 		case .off:
 			return "off".localized
 		case .fifteenSeconds:
-			return "interval.fifteen.seconds".localized
+			return "Fifteen Seconds".localized
 		case .thirtySeconds:
-			return "interval.thirty.seconds".localized
+			return "Thirty Seconds".localized
 		case .oneMinute:
-			return "interval.one.minute".localized
+			return "One Minute".localized
 		case .fiveMinutes:
-			return "interval.five.minutes".localized
+			return "Five Minutes".localized
 		case .tenMinutes:
-			return "interval.ten.minutes".localized
+			return "Ten Minutes".localized
 		case .fifteenMinutes:
-			return "interval.fifteen.minutes".localized
+			return "Fifteen Minutes".localized
 		}
 	}
 }
