@@ -44,7 +44,7 @@ struct Settings: View {
 	// MARK: Views
 
 	var radioConfigurationSection: some View {
-		Section("radio.configuration") {
+		Section("Radio Configuration") {
 			let node = nodes.first(where: { $0.num == preferredNodeNum })
 			if let node,
 				let loRaConfig = node.loRaConfig,
@@ -69,7 +69,7 @@ struct Settings: View {
 
 			NavigationLink(value: SettingsNavigationState.lora) {
 				Label {
-					Text("lora")
+					Text("LoRa")
 				} icon: {
 					Image(systemName: "dot.radiowaves.left.and.right")
 						.rotationEffect(.degrees(-90))
@@ -95,7 +95,7 @@ struct Settings: View {
 
 			NavigationLink(value: SettingsNavigationState.shareQRCode) {
 				Label {
-					Text("share.channels")
+					Text("Share QR Code")
 				} icon: {
 					Image(systemName: "qrcode")
 				}
@@ -189,7 +189,7 @@ struct Settings: View {
 			if isModuleSupported(.detectionsensorConfig) {
 				NavigationLink(value: SettingsNavigationState.detectionSensor) {
 					Label {
-						Text("detection.sensor")
+						Text("Detection Sensor")
 					} icon: {
 						Image(systemName: "sensor")
 					}
@@ -199,7 +199,7 @@ struct Settings: View {
 			if isModuleSupported(.extnotifConfig) {
 				NavigationLink(value: SettingsNavigationState.externalNotification) {
 					Label {
-						Text("external.notification")
+						Text("External Notification")
 					} icon: {
 						Image(systemName: "megaphone")
 					}
@@ -219,7 +219,7 @@ struct Settings: View {
 			if isModuleSupported(.rangetestConfig) {
 				NavigationLink(value: SettingsNavigationState.rangeTest) {
 					Label {
-						Text("range.test")
+						Text("Range Test")
 					} icon: {
 						Image(systemName: "point.3.connected.trianglepath.dotted")
 					}

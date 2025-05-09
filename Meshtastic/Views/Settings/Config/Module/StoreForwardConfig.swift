@@ -46,7 +46,7 @@ struct StoreForwardConfig: View {
 				if enabled {
 					Section(header: Text("Settings")) {
 						Toggle(isOn: $heartbeat) {
-							Label("storeforward.heartbeat", systemImage: "waveform.path.ecg")
+							Label("Send Heartbeat", systemImage: "waveform.path.ecg")
 							Text("Send a heartbeat to advertise the server's presence.")
 						}
 						Picker("Number of records", selection: $records) {

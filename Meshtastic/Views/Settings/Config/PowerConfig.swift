@@ -27,7 +27,7 @@ struct PowerConfig: View {
 
 	var body: some View {
 		Form {
-			ConfigHeader(title: "config.power.title", config: \.powerConfig, node: node, onAppear: setPowerValues)
+			ConfigHeader(title: "Power Config", config: \.powerConfig, node: node, onAppear: setPowerValues)
 
 			Section {
 				if (currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3) || (currentDevice?.architecture == .nrf52840 && (node?.deviceConfig?.role ?? 0 == 5 || node?.deviceConfig?.role ?? 0 == 6)) {
@@ -38,7 +38,7 @@ struct PowerConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 				Toggle(isOn: $shutdownOnPowerLoss) {
-					Label("config.power.shutdown.on.power.loss", systemImage: "power")
+					Label("Shutdown on Power Loss", systemImage: "power")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				if shutdownOnPowerLoss {
@@ -101,7 +101,7 @@ struct PowerConfig: View {
 			}
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.powerConfig == nil)
-		.navigationTitle("config.power.title")
+		.navigationTitle("Power Config")
 		.navigationBarItems(trailing: ZStack {
 			ConnectedDevice(
 				bluetoothOn: bleManager.isSwitchedOn,

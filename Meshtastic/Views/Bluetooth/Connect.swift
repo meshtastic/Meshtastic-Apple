@@ -102,7 +102,7 @@ struct Connect: View {
 											#endif
 											}
 										} label: {
-											Label("mesh.live.activity", systemImage: liveActivityStarted ? "stop" : "play")
+											Label("Mesh Live Activity", systemImage: liveActivityStarted ? "stop" : "play")
 										}
 										#endif
 										Text("Num: \(String(node!.num))")
@@ -175,7 +175,7 @@ struct Connect: View {
 											.foregroundColor(.red)
 											.frame(width: 60, height: 60)
 											.padding(.trailing)
-										Text("not.connected").font(.title3)
+										Text("No device connected").font(.title3)
 									}
 									.padding()
 								}

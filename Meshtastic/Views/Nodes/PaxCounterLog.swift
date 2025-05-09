@@ -174,7 +174,7 @@ struct PaxCounterLog: View {
 						isPresented: $isPresentingClearLogConfirm,
 						titleVisibility: .visible
 					) {
-						Button("paxcounter.delete", role: .destructive) {
+						Button("Delete all pax data?", role: .destructive) {
 							if clearPax(destNum: node.num, context: context) {
 								Logger.services.info("Cleared Pax Counter for \(node.num, privacy: .public)")
 							} else {
@@ -196,10 +196,10 @@ struct PaxCounterLog: View {
 					.padding(.trailing)
 				}
 			} else {
-				ContentUnavailableView("paxcounter.content.unavailable", systemImage: "slash.circle")
+				ContentUnavailableView("No PAX Counter Logs", systemImage: "slash.circle")
 			}
 		}
-		.navigationTitle("paxcounter.log")
+		.navigationTitle("PAX Counter Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 			ZStack {

@@ -189,7 +189,7 @@ struct ExternalNotificationConfig: View {
 				}
 			}
 		}
-		.navigationTitle("external.notification.config")
+		.navigationTitle("External Notification Config")
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(

@@ -149,13 +149,13 @@ enum DisplayModes: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .defaultMode:
-			return "default.128x64.screen.layout".localized
+			return "Default 128x64 screen layout".localized
 		case .twoColor:
-			return "optimized.for.2.color.displays".localized
+			return "Optimized for 2 color displays".localized
 		case .inverted:
-			return "inverted.top.bar.for.2.color.display".localized
+			return "Inverted top bar for 2 Color display".localized
 		case .color:
-			return "tft.full.color.displays".localized
+			return "TFT Full Color Displays".localized
 		}
 	}
 	func protoEnumValue() -> Config.DisplayConfig.DisplayMode {

@@ -126,7 +126,7 @@ struct SerialConfig: View {
 					}
 				}
 			}
-			.navigationTitle("serial.config")
+			.navigationTitle("Serial Config")
 			.navigationBarItems(
 				trailing: ZStack {
 					ConnectedDevice(

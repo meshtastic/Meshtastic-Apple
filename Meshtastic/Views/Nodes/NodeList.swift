@@ -192,7 +192,7 @@ struct NodeList: View {
 			.searchable(text: $searchText, placement: .automatic, prompt: "Find a node")
 			.disableAutocorrection(true)
 			.scrollDismissesKeyboard(.immediately)
-			.navigationTitle(String.localizedStringWithFormat("nodes %@".localized, String(nodes.count)))
+			.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(nodes.count)))
 			.listStyle(.plain)
 			.alert(
 				"Position Exchange Requested",
@@ -272,7 +272,7 @@ struct NodeList: View {
 					)
 				}
 			 } else {
-				ContentUnavailableView("select.node", systemImage: "flipphone")
+				ContentUnavailableView("Select Node", systemImage: "flipphone")
 			 }
 		} detail: {
 			ContentUnavailableView("", systemImage: "line.3.horizontal")

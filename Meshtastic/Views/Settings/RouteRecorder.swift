@@ -191,7 +191,7 @@ struct RouteRecorder: View {
 											Logger.data.error("Error Saving RouteEntity from the Route Recorder \(nsError, privacy: .public)")
 										}
 									} label: {
-										Label("start", systemImage: "play")
+										Label("Start", systemImage: "play")
 									}
 									.buttonStyle(.bordered)
 									.buttonBorderShape(.capsule)

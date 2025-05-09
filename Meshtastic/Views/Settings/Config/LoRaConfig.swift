@@ -228,7 +228,7 @@ struct LoRaConfig: View {
 				}
 			}
 		}
-		.navigationTitle("lora.config")
+		.navigationTitle("LoRa Config")
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(

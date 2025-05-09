@@ -484,7 +484,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					Logger.data.error("Error Updating Core Data BluetoothConfigEntity: \(nsError, privacy: .public)")
 				}
 
-				let logString = String.localizedStringWithFormat("mesh.log.traceroute.sent %@".localized, destNum.toHex())
+				let logString = String.localizedStringWithFormat("Sent a Trace Route Request to node: %@".localized, destNum.toHex())
 				Logger.mesh.info("🪧 \(logString, privacy: .public)")
 
 			} catch {
@@ -498,13 +498,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		guard connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected else { return }
 
 		if FROMRADIO_characteristic == nil {
-			Logger.mesh.error("🚨 \("firmware.version.unsupported".localized, privacy: .public)")
+			Logger.mesh.error("🚨 \("Unsupported Firmware Version Detected, unable to connect to device.".localized, privacy: .public)")
 			invalidVersion = true
 			return
 		} else {
 
 			let nodeName = connectedPeripheral?.peripheral.name ?? "Unknown".localized
-			let logString = String.localizedStringWithFormat("mesh.log.wantconfig %@".localized, nodeName)
+			let logString = String.localizedStringWithFormat("Issuing Want Config to %@".localized, nodeName)
 			Logger.mesh.info("🛎️ \(logString, privacy: .public)")
 			// BLE Characteristics discovered, issue wantConfig
 			var toRadio: ToRadio = ToRadio()
@@ -954,7 +954,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						let nsError = error as NSError
 						Logger.data.error("Error Updating Core Data TraceRouteHop: \(nsError, privacy: .public)")
 					}
-					let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.route %@".localized, routeString)
+					let logString = String.localizedStringWithFormat("Trace Route request returned: %@".localized, routeString)
 					Logger.mesh.info("🪧 \(logString, privacy: .public)")
 				}
 			case .neighborinfoApp:
@@ -1061,7 +1061,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				connectTo(peripheral: preferredPeripheral!.peripheral)
 			}
 			let nodeName = connectedPeripheral?.peripheral.name ?? "Unknown".localized
-			let logString = String.localizedStringWithFormat("mesh.log.textmessage.send.failed %@".localized, nodeName)
+			let logString = String.localizedStringWithFormat("Message Send Failed, not properly connected to %@".localized, nodeName)
 			Logger.mesh.info("🚫 \(logString, privacy: .public)")
 
 			success = false
@@ -1147,7 +1147,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 					if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 						connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-						let logString = String.localizedStringWithFormat("mesh.log.textmessage.sent %@ %@ %@".localized, String(newMessage.messageId), fromUserNum.toHex(), toUserNum.toHex())
+						let logString = String.localizedStringWithFormat("Sent message %@ from %@ to %@".localized, String(newMessage.messageId), fromUserNum.toHex(), toUserNum.toHex())
 
 						Logger.mesh.info("💬 \(logString, privacy: .public)")
 						do {
@@ -1195,7 +1195,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		guard let binaryData: Data = try? toRadio.serializedData() else {
 			return false
 		}
-		let logString = String.localizedStringWithFormat("mesh.log.waypoint.sent %@".localized, String(fromNodeNum))
+		let logString = String.localizedStringWithFormat("Sent a Waypoint Packet from: %@".localized, String(fromNodeNum))
 		Logger.mesh.info("📍 \(logString, privacy: .public)")
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
@@ -1359,7 +1359,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			let logString = String.localizedStringWithFormat("mesh.log.sharelocation %@".localized, String(fromNodeNum))
+			let logString = String.localizedStringWithFormat("Sent a Position Packet from the Apple device GPS to node: %@".localized, String(fromNodeNum))
 			Logger.services.debug("📍 \(logString, privacy: .public)")
 			return true
 		} else {
@@ -1714,7 +1714,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						}
 						if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 							self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
-							let logString = String.localizedStringWithFormat("mesh.log.channel.sent %@ %d".localized, String(connectedPeripheral.num), chan.index)
+							let logString = String.localizedStringWithFormat("Sent a Channel for: %@ Channel Index %d".localized, String(connectedPeripheral.num), chan.index)
 							Logger.mesh.info("🎛️ \(logString, privacy: .public)")
 						}
 					}
@@ -1743,7 +1743,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 					if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 						self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
-						let logString = String.localizedStringWithFormat("mesh.log.lora.config.sent %@".localized, String(connectedPeripheral.num))
+						let logString = String.localizedStringWithFormat("Sent a LoRa.Config for: %@".localized, String(connectedPeripheral.num))
 						Logger.mesh.info("📻 \(logString, privacy: .public)")
 					}
 
@@ -2663,7 +2663,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			let logString = String.localizedStringWithFormat("mesh.log.cannedmessages.messages.get %@".localized, String(connectedPeripheral.num))
+			let logString = String.localizedStringWithFormat("Requested Canned Messages Module Messages for node: %@".localized, String(connectedPeripheral.num))
 			Logger.mesh.info("🥫 \(logString, privacy: .public)")
 			return true
 		}

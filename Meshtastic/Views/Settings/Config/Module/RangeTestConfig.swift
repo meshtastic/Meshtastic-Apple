@@ -71,7 +71,7 @@ struct RangeTestConfig: View {
 					}
 				}
 			}
-			.navigationTitle("range.test.config")
+			.navigationTitle("Range Test Config")
 			.navigationBarItems(
 				trailing: ZStack {
 					ConnectedDevice(

@@ -123,7 +123,7 @@ struct NetworkConfig: View {
 				}
 			}
 		}
-		.navigationTitle("network.config")
+		.navigationTitle("Network Config")
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(
