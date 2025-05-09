@@ -174,7 +174,7 @@ enum SerialTimeoutIntervals: Int, CaseIterable, Identifiable {
 		case .tenSeconds:
 			return "Ten Seconds".localized
 		case .fifteenSeconds:
-			return "Thirty Seconds".localized
+			return "Fifteen Seconds".localized
 		case .thirtySeconds:
 			return "Thirty Seconds".localized
 		case .oneMinute:
