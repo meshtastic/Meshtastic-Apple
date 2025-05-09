@@ -25,12 +25,12 @@ struct SaveConfigButton: View {
 			titleVisibility: .visible
 		) {
 			let nodeName = node?.user?.longName ?? "Unknown".localized
-			let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
+			let buttonText = String.localizedStringWithFormat("Save Config for %@".localized, nodeName)
 			Button(buttonText) {
 				onConfirmation()
 			}
 		} message: {
-			Text("config.save.confirm")
+			Text("After config values save the node will reboot.")
 		}
 	}
 }

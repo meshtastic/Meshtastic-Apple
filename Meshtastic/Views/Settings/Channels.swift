@@ -379,6 +379,6 @@ enum PositionPrecision: Int, CaseIterable, Identifiable {
 
 	var description: String {
 		let distanceFormatter = MKDistanceFormatter()
-		return String.localizedStringWithFormat("position.precision %@".localized, String(distanceFormatter.string(fromDistance: precisionMeters)))
+		return String.localizedStringWithFormat("Within %@".localized, String(distanceFormatter.string(fromDistance: precisionMeters)))
 	}
 }

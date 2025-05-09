@@ -226,7 +226,7 @@ struct ShareChannels: View {
 					}
 				}
 			}
-			.navigationTitle("generate.qr.code")
+			.navigationTitle("Generate QR Code")
 			.navigationBarTitleDisplayMode(.inline)
 			.navigationBarItems(trailing:
 			ZStack {

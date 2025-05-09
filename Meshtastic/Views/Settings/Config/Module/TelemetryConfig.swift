@@ -32,7 +32,7 @@ struct TelemetryConfig: View {
 			Form {
 				ConfigHeader(title: "Telemetry", config: \.telemetryConfig, node: node, onAppear: setTelemetryValues)
 
-				Section(header: Text("update.interval")) {
+				Section(header: Text("Update Interval")) {
 					Picker("Device Metrics", selection: $deviceUpdateInterval ) {
 						ForEach(UpdateIntervals.allCases) { ui in
 							if ui.rawValue >= 900 {
@@ -124,7 +124,7 @@ struct TelemetryConfig: View {
 					}
 				}
 			}
-			.navigationTitle("telemetry.config")
+			.navigationTitle("Telemetry Config")
 			.navigationBarItems(
 				trailing: ZStack {
 					ConnectedDevice(

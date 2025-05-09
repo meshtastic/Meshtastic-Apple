@@ -130,7 +130,7 @@ struct DetectionSensorConfig: View {
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-					Section(header: Text("update.interval")) {
+					Section(header: Text("Update Interval")) {
 						Picker("Minimum time between detection broadcasts", selection: $minimumBroadcastSecs) {
 							ForEach(UpdateIntervals.allCases) { ui in
 								Text(ui.description).tag(ui.rawValue)
@@ -181,7 +181,7 @@ struct DetectionSensorConfig: View {
 				}
 			}
 		}
-		.navigationTitle("detection.sensor.config")
+		.navigationTitle("Detection Sensor Config")
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(

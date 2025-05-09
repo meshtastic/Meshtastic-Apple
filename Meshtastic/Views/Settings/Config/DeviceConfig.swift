@@ -247,7 +247,7 @@ struct DeviceConfig: View {
 			}
 			Spacer()
 		}
-		.navigationTitle("device.config")
+		.navigationTitle("Device Config")
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(
@@ -310,6 +310,9 @@ struct DeviceConfig: View {
 		}
 	}
 	func setDeviceValues() {
+		if node?.deviceConfig?.role ?? 0 == 3 {
+			node?.deviceConfig?.role = 1
+		}
 		self.deviceRole = Int(node?.deviceConfig?.role ?? 0)
 		self.buttonGPIO = Int(node?.deviceConfig?.buttonGpio ?? 0)
 		self.buzzerGPIO = Int(node?.deviceConfig?.buzzerGpio ?? 0)

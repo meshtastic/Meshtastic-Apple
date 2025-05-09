@@ -66,7 +66,7 @@ enum MeshMapDistances: Double, CaseIterable, Identifiable {
 	var id: Double { self.rawValue }
 	var description: String {
 		let distanceFormatter = MKDistanceFormatter()
-		return String.localizedStringWithFormat("nodelist.filter.distance %@".localized, distanceFormatter.string(fromDistance: Double(self.rawValue)))
+		return String.localizedStringWithFormat("up to %@ away".localized, distanceFormatter.string(fromDistance: Double(self.rawValue)))
 	}
 }
 
@@ -78,11 +78,11 @@ enum UserTrackingModes: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .none:
-			return "map.usertrackingmode.none".localized
+			return "None".localized
 		case .follow:
-			return "map.usertrackingmode.follow".localized
+			return "Follow".localized
 		case .followWithHeading:
-			return "map.usertrackingmode.followwithheading".localized
+			return "Follow with heading".localized
 		}
 	}
 	var icon: String {
@@ -117,21 +117,21 @@ enum LocationUpdateInterval: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .tenSeconds:
-			return "interval.ten.seconds".localized
+			return "Ten Seconds".localized
 		case .fifteenSeconds:
-			return "interval.fifteen.seconds".localized
+			return "Fifteen Seconds".localized
 		case .thirtySeconds:
-			return "interval.thirty.seconds".localized
+			return "Thirty Seconds".localized
 		case .fortyFiveSeconds:
-			return "interval.fortyfive.seconds".localized
+			return "Forty Five Seconds".localized
 		case .oneMinute:
-			return "interval.one.minute".localized
+			return "One Minute".localized
 		case .fiveMinutes:
-			return "interval.five.minutes".localized
+			return "Five Minutes".localized
 		case .tenMinutes:
-			return "interval.ten.minutes".localized
+			return "Ten Minutes".localized
 		case .fifteenMinutes:
-			return "interval.fifteen.minutes".localized
+			return "Fifteen Minutes".localized
 		}
 	}
 }

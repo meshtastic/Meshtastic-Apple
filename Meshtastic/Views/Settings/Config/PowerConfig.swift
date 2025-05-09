@@ -27,18 +27,18 @@ struct PowerConfig: View {
 
 	var body: some View {
 		Form {
-			ConfigHeader(title: "config.power.title", config: \.powerConfig, node: node, onAppear: setPowerValues)
+			ConfigHeader(title: "Power Config", config: \.powerConfig, node: node, onAppear: setPowerValues)
 
 			Section {
 				if (currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3) || (currentDevice?.architecture == .nrf52840 && (node?.deviceConfig?.role ?? 0 == 5 || node?.deviceConfig?.role ?? 0 == 6)) {
 					Toggle(isOn: $isPowerSaving) {
-						Label("config.power.saving", systemImage: "bolt")
-						Text("config.power.saving.description")
+						Label("Power Saving", systemImage: "bolt")
+						Text("Will sleep everything as much as possible, for the tracker and sensor role this will also include the lora radio. Don't use this setting if you want to use your device with the phone apps or are using a device without a user button.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 				Toggle(isOn: $shutdownOnPowerLoss) {
-					Label("config.power.shutdown.on.power.loss", systemImage: "power")
+					Label("Shutdown on Power Loss", systemImage: "power")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				if shutdownOnPowerLoss {
@@ -55,15 +55,15 @@ struct PowerConfig: View {
 			if currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3 {
 				Section {
 					Toggle(isOn: $adcOverride) {
-						Text("config.power.adc.override")
+						Text("ADC Override")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
 					if adcOverride {
 						HStack {
-							Text("config.power.adc.multiplier")
+							Text("Multiplier")
 							Spacer()
-							FloatField(title: "config.power.adc.multiplier", number: $adcMultiplier) {
+							FloatField(title: "Multiplier", number: $adcMultiplier) {
 								(2.0 ... 6.0).contains($0)
 							}
 							.focused($isFocused)
@@ -71,7 +71,7 @@ struct PowerConfig: View {
 						}
 					}
 				} header: {
-					Text("config.power.section.battery")
+					Text("Battery")
 				}
 //				Section {
 //					Picker("config.power.wait.bluetooth.secs", selection: $waitBluetoothSecs) {
@@ -101,7 +101,7 @@ struct PowerConfig: View {
 			}
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.powerConfig == nil)
-		.navigationTitle("config.power.title")
+		.navigationTitle("Power Config")
 		.navigationBarItems(trailing: ZStack {
 			ConnectedDevice(
 				bluetoothOn: bleManager.isSwitchedOn,
