@@ -9,18 +9,28 @@ struct TraceRouteButton: View {
 	private var isPresentingTraceRouteSentAlert: Bool = false
 
     var body: some View {
-		Button {
+		RateLimitedButton(key: "traceroute", rateLimit: 30.0) {
 			isPresentingTraceRouteSentAlert = bleManager.sendTraceRouteRequest(
 				destNum: node.user?.num ?? 0,
 				wantResponse: true
 			)
-		} label: {
-			Label {
-				Text("Trace Route")
-			} icon: {
-				Image(systemName: "signpost.right.and.left")
-					.symbolRenderingMode(.hierarchical)
-			}
+		} label: { completion in
+			if let completion, completion.percentComplete > 0.0 {
+				Label {
+					Text("Trace Route (in \(completion.secondsRemaining.formatted(.number.precision(.fractionLength(0))))s)")
+						.foregroundStyle(.secondary)
+				} icon: {
+					Image("progress.ring.dashed", variableValue: completion.percentComplete)
+						.foregroundStyle(.secondary)
+				}.disabled(true)
+			} else {
+				Label {
+					Text("Trace Route")
+				} icon: {
+				   Image(systemName: "signpost.right.and.left")
+					   .symbolRenderingMode(.hierarchical)
+				}
+		   }
 		}.alert(
 			"Trace Route Sent",
 			isPresented: $isPresentingTraceRouteSentAlert

@@ -91,21 +91,10 @@ struct NodeList: View {
 						Label("Message", systemImage: "message")
 					}
 				}
-				Button {
-					let traceRouteSent = bleManager.sendTraceRouteRequest(
-						destNum: node.num,
-						wantResponse: true
-					)
-					if traceRouteSent {
-						isPresentingTraceRouteSentAlert = true
-						DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-							isPresentingTraceRouteSentAlert = false
-						}
-					}
-
-				} label: {
-					Label("Trace Route", systemImage: "signpost.right.and.left")
-				}
+				TraceRouteButton(
+					bleManager: bleManager,
+					node: node
+				)
 				Button {
 					let positionSent = bleManager.sendPosition(
 						channel: node.channel,
