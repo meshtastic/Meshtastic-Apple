@@ -78,7 +78,7 @@ enum UserTrackingModes: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .none:
-			return "None".localized
+			return "map.usertrackingmode.none".localized
 		case .follow:
 			return "Follow".localized
 		case .followWithHeading:

@@ -131,6 +131,7 @@
 		DD6F65792C6EADE60053C113 /* DirectMessagesHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6F65782C6EADE60053C113 /* DirectMessagesHelp.swift */; };
 		DD6F657B2C6EC2900053C113 /* LockLegend.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6F657A2C6EC2900053C113 /* LockLegend.swift */; };
 		DD73FD1128750779000852D6 /* PositionLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD73FD1028750779000852D6 /* PositionLog.swift */; };
+		DD74ED0D2DC6A0C90059AC10 /* DeviceOnboarding.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD74ED0C2DC6A0B80059AC10 /* DeviceOnboarding.swift */; };
 		DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */; };
 		DD77093B2AA1ABB8007A8BF0 /* BluetoothTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD77093A2AA1ABB8007A8BF0 /* BluetoothTips.swift */; };
 		DD77093D2AA1AFA3007A8BF0 /* ChannelTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD77093C2AA1AFA3007A8BF0 /* ChannelTips.swift */; };
@@ -418,6 +419,7 @@
 		DD6F65782C6EADE60053C113 /* DirectMessagesHelp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectMessagesHelp.swift; sourceTree = "<group>"; };
 		DD6F657A2C6EC2900053C113 /* LockLegend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockLegend.swift; sourceTree = "<group>"; };
 		DD73FD1028750779000852D6 /* PositionLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionLog.swift; sourceTree = "<group>"; };
+		DD74ED0C2DC6A0B80059AC10 /* DeviceOnboarding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceOnboarding.swift; sourceTree = "<group>"; };
 		DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMetricsLog.swift; sourceTree = "<group>"; };
 		DD77093A2AA1ABB8007A8BF0 /* BluetoothTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothTips.swift; sourceTree = "<group>"; };
 		DD77093C2AA1AFA3007A8BF0 /* ChannelTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelTips.swift; sourceTree = "<group>"; };
@@ -837,6 +839,14 @@
 			path = Help;
 			sourceTree = "<group>";
 		};
+		DD74ED0B2DC6A0900059AC10 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				DD74ED0C2DC6A0B80059AC10 /* DeviceOnboarding.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
 		DD7709392AA1ABA1007A8BF0 /* Tips */ = {
 			isa = PBXGroup;
 			children = (
@@ -974,11 +984,12 @@
 		DDC2E18726CE24E40042C5E4 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				DD6D5A312CA1176A00ED3032 /* Layouts */,
-				DDC2E18D26CE25CB0042C5E4 /* Helpers */,
 				DD47E3D726F2F21A00029299 /* Bluetooth */,
+				DDC2E18D26CE25CB0042C5E4 /* Helpers */,
+				DD6D5A312CA1176A00ED3032 /* Layouts */,
 				DDC2E18B26CE25A70042C5E4 /* Messages */,
 				DD47E3CA26F0E50300029299 /* Nodes */,
+				DD74ED0B2DC6A0900059AC10 /* Onboarding */,
 				DD4A911C2708C57100501B7E /* Settings */,
 				DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */,
 			);
@@ -1416,6 +1427,7 @@
 				DDDB263F2AABEE20003AFCB7 /* NodeList.swift in Sources */,
 				DDD5BB0B2C285E45007E03CA /* LogDetail.swift in Sources */,
 				DDA0B6B2294CDC55001356EC /* Channels.swift in Sources */,
+				DD74ED0D2DC6A0C90059AC10 /* DeviceOnboarding.swift in Sources */,
 				DDE9659C2B1C3B6A00531070 /* RouteRecorder.swift in Sources */,
 				B399E8A42B6F486400E4488E /* RetryButton.swift in Sources */,
 				DDB8F4102A9EE5B400230ECE /* Messages.swift in Sources */,

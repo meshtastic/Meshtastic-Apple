@@ -13,7 +13,7 @@ import OSLog
 @MainActor class LocationsHandler: ObservableObject {
 
 	static let shared = LocationsHandler()  // Create a single, shared instance of the object.
-	private let manager: CLLocationManager
+	public let manager: CLLocationManager
 	private var background: CLBackgroundActivitySession?
 	var enableSmartPosition: Bool = UserDefaults.enableSmartPosition
 
@@ -38,6 +38,16 @@ import OSLog
 			UserDefaults.standard.set(backgroundActivity, forKey: "BGActivitySessionStarted")
 		}
 	}
+	
+	// The continuation we will use to asynchronously ask the user permission to track their location.
+	private var permissionContinuation: CheckedContinuation<CLAuthorizationStatus, Never>?
+
+	func requestLocationAlwaysPermissions() async -> CLAuthorizationStatus {
+		self.manager.requestAlwaysAuthorization()
+		return await withCheckedContinuation { continuation in
+		   permissionContinuation = continuation
+		}
+	}
 
 	private init() {
 		self.manager = CLLocationManager()  // Creating a location manager instance is safe to call here in `MainActor`.
@@ -48,6 +58,10 @@ import OSLog
 	func startLocationUpdates() {
 		if self.manager.authorizationStatus == .notDetermined {
 			self.manager.requestWhenInUseAuthorization()
+		}
+		let status = self.manager.authorizationStatus
+		guard status == .authorizedAlways || status == .authorizedWhenInUse else {
+			return
 		}
 		Logger.services.info("📍 [App] Starting location updates")
 		Task {

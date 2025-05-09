@@ -5,11 +5,11 @@
 import SwiftUI
 
 struct ContentView: View {
-	@ObservedObject
-	var appState: AppState
+	@ObservedObject var appState: AppState
 
-	@ObservedObject
-	var router: Router
+	@ObservedObject var router: Router
+	
+	@State var isShowingDeviceOnboardingFlow: Bool = false
 
 	init(appState: AppState, router: Router) {
 		self.appState = appState
@@ -58,6 +58,21 @@ struct ContentView: View {
 					.font(.title)
 			}
 			.tag(NavigationState.Tab.settings)
+		}.sheet(
+			isPresented: $isShowingDeviceOnboardingFlow,
+			onDismiss: {
+				//UserDefaults.firstLaunch = false
+			}, content: {
+				DeviceOnboarding()
+			}
+		)
+		.onAppear {
+			if UserDefaults.firstLaunch {
+				isShowingDeviceOnboardingFlow = true
+			}
+		}
+		.onChange(of: UserDefaults.showDeviceOnboarding) { newValue in
+			isShowingDeviceOnboardingFlow = newValue
 		}
 	}
 }
