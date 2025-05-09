@@ -4540,6 +4540,64 @@
         }
       }
     },
+    "Bluetooth config received: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth Konfiguration empfangen: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuration Bluetooth reçue : %@"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "הגדרות בלוטוס התקבלו: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurazione Bluetooth ricevuta: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otrzymano konfigurację Bluetooth: %@"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth-konfiguration mottagen: %@"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Примљена конфигурација блутута: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth config received: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth config received: %@"
+          }
+        }
+      }
+    },
     "Bluetooth is off" : {
       "localizations" : {
         "de" : {
@@ -5066,6 +5124,58 @@
         }
       }
     },
+    "Canned Message module config received: %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuration du module messages préformatés reçue : %@"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "הגדרות מודולת תגובות שמורות התקבלו: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurazione del modulo Canned Message ricevuta: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otrzymano konfigurację modułu wiadomości gotowych: %@"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguration för modulen med fördefinierade meddelanden mottagen: %@"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Конфигурација модула за унапред припремљене поруке примљена: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canned Message module config received: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canned Message module config received: %@"
+          }
+        }
+      }
+    },
     "Canned Messages" : {
       "localizations" : {
         "de" : {
@@ -5178,6 +5288,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "罐頭訊息設定"
+          }
+        }
+      }
+    },
+    "Canned Messages Messages Received For: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ""
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Messages préformatés reçus pour : %@"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "הודעות עבור הודעות שמורות התקבלו מ-%@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Messaggi in scatola Messaggi ricevuti per: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otrzymano Wiadomości Gotowe Dla: %@"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mottagna meddelanden för fördefinierade meddelanden För: %@"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Примљене поруке за унапред припремљене поруке за: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canned Messages Messages Received For: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canned Messages Messages Received For: %@"
           }
         }
       }
@@ -8165,14 +8333,8 @@
         }
       }
     },
-    "default.128x64.screen.layout" : {
+    "Default 128x64 screen layout" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Default 128x64 screen layout"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8391,6 +8553,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "刪除所有環境指標？"
+          }
+        }
+      }
+    },
+    "Delete all pax data?" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cancellare tutti i dati dei passeggeri?"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radera all paxdata?"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Избриши све PAX податке?"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "要刪除所有 PAX 資料嗎？"
           }
         }
       }
@@ -8633,65 +8823,10 @@
         }
       }
     },
-    "Detection Sensor Log" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Registro del sensore di rilevamento"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Логови сензора откривања"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "檢測感測器紀錄"
-          }
-        }
-      }
-    },
-    "Detection sensor messages are received as text messages.  If you enable notifications you will recieve a notification for each detection message received and a corresponding unread message badge." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "I messaggi del sensore di rilevamento vengono ricevuti come messaggi di testo.  Se si attivano le notifiche, si riceverà una notifica per ogni messaggio di rilevamento ricevuto e un badge per il messaggio non letto corrispondente."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Поруке сензора за откривање се примају као текстуалне поруке. Ако омогућите обавештења, добићете обавештење за сваку примљену поруку за откривање и одговарајућу значку непрочитане поруке."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "检测传感器信息以文本信息的形式接收。如果启用通知功能，则每收到一条检测信息都会收到一条通知，并显示相应的未读信息。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "偵測感測器的訊息會以文字訊息的形式接收。若啟用通知功能，每當接收到偵測訊息時，您將會收到一則通知，並顯示對應的未讀訊息標記。"
-          }
-        }
-      }
-    },
-    "detection.sensor" : {
+    "Detection Sensor" : {
+      "extractionState" : "manual",
       "localizations" : {
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Detection Sensor"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Detection Sensor"
@@ -8747,14 +8882,8 @@
         }
       }
     },
-    "detection.sensor.config" : {
+    "Detection Sensor Config" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Detection Sensor Config"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8799,36 +8928,12 @@
         }
       }
     },
-    "detection.sensor.log" : {
+    "Detection Sensor Log" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Detection Sensor Log"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Journal du capteur de détection"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "יומן חיישן זיהוי"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Registro del sensore di rilevamento"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Logg för Detektionssensor"
           }
         },
         "sr" : {
@@ -8837,16 +8942,90 @@
             "value" : "Логови сензора откривања"
           }
         },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檢測感測器紀錄"
+          }
+        }
+      }
+    },
+    "Detection sensor messages are received as text messages.  If you enable notifications you will recieve a notification for each detection message received and a corresponding unread message badge." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I messaggi del sensore di rilevamento vengono ricevuti come messaggi di testo.  Se si attivano le notifiche, si riceverà una notifica per ogni messaggio di rilevamento ricevuto e un badge per il messaggio non letto corrispondente."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поруке сензора за откривање се примају као текстуалне поруке. Ако омогућите обавештења, добићете обавештење за сваку примљену поруку за откривање и одговарајућу значку непрочитане поруке."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "检测传感器日志"
+            "value" : "检测传感器信息以文本信息的形式接收。如果启用通知功能，则每收到一条检测信息都会收到一条通知，并显示相应的未读信息。"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "檢測感測器紀錄"
+            "value" : "偵測感測器的訊息會以文字訊息的形式接收。若啟用通知功能，每當接收到偵測訊息時，您將會收到一則通知，並顯示對應的未讀訊息標記。"
+          }
+        }
+      }
+    },
+    "Detection Sensor module config received: %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuration du module capteur de détection reçue : %@"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "הגדרות מודולת חיישן זיהוי התקבלו: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurazione del modulo sensore di rilevamento ricevuta: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detection Sensor module config received: %@"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguration för detektionssensormodulen mottagen: %@"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Конфигурација модула за сензор детекције примљена: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detection Sensor module config received: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detection Sensor module config received: %@"
           }
         }
       }
@@ -8933,6 +9112,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "設備"
+          }
+        }
+      }
+    },
+    "Device Config" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gerätekonfiguration"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuration de l'appareil"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "הגדרות מכשיר"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurazione del dispositivo"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguracja urządzenia"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhetskonfiguration"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подешавања уређаја"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设备配置"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節點設定"
+          }
+        }
+      }
+    },
+    "Device config received: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gerätekonfiguration empfangen: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuration de l'appareil reçue : %@"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "הגדרות מכשיר התקבלו: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurazione dispositivo ricevuta: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otrzymano konfigurację urządzenia: %@"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhetskonfiguration mottagen: %@"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Примљена конфигурација уређаја: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Device config received: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Device config received: %@"
           }
         }
       }
@@ -9035,6 +9330,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "裝置由 Mesh 遠端管理，使用者無法存取任何裝置設定。"
+          }
+        }
+      }
+    },
+    "Device Metadata received from: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Device Metadata empfangen von: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadatas de l'appareil reçues de : %@"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "מטא-דאטה של מכשיר התקבל מ-%@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadati del dispositivo ricevuti da: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otrzymano metadane urządzenia od: %@"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadata för enhet mottagen från: %@"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Метаподаци уређаја примљени од: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Device Metadata admin message received from: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Device Metadata received from: %@"
           }
         }
       }
@@ -9301,134 +9654,6 @@
         }
       }
     },
-    "device.config" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gerätekonfiguration"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Device Config"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuration de l'appareil"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות מכשיר"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configurazione del dispositivo"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konfiguracja urządzenia"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enhetskonfiguration"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Подешавања уређаја"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "设备配置"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "節點設定"
-          }
-        }
-      }
-    },
-    "device.metrics.log" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Device Metrics Log"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Device Metrics Log"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Journal des mesures de l'appareil"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "יומן מכשיר"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Registro delle metriche del dispositivo"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dziennik metryk urządzenia"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Logg för Enhetsmätvärden"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Логови метрике уређаја"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "设备指标日志"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "裝置指標紀錄檔"
-          }
-        }
-      }
-    },
     "Dilution of precision (DOP) PDOP used by default" : {
       "localizations" : {
         "it" : {
@@ -9513,6 +9738,64 @@
         }
       }
     },
+    "Direct Messages" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direktnachrichten"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Messages directs"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "הודעה פרטית"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Messaggi diretti"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bezpośrednie Wiadomości"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direktmeddelanden"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Директне поруке"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "私聊"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "私人訊息"
+          }
+        }
+      }
+    },
     "Direct messages are using the new public key infrastructure for encryption. Requires firmware version 2.5 or greater." : {
       "localizations" : {
         "it" : {
@@ -9565,70 +9848,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "私訊使用共用金鑰進行加密傳輸。"
-          }
-        }
-      }
-    },
-    "direct.messages" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Direktnachrichten"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Direct Messages"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Messages directs"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הודעה פרטית"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Messaggi diretti"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bezpośrednie Wiadomości"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Direktmeddelanden"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Директне поруке"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "私聊"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "私人訊息"
           }
         }
       }
@@ -11555,18 +11774,12 @@
         }
       }
     },
-    "external.notification" : {
+    "External Notification" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Externe Benachrichtigung"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "External Notification"
           }
         },
         "fr" : {
@@ -11615,6 +11828,58 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "外部通知"
+          }
+        }
+      }
+    },
+    "External Notification module config received: %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuration du module notification extérieure reçue : %@"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "הגדרות מודולת נוטיפיקציה חיצונית התקבלו: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurazione del modulo di notifica esterno ricevuta: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otrzymano konfigurację modułu zewnętrznych powiadomień: %@"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguration för modulen för externa notifikationer mottagen: %@"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Конфигурација модула за екстерне нотификације примљена: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "External Notification module config received: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "External Notification module config received: %@"
           }
         }
       }
@@ -12311,70 +12576,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "韌體版本"
-          }
-        }
-      }
-    },
-    "firmware.version.unsupported" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nicht unterstützte Firmware Version erkannt. Kann nicht verbinden."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unsupported Firmware Version Detected, unable to connect to device."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Version non supportée du firmware détectée, impossible de se connecter à l'appareil."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "גרסת קושחה אינה נתמכת, לא ניתן להתחבר למכשיר."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rilevata versione firmware non supportata, impossibile connettersi al dispositivo."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wykryto nieobsługiwany wersję oprogramowania, brak możliwości połączenia z urządzeniem."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Okänd Firmwareversion upptäckt, kan inte ansluta till enheten."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Откривена је неподржана верзија фирмвера, није могуће повезати са уређајем."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "检测到不支持的固件版本，无法连接到设备。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "檢測到不支援的韌體版本，無法連接到節點。"
           }
         }
       }
@@ -13841,27 +14042,21 @@
     },
     "Hazardous" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hazardous"
-          }
-        },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Pericoloso"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Опасно"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "危險"
           }
         }
@@ -15499,14 +15694,8 @@
         }
       }
     },
-    "inverted.top.bar.for.2.color.display" : {
+    "Inverted top bar for 2 Color display" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inverted top bar for 2 Color display"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17319,122 +17508,6 @@
         }
       }
     },
-    "Bluetooth config received: %@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bluetooth Konfiguration empfangen: %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuration Bluetooth reçue : %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות בלוטוס התקבלו: %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configurazione Bluetooth ricevuta: %@"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Otrzymano konfigurację Bluetooth: %@"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bluetooth-konfiguration mottagen: %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Примљена конфигурација блутута: %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bluetooth config received: %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bluetooth config received: %@"
-          }
-        }
-      }
-    },
-    "mesh.log.cannedmessage.config %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Canned Message module config received: %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuration du module messages préformatés reçue : %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות מודולת תגובות שמורות התקבלו: %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configurazione del modulo Canned Message ricevuta: %@"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Otrzymano konfigurację modułu wiadomości gotowych: %@"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konfiguration för modulen med fördefinierade meddelanden mottagen: %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Конфигурација модула за унапред припремљене поруке примљена: %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Canned Message module config received: %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Canned Message module config received: %@"
-          }
-        }
-      }
-    },
     "mesh.log.cannedmessages.messages.get %@" : {
       "localizations" : {
         "en" : {
@@ -17489,64 +17562,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Requested Canned Messages Module Messages for node: %@"
-          }
-        }
-      }
-    },
-    "mesh.log.cannedmessages.messages.received %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Canned Messages Messages Received For: %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Messages préformatés reçus pour : %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הודעות עבור הודעות שמורות התקבלו מ-%@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Messaggi in scatola Messaggi ricevuti per: %@"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Otrzymano Wiadomości Gotowe Dla: %@"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mottagna meddelanden för fördefinierade meddelanden För: %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Примљене поруке за унапред припремљене поруке за: %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Canned Messages Messages Received For: %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Canned Messages Messages Received For: %@"
           }
         }
       }
@@ -17609,198 +17624,12 @@
         }
       }
     },
-    "mesh.log.detectionsensor.config %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Detection Sensor module config received: %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuration du module capteur de détection reçue : %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות מודולת חיישן זיהוי התקבלו: %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configurazione del modulo sensore di rilevamento ricevuta: %@"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Detection Sensor module config received: %@"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konfiguration för detektionssensormodulen mottagen: %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Конфигурација модула за сензор детекције примљена: %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Detection Sensor module config received: %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Detection Sensor module config received: %@"
-          }
-        }
-      }
-    },
-    "Device config received: %@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gerätekonfiguration empfangen: %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuration de l'appareil reçue : %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות מכשיר התקבלו: %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configurazione dispositivo ricevuta: %@"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Otrzymano konfigurację urządzenia: %@"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enhetskonfiguration mottagen: %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Примљена конфигурација уређаја: %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Device config received: %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Device config received: %@"
-          }
-        }
-      }
-    },
-    "mesh.log.device.metadata.received %@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Device Metadata empfangen von: %@"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Device Metadata received from: %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Metadatas de l'appareil reçues de : %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מטא-דאטה של מכשיר התקבל מ-%@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Metadati del dispositivo ricevuti da: %@"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Otrzymano metadane urządzenia od: %@"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Metadata för enhet mottagen från: %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Метаподаци уређаја примљени од: %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Device Metadata admin message received from: %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Device Metadata received from: %@"
-          }
-        }
-      }
-    },
-    "mesh.log.display.config %@" : {
+    "Display config received: %@" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Display Konfiguration empfangen: %@"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Display config received: %@"
           }
         },
         "fr" : {
@@ -17849,64 +17678,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Display config received: %@"
-          }
-        }
-      }
-    },
-    "mesh.log.externalnotification.config %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "External Notification module config received: %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuration du module notification extérieure reçue : %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות מודולת נוטיפיקציה חיצונית התקבלו: %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configurazione del modulo di notifica esterno ricevuta: %@"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Otrzymano konfigurację modułu zewnętrznych powiadomień: %@"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konfiguration för modulen för externa notifikationer mottagen: %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Конфигурација модула за екстерне нотификације примљена: %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "External Notification module config received: %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "External Notification module config received: %@"
           }
         }
       }
@@ -18835,122 +18606,6 @@
         }
       }
     },
-    "mesh.log.storeforward.config %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Store & Forward module config received: %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuration du module Stocker et Transmettre reçue : %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות מודולת שמירה ושליחה התקבלו: %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configurazione del modulo Store & Forward ricevuta: %@"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Store & Forward module config received: %@"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konfiguration för Store & Forward-modulen mottagen: %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Конфигурација модула за чување и прослеђивање примљена: %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Store & Forward module config received: %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Store & Forward module config received: %@"
-          }
-        }
-      }
-    },
-    "Telemetry module config received: %@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Telemetrie Modul Konfiguration empfangen: %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuration du module télémetrie reçue : %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות מודולת טלמטריה התקבלו: %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configurazione del modulo di telemetria ricevuta: %@"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Odebrano konfigurację modułu telemetrii: %@"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Telemetrimodulkonfiguration mottagen: %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Конфигурација модула телеметрије примљена: %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Telemetry module config received: %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Telemetry module config received: %@"
-          }
-        }
-      }
-    },
     "mesh.log.telemetry.received %@" : {
       "localizations" : {
         "de" : {
@@ -19389,70 +19044,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Issuing Want Config to %@"
-          }
-        }
-      }
-    },
-    "mesh.log.waypoint.received %@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wegpunkt von Knoten empfangen: %@"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Waypoint Packet received from node: %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Paquet Waypoint reçu du noeud : %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "נקודת ציון התקבלה מ-%@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pacchetto Waypoint ricevuto dal nodo: %@"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Odebrano pakiet punktu orientacyjnego od węzła: %@"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vägpunktspaket mottaget från nod: %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Пакет са тачкама пута примљен од чвора: %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Waypoint Packet received from node: %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Waypoint Packet received from node: %@"
           }
         }
       }
@@ -21626,64 +21217,6 @@
         }
       }
     },
-    "up to %@ away" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "bis zu %@ entfernt"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "up to %@ away"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "up to %@ away"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fino a %@ di distanza"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "up to %@ away"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "upp till %@ bort"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "удаљено до максималних %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "最远距离 %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "距離%@以內"
-          }
-        }
-      }
-    },
     "nodes" : {
       "localizations" : {
         "de" : {
@@ -22742,6 +22275,28 @@
         }
       }
     },
+    "Optimized for 2 color displays" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ottimizzato per i display a 2 colori"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оптимизовано за двобојне дисплеје"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "為雙色螢幕最佳化"
+          }
+        }
+      }
+    },
     "Optimized for ATAK system communication, reduces routine broadcasts." : {
       "localizations" : {
         "de" : {
@@ -22796,34 +22351,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "為 ATAK 系統通訊最佳化，並減少例行廣播頻率。"
-          }
-        }
-      }
-    },
-    "optimized.for.2.color.displays" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Optimized for 2 color displays"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ottimizzato per i display a 2 colori"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Оптимизовано за двобојне дисплеје"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "為雙色螢幕最佳化"
           }
         }
       }
@@ -23578,40 +23105,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "沒有 PAX 計數器日誌"
-          }
-        }
-      }
-    },
-    "paxcounter.delete" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete all pax data?"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancellare tutti i dati dei passeggeri?"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Radera all paxdata?"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Избриши све PAX податке?"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "要刪除所有 PAX 資料嗎？"
           }
         }
       }
@@ -25354,18 +24847,12 @@
         }
       }
     },
-    "range.test" : {
+    "Range Test" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entfernungstest"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Range Test"
           }
         },
         "fr" : {
@@ -28629,6 +28116,64 @@
         }
       }
     },
+    "Serial Config" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serial Konfiguration"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuration série"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "'הגדרות מודולה 'סיריאלי"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurazione seriale"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguracja seryjna"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seriekonfiguration"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подешавања серијске везе"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "串口配置"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "序列設定"
+          }
+        }
+      }
+    },
     "Serial Console" : {
       "localizations" : {
         "de" : {
@@ -28681,70 +28226,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "透過串流 API 的序列主控台。"
-          }
-        }
-      }
-    },
-    "serial.config" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Serial Konfiguration"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Serial Config"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuration série"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "'הגדרות מודולה 'סיריאלי"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configurazione seriale"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konfiguracja seryjna"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seriekonfiguration"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Подешавања серијске везе"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "串口配置"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "序列設定"
           }
         }
       }
@@ -30283,15 +29764,9 @@
         }
       }
     },
-    "start" : {
+    "Start" : {
       "localizations" : {
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Start"
@@ -30421,6 +29896,58 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "儲存與轉送設定"
+          }
+        }
+      }
+    },
+    "Store & Forward module config received: %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuration du module Stocker et Transmettre reçue : %@"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "הגדרות מודולת שמירה ושליחה התקבלו: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurazione del modulo Store & Forward ricevuta: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Store & Forward module config received: %@"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguration för Store & Forward-modulen mottagen: %@"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Конфигурација модула за чување и прослеђивање примљена: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Store & Forward module config received: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Store & Forward module config received: %@"
           }
         }
       }
@@ -30913,6 +30440,64 @@
         }
       }
     },
+    "Telemetry module config received: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Telemetrie Modul Konfiguration empfangen: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuration du module télémetrie reçue : %@"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "הגדרות מודולת טלמטריה התקבלו: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurazione del modulo di telemetria ricevuta: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odebrano konfigurację modułu telemetrii: %@"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Telemetrimodulkonfiguration mottagen: %@"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Конфигурација модула телеметрије примљена: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Telemetry module config received: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Telemetry module config received: %@"
+          }
+        }
+      }
+    },
     "Temp" : {
       "localizations" : {
         "de" : {
@@ -31177,14 +30762,8 @@
         }
       }
     },
-    "tft.full.color.displays" : {
+    "TFT Full Color Displays" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TFT Full Color Displays"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33847,6 +33426,64 @@
         }
       }
     },
+    "Unsupported Firmware Version Detected, unable to connect to device." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht unterstützte Firmware Version erkannt. Kann nicht verbinden."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version non supportée du firmware détectée, impossible de se connecter à l'appareil."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "גרסת קושחה אינה נתמכת, לא ניתן להתחבר למכשיר."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rilevata versione firmware non supportata, impossibile connettersi al dispositivo."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wykryto nieobsługiwany wersję oprogramowania, brak możliwości połączenia z urządzeniem."
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Okänd Firmwareversion upptäckt, kan inte ansluta till enheten."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Откривена је неподржана верзија фирмвера, није могуће повезати са уређајем."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "检测到不支持的固件版本，无法连接到设备。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檢測到不支援的韌體版本，無法連接到節點。"
+          }
+        }
+      }
+    },
     "Up" : {
       "localizations" : {
         "de" : {
@@ -33929,6 +33566,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "上 下 1"
+          }
+        }
+      }
+    },
+    "up to %@ away" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "bis zu %@ entfernt"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "up to %@ away"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "up to %@ away"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "fino a %@ di distanza"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "up to %@ away"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "upp till %@ bort"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "удаљено до максималних %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最远距离 %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "距離%@以內"
           }
         }
       }
@@ -34615,15 +34310,9 @@
         }
       }
     },
-    "Version: %@ (%@) " : {
+    "Version: %1$@ (%2$@)" : {
       "localizations" : {
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Version: %1$@ (%2$@) "
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Version: %1$@ (%2$@) "
@@ -35041,6 +34730,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "路徑點選項"
+          }
+        }
+      }
+    },
+    "Waypoint Packet received from node: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wegpunkt von Knoten empfangen: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paquet Waypoint reçu du noeud : %@"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "נקודת ציון התקבלה מ-%@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pacchetto Waypoint ricevuto dal nodo: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odebrano pakiet punktu orientacyjnego od węzła: %@"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vägpunktspaket mottaget från nod: %@"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пакет са тачкама пута примљен од чвора: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waypoint Packet received from node: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waypoint Packet received from node: %@"
           }
         }
       }

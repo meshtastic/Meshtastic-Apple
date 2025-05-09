@@ -174,7 +174,7 @@ struct PaxCounterLog: View {
 						isPresented: $isPresentingClearLogConfirm,
 						titleVisibility: .visible
 					) {
-						Button("paxcounter.delete", role: .destructive) {
+						Button("Delete all pax data?", role: .destructive) {
 							if clearPax(destNum: node.num, context: context) {
 								Logger.services.info("Cleared Pax Counter for \(node.num, privacy: .public)")
 							} else {

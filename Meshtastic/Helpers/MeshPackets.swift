@@ -209,7 +209,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	if metadata.isInitialized {
-		let logString = String.localizedStringWithFormat("mesh.log.device.metadata.received %@".localized, fromNum.toHex())
+		let logString = String.localizedStringWithFormat("Device Metadata received from: %@".localized, fromNum.toHex())
 		Logger.mesh.info("🏷️ \(logString, privacy: .public)")
 
 		let fetchedNodeRequest = NodeInfoEntity.fetchRequest()
@@ -472,7 +472,7 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 				if !cmmc.messages.isEmpty {
 
-					let logString = String.localizedStringWithFormat("mesh.log.cannedmessages.messages.received %@".localized, packet.from.toHex())
+					let logString = String.localizedStringWithFormat("Canned Messages Messages Received For: %@".localized, packet.from.toHex())
 					Logger.mesh.info("🥫 \(logString, privacy: .public)")
 
 					let fetchNodeRequest = NodeInfoEntity.fetchRequest()
@@ -1037,7 +1037,7 @@ func textMessageAppPacket(
 
 func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("mesh.log.waypoint.received %@".localized, String(packet.from))
+	let logString = String.localizedStringWithFormat("Waypoint Packet received from node: %@".localized, String(packet.from))
 	Logger.mesh.info("📍 \(logString, privacy: .public)")
 
 	let fetchWaypointRequest = WaypointEntity.fetchRequest()

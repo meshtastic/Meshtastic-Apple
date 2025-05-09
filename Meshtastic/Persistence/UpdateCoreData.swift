@@ -505,7 +505,7 @@ func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, sessi
 
 func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("mesh.log.display.config %@".localized, nodeNum.toHex())
+	let logString = String.localizedStringWithFormat("Display config received: %@".localized, nodeNum.toHex())
 	Logger.data.info("🖥️ \(logString, privacy: .public)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
@@ -916,7 +916,7 @@ func upsertAmbientLightingModuleConfigPacket(config: ModuleConfig.AmbientLightin
 
 func upsertCannedMessagesModuleConfigPacket(config: ModuleConfig.CannedMessageConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("mesh.log.cannedmessage.config %@".localized, String(nodeNum))
+	let logString = String.localizedStringWithFormat("Canned Message module config received: %@".localized, String(nodeNum))
 	Logger.data.info("🥫 \(logString, privacy: .public)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
@@ -975,7 +975,7 @@ func upsertCannedMessagesModuleConfigPacket(config: ModuleConfig.CannedMessageCo
 
 func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSensorConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("mesh.log.detectionsensor.config %@".localized, String(nodeNum))
+	let logString = String.localizedStringWithFormat("Detection Sensor module config received: %@".localized, String(nodeNum))
 	Logger.data.info("🕵️ \(logString, privacy: .public)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
@@ -1032,7 +1032,7 @@ func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSenso
 
 func upsertExternalNotificationModuleConfigPacket(config: ModuleConfig.ExternalNotificationConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("mesh.log.externalnotification.config %@".localized, String(nodeNum))
+	let logString = String.localizedStringWithFormat("External Notification module config received: %@".localized, String(nodeNum))
 	Logger.data.info("📣 \(logString, privacy: .public)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
@@ -1344,7 +1344,7 @@ func upsertSerialModuleConfigPacket(config: ModuleConfig.SerialConfig, nodeNum: 
 
 func upsertStoreForwardModuleConfigPacket(config: ModuleConfig.StoreForwardConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("mesh.log.storeforward.config %@".localized, String(nodeNum))
+	let logString = String.localizedStringWithFormat("Store & Forward module config received: %@".localized, String(nodeNum))
 	Logger.data.info("📬 \(logString, privacy: .public)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()

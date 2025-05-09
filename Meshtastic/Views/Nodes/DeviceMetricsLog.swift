@@ -240,7 +240,7 @@ struct DeviceMetricsLog: View {
 				ContentUnavailableView("No Device Metrics", systemImage: "slash.circle")
 			}
 		}
-		.navigationTitle("device.metrics.log")
+		.navigationTitle("Device Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 			ZStack {
@@ -250,7 +250,7 @@ struct DeviceMetricsLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \("device.metrics.log".localized)"),
+			defaultFilename: String("\(node.user?.longName ?? "Node") \("Device Metrics Log".localized)"),
 			onCompletion: { result in
 				switch result {
 				case .success:

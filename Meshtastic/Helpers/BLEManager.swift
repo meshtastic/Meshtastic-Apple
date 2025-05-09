@@ -498,7 +498,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		guard connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected else { return }
 
 		if FROMRADIO_characteristic == nil {
-			Logger.mesh.error("🚨 \("firmware.version.unsupported".localized, privacy: .public)")
+			Logger.mesh.error("🚨 \("Unsupported Firmware Version Detected, unable to connect to device.".localized, privacy: .public)")
 			invalidVersion = true
 			return
 		} else {

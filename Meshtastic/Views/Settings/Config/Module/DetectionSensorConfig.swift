@@ -181,7 +181,7 @@ struct DetectionSensorConfig: View {
 				}
 			}
 		}
-		.navigationTitle("detection.sensor.config")
+		.navigationTitle("Detection Sensor Config")
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(

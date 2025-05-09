@@ -48,7 +48,7 @@ struct AboutMeshtastic: View {
 					}
 					.font(.title2)
 
-					Text("Version: \(Bundle.main.appVersionLong) (\(Bundle.main.appBuild)) ")
+					Text("Version: \(Bundle.main.appVersionLong) (\(Bundle.main.appBuild))")
 				}
 
 				Section(header: Text("Project information")) {
