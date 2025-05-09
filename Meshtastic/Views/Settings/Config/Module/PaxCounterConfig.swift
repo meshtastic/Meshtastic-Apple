@@ -41,7 +41,7 @@ struct PaxCounterConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(.hidden)
-					Text("config.module.paxcounter.updateinterval.description")
+					Text("How often we can send a message to the mesh when people are detected.")
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
@@ -50,7 +50,7 @@ struct PaxCounterConfig: View {
 			}
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.powerConfig == nil)
-		.navigationTitle("config.module.paxcounter.title")
+		.navigationTitle("PAX Counter Config")
 		.navigationBarItems(trailing: ZStack {
 			ConnectedDevice(
 				bluetoothOn: bleManager.isSwitchedOn,

@@ -49,21 +49,21 @@ enum ScreenOnIntervals: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .fifteenSeconds:
-			return "interval.fifteen.seconds".localized
+			return "Fifteen Seconds".localized
 		case .thirtySeconds:
-			return "interval.thirty.seconds".localized
+			return "Thirty Seconds".localized
 		case .oneMinute:
-			return "interval.one.minute".localized
+			return "One Minute".localized
 		case .fiveMinutes:
-			return "interval.five.minutes".localized
+			return "Five Minutes".localized
 		case .tenMinutes:
-			return "interval.ten.minutes".localized
+			return "Ten Minutes".localized
 		case .fifteenMinutes:
-			return "interval.fifteen.minutes".localized
+			return "Fifteen Minutes".localized
 		case .thirtyMinutes:
-			return "interval.thirty.minutes".localized
+			return "Thirty Minutes".localized
 		case .oneHour:
-			return "interval.one.hour".localized
+			return "One Hour".localized
 		case .max:
 			return "Always On".localized
 		}
@@ -87,17 +87,17 @@ enum ScreenCarouselIntervals: Int, CaseIterable, Identifiable {
 		case .off:
 			return "off".localized
 		case .fifteenSeconds:
-			return "interval.fifteen.seconds".localized
+			return "Fifteen Seconds".localized
 		case .thirtySeconds:
-			return "interval.thirty.seconds".localized
+			return "Thirty Seconds".localized
 		case .oneMinute:
-			return "interval.one.minute".localized
+			return "One Minute".localized
 		case .fiveMinutes:
-			return "interval.five.minutes".localized
+			return "Five Minutes".localized
 		case .tenMinutes:
-			return "interval.ten.minutes".localized
+			return "Ten Minutes".localized
 		case .fifteenMinutes:
-			return "interval.fifteen.minutes".localized
+			return "Fifteen Minutes".localized
 		}
 	}
 }
@@ -149,13 +149,13 @@ enum DisplayModes: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .defaultMode:
-			return "default.128x64.screen.layout".localized
+			return "Default 128x64 screen layout".localized
 		case .twoColor:
-			return "optimized.for.2.color.displays".localized
+			return "Optimized for 2 color displays".localized
 		case .inverted:
-			return "inverted.top.bar.for.2.color.display".localized
+			return "Inverted top bar for 2 Color display".localized
 		case .color:
-			return "tft.full.color.displays".localized
+			return "TFT Full Color Displays".localized
 		}
 	}
 	func protoEnumValue() -> Config.DisplayConfig.DisplayMode {

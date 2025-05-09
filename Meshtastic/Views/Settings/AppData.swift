@@ -21,7 +21,7 @@ struct AppData: View {
 
 		VStack {
 
-			Section(header: Text("phone.gps")) {
+			Section(header: Text("Phone GPS")) {
 				GPSStatus()
 			}
 			Divider()

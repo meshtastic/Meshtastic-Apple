@@ -50,7 +50,7 @@ struct Messages: View {
 				}
 				NavigationLink(value: MessagesNavigationState.directMessages()) {
 					Label {
-						Text("direct.messages")
+						Text("Direct Messages")
 							.badge(unreadDirectMessages)
 							.font(.title2)
 							.padding()

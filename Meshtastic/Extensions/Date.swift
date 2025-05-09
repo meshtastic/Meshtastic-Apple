@@ -30,11 +30,11 @@ extension Date {
 		let hour = Calendar.current.component(.hour, from: self)
 
 		switch hour {
-		case 6..<12: return "relativetimeofday.morning".localized
-		case 12: return "relativetimeofday.midday".localized
-		case 13..<17: return "relativetimeofday.afternoon".localized
-		case 17..<22: return "relativetimeofday.evening".localized
-		default: return "relativetimeofday.nighttime".localized
+		case 6..<12: return "Morning".localized
+		case 12: return "Midday".localized
+		case 13..<17: return "Afternoon".localized
+		case 17..<22: return "Evening".localized
+		default: return "Nighttime".localized
 		}
 	}
 }

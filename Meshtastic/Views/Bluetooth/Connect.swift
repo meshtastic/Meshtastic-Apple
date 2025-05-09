@@ -46,7 +46,7 @@ struct Connect: View {
 			VStack {
 				List {
 					if bleManager.isSwitchedOn {
-						Section(header: Text("connected.radio").font(.title)) {
+						Section(header: Text("Connected Radio").font(.title)) {
 							if let connectedPeripheral = bleManager.connectedPeripheral, connectedPeripheral.peripheral.state == .connected {
 								TipView(BluetoothConnectionTip(), arrowEdge: .bottom)
 								VStack(alignment: .leading) {
@@ -116,7 +116,7 @@ struct Connect: View {
 											#endif
 											}
 										} label: {
-											Label("mesh.live.activity", systemImage: liveActivityStarted ? "stop" : "play")
+											Label("Mesh Live Activity", systemImage: liveActivityStarted ? "stop" : "play")
 										}
 										#endif
 										Text("Num: \(String(node!.num))")
@@ -139,7 +139,7 @@ struct Connect: View {
 										NavigationLink {
 											LoRaConfig(node: node)
 										} label: {
-											Label("set.region", systemImage: "globe.americas.fill")
+											Label("Set LoRa Region", systemImage: "globe.americas.fill")
 												.foregroundColor(.red)
 												.font(.title)
 										}
@@ -156,7 +156,7 @@ struct Connect: View {
 											.frame(width: 60, height: 60)
 											.padding(.trailing)
 										if bleManager.timeoutTimerCount == 0 {
-											Text("connecting")
+											Text("Connecting . .")
 												.font(.title2)
 												.foregroundColor(.orange)
 										} else {
@@ -189,7 +189,7 @@ struct Connect: View {
 											.foregroundColor(.red)
 											.frame(width: 60, height: 60)
 											.padding(.trailing)
-										Text("not.connected").font(.title3)
+										Text("No device connected").font(.title3)
 									}
 									.padding()
 								}

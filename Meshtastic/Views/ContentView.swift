@@ -40,13 +40,13 @@ struct ContentView: View {
 				router: appState.router
 			)
 			.tabItem {
-				Label("nodes", systemImage: "flipphone")
+				Label("Nodes", systemImage: "flipphone")
 			}
 			.tag(NavigationState.Tab.nodes)
 
 			MeshMap(router: appState.router)
 				.tabItem {
-					Label("map", systemImage: "map")
+					Label("Mesh Map", systemImage: "map")
 				}
 				.tag(NavigationState.Tab.map)
 

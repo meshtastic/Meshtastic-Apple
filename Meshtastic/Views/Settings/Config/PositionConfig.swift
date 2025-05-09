@@ -394,7 +394,7 @@ struct PositionConfig: View {
 			}
 			saveButton
 		}
-		.navigationTitle("position.config")
+		.navigationTitle("Position Config")
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: bleManager.connectedPeripheral?.shortName ?? "?")

@@ -282,7 +282,7 @@ struct PowerMetricsLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \("power.metrics.log".localized)"),
+			defaultFilename: String("\(node.user?.longName ?? "Node") \("Power Metrics Log".localized)"),
 			onCompletion: { result in
 				switch result {
 				case .success:
