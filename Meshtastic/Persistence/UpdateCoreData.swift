@@ -687,7 +687,7 @@ func upsertNetworkConfigPacket(config: Config.NetworkConfig, nodeNum: Int64, ses
 
 func upsertPositionConfigPacket(config: Config.PositionConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("Positon config received: %@".localized, String(nodeNum))
+	let logString = String.localizedStringWithFormat("Position config received: %@".localized, String(nodeNum))
 	Logger.data.info("🗺️ \(logString, privacy: .public)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
