@@ -196,10 +196,10 @@ struct PaxCounterLog: View {
 					.padding(.trailing)
 				}
 			} else {
-				ContentUnavailableView("paxcounter.content.unavailable", systemImage: "slash.circle")
+				ContentUnavailableView("No PAX Counter Logs", systemImage: "slash.circle")
 			}
 		}
-		.navigationTitle("paxcounter.log")
+		.navigationTitle("PAX Counter Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 			ZStack {

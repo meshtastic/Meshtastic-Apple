@@ -60,7 +60,7 @@ struct MQTTConfig: View {
 
 					Toggle(isOn: $proxyToClientEnabled) {
 
-						Label("mqtt.clientproxy", systemImage: "iphone.radiowaves.left.and.right")
+						Label("MQTT Client Proxy", systemImage: "iphone.radiowaves.left.and.right")
 						Text("Utilizes the network connection on your phone to connect to MQTT.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -340,7 +340,7 @@ struct MQTTConfig: View {
 				if newMapPublishIntervalSecs != node?.mqttConfig?.mapPublishIntervalSecs ?? -1 { hasChanges = true }
 			}
 		}
-		.navigationTitle("mqtt.config")
+		.navigationTitle("MQTT Config")
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(

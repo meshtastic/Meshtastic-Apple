@@ -103,7 +103,7 @@ func moduleConfig (config: ModuleConfig, context: NSManagedObjectContext, nodeNu
 
 func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedObjectContext) -> MyInfoEntity? {
 
-	let logString = String.localizedStringWithFormat("mesh.log.myinfo %@".localized, String(myInfo.myNodeNum))
+	let logString = String.localizedStringWithFormat("MyInfo received: %@".localized, String(myInfo.myNodeNum))
 	Logger.mesh.info("ℹ️ \(logString, privacy: .public)")
 
 	let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
@@ -261,7 +261,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPass
 
 func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObjectContext) -> NodeInfoEntity? {
 
-	let logString = String.localizedStringWithFormat("mesh.log.nodeinfo.received %@".localized, String(nodeInfo.num))
+	let logString = String.localizedStringWithFormat("Node info received for: %@".localized, String(nodeInfo.num))
 	Logger.mesh.info("📟 \(logString, privacy: .public)")
 
 	guard nodeInfo.num > 0 else { return nil }
@@ -582,7 +582,7 @@ func adminResponseAck (packet: MeshPacket, context: NSManagedObjectContext) {
 }
 func paxCounterPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("mesh.log.paxcounter %@".localized, String(packet.from))
+	let logString = String.localizedStringWithFormat("PAX Counter message received from: %@".localized, String(packet.from))
 	Logger.mesh.info("🧑‍🤝‍🧑 \(logString, privacy: .public)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
@@ -626,7 +626,7 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 		let routingError = RoutingError(rawValue: routingMessage.errorReason.rawValue)
 
 		let routingErrorString = routingError?.display ?? "Unknown".localized
-		let logString = String.localizedStringWithFormat("mesh.log.routing.message %@ %@".localized, String(packet.decoded.requestID), routingErrorString)
+		let logString = String.localizedStringWithFormat("Routing received for RequestID: %@ Ack Status: %@".localized, String(packet.decoded.requestID), routingErrorString)
 		Logger.mesh.info("🕸️ \(logString, privacy: .public)")
 
 		let fetchMessageRequest = MessageEntity.fetchRequest()
@@ -686,7 +686,7 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManagedObjectContext) {
 
 	if let telemetryMessage = try? Telemetry(serializedBytes: packet.decoded.payload) {
-		let logString = String.localizedStringWithFormat("mesh.log.telemetry.received %@".localized, String(packet.from))
+		let logString = String.localizedStringWithFormat("Telemetry received for: %@".localized, String(packet.from))
 		Logger.mesh.info("📈 \(logString, privacy: .public)")
 		if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) && telemetryMessage.variant != Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
 			/// Other unhandled telemetry packets
@@ -875,7 +875,7 @@ func textMessageAppPacket(
 	}
 
 	if messageText?.count ?? 0 > 0 {
-		Logger.mesh.info("💬 \("mesh.log.textmessage.received".localized, privacy: .public)")
+		Logger.mesh.info("💬 \("Message received from the text message app.".localized, privacy: .public)")
 		let messageUsers = UserEntity.fetchRequest()
 		messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
 		do {
