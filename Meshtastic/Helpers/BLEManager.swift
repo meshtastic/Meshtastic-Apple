@@ -177,20 +177,25 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 	// Disconnect Connected Peripheral
 	func disconnectPeripheral(reconnect: Bool = true) {
-
-		guard let connectedPeripheral = connectedPeripheral else { return }
-		if mqttProxyConnected {
-			mqttManager.mqttClientProxy?.disconnect()
+		// Ensure all operations run on the main thread
+		DispatchQueue.main.async { [weak self] in
+			guard let self = self else { return }
+			guard let connectedPeripheral = self.connectedPeripheral else { return }
+			
+			if self.mqttProxyConnected {
+				self.mqttManager.mqttClientProxy?.disconnect()
+			}
+			
+			self.automaticallyReconnect = reconnect
+			self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
+			self.FROMRADIO_characteristic = nil
+			self.isConnected = false
+			self.isSubscribed = false
+			self.invalidVersion = false
+			self.connectedVersion = "0.0.0"
+			self.stopScanning()
+			self.startScanning()
 		}
-		automaticallyReconnect = reconnect
-		centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
-		FROMRADIO_characteristic = nil
-		isConnected = false
-		isSubscribed = false
-		invalidVersion = false
-		connectedVersion = "0.0.0"
-		stopScanning()
-		startScanning()
 	}
 
 	// Called each time a peripheral is connected
