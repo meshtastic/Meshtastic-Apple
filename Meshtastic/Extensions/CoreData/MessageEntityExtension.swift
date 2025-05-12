@@ -34,7 +34,7 @@ extension MessageEntity {
 
 	func displayTimestamp(aboveMessage: MessageEntity?) -> Bool {
 		if let aboveMessage = aboveMessage {
-			return aboveMessage.timestamp.addingTimeInterval(900) < timestamp // 15 seconds
+			return aboveMessage.timestamp.addingTimeInterval(900) < timestamp // 15 minutes
 		}
 		return false // First message will have no timestamp
 	}
