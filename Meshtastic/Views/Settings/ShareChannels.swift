@@ -62,7 +62,7 @@ struct ShareChannels: View {
 					Grid {
 						GridRow {
 							Spacer()
-							Text("include")
+							Text("Include")
 								.font(.caption)
 								.fontWeight(.bold)
 								.padding(.trailing)
@@ -70,7 +70,7 @@ struct ShareChannels: View {
 								.font(.caption)
 								.fontWeight(.bold)
 								.padding(.trailing)
-							Text("encrypted")
+							Text("Encrypted")
 								.font(.caption)
 								.fontWeight(.bold)
 						}
@@ -226,7 +226,7 @@ struct ShareChannels: View {
 					}
 				}
 			}
-			.navigationTitle("generate.qr.code")
+			.navigationTitle("Generate QR Code")
 			.navigationBarTitleDisplayMode(.inline)
 			.navigationBarItems(trailing:
 			ZStack {

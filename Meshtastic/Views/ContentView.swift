@@ -11,6 +11,12 @@ struct ContentView: View {
 	@ObservedObject
 	var router: Router
 
+	init(appState: AppState, router: Router) {
+		self.appState = appState
+		self.router = router
+		UITabBar.appearance().scrollEdgeAppearance = UITabBarAppearance(idiom: .unspecified)
+	}
+
 	var body: some View {
 		TabView(selection: $appState.router.navigationState.selectedTab) {
 			Messages(
@@ -19,7 +25,7 @@ struct ContentView: View {
 				unreadDirectMessages: $appState.unreadDirectMessages
 			)
 			.tabItem {
-				Label("messages", systemImage: "message")
+				Label("Messages", systemImage: "message")
 			}
 			.tag(NavigationState.Tab.messages)
 			.badge(appState.totalUnreadMessages)
@@ -34,13 +40,13 @@ struct ContentView: View {
 				router: appState.router
 			)
 			.tabItem {
-				Label("nodes", systemImage: "flipphone")
+				Label("Nodes", systemImage: "flipphone")
 			}
 			.tag(NavigationState.Tab.nodes)
 
 			MeshMap(router: appState.router)
 				.tabItem {
-					Label("map", systemImage: "map")
+					Label("Mesh Map", systemImage: "map")
 				}
 				.tag(NavigationState.Tab.map)
 
@@ -48,7 +54,7 @@ struct ContentView: View {
 				router: appState.router
 			)
 			.tabItem {
-				Label("settings", systemImage: "gear")
+				Label("Settings", systemImage: "gear")
 					.font(.title)
 			}
 			.tag(NavigationState.Tab.settings)

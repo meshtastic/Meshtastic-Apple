@@ -220,7 +220,6 @@ extension MetricsColumnList {
 						)
 					} ?? Text(Constants.nilValueIndicator)
 				}),
-			
 			// Rainfall 24-hour
 			MetricsTableColumn(
 				id: "rainfall24H",
@@ -334,7 +333,7 @@ extension MetricsColumnList {
 						.replacingOccurrences(of: ",", with: "")
 					Text(
 						time?.formattedDate(format: dateFormatString)
-							?? "unknown.age".localized
+							?? "Unknown Age".localized
 					)
 				})
 		])

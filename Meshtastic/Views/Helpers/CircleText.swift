@@ -4,29 +4,43 @@ A view draws a circle in the background of the shortName text
 */
 
 import SwiftUI
+import CoreData
 
 struct CircleText: View {
-    var text: String
-    var color: Color
+	var text: String
+	var color: Color
 	var circleSize: CGFloat = 45
+	var node: NodeInfoEntity?
 
-    var body: some View {
+	var body: some View {
+			if let node = node {
+					NavigationStack {
+						NavigationLink(destination: NodeDetail(node: node)) {
+							circleContent
+						}
+					}
 
-        ZStack {
-            Circle()
-                .fill(color)
-                .frame(width: circleSize, height: circleSize)
-			Text(text.addingVariationSelectors)
+			} else {
+				circleContent
+		}
+	}
+
+	var circleContent: some View {
+		ZStack {
+			Circle()
+				.fill(color)
+				.frame(width: circleSize, height: circleSize)
+			Text(text)
 				.frame(width: circleSize * 0.9, height: circleSize * 0.9, alignment: .center)
 				.foregroundColor(color.isLight() ? .black : .white)
 				.minimumScaleFactor(0.001)
 				.font(.system(size: 1300))
-        }
-    }
+		}
+	}
 }
 
 struct CircleText_Previews: PreviewProvider {
-    static var previews: some View {
+	static var previews: some View {
 		VStack {
 			HStack {
 				CircleText(text: "N1", color: Color.yellow, circleSize: 80)
@@ -75,5 +89,5 @@ struct CircleText_Previews: PreviewProvider {
 					.previewLayout(.fixed(width: 300, height: 100))
 			}
 		}
-    }
+	}
 }

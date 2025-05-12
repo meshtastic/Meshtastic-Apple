@@ -34,9 +34,9 @@ struct StoreForwardConfig: View {
 			Form {
 				ConfigHeader(title: "Store & Forward", config: \.storeForwardConfig, node: node, onAppear: setStoreAndForwardValues)
 
-				Section(header: Text("options")) {
+				Section(header: Text("Options")) {
 					Toggle(isOn: $enabled) {
-						Label("enabled", systemImage: "envelope.arrow.triangle.branch")
+						Label("Enabled", systemImage: "envelope.arrow.triangle.branch")
 						Text("Enables the store and forward module.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -46,11 +46,11 @@ struct StoreForwardConfig: View {
 				if enabled {
 					Section(header: Text("settings")) {
 						Toggle(isOn: $heartbeat) {
-							Label("storeforward.heartbeat", systemImage: "waveform.path.ecg")
+							Label("Send Heartbeat", systemImage: "waveform.path.ecg")
 							Text("Send a heartbeat to advertise the server's presence.")
 						}
 						Picker("Number of records", selection: $records) {
-							Text("unset").tag(0)
+							Text("Unset").tag(0)
 							Text("25").tag(25)
 							Text("50").tag(50)
 							Text("75").tag(75)
@@ -58,7 +58,7 @@ struct StoreForwardConfig: View {
 						}
 						.pickerStyle(DefaultPickerStyle())
 						Picker("History Return Max", selection: $historyReturnMax) {
-							Text("unset").tag(0)
+							Text("Unset").tag(0)
 							Text("25").tag(25)
 							Text("50").tag(50)
 							Text("75").tag(75)
@@ -66,7 +66,7 @@ struct StoreForwardConfig: View {
 						}
 						.pickerStyle(DefaultPickerStyle())
 						Picker("History Return Window", selection: $historyReturnWindow) {
-							Text("unset").tag(0)
+							Text("Unset").tag(0)
 							Text("One Minute").tag(60)
 							Text("Five Minutes").tag(300)
 							Text("Ten Minutes").tag(600)

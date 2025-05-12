@@ -21,17 +21,17 @@ enum GpsFormats: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .gpsFormatDec:
-			return "gpsformat.dec".localized
+			return "Decimal Degrees Format".localized
 		case .gpsFormatDms:
-			return "gpsformat.dms".localized
+			return "Degrees Minutes Seconds".localized
 		case .gpsFormatUtm:
-			return "gpsformat.utm".localized
+			return "Universal Transverse Mercator".localized
 		case .gpsFormatMgrs:
-			return "gpsformat.mgrs".localized
+			return "Military Grid Reference System".localized
 		case .gpsFormatOlc:
-			return "gpsformat.olc".localized
+			return "Open Location Code (aka Plus Codes)".localized
 		case .gpsFormatOsgr:
-			return "gpsformat.osgr".localized
+			return "Ordnance Survey Grid Reference".localized
 		}
 	}
 	func protoEnumValue() -> Config.DisplayConfig.GpsCoordinateFormat {
@@ -73,29 +73,29 @@ enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .thirtySeconds:
-			return "interval.thirty.seconds".localized
+			return "Thirty Seconds".localized
 		case .oneMinute:
-			return "interval.one.minute".localized
+			return "One Minute".localized
 		case .twoMinutes:
-			return "interval.two.minutes".localized
+			return "Two Minutes".localized
 		case .fiveMinutes:
-			return "interval.five.minutes".localized
+			return "Five Minutes".localized
 		case .tenMinutes:
-			return "interval.ten.minutes".localized
+			return "Ten Minutes".localized
 		case .fifteenMinutes:
-			return "interval.fifteen.minutes".localized
+			return "Fifteen Minutes".localized
 		case .thirtyMinutes:
-			return "interval.thirty.minutes".localized
+			return "Thirty Minutes".localized
 		case .oneHour:
-			return "interval.one.hour".localized
+			return "One Hour".localized
 		case .sixHours:
-			return "interval.six.hours".localized
+			return "Six Hours".localized
 		case .twelveHours:
-			return "interval.twelve.hours".localized
+			return "Twelve Hours".localized
 		case .twentyFourHours:
-			return "interval.twentyfour.hours".localized
+			return "Twenty Four Hours".localized
 		case .maxInt32:
-			return "on.boot".localized
+			return "On Boot Only".localized
 		}
 	}
 }
@@ -110,11 +110,11 @@ enum GpsMode: Int, CaseIterable, Equatable {
 	var description: String {
 		switch self {
 		case .disabled:
-			return "gpsmode.disabled".localized
+			return "Disabled".localized
 		case .enabled:
-			return "gpsmode.enabled".localized
+			return "Enabled".localized
 		case .notPresent:
-			return "gpsmode.notPresent".localized
+			return "Not Present".localized
 		}
 	}
 	func protoEnumValue() -> Config.PositionConfig.GpsMode {

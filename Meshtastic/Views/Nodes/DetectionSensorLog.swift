@@ -110,7 +110,7 @@ struct DetectionSensorLog: View {
 				exportString = detectionsToCsv(detections: chartData)
 				isExporting = true
 			} label: {
-				Label("save", systemImage: "square.and.arrow.down")
+				Label("Save", systemImage: "square.and.arrow.down")
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
@@ -118,7 +118,7 @@ struct DetectionSensorLog: View {
 			.padding(.bottom)
 			.padding(.trailing)
 		}
-		.navigationTitle("detection.sensor.log")
+		.navigationTitle("Detection Sensor Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 			ZStack {
@@ -128,7 +128,7 @@ struct DetectionSensorLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \("detection.sensor.log".localized)"),
+			defaultFilename: String("\(node.user?.longName ?? "Node") \("Detection Sensor Log".localized)"),
 			onCompletion: { result in
 				switch result {
 				case .success:

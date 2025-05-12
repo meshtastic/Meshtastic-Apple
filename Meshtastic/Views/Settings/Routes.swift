@@ -154,7 +154,7 @@ struct Routes: View {
 								Logger.data.error("\(error.localizedDescription, privacy: .public)")
 							}
 						} label: {
-							Label("delete", systemImage: "trash")
+							Label("Delete", systemImage: "trash")
 						}
 					}
 
@@ -184,7 +184,7 @@ struct Routes: View {
 							}
 
 							Toggle(isOn: $enabled) {
-								Label("enabled", systemImage: "point.topleft.filled.down.to.point.bottomright.curvepath")
+								Label("Enabled", systemImage: "point.topleft.filled.down.to.point.bottomright.curvepath")
 								Text("Show on the mesh map.")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -200,7 +200,7 @@ struct Routes: View {
 							.foregroundColor(Color.gray)
 						}
 						.onAppear {
-							name = selectedRoute?.name ?? "unknown".localized
+							name = selectedRoute?.name ?? "Unknown".localized
 							notes = selectedRoute?.notes ?? ""
 							enabled = selectedRoute?.enabled ?? false
 							color = Color(UIColor(hex: UInt32(selectedRoute?.color ?? 0)))
@@ -215,7 +215,7 @@ struct Routes: View {
 							.buttonBorderShape(.capsule)
 							.controlSize(.large)
 
-							Button("save") {
+							Button("Save") {
 								selectedRoute?.name = name
 								selectedRoute?.notes = notes
 								selectedRoute?.enabled = enabled
@@ -279,7 +279,7 @@ struct Routes: View {
 								exportString = routeToCsvFile(locations: selectedRoute!.locations!.array as? [LocationEntity] ?? [])
 								isExporting = true
 							} label: {
-								Label("export", systemImage: "square.and.arrow.down")
+								Label("Export", systemImage: "square.and.arrow.down")
 							}
 							.buttonStyle(.bordered)
 							.buttonBorderShape(.capsule)

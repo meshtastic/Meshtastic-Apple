@@ -22,12 +22,12 @@ struct RtttlConfig: View {
     var body: some View {
 		VStack {
 			Form {
-				ConfigHeader(title: "ringtone", config: \.rtttlConfig, node: node, onAppear: setRtttLConfigValue)
+				ConfigHeader(title: "Ringtone", config: \.rtttlConfig, node: node, onAppear: setRtttLConfigValue)
 
-				Section(header: Text("options")) {
+				Section(header: Text("Options")) {
 					HStack {
-						Label("ringtone", systemImage: "music.quarternote.3")
-						TextField("config.ringtone.label", text: $ringtone, axis: .vertical)
+						Label("Ringtone", systemImage: "music.quarternote.3")
+						TextField("Ringtone Transfer Language", text: $ringtone, axis: .vertical)
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
@@ -43,7 +43,7 @@ struct RtttlConfig: View {
 					}
 					.keyboardType(.default)
 					.listRowSeparator(.hidden)
-					Text("config.ringtone.description")
+					Text("Ringtone Transfer Language(RTTTL) Ringtone String used by supported buzzers in external notifications.")
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
@@ -62,7 +62,7 @@ struct RtttlConfig: View {
 					}
 				}
 			}
-			.navigationTitle("config.ringtone.title")
+			.navigationTitle("Ringtone Config")
 			.navigationBarItems(
 				trailing: ZStack {
 					ConnectedDevice(

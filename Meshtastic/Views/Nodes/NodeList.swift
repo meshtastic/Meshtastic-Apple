@@ -65,10 +65,7 @@ struct NodeList: View {
 	var nodes: FetchedResults<NodeInfoEntity>
 
 	var connectedNode: NodeInfoEntity? {
-		getNodeInfo(
-			id: bleManager.connectedPeripheral?.num ?? 0,
-			context: context
-		)
+		getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
 	}
 
 	@ViewBuilder
@@ -78,19 +75,11 @@ struct NodeList: View {
 	) -> some View {
 		/// Allow users to mute notifications for a node even if they are not connected
 		if let user = node.user {
-			NodeAlertsButton(
-				context: context,
-				node: node,
-				user: user
-			)
+			NodeAlertsButton(context: context, node: node, user: user)
 		}
 		if let connectedNode {
 			/// Favoriting a node requires being connected
-			FavoriteNodeButton(
-				bleManager: bleManager,
-				context: context,
-				node: node
-			)
+			FavoriteNodeButton(bleManager: bleManager, context: context, node: node)
 			/// Don't show message, trace route, position exchange or delete context menu items for the connected node
 			if connectedNode.num != node.num {
 				if !node.viaMqtt || node.viaMqtt && node.hopsAway == 0 {
@@ -203,7 +192,7 @@ struct NodeList: View {
 			.searchable(text: $searchText, placement: .automatic, prompt: "Find a node")
 			.disableAutocorrection(true)
 			.scrollDismissesKeyboard(.immediately)
-			.navigationTitle(String.localizedStringWithFormat("nodes %@".localized, String(nodes.count)))
+			.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(nodes.count)))
 			.listStyle(.plain)
 			.alert(
 				"Position Exchange Requested",
@@ -237,7 +226,7 @@ struct NodeList: View {
 						if deleteNode != nil {
 							let success = bleManager.removeNode(node: deleteNode!, connectedNodeNum: Int64(bleManager.connectedPeripheral?.num ?? -1))
 							if !success {
-								Logger.data.error("Failed to delete node \(deleteNode?.user?.longName ?? "unknown".localized, privacy: .public)")
+								Logger.data.error("Failed to delete node \(deleteNode?.user?.longName ?? "Unknown".localized, privacy: .public)")
 							}
 						}
 					}
@@ -264,7 +253,6 @@ struct NodeList: View {
 						columnVisibility: columnVisibility
 					)
 					.edgesIgnoringSafeArea([.leading, .trailing])
-					.navigationBarTitle(String(node.user?.longName?.addingVariationSelectors ?? "unknown".localized), displayMode: .inline)
 					.navigationBarItems(
 						trailing: ZStack {
 							if UIDevice.current.userInterfaceIdiom != .phone {
@@ -284,7 +272,7 @@ struct NodeList: View {
 					)
 				}
 			 } else {
-				ContentUnavailableView("select.node", systemImage: "flipphone")
+				ContentUnavailableView("Select Node", systemImage: "flipphone")
 			 }
 		} detail: {
 			ContentUnavailableView("", systemImage: "line.3.horizontal")

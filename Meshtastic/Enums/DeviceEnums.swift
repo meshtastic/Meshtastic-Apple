@@ -21,65 +21,60 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 	case takTracker = 10
 	case repeater = 4
 	case router = 2
-	case routerClient = 3
 	case routerLate = 11
 
 	var id: Int { self.rawValue }
 	var name: String {
 		switch self {
 		case .client:
-			return "device.role.name.client".localized
+			return "Client".localized
 		case .clientMute:
-			return "device.role.name.clientMute".localized
+			return "Client Mute".localized
 		case .router:
-			return "device.role.name.router".localized
-		case .routerClient:
-			return "device.role.name.routerClient".localized
+			return "Router".localized
 		case .repeater:
-			return "device.role.name.repeater".localized
+			return "Repeater".localized
 		case .tracker:
-			return "device.role.name.tracker".localized
+			return "Tracker".localized
 		case .sensor:
-			return "device.role.name.sensor".localized
+			return "Sensor".localized
 		case .tak:
-			return "device.role.name.tak".localized
+			return "TAK".localized
 		case .takTracker:
-			return "device.role.name.takTracker".localized
+			return "TAK Tracker".localized
 		case .clientHidden:
-			return "device.role.name.clientHidden".localized
+			return "Client Hidden".localized
 		case .lostAndFound:
-			return "device.role.name.lostAndFound".localized
+			return "Lost and Found".localized
 		case .routerLate:
-			return "device.role.name.routerlate".localized
+			return "Router Late".localized
 		}
 
 	}
 	var description: String {
 		switch self {
 		case .client:
-			return "device.role.client".localized
+			return "App connected or stand alone messaging device.".localized
 		case .clientMute:
-			return "device.role.clientmute".localized
+			return "Device that does not forward packets from other devices.".localized
 		case .router:
-			return "device.role.router".localized
-		case .routerClient:
-			return "device.role.routerclient".localized
+			return "Infrastructure node on a tower or mountain top only.  Not to be used for roofs or mobile nodes.  Needs exceptional coverage. Visible in Nodes list.".localized
 		case .repeater:
-			return "device.role.repeater".localized
+			return "Infrastructure node on a tower or mountain top only.  Not to be used for roofs or mobile nodes. Relays messages with minimal overhead. Not visible in Nodes list.".localized
 		case .tracker:
-			return "device.role.tracker".localized
+			return "Broadcasts GPS position packets as priority.".localized
 		case .sensor:
-			return "device.role.sensor".localized
+			return "Broadcasts telemetry packets as priority.".localized
 		case .tak:
-			return "device.role.tak".localized
+			return "Optimized for ATAK system communication, reduces routine broadcasts.".localized
 		case .takTracker:
-			return "device.role.taktracker".localized
+			return "Enables automatic TAK PLI broadcasts and reduces routine broadcasts.".localized
 		case .clientHidden:
-			return "device.role.clienthidden".localized
+			return "Device that only broadcasts as needed for stealth or power savings.".localized
 		case .lostAndFound:
-			return "device.role.lostandfound".localized
+			return "Broadcasts location as message to default channel regularly for to assist with device recovery.".localized
 		case .routerLate:
-			return "device.role.routerlate".localized
+			return "Infrastructure node that always rebroadcasts packets once but only after all other modes, ensuring additional coverage for local clusters. Visible in Nodes list.".localized
 		}
 	}
 
@@ -89,7 +84,7 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "apps.iphone"
 		case .clientMute:
 			return "speaker.slash"
-		case .router, .routerClient, .routerLate:
+		case .router, .routerLate:
 			return "wifi.router"
 		case .repeater:
 			return "repeat"
@@ -116,8 +111,6 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return Config.DeviceConfig.Role.clientMute
 		case .router:
 			return Config.DeviceConfig.Role.router
-		case .routerClient:
-			return Config.DeviceConfig.Role.routerClient
 		case .repeater:
 			return Config.DeviceConfig.Role.repeater
 		case .tracker:
@@ -144,36 +137,41 @@ enum RebroadcastModes: Int, CaseIterable, Identifiable {
 	case allSkipDecoding = 1
 	case localOnly = 2
 	case knownOnly = 3
-	case corePortnums = 4
+	case none = 4
+	case corePortnums = 5
 
 	var id: Int { self.rawValue }
 
 	var name: String {
 		switch self {
 		case .all:
-			return "All"
+			return "All".localized
 		case .allSkipDecoding:
-			return "All Skip Decoding"
+			return "All Skip Decoding".localized
 		case .localOnly:
-			return "Local Only"
+			return "Local Only".localized
 		case .knownOnly:
-			return "Known Only"
+			return "Known Only".localized
+		case .none:
+			return "None".localized
 		case .corePortnums:
-			return "Core Portnums Only"
+			return "Core Portnums Only".localized
 		}
 	}
 	var description: String {
 		switch self {
 		case .all:
-			return "Rebroadcast any observed message, if it was on our private channel or from another mesh with the same lora params."
+			return "Rebroadcast any observed message, if it was on our private channel or from another mesh with the same lora params.".localized
 		case .allSkipDecoding:
-			return "Same as behavior as ALL but skips packet decoding and simply rebroadcasts them. Only available in Repeater role. Setting this on any other roles will result in ALL behavior."
+			return "Same as behavior as ALL but skips packet decoding and simply rebroadcasts them. Only available in Repeater role. Setting this on any other roles will result in ALL behavior.".localized
 		case .localOnly:
-			return "Ignores observed messages from foreign meshes that are open or those which it cannot decrypt. Only rebroadcasts message on the nodes local primary / secondary channels."
+			return "Ignores observed messages from foreign meshes that are open or those which it cannot decrypt. Only rebroadcasts message on the nodes local primary / secondary channels.".localized
 		case .knownOnly:
-			return "Ignores observed messages from foreign meshes like Local Only, but takes it step further by also ignoring messages from nodes not already in the node's known list."
+			return "Ignores observed messages from foreign meshes like Local Only, but takes it step further by also ignoring messages from nodes not already in the node's known list.".localized
+		case .none:
+			return "Only permitted for SENSOR, TRACKER and TAK_TRACKER roles, this will inhibit all rebroadcasts, not unlike CLIENT_MUTE role.".localized
 		case .corePortnums:
-			return "Only rebroadcasts packets from the core portnums: NodeInfo, Text, Position, Telemetry, and Routing."
+			return "Only rebroadcasts packets from the core portnums: NodeInfo, Text, Position, Telemetry, and Routing.".localized
 		}
 	}
 	func protoEnumValue() -> Config.DeviceConfig.RebroadcastMode {
@@ -187,6 +185,8 @@ enum RebroadcastModes: Int, CaseIterable, Identifiable {
 			return Config.DeviceConfig.RebroadcastMode.localOnly
 		case .knownOnly:
 			return Config.DeviceConfig.RebroadcastMode.knownOnly
+		case .none:
+			return Config.DeviceConfig.RebroadcastMode.none
 		case .corePortnums:
 			return Config.DeviceConfig.RebroadcastMode.corePortnumsOnly
 		}

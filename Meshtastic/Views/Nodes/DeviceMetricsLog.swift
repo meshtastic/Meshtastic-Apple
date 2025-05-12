@@ -121,7 +121,7 @@ struct DeviceMetricsLog: View {
 					Table(deviceMetrics, selection: $selection, sortOrder: $sortOrder) {
 						TableColumn("Battery Level") { dm in
 							HStack {
-								Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+								Text(dm.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
 									.font(.caption)
 									.fontWeight(.semibold)
 								Spacer()
@@ -165,7 +165,7 @@ struct DeviceMetricsLog: View {
 							// dm.voltage.map { Text("\(String(format: "%.2f", $0))") } ?? Text("--")
 							Text("\(dm.voltage?.formatted(.number.precision(.fractionLength(2))) ?? Constants.nilValueIndicator)")
 						}
-						TableColumn("channel.utilization") { dm in
+						TableColumn("Channel Utilization") { dm in
 							dm.channelUtilization.map { channelUtilization in
 								// Text("\(String(format: "%.2f", channelUtilization))%")
 								Text("\(channelUtilization.formatted(.number.precision(.fractionLength(2))))%")
@@ -188,7 +188,7 @@ struct DeviceMetricsLog: View {
 						}
 						.width(min: 100)
 						TableColumn("Timestamp") { dm in
-							Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+							Text(dm.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
 						}
 						.width(min: 180)
 					}
@@ -209,7 +209,7 @@ struct DeviceMetricsLog: View {
 						isPresented: $isPresentingClearLogConfirm,
 						titleVisibility: .visible
 					) {
-						Button("device.metrics.delete", role: .destructive) {
+						Button("Delete all device metrics?", role: .destructive) {
 							if clearTelemetry(destNum: node.num, metricsType: 0, context: context) {
 								Logger.data.notice("Cleared Device Metrics for \(node.num, privacy: .public)")
 							} else {
@@ -222,7 +222,7 @@ struct DeviceMetricsLog: View {
 						exportString = telemetryToCsvFile(telemetry: deviceMetrics, metricsType: 0)
 						isExporting = true
 					} label: {
-						Label("save", systemImage: "square.and.arrow.down")
+						Label("Save", systemImage: "square.and.arrow.down")
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
@@ -240,7 +240,7 @@ struct DeviceMetricsLog: View {
 				ContentUnavailableView("No Device Metrics", systemImage: "slash.circle")
 			}
 		}
-		.navigationTitle("device.metrics.log")
+		.navigationTitle("Device Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 			ZStack {
@@ -250,7 +250,7 @@ struct DeviceMetricsLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \("device.metrics.log".localized)"),
+			defaultFilename: String("\(node.user?.longName ?? "Node") \("Device Metrics Log".localized)"),
 			onCompletion: { result in
 				switch result {
 				case .success:

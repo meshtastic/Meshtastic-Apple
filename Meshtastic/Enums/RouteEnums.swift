@@ -20,34 +20,34 @@ enum ActivityType: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .walking:
-			return "routes.activitytype.walking".localized
+			return "Walking".localized
 		case .hiking:
-			return "routes.activitytype.hiking".localized
+			return "Hiking".localized
 		case .biking:
-			return "routes.activitytype.biking".localized
+			return "Biking".localized
 		case .driving:
-			return "routes.activitytype.driving".localized
+			return "Driving".localized
 		case .overlanding:
-			return "routes.activitytype.overlanding".localized
+			return "Overlanding".localized
 		case .skiing:
-			return "routes.activitytype.skiing".localized
+			return "Skiing".localized
 		}
 	}
 
 	var fileNameString: String {
 		switch self {
 		case .walking:
-			return "routes.activitytype.filename.walking".localized
+			return "walk".localized
 		case .hiking:
-			return "routes.activitytype.filename.hiking".localized
+			return "hiking".localized
 		case .biking:
-			return "routes.activitytype.filename.biking".localized
+			return "biking".localized
 		case .driving:
-			return "routes.activitytype.filename.driving".localized
+			return "driving".localized
 		case .overlanding:
-			return "routes.activitytype.filename.overlanding".localized
+			return "overlanding".localized
 		case .skiing:
-			return "routes.activitytype.filename.skiing".localized
+			return "skiing".localized
 		}
 	}
 }

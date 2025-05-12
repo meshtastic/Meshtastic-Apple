@@ -122,7 +122,7 @@ struct PowerMetricsLog: View {
 					Table(powerMetrics, selection: $selection, sortOrder: $sortOrder) {
 						TableColumn("Timestamp") { m in
 							HStack {
-								Text(m.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+								Text(m.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
 								Spacer()
 								HStack {
 									VStack {
@@ -213,7 +213,7 @@ struct PowerMetricsLog: View {
 						}
 						.width(min: 75)
 						TableColumn("Timestamp") { dm in
-							Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+							Text(dm.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
 						}
 						.width(min: 180)
 
@@ -282,7 +282,7 @@ struct PowerMetricsLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \("power.metrics.log".localized)"),
+			defaultFilename: String("\(node.user?.longName ?? "Node") \("Power Metrics Log".localized)"),
 			onCompletion: { result in
 				switch result {
 				case .success:

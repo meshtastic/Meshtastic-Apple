@@ -35,7 +35,7 @@ struct AppLog: View {
 
 			if idiom == .phone {
 				Table(logs, selection: $selection, sortOrder: $sortOrder) {
-					TableColumn("log.message", value: \.composedMessage) { value in
+					TableColumn("Message", value: \.composedMessage) { value in
 						Text(value.composedMessage)
 							.foregroundStyle(value.level.color)
 							.font(.caption)
@@ -75,18 +75,18 @@ struct AppLog: View {
 				}
 			} else {
 				Table(logs, selection: $selection, sortOrder: $sortOrder) {
-					TableColumn("log.time") { value in
+					TableColumn("Time") { value in
 						Text(value.date.formatted(dateFormatStyle))
 					}
 					.width(min: 125, max: 150)
-					TableColumn("log.level") { value in
+					TableColumn("Level") { value in
 						Text(value.level.description)
 							.foregroundStyle(value.level.color)
 					}
 					.width(min: 85, max: 110)
-					TableColumn("log.category", value: \.category)
+					TableColumn("Category", value: \.category)
 						.width(min: 80, max: 130)
-					TableColumn("log.message", value: \.composedMessage) { value in
+					TableColumn("Message", value: \.composedMessage) { value in
 						Text(value.composedMessage)
 							.foregroundStyle(value.level.color)
 							.font(.body)
@@ -270,4 +270,4 @@ extension AppLog {
 	}
 }
 
-extension OSLogEntry: Identifiable { }
+extension OSLogEntry: @retroactive Identifiable { }

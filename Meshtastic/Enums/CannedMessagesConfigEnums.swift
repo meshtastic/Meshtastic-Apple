@@ -19,11 +19,11 @@ enum ConfigPresets: Int, CaseIterable, Identifiable {
 		switch self {
 
 		case .unset:
-			return "canned.messages.preset.manual".localized
+			return "Manual Configuration".localized
 		case .rakRotaryEncoder:
-			return "canned.messages.preset.rakrotary".localized
+			return "RAK Rotary Encoder".localized
 		case .cardKB:
-			return "canned.messages.preset.cardkb".localized
+			return "M5 Stack Card KB / RAK Keypad".localized
 		}
 	}
 }
@@ -45,21 +45,21 @@ enum InputEventChars: Int, CaseIterable, Identifiable {
 		switch self {
 
 		case .none:
-			return "inputevent.none".localized
+			return "None".localized
 		case .up:
-			return "inputevent.up".localized
+			return "Up".localized
 		case .down:
-			return "inputevent.down".localized
+			return "Down".localized
 		case .left:
-			return "inputevent.left".localized
+			return "Left".localized
 		case .right:
-			return "inputevent.right".localized
+			return "Right".localized
 		case .select:
-			return "inputevent.select".localized
+			return "Select".localized
 		case .back:
-			return "inputevent.back".localized
+			return "Back".localized
 		case .cancel:
-			return "inputevent.cancel".localized
+			return "Cancel".localized
 		}
 	}
 	func protoEnumValue() -> ModuleConfig.CannedMessageConfig.InputEventChar {

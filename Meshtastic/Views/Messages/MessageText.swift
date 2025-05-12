@@ -73,7 +73,6 @@ struct MessageText: View {
 				} else {
 					EmptyView()
 				}
-				
 			}
 			.contextMenu {
 				MessageContextMenuItems(

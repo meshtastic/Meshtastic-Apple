@@ -22,17 +22,17 @@ struct PaxCounterConfig: View {
 
 	var body: some View {
 		Form {
-			ConfigHeader(title: "config.module.paxcounter.title", config: \.powerConfig, node: node, onAppear: setPaxValues)
+			ConfigHeader(title: "PAX Counter Config", config: \.powerConfig, node: node, onAppear: setPaxValues)
 
 			Section {
 				Toggle(isOn: $enabled) {
-					Label("enabled", systemImage: "figure.walk.motion")
-					Text("config.module.paxcounter.enabled.description")
+					Label("Enabled", systemImage: "figure.walk.motion")
+					Text("When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work.")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				.listRowSeparator(.visible)
 				if enabled {
-					Picker("config.module.paxcounter.updateinterval", selection: $paxcounterUpdateInterval) {
+					Picker("Update Interval", selection: $paxcounterUpdateInterval) {
 						ForEach(UpdateIntervals.allCases) { at in
 							if at.rawValue >= 300 {
 								Text(at.description)
@@ -41,16 +41,16 @@ struct PaxCounterConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(.hidden)
-					Text("config.module.paxcounter.updateinterval.description")
+					Text("How often we can send a message to the mesh when people are detected.")
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
 			} header: {
-				Text("options")
+				Text("Options")
 			}
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.powerConfig == nil)
-		.navigationTitle("config.module.paxcounter.title")
+		.navigationTitle("PAX Counter Config")
 		.navigationBarItems(trailing: ZStack {
 			ConnectedDevice(
 				bluetoothOn: bleManager.isSwitchedOn,

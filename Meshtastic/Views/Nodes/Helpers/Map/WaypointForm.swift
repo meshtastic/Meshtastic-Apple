@@ -134,40 +134,44 @@ struct WaypointForm: View {
 				.scrollDismissesKeyboard(.immediately)
 				HStack {
 					Button {
-						/// Send a new or exiting waypoint
-						var newWaypoint = Waypoint()
-						if waypoint.id  ==  0 {
-							newWaypoint.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-							waypoint.id = Int64(newWaypoint.id)
-						} else {
-							newWaypoint.id = UInt32(waypoint.id)
-						}
-						newWaypoint.latitudeI = waypoint.latitudeI
-						newWaypoint.longitudeI = waypoint.longitudeI
-						newWaypoint.name = name.count > 0 ? name : "Dropped Pin"
-						newWaypoint.description_p = description
-						// Unicode scalar value for the icon emoji string
-						let unicodeScalers = icon.unicodeScalars
-						// First element as an UInt32
-						let unicode = unicodeScalers[unicodeScalers.startIndex].value
-						newWaypoint.icon = unicode
-						if locked {
-							if lockedTo == 0 {
-								newWaypoint.lockedTo = UInt32(bleManager.connectedPeripheral!.num)
+						if bleManager.isConnected {
+							/// Send a new or exiting waypoint
+							var newWaypoint = Waypoint()
+							if waypoint.id  ==  0 {
+								newWaypoint.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+								waypoint.id = Int64(newWaypoint.id)
 							} else {
-								newWaypoint.lockedTo = UInt32(lockedTo)
+								newWaypoint.id = UInt32(waypoint.id)
 							}
-						}
-						if expires {
-							newWaypoint.expire = UInt32(expire.timeIntervalSince1970)
+							newWaypoint.latitudeI = waypoint.latitudeI
+							newWaypoint.longitudeI = waypoint.longitudeI
+							newWaypoint.name = name.count > 0 ? name : "Dropped Pin"
+							newWaypoint.description_p = description
+							// Unicode scalar value for the icon emoji string
+							let unicodeScalers = icon.unicodeScalars
+							// First element as an UInt32
+							let unicode = unicodeScalers[unicodeScalers.startIndex].value
+							newWaypoint.icon = unicode
+							if locked {
+								if lockedTo == 0 {
+									newWaypoint.lockedTo = UInt32(bleManager.connectedPeripheral!.num)
+								} else {
+									newWaypoint.lockedTo = UInt32(lockedTo)
+								}
+							}
+							if expires {
+								newWaypoint.expire = UInt32(expire.timeIntervalSince1970)
+							} else {
+								newWaypoint.expire = 0
+							}
+							if bleManager.sendWaypoint(waypoint: newWaypoint) {
+								dismiss()
+							} else {
+								dismiss()
+								Logger.mesh.warning("Send waypoint failed")
+							}
 						} else {
-							newWaypoint.expire = 0
-						}
-						if bleManager.sendWaypoint(waypoint: newWaypoint) {
-							dismiss()
-						} else {
-							dismiss()
-							Logger.mesh.warning("Send waypoint failed")
+							Logger.mesh.warning("Send waypoint failed, node not connected")
 						}
 					} label: {
 						Label("Send", systemImage: "arrow.up")
@@ -235,7 +239,7 @@ struct WaypointForm: View {
 							})
 						}
 					label: {
-						Label("delete", systemImage: "trash")
+						Label("Delete", systemImage: "trash")
 							.foregroundColor(.red)
 					}
 					.buttonStyle(.bordered)
@@ -338,7 +342,7 @@ struct WaypointForm: View {
 						if LocationsHandler.currentLocation.distance(from: LocationsHandler.DefaultLocation) > 0.0 {
 							let metersAway = waypoint.coordinate.distance(from: LocationsHandler.currentLocation)
 							Label {
-								Text("distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
+								Text("Distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
 									.foregroundColor(.primary)
 							} icon: {
 								Image(systemName: "lines.measurement.horizontal")
@@ -354,7 +358,7 @@ struct WaypointForm: View {
 					Button {
 						dismiss()
 					} label: {
-						Label("close", systemImage: "xmark")
+						Label("Close", systemImage: "xmark")
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
@@ -363,6 +367,18 @@ struct WaypointForm: View {
 #endif
 				}
 			}
+		}
+		.onDisappear {
+			if waypoint.id == 0 {
+					// New, unsent waypoint created by the user: delete it
+					bleManager.context.delete(waypoint)
+					do {
+						try bleManager.context.save()
+					} catch {
+						bleManager.context.rollback()
+						Logger.mesh.error("Failed to save context on waypoint deletion: \(error)")
+					}
+				}
 		}
 		.onAppear {
 			if waypoint.id > 0 {

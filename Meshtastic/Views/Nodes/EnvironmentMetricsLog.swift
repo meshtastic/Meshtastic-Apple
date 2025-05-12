@@ -145,7 +145,7 @@ struct EnvironmentMetricsLog: View {
 						exportString = telemetryToCsvFile(telemetry: environmentMetrics, metricsType: 1)
 						isExporting = true
 					} label: {
-						Label("save", systemImage: "square.and.arrow.down")
+						Label("Save", systemImage: "square.and.arrow.down")
 							.imageScale(imageScale)
 					}
 					.buttonStyle(.bordered)

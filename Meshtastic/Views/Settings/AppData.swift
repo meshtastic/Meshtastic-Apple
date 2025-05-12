@@ -21,7 +21,7 @@ struct AppData: View {
 
 		VStack {
 
-			Section(header: Text("phone.gps")) {
+			Section(header: Text("Phone GPS")) {
 				GPSStatus()
 			}
 			Divider()
@@ -41,7 +41,7 @@ struct AppData: View {
 											Logger.services.error("🗑️ Delete file error: \(error, privacy: .public)")
 										}
 									} label: {
-										Label("delete", systemImage: "trash")
+										Label("Delete", systemImage: "trash")
 									}
 								}
 						} icon: {
@@ -61,7 +61,7 @@ struct AppData: View {
 											Logger.services.error("🗑️ Delete file error: \(error, privacy: .public)")
 										}
 									} label: {
-										Label("delete", systemImage: "trash")
+										Label("Delete", systemImage: "trash")
 									}
 								}
 						} icon: {

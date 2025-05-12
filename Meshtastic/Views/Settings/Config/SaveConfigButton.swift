@@ -12,7 +12,7 @@ struct SaveConfigButton: View {
 		Button {
 			isPresentingSaveConfirm = true
 		} label: {
-			Label("save", systemImage: "square.and.arrow.down")
+			Label("Save", systemImage: "square.and.arrow.down")
 		}
 		.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
 		.buttonStyle(.bordered)
@@ -24,13 +24,13 @@ struct SaveConfigButton: View {
 			isPresented: $isPresentingSaveConfirm,
 			titleVisibility: .visible
 		) {
-			let nodeName = node?.user?.longName ?? "unknown".localized
-			let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
+			let nodeName = node?.user?.longName ?? "Unknown".localized
+			let buttonText = String.localizedStringWithFormat("Save Config for %@".localized, nodeName)
 			Button(buttonText) {
 				onConfirmation()
 			}
 		} message: {
-			Text("config.save.confirm")
+			Text("After config values save the node will reboot.")
 		}
 	}
 }

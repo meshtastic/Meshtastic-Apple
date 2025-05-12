@@ -38,7 +38,7 @@ struct LogDetail: View {
 						/// Time
 						Label {
 							HStack {
-								Text("log.time".localized + ":")
+								Text("Time".localized + ":")
 									.font(idiom == .phone ? .caption : .title)
 									.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
 								Text(log.date.formatted(dateFormatStyle))
@@ -56,7 +56,7 @@ struct LogDetail: View {
 						/// Subsystem
 						Label {
 							HStack {
-								Text("log.subsystem".localized + ":")
+								Text("Subsystem".localized + ":")
 									.font(idiom == .phone ? .caption : .title)
 									.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
 								Text(log.subsystem)
@@ -73,7 +73,7 @@ struct LogDetail: View {
 						/// Process
 						Label {
 							HStack {
-								Text("log.process".localized + ":")
+								Text("Process".localized + ":")
 									.font(idiom == .phone ? .caption : .title)
 									.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
 								Text(log.process)
@@ -90,7 +90,7 @@ struct LogDetail: View {
 						/// Level
 						Label {
 							HStack {
-								Text("log.level".localized + ":")
+								Text("Level".localized + ":")
 									.font(idiom == .phone ? .caption : .title)
 									.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
 								Text(log.level.description)
@@ -107,7 +107,7 @@ struct LogDetail: View {
 						/// Category
 						Label {
 							HStack {
-								Text("log.category".localized + ":")
+								Text("Category".localized + ":")
 									.font(idiom == .phone ? .caption : .title)
 									.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
 								Text(log.category)
@@ -124,7 +124,7 @@ struct LogDetail: View {
 
 						/// message
 						Label {
-							Text("log.message".localized + ":")
+							Text("Message".localized + ":")
 								.font(idiom == .phone ? .caption : .title)
 								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
 							Text(log.composedMessage)
@@ -151,7 +151,7 @@ struct LogDetail: View {
 			Button {
 				dismiss()
 			} label: {
-				Label("close", systemImage: "xmark")
+				Label("Close", systemImage: "xmark")
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)

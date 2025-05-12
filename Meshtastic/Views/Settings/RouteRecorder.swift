@@ -191,7 +191,7 @@ struct RouteRecorder: View {
 											Logger.data.error("Error Saving RouteEntity from the Route Recorder \(nsError, privacy: .public)")
 										}
 									} label: {
-										Label("start", systemImage: "play")
+										Label("Start", systemImage: "play")
 									}
 									.buttonStyle(.bordered)
 									.buttonBorderShape(.capsule)
@@ -204,7 +204,7 @@ struct RouteRecorder: View {
 										locationsHandler.isRecording = false
 										locationsHandler.isRecordingPaused = true
 									} label: {
-										Label("pause", systemImage: "pause")
+										Label("Pause", systemImage: "pause")
 									}
 									.buttonStyle(.bordered)
 									.buttonBorderShape(.capsule)
@@ -216,7 +216,7 @@ struct RouteRecorder: View {
 										locationsHandler.isRecording = true
 										locationsHandler.isRecordingPaused = false
 									} label: {
-										Label("resume", systemImage: "playpause")
+										Label("Resume", systemImage: "playpause")
 									}
 									.buttonStyle(.bordered)
 									.buttonBorderShape(.capsule)
@@ -250,7 +250,7 @@ struct RouteRecorder: View {
 										}
 										isShowingDetails = false
 									} label: {
-										Label("finish", systemImage: "flag.checkered")
+										Label("Finish", systemImage: "flag.checkered")
 									}
 									.buttonStyle(.bordered)
 									.buttonBorderShape(.capsule)
@@ -261,7 +261,7 @@ struct RouteRecorder: View {
 								Button(role: .cancel) {
 									isShowingDetails = false
 								} label: {
-									Label("close", systemImage: "xmark")
+									Label("Close", systemImage: "xmark")
 								}
 								.buttonStyle(.bordered)
 								.buttonBorderShape(.capsule)

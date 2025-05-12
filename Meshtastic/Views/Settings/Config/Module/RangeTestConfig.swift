@@ -27,9 +27,9 @@ struct RangeTestConfig: View {
 			Form {
 				ConfigHeader(title: "Range", config: \.rangeTestConfig, node: node, onAppear: setRangeTestValues)
 
-				Section(header: Text("options")) {
+				Section(header: Text("Options")) {
 					Toggle(isOn: $enabled) {
-						Label("enabled", systemImage: "figure.walk")
+						Label("Enabled", systemImage: "figure.walk")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
@@ -45,7 +45,7 @@ struct RangeTestConfig: View {
 						.font(.callout)
 
 					Toggle(isOn: $save) {
-						Label("save", systemImage: "square.and.arrow.down.fill")
+						Label("Save", systemImage: "square.and.arrow.down.fill")
 						Text("Saves a CSV with the range test message details, currently only available on ESP32 devices with a web server.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -71,7 +71,7 @@ struct RangeTestConfig: View {
 					}
 				}
 			}
-			.navigationTitle("range.test.config")
+			.navigationTitle("Range Test Config")
 			.navigationBarItems(
 				trailing: ZStack {
 					ConnectedDevice(

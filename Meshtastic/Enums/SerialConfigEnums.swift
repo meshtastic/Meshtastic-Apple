@@ -31,7 +31,7 @@ enum SerialBaudRates: Int, CaseIterable, Identifiable {
 		switch self {
 
 		case .baudDefault:
-			return "default".localized
+			return "Default".localized
 		case .baud110:
 			return "110 Baud"
 		case .baud300:
@@ -118,17 +118,17 @@ enum SerialModeTypes: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .default:
-			return "serial.mode.default".localized
+			return "Default".localized
 		case .simple:
-			return "serial.mode.simple".localized
+			return "Simple".localized
 		case .proto:
-			return "serial.mode.proto".localized
+			return "Protobufs".localized
 		case .txtmsg:
-			return "serial.mode.txtmsg".localized
+			return "Text Message".localized
 		case .nmea:
-			return "serial.mode.nmea".localized
+			return "NMEA Positions".localized
 		case .caltopo:
-			return "serial.mode.caltopo".localized
+			return "CALTOPO".localized
 		}
 	}
 	func protoEnumValue() -> ModuleConfig.SerialConfig.Serial_Mode {
@@ -166,21 +166,21 @@ enum SerialTimeoutIntervals: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .unset:
-			return "unset".localized
+			return "Unset".localized
 		case .oneSecond:
-			return "interval.one.second".localized
+			return "One Second".localized
 		case .fiveSeconds:
-			return "interval.five.seconds".localized
+			return "Five Seconds".localized
 		case .tenSeconds:
-			return "interval.ten.seconds".localized
+			return "Ten Seconds".localized
 		case .fifteenSeconds:
-			return "interval.fifteen.seconds".localized
+			return "Fifteen Seconds".localized
 		case .thirtySeconds:
-			return "interval.thirty.seconds".localized
+			return "Thirty Seconds".localized
 		case .oneMinute:
-			return "interval.one.minute".localized
+			return "One Minute".localized
 		case .fiveMinutes:
-			return "interval.five.minutes".localized
+			return "Five Minutes".localized
 		}
 	}
 }

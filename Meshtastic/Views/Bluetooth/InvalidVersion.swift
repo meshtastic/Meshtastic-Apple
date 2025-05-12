@@ -17,7 +17,7 @@ struct InvalidVersion: View {
 
 		VStack {
 
-			Text("update.firmware")
+			Text("Update Your Firmware")
 				.font(.largeTitle)
 				.foregroundColor(.orange)
 
@@ -49,7 +49,7 @@ struct InvalidVersion: View {
 					Button {
 						dismiss()
 					} label: {
-						Label("close", systemImage: "xmark")
+						Label("Close", systemImage: "xmark")
 
 					}
 					.buttonStyle(.bordered)

@@ -36,14 +36,14 @@ struct NetworkConfig: View {
 						Section(header: Text("WiFi Options")) {
 
 							Toggle(isOn: $wifiEnabled) {
-								Label("enabled", systemImage: "wifi")
+								Label("Enabled", systemImage: "wifi")
 								Text("Enabling WiFi will disable the bluetooth connection to the app.")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
 							HStack {
-								Label("ssid", systemImage: "network")
-								TextField("ssid", text: $wifiSsid)
+								Label("SSID", systemImage: "network")
+								TextField("SSID", text: $wifiSsid)
 									.foregroundColor(.gray)
 									.autocapitalization(.none)
 									.disableAutocorrection(true)
@@ -60,8 +60,8 @@ struct NetworkConfig: View {
 							}
 							.keyboardType(.default)
 							HStack {
-								Label("password", systemImage: "wallet.pass")
-								TextField("password", text: $wifiPsk)
+								Label("Password", systemImage: "wallet.pass")
+								TextField("Password", text: $wifiPsk)
 									.foregroundColor(.gray)
 									.autocapitalization(.none)
 									.disableAutocorrection(true)
@@ -82,7 +82,7 @@ struct NetworkConfig: View {
 					if node.metadata?.hasEthernet ?? false {
 						Section(header: Text("Ethernet Options")) {
 							Toggle(isOn: $ethEnabled) {
-								Label("enabled", systemImage: "network")
+								Label("Enabled", systemImage: "network")
 								Text("Enabling Ethernet will disable the bluetooth connection to the app.")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -92,7 +92,7 @@ struct NetworkConfig: View {
 					if node.metadata?.hasEthernet ?? false || node.metadata?.hasWifi ?? false {
 						Section(header: Text("UDP Broadcast")) {
 							Toggle(isOn: $udpEnabled) {
-								Label("enabled", systemImage: "point.3.connected.trianglepath.dotted")
+								Label("Enabled", systemImage: "point.3.connected.trianglepath.dotted")
 								Text("Enable broadcasting packets via UDP over the local network.")
 							}
 						}
@@ -123,7 +123,7 @@ struct NetworkConfig: View {
 				}
 			}
 		}
-		.navigationTitle("network.config")
+		.navigationTitle("Network Config")
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(

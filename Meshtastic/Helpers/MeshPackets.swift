@@ -103,7 +103,7 @@ func moduleConfig (config: ModuleConfig, context: NSManagedObjectContext, nodeNu
 
 func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedObjectContext) -> MyInfoEntity? {
 
-	let logString = String.localizedStringWithFormat("mesh.log.myinfo %@".localized, String(myInfo.myNodeNum))
+	let logString = String.localizedStringWithFormat("MyInfo received: %@".localized, String(myInfo.myNodeNum))
 	Logger.mesh.info("ℹ️ \(logString, privacy: .public)")
 
 	let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
@@ -209,7 +209,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
 	if metadata.isInitialized {
-		let logString = String.localizedStringWithFormat("mesh.log.device.metadata.received %@".localized, fromNum.toHex())
+		let logString = String.localizedStringWithFormat("Device Metadata received from: %@".localized, fromNum.toHex())
 		Logger.mesh.info("🏷️ \(logString, privacy: .public)")
 
 		let fetchedNodeRequest = NodeInfoEntity.fetchRequest()
@@ -261,7 +261,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPass
 
 func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObjectContext) -> NodeInfoEntity? {
 
-	let logString = String.localizedStringWithFormat("mesh.log.nodeinfo.received %@".localized, String(nodeInfo.num))
+	let logString = String.localizedStringWithFormat("Node info received for: %@".localized, String(nodeInfo.num))
 	Logger.mesh.info("📟 \(logString, privacy: .public)")
 
 	guard nodeInfo.num > 0 else { return nil }
@@ -472,7 +472,7 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 				if !cmmc.messages.isEmpty {
 
-					let logString = String.localizedStringWithFormat("mesh.log.cannedmessages.messages.received %@".localized, packet.from.toHex())
+					let logString = String.localizedStringWithFormat("Canned Messages Messages Received For: %@".localized, packet.from.toHex())
 					Logger.mesh.info("🥫 \(logString, privacy: .public)")
 
 					let fetchNodeRequest = NodeInfoEntity.fetchRequest()
@@ -582,7 +582,7 @@ func adminResponseAck (packet: MeshPacket, context: NSManagedObjectContext) {
 }
 func paxCounterPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("mesh.log.paxcounter %@".localized, String(packet.from))
+	let logString = String.localizedStringWithFormat("PAX Counter message received from: %@".localized, String(packet.from))
 	Logger.mesh.info("🧑‍🤝‍🧑 \(logString, privacy: .public)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
@@ -625,8 +625,8 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 
 		let routingError = RoutingError(rawValue: routingMessage.errorReason.rawValue)
 
-		let routingErrorString = routingError?.display ?? "unknown".localized
-		let logString = String.localizedStringWithFormat("mesh.log.routing.message %@ %@".localized, String(packet.decoded.requestID), routingErrorString)
+		let routingErrorString = routingError?.display ?? "Unknown".localized
+		let logString = String.localizedStringWithFormat("Routing received for RequestID: %@ Ack Status: %@".localized, String(packet.decoded.requestID), routingErrorString)
 		Logger.mesh.info("🕸️ \(logString, privacy: .public)")
 
 		let fetchMessageRequest = MessageEntity.fetchRequest()
@@ -686,20 +686,15 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManagedObjectContext) {
 
 	if let telemetryMessage = try? Telemetry(serializedBytes: packet.decoded.payload) {
-
-		let logString = String.localizedStringWithFormat("mesh.log.telemetry.received %@".localized, String(packet.from))
+		let logString = String.localizedStringWithFormat("Telemetry received for: %@".localized, String(packet.from))
 		Logger.mesh.info("📈 \(logString, privacy: .public)")
-
 		if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) && telemetryMessage.variant != Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
 			/// Other unhandled telemetry packets
 			return
 		}
-
 		let telemetry = TelemetryEntity(context: context)
-
 		let fetchNodeTelemetryRequest = NodeInfoEntity.fetchRequest()
 		fetchNodeTelemetryRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
-
 		do {
 			let fetchedNode = try context.fetch(fetchNodeTelemetryRequest)
 			if fetchedNode.count == 1 {
@@ -756,7 +751,6 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.localStats.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.localStats.airUtilTx, privacy: .public) Packets Sent: \(telemetryMessage.localStats.numPacketsTx, privacy: .public) Packets Received: \(telemetryMessage.localStats.numPacketsRx, privacy: .public) Bad Packets Received: \(telemetryMessage.localStats.numPacketsRxBad, privacy: .public) Nodes Online: \(telemetryMessage.localStats.numOnlineNodes, privacy: .public) of \(telemetryMessage.localStats.numTotalNodes, privacy: .public) nodes for Node: \(packet.from.toHex(), privacy: .public)")
 				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
 					Logger.data.info("📈 [Power Metrics] Received for Node: \(packet.from.toHex(), privacy: .public)")
-
 					telemetry.powerCh1Voltage = telemetryMessage.powerMetrics.hasCh1Voltage.then(telemetryMessage.powerMetrics.ch1Voltage)
 					telemetry.powerCh1Current = telemetryMessage.powerMetrics.hasCh1Current.then(telemetryMessage.powerMetrics.ch1Current)
 					telemetry.powerCh2Voltage = telemetryMessage.powerMetrics.hasCh2Voltage.then(telemetryMessage.powerMetrics.ch2Voltage)
@@ -764,7 +758,6 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.powerCh3Voltage = telemetryMessage.powerMetrics.hasCh3Voltage.then(telemetryMessage.powerMetrics.ch3Voltage)
 					telemetry.powerCh3Current = telemetryMessage.powerMetrics.hasCh3Current.then(telemetryMessage.powerMetrics.ch3Current)
 					telemetry.metricsType = 2
-
 				}
 				telemetry.snr = packet.rxSnr
 				telemetry.rssi = packet.rxRssi
@@ -781,7 +774,6 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 				fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
 			}
 			try context.save()
-
 			Logger.data.info("💾 [TelemetryEntity] of type \(MetricsTypes(rawValue: Int(telemetry.metricsType))?.name ?? "Unknown Metrics Type", privacy: .public) Saved for Node: \(packet.from.toHex(), privacy: .public)")
 			if telemetry.metricsType == 0 {
 				// Connected Device Metrics
@@ -883,7 +875,7 @@ func textMessageAppPacket(
 	}
 
 	if messageText?.count ?? 0 > 0 {
-		Logger.mesh.info("💬 \("mesh.log.textmessage.received".localized, privacy: .public)")
+		Logger.mesh.info("💬 \("Message received from the text message app.".localized, privacy: .public)")
 		let messageUsers = UserEntity.fetchRequest()
 		messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
 		do {
@@ -980,7 +972,7 @@ func textMessageAppPacket(
 							manager.notifications = [
 								Notification(
 									id: ("notification.id.\(newMessage.messageId)"),
-									title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
+									title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
 									subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 									content: messageText!,
 									target: "messages",
@@ -992,7 +984,7 @@ func textMessageAppPacket(
 								)
 							]
 							manager.schedule()
-							Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized, privacy: .public)")
+							Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown".localized, privacy: .public)")
 						}
 					} else if newMessage.fromUser != nil && newMessage.toUser == nil {
 						let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
@@ -1011,7 +1003,7 @@ func textMessageAppPacket(
 										manager.notifications = [
 											Notification(
 												id: ("notification.id.\(newMessage.messageId)"),
-												title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
+												title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
 												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 												content: messageText!,
 												target: "messages",
@@ -1023,7 +1015,7 @@ func textMessageAppPacket(
 											)
 										]
 										manager.schedule()
-										Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized, privacy: .public)")
+										Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown".localized, privacy: .public)")
 									}
 								}
 							}
@@ -1045,7 +1037,7 @@ func textMessageAppPacket(
 
 func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("mesh.log.waypoint.received %@".localized, String(packet.from))
+	let logString = String.localizedStringWithFormat("Waypoint Packet received from node: %@".localized, String(packet.from))
 	Logger.mesh.info("📍 \(logString, privacy: .public)")
 
 	let fetchWaypointRequest = WaypointEntity.fetchRequest()

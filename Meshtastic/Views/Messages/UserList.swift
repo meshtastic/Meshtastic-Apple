@@ -93,7 +93,7 @@ struct UserList: View {
 										Image(systemName: "lock.open.fill")
 											.foregroundColor(.yellow)
 									}
-									Text(user.longName ?? "unknown".localized)
+									Text(user.longName ?? "Unknown".localized)
 										.font(.headline)
 										.allowsTightening(true)
 									Spacer()
@@ -187,14 +187,14 @@ struct UserList: View {
 								deleteUserMessages(user: userSelection!, context: context)
 								context.refresh(node!.user!, mergeChanges: true)
 							} label: {
-								Text("delete")
+								Text("Delete")
 							}
 						}
 					}
 				}
 			}
 			.listStyle(.plain)
-			.navigationTitle(String.localizedStringWithFormat("contacts %@".localized, String(users.count == 0 ? 0 : users.count)))
+			.navigationTitle(String.localizedStringWithFormat("Contacts (%@)".localized, String(users.count == 0 ? 0 : users.count)))
 			.sheet(isPresented: $editingFilters) {
 				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isPkiEncrypted: $isPkiEncrypted, isFavorite: $isFavorite, isIgnored: $isIgnored, isEnvironment: $isEnvironment, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
 			}

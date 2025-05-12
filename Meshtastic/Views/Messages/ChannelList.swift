@@ -24,7 +24,7 @@ struct ChannelList: View {
 
 	@State private var isPresentingTraceRouteSentAlert = false
 
-	var restrictedChannels = ["gpio", "mqtt", "serial"]
+	var restrictedChannels = ["gpio", "mqtt", "serial", "admin"]
 
 	@ViewBuilder
 	private func makeChannelRow(
@@ -144,7 +144,7 @@ struct ChannelList: View {
 										context.refresh(myInfo, mergeChanges: true)
 										channelSelection = nil
 									} label: {
-										Text("delete")
+										Text("Delete")
 									}
 								}
 						}
@@ -154,6 +154,6 @@ struct ChannelList: View {
 				.listStyle(.plain)
 			}
 		}
-		.navigationTitle("channels")
+		.navigationTitle("Channels")
 	}
 }

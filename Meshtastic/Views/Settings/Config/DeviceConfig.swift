@@ -30,17 +30,15 @@ struct DeviceConfig: View {
 	@State var ledHeartbeatEnabled = true
 	@State var tripleClickAsAdHocPing = true
 	@State var tzdef = ""
-	
 	@State private var showRouterWarning = false
 	@State private var confirmWarning = false
-
 
 	var body: some View {
 		VStack {
 			Form {
 				ConfigHeader(title: "Device", config: \.deviceConfig, node: node, onAppear: setDeviceValues)
 
-				Section(header: Text("options")) {
+				Section(header: Text("Options")) {
 					VStack(alignment: .leading) {
 						Picker("Device Role", selection: $deviceRole ) {
 							ForEach(DeviceRoles.allCases) { dr in
@@ -149,7 +147,7 @@ struct DeviceConfig: View {
 					Picker("Button GPIO", selection: $buttonGPIO) {
 						ForEach(0..<49) {
 							if $0 == 0 {
-								Text("unset")
+								Text("Unset")
 							} else {
 								Text("Pin \($0)")
 							}
@@ -159,7 +157,7 @@ struct DeviceConfig: View {
 					Picker("Buzzer GPIO", selection: $buzzerGPIO) {
 						ForEach(0..<49) {
 							if $0 == 0 {
-								Text("unset")
+								Text("Unset")
 							} else {
 								Text("Pin \($0)")
 							}
@@ -249,7 +247,7 @@ struct DeviceConfig: View {
 			}
 			Spacer()
 		}
-		.navigationTitle("device.config")
+		.navigationTitle("Device Config")
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(
@@ -312,6 +310,9 @@ struct DeviceConfig: View {
 		}
 	}
 	func setDeviceValues() {
+		if node?.deviceConfig?.role ?? 0 == 3 {
+			node?.deviceConfig?.role = 1
+		}
 		self.deviceRole = Int(node?.deviceConfig?.role ?? 0)
 		self.buttonGPIO = Int(node?.deviceConfig?.buttonGpio ?? 0)
 		self.buzzerGPIO = Int(node?.deviceConfig?.buzzerGpio ?? 0)

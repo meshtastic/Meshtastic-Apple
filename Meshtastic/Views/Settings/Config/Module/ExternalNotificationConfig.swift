@@ -39,10 +39,10 @@ struct ExternalNotificationConfig: View {
 			Form {
 				ConfigHeader(title: "External notification", config: \.externalNotificationConfig, node: node, onAppear: setExternalNotificationValues)
 
-				Section(header: Text("options")) {
+				Section(header: Text("Options")) {
 
 					Toggle(isOn: $enabled) {
-						Label("enabled", systemImage: "megaphone")
+						Label("Enabled", systemImage: "megaphone")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
@@ -82,7 +82,7 @@ struct ExternalNotificationConfig: View {
 							Picker("Output pin GPIO", selection: $output) {
 								ForEach(0..<49) {
 									if $0 == 0 {
-										Text("unset")
+										Text("Unset")
 									} else {
 										Text("Pin \($0)")
 									}
@@ -138,7 +138,7 @@ struct ExternalNotificationConfig: View {
 							Picker("Output pin buzzer GPIO ", selection: $outputBuzzer) {
 								ForEach(0..<49) {
 									if $0 == 0 {
-										Text("unset")
+										Text("Unset")
 									} else {
 										Text("Pin \($0)")
 									}
@@ -148,7 +148,7 @@ struct ExternalNotificationConfig: View {
 							Picker("Output pin vibra GPIO", selection: $outputVibra) {
 								ForEach(0..<49) {
 									if $0 == 0 {
-										Text("unset")
+										Text("Unset")
 									} else {
 										Text("Pin \($0)")
 									}
@@ -189,7 +189,7 @@ struct ExternalNotificationConfig: View {
 				}
 			}
 		}
-		.navigationTitle("external.notification.config")
+		.navigationTitle("External Notification Config")
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(

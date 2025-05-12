@@ -46,7 +46,7 @@ struct Connect: View {
 			VStack {
 				List {
 					if bleManager.isSwitchedOn {
-						Section(header: Text("connected.radio").font(.title)) {
+						Section(header: Text("Connected Radio").font(.title)) {
 							if let connectedPeripheral = bleManager.connectedPeripheral, connectedPeripheral.peripheral.state == .connected {
 								TipView(BluetoothConnectionTip(), arrowEdge: .bottom)
 								VStack(alignment: .leading) {
@@ -64,10 +64,10 @@ struct Connect: View {
 											if node != nil {
 												Text(connectedPeripheral.longName.addingVariationSelectors).font(.title2)
 											}
-											Text("BLE Name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name?.addingVariationSelectors ?? "unknown".localized)")
+											Text("BLE Name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name?.addingVariationSelectors ?? "Unknown".localized)")
 												.font(.callout).foregroundColor(Color.gray)
 											if node != nil {
-												Text("firmware.version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "unknown".localized)")
+												Text("Firmware Version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "Unknown".localized)")
 													.font(.callout).foregroundColor(Color.gray)
 											}
 											if bleManager.isSubscribed {
@@ -116,12 +116,12 @@ struct Connect: View {
 											#endif
 											}
 										} label: {
-											Label("mesh.live.activity", systemImage: liveActivityStarted ? "stop" : "play")
+											Label("Mesh Live Activity", systemImage: liveActivityStarted ? "stop" : "play")
 										}
 										#endif
 										Text("Num: \(String(node!.num))")
 										Text("Short Name: \(node?.user?.shortName ?? "?")")
-										Text("Long Name: \(node?.user?.longName?.addingVariationSelectors ?? "unknown".localized)")
+										Text("Long Name: \(node?.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
 										Text("BLE RSSI: \(connectedPeripheral.rssi)")
 
 										Button {
@@ -139,7 +139,7 @@ struct Connect: View {
 										NavigationLink {
 											LoRaConfig(node: node)
 										} label: {
-											Label("set.region", systemImage: "globe.americas.fill")
+											Label("Set LoRa Region", systemImage: "globe.americas.fill")
 												.foregroundColor(.red)
 												.font(.title)
 										}
@@ -156,7 +156,7 @@ struct Connect: View {
 											.frame(width: 60, height: 60)
 											.padding(.trailing)
 										if bleManager.timeoutTimerCount == 0 {
-											Text("connecting")
+											Text("Connecting . .")
 												.font(.title2)
 												.foregroundColor(.orange)
 										} else {
@@ -189,7 +189,7 @@ struct Connect: View {
 											.foregroundColor(.red)
 											.frame(width: 60, height: 60)
 											.padding(.trailing)
-										Text("not.connected").font(.title3)
+										Text("No device connected").font(.title3)
 									}
 									.padding()
 								}

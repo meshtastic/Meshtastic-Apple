@@ -67,12 +67,12 @@ class MetricsSeriesList: ObservableObject, RandomAccessCollection, RangeReplacea
 			for aSeries in self.visible {
 				var seriesUpper = range[aSeries]?.upperBound ?? -.infinity
 				var seriesLower = range[aSeries]?.lowerBound ?? .infinity
-				
+
 				if let value = aSeries.valueFor(te) {
 					// Update the global bounds
 					if value > globalUpper {globalUpper = value}
 					if value < globalLower {globalLower = value}
-					
+
 					// Update the series bounds if necessary
 					if value > seriesUpper || value < seriesLower {
 						if value > seriesUpper {

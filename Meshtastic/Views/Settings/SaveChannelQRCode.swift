@@ -43,7 +43,7 @@ struct SaveChannelQRCode: View {
 							showError = true
 						}
 					} label: {
-						Label("save", systemImage: "square.and.arrow.down")
+						Label("Save", systemImage: "square.and.arrow.down")
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)

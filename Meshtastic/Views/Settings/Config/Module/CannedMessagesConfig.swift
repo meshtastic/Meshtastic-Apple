@@ -42,11 +42,11 @@ struct CannedMessagesConfig: View {
 			Form {
 				ConfigHeader(title: "Canned messages", config: \.cannedMessageConfig, node: node, onAppear: setCannedMessagesValues)
 
-				Section(header: Text("options")) {
+				Section(header: Text("Options")) {
 
 					Toggle(isOn: $enabled) {
 
-						Label("enabled", systemImage: "list.bullet.rectangle.fill")
+						Label("Enabled", systemImage: "list.bullet.rectangle.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
@@ -103,7 +103,7 @@ struct CannedMessagesConfig: View {
 						Picker("Pin A", selection: $inputbrokerPinA) {
 							ForEach(0..<49) {
 								if $0 == 0 {
-									Text("unset")
+									Text("Unset")
 								} else {
 									Text("Pin \($0)")
 								}
@@ -118,7 +118,7 @@ struct CannedMessagesConfig: View {
 						Picker("Pin B", selection: $inputbrokerPinB) {
 							ForEach(0..<49) {
 								if $0 == 0 {
-									Text("unset")
+									Text("Unset")
 								} else {
 									Text("Pin \($0)")
 								}
@@ -133,7 +133,7 @@ struct CannedMessagesConfig: View {
 						Picker("Press Pin", selection: $inputbrokerPinPress) {
 							ForEach(0..<49) {
 								if $0 == 0 {
-									Text("unset")
+									Text("Unset")
 								} else {
 									Text("Pin \($0)")
 								}

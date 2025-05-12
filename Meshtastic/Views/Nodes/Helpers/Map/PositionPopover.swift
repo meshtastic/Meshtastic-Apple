@@ -23,10 +23,10 @@ struct PositionPopover: View {
 	var body: some View {
 		// Node Color from node.num
 		let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
+		NavigationStack {
 		VStack {
 			HStack {
 				ZStack {
-
 					if position.nodePosition?.isOnline ?? false {
 						Circle()
 							.fill(Color(nodeColor.lighter()).opacity(0.4).shadow(.drop(color: Color(nodeColor).isLight() ? .black : .white, radius: 5)))
@@ -34,16 +34,15 @@ struct PositionPopover: View {
 							.scaleEffect(scale)
 							.animation(
 								Animation.easeInOut(duration: 0.6)
-								   .repeatForever().delay(delay), value: scale
+									.repeatForever().delay(delay), value: scale
 							)
 							.onAppear {
 								self.scale = 1
 							}
 							.frame(width: 90, height: 90)
 					}
-					CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 65)
+					CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 65, node: getNodeInfo(id: Int64(position.nodePosition?.user?.num ?? 0), context: context))
 				}
-
 				Text(position.nodePosition?.user?.longName ?? "Unknown")
 					.font(.largeTitle)
 			}
@@ -53,7 +52,7 @@ struct PositionPopover: View {
 					/// Time
 					Label {
 						if idiom != .phone {
-							Text("heard".localized + ":")
+							Text("Heard".localized + ":")
 						}
 						Text(position.time?.lastHeard ?? "unknown")
 							.foregroundColor(.primary)
@@ -106,7 +105,6 @@ struct PositionPopover: View {
 								.foregroundColor(.primary)
 								.font(idiom == .phone ? .callout : .body)
 						}
-
 					} icon: {
 						Image(systemName: "mountain.2.fill")
 							.symbolRenderingMode(.hierarchical)
@@ -147,9 +145,9 @@ struct PositionPopover: View {
 						Text("Heading: \(heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0)))))")
 					} icon: {
 						Image(systemName: "location.north")
-							 .symbolRenderingMode(.hierarchical)
-							 .frame(width: 35)
-							 .rotationEffect(degrees)
+							.symbolRenderingMode(.hierarchical)
+							.frame(width: 35)
+							.rotationEffect(degrees)
 					}
 					.padding(.bottom, 5)
 					/// Distance
@@ -181,15 +179,14 @@ struct PositionPopover: View {
 					}
 					.padding(.bottom, 5)
 					if position.nodePosition?.viaMqtt ?? false {
-
 						Label {
 							Text("MQTT")
 								.font(idiom == .phone ? .callout : .body)
 						} icon: {
 							Image(systemName: "network")
-								 .symbolRenderingMode(.hierarchical)
-								 .frame(width: 35)
-								 .rotationEffect(degrees)
+								.symbolRenderingMode(.hierarchical)
+								.frame(width: 35)
+								.rotationEffect(degrees)
 						}
 						.padding(.bottom, 5)
 					}
@@ -235,7 +232,7 @@ struct PositionPopover: View {
 				Button {
 					dismiss()
 				} label: {
-					Label("close", systemImage: "xmark")
+					Label("Close", systemImage: "xmark")
 				}
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
@@ -244,6 +241,7 @@ struct PositionPopover: View {
 #endif
 			}
 		}
+	}
 		.presentationDetents([.fraction(0.65), .large])
 		.presentationContentInteraction(.scrolls)
 		.presentationDragIndicator(.visible)

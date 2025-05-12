@@ -219,7 +219,7 @@ struct Channels: View {
 							hasChanges = false
 						}
 					} label: {
-						Label("save", systemImage: "square.and.arrow.down")
+						Label("Save", systemImage: "square.and.arrow.down")
 					}
 					.disabled(bleManager.connectedPeripheral == nil)// || !hasChanges)// !hasValidKey)
 					.buttonStyle(.bordered)
@@ -230,7 +230,7 @@ struct Channels: View {
 					Button {
 						goBack()
 					} label: {
-						Label("close", systemImage: "xmark")
+						Label("Close", systemImage: "xmark")
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
@@ -279,7 +279,7 @@ struct Channels: View {
 				.padding()
 			}
 		}
-		.navigationTitle("channels")
+		.navigationTitle("Channels")
 		.navigationBarItems(trailing:
 		ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
@@ -379,6 +379,6 @@ enum PositionPrecision: Int, CaseIterable, Identifiable {
 
 	var description: String {
 		let distanceFormatter = MKDistanceFormatter()
-		return String.localizedStringWithFormat("position.precision %@".localized, String(distanceFormatter.string(fromDistance: precisionMeters)))
+		return String.localizedStringWithFormat("Within %@".localized, String(distanceFormatter.string(fromDistance: precisionMeters)))
 	}
 }

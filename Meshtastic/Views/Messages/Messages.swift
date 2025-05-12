@@ -35,7 +35,7 @@ struct Messages: View {
 			List(selection: $router.navigationState.messages) {
 				NavigationLink(value: MessagesNavigationState.channels()) {
 					Label {
-						Text("channels")
+						Text("Channels")
 							.badge(unreadChannelMessages)
 							.font(.title2)
 							.padding()
@@ -50,7 +50,7 @@ struct Messages: View {
 				}
 				NavigationLink(value: MessagesNavigationState.directMessages()) {
 					Label {
-						Text("direct.messages")
+						Text("Direct Messages")
 							.badge(unreadDirectMessages)
 							.font(.title2)
 							.padding()
@@ -65,7 +65,7 @@ struct Messages: View {
 
 				TipView(MessagesTip(), arrowEdge: .top)
 			}
-			.navigationTitle("messages")
+			.navigationTitle("Messages")
 			.navigationBarTitleDisplayMode(.large)
 			.navigationBarItems(leading: MeshtasticLogo())
 		} content: {

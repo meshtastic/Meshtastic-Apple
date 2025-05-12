@@ -51,7 +51,7 @@ struct MessageContextMenuItems: View {
 			Image(systemName: "doc.on.doc")
 		}
 
-		Menu("message.details") {
+		Menu("Message Details") {
 			VStack {
 				let messageDate = Date(timeIntervalSince1970: TimeInterval(message.messageTimestamp))
 				Text("\(messageDate.formattedDate(format: MessageText.dateFormatString))").foregroundColor(.gray)
@@ -69,8 +69,8 @@ struct MessageContextMenuItems: View {
 			}
 			if isCurrentUser && message.receivedACK {
 				VStack {
-					Text("received.ack") + Text(": \(message.receivedACK ? "✔️" : "")")
-					Text("received.ack.real") + Text(": \(message.realACK ? "✔️" : "")")
+					Text("Received Ack") + Text(": \(message.receivedACK ? "✔️" : "")")
+					Text("Recipient Ack") + Text(": \(message.realACK ? "✔️" : "")")
 				}
 			} else if isCurrentUser && message.ackError == 0 {
 				// Empty Error
@@ -104,7 +104,7 @@ struct MessageContextMenuItems: View {
 		Button(role: .destructive) {
 			isShowingDeleteConfirmation = true
 		} label: {
-			Text("delete")
+			Text("Delete")
 			Image(systemName: "trash")
 		}
 	}

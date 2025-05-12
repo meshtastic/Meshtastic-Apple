@@ -44,7 +44,7 @@ struct PaxCounterLog: View {
 										y: .value("y", (point.wifi + point.ble))
 									)
 								}
-								.accessibilityLabel("paxcounter.total")
+								.accessibilityLabel("Total PAX")
 								.accessibilityValue("X: \(point.time!), Y: \(point.wifi + point.ble)")
 								.foregroundStyle(paxChartColor)
 								.interpolationMethod(.cardinal)
@@ -55,7 +55,7 @@ struct PaxCounterLog: View {
 										y: .value("y", point.wifi)
 									)
 								}
-								.accessibilityLabel("paxcounter.wifi")
+								.accessibilityLabel("WiFi")
 								.accessibilityValue("X: \(point.time!), Y: \(point.wifi)")
 								.foregroundStyle(wifiChartColor)
 
@@ -65,7 +65,7 @@ struct PaxCounterLog: View {
 										y: .value("y", point.ble)
 									)
 								}
-								.accessibilityLabel("paxcounter.ble")
+								.accessibilityLabel("BLE")
 								.accessibilityValue("X: \(point.time!), Y: \(point.ble)")
 								.foregroundStyle(bleChartColor)
 							}
@@ -76,9 +76,9 @@ struct PaxCounterLog: View {
 						.chartXAxis(.automatic)
 						.chartYScale(domain: 0...maxValue)
 						.chartForegroundStyleScale([
-							"paxcounter.ble".localized: .blue,
-							"paxcounter.wifi".localized: .orange,
-							"paxcounter.total".localized: .green
+							"BLE".localized: .blue,
+							"WiFi".localized: .orange,
+							"Total PAX".localized: .green
 						])
 						.chartLegend(position: .automatic, alignment: .bottom)
 					}
@@ -89,23 +89,23 @@ struct PaxCounterLog: View {
 				if UIScreen.main.bounds.size.width > 768 && (UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
 					// Add a table for mac and ipad
 					Table(pax) {
-						TableColumn("paxcounter.ble") { pc in
+						TableColumn("BLE") { pc in
 							Text("\(pc.ble)")
 						}
-						TableColumn("paxcounter.wifi") { pc in
+						TableColumn("WiFi") { pc in
 							Text("\(pc.wifi)")
 						}
-						TableColumn("paxcounter.total") { pc in
+						TableColumn("Total PAX") { pc in
 							Text("\(pc.wifi + pc.ble)")
 						}
-						TableColumn("uptime") { pc in
+						TableColumn("Uptime") { pc in
 							let now = Date.now
 							let later = now + TimeInterval(pc.uptime)
 							let components = (now..<later).formatted(.components(style: .condensedAbbreviated))
 							Text(components)
 						}
 						TableColumn("Timestamp") { pc in
-							Text(pc.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+							Text(pc.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
 						}
 						.width(min: 180)
 					}
@@ -120,10 +120,10 @@ struct PaxCounterLog: View {
 						]
 						LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 							GridRow {
-								Text("paxcounter.ble")
+								Text("BLE")
 									.font(.caption)
 									.fontWeight(.bold)
-								Text("paxcounter.wifi")
+								Text("WiFi")
 									.font(.caption)
 									.fontWeight(.bold)
 								Text("Total")
@@ -149,7 +149,7 @@ struct PaxCounterLog: View {
 									let components = (now..<later).formatted(.components(style: .condensedAbbreviated))
 									Text(components)
 										.font(.caption)
-									Text(pc.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+									Text(pc.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
 										.font(.caption)
 								}
 							}
@@ -174,7 +174,7 @@ struct PaxCounterLog: View {
 						isPresented: $isPresentingClearLogConfirm,
 						titleVisibility: .visible
 					) {
-						Button("paxcounter.delete", role: .destructive) {
+						Button("Delete all pax data?", role: .destructive) {
 							if clearPax(destNum: node.num, context: context) {
 								Logger.services.info("Cleared Pax Counter for \(node.num, privacy: .public)")
 							} else {
@@ -187,7 +187,7 @@ struct PaxCounterLog: View {
 						exportString = paxToCsvFile(pax: pax)
 						isExporting = true
 					} label: {
-						Label("save", systemImage: "square.and.arrow.down")
+						Label("Save", systemImage: "square.and.arrow.down")
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
@@ -196,10 +196,10 @@ struct PaxCounterLog: View {
 					.padding(.trailing)
 				}
 			} else {
-				ContentUnavailableView("paxcounter.content.unavailable", systemImage: "slash.circle")
+				ContentUnavailableView("No PAX Counter Logs", systemImage: "slash.circle")
 			}
 		}
-		.navigationTitle("paxcounter.log")
+		.navigationTitle("PAX Counter Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 			ZStack {

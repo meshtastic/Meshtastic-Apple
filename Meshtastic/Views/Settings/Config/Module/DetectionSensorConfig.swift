@@ -47,10 +47,10 @@ struct DetectionSensorConfig: View {
 			Form {
 				ConfigHeader(title: "Detection Sensor", config: \.detectionSensorConfig, node: node, onAppear: setDetectionSensorValues)
 
-				Section(header: Text("options")) {
+				Section(header: Text("Options")) {
 
 					Toggle(isOn: $enabled) {
-						Label("enabled", systemImage: "dot.radiowaves.right")
+						Label("Enabled", systemImage: "dot.radiowaves.right")
 						Text("Enables the detection sensor module, it needs to be enabled on both the node with the sensor, and any nodes that you want to receive detection sensor text messages or view the detection sensor log and chart.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -108,7 +108,7 @@ struct DetectionSensorConfig: View {
 						Picker("GPIO Pin to monitor", selection: $monitorPin) {
 							ForEach(0..<49) {
 								if $0 == 0 {
-									Text("unset")
+									Text("Unset")
 								} else {
 									Text("Pin \($0)")
 								}
@@ -130,7 +130,7 @@ struct DetectionSensorConfig: View {
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-					Section(header: Text("update.interval")) {
+					Section(header: Text("Update Interval")) {
 						Picker("Minimum time between detection broadcasts", selection: $minimumBroadcastSecs) {
 							ForEach(UpdateIntervals.allCases) { ui in
 								Text(ui.description).tag(ui.rawValue)
@@ -181,7 +181,7 @@ struct DetectionSensorConfig: View {
 				}
 			}
 		}
-		.navigationTitle("detection.sensor.config")
+		.navigationTitle("Detection Sensor Config")
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(

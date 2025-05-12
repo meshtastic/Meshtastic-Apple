@@ -32,7 +32,7 @@ struct TelemetryConfig: View {
 			Form {
 				ConfigHeader(title: "Telemetry", config: \.telemetryConfig, node: node, onAppear: setTelemetryValues)
 
-				Section(header: Text("update.interval")) {
+				Section(header: Text("Update Interval")) {
 					Picker("Device Metrics", selection: $deviceUpdateInterval ) {
 						ForEach(UpdateIntervals.allCases) { ui in
 							if ui.rawValue >= 900 {
@@ -46,7 +46,7 @@ struct TelemetryConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 						.listRowSeparator(.visible)
-					Picker("Sensor Metrics", selection: $environmentUpdateInterval ) {
+					Picker("Environment Metrics", selection: $environmentUpdateInterval ) {
 						ForEach(UpdateIntervals.allCases) { ui in
 							if ui.rawValue >= 900 {
 								Text(ui.description)
@@ -55,7 +55,7 @@ struct TelemetryConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(.hidden)
-					Text("How often sensor metrics are sent out over the mesh. Default is 30 minutes.")
+					Text("How often environment metrics are sent out over the mesh. Default is 30 minutes.")
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
@@ -64,7 +64,7 @@ struct TelemetryConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 					Toggle(isOn: $environmentMeasurementEnabled) {
-						Label("enabled", systemImage: "chart.xyaxis.line")
+						Label("Enabled", systemImage: "chart.xyaxis.line")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Toggle(isOn: $environmentScreenEnabled) {
@@ -78,7 +78,7 @@ struct TelemetryConfig: View {
 				}
 				Section(header: Text("Power Options")) {
 					Toggle(isOn: $powerMeasurementEnabled) {
-						Label("enabled", systemImage: "bolt")
+						Label("Enabled", systemImage: "bolt")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
@@ -124,7 +124,7 @@ struct TelemetryConfig: View {
 					}
 				}
 			}
-			.navigationTitle("telemetry.config")
+			.navigationTitle("Telemetry Config")
 			.navigationBarItems(
 				trailing: ZStack {
 					ConnectedDevice(

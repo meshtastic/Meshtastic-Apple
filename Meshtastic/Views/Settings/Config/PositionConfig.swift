@@ -114,7 +114,7 @@ struct PositionConfig: View {
 					Picker("Minimum Distance", selection: $broadcastSmartMinimumDistance) {
 						ForEach(10..<151) {
 							if $0 == 0 {
-								Text("unset")
+								Text("Unset")
 							} else {
 								if $0.isMultiple(of: 5) {
 									Text("\($0)")
@@ -139,7 +139,6 @@ struct PositionConfig: View {
 				ForEach(GpsMode.allCases, id: \.self) { at in
 					Text(at.description)
 						.tag(at.id)
-
 				}
 			}
 			.pickerStyle(SegmentedPickerStyle())
@@ -210,7 +209,7 @@ struct PositionConfig: View {
 			}
 
 			Toggle(isOn: $includeTimestamp) { // 128
-				Label("timestamp", systemImage: "clock")
+				Label("Timestamp", systemImage: "clock")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 			.onChange(of: includeTimestamp) { _, newIncludeTimestamp in
@@ -283,7 +282,7 @@ struct PositionConfig: View {
 			Picker("GPS Receive GPIO", selection: $rxGpio) {
 				ForEach(0..<49) {
 					if $0 == 0 {
-						Text("unset")
+						Text("Unset")
 					} else {
 						Text("Pin \($0)")
 					}
@@ -293,7 +292,7 @@ struct PositionConfig: View {
 			Picker("GPS Transmit GPIO", selection: $txGpio) {
 				ForEach(0..<49) {
 					if $0 == 0 {
-						Text("unset")
+						Text("Unset")
 					} else {
 						Text("Pin \($0)")
 					}
@@ -303,7 +302,7 @@ struct PositionConfig: View {
 			Picker("GPS EN GPIO", selection: $gpsEnGpio) {
 				ForEach(0..<49) {
 					if $0 == 0 {
-						Text("unset")
+						Text("Unset")
 					} else {
 						Text("Pin \($0)")
 					}
@@ -314,7 +313,6 @@ struct PositionConfig: View {
 				.font(.caption)
 		}
 	}
-
 	var saveButton: some View {
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			if fixedPosition && !supportedVersion {
@@ -396,14 +394,10 @@ struct PositionConfig: View {
 			}
 			saveButton
 		}
-		.navigationTitle("position.config")
+		.navigationTitle("Position Config")
 		.navigationBarItems(
 			trailing: ZStack {
-				ConnectedDevice(
-					bluetoothOn: bleManager.isSwitchedOn,
-					deviceConnected: bleManager.connectedPeripheral != nil,
-					name: bleManager.connectedPeripheral?.shortName ?? "?"
-				)
+				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: bleManager.connectedPeripheral?.shortName ?? "?")
 			}
 		)
 		.onFirstAppear {

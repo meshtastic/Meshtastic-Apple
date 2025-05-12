@@ -141,7 +141,7 @@ struct UserConfig: View {
 				Button {
 					isPresentingSaveConfirm = true
 				} label: {
-					Label("save", systemImage: "square.and.arrow.down")
+					Label("Save", systemImage: "square.and.arrow.down")
 				}
 				.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
 				.buttonStyle(.bordered)
@@ -186,7 +186,7 @@ struct UserConfig: View {
 						}
 					}
 				} message: {
-					Text("config.save.confirm")
+					Text("After config values save the node will reboot.")
 				}
 			}
 			Spacer()

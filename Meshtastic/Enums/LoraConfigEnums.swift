@@ -105,27 +105,27 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 		case .in:
 			return "India".localized
 		case .nz865:
-			return "New Zealand 865mhz".localized
+			return "New Zealand 865MHz".localized
 		case .th:
 			return "Thailand".localized
 		case .ua433:
-			return "Ukraine 433mhz".localized
+			return "Ukraine 433MHz".localized
 		case .ua868:
-			return "Ukraine 868mhz".localized
+			return "Ukraine 868MHz".localized
 		case .lora24:
 			return "2.4 Ghz".localized
 		case .my433:
-			return "Malaysia 433mhz".localized
+			return "Malaysia 433MHz".localized
 		case .my919:
-			return "Malaysia 919mhz".localized
+			return "Malaysia 919MHz".localized
 		case .sg923:
-			return "Singapore 923mhz".localized
+			return "Singapore 923MHz".localized
 		case .ph433:
-			return "Philippines 433mhz".localized
+			return "Philippines 433MHz".localized
 		case .ph868:
-			return "Philippines 868mhz".localized
+			return "Philippines 868MHz".localized
 		case .ph915:
-			return "Philippines 915mhz".localized
+			return "Philippines 915MHz".localized
 		}
 	}
 	var dutyCycle: Int {
@@ -280,7 +280,6 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 	case longFast = 0
 	case longSlow = 1
 	case longModerate = 7
-	case vLongSlow = 2
 	case medSlow = 3
 	case medFast = 4
 	case shortSlow = 5
@@ -291,23 +290,21 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 	var description: String {
     		switch self {
 		case .longFast:
-			return "long.range.fast".localized
+			return "Long Range - Fast".localized
 		case .longSlow:
-			return "long.range.slow".localized
+			return "Long Range - Slow".localized
 		case .longModerate:
-			return "long.range.moderate".localized
-		case .vLongSlow:
-			return "very.long.range.slow".localized
+			return "Long Range - Moderate".localized
 		case .medSlow:
-			return "medium.range.slow".localized
+			return "Medium Range - Slow".localized
 		case .medFast:
-			return "medium.range.fast".localized
+			return "Medium Range - Fast".localized
 		case .shortSlow:
-			return "short.range.slow".localized
+			return "Short Range - Slow".localized
 		case .shortFast:
-			return "short.range.fast".localized
+			return "Short Range - Fast".localized
 		case .shortTurbo:
-			return "short.range.turbo".localized
+			return "Short Range - Turbo".localized
 		}
 	}
 	var name: String {
@@ -318,8 +315,6 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return "LongSlow"
 		case .longModerate:
 			return "LongModerate"
-		case .vLongSlow:
-			return "VLongFast"
 		case .medSlow:
 			return "MediumSlow"
 		case .medFast:
@@ -340,8 +335,6 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return -7.5
 		case .longModerate:
 			return -17.5
-		case .vLongSlow:
-			return -20
 		case .medSlow:
 			return -15
 		case .medFast:
@@ -362,8 +355,6 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return Config.LoRaConfig.ModemPreset.longSlow
 		case .longModerate:
 			return Config.LoRaConfig.ModemPreset.longModerate
-		case .vLongSlow:
-			return Config.LoRaConfig.ModemPreset.veryLongSlow
 		case .medSlow:
 			return Config.LoRaConfig.ModemPreset.mediumSlow
 		case .medFast:
