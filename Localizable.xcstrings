@@ -22467,8 +22467,7 @@
         }
       }
     },
-    "Positon config received: %@" : {
-      "extractionState" : "stale",
+    "Position config received: %@" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
