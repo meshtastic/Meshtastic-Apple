@@ -18,20 +18,18 @@ struct BatteryGauge: View {
 
 		let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
 		let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
-		// For VoiceOver purposes, detect when device is plugged in (battery > 100%)
-		let isPluggedIn = (mostRecent?.batteryLevel ?? 0) > 100
-		// Use a capped battery level for UI display
-		let batteryLevel = Double(min(100, mostRecent?.batteryLevel ?? 0))
+		let batteryLevel = Double(mostRecent?.batteryLevel ?? 0)
 
 		VStack {
-			if isPluggedIn {
-				// Use a completely standalone view for the plugged in state
-				// to avoid any VoiceOver confusion
-				PluggedInIndicator()
+			if batteryLevel > 100.0 {
+				// Plugged in
+				Image(systemName: "powerplug")
+					.font(.largeTitle)
+					.foregroundColor(.accentColor)
+					.symbolRenderingMode(.hierarchical)
 			} else {
 				let gradient = Gradient(colors: [.red, .orange, .green])
 				Gauge(value: batteryLevel, in: minValue...maxValue) {
-					// Accessibility for battery gauge
 					if batteryLevel >= 0.0 && batteryLevel < 10 {
 						Label("Battery Level %", systemImage: "battery.0")
 					} else if batteryLevel >= 10.0 && batteryLevel < 25.00 {
@@ -52,8 +50,6 @@ struct BatteryGauge: View {
 						Text(Int(batteryLevel), format: .percent)
 					}
 				}
-				.accessibilityLabel(NSLocalizedString("Battery Level", comment: "VoiceOver label for battery gauge"))
-				.accessibilityValue(String(format: NSLocalizedString("Battery Level %", comment: "VoiceOver value for battery level"), Int(batteryLevel)))
 				.tint(gradient)
 				.gaugeStyle(.accessoryCircular)
 			}
@@ -65,23 +61,6 @@ struct BatteryGauge: View {
 			}
 		}
 	}
-}
-
-/// A dedicated view for showing a device is plugged in
-/// With proper VoiceOver support that matches the visual indication
-struct PluggedInIndicator: View {
-    var body: some View {
-        // This view is isolated from any battery measurement
-        // to ensure VoiceOver doesn't pick up any percentages
-        Image(systemName: "powerplug")
-            .font(.largeTitle)
-            .foregroundColor(.accentColor)
-            .symbolRenderingMode(.hierarchical)
-            // Override the accessibility to ensure correct VoiceOver announcement
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(NSLocalizedString("Battery Level", comment: "VoiceOver label for battery gauge"))
-            .accessibilityValue(NSLocalizedString("device_plugged_in", comment: "VoiceOver value for plugged in device"))
-    }
 }
 
 struct BatteryGauge_Previews: PreviewProvider {

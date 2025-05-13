@@ -6,7 +6,6 @@ struct RequestPositionButton: View {
 	var body: some View {
 		Button(action: action) {
 			Image(systemName: "mappin.and.ellipse")
-				.accessibilityLabel(NSLocalizedString("request_position", comment: "VoiceOver label for request position button"))
 				.symbolRenderingMode(.hierarchical)
 				.imageScale(.large)
 				.foregroundColor(.accentColor)
