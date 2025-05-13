@@ -27,6 +27,31 @@ struct Connect: View {
 	@State var presentingSwitchPreferredPeripheral = false
 	@State var selectedPeripherialId = ""
 
+	private func nodeAccessibilityLabel() -> String {
+		// Create a battery status string that handles charging and plugged in states
+		var batteryStatus: String? = nil
+		if let batteryLevel = node?.latestDeviceMetrics?.batteryLevel {
+			if batteryLevel > 100 {
+				// Plugged in state
+				batteryStatus = NSLocalizedString("device_plugged_in", comment: "VoiceOver value for plugged in device")
+			} else if batteryLevel == 100 {
+				// Charging state
+				batteryStatus = NSLocalizedString("device_charging", comment: "VoiceOver value for charging device")
+			} else {
+				// Normal battery percentage
+				batteryStatus = "Battery: \(Int(batteryLevel))%"
+			}
+		}
+
+		return [
+			node?.user?.shortName?.formatNodeNameForVoiceOver() ?? "",
+			"BLE Name: \(bleManager.connectedPeripheral?.peripheral.name?.addingVariationSelectors ?? "unknown".localized)",
+			"Firmware Version: \(node?.metadata?.firmwareVersion ?? "unknown".localized)",
+			bleManager.isSubscribed ? "Subscribed" : nil,
+			batteryStatus
+		].compactMap { $0 }.joined(separator: ", ")
+	}
+
 	init () {
 		let notificationCenter = UNUserNotificationCenter.current()
 		notificationCenter.getNotificationSettings(completionHandler: { (settings) in
@@ -86,6 +111,8 @@ struct Connect: View {
 										}
 									}
 								}
+								.accessibilityElement(children: .ignore)
+								.accessibilityLabel(nodeAccessibilityLabel())
 								.font(.caption)
 								.foregroundColor(Color.gray)
 								.padding([.top])
@@ -299,6 +326,8 @@ struct Connect: View {
 						mqttTopic: bleManager.mqttManager.topic
 					)
 				}
+				// Make sure the ZStack passes through accessibility to the ConnectedDevice component
+				.accessibilityElement(children: .contain)
 			)
 		}
 		.sheet(isPresented: $invalidFirmwareVersion, onDismiss: didDismissSheet) {
