@@ -940,7 +940,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								subtitle: "TR received back from \(destinationHop.name ?? "unknown")",
 								content: "Hops from: \(tr.hopsTowards), Hops back: \(tr.hopsBack)\n\(tr.routeText ?? "Unknown".localized)\n\(tr.routeBackText ?? "Unknown".localized)",
 								target: "nodes",
-								path: "meshtastic:///nodes?nodenum=\(connectedNode.user?.num ?? 0)"
+								path: "meshtastic:///nodes?nodenum=\(tr.node?.num ?? 0)"
 							)
 						]
 						manager.schedule()
@@ -1120,6 +1120,19 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					if newMessage.toUser?.pkiEncrypted ?? false {
 						meshPacket.pkiEncrypted = true
 						meshPacket.publicKey = newMessage.toUser?.publicKey ?? Data()
+						// Auto Favorite nodes you DM so they don't roll out of the nodedb
+						if !(newMessage.toUser?.userNode?.favorite ?? true) {
+							newMessage.toUser?.userNode?.favorite = true
+							do {
+								try context.save()
+								Logger.data.info("💾 Auto favorited node bases on sending a message \(self.connectedPeripheral.num.toHex(), privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
+								_ = self.setFavoriteNode(node: (newMessage.toUser?.userNode)!, connectedNodeNum: fromUserNum)
+							} catch {
+								context.rollback()
+								let nsError = error as NSError
+								Logger.data.error("Unresolved Core Data error when auto favoriting in Send Message Function. Error: \(nsError, privacy: .public)")
+							}
+						}
 					}
 					meshPacket.id = UInt32(newMessage.messageId)
 					if toUserNum > 0 {

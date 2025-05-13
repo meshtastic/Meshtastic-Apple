@@ -28,6 +28,7 @@
 		2373AE132D0A216C0086C749 /* MetricsChartSeries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE122D0A216C0086C749 /* MetricsChartSeries.swift */; };
 		2373AE152D0A24930086C749 /* MetricsSeriesList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE142D0A24930086C749 /* MetricsSeriesList.swift */; };
 		2373AE172D0A26620086C749 /* EnvironmentDefaultSeries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE162D0A26620086C749 /* EnvironmentDefaultSeries.swift */; };
+		237B46962DC8F1C100B22D99 /* RateLimitedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 237B46952DC8F1C100B22D99 /* RateLimitedButton.swift */; };
 		251926852C3BA97800249DF5 /* FavoriteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */; };
 		251926872C3BAE2200249DF5 /* NodeAlertsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */; };
 		2519268A2C3BB1B200249DF5 /* ExchangePositionsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */; };
@@ -294,6 +295,7 @@
 		2373AE122D0A216C0086C749 /* MetricsChartSeries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsChartSeries.swift; sourceTree = "<group>"; };
 		2373AE142D0A24930086C749 /* MetricsSeriesList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsSeriesList.swift; sourceTree = "<group>"; };
 		2373AE162D0A26620086C749 /* EnvironmentDefaultSeries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentDefaultSeries.swift; sourceTree = "<group>"; };
+		237B46952DC8F1C100B22D99 /* RateLimitedButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateLimitedButton.swift; sourceTree = "<group>"; };
 		251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteNodeButton.swift; sourceTree = "<group>"; };
 		251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeAlertsButton.swift; sourceTree = "<group>"; };
 		251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangePositionsButton.swift; sourceTree = "<group>"; };
@@ -1041,6 +1043,7 @@
 				DD5E523D298F5A7D00D21B61 /* Weather */,
 				DD6F65712C6AB8EC0053C113 /* SecureInput.swift */,
 				8D3F8A3E2D44BB02009EAAA4 /* PowerMetrics.swift */,
+				237B46952DC8F1C100B22D99 /* RateLimitedButton.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1412,6 +1415,7 @@
 				DDDB445429F8AD1600EE2349 /* Data.swift in Sources */,
 				DDDB26462AACC0B7003AFCB7 /* NodeInfoItem.swift in Sources */,
 				DDE5B4042B2279A700FCDD05 /* TraceRouteLog.swift in Sources */,
+				237B46962DC8F1C100B22D99 /* RateLimitedButton.swift in Sources */,
 				DD6193792863875F00E59241 /* SerialConfig.swift in Sources */,
 				DDDB263F2AABEE20003AFCB7 /* NodeList.swift in Sources */,
 				DDD5BB0B2C285E45007E03CA /* LogDetail.swift in Sources */,
@@ -1785,7 +1789,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.6.2;
+				MARKETING_VERSION = 2.6.3;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1818,7 +1822,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.6.2;
+				MARKETING_VERSION = 2.6.3;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1849,7 +1853,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.6.2;
+				MARKETING_VERSION = 2.6.3;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1881,7 +1885,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.6.2;
+				MARKETING_VERSION = 2.6.3;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

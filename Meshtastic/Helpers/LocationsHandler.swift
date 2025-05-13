@@ -8,6 +8,7 @@
 import SwiftUI
 import CoreLocation
 import OSLog
+import CoreData
 
 // Shared state that manages the `CLLocationManager` and `CLBackgroundActivitySession`.
 @MainActor class LocationsHandler: ObservableObject {
@@ -109,15 +110,43 @@ import OSLog
 		} else {
 			locationsArray = [location]
 		}
+		UserDefaults.standard.set(location.coordinate.latitude, forKey: "lastKnownLatitude")
+		UserDefaults.standard.set(location.coordinate.longitude, forKey: "lastKnownLongitude")
+		UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "lastKnownLocationTimestamp")
 		return true
 	}
-
 	static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
 	static var currentLocation: CLLocationCoordinate2D {
-		guard let location = shared.manager.location else {
+		if let location = shared.manager.location {
+			return location.coordinate
+		} else {
+			// Check authorization status
+			let status = shared.manager.authorizationStatus
+			switch status {
+			case .notDetermined:
+				Logger.services.info("📍 [App] Location permission not determined, requesting authorization")
+				shared.manager.requestWhenInUseAuthorization()
+			case .denied, .restricted:
+				Logger.services.warning("📍 [App] Location access denied or restricted. Please enable location services in Settings to get accurate positioning!")
+				shared.manager.requestWhenInUseAuthorization()
+			default:
+				break
+			}
+			// Fallback 1: Last known location from UserDefaults (if within 4 hours)
+			if let lat = UserDefaults.standard.object(forKey: "lastKnownLatitude") as? Double,
+				let lon = UserDefaults.standard.object(forKey: "lastKnownLongitude") as? Double,
+				 let timestamp = UserDefaults.standard.object(forKey: "lastKnownLocationTimestamp") as? Double,
+				 lat >= -90 && lat <= 90,
+				 lon >= -180 && lon <= 180,
+			   Date().timeIntervalSince1970 - timestamp <= 14_400 { // 4 hours in seconds
+				Logger.services.info("📍 [App] Falling back to last known location (age: \(Int(Date().timeIntervalSince1970 - timestamp)) seconds)")
+				return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+			}
+			
+			// Fallback 2: Default location
+			Logger.services.warning("📍 [App] No Location and no last known location, something is really wrong. Teleporting user to Apple Park")
 			return DefaultLocation
 		}
-		return location.coordinate
 	}
 
 	static var satsInView: Int {

@@ -33,7 +33,14 @@ struct UserMessageList: View {
 				ZStack(alignment: .bottomTrailing) {
 					ScrollView {
 						LazyVStack {
-							ForEach( user.messageList ) { (message: MessageEntity) in
+							ForEach( Array(user.messageList.enumerated()) , id: \.element.id) { index, message in
+								// Get the previous message, if it exists
+								let previousMessage = index > 0 ? user.messageList[index - 1] : nil
+								if message.displayTimestamp(aboveMessage: previousMessage) {
+									Text(message.timestamp.formatted(date: .abbreviated, time: .shortened))
+										.font(.caption)
+										.foregroundColor(.gray)
+								} 
 								if user.num != bleManager.connectedPeripheral?.num ?? -1 {
 									let currentUser: Bool = (Int64(UserDefaults.preferredPeripheralNum) == message.fromUser?.num ?? -1 ? true : false)
 

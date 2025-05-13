@@ -22614,7 +22614,7 @@
         }
       }
     },
-    "Positon config received: %@" : {
+    "Position config received: %@" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -32156,6 +32156,9 @@
           }
         }
       }
+    },
+    "Trace Route (in %@s)" : {
+
     },
     "Trace Route Log" : {
       "localizations" : {

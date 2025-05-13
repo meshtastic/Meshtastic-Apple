@@ -96,8 +96,7 @@ struct RangeTestConfig: View {
 								}
 							} else {
 								/// Legacy Administration
-								Logger.mesh.info("☠️ Using insecure legacy admin, empty range test module config")
-								_ = bleManager.requestRangeTestModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
 							}
 						}
 					}

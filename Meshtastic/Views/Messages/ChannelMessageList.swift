@@ -33,8 +33,15 @@ struct ChannelMessageList: View {
 				ZStack(alignment: .bottomTrailing) {
 					ScrollView {
 						LazyVStack {
-							ForEach(channel.allPrivateMessages) { (message: MessageEntity) in
+							ForEach(Array(channel.allPrivateMessages.enumerated()), id: \.element.id) { index, message in
+								// Get the previous message, if it exists
+								let previousMessage = index > 0 ? channel.allPrivateMessages[index - 1] : nil
 								let currentUser: Bool = (Int64(preferredPeripheralNum) == message.fromUser?.num ? true : false)
+								if message.displayTimestamp(aboveMessage: previousMessage) {
+									Text(message.timestamp.formatted(date: .abbreviated, time: .shortened))
+										.font(.caption)
+										.foregroundColor(.gray)
+								}
 								if message.replyID > 0 {
 									let messageReply = channel.allPrivateMessages.first(where: { $0.messageId == message.replyID })
 									HStack {
