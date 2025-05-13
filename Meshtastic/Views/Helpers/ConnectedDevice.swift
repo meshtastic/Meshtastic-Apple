@@ -21,46 +21,22 @@ struct ConnectedDevice: View {
             if (phoneOnly && UIDevice.current.userInterfaceIdiom == .phone) || !phoneOnly {
                 if bluetoothOn {
                     if deviceConnected {
-                        // Create an HStack for connected state with proper accessibility
-                        HStack {
-                            if mqttUplinkEnabled || mqttDownlinkEnabled {
-                                MQTTIcon(connected: mqttProxyConnected, uplink: mqttUplinkEnabled, downlink: mqttDownlinkEnabled, topic: mqttTopic)
-                                    .accessibilityHidden(true)
-                            }
-                            Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
-                                .imageScale(.large)
-                                .foregroundColor(.green)
-                                .symbolRenderingMode(.hierarchical)
-                                .accessibilityHidden(true)
-                            Text(name.addingVariationSelectors)
-                                .font(name.isEmoji() ? .title : .callout)
-                                .foregroundColor(.gray)
-                                .accessibilityHidden(true)
-                        }
-                        .accessibilityElement(children: .ignore)
-                        .accessibilityLabel("bluetooth.connected".localized + ", " + name.formatNodeNameForVoiceOver())
+						if mqttUplinkEnabled || mqttDownlinkEnabled {
+							MQTTIcon(connected: mqttProxyConnected, uplink: mqttUplinkEnabled, downlink: mqttDownlinkEnabled, topic: mqttTopic)
+						}
+                        Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
+                            .imageScale(.large)
+                            .foregroundColor(.green)
+                            .symbolRenderingMode(.hierarchical)
+						Text(name.addingVariationSelectors).font(name.isEmoji() ? .title : .callout).foregroundColor(.gray)
                     } else {
-                        // Create a container for disconnected state
-                        HStack {
-                            Image(systemName: "antenna.radiowaves.left.and.right.slash")
-                                .imageScale(.medium)
-                                .foregroundColor(.red)
-                                .symbolRenderingMode(.hierarchical)
-                                .accessibilityHidden(true)
-                        }
-                        .accessibilityElement(children: .ignore)
-                        .accessibilityLabel("bluetooth.not.connected".localized)
+                        Image(systemName: "antenna.radiowaves.left.and.right.slash")
+                            .imageScale(.medium)
+                            .foregroundColor(.red)
+                            .symbolRenderingMode(.hierarchical)
                     }
                 } else {
-                    // Create a container for Bluetooth off state
-                    HStack {
-                        Text("bluetooth.off".localized)
-                            .font(.subheadline)
-                            .foregroundColor(.red)
-                            .accessibilityHidden(true)
-                    }
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel("bluetooth.off".localized)
+                    Text("Bluetooth is off").font(.subheadline).foregroundColor(.red)
                 }
             }
         }

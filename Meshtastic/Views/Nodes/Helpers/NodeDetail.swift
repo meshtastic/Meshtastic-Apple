@@ -46,8 +46,7 @@ struct NodeDetail: View {
 				Section("Hardware") {
 					NodeInfoItem(node: node)
 				}
-				.accessibilityElement(children: .combine)
-				Section("Node") { // Node
+				Section("Node") {
 					HStack(alignment: .center) {
 						Spacer()
 						CircleText(
@@ -68,7 +67,6 @@ struct NodeDetail: View {
 									.foregroundColor(getRssiColor(rssi: node.rssi))
 									.font(.caption)
 							}
-							.accessibilityElement(children: .combine)
 						}
 						if node.telemetries?.count ?? 0 > 0 {
 							Spacer()
@@ -76,7 +74,6 @@ struct NodeDetail: View {
 						}
 						Spacer()
 					}
-					.accessibilityElement(children: .combine)
 					.listRowSeparator(.hidden)
 					if let user = node.user {
 						if !user.keyMatch {
@@ -89,7 +86,6 @@ struct NodeDetail: View {
 										.foregroundStyle(.secondary)
 										.font(.callout)
 								}
-								.accessibilityElement(children: .combine)
 							} icon: {
 								Image(systemName: "key.slash.fill")
 									.symbolRenderingMode(.multicolor)
@@ -108,7 +104,6 @@ struct NodeDetail: View {
 						Text(String(node.num))
 						.textSelection(.enabled)
 					}
-					.accessibilityElement(children: .combine)
 
 					HStack {
 						Label {
@@ -121,7 +116,6 @@ struct NodeDetail: View {
 						Text(node.num.toHex())
 						.textSelection(.enabled)
 					}
-					.accessibilityElement(children: .combine)
 
 					if let metadata = node.metadata {
 						HStack {
@@ -135,7 +129,6 @@ struct NodeDetail: View {
 
 							Text(metadata.firmwareVersion ?? "Unknown".localized)
 						}
-						.accessibilityElement(children: .combine)
 					}
 
 					if let role = node.user?.role, let deviceRole = DeviceRoles(rawValue: Int(role)) {
@@ -149,7 +142,6 @@ struct NodeDetail: View {
 							Spacer()
 							Text(deviceRole.name)
 						}
-						.accessibilityElement(children: .combine)
 					}
 
 					if let dm = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity, let uptimeSeconds = dm.uptimeSeconds {
@@ -169,7 +161,6 @@ struct NodeDetail: View {
 							Text(uptime)
 								.textSelection(.enabled)
 						}
-						.accessibilityElement(children: .combine)
 					}
 
 					if let firstHeard = node.firstHeard, firstHeard.timeIntervalSince1970 > 0 && firstHeard < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
@@ -188,9 +179,7 @@ struct NodeDetail: View {
 								Text(firstHeard.formatted())
 									.textSelection(.enabled)
 							}
-						}
-						.accessibilityElement(children: .combine)
-						.onTapGesture {
+						}.onTapGesture {
 							dateFormatRelative.toggle()
 						}
 					}
@@ -214,9 +203,7 @@ struct NodeDetail: View {
 								Text(lastHeard.formatted())
 									.textSelection(.enabled)
 							}
-						}
-						.accessibilityElement(children: .combine)
-						.onTapGesture {
+						}.onTapGesture {
 							dateFormatRelative.toggle()
 						}
 					}
@@ -229,84 +216,79 @@ struct NodeDetail: View {
 				if node.hasPositions && UserDefaults.environmentEnableWeatherKit
 					|| node.hasDataForLatestEnvironmentMetrics(attributes: ["iaq", "temperature", "relativeHumidity", "barometricPressure", "windSpeed", "radiation", "weight", "Distance", "soilTemperature", "soilMoisture"]) {
 					Section("Environment") {
-						// Group weather/environment data for better VoiceOver experience
-						VStack {
-							if !node.hasEnvironmentMetrics {
-								LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
-							} else {
-								VStack {
-									if node.latestEnvironmentMetrics?.iaq ?? -1 > 0 {
-										IndoorAirQuality(iaq: Int(node.latestEnvironmentMetrics?.iaq ?? 0), displayMode: .gradient)
-											.padding(.vertical)
-									}
-									LazyVGrid(columns: gridItemLayout) {
-										if let temperature = node.latestEnvironmentMetrics?.temperature?.shortFormattedTemperature() {
-											WeatherConditionsCompactWidget(temperature: String(temperature), symbolName: "cloud.sun", description: "TEMP")
-										}
-										if let humidity = node.latestEnvironmentMetrics?.relativeHumidity {
-											if let temperature = node.latestEnvironmentMetrics?.temperature {
-												let dewPoint = calculateDewPoint(temp: temperature, relativeHumidity: humidity)
-													.formatted(.number.precision(.fractionLength(0))) + "°"
-												HumidityCompactWidget(humidity: Int(humidity), dewPoint: dewPoint)
-											} else {
-												HumidityCompactWidget(humidity: Int(humidity), dewPoint: nil)
-											}
-										}
-										if let pressure = node.latestEnvironmentMetrics?.barometricPressure {
-											PressureCompactWidget(pressure: pressure.formatted(.number.precision(.fractionLength(2))), unit: "hPA", low: pressure <= 1009.144)
-										}
-										if let windSpeed = node.latestEnvironmentMetrics?.windSpeed {
-											let windSpeedMeasurement = Measurement(value: Double(windSpeed), unit: UnitSpeed.metersPerSecond)
-											let windGust = node.latestEnvironmentMetrics?.windGust.map { Measurement(value: Double($0), unit: UnitSpeed.metersPerSecond) }
-											let direction = cardinalValue(from: Double(node.latestEnvironmentMetrics?.windDirection ?? 0))
-											WindCompactWidget(speed: windSpeedMeasurement.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))),
-															gust: node.latestEnvironmentMetrics?.windGust ?? 0.0 > 0.0 ? windGust?.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))) : "", direction: direction)
-										}
-										if let rainfall1h = node.latestEnvironmentMetrics?.rainfall1H {
-											let locale = NSLocale.current as NSLocale
-											let usesMetricSystem = locale.usesMetricSystem // Returns true for metric (mm), false for imperial (inches)
-											let unit = usesMetricSystem ? UnitLength.millimeters : UnitLength.inches
-											let unitLabel = usesMetricSystem ? "mm" : "in"
-											let measurement = Measurement(value: Double(rainfall1h), unit: UnitLength.millimeters)
-											let decimals = usesMetricSystem ? 0 : 1
-											let formattedRain = measurement.converted(to: unit).value.formatted(.number.precision(.fractionLength(decimals)))
-											RainfallCompactWidget(timespan: .rainfall1H, rainfall: formattedRain, unit: unitLabel)
-										}
-										if let rainfall24h = node.latestEnvironmentMetrics?.rainfall24H {
-											let locale = NSLocale.current as NSLocale
-											let usesMetricSystem = locale.usesMetricSystem // Returns true for metric (mm), false for imperial (inches)
-											let unit = usesMetricSystem ? UnitLength.millimeters : UnitLength.inches
-											let unitLabel = usesMetricSystem ? "mm" : "in"
-											let measurement = Measurement(value: Double(rainfall24h), unit: UnitLength.millimeters)
-											let decimals = usesMetricSystem ? 0 : 1
-											let formattedRain = measurement.converted(to: unit).value.formatted(.number.precision(.fractionLength(decimals)))
-											RainfallCompactWidget(timespan: .rainfall24H, rainfall: formattedRain, unit: unitLabel)
-										}
-										if let radiation = node.latestEnvironmentMetrics?.radiation {
-											RadiationCompactWidget(radiation: radiation.formatted(.number.precision(.fractionLength(1))), unit: "µR/hr")
-										}
-										if let weight = node.latestEnvironmentMetrics?.weight {
-											WeightCompactWidget(weight: weight.formatted(.number.precision(.fractionLength(1))), unit: "kg")
-										}
-										if let distance = node.latestEnvironmentMetrics?.distance {
-											DistanceCompactWidget(distance: distance.formatted(.number.precision(.fractionLength(0))), unit: "mm")
-										}
-										if let soilTemperature = node.latestEnvironmentMetrics?.soilTemperature {
-											let locale = NSLocale.current as NSLocale
-											let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
-											let unit = localeUnit as? String ?? "Celsius" == "Fahrenheit" ? "°F" : "°C"
-											SoilTemperatureCompactWidget(temperature: soilTemperature.localeTemperature().formatted(.number.precision(.fractionLength(0))), unit: unit)
-										}
-										if let soilMoisture = node.latestEnvironmentMetrics?.soilMoisture {
-											SoilMoistureCompactWidget(moisture: soilMoisture.formatted(.number.precision(.fractionLength(0))), unit: "%")
-										}
-									}
-									.padding(node.latestEnvironmentMetrics?.iaq ?? -1 > 0 ? .bottom : .vertical)
+						if !node.hasEnvironmentMetrics {
+							LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
+						} else {
+							VStack {
+								if node.latestEnvironmentMetrics?.iaq ?? -1 > 0 {
+									IndoorAirQuality(iaq: Int(node.latestEnvironmentMetrics?.iaq ?? 0), displayMode: .gradient)
+										.padding(.vertical)
 								}
+								LazyVGrid(columns: gridItemLayout) {
+									if let temperature = node.latestEnvironmentMetrics?.temperature?.shortFormattedTemperature() {
+										WeatherConditionsCompactWidget(temperature: String(temperature), symbolName: "cloud.sun", description: "TEMP")
+									}
+									if let humidity = node.latestEnvironmentMetrics?.relativeHumidity {
+										if let temperature = node.latestEnvironmentMetrics?.temperature {
+											let dewPoint = calculateDewPoint(temp: temperature, relativeHumidity: humidity)
+												.formatted(.number.precision(.fractionLength(0))) + "°"
+											HumidityCompactWidget(humidity: Int(humidity), dewPoint: dewPoint)
+										} else {
+											HumidityCompactWidget(humidity: Int(humidity), dewPoint: nil)
+										}
+									}
+									if let pressure = node.latestEnvironmentMetrics?.barometricPressure {
+										PressureCompactWidget(pressure: pressure.formatted(.number.precision(.fractionLength(2))), unit: "hPA", low: pressure <= 1009.144)
+									}
+									if let windSpeed = node.latestEnvironmentMetrics?.windSpeed {
+										let windSpeedMeasurement = Measurement(value: Double(windSpeed), unit: UnitSpeed.metersPerSecond)
+										let windGust = node.latestEnvironmentMetrics?.windGust.map { Measurement(value: Double($0), unit: UnitSpeed.metersPerSecond) }
+										let direction = cardinalValue(from: Double(node.latestEnvironmentMetrics?.windDirection ?? 0))
+										WindCompactWidget(speed: windSpeedMeasurement.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))),
+														  gust: node.latestEnvironmentMetrics?.windGust ?? 0.0 > 0.0 ? windGust?.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))) : "", direction: direction)
+									}
+									if let rainfall1h = node.latestEnvironmentMetrics?.rainfall1H {
+										let locale = NSLocale.current as NSLocale
+										let usesMetricSystem = locale.usesMetricSystem // Returns true for metric (mm), false for imperial (inches)
+										let unit = usesMetricSystem ? UnitLength.millimeters : UnitLength.inches
+										let unitLabel = usesMetricSystem ? "mm" : "in"
+										let measurement = Measurement(value: Double(rainfall1h), unit: UnitLength.millimeters)
+										let decimals = usesMetricSystem ? 0 : 1
+										let formattedRain = measurement.converted(to: unit).value.formatted(.number.precision(.fractionLength(decimals)))
+										RainfallCompactWidget(timespan: .rainfall1H, rainfall: formattedRain, unit: unitLabel)
+									}
+									if let rainfall24h = node.latestEnvironmentMetrics?.rainfall24H {
+										let locale = NSLocale.current as NSLocale
+										let usesMetricSystem = locale.usesMetricSystem // Returns true for metric (mm), false for imperial (inches)
+										let unit = usesMetricSystem ? UnitLength.millimeters : UnitLength.inches
+										let unitLabel = usesMetricSystem ? "mm" : "in"
+										let measurement = Measurement(value: Double(rainfall24h), unit: UnitLength.millimeters)
+										let decimals = usesMetricSystem ? 0 : 1
+										let formattedRain = measurement.converted(to: unit).value.formatted(.number.precision(.fractionLength(decimals)))
+										RainfallCompactWidget(timespan: .rainfall24H, rainfall: formattedRain, unit: unitLabel)
+									}
+									if let radiation = node.latestEnvironmentMetrics?.radiation {
+										RadiationCompactWidget(radiation: radiation.formatted(.number.precision(.fractionLength(1))), unit: "µR/hr")
+									}
+									if let weight = node.latestEnvironmentMetrics?.weight {
+										WeightCompactWidget(weight: weight.formatted(.number.precision(.fractionLength(1))), unit: "kg")
+									}
+									if let distance = node.latestEnvironmentMetrics?.distance {
+										DistanceCompactWidget(distance: distance.formatted(.number.precision(.fractionLength(0))), unit: "mm")
+									}
+									if let soilTemperature = node.latestEnvironmentMetrics?.soilTemperature {
+										let locale = NSLocale.current as NSLocale
+										let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
+										let unit = localeUnit as? String ?? "Celsius" == "Fahrenheit" ? "°F" : "°C"
+										SoilTemperatureCompactWidget(temperature: soilTemperature.localeTemperature().formatted(.number.precision(.fractionLength(0))), unit: unit)
+									}
+									if let soilMoisture = node.latestEnvironmentMetrics?.soilMoisture {
+										SoilMoistureCompactWidget(moisture: soilMoisture.formatted(.number.precision(.fractionLength(0))), unit: "%")
+									}
+								}
+								.padding(node.latestEnvironmentMetrics?.iaq ?? -1 > 0 ? .bottom : .vertical)
 							}
 						}
-						// Apply accessibility properties to the environment section
-						.accessibilityElement(children: .combine)
 					}
 				}
 				if node.hasPowerMetrics && node.latestPowerMetrics != nil {
@@ -316,7 +298,6 @@ struct NodeDetail: View {
 								PowerMetrics(metric: metric)
 							}
 						}
-						.accessibilityElement(children: .combine)
 					}
 				}
 				Section("Logs") {
