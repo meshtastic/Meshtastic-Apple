@@ -9,10 +9,10 @@ import AppIntents
 import MeshtasticProtobufs
 
 struct AddContactIntent: AppIntent {
-	static var title: LocalizedStringResource = "Import Contact"
+	static var title: LocalizedStringResource = "Add Contact"
 	static var description: IntentDescription = "Takes a Meshtastic contact URL and saves it to the nodes database"
 
-	@Parameter(title: "Contact URL", description: "The URL for the node to import")
+	@Parameter(title: "Contact URL", description: "The URL for the node to add")
 	var contactUrl: URL
 
 	// Define the function that performs the main logic
@@ -33,7 +33,7 @@ struct AddContactIntent: AppIntent {
 					do {
 						let success = BLEManager.shared.addContactFromURL(base64UrlString: contactData)
 						if !success {
-							throw AppIntentErrors.AppIntentError.message("Failed to import contact")
+							throw AppIntentErrors.AppIntentError.message("Failed to add contact")
 						}
 
 					} catch {

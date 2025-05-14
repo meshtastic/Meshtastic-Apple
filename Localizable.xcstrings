@@ -15089,10 +15089,10 @@
         }
       }
     },
-    "Import Contact" : {
+    "Add Contact" : {
 
     },
-    "Import Meshtastic Node %@ as a contact" : {
+    "Add Meshtastic Node %@ as a contact" : {
 
     },
     "Import Route" : {
