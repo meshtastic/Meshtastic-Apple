@@ -1811,6 +1811,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 
 				} catch {
+					Logger.data.error("Failed to decode contact data: \(error.localizedDescription, privacy: .public)")
 					return false
 				}
 			}

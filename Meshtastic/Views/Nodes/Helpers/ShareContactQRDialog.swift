@@ -54,7 +54,6 @@ struct ShareContactQRDialog: View {
                 .interpolation(.none)
                 .resizable()
                 .scaledToFit()
-                .frame(width: 220, height: 220)
                 .background(Color(.systemBackground))
                 .cornerRadius(16)
                 .shadow(radius: 4)
