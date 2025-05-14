@@ -63,9 +63,9 @@ struct ShareContactQRDialog: View {
                 .foregroundColor(.secondary)
 			ShareLink("Share QR Code & Link",
 						item: Image(uiImage: qrImage),
-					  subject: Text("Import Meshtastic Node \(node.user.shortName) as a contact"),
+					  subject: Text("Add Meshtastic Node \(node.user.shortName) as a contact"),
 					  message: Text(qrString),
-					  preview: SharePreview("Import Meshtastic Node \(node.user.shortName) as a contact",
+					  preview: SharePreview("Add Meshtastic Node \(node.user.shortName) as a contact",
 						image: Image(uiImage: qrImage))
 			)
             Button("Done") { dismiss() }
