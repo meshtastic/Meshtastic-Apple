@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		108FFECB2DD3F43C00BFAA81 /* ShareContactQRDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 108FFECA2DD3F43C00BFAA81 /* ShareContactQRDialog.swift */; };
+		108FFECD2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 108FFECC2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift */; };
 		231B3F212D087A4C0069A07D /* MetricTableColumn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F202D087A4C0069A07D /* MetricTableColumn.swift */; };
 		231B3F222D087A4C0069A07D /* MetricsColumnList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F1F2D087A4C0069A07D /* MetricsColumnList.swift */; };
 		231B3F252D087C3C0069A07D /* EnvironmentDefaultColumns.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */; };
@@ -274,6 +276,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		108FFECA2DD3F43C00BFAA81 /* ShareContactQRDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareContactQRDialog.swift; sourceTree = "<group>"; };
+		108FFECC2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntityToNodeInfo.swift; sourceTree = "<group>"; };
 		231B3F1F2D087A4C0069A07D /* MetricsColumnList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsColumnList.swift; sourceTree = "<group>"; };
 		231B3F202D087A4C0069A07D /* MetricTableColumn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricTableColumn.swift; sourceTree = "<group>"; };
 		231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentDefaultColumns.swift; sourceTree = "<group>"; };
@@ -701,6 +705,7 @@
 		DD007BB12AA59B9A00F5FA12 /* CoreData */ = {
 			isa = PBXGroup;
 			children = (
+				108FFECC2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift */,
 				2344A2AA2D66973D00170A77 /* ManagedAttributePropertyWrapper.swift */,
 				DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */,
 				6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */,
@@ -1101,6 +1106,7 @@
 		DDDB26402AABEF7B003AFCB7 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				108FFECA2DD3F43C00BFAA81 /* ShareContactQRDialog.swift */,
 				231B3F232D087C020069A07D /* Metrics Columns */,
 				DDAD49EB2AFAE82500B4425D /* Map */,
 				DDDB26432AAC0206003AFCB7 /* NodeDetail.swift */,
@@ -1396,6 +1402,7 @@
 				DD4640202AFF10F4002A5ECB /* WaypointForm.swift in Sources */,
 				233E99C12D849D6000CC3A77 /* DistanceCompactWidget.swift in Sources */,
 				DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */,
+				108FFECD2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift in Sources */,
 				DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */,
 				DD15E4F32B8BA56E00654F61 /* PaxCounterConfig.swift in Sources */,
 				DDDB445229F8ACF900EE2349 /* Date.swift in Sources */,
@@ -1486,6 +1493,7 @@
 				DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */,
 				DDD5BB092C285DDC007E03CA /* AppLog.swift in Sources */,
 				DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */,
+				108FFECB2DD3F43C00BFAA81 /* ShareContactQRDialog.swift in Sources */,
 				233E99C52D84A0B600CC3A77 /* CompactWidget.swift in Sources */,
 				DDC1B81A2AB5377B00C71E39 /* MessagesTips.swift in Sources */,
 				DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */,
