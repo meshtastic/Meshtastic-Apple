@@ -89,9 +89,9 @@ struct MeshtasticAppleApp: App {
 				Logger.mesh.debug("Some sort of URL was received \(url, privacy: .public)")
 				self.incomingUrl = url
 				if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
-					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
-						// Extract contact information from the URL
-						if let contactData = components.last {
+					let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") ?? []
+					// Extract contact information from the URL
+					if let contactData = components.last {
 							
 							let decodedString = contactData.base64urlToBase64()
 							if let decodedData = Data(base64Encoded: decodedString) {
