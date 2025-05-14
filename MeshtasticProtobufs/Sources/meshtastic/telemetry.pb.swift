@@ -176,6 +176,10 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
   ///
   /// RAKWireless RAK12035 Soil Moisture Sensor Module
   case rak12035 // = 37
+
+  ///
+  /// MAX17261 lipo battery gauge
+  case max17261 // = 38
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -222,6 +226,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 35: self = .dfrobotRain
     case 36: self = .dps310
     case 37: self = .rak12035
+    case 38: self = .max17261
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -266,6 +271,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .dfrobotRain: return 35
     case .dps310: return 36
     case .rak12035: return 37
+    case .max17261: return 38
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -310,6 +316,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     .dfrobotRain,
     .dps310,
     .rak12035,
+    .max17261,
   ]
 
 }
@@ -1170,6 +1177,7 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     35: .same(proto: "DFROBOT_RAIN"),
     36: .same(proto: "DPS310"),
     37: .same(proto: "RAK12035"),
+    38: .same(proto: "MAX17261"),
   ]
 }
 
