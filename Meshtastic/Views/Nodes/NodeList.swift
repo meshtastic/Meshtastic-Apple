@@ -235,6 +235,8 @@ struct NodeList: View {
 			.sheet(isPresented: $isPresentingShareContactQR) {
 				if let node = shareContactNode {
 					ShareContactQRDialog(node: node.toProto())
+				} else {
+					EmptyView()
 				}
 			}
 			.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
