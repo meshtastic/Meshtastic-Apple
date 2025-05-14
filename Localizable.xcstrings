@@ -139,6 +139,12 @@
     },
     "(Re)define PIN_GPS_EN for your board." : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(Re)definer PIN_GPS_EN for dit printkort."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -300,6 +306,12 @@
     },
     "%@ - No Response" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ - Intet svar"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -334,6 +346,12 @@
     },
     "%@ - Not Sent" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ - Ikke afsendt"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -473,6 +491,12 @@
     },
     "%@ away" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ væk"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -507,6 +531,12 @@
     },
     "%@ can be up to %@ bytes long." : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kan være op til %@ bytes lang."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -535,6 +565,12 @@
     },
     "%@ Channels?" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kanaler?"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -615,7 +651,8 @@
             "value" : "%@ dB"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ Please try connecting again and check the PIN carefully." : {
       "localizations" : {
@@ -887,7 +924,8 @@
             "value" : "%@%%"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@°F" : {
       "localizations" : {
@@ -915,7 +953,8 @@
             "value" : "%@°F"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@mA" : {
       "localizations" : {
@@ -937,7 +976,8 @@
             "value" : "%@mA"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@V" : {
       "localizations" : {
@@ -959,7 +999,8 @@
             "value" : "%@V"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%d" : {
       "localizations" : {
@@ -987,10 +1028,29 @@
             "value" : "%d"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%d Hops" : {
       "localizations" : {
+        "da" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Ét hop"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%d hop"
+                }
+              }
+            }
+          }
+        },
         "en" : {
           "variations" : {
             "plural" : {
@@ -1109,7 +1169,8 @@
             "value" : "%d%%"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%lf" : {
       "localizations" : {
@@ -1137,7 +1198,8 @@
             "value" : "%lf"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%lld" : {
       "localizations" : {
@@ -1165,10 +1227,17 @@
             "value" : "%lld"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%lld or less hops away" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "afstand på %lld eller færre hop"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1197,6 +1266,12 @@
     },
     "%lld Readings Total" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Samlet %lld aflæsninger"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1219,6 +1294,12 @@
     },
     "%lld Total Detection Events" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Samlet %lld detektioner"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1241,6 +1322,12 @@
     },
     "%lld%%" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%%"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1269,6 +1356,12 @@
     },
     "%llddb Transmit Power" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld dB sendestyrke"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1303,6 +1396,12 @@
     },
     "%llddBm Transmit Power" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld dBm sendestyrke"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1355,10 +1454,17 @@
             "value" : "< 1%"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "🦕 End of life Version 🦖 ☄️" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🦕 Ikke-supporteret version 🦖 ☄️"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1405,10 +1511,17 @@
             "value" : "1 byte"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "1 hop away" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 hop væk"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1437,6 +1550,12 @@
     },
     "2.4 Ghz" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2.4 GHz"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1483,7 +1602,8 @@
             "value" : "7"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "8" : {
       "localizations" : {
@@ -1511,7 +1631,8 @@
             "value" : "8"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "25" : {
       "localizations" : {
@@ -1539,7 +1660,8 @@
             "value" : "25"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "50" : {
       "localizations" : {
@@ -1567,7 +1689,8 @@
             "value" : "50"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "75" : {
       "localizations" : {
@@ -1595,7 +1718,8 @@
             "value" : "75"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "100" : {
       "localizations" : {
@@ -1623,7 +1747,8 @@
             "value" : "100"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "128 bit" : {
       "localizations" : {
@@ -1651,7 +1776,8 @@
             "value" : "128 bit"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "256 bit" : {
       "localizations" : {
@@ -1679,10 +1805,17 @@
             "value" : "256 bit"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "A Meshtastic QR code contains the LoRa config and channel values needed for radios to communicate. You can share a complete channel configuration using the Replace Channels option, if you choose Add Channels your shared channels will be added to the channels on the receiving radio." : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En Meshtastic-QR-kode indeholder LoRa-konfigurationen og kanalværdierne, der er nødvendige for radiokommunikationen. Du kan dele en komplet kanalkonfiguration med Udskift Kanaler-funktionen. Hvis du vælger Tilføj kanaler vil dine delte kanaler også blive tilføjet på den modtagende radioenhed."
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1741,6 +1874,12 @@
     },
     "A Trace Route was sent, no response has been received." : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der er igangsat en rutesporing (trace route), men der er ikke modtaget svar."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1763,6 +1902,12 @@
     },
     "About" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Om"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1785,6 +1930,12 @@
     },
     "About Meshtastic" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Om Meshtastic"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1807,6 +1958,12 @@
     },
     "Accuracy %@" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Præcision %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1857,6 +2014,12 @@
     },
     "Ack Time: %@" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bekræftelsestidspunkt: %@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1879,6 +2042,12 @@
     },
     "Acknowledged" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modtagelse bekræftet"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1937,6 +2106,12 @@
     },
     "Acknowledged by another node" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modtagelse bekræftet af en anden node"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1959,6 +2134,12 @@
     },
     "Actions" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Handlinger"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1987,6 +2168,12 @@
     },
     "Active" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktiv"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2015,6 +2202,12 @@
     },
     "Activity" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktivitet"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2095,6 +2288,12 @@
     },
     "Add Channel" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilføj kanal"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2117,6 +2316,12 @@
     },
     "Add Channels" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilføj kanaler"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2139,6 +2344,12 @@
     },
     "Add to favorites" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilføj til favoritter"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2167,6 +2378,12 @@
     },
     "Additional help" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yderligere hjælp"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2195,6 +2412,12 @@
     },
     "Address" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adresse"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2257,6 +2480,12 @@
     },
     "Administration" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administration"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2288,6 +2517,12 @@
     },
     "Advanced" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avanceret"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2316,6 +2551,12 @@
     },
     "Advanced Device GPS" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avanceret indbygget GPS"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2344,6 +2585,12 @@
     },
     "Advanced GPIO Options" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avancerede GPIO-indstillinger"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2400,6 +2647,12 @@
     },
     "After" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efter"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2434,6 +2687,12 @@
     },
     "After config values save the node will reboot." : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noden skal genstartes med de nye indstillinger"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2492,6 +2751,12 @@
     },
     "Afternoon" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eftermiddag"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2578,6 +2843,12 @@
     },
     "Alert" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarm"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2750,6 +3021,12 @@
     },
     "All" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2840,6 +3117,12 @@
     },
     "Allow Position Requests" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tillad positions-anmodninger"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2862,6 +3145,12 @@
     },
     "Alt" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Højde"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2884,6 +3173,12 @@
     },
     "Altitude" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Højde"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2912,6 +3207,12 @@
     },
     "Altitude %@" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Højde %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2984,6 +3285,12 @@
     },
     "Always On" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altid tændt"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3042,6 +3349,12 @@
     },
     "Always point north" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peg altid mod nord"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3226,6 +3539,12 @@
     },
     "An open source, off-grid, decentralized, mesh network that runs on affordable, low-power radios." : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Et open-source, elnetsuafhængigt, decentraliseret mehs-netværk, der er drevet af billige, energieffektive radioer."
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3346,6 +3665,12 @@
     },
     "App Data" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-data"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3374,6 +3699,12 @@
     },
     "App Files" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-filer"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3402,6 +3733,12 @@
     },
     "App Settings" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-indstillinger"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3430,6 +3767,12 @@
     },
     "Apple Apps" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple-apps"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3514,6 +3857,12 @@
     },
     "Are you sure you want to factory reset the node?" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vil du nulstille noden til fabriksindstillinger?"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3548,6 +3897,12 @@
     },
     "Are you sure?" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er du sikker?"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3606,6 +3961,12 @@
     },
     "Australia / New Zealand" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Australien og New Zealand"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3742,6 +4103,12 @@
     },
     "Back" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilbage"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3800,6 +4167,12 @@
     },
     "Bad" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bad"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3822,6 +4195,12 @@
     },
     "Bad Request" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fejl i forespørgsel"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3874,6 +4253,12 @@
     },
     "Bandwidth" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Båndbredde"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3992,6 +4377,12 @@
     },
     "Battery" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batteri"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4044,6 +4435,12 @@
     },
     "Battery Level" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batteriniveau"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4102,6 +4499,12 @@
     },
     "Battery Level %" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batterinveau %"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4154,10 +4557,17 @@
             "value" : "鮑率（Baud）"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "biking" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "cyklende"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4192,6 +4602,12 @@
     },
     "Biking" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cyklende"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4250,10 +4666,17 @@
             "value" : "BLE"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "BLE Name" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BLE-navn"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4312,6 +4735,12 @@
     },
     "BLE Pin must be 6 digits long." : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BLE-pin skal være 6 cifre."
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4370,6 +4799,12 @@
     },
     "BLE RSSI: %lld" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BLE RSSI: %lld"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4398,6 +4833,12 @@
     },
     "BLE: %@" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BLE: %@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4426,6 +4867,12 @@
     },
     "Bluetooth" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4484,6 +4931,12 @@
     },
     "Bluetooth Config" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth-indstillinger"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4600,6 +5053,12 @@
     },
     "Bluetooth is off" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth slukket"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4954,6 +5413,12 @@
     },
     "Bytes" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bytes"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5068,6 +5533,12 @@
     },
     "Cancel" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annuller"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5368,6 +5839,12 @@
     },
     "Categories" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kategorier"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5402,6 +5879,12 @@
     },
     "Category" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kategori"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5430,6 +5913,12 @@
     },
     "Ch1 Current" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ch1 strøm"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5452,6 +5941,12 @@
     },
     "Ch1 Voltage" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ch1 spænding"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5474,6 +5969,12 @@
     },
     "Ch2 Current" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ch2 strøm"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5496,6 +5997,12 @@
     },
     "Ch2 Voltage" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ch2 spænding"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5518,6 +6025,12 @@
     },
     "Ch3 Current" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ch3 strøm"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5540,6 +6053,12 @@
     },
     "Ch3 Voltage" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ch3 spænding"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5562,6 +6081,12 @@
     },
     "Channel" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanal"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5620,6 +6145,12 @@
     },
     "Channel 0 Included" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanal 0 inkluderet"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5648,6 +6179,12 @@
     },
     "Channel 1" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanal 1"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5670,6 +6207,12 @@
     },
     "Channel 1 Included" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanal 1 inkluderet"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5698,6 +6241,12 @@
     },
     "Channel 2" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanal 2"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5720,6 +6269,12 @@
     },
     "Channel 2 Included" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanal 2 inkluderet"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5748,6 +6303,12 @@
     },
     "Channel 3" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanal 3"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5770,6 +6331,12 @@
     },
     "Channel 3 Included" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanal 3 inkluderet"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5798,6 +6365,12 @@
     },
     "Channel 4 Included" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanal 4"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5826,6 +6399,12 @@
     },
     "Channel 5 Included" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanal 5 inkluderet"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5854,6 +6433,12 @@
     },
     "Channel 6 Included" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanal 6 inkluderet"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5882,6 +6467,12 @@
     },
     "Channel 7 Included" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanal 7 inkluderet"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5910,6 +6501,12 @@
     },
     "channel details" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "kanaldetaljer"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5938,6 +6535,12 @@
     },
     "Channel Name" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanalnavn"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5966,6 +6569,12 @@
     },
     "Channel number must be between 0 and 7." : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanalnummeret skal være mellem 0 og 7."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5994,6 +6603,12 @@
     },
     "Channel Role" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanalrolle"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6022,6 +6637,12 @@
     },
     "Channel URL" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanal-URL"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6044,6 +6665,12 @@
     },
     "Channel Utilization" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanaludnyttelse"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6102,6 +6729,12 @@
     },
     "Channel Utilization %@%%" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanaludnyttelsesgrad %@%%"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6118,6 +6751,12 @@
     },
     "Channels" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanaler"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6204,6 +6843,12 @@
     },
     "Chart" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Graf"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6250,10 +6895,17 @@
             "value" : "充電中"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "China" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kina"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6276,6 +6928,12 @@
     },
     "Clear" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tøm"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6304,6 +6962,12 @@
     },
     "Clear App Data" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tøm app-data"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6362,21 +7026,27 @@
     },
     "Clear Log" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tøm log"
+          }
+        },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Cancella registro"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Очисти логове"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "清除 Log 檔"
           }
         }
@@ -6384,6 +7054,12 @@
     },
     "Client" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klient"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6412,6 +7088,12 @@
     },
     "Client Hidden" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skjult klient"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6446,6 +7128,12 @@
     },
     "Client History" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klienthistorik"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6474,6 +7162,12 @@
     },
     "Client History Request Sent" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klienthistorik-anmodning sendt"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6502,6 +7196,12 @@
     },
     "Client Mute" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tavs klient (client mute)"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6530,6 +7230,12 @@
     },
     "Client options" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klientindstillinger"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6586,6 +7292,12 @@
     },
     "Close" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luk"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6672,6 +7384,12 @@
     },
     "Color" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Farve"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6706,6 +7424,12 @@
     },
     "Communicating" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kommunikerer"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6728,6 +7452,12 @@
     },
     "Community Support" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Support fra fællesskabet"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6744,6 +7474,12 @@
     },
     "Config" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguration"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6772,6 +7508,12 @@
     },
     "Configuration for: %@" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguration for %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6800,6 +7542,12 @@
     },
     "Configuration Presets" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standardkonfigurationer"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6828,6 +7576,12 @@
     },
     "Configure" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfigurér"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6856,6 +7610,12 @@
     },
     "Confirm" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bekræft"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6872,6 +7632,12 @@
     },
     "Connect to a Node" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilslut en Node"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6900,6 +7666,12 @@
     },
     "Connect to MQTT via Proxy" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilslut MQTT over proxy"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6910,6 +7682,12 @@
     },
     "Connect to new radio?" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilslut ny radio"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6926,6 +7704,12 @@
     },
     "Connected" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilsluttet"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6984,6 +7768,12 @@
     },
     "Connected Node %@" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilsluttet Node %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7012,6 +7802,12 @@
     },
     "Connected Radio" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilsluttet radio"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7028,6 +7824,12 @@
     },
     "Connecting . ." : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilslutter . ."
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7086,6 +7888,12 @@
     },
     "Connecting to a new radio will clear all app data on the phone." : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hvis du tilslutter en ny radio bliver all appens data på telefonen slettet"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7102,6 +7910,12 @@
     },
     "Connection Attempt %lld of 10" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilslutningsforsøg %lld af 10"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7204,6 +8018,12 @@
     },
     "Contacts (%@)" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontakter (%@)"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7262,6 +8082,12 @@
     },
     "Control Type" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontroltype"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7346,6 +8172,12 @@
     },
     "Coordinate" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koordinat"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7374,6 +8206,12 @@
     },
     "Coordinate %@, %@" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koordinat %@, %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7408,6 +8246,12 @@
     },
     "Coordinates:" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koordinater:"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7436,6 +8280,12 @@
     },
     "Copy" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopier"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7494,6 +8344,12 @@
     },
     "Could not find node" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kunne ikke finde node"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7550,6 +8406,12 @@
     },
     "Create Waypoint" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opret viapunkt"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7578,6 +8440,12 @@
     },
     "Created: %@" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oprettet: %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7606,6 +8474,12 @@
     },
     "Current" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Strøm"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7628,6 +8502,12 @@
     },
     "Current Firmware Version: %@" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuværende firmwareversion: %@."
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7662,6 +8542,12 @@
     },
     "Current Firmware Version: %@, Latest Firmware Version: %@" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuværende firmwareversion: %@. Seneste firmwareversion:  %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7696,6 +8582,12 @@
     },
     "Current: %lld" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Strøm: %lld"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7768,6 +8660,12 @@
     },
     "Date" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dato"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7796,6 +8694,12 @@
     },
     "Debug" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fejlfinding"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7824,6 +8728,12 @@
     },
     "Debug Logs" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fejlfindingslogs"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7852,6 +8762,12 @@
     },
     "Debug Logs%@" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fejlfindingslogs %@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7874,6 +8790,12 @@
     },
     "Decimal Degrees Format" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Decimalgrader"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7932,6 +8854,12 @@
     },
     "Default" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7990,6 +8918,12 @@
     },
     "Default 128x64 screen layout" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standardskærmlayout på 128x64"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8018,6 +8952,12 @@
     },
     "Degrees Minutes Seconds" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grader Minutter Sekunder"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8076,6 +9016,12 @@
     },
     "Delete" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slet"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8134,6 +9080,12 @@
     },
     "Delete all device metrics?" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slet alle enhedens måledata?"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8186,6 +9138,12 @@
     },
     "Delete all environment metrics?" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slet alle miljødata?"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8214,6 +9172,12 @@
     },
     "Delete all pax data?" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slet alle persontællingsdata?"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8242,6 +9206,12 @@
     },
     "Delete all positions?" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slet alle positioner?"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8264,6 +9234,12 @@
     },
     "Delete Message" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slet besked"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8286,6 +9262,12 @@
     },
     "Delete Messages" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slet beskeder"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8308,6 +9290,12 @@
     },
     "Delete Node" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slet node"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8336,6 +9324,12 @@
     },
     "Delete Node?" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slet node?"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8364,6 +9358,12 @@
     },
     "Delete Power metrics?" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slet alle energiforbrugsdata?"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8386,6 +9386,12 @@
     },
     "Description" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beskrivelse"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8408,6 +9414,12 @@
     },
     "Description must be less than 100 bytes" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beskrivelsen skal være under 100 bytes"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8436,6 +9448,12 @@
     },
     "Detection" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detektion"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8458,6 +9476,12 @@
     },
     "Detection event" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detektionshændelse"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8479,8 +9503,15 @@
       }
     },
     "Detection Sensor" : {
+      "comment" : "Kommentar",
       "extractionState" : "manual",
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detektionssensor"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8539,6 +9570,12 @@
     },
     "Detection Sensor Config" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detektionssensor-indstillinger"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8585,6 +9622,12 @@
     },
     "Detection Sensor Log" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detektionssensor-log"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8687,6 +9730,12 @@
     },
     "Developers" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Udviklere"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8715,6 +9764,12 @@
     },
     "Device" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhed"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8773,6 +9828,12 @@
     },
     "Device Config" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhedsopsætning"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8889,6 +9950,12 @@
     },
     "Device Configuration" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhedsopsætning"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8929,6 +9996,12 @@
     },
     "Device GPS" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enheds-GPS"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9049,6 +10122,12 @@
     },
     "Device Metrics" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhedsmåledata"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9139,6 +10218,12 @@
     },
     "Device Role" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhedsrolle"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9167,6 +10252,12 @@
     },
     "Device Screen" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enhedsskærm"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9333,6 +10424,12 @@
     },
     "Direct" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direkte"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9367,6 +10464,12 @@
     },
     "Direct Message Help" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hjælp til direkte beskeder"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9395,6 +10498,12 @@
     },
     "Direct Messages" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direkte beskeder"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9481,6 +10590,12 @@
     },
     "Direct messages are using the shared key for the channel." : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direkte beskeder bruger den fælles krypteringsnøgle for kanalen."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9509,6 +10624,12 @@
     },
     "Disabled" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deaktiveret"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9567,6 +10688,12 @@
     },
     "Disconnect" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fra"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9625,6 +10752,12 @@
     },
     "Dismiss" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afvis"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9683,6 +10816,12 @@
     },
     "Display" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skærm"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9741,6 +10880,12 @@
     },
     "Display Config" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skærmopsætning"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9793,6 +10938,12 @@
     },
     "Display config received: %@" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skærmopsætning modtaget: %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9851,6 +11002,12 @@
     },
     "Display Fahrenheit" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis Fahrenheit"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9879,6 +11036,12 @@
     },
     "Display Mode" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Display Mode"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9907,6 +11070,12 @@
     },
     "Display Units" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Display Units"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9935,6 +11104,12 @@
     },
     "Distance" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afstand"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9969,6 +11144,12 @@
     },
     "Documentation" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dokumentation"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10025,6 +11206,12 @@
     },
     "Down" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nede"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10083,6 +11270,12 @@
     },
     "Downlink Enabled" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Downlink slået til"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10111,6 +11304,12 @@
     },
     "Drag & Drop Firmware Update" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Træk-og-slip firmwareopdatering"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10139,6 +11338,12 @@
     },
     "Drag & Drop Firmware Update Documentation" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Træk-og-slip firmwareopdateringsdokumentation"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10195,6 +11400,12 @@
     },
     "driving" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "kører"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10229,6 +11440,12 @@
     },
     "Driving" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kører"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10263,6 +11480,12 @@
     },
     "Drop Pin in Maps" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Placer nål i kort"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10285,6 +11508,12 @@
     },
     "Echo" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Echo"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10331,6 +11560,12 @@
     },
     "Editing Waypoint" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redigerer viapunkt"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10353,6 +11588,12 @@
     },
     "Eighteen Hours" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atten timer"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10457,10 +11698,17 @@
             "value" : "Emoji"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "Empty" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tom"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10505,6 +11753,12 @@
     },
     "Enable Notifications" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tillad notifikationer"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10549,6 +11803,12 @@
     },
     "Enabled" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktiveret"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10809,6 +12069,12 @@
     },
     "Encrypted" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Krypteret"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10867,6 +12133,12 @@
     },
     "Encrypted Send Failed" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Krypteret afsendelse mislykkedes"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10895,6 +12167,12 @@
     },
     "Encryption Enabled" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kryptering aktiveret"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10957,6 +12235,12 @@
     },
     "environment" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "miljø"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10985,6 +12269,12 @@
     },
     "Environment" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miljø"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11019,6 +12309,12 @@
     },
     "Environment Metrics" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miljødata"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11047,6 +12343,12 @@
     },
     "Environment Metrics Log" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miljødata-log"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11249,6 +12551,12 @@
     },
     "European Union 433MHz" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EU 433 MHz"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11271,6 +12579,12 @@
     },
     "European Union 868MHz" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EU 868 MHz"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11891,6 +13205,12 @@
     },
     "Fetch the latest position of a cetain node" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hent seneste position for én node"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11941,6 +13261,12 @@
     },
     "Fifteen Seconds" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Femten sekunder"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12049,6 +13375,12 @@
     },
     "Find a node" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find en node"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12311,6 +13643,12 @@
     },
     "Five Hours" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fem timer"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12397,6 +13735,12 @@
     },
     "Five Seconds" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fem sekunder"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12779,6 +14123,12 @@
     },
     "Forty Eight Hours" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otteogfyrre timer"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12837,6 +14187,12 @@
     },
     "Forty Five Seconds" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Femogfyrre sekunder"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12895,6 +14251,12 @@
     },
     "Four Hours" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fire timer"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12953,6 +14315,12 @@
     },
     "Four Seconds" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fire sekunder"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13155,6 +14523,12 @@
     },
     "Generate QR Code" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generer QR-kode"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13235,6 +14609,12 @@
     },
     "Get Node Position" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hent nodeposition"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15009,6 +16389,12 @@
     },
     "Ignore Node" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignorer node"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16807,6 +18193,12 @@
     },
     "Malaysia 433MHz" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Malaysia 433 MHz"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17325,6 +18717,12 @@
     },
     "Meshtastic Node %@ has shared channels with you" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meshtastic-noden %@ har delt kanaler med dig"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17353,6 +18751,12 @@
     },
     "Meshtastic® Copyright Meshtastic LLC" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meshtastic® er copyright Meshtastic LLC"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18594,6 +19998,12 @@
     },
     "Navigate to node" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rutevejvisning til node"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18896,6 +20306,12 @@
     },
     "New Node" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ny node"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18918,6 +20334,12 @@
     },
     "New Node has been discovered" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ny node fundet"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19140,6 +20562,12 @@
     },
     "No Connected Node" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ingen forbundne noder"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19226,6 +20654,12 @@
     },
     "No Device Metrics" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen enhedsdata"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19248,6 +20682,12 @@
     },
     "No Environment Metrics" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen miljødata"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19448,6 +20888,12 @@
     },
     "No Power Metrics" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen energidata"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19586,6 +21032,12 @@
     },
     "Node" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Node"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19614,6 +21066,12 @@
     },
     "Node Core Data Backup %@/%@ - %@ - %@" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Node "
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19648,6 +21106,12 @@
     },
     "Node does not have positions" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noden er ikke positioneret"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19676,6 +21140,12 @@
     },
     "Node History" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nodehistorik"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19726,6 +21196,12 @@
     },
     "Node info received for: %@" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Node-info modtaget for: %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19784,6 +21260,12 @@
     },
     "Node Map" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Node-kort"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19812,6 +21294,12 @@
     },
     "Node Number" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nodenummer"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19840,6 +21328,12 @@
     },
     "Nodes" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noder"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19892,6 +21386,12 @@
     },
     "Nodes (%@)" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noder (%@)"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20624,6 +22124,12 @@
     },
     "One Second" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ét sekund"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21733,6 +23239,12 @@
     },
     "Philippines 433MHz" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filippinerne 433 MHz"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21755,6 +23267,12 @@
     },
     "Philippines 868MHz" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filippinerne 868 MHz"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22647,6 +24165,12 @@
     },
     "Power Metrics" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Energidata"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22669,6 +24193,12 @@
     },
     "Power Metrics Log" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Energidata-log"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23779,6 +25309,12 @@
     },
     "Reboot node?" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Genstart node?"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23897,6 +25433,12 @@
     },
     "Received a negative acknowledgment" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Modtog en negativ bekræftelse"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24654,6 +26196,12 @@
     },
     "Reset NodeDB" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tøm node-database"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24710,6 +26258,12 @@
     },
     "Restart to the node you are connected to" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Genstart noden, du har forbindelse til"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25594,6 +27148,12 @@
     },
     "Russia" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rusland"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25642,6 +27202,12 @@
     },
     "Satellite" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Satellit"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25824,6 +27390,12 @@
     },
     "Save" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gem"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25962,6 +27534,12 @@
     },
     "Save User Config to %@?" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gem brugeropsætning på %@?"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26024,6 +27602,12 @@
     },
     "Screen on for" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Skærm tændt i "
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26046,6 +27630,12 @@
     },
     "Search" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Søg"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26074,6 +27664,12 @@
     },
     "Second" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sekund"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26096,6 +27692,12 @@
     },
     "Secondary" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sekundær"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26188,6 +27790,12 @@
     },
     "Security" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sikkerhed"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26222,6 +27830,12 @@
     },
     "Security Config" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sikkerhedsindstillinger"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26256,6 +27870,12 @@
     },
     "Security Config Settings require a firmware version 2.5+" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sikkerhedsindstillinger kræver mindst firmware-version 2.5"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26290,6 +27910,12 @@
     },
     "Select" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vælg"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26348,6 +27974,12 @@
     },
     "Select a channel" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vælg en kanal"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26376,6 +28008,12 @@
     },
     "Select a conversation" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vælg en samtale"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26398,6 +28036,12 @@
     },
     "Select a conversation type" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vælg en samtaletype"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26419,7 +28063,14 @@
       }
     },
     "Select a node from the drop down to manage connected or remote devices." : {
-
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vælg en node fra listen for at (fjern)administrere enheden."
+          }
+        }
+      }
     },
     "Select a Trace Route" : {
       "localizations" : {
@@ -26445,6 +28096,12 @@
     },
     "Select Channel" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vælg kanal"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26467,6 +28124,12 @@
     },
     "Select Node" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vælg node"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26525,6 +28188,12 @@
     },
     "Send" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26553,6 +28222,12 @@
     },
     "Send ${messageContent} to ${channelNumber}" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send ${messageContent} til ${channelNumber}"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26581,6 +28256,12 @@
     },
     "Send ${messageContent} to ${nodeNumber}" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Send ${messageContent} til ${nodeNumber}"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26603,6 +28284,12 @@
     },
     "Send a Direct Message" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send en direkte besked"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26625,6 +28312,12 @@
     },
     "Send a Group Message" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send en gruppebesked"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26691,6 +28384,12 @@
     },
     "Send a message to a certain meshtastic node" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send en besked til én Meshtastic-node"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26741,6 +28440,12 @@
     },
     "Send a shutdown to the node you are connected to" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send en sluk-kommando til enheden, du er tilkoblet."
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26769,6 +28474,12 @@
     },
     "Send a Waypoint" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send et viapunkt"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26973,6 +28684,12 @@
     },
     "Sensor" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensor"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27007,6 +28724,12 @@
     },
     "Sensor options" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensorindstillinger"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27029,6 +28752,12 @@
     },
     "Sensor Options" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensorindstillinger"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27162,6 +28891,12 @@
     "Sent a Position Packet from the Apple device GPS to node: %@@" : {
       "extractionState" : "manual",
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geoposition (fra Apple-enheden) sendt til noden %@@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27278,6 +29013,12 @@
     },
     "Sent a Waypoint Packet from: %@" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Viapunkt-pakke afsendt fra: %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27422,6 +29163,12 @@
     },
     "Sequence number" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sekvensnummer"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27450,6 +29197,12 @@
     },
     "Sequence: %@" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sekvens: %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27478,6 +29231,12 @@
     },
     "Serial" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seriel"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27530,6 +29289,12 @@
     },
     "Serial Config" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seriel-konfiguration"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27588,6 +29353,12 @@
     },
     "Serial Console" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seriel-konsol"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27724,6 +29495,12 @@
     },
     "Server" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27752,6 +29529,12 @@
     },
     "Server Address" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serveradresse"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27818,6 +29601,12 @@
     },
     "Set LoRa Region" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vælg LoRa-region"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27920,6 +29709,12 @@
     },
     "Settings" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indstillinger"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27978,6 +29773,12 @@
     },
     "Seventy Two Hours" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tooghalvfjerds timer"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28036,6 +29837,12 @@
     },
     "Share QR Code" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Del QR-kode"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28094,6 +29901,12 @@
     },
     "Share QR Code & Link" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Del QR-kode og link"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28122,6 +29935,12 @@
     },
     "Shared Key" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fælles krypteringsnøgle"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28208,6 +30027,12 @@
     },
     "Short Name" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kort navn"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28242,6 +30067,12 @@
     },
     "Short Name: %@" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kort navn: %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28342,6 +30173,12 @@
     },
     "Show alerts" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis alarmer"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28370,6 +30207,12 @@
     },
     "Show Alerts" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis alarmer"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28398,6 +30241,12 @@
     },
     "Show nodes" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis noder"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28426,6 +30275,12 @@
     },
     "Show on device screen" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis på enhedsskærm"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28454,6 +30309,12 @@
     },
     "Show on the mesh map." : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis på mesh-kort"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28482,6 +30343,12 @@
     },
     "Show Waypoints " : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis viapunkter"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28554,6 +30421,12 @@
     },
     "Shut Down Node?" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sluk node?"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28582,6 +30455,12 @@
     },
     "Shutdown Node?" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sluk node?"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28764,6 +30643,12 @@
     },
     "Six Hours" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seks timer"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28978,6 +30863,12 @@
     },
     "Soil Moisture" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jordfugtighed"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28994,6 +30885,12 @@
     },
     "Soil Temp" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jordtemperatur"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29032,6 +30929,12 @@
     },
     "Speed" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hastighed"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29138,6 +31041,12 @@
     },
     "SSID" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SSID"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29282,6 +31191,12 @@
     },
     "Start" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29530,6 +31445,12 @@
     },
     "Supported" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Understøttet"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29558,6 +31479,12 @@
     },
     "Supported I2C Connected sensors will be detected automatically, sensors are BMP280, BME280, BME680, MCP9808, INA219, INA260, LPS22 and SHTC3." : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Understøttede I2C Connected- sensorer bliver automatisk genkendt: BMP280, BME280, BME680, MCP9808, INA219, INA260, LPS22 and SHTC3."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29586,6 +31513,12 @@
     },
     "Table" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tabel"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29608,6 +31541,12 @@
     },
     "Taiwan" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taiwan"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30004,6 +31943,12 @@
     },
     "Temp" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temp"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30032,6 +31977,12 @@
     },
     "Temperature" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temperatur"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30118,6 +32069,12 @@
     },
     "Ten Seconds" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ti sekunder"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30462,6 +32419,12 @@
     },
     "The maximum interval that can elapse without a node broadcasting a position" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Det maksimale tidsrum uden at noden sender sin position"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30996,6 +32959,12 @@
     },
     "Thirty Seconds" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tredive sekunder"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31054,6 +33023,12 @@
     },
     "Thirty Six Hours" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seksogtredive timer"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31234,6 +33209,12 @@
     },
     "This node does not support any configurable modules." : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noden understøtter ingen konfigurerbare moduler."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31300,6 +33281,12 @@
     },
     "Three Hours" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tre timer"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31358,6 +33345,12 @@
     },
     "Three Seconds" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tre sekunder"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31782,6 +33775,12 @@
     },
     "TLS Enabled" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TLS-kryptering aktiveret"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31842,6 +33841,12 @@
     },
     "Total" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31870,6 +33875,12 @@
     },
     "Total PAX" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sum af personer"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32282,6 +34293,12 @@
     },
     "Twelve Hours" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tolv timer"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32340,6 +34357,12 @@
     },
     "Twenty Four Hours" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fireogtyve timer"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32398,6 +34421,12 @@
     },
     "Two Hours" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To timer"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32514,6 +34543,12 @@
     },
     "Two Seconds" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To sekunder"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32588,6 +34623,12 @@
     },
     "Ukraine 433MHz" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ukraine 433 MHz"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32610,6 +34651,12 @@
     },
     "Ukraine 868MHz" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ukraine 868 MHz"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32698,6 +34745,12 @@
     },
     "United States" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "USA"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33272,6 +35325,12 @@
     },
     "Updated Node Stats Data." : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opdaterede statistikker for noden."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33484,6 +35543,12 @@
     },
     "Used to create a shared key with a remote device." : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bruges til at oprette en fælles krypteringsnøgle med en anden enhed."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33506,6 +35571,12 @@
     },
     "User" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bruger"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33564,6 +35635,12 @@
     },
     "User Config" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brugerindstillinger"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33592,6 +35669,12 @@
     },
     "User Details" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brugerdetaljer"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33620,6 +35703,12 @@
     },
     "User Id" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bruger-ID"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33648,6 +35737,12 @@
     },
     "User Initiated Disconnect" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brugeren igangsatte frakobling."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33676,6 +35771,12 @@
     },
     "Username" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brugernavn"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33784,6 +35885,12 @@
     },
     "Vehicle heading" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Køretøjets retning"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33812,6 +35919,12 @@
     },
     "Vehicle speed" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Køretøjets hastighed"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34134,6 +36247,12 @@
     },
     "Waiting to be acknowledged. . ." : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afventer bekræftelse…"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34280,6 +36399,12 @@
     },
     "Waypoint Options" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Viapunkt-indstillinger"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34308,6 +36433,12 @@
     },
     "Waypoint Packet received from node: %@" : {
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Viapunkt-pakke modtaget fra node: %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
