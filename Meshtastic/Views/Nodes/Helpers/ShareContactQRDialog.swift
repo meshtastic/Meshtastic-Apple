@@ -26,7 +26,7 @@ struct ShareContactQRDialog: View {
 			return ("https://meshtastic.org/v/#" + contactString.base64ToBase64url())
         } catch {
 			Logger.services.error("Error serializing contact: \(error)")
-            return "Error generating QR code"
+            return ""
         }
 		
     }
