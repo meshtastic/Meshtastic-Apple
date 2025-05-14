@@ -13,7 +13,7 @@ extension NodeInfoEntity {
             userProto.id = user.userId ?? ""
             userProto.longName = user.longName ?? ""
             userProto.shortName = user.shortName ?? ""
-            userProto.hwModel = HardwareModel(rawValue: Int(user.hwModelId))!
+            userProto.hwModel = HardwareModel(rawValue: Int(user.hwModelId)) ?? .unknown
             userProto.isLicensed = user.isLicensed
 			userProto.role = Config.DeviceConfig.Role(rawValue: Int(user.role)) ?? .unknown
 			userProto.publicKey = user.publicKey?.subdata(in: 0..<user.publicKey!.count) ?? Data()
