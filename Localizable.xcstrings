@@ -7203,7 +7203,14 @@
       }
     },
     "Contact URL" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact URL"
+          }
+        }
+      }
     },
     "Contacts (%@)" : {
       "localizations" : {
