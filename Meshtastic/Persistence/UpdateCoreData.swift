@@ -160,7 +160,9 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				newNode.channel = Int32(packet.channel)
 			}
 			if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
-				newNode.hopsAway = Int32(nodeInfoMessage.hopsAway)
+				if nodeInfoMessage.hasHopsAway {
+					newNode.hopsAway = Int32(nodeInfoMessage.hopsAway)
+				}
 				newNode.favorite = nodeInfoMessage.isFavorite
 			}
 
