@@ -100,9 +100,22 @@ public struct UserLite: @unchecked Sendable {
   /// This is sent out to other nodes on the mesh to allow them to compute a shared secret key.
   public var publicKey: Data = Data()
 
+  ///
+  /// Whether or not the node can be messaged
+  public var isUnmessagable: Bool {
+    get {return _isUnmessagable ?? false}
+    set {_isUnmessagable = newValue}
+  }
+  /// Returns true if `isUnmessagable` has been explicitly set.
+  public var hasIsUnmessagable: Bool {return self._isUnmessagable != nil}
+  /// Clears the value of `isUnmessagable`. Subsequent reads from it will return its default value.
+  public mutating func clearIsUnmessagable() {self._isUnmessagable = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+
+  fileprivate var _isUnmessagable: Bool? = nil
 }
 
 public struct NodeInfoLite: @unchecked Sendable {
@@ -512,6 +525,7 @@ extension UserLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     5: .standard(proto: "is_licensed"),
     6: .same(proto: "role"),
     7: .standard(proto: "public_key"),
+    9: .standard(proto: "is_unmessagable"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -527,12 +541,17 @@ extension UserLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       case 5: try { try decoder.decodeSingularBoolField(value: &self.isLicensed) }()
       case 6: try { try decoder.decodeSingularEnumField(value: &self.role) }()
       case 7: try { try decoder.decodeSingularBytesField(value: &self.publicKey) }()
+      case 9: try { try decoder.decodeSingularBoolField(value: &self._isUnmessagable) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if !self.macaddr.isEmpty {
       try visitor.visitSingularBytesField(value: self.macaddr, fieldNumber: 1)
     }
@@ -554,6 +573,9 @@ extension UserLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if !self.publicKey.isEmpty {
       try visitor.visitSingularBytesField(value: self.publicKey, fieldNumber: 7)
     }
+    try { if let v = self._isUnmessagable {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 9)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -565,6 +587,7 @@ extension UserLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if lhs.isLicensed != rhs.isLicensed {return false}
     if lhs.role != rhs.role {return false}
     if lhs.publicKey != rhs.publicKey {return false}
+    if lhs._isUnmessagable != rhs._isUnmessagable {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

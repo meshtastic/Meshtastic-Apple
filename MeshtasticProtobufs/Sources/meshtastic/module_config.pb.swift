@@ -345,6 +345,10 @@ public struct ModuleConfig: Sendable {
     /// Bits of precision for the location sent (default of 32 is full precision).
     public var positionPrecision: UInt32 = 0
 
+    ///
+    /// Whether we have opted-in to report our location to the map
+    public var shouldReportLocation: Bool = false
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public init() {}
@@ -1647,6 +1651,7 @@ extension ModuleConfig.MapReportSettings: SwiftProtobuf.Message, SwiftProtobuf._
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "publish_interval_secs"),
     2: .standard(proto: "position_precision"),
+    3: .standard(proto: "should_report_location"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1657,6 +1662,7 @@ extension ModuleConfig.MapReportSettings: SwiftProtobuf.Message, SwiftProtobuf._
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularUInt32Field(value: &self.publishIntervalSecs) }()
       case 2: try { try decoder.decodeSingularUInt32Field(value: &self.positionPrecision) }()
+      case 3: try { try decoder.decodeSingularBoolField(value: &self.shouldReportLocation) }()
       default: break
       }
     }
@@ -1669,12 +1675,16 @@ extension ModuleConfig.MapReportSettings: SwiftProtobuf.Message, SwiftProtobuf._
     if self.positionPrecision != 0 {
       try visitor.visitSingularUInt32Field(value: self.positionPrecision, fieldNumber: 2)
     }
+    if self.shouldReportLocation != false {
+      try visitor.visitSingularBoolField(value: self.shouldReportLocation, fieldNumber: 3)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: ModuleConfig.MapReportSettings, rhs: ModuleConfig.MapReportSettings) -> Bool {
     if lhs.publishIntervalSecs != rhs.publishIntervalSecs {return false}
     if lhs.positionPrecision != rhs.positionPrecision {return false}
+    if lhs.shouldReportLocation != rhs.shouldReportLocation {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

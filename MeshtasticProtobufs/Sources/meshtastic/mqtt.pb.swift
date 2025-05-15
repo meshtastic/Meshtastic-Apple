@@ -116,6 +116,11 @@ public struct MapReport: Sendable {
   /// Number of online nodes (heard in the last 2 hours) this node has in its list that were received locally (not via MQTT)
   public var numOnlineLocalNodes: UInt32 = 0
 
+  ///
+  /// User has opted in to share their location (map report) with the mqtt server
+  /// Controlled by map_report.should_report_location
+  public var hasOptedReportLocation_p: Bool = false
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -189,6 +194,7 @@ extension MapReport: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     11: .same(proto: "altitude"),
     12: .standard(proto: "position_precision"),
     13: .standard(proto: "num_online_local_nodes"),
+    14: .standard(proto: "has_opted_report_location"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -210,6 +216,7 @@ extension MapReport: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       case 11: try { try decoder.decodeSingularInt32Field(value: &self.altitude) }()
       case 12: try { try decoder.decodeSingularUInt32Field(value: &self.positionPrecision) }()
       case 13: try { try decoder.decodeSingularUInt32Field(value: &self.numOnlineLocalNodes) }()
+      case 14: try { try decoder.decodeSingularBoolField(value: &self.hasOptedReportLocation_p) }()
       default: break
       }
     }
@@ -255,6 +262,9 @@ extension MapReport: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     if self.numOnlineLocalNodes != 0 {
       try visitor.visitSingularUInt32Field(value: self.numOnlineLocalNodes, fieldNumber: 13)
     }
+    if self.hasOptedReportLocation_p != false {
+      try visitor.visitSingularBoolField(value: self.hasOptedReportLocation_p, fieldNumber: 14)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -272,6 +282,7 @@ extension MapReport: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     if lhs.altitude != rhs.altitude {return false}
     if lhs.positionPrecision != rhs.positionPrecision {return false}
     if lhs.numOnlineLocalNodes != rhs.numOnlineLocalNodes {return false}
+    if lhs.hasOptedReportLocation_p != rhs.hasOptedReportLocation_p {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

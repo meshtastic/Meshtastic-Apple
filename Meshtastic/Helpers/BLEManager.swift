@@ -1770,6 +1770,56 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return false
 	}
 
+	public func addContactFromURL(base64UrlString: String) -> Bool {
+		if isConnected {
+
+			let decodedString = base64UrlString.base64urlToBase64()
+			if let decodedData = Data(base64Encoded: decodedString) {
+				do {
+					let contact: SharedContact = try SharedContact(serializedBytes: decodedData)
+					var adminPacket = AdminMessage()
+					adminPacket.addContact = contact
+					var meshPacket: MeshPacket = MeshPacket()
+					meshPacket.to = UInt32(connectedPeripheral.num)
+					meshPacket.from	= UInt32(connectedPeripheral.num)
+					meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+					meshPacket.priority =  MeshPacket.Priority.reliable
+					meshPacket.wantAck = true
+					meshPacket.channel = 0
+					var dataMessage = DataMessage()
+					guard let adminData: Data = try? adminPacket.serializedData() else {
+						return false
+					}
+					dataMessage.payload = adminData
+					dataMessage.portnum = PortNum.adminApp
+					meshPacket.decoded = dataMessage
+					var toRadio: ToRadio!
+					toRadio = ToRadio()
+					toRadio.packet = meshPacket
+					guard let binaryData: Data = try? toRadio.serializedData() else {
+						return false
+					}
+					if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
+						self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
+						let logString = String.localizedStringWithFormat("Sent a LoRa.Config for: %@".localized, String(connectedPeripheral.num))
+						Logger.mesh.info("📻 \(logString, privacy: .public)")
+					}
+
+					if self.connectedPeripheral != nil {
+						self.sendWantConfig()
+						return true
+					}
+
+				} catch {
+					Logger.data.error("Failed to decode contact data: \(error.localizedDescription, privacy: .public)")
+					return false
+				}
+			}
+		}
+		return false
+	}
+
+
 	public func saveUser(config: User, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 		var adminPacket = AdminMessage()
 		adminPacket.setOwner = config
