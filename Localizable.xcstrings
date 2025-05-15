@@ -2137,6 +2137,12 @@
         }
       }
     },
+    "Add Contact" : {
+
+    },
+    "Add Meshtastic Node %@ as a contact" : {
+
+    },
     "Add to favorites" : {
       "localizations" : {
         "de" : {
@@ -15095,12 +15101,6 @@
           }
         }
       }
-    },
-    "Add Contact" : {
-
-    },
-    "Add Meshtastic Node %@ as a contact" : {
-
     },
     "Import Route" : {
       "localizations" : {
@@ -30920,7 +30920,7 @@
         }
       }
     },
-    "The URL for the node to import" : {
+    "The URL for the node to add" : {
 
     },
     "There has been no response to a request for device metadata over the admin channel for this node." : {

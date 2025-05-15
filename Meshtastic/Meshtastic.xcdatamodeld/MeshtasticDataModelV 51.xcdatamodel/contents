@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23605" systemVersion="24D81" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788" systemVersion="24D81" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="AmbientLightingConfigEntity" representedClassName="AmbientLightingConfigEntity" syncable="YES" codeGenerationType="class">
         <attribute name="blue" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="current" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -479,6 +479,7 @@
         <attribute name="publicKey" optional="YES" attributeType="Binary"/>
         <attribute name="role" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="shortName" attributeType="String"/>
+        <attribute name="unmessagable" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="userId" attributeType="String"/>
         <relationship name="receivedMessages" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="MessageEntity" inverseName="toUser" inverseEntity="MessageEntity"/>
         <relationship name="sentMessages" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="MessageEntity" inverseName="fromUser" inverseEntity="MessageEntity"/>
