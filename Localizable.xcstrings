@@ -7202,6 +7202,16 @@
         }
       }
     },
+    "Contact URL" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact URL"
+          }
+        }
+      }
+    },
     "Contacts (%@)" : {
       "localizations" : {
         "de" : {
@@ -9994,6 +10004,9 @@
           }
         }
       }
+    },
+    "Done" : {
+
     },
     "Double Tap as Button" : {
       "localizations" : {
@@ -15082,6 +15095,12 @@
           }
         }
       }
+    },
+    "Add Contact" : {
+
+    },
+    "Add Meshtastic Node %@ as a contact" : {
+
     },
     "Import Route" : {
       "localizations" : {
@@ -22193,6 +22212,52 @@
         }
       }
     },
+    "Position config received: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Positionskonfiguration empfangen: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuration de la position reçue : %@"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "הגדרות מיקום התקבלו: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurazione della posizione ricevuta: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odebrano konfigurację pozycji: %@"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Positionskonfiguration mottagen: %@"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Конфигурација позиције примљена: %@"
+          }
+        }
+      }
+    },
     "Position Exchange Failed" : {
       "localizations" : {
         "it" : {
@@ -22463,52 +22528,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "裝置的 GPS 會提供定位資訊，如果選擇「已停用」或「無此功能」，則可以手動設定固定位置。"
-          }
-        }
-      }
-    },
-    "Position config received: %@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Positionskonfiguration empfangen: %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuration de la position reçue : %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות מיקום התקבלו: %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configurazione della posizione ricevuta: %@"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Odebrano konfigurację pozycji: %@"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Positionskonfiguration mottagen: %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Конфигурација позиције примљена: %@"
           }
         }
       }
@@ -26022,6 +26041,9 @@
         }
       }
     },
+    "Scan this QR code to add %@ to another device." : {
+
+    },
     "Screen on for" : {
       "localizations" : {
         "it" : {
@@ -28034,6 +28056,9 @@
         }
       }
     },
+    "Share Contact QR" : {
+
+    },
     "Share QR Code" : {
       "localizations" : {
         "de" : {
@@ -29712,6 +29737,9 @@
         }
       }
     },
+    "Takes a Meshtastic contact URL and saves it to the nodes database" : {
+
+    },
     "Tapback" : {
       "localizations" : {
         "de" : {
@@ -30891,6 +30919,9 @@
           }
         }
       }
+    },
+    "The URL for the node to import" : {
+
     },
     "There has been no response to a request for device metadata over the admin channel for this node." : {
       "localizations" : {
