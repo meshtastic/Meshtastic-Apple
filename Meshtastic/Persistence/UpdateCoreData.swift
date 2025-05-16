@@ -187,8 +187,8 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 						newUser.unmessagable = newUserMessage.isUnmessagable
 					} else {
 						// For older firmare make Repeater, Router, Router Late, Sensor, Tracker, TAK, and TAK Tracker unmessagable
-						let roles: [Int32] = [4, 2, 11, 6, 7, 10]
-						if roles.contains(newUser.role) {
+						let roles: [Int32] = [2, 4, 5, 6, 7, 10, 11]
+						if roles.contains(Int32(newUser.role)) {
 							newUser.unmessagable = true
 						} else {
 							newUser.unmessagable = false
@@ -294,8 +294,8 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 						fetchedNode[0].user!.unmessagable = nodeInfoMessage.user.isUnmessagable
 					} else {
 						// For older firmare make Repeater, Router, Router Late, Sensor, Tracker, TAK, and TAK Tracker unmessagable
-						let roles: [Int32] = [-1, 4, 2, 11, 6, 7, 10]
-						if roles.contains(fetchedNode[0].user?.role ?? -1) {
+						let roles: [Int32] = [-1, 2, 4, 5, 6, 7, 10, 11]
+						if roles.contains(Int32(fetchedNode[0].user?.role ?? -1)) {
 							fetchedNode[0].user!.unmessagable = true
 						} else {
 							fetchedNode[0].user!.unmessagable = false
