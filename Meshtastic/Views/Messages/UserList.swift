@@ -46,9 +46,8 @@ struct UserList: View {
 						  NSSortDescriptor(key: "userNode.lastHeard", ascending: false),
 						  NSSortDescriptor(key: "longName", ascending: true)],
 		predicate: NSPredicate(
-		  format: "userNode.ignored == false && longName != '' AND NOT (userNode.viaMqtt == YES AND userNode.hopsAway > 0)"
-		), animation: .default
-	)
+		 format: "userNode.ignored == false && longName != '' AND unmessagable == false"
+		), animation: .default)
 	var users: FetchedResults<UserEntity>
 
 	@Binding var node: NodeInfoEntity?
@@ -298,17 +297,19 @@ struct UserList: View {
 		let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
 		/// Create an array of predicates to hold our AND predicates
 		var predicates: [NSPredicate] = []
+		let defaultPredicate = NSPredicate(format: "userNode.ignored == NO AND longName != '' AND unmessagable == NO")
+			predicates.append(defaultPredicate)
 		/// Mqtt and lora
 		if !(viaLora && viaMqtt) {
 			if viaLora {
 				let loraPredicate = NSPredicate(format: "userNode.viaMqtt == NO")
 				predicates.append(loraPredicate)
 			} else {
-				let mqttPredicate = NSPredicate(format: "userNode.viaMqtt == YES AND userNode.hopsAway == 0")
+				let mqttPredicate = NSPredicate(format: "userNode.viaMqtt == YES")
 				predicates.append(mqttPredicate)
 			}
 		} else {
-			let mqttPredicate = NSPredicate(format: "NOT (userNode.viaMqtt == YES AND userNode.hopsAway > 0)")
+			let mqttPredicate = NSPredicate(format: "NOT (userNode.viaMqtt == YES)")
 			predicates.append(mqttPredicate)
 		}
 		/// Roles
@@ -362,16 +363,11 @@ struct UserList: View {
 				predicates.append(distancePredicate)
 			}
 		}
-
-		if predicates.count > 0 || !searchText.isEmpty {
-			if !searchText.isEmpty {
-				let filterPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)
-				users.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: [textSearchPredicate, filterPredicates])
-			} else {
-				users.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: predicates)
-			}
+		if !searchText.isEmpty {
+			let filterPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)
+			users.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: [textSearchPredicate, filterPredicates])
 		} else {
-			users.nsPredicate = nil
+			users.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: predicates)
 		}
 	}
 }

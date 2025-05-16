@@ -7,6 +7,7 @@
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>applinks:meshtastic.org/e/*</string>
+		<string>applinks:meshtastic.org/v/*</string>
 	</array>
 	<key>com.apple.developer.weatherkit</key>
 	<true/>
