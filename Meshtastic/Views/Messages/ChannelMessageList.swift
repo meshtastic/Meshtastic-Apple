@@ -51,6 +51,7 @@ struct ChannelMessageList: View {
 													messageToHighlight = messageNum
 												}
 												scrollView.scrollTo(messageNum, anchor: .center)
+
 												// Reset highlight after delay
 												Task {
 													try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
