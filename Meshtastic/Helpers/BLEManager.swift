@@ -1799,9 +1799,26 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					guard let binaryData: Data = try? toRadio.serializedData() else {
 						return false
 					}
+
+					// Create a NodeInfo (User) packet for the newly added contact
+					var dataNodeMessage = DataMessage()
+					if let nodeInfoData = try? contact.user.serializedData() {
+						dataNodeMessage.payload = nodeInfoData
+						dataNodeMessage.portnum = PortNum.nodeinfoApp
+						
+						var nodeMeshPacket = MeshPacket()
+						nodeMeshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+						nodeMeshPacket.to = UInt32.max
+						nodeMeshPacket.from = UInt32(contact.nodeNum)
+						nodeMeshPacket.decoded = dataNodeMessage
+						
+						// Update local database with the new node info
+						upsertNodeInfoPacket(packet: nodeMeshPacket, context: context)
+					}
+
 					if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 						self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
-						let logString = String.localizedStringWithFormat("Sent a LoRa.Config for: %@".localized, String(connectedPeripheral.num))
+						let logString = String.localizedStringWithFormat("Added contact %@ to device".localized, contact.user.longName)
 						Logger.mesh.info("📻 \(logString, privacy: .public)")
 					}
 
