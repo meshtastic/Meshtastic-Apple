@@ -2138,10 +2138,24 @@
       }
     },
     "Add Contact" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "增加聯絡人"
+          }
+        }
+      }
     },
     "Add Meshtastic Node %@ as a contact" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將 Meshtastic 節點 %@ 新增為聯絡人"
+          }
+        }
+      }
     },
     "Add to favorites" : {
       "localizations" : {
@@ -2290,7 +2304,14 @@
       }
     },
     "Administration Enabled" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理功能已啟用"
+          }
+        }
+      }
     },
     "Advanced" : {
       "localizations" : {
@@ -7215,6 +7236,12 @@
             "state" : "translated",
             "value" : "Contact URL"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聯絡人網址"
+          }
         }
       }
     },
@@ -10012,7 +10039,14 @@
       }
     },
     "Done" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成"
+          }
+        }
+      }
     },
     "Double Tap as Button" : {
       "localizations" : {
@@ -17393,7 +17427,14 @@
       }
     },
     "message" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "訊息"
+          }
+        }
+      }
     },
     "Message" : {
       "localizations" : {
@@ -21636,6 +21677,12 @@
             "state" : "translated",
             "value" : "Конфигурација PAX бројача примљена: %@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAX 計數器設定已收到: %@"
+          }
         }
       }
     },
@@ -21720,7 +21767,14 @@
       }
     },
     "paxcounter.log" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "paxcounter.log"
+          }
+        }
+      }
     },
     "Perform a factory reset on the node you are connected to" : {
       "localizations" : {
@@ -22254,6 +22308,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Конфигурација позиције примљена: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "收到位置設定檔: %@"
           }
         }
       }
@@ -24517,7 +24577,14 @@
       }
     },
     "Replying to a message" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在回覆訊息"
+          }
+        }
+      }
     },
     "Request Legacy Admin: %@" : {
       "localizations" : {
@@ -26042,7 +26109,14 @@
       }
     },
     "Scan this QR code to add %@ to another device." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "掃描這個QR code 以便將 %@ 增加到另一個裝置。"
+          }
+        }
+      }
     },
     "Screen on for" : {
       "localizations" : {
@@ -26441,7 +26515,14 @@
       }
     },
     "Select a node from the drop down to manage connected or remote devices." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從下拉選單中選擇一個節點，以管理已連接或遠端的裝置。"
+          }
+        }
+      }
     },
     "Select a Trace Route" : {
       "localizations" : {
@@ -28057,7 +28138,14 @@
       }
     },
     "Share Contact QR" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分享聯絡人 QR 碼"
+          }
+        }
+      }
     },
     "Share QR Code" : {
       "localizations" : {
@@ -29550,6 +29638,12 @@
             "state" : "translated",
             "value" : "Подсистем"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "子系統"
+          }
         }
       }
     },
@@ -29738,7 +29832,14 @@
       }
     },
     "Takes a Meshtastic contact URL and saves it to the nodes database" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將 Meshtastic 聯絡人的網址儲存到節點資料庫中。"
+          }
+        }
+      }
     },
     "Tapback" : {
       "localizations" : {
@@ -30921,7 +31022,14 @@
       }
     },
     "The URL for the node to add" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要新增的節點網址"
+          }
+        }
+      }
     },
     "There has been no response to a request for device metadata over the admin channel for this node." : {
       "localizations" : {
@@ -31950,7 +32058,14 @@
       }
     },
     "Trace Route (in %@s)" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追蹤路由（在 %@ 秒）"
+          }
+        }
+      }
     },
     "Trace Route Log" : {
       "localizations" : {
@@ -32132,6 +32247,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "追踪器"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追蹤器"
           }
         }
       }
@@ -33912,6 +34033,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Version: %1$@ (%2$@)"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版本: %1$@ (%2$@)"
           }
         }
       }
