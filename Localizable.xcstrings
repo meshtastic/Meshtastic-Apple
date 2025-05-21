@@ -2305,6 +2305,11 @@
     },
     "Administration Enabled" : {
       "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Администрација је активирана"
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5084,6 +5089,12 @@
     },
     "By enabling this feature, you acknowledge and expressly consent to the transmission of your device’s real-time geographic location over the MQTT protocol without encryption. This location data may be used for purposes such as live map reporting, device tracking, and related telemetry functions." : {
       "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Укључивањем ове функције, потврђујете и изричито пристајете на пренос географске локације вашег уређаја у реалном времену преко MQTT протокола без шифровања. Ови подаци о локацији могу се користити у сврхе као што су извештавање на живој мапи, праћење уређаја и сродне телеметријске функције."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6251,6 +6262,12 @@
             "value" : "Utilizzo del canale %@%%"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Искоришћеност канала %@%%"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6877,6 +6894,12 @@
             "value" : "Supporto alla community"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подршка заједнице"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7005,6 +7028,12 @@
             "value" : "Conferma"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Потврди"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7043,6 +7072,12 @@
     },
     "Connect to MQTT via Proxy" : {
       "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повежите се на MQTT преко проксија"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7057,6 +7092,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Collegare alla nuova radio?"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повезати се на нови радио уређај?"
           }
         },
         "zh-Hant-TW" : {
@@ -7161,6 +7202,12 @@
             "value" : "Radio connessa"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Радио повезан"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7233,6 +7280,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La connessione a una nuova radio cancellerà tutti i dati delle app sul telefono."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повезивање са новим радиом ће обрисати све податке апликације на телефону."
           }
         },
         "zh-Hant-TW" : {
@@ -7337,6 +7390,12 @@
     },
     "Consent to Share Unencrypted Node Data via MQTT" : {
       "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пристанак на дељење нешифрованих података чвора путем MQTT-а"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7881,6 +7940,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Attualmente mostra i moduli che potrebbero non essere supportati da questo nodo."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тренутно приказује модуле који можда нису подржани од стране овог чвора."
           }
         },
         "zh-Hant-TW" : {
@@ -10652,6 +10717,12 @@
             "value" : "Abilita la trasmissione di pacchetti via UDP sulla rete locale."
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Омогућите емитовање пакета путем UDP-а преко локалне мреже."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10694,6 +10765,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abilita questo dispositivo come server Store and Forward. Richiede un dispositivo ESP32 con PSRAM."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Омогућите овај уређај као сервер за складиштење и прослеђивање. Захтева ESP32 уређај са PSRAM-ом."
           }
         },
         "zh-Hant-TW" : {
@@ -10878,6 +10955,12 @@
     },
     "Enables the store and forward module." : {
       "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Омогућава модул за складиштење и прослеђивање."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13302,6 +13385,12 @@
             "value" : "Supporto completo"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пуна подршка"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14845,6 +14934,12 @@
     },
     "I have read and understand the above. I voluntarily consent to the unencrypted transmission of my node data via MQTT." : {
       "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Прочитао/ла сам и разумем горе наведено. Добровољно пристајем на нешифровани пренос података мог чвора путем MQTT-а."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15191,6 +15286,12 @@
     },
     "Ignores observed messages from foreign meshes like Local Only, but takes it step further by also ignoring messages from nodes not already in the node's known list." : {
       "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Игнорише посматране поруке из страних мрежа попут Local Only, али иде и корак даље тако што такође игнорише поруке са чворова који се већ не налазе на листи познатих чворова."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15201,6 +15302,12 @@
     },
     "Ignores observed messages from foreign meshes that are open or those which it cannot decrypt. Only rebroadcasts message on the nodes local primary / secondary channels." : {
       "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Игнорише посматране поруке из страних мрежа које су отворене или које не може дешифровати. Пребацује поруке само на примарним/секундарним каналима локалног чвора."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15733,6 +15840,12 @@
     },
     "Jump to present" : {
       "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скочи на најновије"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20836,6 +20949,12 @@
     },
     "Only permitted for SENSOR, TRACKER and TAK_TRACKER roles, this will inhibit all rebroadcasts, not unlike CLIENT_MUTE role." : {
       "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дозвољено само за улоге SENSOR, TRACKER и TAK_TRACKER, ово ће спречити сва поновна емитовања, слично улози CLIENT_MUTE."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20846,6 +20965,12 @@
     },
     "Only rebroadcasts packets from the core portnums: NodeInfo, Text, Position, Telemetry, and Routing." : {
       "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Само поново емитује пакете из основних портова: Информације о чвору, Текст, Позиција, Телеметрија и Рутирање."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21806,12 +21931,6 @@
     },
     "paxcounter.log" : {
       "localizations" : {
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "paxcounter.log"
-          }
-        }
       }
     },
     "Perform a factory reset on the node you are connected to" : {
@@ -22068,6 +22187,12 @@
     },
     "Please be advised that because the map report is not encrypted, your data may be stored and displayed permanently by third parties. Meshtastic does not assume responsibility for any such storage, display or disclosure of this data." : {
       "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Молимо вас да имате у виду да, пошто извештај мапе није шифрован, ваши подаци могу бити трајно сачувани и приказани од стране трећих лица. Meshtastic не преузима одговорност за такво чување, приказивање или откривање ових података."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23038,6 +23163,12 @@
             "value" : "Pressione"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Притисак"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23516,6 +23647,12 @@
             "value" : "Radiazioni"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Зрачење"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23954,6 +24091,12 @@
     },
     "Rebroadcast any observed message, if it was on our private channel or from another mesh with the same lora params." : {
       "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поново емитује сваку посматрану поруку, ако је била на нашем приватном каналу или из друге мреже са истим лора параметрима."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24616,6 +24759,11 @@
     },
     "Replying to a message" : {
       "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Одговара на поруку"
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25756,6 +25904,12 @@
     },
     "Same as behavior as ALL but skips packet decoding and simply rebroadcasts them. Only available in Repeater role. Setting this on any other roles will result in ALL behavior." : {
       "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Исто понашање као ALL, али прескаче декодирање пакета и једноставно их поново емитује. Доступно само у улози Repeater. Подешавање овога на било којој другој улози резултираће понашањем ALL."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26554,6 +26708,11 @@
     },
     "Select a node from the drop down to manage connected or remote devices." : {
       "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изаберите чвор из падајућег менија за управљање повезаним или удаљеним уређајима."
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26798,6 +26957,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Invia un heartbeat per pubblicizzare la presenza del server."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пошаљите откуцај срца за оглашавање присуства сервера."
           }
         },
         "zh-Hant-TW" : {
@@ -27927,6 +28092,12 @@
             "value" : "Opzione server"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Опција сервера"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28667,6 +28838,12 @@
             "value" : "Mostra le informazioni relative alla radio Lora collegata via bluetooth. È possibile scorrere il dito verso sinistra per scollegare la radio e premere a lungo per avviare l'attività live."
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приказује информације за Лора радио повезан путем блутута. Можете превући улево да прекинете везу са радиом, а дугим притиском почети активност уживо."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29101,6 +29278,12 @@
             "value" : "Umidità del suolo"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Влажност земљишта"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29115,6 +29298,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Temperatura del suolo"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Температура земљишта"
           }
         },
         "zh-Hant-TW" : {
@@ -29591,6 +29780,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "I server Store and Forward richiedono un dispositivo ESP32 con PSRAM o Linux Native."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сервери за складиштење и прослеђивање захтевају ESP32 уређај са PSRAM-ом или Linux Native."
           }
         },
         "zh-Hant-TW" : {
@@ -30883,6 +31078,12 @@
             "value" : "I ruoli di router sono progettati per posizioni elevate, come le cime delle montagne e le torri. Questo nodo deve essere in grado di avere una buona connessione diretta con la maggior parte dei nodi della rete, altrimenti danneggia significativamente la rete."
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Улоге рутера су дизајниране за локације са добром прегледношћу попут планинских врхова и торњева. Овај чвор мора имати добру директну везу са већином чворова на мрежи, иначе ће значајно нарушити мрежу."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31381,6 +31582,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Questo nodo non supporta alcun modulo configurabile."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Овај чвор не подржава ниједан конфигурабилни модул."
           }
         },
         "zh-Hant-TW" : {
@@ -31953,6 +32160,12 @@
     },
     "To comply with privacy laws like CCPA and GDPR, we avoid sharing exact location data. Instead, we use anonymized or approximate (imprecise) location information to protect your privacy." : {
       "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "У складу са законима о приватности попут CCPA и GDPR, избегавамо дељење тачних података о локацији. Уместо тога, користимо анонимизоване или приближне (непрецизне) информације о локацији како бисмо заштитили вашу приватност."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32735,6 +32948,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Trasmissione UDP"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "УДП емитовање"
           }
         },
         "zh-Hant-TW" : {
@@ -34061,6 +34280,11 @@
             "value" : "Version: %1$@ (%2$@)"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Верзија: %1$@ (%2$@)"
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34251,6 +34475,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Volt %@"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Волти %@"
           }
         },
         "zh-Hant-TW" : {
@@ -34609,6 +34839,12 @@
             "value" : "Peso"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тежина"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34911,6 +35147,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vento"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ветар"
           }
         },
         "zh-Hant-TW" : {
@@ -35366,6 +35608,12 @@
     },
     "Your node will periodically send an unencrypted map report packet to the configured MQTT server, this includes id, short and long name, approximate location, hardware model, role, firmware version, LoRa region, modem preset and primary channel name." : {
       "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ваш чвор ће периодично слати нешифровани пакет извештаја мапе на конфигурисани MQTT сервер, што укључује ИД, кратко и дуго име, приближну локацију, модел хардвера, улогу, верзију фирмвера, ЛоРа регион, модем пресет и назив примарног канала."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
