@@ -20,7 +20,7 @@ struct NodeListItem: View {
         } else if let longName = node.user?.longName {
             desc = longName
         } else {
-            desc = "unknown node"
+			desc = "Unknown".localized + " " + "Node".localized
         }
         if connected {
             desc += ", currently connected"
@@ -66,14 +66,13 @@ struct NodeListItem: View {
             distanceFormatter.unitStyle = .medium
             let formattedDistance = distanceFormatter.string(fromMeters: metersAway)
             // For VoiceOver, prepend 'Distance' (localized)
-            desc += ", " + String(format: "%@: %@", NSLocalizedString("distance", comment: "Distance label for VoiceOver"), formattedDistance)
-            
+			desc += ", " + String(format: "%@: %@", "Distance".localized, formattedDistance)
             // Add bearing/heading information for VoiceOver
             let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: nodeCoord)
             let heading = Measurement(value: trueBearing, unit: UnitAngle.degrees)
             let formattedHeading = heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0))))
             // Using a direct format without requiring a new localization key
-            desc += ", " + NSLocalizedString("heading", comment: "Heading label for VoiceOver") + " " + formattedHeading
+			desc += ", " + "Heading".localized + " " + formattedHeading
         }
         // Add signal strength if available
         if node.snr != 0 && !node.viaMqtt {
@@ -98,7 +97,6 @@ struct NodeListItem: View {
         }
         return desc
     }
-
 
 	@ObservedObject var node: NodeInfoEntity
 	var connected: Bool

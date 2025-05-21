@@ -37,17 +37,17 @@ enum ActivityType: Int, CaseIterable, Identifiable {
 	var fileNameString: String {
 		switch self {
 		case .walking:
-			return "walk".localized
+			return "Walking".localized.lowercased()
 		case .hiking:
-			return "hiking".localized
+			return "Hiking".localized.lowercased()
 		case .biking:
-			return "biking".localized
+			return "Biking".localized.lowercased()
 		case .driving:
-			return "driving".localized
+			return "Driving".localized.lowercased()
 		case .overlanding:
-			return "overlanding".localized
+			return "Overlanding".localized.lowercased()
 		case .skiing:
-			return "skiing".localized
+			return "Skiing".localized.lowercased()
 		}
 	}
 }

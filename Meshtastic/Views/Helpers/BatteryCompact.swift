@@ -101,7 +101,7 @@ struct BatteryCompact: View {
 		.accessibilityLabel(NSLocalizedString("Battery Level", comment: "VoiceOver label for battery gauge"))
 		// Set appropriate value based on the battery state using a computed property
 		.accessibilityValue(batteryLevel.map { level in 
-			if level > 100 { 
+		if level > 100 {
 				// Plugged in - same as PWD visual indicator
 				return NSLocalizedString("device_plugged_in", comment: "VoiceOver value for plugged in device")
 			} else if level == 100 {
@@ -109,7 +109,7 @@ struct BatteryCompact: View {
 				return NSLocalizedString("device_charging", comment: "VoiceOver value for charging device")
 			} else {
 				// Normal battery level
-				return String(format: NSLocalizedString("battery_level_percent", comment: "VoiceOver value for battery level"), Int(level))
+				return String(format: NSLocalizedString("Battery Level %", comment: "VoiceOver value for battery level"), Int(level))
 			}
 		} ?? "Unknown")
 	}

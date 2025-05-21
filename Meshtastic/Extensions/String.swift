@@ -123,7 +123,7 @@ extension String {
 			with: "$1 $2",
 			options: .regularExpression
 		)
-		return "Node " + spaced
+		return "Node".localized + " " + spaced
 	}
 
 	// Adds variation selectors to prefer the graphical form of emoji.

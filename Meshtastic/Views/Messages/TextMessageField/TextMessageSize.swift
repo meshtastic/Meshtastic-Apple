@@ -6,8 +6,8 @@ struct TextMessageSize: View {
 
 	var body: some View {
 		ProgressView("\("Bytes".localized): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
-			.accessibilityLabel(NSLocalizedString("message_size", comment: "VoiceOver label for message size"))
-			.accessibilityValue(String(format: NSLocalizedString("bytes_used", comment: "VoiceOver value for bytes used"), totalBytes, maxbytes))
+			.accessibilityLabel(NSLocalizedString("Message Size", comment: "VoiceOver label for message size"))
+			.accessibilityValue(String(format: NSLocalizedString("Bytes Used", comment: "VoiceOver value for bytes used"), totalBytes, maxbytes))
 			.frame(width: 130)
 			.padding(5)
 			.font(.subheadline)
