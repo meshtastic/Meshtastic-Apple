@@ -250,6 +250,8 @@ struct NodeList: View {
 						phoneOnly: true
 					)
 				}
+				// Make sure the ZStack passes through accessibility to the ConnectedDevice component
+				.accessibilityElement(children: .contain)
 			)
 		} content: {
 			if let node = selectedNode {
@@ -268,6 +270,7 @@ struct NodeList: View {
 								} label: {
 									Image(systemName: "rectangle")
 								}
+								.accessibilityLabel("Hide sidebar")
 							}
 							ConnectedDevice(
 								bluetoothOn: bleManager.isSwitchedOn,
@@ -276,6 +279,8 @@ struct NodeList: View {
 								phoneOnly: true
 							)
 						}
+						// Make sure the ZStack passes through accessibility to the ConnectedDevice component
+						.accessibilityElement(children: .contain)
 					)
 				}
 			 } else {
