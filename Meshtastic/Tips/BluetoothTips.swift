@@ -13,7 +13,7 @@ struct BluetoothConnectionTip: Tip {
 		return "tip.bluetooth.connect"
 	}
 	var title: Text {
-		Text("connected.radio")
+		Text("Connected Radio")
 	}
 	var message: Text? {
 		Text("Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press start the live activity.")
