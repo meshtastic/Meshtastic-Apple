@@ -40,6 +40,7 @@ struct IgnoreNodeButton: View {
 				Image(systemName: node.ignored ? "minus.circle.fill" : "minus.circle")
 					.symbolRenderingMode(.multicolor)
 			}
+			// Accessibility: Label for VoiceOver
 		}
 	}
 }

@@ -4075,6 +4075,7 @@
       }
     },
     "Battery Level" : {
+      "comment" : "VoiceOver label for battery gauge",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4133,6 +4134,7 @@
       }
     },
     "Battery Level %" : {
+      "comment" : "VoiceOver value for battery level",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -4184,40 +4186,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "鮑率（Baud）"
-          }
-        }
-      }
-    },
-    "biking" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "biken"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "tour in bicicletta"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "тура бициклом"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "自行车旅行"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "自行車"
           }
         }
       }
@@ -4456,6 +4424,129 @@
         }
       }
     },
+    "ble.signal.strength.normal" : {
+      "comment" : "VoiceOver value for normal BLE signal strength",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Signalstärke normal"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signal strength normal"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Segnale normale"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Нормалан сигнал"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "信号正常"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "訊號正常"
+          }
+        }
+      }
+    },
+    "ble.signal.strength.strong" : {
+      "comment" : "VoiceOver value for strong BLE signal strength",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Signalstärke stark"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signal strength strong"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Segnale forte"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Јак сигнал"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "信号强"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "訊號強"
+          }
+        }
+      }
+    },
+    "ble.signal.strength.weak" : {
+      "comment" : "VoiceOver value for weak BLE signal strength",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Signalstärke schwach"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signal strength weak"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Segnale debole"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Слаб сигнал"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "信号弱"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "訊號微弱"
+          }
+        }
+      }
+    },
     "Bluetooth" : {
       "localizations" : {
         "de" : {
@@ -4684,6 +4775,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "藍芽已關閉"
+          }
+        }
+      }
+    },
+    "bluetooth.connected" : {
+      "comment" : "VoiceOver label for connected Bluetooth icon",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connected to Bluetooth device"
+          }
+        }
+      }
+    },
+    "bluetooth.not.connected" : {
+      "comment" : "VoiceOver label for disconnected Bluetooth icon",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Bluetooth device connected"
           }
         }
       }
@@ -5047,6 +5160,9 @@
           }
         }
       }
+    },
+    "Bytes Used" : {
+      "comment" : "VoiceOver value for bytes used"
     },
     "Call Sign" : {
       "localizations" : {
@@ -7290,15 +7406,9 @@
     },
     "Contact URL" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Contact URL"
-          }
-        },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "聯絡人網址"
           }
         }
@@ -9417,6 +9527,28 @@
         }
       }
     },
+    "device_charging" : {
+      "comment" : "VoiceOver value for charging device",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Charging"
+          }
+        }
+      }
+    },
+    "device_plugged_in" : {
+      "comment" : "VoiceOver value for plugged in device",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plugged in"
+          }
+        }
+      }
+    },
     "Dilution of precision (DOP) PDOP used by default" : {
       "localizations" : {
         "it" : {
@@ -10313,40 +10445,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "拖放（Drag & Drop）是更新 NRF 裝置韌體的建議方式。如果您的 iPhone 或 iPad 是 USB-C 版本，可以直接使用一般的 USB-C 充電線。若是 Lightning 裝置，則需要使用 Apple 的 Lightning 對 USB 相機轉接器。"
-          }
-        }
-      }
-    },
-    "driving" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fahren"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "guida"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "вожња"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "驾驶"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "開車"
           }
         }
       }
@@ -14143,6 +14241,9 @@
         }
       }
     },
+    "Hide sidebar" : {
+
+    },
     "HIGH" : {
       "localizations" : {
         "de" : {
@@ -14173,40 +14274,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "高"
-          }
-        }
-      }
-    },
-    "hiking" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "wandern"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "escursione"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "планинарње"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "徒步"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "登山"
           }
         }
       }
@@ -17545,21 +17612,6 @@
         }
       }
     },
-    "message" : {
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "порука"
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "訊息"
-          }
-        }
-      }
-    },
     "Message" : {
       "localizations" : {
         "de" : {
@@ -17789,6 +17841,9 @@
           }
         }
       }
+    },
+    "Message Size" : {
+      "comment" : "VoiceOver label for message size"
     },
     "Message Status Options" : {
       "localizations" : {
@@ -21452,34 +21507,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "振動馬達輸出腳位 GPIO"
-          }
-        }
-      }
-    },
-    "overlanding" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "overland drive"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Вожња преко копна"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "越野"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "開車 (overland drive)"
           }
         }
       }
@@ -29121,40 +29148,6 @@
         }
       }
     },
-    "skiing" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "skitour"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "tour sciistico"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ски тура"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "滑雪之旅"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "滑雪"
-          }
-        }
-      }
-    },
     "Skiing" : {
       "localizations" : {
         "de" : {
@@ -33183,6 +33176,28 @@
         }
       }
     },
+    "unknown" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "sconosciuto"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "непознато"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "未知"
+          }
+        }
+      }
+    },
     "Unknown" : {
       "localizations" : {
         "fr" : {
@@ -34574,40 +34589,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "輕觸或移動時喚醒螢幕"
-          }
-        }
-      }
-    },
-    "walk" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "gehen"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "passeggiata"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "шетња"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "步行"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "走路"
           }
         }
       }
