@@ -26,6 +26,10 @@ struct Connect: View {
 	@State var liveActivityStarted = false
 	@State var presentingSwitchPreferredPeripheral = false
 	@State var selectedPeripherialId = ""
+	@State private var showSwipeDemo = false
+	@State private var swipeDemoOffset: CGFloat = 0
+	@State private var showDeleteButton: Bool = false
+	@AppStorage("hasSeenSwipeDemo") private var hasSeenSwipeDemo = false
 
 	init () {
 		let notificationCenter = UNUserNotificationCenter.current()
@@ -89,6 +93,28 @@ struct Connect: View {
 								.font(.caption)
 								.foregroundColor(Color.gray)
 								.padding([.top])
+								.offset(x: swipeDemoOffset)
+								.overlay(
+									GeometryReader { geometry in
+										ZStack {
+											Rectangle()
+												.foregroundColor(.red)
+												.frame(width: 80)
+												.offset(x: geometry.size.width - 80)
+											VStack {
+												Image(systemName: "antenna.radiowaves.left.and.right.slash")
+													.foregroundColor(.white)
+													.font(.title3)
+												Text("Disconnect")
+													.foregroundColor(.white)
+													.font(.caption)
+											}
+										}
+										.offset(x: geometry.size.width - 50)
+
+										.opacity(showDeleteButton ? 1 : 0)
+									}
+								)
 								.swipeActions {
 									Button(role: .destructive) {
 										if let connectedPeripheral = bleManager.connectedPeripheral,
@@ -123,7 +149,15 @@ struct Connect: View {
 										Text("Short Name: \(node?.user?.shortName ?? "?")")
 										Text("Long Name: \(node?.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
 										Text("BLE RSSI: \(connectedPeripheral.rssi)")
-
+										
+										Button(role: .destructive) {
+											if let connectedPeripheral = bleManager.connectedPeripheral,
+											   connectedPeripheral.peripheral.state == .connected {
+												bleManager.disconnectPeripheral(reconnect: false)
+											}
+										} label: {
+											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+										}
 										Button {
 											if !bleManager.sendShutdown(fromUser: node!.user!, toUser: node!.user!, adminIndex: node!.myInfo!.adminIndex) {
 												Logger.mesh.error("Shutdown Failed")
@@ -322,6 +356,23 @@ struct Connect: View {
 						isUnsetRegion = true
 					} else {
 						isUnsetRegion = false
+					}
+					// Show swipe demo if user hasn't seen it before and we're connected
+					if !hasSeenSwipeDemo && bleManager.isSubscribed && node != nil {
+						DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+							withAnimation(.easeInOut(duration: 0.6)) {
+								swipeDemoOffset = -80
+								showDeleteButton = true
+							}
+							DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+								withAnimation(.easeInOut(duration: 0.6)) {
+									swipeDemoOffset = 0
+									showDeleteButton = false
+								}
+								// Mark as seen so it doesn't appear again
+								hasSeenSwipeDemo = true
+							}
+						}
 					}
 				} catch {
 					Logger.data.error("💥 Error fetching node info: \(error.localizedDescription, privacy: .public)")
