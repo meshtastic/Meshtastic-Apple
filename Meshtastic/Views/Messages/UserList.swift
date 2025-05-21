@@ -21,6 +21,7 @@ struct UserList: View {
 	@State private var isPkiEncrypted = false
 	@State private var isFavorite = false
 	@State private var isIgnored = false
+	@State private var isUnmessagable = false
 	@State private var isEnvironment = false
 	@State private var distanceFilter = false
 	@State private var maxDistance: Double = 800000
@@ -46,8 +47,9 @@ struct UserList: View {
 						  NSSortDescriptor(key: "userNode.lastHeard", ascending: false),
 						  NSSortDescriptor(key: "longName", ascending: true)],
 		predicate: NSPredicate(
-		 format: "userNode.ignored == false && longName != '' AND unmessagable == false"
-		), animation: .default)
+		  format: "userNode.ignored == NO AND unmessagable = NO"
+		), animation: .spring
+	)
 	var users: FetchedResults<UserEntity>
 
 	@Binding var node: NodeInfoEntity?
@@ -59,141 +61,139 @@ struct UserList: View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 		VStack {
-			List(selection: $userSelection) {
-				ForEach(users) { (user: UserEntity) in
-					let mostRecent = user.messageList.last
-					let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
-					let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
-					let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
-					if user.num != bleManager.connectedPeripheral?.num ?? 0 {
-						NavigationLink(value: user) {
-							ZStack {
-								Image(systemName: "circle.fill")
-									.opacity(user.unreadMessages > 0 ? 1 : 0)
-									.font(.system(size: 10))
-									.foregroundColor(.accentColor)
-									.brightness(0.2)
-							}
+			List(users, selection: $userSelection) { (user: UserEntity) in
+				let mostRecent = user.messageList.last
+				let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
+				let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
+				let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
+				if user.num != bleManager.connectedPeripheral?.num ?? 0 {
+					NavigationLink(value: user) {
+						ZStack {
+							Image(systemName: "circle.fill")
+								.opacity(user.unreadMessages > 0 ? 1 : 0)
+								.font(.system(size: 10))
+								.foregroundColor(.accentColor)
+								.brightness(0.2)
+						}
 
-							CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))))
+						CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))))
 
-							VStack(alignment: .leading) {
-								HStack {
-									if user.pkiEncrypted {
-										if !user.keyMatch {
-											/// Public Key on the User and the Public Key on the Last Message don't match
-											Image(systemName: "key.slash")
-												.foregroundColor(.red)
-										} else {
-											Image(systemName: "lock.fill")
-												.foregroundColor(.green)
-										}
+						VStack(alignment: .leading) {
+							HStack {
+								if user.pkiEncrypted {
+									if !user.keyMatch {
+										/// Public Key on the User and the Public Key on the Last Message don't match
+										Image(systemName: "key.slash")
+											.foregroundColor(.red)
 									} else {
-										Image(systemName: "lock.open.fill")
-											.foregroundColor(.yellow)
+										Image(systemName: "lock.fill")
+											.foregroundColor(.green)
 									}
-									Text(user.longName ?? "Unknown".localized)
-										.font(.headline)
-										.allowsTightening(true)
-									Spacer()
-									if user.userNode?.favorite ?? false {
-										Image(systemName: "star.fill")
-											.foregroundColor(.yellow)
-									}
-									if user.messageList.count > 0 {
-										if lastMessageDay == currentDay {
-											Text(lastMessageTime, style: .time )
-												.font(.footnote)
-												.foregroundColor(.secondary)
-										} else if lastMessageDay == (currentDay - 1) {
-											Text("Yesterday")
-												.font(.footnote)
-												.foregroundColor(.secondary)
-										} else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-											Text(lastMessageTime.formattedDate(format: dateFormatString))
-												.font(.footnote)
-												.foregroundColor(.secondary)
-										} else if lastMessageDay < (currentDay - 1800) {
-											Text(lastMessageTime.formattedDate(format: dateFormatString))
-												.font(.footnote)
-												.foregroundColor(.secondary)
-										}
-									}
+								} else {
+									Image(systemName: "lock.open.fill")
+										.foregroundColor(.yellow)
 								}
-
+								Text(user.longName ?? "Unknown".localized)
+									.font(.headline)
+									.allowsTightening(true)
+								Spacer()
+								if user.userNode?.favorite ?? false {
+									Image(systemName: "star.fill")
+										.foregroundColor(.yellow)
+								}
 								if user.messageList.count > 0 {
-									HStack(alignment: .top) {
-										Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
+									if lastMessageDay == currentDay {
+										Text(lastMessageTime, style: .time )
+											.font(.footnote)
+											.foregroundColor(.secondary)
+									} else if lastMessageDay == (currentDay - 1) {
+										Text("Yesterday")
+											.font(.footnote)
+											.foregroundColor(.secondary)
+									} else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+										Text(lastMessageTime.formattedDate(format: dateFormatString))
+											.font(.footnote)
+											.foregroundColor(.secondary)
+									} else if lastMessageDay < (currentDay - 1800) {
+										Text(lastMessageTime.formattedDate(format: dateFormatString))
 											.font(.footnote)
 											.foregroundColor(.secondary)
 									}
 								}
 							}
-						}
-						.frame(height: 62)
-						.contextMenu {
-							Button {
 
-								if node != nil && !(user.userNode?.favorite ?? false) {
-									let success = bleManager.setFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
-									if success {
-										user.userNode?.favorite = !(user.userNode?.favorite ?? true)
-										Logger.data.info("Favorited a node")
-									}
-								} else {
-									let success = bleManager.removeFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
-									if success {
-										user.userNode?.favorite = !(user.userNode?.favorite ?? true)
-										Logger.data.info("Un Favorited a node")
-									}
-								}
-								context.refresh(user, mergeChanges: true)
-								do {
-									try context.save()
-								} catch {
-									context.rollback()
-									Logger.data.error("Save Node Favorite Error")
-								}
-							} label: {
-								Label((user.userNode?.favorite ?? false)  ? "Un-Favorite" : "Favorite", systemImage: (user.userNode?.favorite ?? false) ? "star.slash.fill" : "star.fill")
-							}
-							Button {
-								user.mute = !user.mute
-								do {
-									try context.save()
-								} catch {
-									context.rollback()
-									Logger.data.error("Save User Mute Error")
-								}
-							} label: {
-								Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")
-							}
-							if user.messageList.count  > 0 {
-								Button(role: .destructive) {
-									isPresentingDeleteUserMessagesConfirm = true
-									userSelection = user
-								} label: {
-									Label("Delete Messages", systemImage: "trash")
+							if user.messageList.count > 0 {
+								HStack(alignment: .top) {
+									Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
+										.font(.footnote)
+										.foregroundColor(.secondary)
 								}
 							}
 						}
-						.confirmationDialog(
-							"This conversation will be deleted.",
-							isPresented: $isPresentingDeleteUserMessagesConfirm,
-							titleVisibility: .visible
-						) {
-							Button(role: .destructive) {
-								deleteUserMessages(user: userSelection!, context: context)
-								context.refresh(node!.user!, mergeChanges: true)
-							} label: {
-								Text("Delete")
+					}
+					.frame(height: 62)
+					.contextMenu {
+						Button {
+
+							if node != nil && !(user.userNode?.favorite ?? false) {
+								let success = bleManager.setFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
+								if success {
+									user.userNode?.favorite = !(user.userNode?.favorite ?? true)
+									Logger.data.info("Favorited a node")
+								}
+							} else {
+								let success = bleManager.removeFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
+								if success {
+									user.userNode?.favorite = !(user.userNode?.favorite ?? true)
+									Logger.data.info("Un Favorited a node")
+								}
 							}
+							context.refresh(user, mergeChanges: true)
+							do {
+								try context.save()
+							} catch {
+								context.rollback()
+								Logger.data.error("Save Node Favorite Error")
+							}
+						} label: {
+							Label((user.userNode?.favorite ?? false)  ? "Un-Favorite" : "Favorite", systemImage: (user.userNode?.favorite ?? false) ? "star.slash.fill" : "star.fill")
+						}
+						Button {
+							user.mute = !user.mute
+							do {
+								try context.save()
+							} catch {
+								context.rollback()
+								Logger.data.error("Save User Mute Error")
+							}
+						} label: {
+							Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")
+						}
+						if user.messageList.count  > 0 {
+							Button(role: .destructive) {
+								isPresentingDeleteUserMessagesConfirm = true
+								userSelection = user
+							} label: {
+								Label("Delete Messages", systemImage: "trash")
+							}
+						}
+					}
+					.confirmationDialog(
+						"This conversation will be deleted.",
+						isPresented: $isPresentingDeleteUserMessagesConfirm,
+						titleVisibility: .visible
+					) {
+						Button(role: .destructive) {
+							deleteUserMessages(user: userSelection!, context: context)
+							context.refresh(node!.user!, mergeChanges: true)
+						} label: {
+							Text("Delete")
 						}
 					}
 				}
 			}
 			.listStyle(.plain)
-			.navigationTitle(String.localizedStringWithFormat("Contacts (%@)".localized, String(users.count == 0 ? 0 : users.count)))
+			.navigationTitle(String.localizedStringWithFormat("Contacts (%@)".localized, String(users.count == 0 ? 0 : users.count - 1)))
 			.sheet(isPresented: $editingFilters) {
 				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isPkiEncrypted: $isPkiEncrypted, isFavorite: $isFavorite, isIgnored: $isIgnored, isEnvironment: $isEnvironment, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
 			}
@@ -246,7 +246,7 @@ struct UserList: View {
 					await searchUserList()
 				}
 			}
-			.onAppear {
+			.onFirstAppear {
 				Task {
 					await searchUserList()
 				}
@@ -297,8 +297,6 @@ struct UserList: View {
 		let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
 		/// Create an array of predicates to hold our AND predicates
 		var predicates: [NSPredicate] = []
-		let defaultPredicate = NSPredicate(format: "userNode.ignored == NO AND longName != '' AND unmessagable == NO")
-			predicates.append(defaultPredicate)
 		/// Mqtt and lora
 		if !(viaLora && viaMqtt) {
 			if viaLora {
@@ -345,6 +343,13 @@ struct UserList: View {
 			let isFavoritePredicate = NSPredicate(format: "userNode.favorite == YES")
 			predicates.append(isFavoritePredicate)
 		}
+		/// Ignored
+		let isIgnoredPredicate = NSPredicate(format: "userNode.ignored == NO")
+		predicates.append(isIgnoredPredicate)
+		/// Unmessagable
+		let isUnmessagablePredicate = NSPredicate(format: "unmessagable == NO")
+		predicates.append(isUnmessagablePredicate)
+
 		/// Distance
 		if distanceFilter {
 			let pointOfInterest = LocationsHandler.currentLocation

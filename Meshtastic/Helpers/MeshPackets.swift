@@ -317,12 +317,17 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 					newUser.pkiEncrypted = true
 					newUser.publicKey = nodeInfo.user.publicKey
 				}
-				let roles: [Int32] = [2, 4, 5, 6, 7, 10, 11]
-				if roles.contains(Int32(newUser.role)) {
-					newUser.unmessagable = true
+				/// For nodes that have the optional isUnmessagable boolean use that, otherwise excluded roles that are unmessagable by default
+				if nodeInfo.user.hasIsUnmessagable {
+					newUser.unmessagable = nodeInfo.user.isUnmessagable
 				} else {
-					newUser.unmessagable = false
-				}
+					let roles = [2, 4, 5, 6, 7, 10, 11]
+					let containsRole = roles.contains(Int(newUser.role))
+					if containsRole {
+						newUser.unmessagable = true
+					} else {
+						newUser.unmessagable = false
+					}}
 				newNode.user = newUser
 			} else if nodeInfo.num > Constants.minimumNodeNum {
 				let newUser = createUser(num: Int64(nodeInfo.num), context: context)
@@ -386,25 +391,31 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 					fetchedNode[0].user?.pkiEncrypted = true
 					fetchedNode[0].user?.publicKey = nodeInfo.user.publicKey
 				}
-				fetchedNode[0].user!.userId = nodeInfo.user.id
-				fetchedNode[0].user!.num = Int64(nodeInfo.num)
-				fetchedNode[0].user!.numString = String(nodeInfo.num)
-				fetchedNode[0].user!.longName = nodeInfo.user.longName
-				fetchedNode[0].user!.shortName = nodeInfo.user.shortName
-				fetchedNode[0].user!.isLicensed = nodeInfo.user.isLicensed
-				fetchedNode[0].user!.role = Int32(nodeInfo.user.role.rawValue)
-				fetchedNode[0].user!.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
-				fetchedNode[0].user!.hwModelId = Int32(nodeInfo.user.hwModel.rawValue)
-				let roles: [Int32] = [-1, 2, 4, 5, 6, 7, 10, 11]
-				if roles.contains(Int32(fetchedNode[0].user?.role ?? -1)) {
-					fetchedNode[0].user!.unmessagable = true
+				fetchedNode[0].user?.userId = nodeInfo.user.id
+				fetchedNode[0].user?.num = Int64(nodeInfo.num)
+				fetchedNode[0].user?.numString = String(nodeInfo.num)
+				fetchedNode[0].user?.longName = nodeInfo.user.longName
+				fetchedNode[0].user?.shortName = nodeInfo.user.shortName
+				fetchedNode[0].user?.isLicensed = nodeInfo.user.isLicensed
+				fetchedNode[0].user?.role = Int32(nodeInfo.user.role.rawValue)
+				fetchedNode[0].user?.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
+				fetchedNode[0].user?.hwModelId = Int32(nodeInfo.user.hwModel.rawValue)
+				/// For nodes that have the optional isUnmessagable boolean use that, otherwise excluded roles that are unmessagable by default
+				if nodeInfo.user.hasIsUnmessagable {
+					fetchedNode[0].user?.unmessagable = nodeInfo.user.isUnmessagable
 				} else {
-					fetchedNode[0].user!.unmessagable = false
+					let roles = [-1, 2, 4, 5, 6, 7, 10, 11]
+					let containsRole = roles.contains(Int(fetchedNode[0].user?.role ?? -1))
+					if containsRole {
+						fetchedNode[0].user?.unmessagable = true
+					} else {
+						fetchedNode[0].user?.unmessagable = false
+					}
 				}
 				Task {
 					Api().loadDeviceHardwareData { (hw) in
 						let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user!.hwModelId })
-						fetchedNode[0].user!.hwDisplayName = dh?.displayName
+						fetchedNode[0].user?.hwDisplayName = dh?.displayName
 					}
 				}
 			} else {
