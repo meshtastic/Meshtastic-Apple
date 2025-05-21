@@ -31,13 +31,6 @@ struct TraceRouteButton: View {
 					   .symbolRenderingMode(.hierarchical)
 				}
 		   }
-		}.alert(
-			"Trace Route Sent",
-			isPresented: $isPresentingTraceRouteSentAlert
-		) {
-			Button("OK") {	}.keyboardShortcut(.defaultAction)
-		} message: {
-			Text("This could take a while. The response will appear in the trace route log for the node it was sent to.")
 		}
     }
 }

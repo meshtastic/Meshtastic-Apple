@@ -31130,28 +31130,6 @@
         }
       }
     },
-    "This could take a while. The response will appear in the trace route log for the node it was sent to." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L'operazione potrebbe richiedere un po' di tempo. La risposta apparirà nel registro delle rotte di tracciamento per il nodo a cui è stata inviata."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ово може потрајати. Одговор ће се појавити у евиденцији трасе праћења за чвор којем је послат."
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "這可能需要一段時間。回應將會顯示在被發送節點的路由追蹤紀錄中。"
-          }
-        }
-      }
-    },
     "This device will send out range test messages on the selected interval." : {
       "localizations" : {
         "it" : {
