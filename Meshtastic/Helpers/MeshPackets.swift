@@ -317,6 +317,12 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 					newUser.pkiEncrypted = true
 					newUser.publicKey = nodeInfo.user.publicKey
 				}
+				let roles: [Int32] = [2, 4, 5, 6, 7, 10, 11]
+				if roles.contains(Int32(newUser.role)) {
+					newUser.unmessagable = true
+				} else {
+					newUser.unmessagable = false
+				}
 				newNode.user = newUser
 			} else if nodeInfo.num > Constants.minimumNodeNum {
 				let newUser = createUser(num: Int64(nodeInfo.num), context: context)
@@ -389,6 +395,12 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				fetchedNode[0].user!.role = Int32(nodeInfo.user.role.rawValue)
 				fetchedNode[0].user!.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
 				fetchedNode[0].user!.hwModelId = Int32(nodeInfo.user.hwModel.rawValue)
+				let roles: [Int32] = [-1, 2, 4, 5, 6, 7, 10, 11]
+				if roles.contains(Int32(fetchedNode[0].user?.role ?? -1)) {
+					fetchedNode[0].user!.unmessagable = true
+				} else {
+					fetchedNode[0].user!.unmessagable = false
+				}
 				Task {
 					Api().loadDeviceHardwareData { (hw) in
 						let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user!.hwModelId })

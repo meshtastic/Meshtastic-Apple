@@ -40,6 +40,8 @@ struct NodeList: View {
 	@State private var isPresentingPositionFailedAlert = false
 	@State private var isPresentingDeleteNodeAlert = false
 	@State private var deleteNodeId: Int64 = 0
+    @State private var isPresentingShareContactQR = false
+    @State private var shareContactNode: NodeInfoEntity?
 
 	var boolFilters: [Bool] {[
 		isFavorite,
@@ -78,13 +80,19 @@ struct NodeList: View {
 		/// Allow users to mute notifications for a node even if they are not connected
 		if let user = node.user {
 			NodeAlertsButton(context: context, node: node, user: user)
+            Button(action: {
+                shareContactNode = node
+                isPresentingShareContactQR = true
+            }) {
+                Label("Share Contact QR", systemImage: "qrcode")
+            }
 		}
 		if let connectedNode {
 			/// Favoriting a node requires being connected
 			FavoriteNodeButton(bleManager: bleManager, context: context, node: node)
 			/// Don't show message, trace route, position exchange or delete context menu items for the connected node
 			if connectedNode.num != node.num {
-				if !node.viaMqtt || node.viaMqtt && node.hopsAway == 0 {
+				if !(node.user?.unmessagable ?? true) {
 					Button(action: {
 						if let url = URL(string: "meshtastic:///messages?userNum=\(node.num)") {
 						   UIApplication.shared.open(url)
@@ -222,6 +230,13 @@ struct NodeList: View {
 							}
 						}
 					}
+				}
+			 }
+			.sheet(isPresented: $isPresentingShareContactQR) {
+				if let node = shareContactNode {
+					ShareContactQRDialog(node: node.toProto())
+				} else {
+					EmptyView()
 				}
 			}
 			.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)

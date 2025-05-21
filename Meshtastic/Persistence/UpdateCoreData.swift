@@ -160,7 +160,9 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				newNode.channel = Int32(packet.channel)
 			}
 			if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
-				newNode.hopsAway = Int32(nodeInfoMessage.hopsAway)
+				if nodeInfoMessage.hasHopsAway {
+					newNode.hopsAway = Int32(nodeInfoMessage.hopsAway)
+				}
 				newNode.favorite = nodeInfoMessage.isFavorite
 			}
 
@@ -181,6 +183,17 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					newUser.role = Int32(newUserMessage.role.rawValue)
 					newUser.hwModel = String(describing: newUserMessage.hwModel).uppercased()
 					newUser.hwModelId = Int32(newUserMessage.hwModel.rawValue)
+					if newUserMessage.hasIsUnmessagable {
+						newUser.unmessagable = newUserMessage.isUnmessagable
+					} else {
+						// For older firmare make Repeater, Router, Router Late, Sensor, Tracker, TAK, and TAK Tracker unmessagable
+						let roles: [Int32] = [2, 4, 5, 6, 7, 10, 11]
+						if roles.contains(Int32(newUser.role)) {
+							newUser.unmessagable = true
+						} else {
+							newUser.unmessagable = false
+						}
+					}
 					if !newUserMessage.publicKey.isEmpty {
 						newUser.pkiEncrypted = true
 						newUser.publicKey = newUserMessage.publicKey
@@ -277,6 +290,17 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].user!.role = Int32(nodeInfoMessage.user.role.rawValue)
 					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
 					fetchedNode[0].user!.hwModelId = Int32(nodeInfoMessage.user.hwModel.rawValue)
+					if nodeInfoMessage.user.hasIsUnmessagable {
+						fetchedNode[0].user!.unmessagable = nodeInfoMessage.user.isUnmessagable
+					} else {
+						// For older firmare make Repeater, Router, Router Late, Sensor, Tracker, TAK, and TAK Tracker unmessagable
+						let roles: [Int32] = [-1, 2, 4, 5, 6, 7, 10, 11]
+						if roles.contains(Int32(fetchedNode[0].user?.role ?? -1)) {
+							fetchedNode[0].user!.unmessagable = true
+						} else {
+							fetchedNode[0].user!.unmessagable = false
+						}
+					}
 					if !nodeInfoMessage.user.publicKey.isEmpty {
 						fetchedNode[0].user!.pkiEncrypted = true
 						fetchedNode[0].user!.publicKey = nodeInfoMessage.user.publicKey
