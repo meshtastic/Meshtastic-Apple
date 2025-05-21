@@ -26,7 +26,7 @@ struct UserMessageList: View {
 	@State private var gotFirstUnreadMessage: Bool = false
 
 	@State private var messageToHighlight: Int64 = 0
-
+	
 	var body: some View {
 		VStack {
 			ScrollViewReader { scrollView in
@@ -53,7 +53,7 @@ struct UserMessageList: View {
 														messageToHighlight = messageNum
 													}
 													scrollView.scrollTo(messageNum, anchor: .center)
-
+													
 													// Reset highlight after delay
 													Task {
 														try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second

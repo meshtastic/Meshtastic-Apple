@@ -19,11 +19,11 @@ struct UserDefault<T: Decodable> {
 
 	var wrappedValue: T {
 		get {
-			if defaultValue is any RawRepresentable {
+			if defaultValue as? any RawRepresentable != nil {
 				let storedValue = UserDefaults.standard.object(forKey: key.rawValue)
 
 				guard let storedValue,
-				let jsonString = (storedValue is String) ? "\"\(storedValue)\"" : "\(storedValue)",
+				let jsonString = (storedValue as? String != nil) ? "\"\(storedValue)\"" : "\(storedValue)",
 				let data = jsonString.data(using: .utf8),
 				let value = (try? JSONDecoder().decode(T.self, from: data)) else { return defaultValue }
 
