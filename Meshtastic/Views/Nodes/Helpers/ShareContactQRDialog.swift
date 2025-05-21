@@ -15,12 +15,10 @@ import OSLog
 struct ShareContactQRDialog: View {
     let node: NodeInfo
     @Environment(\.dismiss) private var dismiss
-    
     var qrString: String {
 		var contact = SharedContact()
 		contact.nodeNum = node.num
 		contact.user = node.user
-		
         do {
             let contactString = try contact.serializedData().base64EncodedString()
 			return ("https://meshtastic.org/v/#" + contactString.base64ToBase64url())
@@ -28,9 +26,7 @@ struct ShareContactQRDialog: View {
 			Logger.services.error("Error serializing contact: \(error)")
             return ""
         }
-		
     }
-    
     var qrImage: UIImage {
         let context = CIContext()
         let filter = CIFilter.qrCodeGenerator()
@@ -42,7 +38,6 @@ struct ShareContactQRDialog: View {
         }
         return UIImage(systemName: "xmark.circle") ?? UIImage()
     }
-    
     var body: some View {
         VStack(spacing: 20) {
             Text("Share Contact QR")
@@ -86,8 +81,8 @@ struct ShareContactQRDialog_Previews: PreviewProvider {
 			userProto.id = "!1234"
 			userProto.longName = "Bud"
 			userProto.shortName = "Bud"
-			userProto.hwModel = HardwareModel(rawValue:1)!;
-			userProto.role = Config.DeviceConfig.Role(rawValue: 1)!
+			userProto.hwModel = HardwareModel.tbeam
+			userProto.role = Config.DeviceConfig.Role.client
 			userProto.publicKey = Data()
 		node.user = userProto
 

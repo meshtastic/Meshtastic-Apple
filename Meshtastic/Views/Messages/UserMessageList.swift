@@ -14,7 +14,6 @@ struct UserMessageList: View {
 	@EnvironmentObject var appState: AppState
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.managedObjectContext) var context
-
 	// Keyboard State
 	@FocusState var messageFieldFocused: Bool
 	// View State Items
@@ -24,23 +23,22 @@ struct UserMessageList: View {
 	@State private var showScrollToBottomButton = false
 	@State private var hasReachedBottom = false
 	@State private var gotFirstUnreadMessage: Bool = false
-
 	@State private var messageToHighlight: Int64 = 0
-	
+
 	var body: some View {
 		VStack {
 			ScrollViewReader { scrollView in
 				ZStack(alignment: .bottomTrailing) {
 					ScrollView {
 						LazyVStack {
-							ForEach( Array(user.messageList.enumerated()) , id: \.element.id) { index, message in
+							ForEach( Array(user.messageList.enumerated()), id: \.element.id) { index, message in
 								// Get the previous message, if it exists
 								let previousMessage = index > 0 ? user.messageList[index - 1] : nil
 								if message.displayTimestamp(aboveMessage: previousMessage) {
 									Text(message.timestamp.formatted(date: .abbreviated, time: .shortened))
 										.font(.caption)
 										.foregroundColor(.gray)
-								} 
+								}
 								if user.num != bleManager.connectedPeripheral?.num ?? -1 {
 									let currentUser: Bool = (Int64(UserDefaults.preferredPeripheralNum) == message.fromUser?.num ?? -1 ? true : false)
 

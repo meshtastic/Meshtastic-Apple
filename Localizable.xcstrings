@@ -4419,129 +4419,6 @@
         }
       }
     },
-    "ble.signal.strength.normal" : {
-      "comment" : "VoiceOver value for normal BLE signal strength",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Signalstärke normal"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Signal strength normal"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Segnale normale"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Нормалан сигнал"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "信号正常"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "訊號正常"
-          }
-        }
-      }
-    },
-    "ble.signal.strength.strong" : {
-      "comment" : "VoiceOver value for strong BLE signal strength",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Signalstärke stark"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Signal strength strong"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Segnale forte"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Јак сигнал"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "信号强"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "訊號強"
-          }
-        }
-      }
-    },
-    "ble.signal.strength.weak" : {
-      "comment" : "VoiceOver value for weak BLE signal strength",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Signalstärke schwach"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Signal strength weak"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Segnale debole"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Слаб сигнал"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "信号弱"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "訊號微弱"
-          }
-        }
-      }
-    },
     "Bluetooth" : {
       "localizations" : {
         "de" : {
@@ -4770,28 +4647,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "藍芽已關閉"
-          }
-        }
-      }
-    },
-    "bluetooth.connected" : {
-      "comment" : "VoiceOver label for connected Bluetooth icon",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connected to Bluetooth device"
-          }
-        }
-      }
-    },
-    "bluetooth.not.connected" : {
-      "comment" : "VoiceOver label for disconnected Bluetooth icon",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No Bluetooth device connected"
           }
         }
       }
@@ -9458,28 +9313,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "裝置僅在必要時廣播，以達到隱蔽性或節能目的。"
-          }
-        }
-      }
-    },
-    "device_charging" : {
-      "comment" : "VoiceOver value for charging device",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Charging"
-          }
-        }
-      }
-    },
-    "device_plugged_in" : {
-      "comment" : "VoiceOver value for plugged in device",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plugged in"
           }
         }
       }

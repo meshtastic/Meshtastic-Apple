@@ -49,9 +49,9 @@ struct NodeListItem: View {
         if let battery = node.latestDeviceMetrics?.batteryLevel {
             // Check for plugged in and charging states, same logic as in BatteryCompact and BatteryGauge
             if battery > 100 {
-                desc += ", " + NSLocalizedString("device_plugged_in", comment: "VoiceOver value for plugged in device")
+				desc += ", " + "Plugged in".localized
             } else if battery == 100 {
-                desc += ", " + NSLocalizedString("device_charging", comment: "VoiceOver value for charging device")
+				desc += ", " + "Charging".localized
             } else {
                 desc += ", battery \(battery)%"
             }
@@ -60,7 +60,6 @@ struct NodeListItem: View {
         if !connected, let (lastPosition, myCoord) = locationData {
             let nodeCoord = CLLocation(latitude: lastPosition.nodeCoordinate!.latitude, longitude: lastPosition.nodeCoordinate!.longitude)
             let metersAway = nodeCoord.distance(from: myCoord)
-            
             // Distance information
             let distanceFormatter = LengthFormatter()
             distanceFormatter.unitStyle = .medium
@@ -87,11 +86,11 @@ struct NodeListItem: View {
             let signalString: String
             switch signalStrength {
             case .weak:
-                signalString = NSLocalizedString("ble.signal.strength.weak", comment: "VoiceOver value for weak BLE signal strength")
+                signalString = "Signal strength weak".localized
             case .normal:
-                signalString = NSLocalizedString("ble.signal.strength.normal", comment: "VoiceOver value for normal BLE signal strength")
+                signalString = "Signal strength normal".localized
             case .strong:
-                signalString = NSLocalizedString("ble.signal.strength.strong", comment: "VoiceOver value for strong BLE signal strength")
+                signalString = "Signal strength strong".localized
             }
             desc += ", " + signalString
         }

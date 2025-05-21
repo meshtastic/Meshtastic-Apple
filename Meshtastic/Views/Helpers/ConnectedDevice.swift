@@ -38,7 +38,7 @@ struct ConnectedDevice: View {
                                 .accessibilityHidden(true)
                         }
                         .accessibilityElement(children: .ignore)
-                        .accessibilityLabel("bluetooth.connected".localized + ", " + name.formatNodeNameForVoiceOver())
+                        .accessibilityLabel("Connected to Bluetooth device".localized + ", " + name.formatNodeNameForVoiceOver())
                     } else {
                         // Create a container for disconnected state
                         HStack {
@@ -49,7 +49,7 @@ struct ConnectedDevice: View {
                                 .accessibilityHidden(true)
                         }
                         .accessibilityElement(children: .ignore)
-                        .accessibilityLabel("bluetooth.not.connected".localized)
+                        .accessibilityLabel("No Bluetooth device connected".localized)
                     }
                 } else {
                     // Create a container for Bluetooth off state

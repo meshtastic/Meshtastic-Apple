@@ -36,11 +36,11 @@ struct SignalStrengthIndicator: View {
     private var accessibilityDescription: String {
         switch signalStrength {
         case .weak:
-            return NSLocalizedString("ble.signal.strength.weak", comment: "VoiceOver value for weak BLE signal strength")
+			return "Signal strength weak".localized
         case .normal:
-            return NSLocalizedString("ble.signal.strength.normal", comment: "VoiceOver value for normal BLE signal strength")
+			return "Signal strength normal".localized
         case .strong:
-            return NSLocalizedString("ble.signal.strength.strong", comment: "VoiceOver value for strong BLE signal strength")
+            return "Signal strength strong".localized
         }
     }
 

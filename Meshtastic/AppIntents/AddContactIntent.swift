@@ -23,11 +23,9 @@ struct AddContactIntent: AppIntent {
 		}
 
 		if contactUrl.absoluteString.lowercased().contains("meshtastic.org/v/#") {
-			
 			let components = self.contactUrl.absoluteString.components(separatedBy: "#")
 			// Extract contact information from the URL
 			if let contactData = components.last {
-				
 				let decodedString = contactData.base64urlToBase64()
 				if let decodedData = Data(base64Encoded: decodedString) {
 					do {
@@ -38,7 +36,6 @@ struct AddContactIntent: AppIntent {
 
 					} catch {
 						throw AppIntentErrors.AppIntentError.message("Failed to parse contact data: \(error.localizedDescription)")
-						
 					}
 				}
 			}
