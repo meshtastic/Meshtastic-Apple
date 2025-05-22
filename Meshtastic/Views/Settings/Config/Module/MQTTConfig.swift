@@ -130,11 +130,11 @@ struct MQTTConfig: View {
 							Text("To comply with privacy laws like CCPA and GDPR, we avoid sharing exact location data. Instead, we use anonymized or approximate (imprecise) location information to protect your privacy.")
 								.foregroundColor(.gray)
 								.font(.callout)
-							Slider(value: $mapPositionPrecision, in: 11...14, step: 1) {
+							Slider(value: $mapPositionPrecision, in: 12...15, step: 1) {
 							} minimumValueLabel: {
-								Image(systemName: "minus")
-							} maximumValueLabel: {
 								Image(systemName: "plus")
+							} maximumValueLabel: {
+								Image(systemName: "minus")
 							}
 							Text(PositionPrecision(rawValue: Int(mapPositionPrecision))?.description ?? "")
 								.foregroundColor(.gray)
