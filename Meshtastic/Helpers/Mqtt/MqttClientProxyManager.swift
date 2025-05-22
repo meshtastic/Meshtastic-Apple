@@ -41,31 +41,29 @@ class MqttClientProxyManager {
 
 		if let host = host {
 			let port = defaultServerPort
-			let username = node.mqttConfig?.username
-			let password = node.mqttConfig?.password
 			let root = node.mqttConfig?.root?.count ?? 0 > 0 ? node.mqttConfig?.root : "msh"
 			let prefix = root!
 			topic = prefix + "/2/e" + "/#"
 			// Require opt in to map report terms to connect
 			if node.mqttConfig?.mapReportingEnabled ?? false && UserDefaults.mapReportingOptIn || !(node.mqttConfig?.mapReportingEnabled ?? false) {
-				connect(host: host, port: port, useSsl: useSsl, username: username, password: password, topic: topic)
+				connect(host: host, port: port, useSsl: useSsl, topic: topic, node: node)
 			} else {
 				delegate?.onMqttError(message: "MQTT Map Reporting Terms need to be accepted.")
 			}
 		}
 	}
-	func connect(host: String, port: Int, useSsl: Bool, username: String?, password: String?, topic: String?) {
+	func connect(host: String, port: Int, useSsl: Bool, topic: String?, node: NodeInfoEntity) {
 		guard !host.isEmpty else {
 			delegate?.onMqttDisconnected()
 			return
 		}
-		let clientId = "MeshtasticAppleMqttProxy-" + String(ProcessInfo().processIdentifier)
+		let clientId = "MeshtasticAppleMqttProxy-" + (node.user?.userId ?? String(ProcessInfo().processIdentifier))
 		mqttClientProxy = CocoaMQTT(clientID: clientId, host: host, port: UInt16(port))
 		if let mqttClient = mqttClientProxy {
 			mqttClient.enableSSL = useSsl
 			mqttClient.allowUntrustCACertificate = true
-			mqttClient.username = username
-			mqttClient.password = password
+			mqttClient.username =  node.mqttConfig?.username
+			mqttClient.password = node.mqttConfig?.password
 			mqttClient.keepAlive = 60
 			mqttClient.cleanSession = true
 			if debugLog {
