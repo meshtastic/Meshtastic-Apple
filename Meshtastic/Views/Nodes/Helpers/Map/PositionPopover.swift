@@ -156,7 +156,7 @@ struct PositionPopover: View {
 						if lastLocation.distance(from: CLLocation(latitude: LocationsHandler.DefaultLocation.latitude, longitude: LocationsHandler.DefaultLocation.longitude)) > 0.0 {
 							let metersAway = position.coordinate.distance(from: CLLocationCoordinate2D(latitude: lastLocation.coordinate.latitude, longitude: lastLocation.coordinate.longitude))
 							Label {
-								Text("distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
+								Text("Distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
 									.foregroundColor(.primary)
 									.font(idiom == .phone ? .callout : .body)
 							} icon: {

@@ -214,8 +214,7 @@ struct ExternalNotificationConfig: View {
 							}
 						} else {
 							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin, empty external notificaiton module config")
-							_ = bleManager.requestExternalNotificationModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
 						}
 					}
 				}

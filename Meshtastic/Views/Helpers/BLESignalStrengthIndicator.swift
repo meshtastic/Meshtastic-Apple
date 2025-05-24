@@ -32,47 +32,64 @@ import Foundation
 import SwiftUI
 
 struct SignalStrengthIndicator: View {
-	let signalStrength: BLESignalStrength
+    // Accessibility: VoiceOver description
+    private var accessibilityDescription: String {
+        switch signalStrength {
+        case .weak:
+			return "Signal strength weak".localized
+        case .normal:
+			return "Signal strength normal".localized
+        case .strong:
+            return "Signal strength strong".localized
+        }
+    }
 
-	var body: some View {
-		HStack {
-			ForEach(0..<3) { bar in
-				RoundedRectangle(cornerRadius: 3)
-					.divided(amount: (CGFloat(bar) + 1) / CGFloat(3))
-					.fill(getColor().opacity(bar <= signalStrength.rawValue ? 1 : 0.3))
-					.frame(width: 8, height: 40)
-			}
-		}
-	}
+    let signalStrength: BLESignalStrength
 
-	private func getColor() -> Color {
-		switch signalStrength {
-		case .weak:
-			return Color.red
-		case .normal:
-			return Color.yellow
-		case .strong:
-			return Color.green
-		}
-	}
+    var body: some View {
+        Group {
+            HStack {
+                ForEach(0..<3) { bar in
+                    RoundedRectangle(cornerRadius: 3)
+                        .divided(amount: (CGFloat(bar) + 1) / CGFloat(3))
+                        .fill(getColor().opacity(bar <= signalStrength.rawValue ? 1 : 0.3))
+                        .frame(width: 8, height: 40)
+                }
+            }
+        }
+        .accessibilityElement(children: .ignore)
+		.accessibilityLabel("Signal strength".localized)
+        .accessibilityValue(accessibilityDescription)
+    }
+
+    private func getColor() -> Color {
+        switch signalStrength {
+        case .weak:
+            return Color.red
+        case .normal:
+            return Color.yellow
+        case .strong:
+            return Color.green
+        }
+    }
 }
 
 struct Divided<S: Shape>: Shape {
-	var amount: CGFloat // Should be in range 0...1
-	var shape: S
-	func path(in rect: CGRect) -> Path {
-		shape.path(in: rect.divided(atDistance: amount * rect.height, from: .maxYEdge).slice)
-	}
+    var amount: CGFloat // Should be in range 0...1
+    var shape: S
+    func path(in rect: CGRect) -> Path {
+        shape.path(in: rect.divided(atDistance: amount * rect.height, from: .maxYEdge).slice)
+    }
 }
 
 extension Shape {
-	func divided(amount: CGFloat) -> Divided<Self> {
-		return Divided(amount: amount, shape: self)
-	}
+    func divided(amount: CGFloat) -> Divided<Self> {
+        return Divided(amount: amount, shape: self)
+    }
 }
 
 enum BLESignalStrength: Int {
-	case weak = 0
-	case normal = 1
-	case strong = 2
+    case weak = 0
+    case normal = 1
+    case strong = 2
 }

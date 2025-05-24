@@ -73,8 +73,7 @@ struct PaxCounterConfig: View {
 							}
 						} else {
 							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin, empty pax counter module config")
-							_ = bleManager.requestPaxCounterModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
 						}
 					}
 				}

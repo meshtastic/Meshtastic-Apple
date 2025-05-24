@@ -160,7 +160,9 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				newNode.channel = Int32(packet.channel)
 			}
 			if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
-				newNode.hopsAway = Int32(nodeInfoMessage.hopsAway)
+				if nodeInfoMessage.hasHopsAway {
+					newNode.hopsAway = Int32(nodeInfoMessage.hopsAway)
+				}
 				newNode.favorite = nodeInfoMessage.isFavorite
 			}
 
@@ -181,6 +183,18 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					newUser.role = Int32(newUserMessage.role.rawValue)
 					newUser.hwModel = String(describing: newUserMessage.hwModel).uppercased()
 					newUser.hwModelId = Int32(newUserMessage.hwModel.rawValue)
+					/// For nodes that have the optional isUnmessagable boolean use that, otherwise excluded roles that are unmessagable by default
+					if newUserMessage.hasIsUnmessagable {
+						newUser.unmessagable = newUserMessage.isUnmessagable
+					} else {
+						let roles = [2, 4, 5, 6, 7, 10, 11]
+						let containsRole = roles.contains(Int(newUser.role))
+						if containsRole {
+							newUser.unmessagable = true
+						} else {
+							newUser.unmessagable = false
+						}
+					}
 					if !newUserMessage.publicKey.isEmpty {
 						newUser.pkiEncrypted = true
 						newUser.publicKey = newUserMessage.publicKey
@@ -277,6 +291,18 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].user!.role = Int32(nodeInfoMessage.user.role.rawValue)
 					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
 					fetchedNode[0].user!.hwModelId = Int32(nodeInfoMessage.user.hwModel.rawValue)
+					/// For nodes that have the optional isUnmessagable boolean use that, otherwise excluded roles that are unmessagable by default
+					if nodeInfoMessage.user.hasIsUnmessagable {
+						fetchedNode[0].user!.unmessagable = nodeInfoMessage.user.isUnmessagable
+					} else {
+						let roles = [-1, 2, 4, 5, 6, 7, 10, 11]
+						let containsRole = roles.contains(Int(fetchedNode[0].user?.role ?? -1))
+						if containsRole {
+							fetchedNode[0].user?.unmessagable = true
+						} else {
+							fetchedNode[0].user?.unmessagable = false
+						}
+					}
 					if !nodeInfoMessage.user.publicKey.isEmpty {
 						fetchedNode[0].user!.pkiEncrypted = true
 						fetchedNode[0].user!.publicKey = nodeInfoMessage.user.publicKey

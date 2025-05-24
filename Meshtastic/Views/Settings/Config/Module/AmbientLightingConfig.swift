@@ -100,8 +100,7 @@ struct AmbientLightingConfig: View {
 								}
 							} else {
 								/// Legacy Administration
-								Logger.mesh.info("☠️ Using insecure legacy admin, empty ambient lighting module config")
-								_ = bleManager.requestAmbientLightingConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
 							}
 						}
 					}

@@ -177,20 +177,23 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 	// Disconnect Connected Peripheral
 	func disconnectPeripheral(reconnect: Bool = true) {
-
-		guard let connectedPeripheral = connectedPeripheral else { return }
-		if mqttProxyConnected {
-			mqttManager.mqttClientProxy?.disconnect()
+		// Ensure all operations run on the main thread
+		DispatchQueue.main.async { [weak self] in
+			guard let self = self else { return }
+			guard let connectedPeripheral = self.connectedPeripheral else { return }
+			if self.mqttProxyConnected {
+				self.mqttManager.mqttClientProxy?.disconnect()
+			}
+			self.automaticallyReconnect = reconnect
+			self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
+			self.FROMRADIO_characteristic = nil
+			self.isConnected = false
+			self.isSubscribed = false
+			self.invalidVersion = false
+			self.connectedVersion = "0.0.0"
+			self.stopScanning()
+			self.startScanning()
 		}
-		automaticallyReconnect = reconnect
-		centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
-		FROMRADIO_characteristic = nil
-		isConnected = false
-		isSubscribed = false
-		invalidVersion = false
-		connectedVersion = "0.0.0"
-		stopScanning()
-		startScanning()
 	}
 
 	// Called each time a peripheral is connected
@@ -940,7 +943,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								subtitle: "TR received back from \(destinationHop.name ?? "unknown")",
 								content: "Hops from: \(tr.hopsTowards), Hops back: \(tr.hopsBack)\n\(tr.routeText ?? "Unknown".localized)\n\(tr.routeBackText ?? "Unknown".localized)",
 								target: "nodes",
-								path: "meshtastic:///nodes?nodenum=\(connectedNode.user?.num ?? 0)"
+								path: "meshtastic:///nodes?nodenum=\(tr.node?.num ?? 0)"
 							)
 						]
 						manager.schedule()
@@ -1120,6 +1123,19 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					if newMessage.toUser?.pkiEncrypted ?? false {
 						meshPacket.pkiEncrypted = true
 						meshPacket.publicKey = newMessage.toUser?.publicKey ?? Data()
+						// Auto Favorite nodes you DM so they don't roll out of the nodedb
+						if !(newMessage.toUser?.userNode?.favorite ?? true) {
+							newMessage.toUser?.userNode?.favorite = true
+							do {
+								try context.save()
+								Logger.data.info("💾 Auto favorited node bases on sending a message \(self.connectedPeripheral.num.toHex(), privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
+								_ = self.setFavoriteNode(node: (newMessage.toUser?.userNode)!, connectedNodeNum: fromUserNum)
+							} catch {
+								context.rollback()
+								let nsError = error as NSError
+								Logger.data.error("Unresolved Core Data error when auto favoriting in Send Message Function. Error: \(nsError, privacy: .public)")
+							}
+						}
 					}
 					meshPacket.id = UInt32(newMessage.messageId)
 					if toUserNum > 0 {
@@ -1750,6 +1766,70 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 
 				} catch {
+					return false
+				}
+			}
+		}
+		return false
+	}
+
+	public func addContactFromURL(base64UrlString: String) -> Bool {
+		if isConnected {
+
+			let decodedString = base64UrlString.base64urlToBase64()
+			if let decodedData = Data(base64Encoded: decodedString) {
+				do {
+					let contact: SharedContact = try SharedContact(serializedBytes: decodedData)
+					var adminPacket = AdminMessage()
+					adminPacket.addContact = contact
+					var meshPacket: MeshPacket = MeshPacket()
+					meshPacket.to = UInt32(connectedPeripheral.num)
+					meshPacket.from	= UInt32(connectedPeripheral.num)
+					meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+					meshPacket.priority =  MeshPacket.Priority.reliable
+					meshPacket.wantAck = true
+					meshPacket.channel = 0
+					var dataMessage = DataMessage()
+					guard let adminData: Data = try? adminPacket.serializedData() else {
+						return false
+					}
+					dataMessage.payload = adminData
+					dataMessage.portnum = PortNum.adminApp
+					meshPacket.decoded = dataMessage
+					var toRadio: ToRadio!
+					toRadio = ToRadio()
+					toRadio.packet = meshPacket
+					guard let binaryData: Data = try? toRadio.serializedData() else {
+						return false
+					}
+
+					// Create a NodeInfo (User) packet for the newly added contact
+					var dataNodeMessage = DataMessage()
+					if let nodeInfoData = try? contact.user.serializedData() {
+						dataNodeMessage.payload = nodeInfoData
+						dataNodeMessage.portnum = PortNum.nodeinfoApp
+						var nodeMeshPacket = MeshPacket()
+						nodeMeshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+						nodeMeshPacket.to = UInt32.max
+						nodeMeshPacket.from = UInt32(contact.nodeNum)
+						nodeMeshPacket.decoded = dataNodeMessage
+						// Update local database with the new node info
+						upsertNodeInfoPacket(packet: nodeMeshPacket, context: context)
+					}
+
+					if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
+						self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
+						let logString = String.localizedStringWithFormat("Added contact %@ to device".localized, contact.user.longName)
+						Logger.mesh.info("📻 \(logString, privacy: .public)")
+					}
+
+					if self.connectedPeripheral != nil {
+						self.sendWantConfig()
+						return true
+					}
+
+				} catch {
+					Logger.data.error("Failed to decode contact data: \(error.localizedDescription, privacy: .public)")
 					return false
 				}
 			}

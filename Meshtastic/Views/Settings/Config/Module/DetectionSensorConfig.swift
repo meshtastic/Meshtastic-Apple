@@ -206,8 +206,7 @@ struct DetectionSensorConfig: View {
 							}
 						} else {
 							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin, empty detection sensor module config")
-							_ = bleManager.requestDetectionSensorModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
 						}
 					}
 				}

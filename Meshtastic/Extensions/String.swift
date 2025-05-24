@@ -115,6 +115,17 @@ extension String {
 			.joined()
 	}
 
+	/// Formats a short name like "P130" to read as "Node P 130" for VoiceOver
+	/// This ensures proper pronunciation of alphanumeric node IDs
+	func formatNodeNameForVoiceOver() -> String {
+		let spaced = self.replacingOccurrences(
+			of: #"([A-Za-z])([0-9]+)"#,
+			with: "$1 $2",
+			options: .regularExpression
+		)
+		return "Node".localized + " " + spaced
+	}
+
 	// Adds variation selectors to prefer the graphical form of emoji.
 	// Looks ahead to make sure that the variation selector is not already applied.
 	var addingVariationSelectors: String {
