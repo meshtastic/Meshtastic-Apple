@@ -15,6 +15,7 @@ struct MapSettingsForm: View {
 	@AppStorage("meshMapShowRouteLines") private var routeLines = false
 	@AppStorage("enableMapConvexHull") private var convexHull = false
 	@AppStorage("enableMapWaypoints") private var waypoints = true
+	@AppStorage("onlyShowFavoriteNodesMap") private var favoriteNodesOnly = false
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
 	@Binding var mapLayer: MapLayer
@@ -61,7 +62,15 @@ struct MapSettingsForm: View {
 							UserDefaults.enableMapWaypoints = !waypoints
 						}
 					}
-
+					
+					Toggle(isOn: $favoriteNodesOnly) {
+						Label("Only Show Favorites", systemImage: "star.fill")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.onTapGesture {
+						self.favoriteNodesOnly.toggle()
+						UserDefaults.onlyShowFavoriteNodesMap = self.favoriteNodesOnly
+					}
 					Toggle(isOn: $nodeHistory) {
 						Label("Node History", systemImage: "building.columns.fill")
 					}
