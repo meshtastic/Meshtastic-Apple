@@ -30,9 +30,9 @@ struct UserConfig: View {
 	@State var overrideDutyCycle = false
 	@State var overrideFrequency: Float = 0.0
 	@State var txPower = 0
-
 	@FocusState var focusedField: Field?
 
+	public var minimumVersion = "2.6.8"
 	let floatFormatter: NumberFormatter = {
 		let formatter = NumberFormatter()
 		formatter.numberStyle = .decimal
@@ -97,13 +97,14 @@ struct UserConfig: View {
 						Text("The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long.")
 							.foregroundColor(.gray)
 							.font(.callout)
-					
+						let supportedVersion = UserDefaults.firmwareVersion == "0.0.0" ||  self.minimumVersion.compare(UserDefaults.firmwareVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(UserDefaults.firmwareVersion, options: .numeric) == .orderedSame
 						Toggle(isOn: $isUnmessagable) {
 							Label("Unmessagable", systemImage: "iphone.slash")
 							Text("Used to identify unmonitored or infrastructure nodes so that messaging is not avaliable to nodes that will never respond.")
 								.font(.caption2)
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.disabled(!supportedVersion)
 					}
 					// Only manage ham mode for the locally connected node
 					if node?.num ?? 0 > 0 && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {

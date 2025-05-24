@@ -70,8 +70,8 @@ class LocalNotificationManager {
 			if notification.critical {
 				content.sound = UNNotificationSound.defaultCritical
 			}
-
-            let request = UNNotificationRequest(identifier: notification.id, content: content, trigger: nil)
+			let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+            let request = UNNotificationRequest(identifier: notification.id, content: content, trigger: trigger)
 
             UNUserNotificationCenter.current().add(request) { error in
 				if let error {
