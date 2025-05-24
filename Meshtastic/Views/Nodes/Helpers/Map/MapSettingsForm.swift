@@ -29,7 +29,7 @@ struct MapSettingsForm: View {
 					Picker(selection: $mapLayer, label: Text("")) {
 						ForEach(MapLayer.allCases, id: \.self) { layer in
 							if layer != MapLayer.offline {
-								Text(layer.localized)
+								Text(layer.localized.capitalized)
 							}
 						}
 					}
