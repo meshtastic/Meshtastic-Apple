@@ -19,7 +19,6 @@ struct BatteryCompact: View {
 				// Check for plugged in state
 				let isPluggedIn = batteryLevel > 100
 				let isCharging = batteryLevel == 100
-				
 				// Battery icon selection based on level
 				if isPluggedIn {
 					Image(systemName: "powerplug")
@@ -64,7 +63,6 @@ struct BatteryCompact: View {
 						.symbolRenderingMode(.multicolor)
 						.accessibilityHidden(true)
 				}
-				
 				// Battery text label
 				if isPluggedIn {
 					Text("PWD")
@@ -89,7 +87,6 @@ struct BatteryCompact: View {
 					.foregroundColor(color)
 					.symbolRenderingMode(.multicolor)
 					.accessibilityHidden(true)
-				
 				Text(verbatim: "?")
 					.foregroundStyle(.secondary)
 					.font(font)
@@ -100,7 +97,7 @@ struct BatteryCompact: View {
 		.accessibilityElement(children: .ignore)
 		.accessibilityLabel(NSLocalizedString("Battery Level", comment: "VoiceOver label for battery gauge"))
 		// Set appropriate value based on the battery state using a computed property
-		.accessibilityValue(batteryLevel.map { level in 
+		.accessibilityValue(batteryLevel.map { level in
 		if level > 100 {
 				// Plugged in - same as PWD visual indicator
 			return "Plugged in".localized

@@ -1058,7 +1058,6 @@ func textMessageAppPacket(
 	}
 }
 
-
 func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("Waypoint Packet received from node: %@".localized, String(packet.from))

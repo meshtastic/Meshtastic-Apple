@@ -32,7 +32,6 @@ struct ShortcutsProvider: AppShortcutsProvider {
 							  "Send a \(.applicationName) group message"],
 					shortTitle: "Group Message",
 					systemImageName: "message")
-		
 		AppShortcut(intent: DisconnectNodeIntent(),
 					phrases: ["Disconnect \(.applicationName) node",
 							  "Disconnect my \(.applicationName) node",

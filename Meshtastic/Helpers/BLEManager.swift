@@ -181,11 +181,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		DispatchQueue.main.async { [weak self] in
 			guard let self = self else { return }
 			guard let connectedPeripheral = self.connectedPeripheral else { return }
-			
 			if self.mqttProxyConnected {
 				self.mqttManager.mqttClientProxy?.disconnect()
 			}
-			
 			self.automaticallyReconnect = reconnect
 			self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
 			self.FROMRADIO_characteristic = nil
@@ -1810,13 +1808,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					if let nodeInfoData = try? contact.user.serializedData() {
 						dataNodeMessage.payload = nodeInfoData
 						dataNodeMessage.portnum = PortNum.nodeinfoApp
-						
 						var nodeMeshPacket = MeshPacket()
 						nodeMeshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 						nodeMeshPacket.to = UInt32.max
 						nodeMeshPacket.from = UInt32(contact.nodeNum)
 						nodeMeshPacket.decoded = dataNodeMessage
-						
 						// Update local database with the new node info
 						upsertNodeInfoPacket(packet: nodeMeshPacket, context: context)
 					}
@@ -1840,7 +1836,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		return false
 	}
-
 
 	public func saveUser(config: User, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 		var adminPacket = AdminMessage()

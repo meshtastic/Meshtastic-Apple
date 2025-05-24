@@ -13,7 +13,6 @@ struct DisconnectNodeIntent: AppIntent {
 
 	static var description: IntentDescription = "Disconnect the currently connected node"
 
-
 	func perform() async throws -> some IntentResult {
 		if !BLEManager.shared.isConnected {
 			throw AppIntentErrors.AppIntentError.notConnected

@@ -65,7 +65,6 @@ struct LoRaSignalStrengthMeter_Previews: PreviewProvider {
 					LoRaSignalStrengthMeter(snr: -26.0, rssi: -128, preset: ModemPresets.longFast, compact: true)
 						.padding(.bottom)
 				}.padding()
-				
 				HStack {
 					// Good
 					LoRaSignalStrengthMeter(snr: -1, rssi: -114, preset: ModemPresets.longFast, compact: false)

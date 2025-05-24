@@ -364,7 +364,6 @@ struct NodeList: View {
 					Logger.services.info("NodeList directly updated from notification for node: \(nodeNum, privacy: .public)")
 				}
 			}
-			
 			Task {
 				await searchNodeList()
 			}

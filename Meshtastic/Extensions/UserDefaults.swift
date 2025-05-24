@@ -119,7 +119,7 @@ extension UserDefaults {
 
 	@UserDefault(.enableMapPointsOfInterest, defaultValue: false)
 	static var enableMapPointsOfInterest: Bool
-	
+
 	@UserDefault(.enableMapShowFavorites, defaultValue: false)
 	static var enableMapShowFavorites: Bool
 

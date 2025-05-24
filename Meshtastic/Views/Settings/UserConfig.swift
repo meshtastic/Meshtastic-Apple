@@ -184,7 +184,7 @@ struct UserConfig: View {
 							} else {
 								var ham = HamParameters()
 								ham.shortName = shortName
-								//ham.isUnmessagable = isUnmessagable
+								// ham.isUnmessagable = isUnmessagable
 								ham.callSign = longName
 								ham.txPower = Int32(txPower)
 								ham.frequency = overrideFrequency

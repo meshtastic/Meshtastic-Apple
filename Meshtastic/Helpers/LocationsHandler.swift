@@ -142,7 +142,6 @@ import CoreData
 				Logger.services.info("📍 [App] Falling back to last known location (age: \(Int(Date().timeIntervalSince1970 - timestamp)) seconds)")
 				return CLLocationCoordinate2D(latitude: lat, longitude: lon)
 			}
-			
 			// Fallback 2: Default location
 			Logger.services.warning("📍 [App] No Location and no last known location, something is really wrong. Teleporting user to Apple Park")
 			return DefaultLocation

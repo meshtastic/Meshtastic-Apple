@@ -61,10 +61,9 @@ struct MeshtasticAppleApp: App {
 				Logger.mesh.debug("URL received \(userActivity, privacy: .public)")
 				self.incomingUrl = userActivity.webpageURL
 				self.saveChannels = false
-				if (self.incomingUrl?.absoluteString.lowercased().contains("meshtastic.org/v/#") == true) {
+				if self.incomingUrl?.absoluteString.lowercased().contains("meshtastic.org/v/#") == true {
 					handleContactUrl(url: self.incomingUrl!)
-				}
-				else if (self.incomingUrl?.absoluteString.lowercased().contains("meshtastic.org/e/#") == true) {
+				} else if self.incomingUrl?.absoluteString.lowercased().contains("meshtastic.org/e/#") == true {
 					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
 						self.addChannels = Bool(self.incomingUrl?["add"] ?? "false") ?? false
 						if (self.incomingUrl?.absoluteString.lowercased().contains("?")) != nil {
@@ -153,19 +152,19 @@ struct MeshtasticAppleApp: App {
 		let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") ?? []
 		// Extract contact information from the URL
 		if let contactData = components.last {
-			
+
 			let decodedString = contactData.base64urlToBase64()
 			if let decodedData = Data(base64Encoded: decodedString) {
 				do {
 					let contact = try MeshtasticProtobufs.SharedContact(serializedBytes: decodedData)
-					
+
 					// Show an alert to confirm adding the contact
 					let alertController = UIAlertController(
 						title: "Add Contact",
 						message: "Would you like to add \(contact.user.longName) as a  contact?",
 						preferredStyle: .alert
 					)
-					
+
 					alertController.addAction(UIAlertAction(
 						title: "Yes",
 						style: .default,
@@ -174,13 +173,13 @@ struct MeshtasticAppleApp: App {
 							Logger.services.debug("Contact added from URL: \(success ? "success" : "failed")")
 						}
 					))
-					
+
 					alertController.addAction(UIAlertAction(
 						title: "No",
 						style: .cancel,
 						handler: nil
 					))
-					
+
 					// Present the alert
 					if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
 						let rootViewController = windowScene.windows.first?.rootViewController {
@@ -189,7 +188,7 @@ struct MeshtasticAppleApp: App {
 					Logger.services.debug("Contact data extracted from URL: \(contactData, privacy: .public)")
 				} catch {
 					Logger.services.error("Failed to parse contact data: \(error.localizedDescription, privacy: .public)")
-					
+
 					// Show error alert to user
 					if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
 						let rootViewController = windowScene.windows.first?.rootViewController {
