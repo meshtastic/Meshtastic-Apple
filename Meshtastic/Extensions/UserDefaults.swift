@@ -57,7 +57,7 @@ extension UserDefaults {
 		case enableMapTraffic
 		case enableMapPointsOfInterest
 		case enableOfflineMaps
-		case onlyShowFavoriteNodesMap
+		case enableMapShowFavorites
 		case mapTileServer
 		case enableOverlayServer
 		case mapOverlayServer
@@ -120,8 +120,8 @@ extension UserDefaults {
 	@UserDefault(.enableMapPointsOfInterest, defaultValue: false)
 	static var enableMapPointsOfInterest: Bool
 	
-	@UserDefault(.onlyShowFavoriteNodesMap, defaultValue: false)
-	static var onlyShowFavoriteNodesMap: Bool
+	@UserDefault(.enableMapShowFavorites, defaultValue: false)
+	static var enableMapShowFavorites: Bool
 
 	@UserDefault(.enableDetectionNotifications, defaultValue: false)
 	static var enableDetectionNotifications: Bool

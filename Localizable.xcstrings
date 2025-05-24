@@ -20687,9 +20687,6 @@
         }
       }
     },
-    "Only Show Favorites" : {
-
-    },
     "Open Location Code (aka Plus Codes)" : {
       "localizations" : {
         "de" : {
@@ -28467,7 +28464,7 @@
         }
       }
     },
-    "Show Waypoints " : {
+    "Show Waypoints" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {

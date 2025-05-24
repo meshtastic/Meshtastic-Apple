@@ -15,7 +15,7 @@ struct MeshMapContent: MapContent {
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
 	@AppStorage("enableMapConvexHull") private var showConvexHull = false
-	@AppStorage("onlyShowFavoriteNodesMap") private var favoriteNodesOnly = false
+	@AppStorage("enableMapShowFavorites") private var showFavorites = false
 	@Binding var showTraffic: Bool
 	@Binding var showPointsOfInterest: Bool
 	@Binding var selectedMapLayer: MapLayer
@@ -40,7 +40,7 @@ struct MeshMapContent: MapContent {
 	@MapContentBuilder
 	var positionAnnotations: some MapContent {
 		ForEach(positions, id: \.id) { position in
-			if  !favoriteNodesOnly || (position.nodePosition?.favorite == true) {
+			if  !showFavorites || (position.nodePosition?.favorite == true) {
 				/// Node color from node.num
 				let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
 				let positionName = position.nodePosition?.user?.longName ?? "?"
@@ -61,7 +61,7 @@ struct MeshMapContent: MapContent {
 								.onAppear {
 									self.scale = 1
 								}
-								.onChange(of: favoriteNodesOnly) {
+								.onChange(of: showFavorites) {
 
 									scale = 0.5 // Reset to initial state
 											DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
