@@ -172,6 +172,11 @@ struct NodeListItem: View {
 						let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
 						IconAndText(systemName: role?.systemName ?? "figure",
 									text: "Role: \(role?.name ?? "Unknown".localized)")
+						if node.user?.unmessagable ?? false {
+							IconAndText(systemName: "iphone.slash",
+										renderingMode: .multicolor,
+										text: "Unmonitored")
+						}
 						if node.isStoreForwardRouter {
 							IconAndText(systemName: "envelope.arrow.triangle.branch",
 										renderingMode: .multicolor,

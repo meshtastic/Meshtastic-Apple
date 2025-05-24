@@ -151,6 +151,19 @@ struct NodeDetail: View {
 						}
 						.accessibilityElement(children: .combine)
 					}
+					if node.user?.unmessagable ?? false {
+						HStack {
+							Label {
+								Text("")
+							} icon: {
+								Image(systemName: "iphone.slash")
+									.symbolRenderingMode(.multicolor)
+							}
+							Spacer()
+							Text("Unmonitored or Infrastructure")
+						}
+						.accessibilityElement(children: .combine)
+					}
 
 					if let dm = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity, let uptimeSeconds = dm.uptimeSeconds {
 						HStack {
