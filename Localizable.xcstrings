@@ -32900,6 +32900,9 @@
         }
       }
     },
+    "Unmessagable" : {
+
+    },
     "Unmonitored or Infrastructure" : {
 
     },
@@ -33498,6 +33501,9 @@
           }
         }
       }
+    },
+    "Used to identify unmonitored or infrastructure nodes so that messaging is not avaliable to nodes that will never respond." : {
+
     },
     "User" : {
       "localizations" : {

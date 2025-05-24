@@ -25,6 +25,7 @@ struct UserConfig: View {
 	@State var hasChanges = false
 	@State var shortName = ""
 	@State var longName: String = ""
+	@State var isUnmessagable: Bool = false
 	@State var isLicensed = false
 	@State var overrideDutyCycle = false
 	@State var overrideFrequency: Float = 0.0
@@ -96,6 +97,13 @@ struct UserConfig: View {
 						Text("The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long.")
 							.foregroundColor(.gray)
 							.font(.callout)
+					
+						Toggle(isOn: $isUnmessagable) {
+							Label("Unmessagable", systemImage: "iphone.slash")
+							Text("Used to identify unmonitored or infrastructure nodes so that messaging is not avaliable to nodes that will never respond.")
+								.font(.caption2)
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
 					// Only manage ham mode for the locally connected node
 					if node?.num ?? 0 > 0 && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
@@ -166,6 +174,7 @@ struct UserConfig: View {
 								var u = User()
 								u.shortName = shortName
 								u.longName = longName
+								u.isUnmessagable = isUnmessagable
 								let adminMessageId = bleManager.saveUser(config: u, fromUser: connectedUser, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 								if adminMessageId > 0 {
 									hasChanges = false
@@ -174,6 +183,7 @@ struct UserConfig: View {
 							} else {
 								var ham = HamParameters()
 								ham.shortName = shortName
+								//ham.isUnmessagable = isUnmessagable
 								ham.callSign = longName
 								ham.txPower = Int32(txPower)
 								ham.frequency = overrideFrequency
@@ -199,6 +209,7 @@ struct UserConfig: View {
 		.onAppear {
 			self.shortName = node?.user?.shortName ?? ""
 			self.longName = node?.user?.longName ?? ""
+			self.isUnmessagable = node?.user?.unmessagable ?? false
 			self.isLicensed = node?.user?.isLicensed ?? false
 			self.txPower = Int(node?.loRaConfig?.txPower ?? 0)
 			self.overrideFrequency = node?.loRaConfig?.overrideFrequency ?? 0.00
