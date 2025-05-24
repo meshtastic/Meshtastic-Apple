@@ -15,6 +15,7 @@ struct MeshMapContent: MapContent {
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
 	@AppStorage("enableMapConvexHull") private var showConvexHull = false
+	@AppStorage("onlyShowFavoriteNodesMap") private var favoriteNodesOnly = false
 	@Binding var showTraffic: Bool
 	@Binding var showPointsOfInterest: Bool
 	@Binding var selectedMapLayer: MapLayer
@@ -39,11 +40,12 @@ struct MeshMapContent: MapContent {
 	@MapContentBuilder
 	var positionAnnotations: some MapContent {
 		ForEach(positions, id: \.id) { position in
-			/// Node color from node.num
-			let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
-			let positionName = position.nodePosition?.user?.longName ?? "?"
-			/// Latest Position Anotations
-			Annotation(positionName, coordinate: position.coordinate) {
+			if  !favoriteNodesOnly || (position.nodePosition?.favorite == true) {
+				/// Node color from node.num
+				let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
+				let positionName = position.nodePosition?.user?.longName ?? "?"
+				/// Latest Position Anotations
+				Annotation(positionName, coordinate: position.coordinate) {
 				LazyVStack {
 					ZStack {
 						let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
@@ -58,6 +60,13 @@ struct MeshMapContent: MapContent {
 								)
 								.onAppear {
 									self.scale = 1
+								}
+								.onChange(of: favoriteNodesOnly) {
+
+									scale = 0.5 // Reset to initial state
+											DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+													scale = 1
+											}
 								}
 								.frame(width: 60, height: 60)
 						}
@@ -141,6 +150,8 @@ struct MeshMapContent: MapContent {
 				}
 			}
 		}
+
+	}
 	}
 
 	@MapContentBuilder
