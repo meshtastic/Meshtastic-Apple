@@ -8,7 +8,6 @@
 import SwiftUI
 import CoreLocation
 import OSLog
-import CoreData
 
 // Shared state that manages the `CLLocationManager` and `CLBackgroundActivitySession`.
 @MainActor class LocationsHandler: ObservableObject {
