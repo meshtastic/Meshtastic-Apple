@@ -149,7 +149,7 @@ struct MeshtasticAppleApp: App {
 	}
 
 	func handleContactUrl(url: URL) {
-		let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") ?? []
+		let components = url.absoluteString.components(separatedBy: "#")
 		// Extract contact information from the URL
 		if let contactData = components.last {
 
@@ -161,7 +161,7 @@ struct MeshtasticAppleApp: App {
 					// Show an alert to confirm adding the contact
 					let alertController = UIAlertController(
 						title: "Add Contact",
-						message: "Would you like to add \(contact.user.longName) as a  contact?",
+						message: "Would you like to add \(contact.user.longName) as a contact?",
 						preferredStyle: .alert
 					)
 
