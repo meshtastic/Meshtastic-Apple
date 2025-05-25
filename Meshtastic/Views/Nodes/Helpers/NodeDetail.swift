@@ -154,13 +154,13 @@ struct NodeDetail: View {
 					if node.user?.unmessagable ?? false {
 						HStack {
 							Label {
-								Text("")
+								Text("Messaging")
 							} icon: {
 								Image(systemName: "iphone.slash")
 									.symbolRenderingMode(.multicolor)
 							}
 							Spacer()
-							Text("Unmonitored or Infrastructure")
+							Text("Unmonitored")
 						}
 						.accessibilityElement(children: .combine)
 					}

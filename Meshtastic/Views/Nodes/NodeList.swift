@@ -80,12 +80,14 @@ struct NodeList: View {
 		/// Allow users to mute notifications for a node even if they are not connected
 		if let user = node.user {
 			NodeAlertsButton(context: context, node: node, user: user)
-            Button(action: {
-                shareContactNode = node
-                isPresentingShareContactQR = true
-            }) {
-                Label("Share Contact QR", systemImage: "qrcode")
-            }
+			if !user.unmessagable {
+				Button(action: {
+					shareContactNode = node
+					isPresentingShareContactQR = true
+				}) {
+					Label("Share Contact QR", systemImage: "qrcode")
+				}
+			}
 		}
 		if let connectedNode {
 			/// Favoriting a node requires being connected

@@ -15,7 +15,9 @@ extension NodeInfoEntity {
             userProto.shortName = user.shortName ?? ""
             userProto.hwModel = HardwareModel(rawValue: Int(user.hwModelId)) ?? .unset
             userProto.isLicensed = user.isLicensed
-            userProto.isUnmessagable = false
+			if userProto.hasIsUnmessagable == true {
+				userProto.isUnmessagable = user.unmessagable
+			}
 			userProto.role = Config.DeviceConfig.Role(rawValue: Int(user.role)) ?? .client
 			userProto.publicKey = user.publicKey?.subdata(in: 0..<user.publicKey!.count) ?? Data()
         }
