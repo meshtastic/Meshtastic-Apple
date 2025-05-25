@@ -32,7 +32,7 @@ struct UserConfig: View {
 	@State var txPower = 0
 	@FocusState var focusedField: Field?
 
-	public var minimumVersion = "2.6.8"
+	public var minimumVersion = "2.6.9"
 	let floatFormatter: NumberFormatter = {
 		let formatter = NumberFormatter()
 		formatter.numberStyle = .decimal
