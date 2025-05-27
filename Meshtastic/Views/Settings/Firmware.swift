@@ -197,6 +197,9 @@ struct Firmware: View {
 				}
 				Api().loadFirmwareReleaseData { (fw) in
 					latestStable = fw.releases.stable.first
+					let archString = currentDevice?.architecture.rawValue ?? ""
+					let ls = fw.releases.stable.first(where: { $0.zipURL.contains(archString) == true })
+					latestStable = fw.releases.stable.first(where: { $0.zipURL.contains(archString) == true })
 					latestAlpha = fw.releases.alpha.first
 				}
 			}
