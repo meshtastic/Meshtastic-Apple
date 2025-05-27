@@ -112,7 +112,6 @@ struct MQTTConfig: View {
 							Label("I have read and understand the above. I voluntarily consent to the unencrypted transmission of my node data via MQTT.", systemImage: "hand.raised")
 								.foregroundColor(.gray)
 								.font(.callout)
-
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
@@ -130,11 +129,11 @@ struct MQTTConfig: View {
 							Text("To comply with privacy laws like CCPA and GDPR, we avoid sharing exact location data. Instead, we use anonymized or approximate (imprecise) location information to protect your privacy.")
 								.foregroundColor(.gray)
 								.font(.callout)
-							Slider(value: $mapPositionPrecision, in: 11...14, step: 1) {
+							Slider(value: $mapPositionPrecision, in: 12...15, step: 1) {
 							} minimumValueLabel: {
-								Image(systemName: "minus")
-							} maximumValueLabel: {
 								Image(systemName: "plus")
+							} maximumValueLabel: {
+								Image(systemName: "minus")
 							}
 							Text(PositionPrecision(rawValue: Int(mapPositionPrecision))?.description ?? "")
 								.foregroundColor(.gray)
@@ -365,8 +364,7 @@ struct MQTTConfig: View {
 							}
 						} else {
 							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin, empty mqtt module config")
-							_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
 						}
 					}
 				}
@@ -430,8 +428,13 @@ struct MQTTConfig: View {
 		self.tlsEnabled = node?.mqttConfig?.tlsEnabled ?? false
 		self.mqttConnected = bleManager.mqttProxyConnected
 		self.mapReportingEnabled = node?.mqttConfig?.mapReportingEnabled ?? false
-		self.mapPublishIntervalSecs = Int(node?.mqttConfig?.mapPublishIntervalSecs ?? 3600)
+		if node?.mqttConfig?.mapPublishIntervalSecs ?? 0 < 3600 {
+			self.mapPublishIntervalSecs = 3600
+		} else {
+			self.mapPublishIntervalSecs = Int(node?.mqttConfig?.mapPublishIntervalSecs ?? 3600)
+		}
 		self.mapPositionPrecision = Double(node?.mqttConfig?.mapPositionPrecision ?? 14)
+		self.mapReportingOptIn = UserDefaults.mapReportingOptIn
 		if mapPositionPrecision < 11 || mapPositionPrecision > 14 {
 			self.mapPositionPrecision = 14
 			self.hasChanges = true

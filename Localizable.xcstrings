@@ -2137,6 +2137,26 @@
         }
       }
     },
+    "Add Contact" : {
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "增加聯絡人"
+          }
+        }
+      }
+    },
+    "Add Meshtastic Node %@ as a contact" : {
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將 Meshtastic 節點 %@ 新增為聯絡人"
+          }
+        }
+      }
+    },
     "Add to favorites" : {
       "localizations" : {
         "de" : {
@@ -2284,7 +2304,14 @@
       }
     },
     "Administration Enabled" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理功能已啟用"
+          }
+        }
+      }
     },
     "Advanced" : {
       "localizations" : {
@@ -4043,6 +4070,7 @@
       }
     },
     "Battery Level" : {
+      "comment" : "VoiceOver label for battery gauge",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4101,6 +4129,7 @@
       }
     },
     "Battery Level %" : {
+      "comment" : "VoiceOver value for battery level",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -4152,40 +4181,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "鮑率（Baud）"
-          }
-        }
-      }
-    },
-    "biking" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "biken"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "tour in bicicletta"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "тура бициклом"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "自行车旅行"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "自行車"
           }
         }
       }
@@ -5009,6 +5004,9 @@
           }
         }
       }
+    },
+    "Bytes Used" : {
+      "comment" : "VoiceOver value for bytes used"
     },
     "Call Sign" : {
       "localizations" : {
@@ -7198,6 +7196,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "同意透過 MQTT 傳輸未加密的節點資料"
+          }
+        }
+      }
+    },
+    "Contact URL" : {
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "聯絡人網址"
           }
         }
       }
@@ -9623,6 +9631,12 @@
         }
       }
     },
+    "Disconnect Node" : {
+
+    },
+    "Disconnect the currently connected node" : {
+
+    },
     "Dismiss" : {
       "localizations" : {
         "de" : {
@@ -9995,6 +10009,16 @@
         }
       }
     },
+    "Done" : {
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成"
+          }
+        }
+      }
+    },
     "Double Tap as Button" : {
       "localizations" : {
         "it" : {
@@ -10189,40 +10213,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "拖放（Drag & Drop）是更新 NRF 裝置韌體的建議方式。如果您的 iPhone 或 iPad 是 USB-C 版本，可以直接使用一般的 USB-C 充電線。若是 Lightning 裝置，則需要使用 Apple 的 Lightning 對 USB 相機轉接器。"
-          }
-        }
-      }
-    },
-    "driving" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fahren"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "guida"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "вожња"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "驾驶"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "開車"
           }
         }
       }
@@ -13995,6 +13985,9 @@
         }
       }
     },
+    "Hide sidebar" : {
+
+    },
     "HIGH" : {
       "localizations" : {
         "de" : {
@@ -14025,40 +14018,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "高"
-          }
-        }
-      }
-    },
-    "hiking" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "wandern"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "escursione"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "планинарње"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "徒步"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "登山"
           }
         }
       }
@@ -17373,9 +17332,6 @@
         }
       }
     },
-    "message" : {
-
-    },
     "Message" : {
       "localizations" : {
         "de" : {
@@ -17606,6 +17562,9 @@
         }
       }
     },
+    "Message Size" : {
+      "comment" : "VoiceOver label for message size"
+    },
     "Message Status Options" : {
       "localizations" : {
         "it" : {
@@ -17707,6 +17666,9 @@
           }
         }
       }
+    },
+    "Messaging" : {
+
     },
     "Metric" : {
       "localizations" : {
@@ -21260,34 +21222,6 @@
         }
       }
     },
-    "overlanding" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "overland drive"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Вожња преко копна"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "越野"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "開車 (overland drive)"
-          }
-        }
-      }
-    },
     "Overlanding" : {
       "localizations" : {
         "it" : {
@@ -21617,6 +21551,12 @@
             "state" : "translated",
             "value" : "Конфигурација PAX бројача примљена: %@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAX 計數器設定已收到: %@"
+          }
         }
       }
     },
@@ -21701,7 +21641,14 @@
       }
     },
     "paxcounter.log" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "paxcounter.log"
+          }
+        }
+      }
     },
     "Perform a factory reset on the node you are connected to" : {
       "localizations" : {
@@ -22193,6 +22140,58 @@
         }
       }
     },
+    "Position config received: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Positionskonfiguration empfangen: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuration de la position reçue : %@"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "הגדרות מיקום התקבלו: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurazione della posizione ricevuta: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odebrano konfigurację pozycji: %@"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Positionskonfiguration mottagen: %@"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Конфигурација позиције примљена: %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "收到位置設定檔: %@"
+          }
+        }
+      }
+    },
     "Position Exchange Failed" : {
       "localizations" : {
         "it" : {
@@ -22463,52 +22462,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "裝置的 GPS 會提供定位資訊，如果選擇「已停用」或「無此功能」，則可以手動設定固定位置。"
-          }
-        }
-      }
-    },
-    "Positon config received: %@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Positionskonfiguration empfangen: %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuration de la position reçue : %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות מיקום התקבלו: %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configurazione della posizione ricevuta: %@"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Odebrano konfigurację pozycji: %@"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Positionskonfiguration mottagen: %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Конфигурација позиције примљена: %@"
           }
         }
       }
@@ -24498,7 +24451,14 @@
       }
     },
     "Replying to a message" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在回覆訊息"
+          }
+        }
+      }
     },
     "Request Legacy Admin: %@" : {
       "localizations" : {
@@ -26022,6 +25982,16 @@
         }
       }
     },
+    "Scan this QR code to add %@ to another device." : {
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "掃描這個QR code 以便將 %@ 增加到另一個裝置。"
+          }
+        }
+      }
+    },
     "Screen on for" : {
       "localizations" : {
         "it" : {
@@ -26419,7 +26389,14 @@
       }
     },
     "Select a node from the drop down to manage connected or remote devices." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從下拉選單中選擇一個節點，以管理已連接或遠端的裝置。"
+          }
+        }
+      }
     },
     "Select a Trace Route" : {
       "localizations" : {
@@ -28034,6 +28011,16 @@
         }
       }
     },
+    "Share Contact QR" : {
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分享聯絡人 QR 碼"
+          }
+        }
+      }
+    },
     "Share QR Code" : {
       "localizations" : {
         "de" : {
@@ -28480,7 +28467,7 @@
         }
       }
     },
-    "Show Waypoints " : {
+    "Show Waypoints" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -28816,40 +28803,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "6 小時"
-          }
-        }
-      }
-    },
-    "skiing" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "skitour"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "tour sciistico"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ски тура"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "滑雪之旅"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "滑雪"
           }
         }
       }
@@ -29525,6 +29478,12 @@
             "state" : "translated",
             "value" : "Подсистем"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "子系統"
+          }
         }
       }
     },
@@ -29708,6 +29667,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "輸入一個 Meshtastic 頻道網址，並儲存該頻道的設定。"
+          }
+        }
+      }
+    },
+    "Takes a Meshtastic contact URL and saves it to the nodes database" : {
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將 Meshtastic 聯絡人的網址儲存到節點資料庫中。"
           }
         }
       }
@@ -30892,6 +30861,16 @@
         }
       }
     },
+    "The URL for the node to add" : {
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要新增的節點網址"
+          }
+        }
+      }
+    },
     "There has been no response to a request for device metadata over the admin channel for this node." : {
       "localizations" : {
         "it" : {
@@ -31150,28 +31129,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "這可能需要一段時間，回應將會顯示在被發送節點的路由追蹤紀錄中。"
-          }
-        }
-      }
-    },
-    "This could take a while. The response will appear in the trace route log for the node it was sent to." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L'operazione potrebbe richiedere un po' di tempo. La risposta apparirà nel registro delle rotte di tracciamento per il nodo a cui è stata inviata."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ово може потрајати. Одговор ће се појавити у евиденцији трасе праћења за чвор којем је послат."
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "這可能需要一段時間。回應將會顯示在被發送節點的路由追蹤紀錄中。"
           }
         }
       }
@@ -31918,6 +31875,16 @@
         }
       }
     },
+    "Trace Route (in %@s)" : {
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追蹤路由（在 %@ 秒）"
+          }
+        }
+      }
+    },
     "Trace Route Log" : {
       "localizations" : {
         "it" : {
@@ -32098,6 +32065,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "追踪器"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追蹤器"
           }
         }
       }
@@ -32798,6 +32771,28 @@
         }
       }
     },
+    "unknown" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "sconosciuto"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "непознато"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "未知"
+          }
+        }
+      }
+    },
     "Unknown" : {
       "localizations" : {
         "fr" : {
@@ -32907,6 +32902,12 @@
           }
         }
       }
+    },
+    "Unmessagable" : {
+
+    },
+    "Unmonitored" : {
+
     },
     "Unset" : {
       "localizations" : {
@@ -33504,6 +33505,9 @@
         }
       }
     },
+    "Used to identify unmonitored or infrastructure nodes so that messaging is not avaliable to nodes that will never respond." : {
+
+    },
     "User" : {
       "localizations" : {
         "de" : {
@@ -33879,6 +33883,12 @@
             "state" : "new",
             "value" : "Version: %1$@ (%2$@)"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版本: %1$@ (%2$@)"
+          }
         }
       }
     },
@@ -34172,40 +34182,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "輕觸或移動時喚醒螢幕"
-          }
-        }
-      }
-    },
-    "walk" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "gehen"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "passeggiata"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "шетња"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "步行"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "走路"
           }
         }
       }

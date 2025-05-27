@@ -12,9 +12,10 @@ struct MapSettingsForm: View {
 	@Environment(\.dismiss) private var dismiss
 	@State private var currentDetent = PresentationDetent.medium
 	@AppStorage("meshMapShowNodeHistory") private var nodeHistory = false
-	@AppStorage("meshMapShowRouteLines") private var routeLines = false
+	@AppStorage("meshMapShowRouteLines") private var enableMapRouteLines = false
 	@AppStorage("enableMapConvexHull") private var convexHull = false
-	@AppStorage("enableMapWaypoints") private var waypoints = true
+	@AppStorage("enableMapWaypoints") private var enableMapWaypoints = true
+	@AppStorage("enableMapShowFavorites") private var enableMapShowFavorites = false
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
 	@Binding var mapLayer: MapLayer
@@ -29,7 +30,7 @@ struct MapSettingsForm: View {
 					Picker(selection: $mapLayer, label: Text("")) {
 						ForEach(MapLayer.allCases, id: \.self) { layer in
 							if layer != MapLayer.offline {
-								Text(layer.localized)
+								Text(layer.localized.capitalized)
 							}
 						}
 					}
@@ -53,15 +54,25 @@ struct MapSettingsForm: View {
 						.onChange(of: meshMapDistance) { _, newMeshMapDistance in
 							UserDefaults.meshMapDistance = newMeshMapDistance
 						}
-						Toggle(isOn: $waypoints) {
-							Label("Show Waypoints ", systemImage: "signpost.right.and.left")
+						Toggle(isOn: $enableMapWaypoints) {
+							Label {
+								Text("Show Waypoints")
+							} icon: {
+								Image(systemName: "signpost.right.and.left")
+									.symbolRenderingMode(.multicolor)
+							}
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						.onTapGesture {
-							UserDefaults.enableMapWaypoints = !waypoints
+						.tint(.accentColor)
+					}
+					Toggle(isOn: $enableMapShowFavorites) {
+						Label {
+							Text("Favorites")
+						} icon: {
+							Image(systemName: "star.fill")
+								.symbolRenderingMode(.multicolor)
 						}
 					}
-
+					.tint(.accentColor)
 					Toggle(isOn: $nodeHistory) {
 						Label("Node History", systemImage: "building.columns.fill")
 					}
@@ -70,15 +81,10 @@ struct MapSettingsForm: View {
 						self.nodeHistory.toggle()
 						UserDefaults.enableMapNodeHistoryPins = self.nodeHistory
 					}
-					Toggle(isOn: $routeLines) {
+					Toggle(isOn: $enableMapRouteLines) {
 						Label("Route Lines", systemImage: "road.lanes")
 					}
-
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.onTapGesture {
-						self.routeLines.toggle()
-						UserDefaults.enableMapRouteLines = self.routeLines
-					}
+					.tint(.accentColor)
 					Toggle(isOn: $convexHull) {
 						Label("Convex Hull", systemImage: "button.angledbottom.horizontal.right")
 					}
@@ -96,9 +102,14 @@ struct MapSettingsForm: View {
 						UserDefaults.enableMapTraffic = self.traffic
 					}
 					Toggle(isOn: $pointsOfInterest) {
-						Label("Points of Interest", systemImage: "mappin.and.ellipse")
+						Label {
+							Text("Points of Interest")
+						} icon: {
+							Image(systemName: "mappin.and.ellipse")
+								.symbolRenderingMode(.multicolor)
+						}
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					.onTapGesture {
 						self.pointsOfInterest.toggle()
 						UserDefaults.enableMapPointsOfInterest = self.pointsOfInterest

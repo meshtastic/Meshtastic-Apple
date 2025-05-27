@@ -249,12 +249,13 @@ struct LoRaConfig: View {
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.loRaConfig == nil {
 								Logger.mesh.info("⚙️ Empty or expired lora config requesting via PKI admin")
-								_ = bleManager.requestLoRaConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								if connectedNode.user != nil && node.user != nil {
+									_ = bleManager.requestLoRaConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								}
 							}
 						} else {
 							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin, empty lora config")
-							_ = bleManager.requestLoRaConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
 						}
 					}
 				}

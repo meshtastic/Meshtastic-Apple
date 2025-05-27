@@ -31,6 +31,7 @@ struct NodeInfoItem: View {
 								.foregroundStyle(.gray)
 								.font(.callout)
 						}
+						.accessibilityElement(children: .combine)
 						Spacer()
 					}
 					VStack(alignment: .center) {
@@ -49,9 +50,11 @@ struct NodeInfoItem: View {
 									.cornerRadius(5)
 							}
 						}
+						.accessibilityElement(children: .combine)
 					}
 					Spacer()
 				}
+				.accessibilityElement(children: .combine)
 				.onAppear {
 					Api().loadDeviceHardwareData { (hw) in
 						for device in hw {
@@ -79,6 +82,7 @@ struct NodeInfoItem: View {
 					Text(String("incomplete".localized))
 				}
 			}
+			.accessibilityElement(children: .combine)
 		}
 	}
 }

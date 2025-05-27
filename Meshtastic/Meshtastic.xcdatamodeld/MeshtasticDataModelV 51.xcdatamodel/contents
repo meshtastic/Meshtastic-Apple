@@ -479,6 +479,7 @@
         <attribute name="publicKey" optional="YES" attributeType="Binary"/>
         <attribute name="role" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="shortName" attributeType="String"/>
+        <attribute name="unmessagable" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="userId" attributeType="String"/>
         <relationship name="receivedMessages" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="MessageEntity" inverseName="toUser" inverseEntity="MessageEntity"/>
         <relationship name="sentMessages" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="MessageEntity" inverseName="fromUser" inverseEntity="MessageEntity"/>

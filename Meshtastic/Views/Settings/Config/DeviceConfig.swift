@@ -273,8 +273,7 @@ struct DeviceConfig: View {
 						} else {
 							if node.deviceConfig == nil {
 								/// Legacy Administration
-								Logger.mesh.info("☠️ Using insecure legacy admin, empty device config")
-								_ = bleManager.requestDeviceConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
 							}
 						}
 					}

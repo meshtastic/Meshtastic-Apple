@@ -317,6 +317,17 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 					newUser.pkiEncrypted = true
 					newUser.publicKey = nodeInfo.user.publicKey
 				}
+				/// For nodes that have the optional isUnmessagable boolean use that, otherwise excluded roles that are unmessagable by default
+				if nodeInfo.user.hasIsUnmessagable {
+					newUser.unmessagable = nodeInfo.user.isUnmessagable
+				} else {
+					let roles = [2, 4, 5, 6, 7, 10, 11]
+					let containsRole = roles.contains(Int(newUser.role))
+					if containsRole {
+						newUser.unmessagable = true
+					} else {
+						newUser.unmessagable = false
+					}}
 				newNode.user = newUser
 			} else if nodeInfo.num > Constants.minimumNodeNum {
 				let newUser = createUser(num: Int64(nodeInfo.num), context: context)
@@ -380,19 +391,31 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 					fetchedNode[0].user?.pkiEncrypted = true
 					fetchedNode[0].user?.publicKey = nodeInfo.user.publicKey
 				}
-				fetchedNode[0].user!.userId = nodeInfo.user.id
-				fetchedNode[0].user!.num = Int64(nodeInfo.num)
-				fetchedNode[0].user!.numString = String(nodeInfo.num)
-				fetchedNode[0].user!.longName = nodeInfo.user.longName
-				fetchedNode[0].user!.shortName = nodeInfo.user.shortName
-				fetchedNode[0].user!.isLicensed = nodeInfo.user.isLicensed
-				fetchedNode[0].user!.role = Int32(nodeInfo.user.role.rawValue)
-				fetchedNode[0].user!.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
-				fetchedNode[0].user!.hwModelId = Int32(nodeInfo.user.hwModel.rawValue)
+				fetchedNode[0].user?.userId = nodeInfo.user.id
+				fetchedNode[0].user?.num = Int64(nodeInfo.num)
+				fetchedNode[0].user?.numString = String(nodeInfo.num)
+				fetchedNode[0].user?.longName = nodeInfo.user.longName
+				fetchedNode[0].user?.shortName = nodeInfo.user.shortName
+				fetchedNode[0].user?.isLicensed = nodeInfo.user.isLicensed
+				fetchedNode[0].user?.role = Int32(nodeInfo.user.role.rawValue)
+				fetchedNode[0].user?.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
+				fetchedNode[0].user?.hwModelId = Int32(nodeInfo.user.hwModel.rawValue)
+				/// For nodes that have the optional isUnmessagable boolean use that, otherwise excluded roles that are unmessagable by default
+				if nodeInfo.user.hasIsUnmessagable {
+					fetchedNode[0].user?.unmessagable = nodeInfo.user.isUnmessagable
+				} else {
+					let roles = [-1, 2, 4, 5, 6, 7, 10, 11]
+					let containsRole = roles.contains(Int(fetchedNode[0].user?.role ?? -1))
+					if containsRole {
+						fetchedNode[0].user?.unmessagable = true
+					} else {
+						fetchedNode[0].user?.unmessagable = false
+					}
+				}
 				Task {
 					Api().loadDeviceHardwareData { (hw) in
 						let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user!.hwModelId })
-						fetchedNode[0].user!.hwDisplayName = dh?.displayName
+						fetchedNode[0].user?.hwDisplayName = dh?.displayName
 					}
 				}
 			} else {
@@ -1040,17 +1063,29 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	let logString = String.localizedStringWithFormat("Waypoint Packet received from node: %@".localized, String(packet.from))
 	Logger.mesh.info("📍 \(logString, privacy: .public)")
 
-	let fetchWaypointRequest = WaypointEntity.fetchRequest()
-	fetchWaypointRequest.predicate = NSPredicate(format: "id == %lld", Int64(packet.id))
-
 	do {
-
 		if let waypointMessage = try? Waypoint(serializedBytes: packet.decoded.payload) {
-			let fetchedWaypoint = try context.fetch(fetchWaypointRequest)
-			if fetchedWaypoint.isEmpty {
-				let waypoint = WaypointEntity(context: context)
+			// Fetch waypoint by waypointMessage.id, not packet.id
+			let fetchWaypointRequest = WaypointEntity.fetchRequest()
+			fetchWaypointRequest.predicate = NSPredicate(format: "id == %lld", Int64(waypointMessage.id))
 
-				waypoint.id = Int64(packet.id)
+			let fetchedWaypoint = try context.fetch(fetchWaypointRequest)
+			// Fetch the node info to get the short name
+			var nodeShortName: String = "?"
+			let fetchNodeRequest = NodeInfoEntity.fetchRequest()
+			fetchNodeRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
+			do {
+				let fetchedNode = try context.fetch(fetchNodeRequest)
+				if let node = fetchedNode.first, let user = node.user {
+				nodeShortName = user.shortName ?? node.user?.userId ?? String(packet.from.toHex())
+				}
+			} catch {
+				Logger.data.error("Failed to fetch NodeInfoEntity for node \(packet.from.toHex(), privacy: .public): \(error)")
+			}
+			if fetchedWaypoint.isEmpty {
+				// Create a new waypoint
+				let waypoint = WaypointEntity(context: context)
+				waypoint.id = Int64(waypointMessage.id) // Use waypointMessage.id
 				waypoint.name = waypointMessage.name
 				waypoint.longDescription = waypointMessage.description_p
 				waypoint.latitudeI = waypointMessage.latitudeI
@@ -1073,7 +1108,7 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 					manager.notifications = [
 						Notification(
 							id: ("notification.id.\(waypoint.id)"),
-							title: "New Waypoint Received",
+							title: "New Waypoint From \(nodeShortName)",
 							subtitle: "\(icon) \(waypoint.name ?? "Dropped Pin")",
 							content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")",
 							target: "map",
@@ -1088,26 +1123,42 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 					Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
 				}
 			} else {
-				fetchedWaypoint[0].id = Int64(packet.id)
-				fetchedWaypoint[0].name = waypointMessage.name
-				fetchedWaypoint[0].longDescription = waypointMessage.description_p
-				fetchedWaypoint[0].latitudeI = waypointMessage.latitudeI
-				fetchedWaypoint[0].longitudeI = waypointMessage.longitudeI
-				fetchedWaypoint[0].icon = Int64(waypointMessage.icon)
-				fetchedWaypoint[0].locked = Int64(waypointMessage.lockedTo)
-				if waypointMessage.expire >= 1 {
-					fetchedWaypoint[0].expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
-				} else {
-					fetchedWaypoint[0].expire = nil
-				}
-				fetchedWaypoint[0].lastUpdated = Date()
-				do {
-					try context.save()
-					Logger.data.info("💾 Updated Node Waypoint App Packet For: \(fetchedWaypoint[0].id, privacy: .public)")
-				} catch {
-					context.rollback()
-					let nsError = error as NSError
-					Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
+				// Update existing waypoint
+				let existingWaypoint = fetchedWaypoint[0]
+				if existingWaypoint.locked == 0 || existingWaypoint.locked == packet.from {
+					let currentTime = Int64(Date().timeIntervalSince1970)
+					if waypointMessage.expire > 0 && waypointMessage.expire <= currentTime {
+						context.delete(existingWaypoint)
+						do {
+							try context.save()
+							Logger.data.info("💾 Deleted a waypoint")
+						} catch {
+							context.rollback()
+							let nsError = error as NSError
+							Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
+						}
+					} else {
+						existingWaypoint.name = waypointMessage.name
+						existingWaypoint.longDescription = waypointMessage.description_p
+						existingWaypoint.latitudeI = waypointMessage.latitudeI
+						existingWaypoint.longitudeI = waypointMessage.longitudeI
+						existingWaypoint.icon = Int64(waypointMessage.icon)
+						existingWaypoint.locked = Int64(waypointMessage.lockedTo)
+						if waypointMessage.expire >= 1 {
+							existingWaypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
+						} else {
+							existingWaypoint.expire = nil
+						}
+						existingWaypoint.lastUpdated = Date()
+						do {
+							try context.save()
+							Logger.data.info("💾 Updated Node Waypoint App Packet For: \(existingWaypoint.id, privacy: .public)")
+						} catch {
+							context.rollback()
+							let nsError = error as NSError
+							Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
+						}
+					}
 				}
 			}
 		}
