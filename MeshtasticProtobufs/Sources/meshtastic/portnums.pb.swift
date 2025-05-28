@@ -112,6 +112,10 @@ public enum PortNum: SwiftProtobuf.Enum, Swift.CaseIterable {
   case alertApp // = 11
 
   ///
+  /// Module/port for handling key verification requests.
+  case keyVerificationApp // = 12
+
+  ///
   /// Provides a 'ping' service that replies to any packet it receives.
   /// Also serves as a small example module.
   /// ENCODING: ASCII Plaintext
@@ -232,6 +236,7 @@ public enum PortNum: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 9: self = .audioApp
     case 10: self = .detectionSensorApp
     case 11: self = .alertApp
+    case 12: self = .keyVerificationApp
     case 32: self = .replyApp
     case 33: self = .ipTunnelApp
     case 34: self = .paxcounterApp
@@ -268,6 +273,7 @@ public enum PortNum: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .audioApp: return 9
     case .detectionSensorApp: return 10
     case .alertApp: return 11
+    case .keyVerificationApp: return 12
     case .replyApp: return 32
     case .ipTunnelApp: return 33
     case .paxcounterApp: return 34
@@ -304,6 +310,7 @@ public enum PortNum: SwiftProtobuf.Enum, Swift.CaseIterable {
     .audioApp,
     .detectionSensorApp,
     .alertApp,
+    .keyVerificationApp,
     .replyApp,
     .ipTunnelApp,
     .paxcounterApp,
@@ -342,6 +349,7 @@ extension PortNum: SwiftProtobuf._ProtoNameProviding {
     9: .same(proto: "AUDIO_APP"),
     10: .same(proto: "DETECTION_SENSOR_APP"),
     11: .same(proto: "ALERT_APP"),
+    12: .same(proto: "KEY_VERIFICATION_APP"),
     32: .same(proto: "REPLY_APP"),
     33: .same(proto: "IP_TUNNEL_APP"),
     34: .same(proto: "PAXCOUNTER_APP"),

@@ -227,6 +227,14 @@ public struct NodeInfoLite: @unchecked Sendable {
     set {_uniqueStorage()._nextHop = newValue}
   }
 
+  ///
+  /// Bitfield for storing booleans.
+  /// LSB 0 is_key_manually_verified
+  public var bitfield: UInt32 {
+    get {return _storage._bitfield}
+    set {_uniqueStorage()._bitfield = newValue}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -608,6 +616,7 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     10: .standard(proto: "is_favorite"),
     11: .standard(proto: "is_ignored"),
     12: .standard(proto: "next_hop"),
+    13: .same(proto: "bitfield"),
   ]
 
   fileprivate class _StorageClass {
@@ -623,6 +632,7 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     var _isFavorite: Bool = false
     var _isIgnored: Bool = false
     var _nextHop: UInt32 = 0
+    var _bitfield: UInt32 = 0
 
     #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
@@ -649,6 +659,7 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       _isFavorite = source._isFavorite
       _isIgnored = source._isIgnored
       _nextHop = source._nextHop
+      _bitfield = source._bitfield
     }
   }
 
@@ -679,6 +690,7 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         case 10: try { try decoder.decodeSingularBoolField(value: &_storage._isFavorite) }()
         case 11: try { try decoder.decodeSingularBoolField(value: &_storage._isIgnored) }()
         case 12: try { try decoder.decodeSingularUInt32Field(value: &_storage._nextHop) }()
+        case 13: try { try decoder.decodeSingularUInt32Field(value: &_storage._bitfield) }()
         default: break
         }
       }
@@ -727,6 +739,9 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       if _storage._nextHop != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._nextHop, fieldNumber: 12)
       }
+      if _storage._bitfield != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._bitfield, fieldNumber: 13)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -748,6 +763,7 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         if _storage._isFavorite != rhs_storage._isFavorite {return false}
         if _storage._isIgnored != rhs_storage._isIgnored {return false}
         if _storage._nextHop != rhs_storage._nextHop {return false}
+        if _storage._bitfield != rhs_storage._bitfield {return false}
         return true
       }
       if !storagesAreEqual {return false}
