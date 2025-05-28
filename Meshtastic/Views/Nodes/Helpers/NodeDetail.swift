@@ -486,7 +486,7 @@ struct NodeDetail: View {
 				   let connectedNode,
 				   self.bleManager.connectedPeripheral != nil {
 					Section("Administration") {
-						if connectedNode.myInfo?.hasAdmin ?? false {
+						if UserDefaults.enableAdministration {
 							Button {
 								let adminMessageId = bleManager.requestDeviceMetadata(
 									fromUser: connectedNode.user!,
