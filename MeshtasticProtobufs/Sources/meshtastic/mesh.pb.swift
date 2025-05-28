@@ -442,6 +442,22 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
   /// Elecrow CrowPanel Advance models, ESP32-S3 and TFT with SX1262 radio plugin
   case crowpanel // = 97
 
+  ///*
+  /// Lilygo LINK32 board with sensors
+  case link32 // = 98
+
+  ///*
+  /// Seeed Tracker L1
+  case seeedWioTrackerL1 // = 99
+
+  ///*
+  /// Seeed Tracker L1 EINK driver
+  case seeedWioTrackerL1Eink // = 100
+
+  ///
+  /// Reserved ID for future and past use
+  case qwantzTinyArms // = 101
+
   ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
@@ -553,6 +569,10 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 95: self = .seeedSolarNode
     case 96: self = .nomadstarMeteorPro
     case 97: self = .crowpanel
+    case 98: self = .link32
+    case 99: self = .seeedWioTrackerL1
+    case 100: self = .seeedWioTrackerL1Eink
+    case 101: self = .qwantzTinyArms
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -658,6 +678,10 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .seeedSolarNode: return 95
     case .nomadstarMeteorPro: return 96
     case .crowpanel: return 97
+    case .link32: return 98
+    case .seeedWioTrackerL1: return 99
+    case .seeedWioTrackerL1Eink: return 100
+    case .qwantzTinyArms: return 101
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -763,6 +787,10 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     .seeedSolarNode,
     .nomadstarMeteorPro,
     .crowpanel,
+    .link32,
+    .seeedWioTrackerL1,
+    .seeedWioTrackerL1Eink,
+    .qwantzTinyArms,
     .privateHw,
   ]
 
@@ -1821,6 +1849,31 @@ public struct DataMessage: @unchecked Sendable {
 }
 
 ///
+/// The actual over-the-mesh message doing KeyVerification
+public struct KeyVerification: @unchecked Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// random value Selected by the requesting node
+  public var nonce: UInt64 = 0
+
+  ///
+  /// The final authoritative hash, only to be sent by NodeA at the end of the handshake
+  public var hash1: Data = Data()
+
+  ///
+  /// The intermediary hash (actually derived from hash1),
+  /// sent from NodeB to NodeA in response to the initial message.
+  public var hash2: Data = Data()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+///
 /// Waypoint message, used to share arbitrary locations across the mesh
 public struct Waypoint: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -2441,6 +2494,15 @@ public struct NodeInfo: @unchecked Sendable {
     set {_uniqueStorage()._isIgnored = newValue}
   }
 
+  ///
+  /// True if node public key has been verified.
+  /// Persists between NodeDB internal clean ups
+  /// LSB 0 of the bitfield
+  public var isKeyManuallyVerified: Bool {
+    get {return _storage._isKeyManuallyVerified}
+    set {_uniqueStorage()._isKeyManuallyVerified = newValue}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -2903,11 +2965,92 @@ public struct ClientNotification: Sendable {
   /// The message body of the notification
   public var message: String = String()
 
+  public var payloadVariant: ClientNotification.OneOf_PayloadVariant? = nil
+
+  public var keyVerificationNumberInform: KeyVerificationNumberInform {
+    get {
+      if case .keyVerificationNumberInform(let v)? = payloadVariant {return v}
+      return KeyVerificationNumberInform()
+    }
+    set {payloadVariant = .keyVerificationNumberInform(newValue)}
+  }
+
+  public var keyVerificationNumberRequest: KeyVerificationNumberRequest {
+    get {
+      if case .keyVerificationNumberRequest(let v)? = payloadVariant {return v}
+      return KeyVerificationNumberRequest()
+    }
+    set {payloadVariant = .keyVerificationNumberRequest(newValue)}
+  }
+
+  public var keyVerificationFinal: KeyVerificationFinal {
+    get {
+      if case .keyVerificationFinal(let v)? = payloadVariant {return v}
+      return KeyVerificationFinal()
+    }
+    set {payloadVariant = .keyVerificationFinal(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public enum OneOf_PayloadVariant: Equatable, Sendable {
+    case keyVerificationNumberInform(KeyVerificationNumberInform)
+    case keyVerificationNumberRequest(KeyVerificationNumberRequest)
+    case keyVerificationFinal(KeyVerificationFinal)
+
+  }
 
   public init() {}
 
   fileprivate var _replyID: UInt32? = nil
+}
+
+public struct KeyVerificationNumberInform: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var nonce: UInt64 = 0
+
+  public var remoteLongname: String = String()
+
+  public var securityNumber: UInt32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct KeyVerificationNumberRequest: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var nonce: UInt64 = 0
+
+  public var remoteLongname: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct KeyVerificationFinal: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var nonce: UInt64 = 0
+
+  public var remoteLongname: String = String()
+
+  public var isSender: Bool = false
+
+  public var verificationCharacters: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
 }
 
 ///
@@ -3431,6 +3574,10 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     95: .same(proto: "SEEED_SOLAR_NODE"),
     96: .same(proto: "NOMADSTAR_METEOR_PRO"),
     97: .same(proto: "CROWPANEL"),
+    98: .same(proto: "LINK_32"),
+    99: .same(proto: "SEEED_WIO_TRACKER_L1"),
+    100: .same(proto: "SEEED_WIO_TRACKER_L1_EINK"),
+    101: .same(proto: "QWANTZ_TINY_ARMS"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
@@ -4075,6 +4222,50 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 }
 
+extension KeyVerification: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".KeyVerification"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "nonce"),
+    2: .same(proto: "hash1"),
+    3: .same(proto: "hash2"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt64Field(value: &self.nonce) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.hash1) }()
+      case 3: try { try decoder.decodeSingularBytesField(value: &self.hash2) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.nonce != 0 {
+      try visitor.visitSingularUInt64Field(value: self.nonce, fieldNumber: 1)
+    }
+    if !self.hash1.isEmpty {
+      try visitor.visitSingularBytesField(value: self.hash1, fieldNumber: 2)
+    }
+    if !self.hash2.isEmpty {
+      try visitor.visitSingularBytesField(value: self.hash2, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: KeyVerification, rhs: KeyVerification) -> Bool {
+    if lhs.nonce != rhs.nonce {return false}
+    if lhs.hash1 != rhs.hash1 {return false}
+    if lhs.hash2 != rhs.hash2 {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Waypoint"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -4511,6 +4702,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     9: .standard(proto: "hops_away"),
     10: .standard(proto: "is_favorite"),
     11: .standard(proto: "is_ignored"),
+    12: .standard(proto: "is_key_manually_verified"),
   ]
 
   fileprivate class _StorageClass {
@@ -4525,6 +4717,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     var _hopsAway: UInt32? = nil
     var _isFavorite: Bool = false
     var _isIgnored: Bool = false
+    var _isKeyManuallyVerified: Bool = false
 
     #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
@@ -4550,6 +4743,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       _hopsAway = source._hopsAway
       _isFavorite = source._isFavorite
       _isIgnored = source._isIgnored
+      _isKeyManuallyVerified = source._isKeyManuallyVerified
     }
   }
 
@@ -4579,6 +4773,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         case 9: try { try decoder.decodeSingularUInt32Field(value: &_storage._hopsAway) }()
         case 10: try { try decoder.decodeSingularBoolField(value: &_storage._isFavorite) }()
         case 11: try { try decoder.decodeSingularBoolField(value: &_storage._isIgnored) }()
+        case 12: try { try decoder.decodeSingularBoolField(value: &_storage._isKeyManuallyVerified) }()
         default: break
         }
       }
@@ -4624,6 +4819,9 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       if _storage._isIgnored != false {
         try visitor.visitSingularBoolField(value: _storage._isIgnored, fieldNumber: 11)
       }
+      if _storage._isKeyManuallyVerified != false {
+        try visitor.visitSingularBoolField(value: _storage._isKeyManuallyVerified, fieldNumber: 12)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -4644,6 +4842,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         if _storage._hopsAway != rhs_storage._hopsAway {return false}
         if _storage._isFavorite != rhs_storage._isFavorite {return false}
         if _storage._isIgnored != rhs_storage._isIgnored {return false}
+        if _storage._isKeyManuallyVerified != rhs_storage._isKeyManuallyVerified {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -5146,6 +5345,9 @@ extension ClientNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     2: .same(proto: "time"),
     3: .same(proto: "level"),
     4: .same(proto: "message"),
+    11: .standard(proto: "key_verification_number_inform"),
+    12: .standard(proto: "key_verification_number_request"),
+    13: .standard(proto: "key_verification_final"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -5158,6 +5360,45 @@ extension ClientNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       case 2: try { try decoder.decodeSingularFixed32Field(value: &self.time) }()
       case 3: try { try decoder.decodeSingularEnumField(value: &self.level) }()
       case 4: try { try decoder.decodeSingularStringField(value: &self.message) }()
+      case 11: try {
+        var v: KeyVerificationNumberInform?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .keyVerificationNumberInform(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .keyVerificationNumberInform(v)
+        }
+      }()
+      case 12: try {
+        var v: KeyVerificationNumberRequest?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .keyVerificationNumberRequest(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .keyVerificationNumberRequest(v)
+        }
+      }()
+      case 13: try {
+        var v: KeyVerificationFinal?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .keyVerificationFinal(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .keyVerificationFinal(v)
+        }
+      }()
       default: break
       }
     }
@@ -5180,6 +5421,21 @@ extension ClientNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if !self.message.isEmpty {
       try visitor.visitSingularStringField(value: self.message, fieldNumber: 4)
     }
+    switch self.payloadVariant {
+    case .keyVerificationNumberInform?: try {
+      guard case .keyVerificationNumberInform(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
+    }()
+    case .keyVerificationNumberRequest?: try {
+      guard case .keyVerificationNumberRequest(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
+    }()
+    case .keyVerificationFinal?: try {
+      guard case .keyVerificationFinal(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
+    }()
+    case nil: break
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -5188,6 +5444,139 @@ extension ClientNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if lhs.time != rhs.time {return false}
     if lhs.level != rhs.level {return false}
     if lhs.message != rhs.message {return false}
+    if lhs.payloadVariant != rhs.payloadVariant {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension KeyVerificationNumberInform: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".KeyVerificationNumberInform"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "nonce"),
+    2: .standard(proto: "remote_longname"),
+    3: .standard(proto: "security_number"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt64Field(value: &self.nonce) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.remoteLongname) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.securityNumber) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.nonce != 0 {
+      try visitor.visitSingularUInt64Field(value: self.nonce, fieldNumber: 1)
+    }
+    if !self.remoteLongname.isEmpty {
+      try visitor.visitSingularStringField(value: self.remoteLongname, fieldNumber: 2)
+    }
+    if self.securityNumber != 0 {
+      try visitor.visitSingularUInt32Field(value: self.securityNumber, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: KeyVerificationNumberInform, rhs: KeyVerificationNumberInform) -> Bool {
+    if lhs.nonce != rhs.nonce {return false}
+    if lhs.remoteLongname != rhs.remoteLongname {return false}
+    if lhs.securityNumber != rhs.securityNumber {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension KeyVerificationNumberRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".KeyVerificationNumberRequest"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "nonce"),
+    2: .standard(proto: "remote_longname"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt64Field(value: &self.nonce) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.remoteLongname) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.nonce != 0 {
+      try visitor.visitSingularUInt64Field(value: self.nonce, fieldNumber: 1)
+    }
+    if !self.remoteLongname.isEmpty {
+      try visitor.visitSingularStringField(value: self.remoteLongname, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: KeyVerificationNumberRequest, rhs: KeyVerificationNumberRequest) -> Bool {
+    if lhs.nonce != rhs.nonce {return false}
+    if lhs.remoteLongname != rhs.remoteLongname {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension KeyVerificationFinal: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".KeyVerificationFinal"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "nonce"),
+    2: .standard(proto: "remote_longname"),
+    3: .same(proto: "isSender"),
+    4: .standard(proto: "verification_characters"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt64Field(value: &self.nonce) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.remoteLongname) }()
+      case 3: try { try decoder.decodeSingularBoolField(value: &self.isSender) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.verificationCharacters) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.nonce != 0 {
+      try visitor.visitSingularUInt64Field(value: self.nonce, fieldNumber: 1)
+    }
+    if !self.remoteLongname.isEmpty {
+      try visitor.visitSingularStringField(value: self.remoteLongname, fieldNumber: 2)
+    }
+    if self.isSender != false {
+      try visitor.visitSingularBoolField(value: self.isSender, fieldNumber: 3)
+    }
+    if !self.verificationCharacters.isEmpty {
+      try visitor.visitSingularStringField(value: self.verificationCharacters, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: KeyVerificationFinal, rhs: KeyVerificationFinal) -> Bool {
+    if lhs.nonce != rhs.nonce {return false}
+    if lhs.remoteLongname != rhs.remoteLongname {return false}
+    if lhs.isSender != rhs.isSender {return false}
+    if lhs.verificationCharacters != rhs.verificationCharacters {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

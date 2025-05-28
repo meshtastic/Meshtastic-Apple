@@ -180,6 +180,10 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
   ///
   /// MAX17261 lipo battery gauge
   case max17261 // = 38
+
+  ///
+  /// PCT2075 Temperature Sensor
+  case pct2075 // = 39
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -227,6 +231,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 36: self = .dps310
     case 37: self = .rak12035
     case 38: self = .max17261
+    case 39: self = .pct2075
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -272,6 +277,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .dps310: return 36
     case .rak12035: return 37
     case .max17261: return 38
+    case .pct2075: return 39
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -317,6 +323,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     .dps310,
     .rak12035,
     .max17261,
+    .pct2075,
   ]
 
 }
@@ -959,6 +966,14 @@ public struct LocalStats: Sendable {
   /// This will always be zero for ROUTERs/REPEATERs. If this number is high, some other node(s) is/are relaying faster than you.
   public var numTxRelayCanceled: UInt32 = 0
 
+  ///
+  /// Number of bytes used in the heap
+  public var heapTotalBytes: UInt32 = 0
+
+  ///
+  /// Number of bytes free in the heap
+  public var heapFreeBytes: UInt32 = 0
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -1011,6 +1026,80 @@ public struct HealthMetrics: Sendable {
   fileprivate var _heartBpm: UInt32? = nil
   fileprivate var _spO2: UInt32? = nil
   fileprivate var _temperature: Float? = nil
+}
+
+///
+/// Linux host metrics
+public struct HostMetrics: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Host system uptime
+  public var uptimeSeconds: UInt32 = 0
+
+  ///
+  /// Host system free memory
+  public var freememBytes: UInt64 = 0
+
+  ///
+  /// Host system disk space free for /
+  public var diskfree1Bytes: UInt64 = 0
+
+  ///
+  /// Secondary system disk space free
+  public var diskfree2Bytes: UInt64 {
+    get {return _diskfree2Bytes ?? 0}
+    set {_diskfree2Bytes = newValue}
+  }
+  /// Returns true if `diskfree2Bytes` has been explicitly set.
+  public var hasDiskfree2Bytes: Bool {return self._diskfree2Bytes != nil}
+  /// Clears the value of `diskfree2Bytes`. Subsequent reads from it will return its default value.
+  public mutating func clearDiskfree2Bytes() {self._diskfree2Bytes = nil}
+
+  ///
+  /// Tertiary disk space free
+  public var diskfree3Bytes: UInt64 {
+    get {return _diskfree3Bytes ?? 0}
+    set {_diskfree3Bytes = newValue}
+  }
+  /// Returns true if `diskfree3Bytes` has been explicitly set.
+  public var hasDiskfree3Bytes: Bool {return self._diskfree3Bytes != nil}
+  /// Clears the value of `diskfree3Bytes`. Subsequent reads from it will return its default value.
+  public mutating func clearDiskfree3Bytes() {self._diskfree3Bytes = nil}
+
+  ///
+  /// Host system one minute load in 1/100ths
+  public var load1: UInt32 = 0
+
+  ///
+  /// Host system five minute load  in 1/100ths
+  public var load5: UInt32 = 0
+
+  ///
+  /// Host system fifteen minute load  in 1/100ths
+  public var load15: UInt32 = 0
+
+  ///
+  /// Optional User-provided string for arbitrary host system information
+  /// that doesn't make sense as a dedicated entry.
+  public var userString: String {
+    get {return _userString ?? String()}
+    set {_userString = newValue}
+  }
+  /// Returns true if `userString` has been explicitly set.
+  public var hasUserString: Bool {return self._userString != nil}
+  /// Clears the value of `userString`. Subsequent reads from it will return its default value.
+  public mutating func clearUserString() {self._userString = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _diskfree2Bytes: UInt64? = nil
+  fileprivate var _diskfree3Bytes: UInt64? = nil
+  fileprivate var _userString: String? = nil
 }
 
 ///
@@ -1086,6 +1175,16 @@ public struct Telemetry: Sendable {
     set {variant = .healthMetrics(newValue)}
   }
 
+  ///
+  /// Linux host metrics
+  public var hostMetrics: HostMetrics {
+    get {
+      if case .hostMetrics(let v)? = variant {return v}
+      return HostMetrics()
+    }
+    set {variant = .hostMetrics(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public enum OneOf_Variant: Equatable, Sendable {
@@ -1107,6 +1206,9 @@ public struct Telemetry: Sendable {
     ///
     /// Health telemetry metrics
     case healthMetrics(HealthMetrics)
+    ///
+    /// Linux host metrics
+    case hostMetrics(HostMetrics)
 
   }
 
@@ -1178,6 +1280,7 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     36: .same(proto: "DPS310"),
     37: .same(proto: "RAK12035"),
     38: .same(proto: "MAX17261"),
+    39: .same(proto: "PCT2075"),
   ]
 }
 
@@ -1673,6 +1776,8 @@ extension LocalStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     9: .standard(proto: "num_rx_dupe"),
     10: .standard(proto: "num_tx_relay"),
     11: .standard(proto: "num_tx_relay_canceled"),
+    12: .standard(proto: "heap_total_bytes"),
+    13: .standard(proto: "heap_free_bytes"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1692,6 +1797,8 @@ extension LocalStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       case 9: try { try decoder.decodeSingularUInt32Field(value: &self.numRxDupe) }()
       case 10: try { try decoder.decodeSingularUInt32Field(value: &self.numTxRelay) }()
       case 11: try { try decoder.decodeSingularUInt32Field(value: &self.numTxRelayCanceled) }()
+      case 12: try { try decoder.decodeSingularUInt32Field(value: &self.heapTotalBytes) }()
+      case 13: try { try decoder.decodeSingularUInt32Field(value: &self.heapFreeBytes) }()
       default: break
       }
     }
@@ -1731,6 +1838,12 @@ extension LocalStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     if self.numTxRelayCanceled != 0 {
       try visitor.visitSingularUInt32Field(value: self.numTxRelayCanceled, fieldNumber: 11)
     }
+    if self.heapTotalBytes != 0 {
+      try visitor.visitSingularUInt32Field(value: self.heapTotalBytes, fieldNumber: 12)
+    }
+    if self.heapFreeBytes != 0 {
+      try visitor.visitSingularUInt32Field(value: self.heapFreeBytes, fieldNumber: 13)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1746,6 +1859,8 @@ extension LocalStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     if lhs.numRxDupe != rhs.numRxDupe {return false}
     if lhs.numTxRelay != rhs.numTxRelay {return false}
     if lhs.numTxRelayCanceled != rhs.numTxRelayCanceled {return false}
+    if lhs.heapTotalBytes != rhs.heapTotalBytes {return false}
+    if lhs.heapFreeBytes != rhs.heapFreeBytes {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1799,6 +1914,90 @@ extension HealthMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   }
 }
 
+extension HostMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".HostMetrics"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "uptime_seconds"),
+    2: .standard(proto: "freemem_bytes"),
+    3: .standard(proto: "diskfree1_bytes"),
+    4: .standard(proto: "diskfree2_bytes"),
+    5: .standard(proto: "diskfree3_bytes"),
+    6: .same(proto: "load1"),
+    7: .same(proto: "load5"),
+    8: .same(proto: "load15"),
+    9: .standard(proto: "user_string"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.uptimeSeconds) }()
+      case 2: try { try decoder.decodeSingularUInt64Field(value: &self.freememBytes) }()
+      case 3: try { try decoder.decodeSingularUInt64Field(value: &self.diskfree1Bytes) }()
+      case 4: try { try decoder.decodeSingularUInt64Field(value: &self._diskfree2Bytes) }()
+      case 5: try { try decoder.decodeSingularUInt64Field(value: &self._diskfree3Bytes) }()
+      case 6: try { try decoder.decodeSingularUInt32Field(value: &self.load1) }()
+      case 7: try { try decoder.decodeSingularUInt32Field(value: &self.load5) }()
+      case 8: try { try decoder.decodeSingularUInt32Field(value: &self.load15) }()
+      case 9: try { try decoder.decodeSingularStringField(value: &self._userString) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.uptimeSeconds != 0 {
+      try visitor.visitSingularUInt32Field(value: self.uptimeSeconds, fieldNumber: 1)
+    }
+    if self.freememBytes != 0 {
+      try visitor.visitSingularUInt64Field(value: self.freememBytes, fieldNumber: 2)
+    }
+    if self.diskfree1Bytes != 0 {
+      try visitor.visitSingularUInt64Field(value: self.diskfree1Bytes, fieldNumber: 3)
+    }
+    try { if let v = self._diskfree2Bytes {
+      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._diskfree3Bytes {
+      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 5)
+    } }()
+    if self.load1 != 0 {
+      try visitor.visitSingularUInt32Field(value: self.load1, fieldNumber: 6)
+    }
+    if self.load5 != 0 {
+      try visitor.visitSingularUInt32Field(value: self.load5, fieldNumber: 7)
+    }
+    if self.load15 != 0 {
+      try visitor.visitSingularUInt32Field(value: self.load15, fieldNumber: 8)
+    }
+    try { if let v = self._userString {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 9)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: HostMetrics, rhs: HostMetrics) -> Bool {
+    if lhs.uptimeSeconds != rhs.uptimeSeconds {return false}
+    if lhs.freememBytes != rhs.freememBytes {return false}
+    if lhs.diskfree1Bytes != rhs.diskfree1Bytes {return false}
+    if lhs._diskfree2Bytes != rhs._diskfree2Bytes {return false}
+    if lhs._diskfree3Bytes != rhs._diskfree3Bytes {return false}
+    if lhs.load1 != rhs.load1 {return false}
+    if lhs.load5 != rhs.load5 {return false}
+    if lhs.load15 != rhs.load15 {return false}
+    if lhs._userString != rhs._userString {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Telemetry"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -1809,6 +2008,7 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     5: .standard(proto: "power_metrics"),
     6: .standard(proto: "local_stats"),
     7: .standard(proto: "health_metrics"),
+    8: .standard(proto: "host_metrics"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1896,6 +2096,19 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
           self.variant = .healthMetrics(v)
         }
       }()
+      case 8: try {
+        var v: HostMetrics?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .hostMetrics(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .hostMetrics(v)
+        }
+      }()
       default: break
       }
     }
@@ -1933,6 +2146,10 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     case .healthMetrics?: try {
       guard case .healthMetrics(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+    }()
+    case .hostMetrics?: try {
+      guard case .hostMetrics(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
     }()
     case nil: break
     }

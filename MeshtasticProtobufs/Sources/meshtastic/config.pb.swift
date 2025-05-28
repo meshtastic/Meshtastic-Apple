@@ -756,6 +756,10 @@ public struct Config: Sendable {
     /// Flags for enabling/disabling network protocols
     public var enabledProtocols: UInt32 = 0
 
+    ///
+    /// Enable/Disable ipv6 support
+    public var ipv6Enabled: Bool = false
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public enum AddressMode: SwiftProtobuf.Enum, Swift.CaseIterable {
@@ -2385,6 +2389,7 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     8: .standard(proto: "ipv4_config"),
     9: .standard(proto: "rsyslog_server"),
     10: .standard(proto: "enabled_protocols"),
+    11: .standard(proto: "ipv6_enabled"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2402,6 +2407,7 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       case 8: try { try decoder.decodeSingularMessageField(value: &self._ipv4Config) }()
       case 9: try { try decoder.decodeSingularStringField(value: &self.rsyslogServer) }()
       case 10: try { try decoder.decodeSingularUInt32Field(value: &self.enabledProtocols) }()
+      case 11: try { try decoder.decodeSingularBoolField(value: &self.ipv6Enabled) }()
       default: break
       }
     }
@@ -2439,6 +2445,9 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if self.enabledProtocols != 0 {
       try visitor.visitSingularUInt32Field(value: self.enabledProtocols, fieldNumber: 10)
     }
+    if self.ipv6Enabled != false {
+      try visitor.visitSingularBoolField(value: self.ipv6Enabled, fieldNumber: 11)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2452,6 +2461,7 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if lhs._ipv4Config != rhs._ipv4Config {return false}
     if lhs.rsyslogServer != rhs.rsyslogServer {return false}
     if lhs.enabledProtocols != rhs.enabledProtocols {return false}
+    if lhs.ipv6Enabled != rhs.ipv6Enabled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
