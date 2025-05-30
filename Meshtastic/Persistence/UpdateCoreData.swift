@@ -1231,6 +1231,7 @@ func upsertMqttModuleConfigPacket(config: ModuleConfig.MQTTConfig, nodeNum: Int6
 				newMQTTConfig.jsonEnabled = config.jsonEnabled
 				newMQTTConfig.tlsEnabled = config.tlsEnabled
 				newMQTTConfig.mapReportingEnabled = config.mapReportingEnabled
+				newMQTTConfig.mapReportingShouldReportLocation = config.mapReportSettings.shouldReportLocation
 				newMQTTConfig.mapPositionPrecision = Int32(config.mapReportSettings.positionPrecision)
 				newMQTTConfig.mapPublishIntervalSecs = Int32(config.mapReportSettings.publishIntervalSecs)
 				fetchedNode[0].mqttConfig = newMQTTConfig
