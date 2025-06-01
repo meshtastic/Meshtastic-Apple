@@ -27,7 +27,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	@Published var automaticallyReconnect: Bool = true
 	@Published var mqttProxyConnected: Bool = false
 	@Published var mqttError: String = ""
-	public var minimumVersion = "2.3.15"
+	public var minimumVersion = "2.5.14"
 	public var connectedVersion: String
 	public var isConnecting: Bool = false
 	public var isConnected: Bool = false
