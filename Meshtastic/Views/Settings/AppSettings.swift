@@ -11,6 +11,8 @@ struct AppSettings: View {
 	@State var totalDownloadedTileSize = ""
 	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var isPresentingDeleteMapTilesConfirm = false
+	@State private var purgeStaleNodes: Bool = false
+	@AppStorage("purgeStaleNodeDays") private var  purgeStaleNodeDays: Double = 0
 	@AppStorage("environmentEnableWeatherKit") private var  environmentEnableWeatherKit: Bool = true
 	@AppStorage("enableAdministration") private var  enableAdministration: Bool = false
 	var body: some View {
@@ -40,6 +42,36 @@ struct AppSettings: View {
 					}
 				}
 				Section(header: Text("App Data")) {
+					Toggle(isOn: $purgeStaleNodes ) {
+						Label {
+							Text("Clear Stale Nodes")
+						} icon: {
+							Image(systemName: "list.bullet.circle")
+						}
+					}
+					.onFirstAppear {
+						purgeStaleNodes = purgeStaleNodeDays > 0
+						Logger.services.info("ℹ️ Purge Stale Nodes toggle initialized to \(purgeStaleNodes)")
+					}
+					.onChange(of: purgeStaleNodes) { _, newValue in
+						purgeStaleNodeDays = purgeStaleNodeDays > 0 ? purgeStaleNodeDays : 7
+						purgeStaleNodeDays = newValue ? purgeStaleNodeDays : 0
+						Logger.services.info("ℹ️ Purge Stale Nodes changed to \(purgeStaleNodeDays)")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+
+					.listRowSeparator(purgeStaleNodes ? .hidden : .visible)
+					if purgeStaleNodes {
+						VStack(alignment: .leading) {
+							Text(String(localized: "After \(Int(purgeStaleNodeDays)) Days"))
+							Slider(value: $purgeStaleNodeDays, in: 1...180, step: 1) {
+							} minimumValueLabel: {
+								Text("1")
+							} maximumValueLabel: {
+								Text("180")
+							}
+						}
+					}
 					Button {
 						isPresentingCoreDataResetConfirm = true
 					} label: {
