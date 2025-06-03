@@ -27,6 +27,16 @@ struct UserMessageList: View {
 
 	var body: some View {
 		VStack {
+			if (user.unmessagable) {
+				HStack {
+					Image(systemName: "iphone.gen3.slash")
+						.foregroundColor(Color.red)
+						.font(.title)
+					Text("This node is unmessegable and your message will likley not be read")
+						.padding(.leading, 8)
+				}
+				.padding()
+			}
 			ScrollViewReader { scrollView in
 				ZStack(alignment: .bottomTrailing) {
 					ScrollView {

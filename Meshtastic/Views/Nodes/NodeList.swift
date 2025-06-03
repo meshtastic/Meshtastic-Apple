@@ -94,7 +94,6 @@ struct NodeList: View {
 			FavoriteNodeButton(bleManager: bleManager, context: context, node: node)
 			/// Don't show message, trace route, position exchange or delete context menu items for the connected node
 			if connectedNode.num != node.num {
-				if !(node.user?.unmessagable ?? true) {
 					Button(action: {
 						if let url = URL(string: "meshtastic:///messages?userNum=\(node.num)") {
 						   UIApplication.shared.open(url)
@@ -102,7 +101,6 @@ struct NodeList: View {
 					}) {
 						Label("Message", systemImage: "message")
 					}
-				}
 				TraceRouteButton(
 					bleManager: bleManager,
 					node: node

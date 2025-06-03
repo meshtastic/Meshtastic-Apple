@@ -47,7 +47,7 @@ struct UserList: View {
 						  NSSortDescriptor(key: "userNode.lastHeard", ascending: false),
 						  NSSortDescriptor(key: "longName", ascending: true)],
 		predicate: NSPredicate(
-		  format: "userNode.ignored == NO AND unmessagable = NO"
+		  format: "userNode.ignored == NO"
 		), animation: .spring
 	)
 	var users: FetchedResults<UserEntity>
