@@ -47,6 +47,14 @@ struct WaypointForm: View {
 								.textSelection(.enabled)
 								.foregroundColor(.secondary)
 								.font(.caption)
+							
+							Button {
+								let currentLoc = LocationsHandler.currentLocation
+								waypoint.coordinate.longitude = currentLoc.longitude
+								waypoint.coordinate.latitude = currentLoc.latitude
+							} label: {
+								Image(systemName: "location")
+							}
 						}
 						HStack {
 							if waypoint.coordinate.latitude != 0 && waypoint.coordinate.longitude != 0 {
