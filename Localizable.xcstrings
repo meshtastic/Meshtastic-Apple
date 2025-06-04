@@ -11389,6 +11389,9 @@
         }
       }
     },
+    "Expiration" : {
+
+    },
     "Expire" : {
       "localizations" : {
         "it" : {
@@ -15748,6 +15751,12 @@
         }
       }
     },
+    "Latitude in degrees (e.g., 37.7749)" : {
+
+    },
+    "Latitude must be between -90 and 90 degrees" : {
+
+    },
     "LED Heartbeat" : {
       "localizations" : {
         "it" : {
@@ -16055,6 +16064,7 @@
       }
     },
     "Location" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -16493,6 +16503,12 @@
           }
         }
       }
+    },
+    "Longitude in degrees (e.g., -122.4194)" : {
+
+    },
+    "Longitude must be between -180 and 180 degrees" : {
+
     },
     "LoRa" : {
       "localizations" : {
