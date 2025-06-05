@@ -58,7 +58,7 @@ extension WaypointEntity: MKAnnotation {
 	@MainActor
 	public var coordinate: CLLocationCoordinate2D {
 		get {
-			waypointCoordinate ?? LocationsHandler.currentLocation
+			waypointCoordinate ?? LocationsHandler.DefaultLocation
 		}
 		set {
 			latitudeI = Int32(newValue.latitude * 1e7)

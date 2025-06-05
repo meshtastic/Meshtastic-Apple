@@ -30,6 +30,7 @@ struct WaypointForm: View {
 	@State private var lockedTo: Int64 = 0
 	@State private var detents: Set<PresentationDetent> = [.medium, .fraction(0.85)]
 	@State private var selectedDetent: PresentationDetent = .medium
+	@State private var waypointFailedAlert: Bool = false
 
 	var body: some View {
 		NavigationStack {
@@ -47,7 +48,7 @@ struct WaypointForm: View {
 								.textSelection(.enabled)
 								.foregroundColor(.secondary)
 								.font(.caption)
-							
+
 							Button {
 								let currentLoc = LocationsHandler.currentLocation
 								waypoint.coordinate.longitude = currentLoc.longitude
@@ -80,6 +81,7 @@ struct WaypointForm: View {
 									name = String(name.dropLast())
 									totalBytes = name.utf8.count
 								}
+								waypoint.name = name.count > 0 ? name : "Dropped Pin"
 							}
 						}
 						HStack {
@@ -175,8 +177,8 @@ struct WaypointForm: View {
 							if bleManager.sendWaypoint(waypoint: newWaypoint) {
 								dismiss()
 							} else {
-								dismiss()
 								Logger.mesh.warning("Send waypoint failed")
+								waypointFailedAlert = true
 							}
 						} else {
 							Logger.mesh.warning("Send waypoint failed, node not connected")
@@ -241,8 +243,8 @@ struct WaypointForm: View {
 									}
 									dismiss()
 								} else {
-									dismiss()
 									Logger.mesh.warning("Send waypoint failed")
+									waypointFailedAlert = true
 								}
 							})
 						}
@@ -376,6 +378,17 @@ struct WaypointForm: View {
 				}
 			}
 		}
+		.alert("Waypoiny Failed to Send", isPresented: $waypointFailedAlert) {
+					Button("OK", role: .cancel) {
+						bleManager.context.delete(waypoint)
+						do {
+							try bleManager.context.save()
+						} catch {
+							bleManager.context.rollback()
+						}
+						dismiss()
+					}
+				}
 		.onDisappear {
 			if waypoint.id == 0 {
 					// New, unsent waypoint created by the user: delete it
