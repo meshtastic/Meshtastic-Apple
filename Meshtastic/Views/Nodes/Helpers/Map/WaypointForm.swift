@@ -378,7 +378,7 @@ struct WaypointForm: View {
 				}
 			}
 		}
-		.alert("Waypoiny Failed to Send", isPresented: $waypointFailedAlert) {
+		.alert("Waypoint Failed to Send", isPresented: $waypointFailedAlert) {
 					Button("OK", role: .cancel) {
 						bleManager.context.delete(waypoint)
 						do {
