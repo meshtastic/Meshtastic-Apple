@@ -267,8 +267,8 @@ struct WaypointForm: View {
 						Text(waypoint.name ?? "?")
 							.font(.largeTitle)
 						Spacer()
-						if waypoint.locked > 0 {
-							Image(systemName: "lock.fill" )
+						if waypoint.locked > 0 && waypoint.locked != UInt32(BLEManager.shared.connectedPeripheral?.num ?? 0) {
+							Image(systemName: "lock.fill")
 								.font(.largeTitle)
 						} else {
 							Button {

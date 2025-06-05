@@ -27889,6 +27889,9 @@
         }
       }
     },
+    "Set to current location" : {
+
+    },
     "Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully. O hop broadcast messages will not get ACKs." : {
       "localizations" : {
         "it" : {
@@ -34270,6 +34273,9 @@
         }
       }
     },
+    "Waypoint Failed to Send" : {
+
+    },
     "Waypoint Options" : {
       "localizations" : {
         "de" : {
@@ -34355,9 +34361,6 @@
           }
         }
       }
-    },
-    "Waypoint Failed to Send" : {
-
     },
     "Weather Conditions" : {
       "localizations" : {
