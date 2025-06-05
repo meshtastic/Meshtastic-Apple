@@ -89,7 +89,11 @@ struct SendWaypointIntent: AppIntent {
 		}
 		
 		if isLocked {
-			newWaypoint.lockedTo = UInt32(BLEManager.shared.connectedPeripheral!.num)
+			if let connectedPeripheral = BLEManager.shared.connectedPeripheral {
+				newWaypoint.lockedTo = UInt32(connectedPeripheral.num)
+			} else {
+				throw AppIntentErrors.AppIntentError.notConnected
+			}
 		}
 
 		if !BLEManager.shared.sendWaypoint(waypoint: newWaypoint) {
