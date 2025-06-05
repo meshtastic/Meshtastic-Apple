@@ -56,6 +56,7 @@ struct WaypointForm: View {
 							} label: {
 								Image(systemName: "location")
 							}
+							.accessibilityLabel("Set to current location")
 						}
 						HStack {
 							if waypoint.coordinate.latitude != 0 && waypoint.coordinate.longitude != 0 {
