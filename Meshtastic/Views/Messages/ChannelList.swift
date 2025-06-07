@@ -26,6 +26,12 @@ struct ChannelList: View {
 
 	var restrictedChannels = ["gpio", "mqtt", "serial", "admin"]
 
+	@FetchRequest(
+			sortDescriptors: [NSSortDescriptor(keyPath: \ChannelEntity.index, ascending: true)],
+			predicate: nil,
+			animation: .default
+		) private var channels: FetchedResults<ChannelEntity>
+
 	@ViewBuilder
 	private func makeChannelRow(
 		myInfo: MyInfoEntity,
@@ -87,6 +93,9 @@ struct ChannelList: View {
 								.foregroundColor(.secondary)
 						}
 					}
+					if channel.mute {
+						Image(systemName: "bell.slash")
+					}
 				}
 
 				if channel.allPrivateMessages.count > 0 {
@@ -103,7 +112,7 @@ struct ChannelList: View {
 	var body: some View {
 		VStack {
 			// Display Contacts for the rest of the non admin channels
-			if let node, let myInfo = node.myInfo, let channels = myInfo.channels?.array as? [ChannelEntity] {
+			if let node, let myInfo = node.myInfo {
 				List(selection: $channelSelection) {
 					ForEach(channels) { (channel: ChannelEntity) in
 						if !restrictedChannels.contains(channel.name?.lowercased() ?? "") {
@@ -119,7 +128,7 @@ struct ChannelList: View {
 										}
 									}
 									Button {
-										channel.mute = !channel.mute
+										channel.mute.toggle()
 										do {
 											let adminMessageId =  bleManager.saveChannel(channel: channel.protoBuf, fromUser: node.user!, toUser: node.user!)
 											if adminMessageId > 0 {
