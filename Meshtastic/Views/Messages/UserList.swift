@@ -319,14 +319,6 @@ struct FilteredUserList<Content: View>: View {
 			let isFavoritePredicate = NSPredicate(format: "userNode.favorite == YES")
 			predicates.append(isFavoritePredicate)
 		}
-		// Ignored
-		if isIgnored {
-			let isIgnoredPredicate = NSPredicate(format: "userNode.ignored == YES")
-			predicates.append(isIgnoredPredicate)
-		} else if !isIgnored {
-			let isIgnoredPredicate = NSPredicate(format: "userNode.ignored == NO")
-			predicates.append(isIgnoredPredicate)
-		}
 		// Distance
 		if distanceFilter {
 			let pointOfInterest = LocationsHandler.currentLocation
@@ -347,6 +339,8 @@ struct FilteredUserList<Content: View>: View {
 		// Always apply unmessagable and connected node filters
 		let isUnmessagablePredicate = NSPredicate(format: "unmessagable == NO")
 		predicates.append(isUnmessagablePredicate)
+		let isIgnoredPredicate = NSPredicate(format: "userNode.ignored == NO")
+		predicates.append(isIgnoredPredicate)
 		let isConnectedNodePredicate = NSPredicate(format: "NOT (numString CONTAINS %@)", String(UserDefaults.preferredPeripheralNum))
 		predicates.append(isConnectedNodePredicate)
 		// Combine all predicates
