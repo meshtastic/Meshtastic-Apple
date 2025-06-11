@@ -659,7 +659,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				manager.notifications = [
 					Notification(
 						id: UUID().uuidString,
-						title: "Firmware Notification",
+						title: "Firmware Notification".localized,
 						subtitle: "\(decodedInfo.clientNotification.level)".capitalized,
 						content: decodedInfo.clientNotification.message,
 						target: "settings",
@@ -667,7 +667,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					)
 				]
 				manager.schedule()
-				Logger.data.error("⚠️ Client Notification \((try? decodedInfo.clientNotification.jsonString()) ?? "JSON Decode Failure")")
+				Logger.data.error("⚠️ Client Notification: \(decodedInfo.clientNotification.message, privacy: .public)")
 			}
 
 			switch decodedInfo.packet.decoded.portnum {
@@ -978,6 +978,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				Logger.mesh.info("🕸️ MESH PACKET received for Power Stress App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			case .reticulumTunnelApp:
 				Logger.mesh.info("🕸️ MESH PACKET received for Reticulum Tunnel App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+			case .keyVerificationApp:
+				Logger.mesh.warning("🕸️ MESH PACKET received for Key Verification App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			}
 
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
