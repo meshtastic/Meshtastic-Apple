@@ -283,7 +283,6 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].telemetries? = NSOrderedSet(array: newTelemetries)
 				}
 				if nodeInfoMessage.hasUser {
-					/// Seeing Some crashes here ?
 					fetchedNode[0].user?.userId = nodeInfoMessage.user.id
 					fetchedNode[0].user?.num = Int64(nodeInfoMessage.num)
 					fetchedNode[0].user?.longName = nodeInfoMessage.user.longName
@@ -293,7 +292,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].user?.hwModelId = Int32(nodeInfoMessage.user.hwModel.rawValue)
 					/// For nodes that have the optional isUnmessagable boolean use that, otherwise excluded roles that are unmessagable by default
 					if nodeInfoMessage.user.hasIsUnmessagable {
-						fetchedNode[0].user!.unmessagable = nodeInfoMessage.user.isUnmessagable
+						fetchedNode[0].user?.unmessagable = nodeInfoMessage.user.isUnmessagable
 					} else {
 						let roles = [-1, 2, 4, 5, 6, 7, 10, 11]
 						let containsRole = roles.contains(Int(fetchedNode[0].user?.role ?? -1))
