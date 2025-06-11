@@ -659,7 +659,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				manager.notifications = [
 					Notification(
 						id: UUID().uuidString,
-						title: "Firmware Notification",
+						title: "Firmware Notification".localized,
 						subtitle: "\(decodedInfo.clientNotification.level)".capitalized,
 						content: decodedInfo.clientNotification.message,
 						target: "settings",
@@ -667,7 +667,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					)
 				]
 				manager.schedule()
-				Logger.data.error("⚠️ Client Notification \((try? decodedInfo.clientNotification.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+				Logger.data.error("⚠️ Client Notification: \(decodedInfo.clientNotification.message, privacy: .public)")
 			}
 
 			switch decodedInfo.packet.decoded.portnum {
