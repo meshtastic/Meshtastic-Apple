@@ -284,13 +284,13 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				}
 				if nodeInfoMessage.hasUser {
 					/// Seeing Some crashes here ?
-					fetchedNode[0].user!.userId = nodeInfoMessage.user.id
-					fetchedNode[0].user!.num = Int64(nodeInfoMessage.num)
-					fetchedNode[0].user!.longName = nodeInfoMessage.user.longName
-					fetchedNode[0].user!.shortName = nodeInfoMessage.user.shortName
-					fetchedNode[0].user!.role = Int32(nodeInfoMessage.user.role.rawValue)
-					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
-					fetchedNode[0].user!.hwModelId = Int32(nodeInfoMessage.user.hwModel.rawValue)
+					fetchedNode[0].user?.userId = nodeInfoMessage.user.id
+					fetchedNode[0].user?.num = Int64(nodeInfoMessage.num)
+					fetchedNode[0].user?.longName = nodeInfoMessage.user.longName
+					fetchedNode[0].user?.shortName = nodeInfoMessage.user.shortName
+					fetchedNode[0].user?.role = Int32(nodeInfoMessage.user.role.rawValue)
+					fetchedNode[0].user?.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
+					fetchedNode[0].user?.hwModelId = Int32(nodeInfoMessage.user.hwModel.rawValue)
 					/// For nodes that have the optional isUnmessagable boolean use that, otherwise excluded roles that are unmessagable by default
 					if nodeInfoMessage.user.hasIsUnmessagable {
 						fetchedNode[0].user!.unmessagable = nodeInfoMessage.user.isUnmessagable
@@ -304,13 +304,13 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 						}
 					}
 					if !nodeInfoMessage.user.publicKey.isEmpty {
-						fetchedNode[0].user!.pkiEncrypted = true
-						fetchedNode[0].user!.publicKey = nodeInfoMessage.user.publicKey
+						fetchedNode[0].user?.pkiEncrypted = true
+						fetchedNode[0].user?.publicKey = nodeInfoMessage.user.publicKey
 					}
 					Task {
 						Api().loadDeviceHardwareData { (hw) in
 							let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user?.hwModelId ?? 0 })
-							fetchedNode[0].user!.hwDisplayName = dh?.displayName
+							fetchedNode[0].user?.hwDisplayName = dh?.displayName
 						}
 					}
 				}
@@ -384,7 +384,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					} else {
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
 					}
-					guard let mutablePositions = fetchedNode[0].positions!.mutableCopy() as? NSMutableOrderedSet else {
+					guard let mutablePositions = fetchedNode[0].positions?.mutableCopy() as? NSMutableOrderedSet else {
 						return
 					}
 					/// Don't save nearly the same position over and over. If the next position is less than 10 meters from the new position, delete the previous position and save the new one.
