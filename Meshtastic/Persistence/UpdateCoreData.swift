@@ -284,28 +284,29 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				}
 				if nodeInfoMessage.hasUser {
 					/// Seeing Some crashes here ?
-					fetchedNode[0].user!.userId = nodeInfoMessage.user.id
-					fetchedNode[0].user!.num = Int64(nodeInfoMessage.num)
-					fetchedNode[0].user!.longName = nodeInfoMessage.user.longName
-					fetchedNode[0].user!.shortName = nodeInfoMessage.user.shortName
-					fetchedNode[0].user!.role = Int32(nodeInfoMessage.user.role.rawValue)
-					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
-					fetchedNode[0].user!.hwModelId = Int32(nodeInfoMessage.user.hwModel.rawValue)
-					/// For nodes that have the optional isUnmessagable boolean use that, otherwise excluded roles that are unmessagable by default
-					if nodeInfoMessage.user.hasIsUnmessagable {
-						fetchedNode[0].user!.unmessagable = nodeInfoMessage.user.isUnmessagable
+					if let user = fetchedNode[0].user {
+						user.userId = nodeInfoMessage.user.id
+						user.num = Int64(nodeInfoMessage.num)
+						user.longName = nodeInfoMessage.user.longName
+						user.shortName = nodeInfoMessage.user.shortName
+						user.role = Int32(nodeInfoMessage.user.role.rawValue)
+						user.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
+						user.hwModelId = Int32(nodeInfoMessage.user.hwModel.rawValue)
+						/// For nodes that have the optional isUnmessagable boolean use that, otherwise excluded roles that are unmessagable by default
+						if nodeInfoMessage.user.hasIsUnmessagable {
+						user.unmessagable = nodeInfoMessage.user.isUnmessagable
 					} else {
 						let roles = [-1, 2, 4, 5, 6, 7, 10, 11]
 						let containsRole = roles.contains(Int(fetchedNode[0].user?.role ?? -1))
 						if containsRole {
-							fetchedNode[0].user?.unmessagable = true
+							user.unmessagable = true
 						} else {
-							fetchedNode[0].user?.unmessagable = false
+							user.unmessagable = false
 						}
 					}
 					if !nodeInfoMessage.user.publicKey.isEmpty {
-						fetchedNode[0].user!.pkiEncrypted = true
-						fetchedNode[0].user!.publicKey = nodeInfoMessage.user.publicKey
+						user.pkiEncrypted = true
+						user.publicKey = nodeInfoMessage.user.publicKey
 					}
 					Task {
 						Api().loadDeviceHardwareData { (hw) in
@@ -313,6 +314,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 							fetchedNode[0].user!.hwDisplayName = dh?.displayName
 						}
 					}
+				}
 				}
 			} else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 				fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
@@ -384,7 +386,8 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					} else {
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
 					}
-					guard let mutablePositions = fetchedNode[0].positions!.mutableCopy() as? NSMutableOrderedSet else {
+					guard let positions = fetchedNode[0].positions,
+						  let mutablePositions = positions.mutableCopy() as? NSMutableOrderedSet else {
 						return
 					}
 					/// Don't save nearly the same position over and over. If the next position is less than 10 meters from the new position, delete the previous position and save the new one.

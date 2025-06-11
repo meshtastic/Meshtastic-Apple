@@ -36,7 +36,9 @@ struct MeshtasticAppleApp: App {
 		// Wire up router
 		self.appDelegate.router = appState.router
 		// Show Tips
-		try? Tips.resetDatastore()
+		DispatchQueue.global(qos: .background).async {
+			try? Tips.resetDatastore()
+		}
 	}
 
     var body: some Scene {
