@@ -284,7 +284,7 @@ struct FilteredUserList<Content: View>: View {
 				let loraPredicate = NSPredicate(format: "userNode.viaMqtt == NO")
 				predicates.append(loraPredicate)
 			} else {
-				let mqttPredicate = NSPredicate(format: "userNode.viaMqtt == YES AND userNode.hopsAway == 0")
+				let mqttPredicate = NSPredicate(format: "userNode.viaMqtt == YES")
 				predicates.append(mqttPredicate)
 			}
 		}
