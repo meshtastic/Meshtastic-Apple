@@ -767,6 +767,7 @@
 			children = (
 				DDD5BB0E2C285F92007E03CA /* Logs */,
 				DD93800C2BA74CE3008BEC06 /* Channels */,
+				DD61937A2863876A00E59241 /* Config */,
 				DD97E96728EFE9A00056DDA4 /* About.swift */,
 				DDD5BB152C28B1E4007E03CA /* AppData.swift */,
 				DDD5BB082C285DDC007E03CA /* AppLog.swift */,
@@ -780,7 +781,6 @@
 				DD3501882852FC3B000FC853 /* Settings.swift */,
 				DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */,
 				DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */,
-				DD61937A2863876A00E59241 /* Config */,
 				DD1B8F3F2B35E2F10022AABC /* GPSStatus.swift */,
 			);
 			path = Settings;
@@ -801,6 +801,7 @@
 		DD61937A2863876A00E59241 /* Config */ = {
 			isa = PBXGroup;
 			children = (
+				DD61937B2863877A00E59241 /* Module */,
 				D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */,
 				D93069072B81DF040066FBC8 /* SaveConfigButton.swift */,
 				DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */,
@@ -811,7 +812,6 @@
 				DD2553582855B52700E55709 /* PositionConfig.swift */,
 				D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */,
 				DD1BD0F22C63C65E008C0C70 /* SecurityConfig.swift */,
-				DD61937B2863877A00E59241 /* Module */,
 			);
 			path = Config;
 			sourceTree = "<group>";
@@ -1807,7 +1807,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.6.4;
+				MARKETING_VERSION = 2.6.5;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1840,7 +1840,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.6.4;
+				MARKETING_VERSION = 2.6.5;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1871,7 +1871,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.6.4;
+				MARKETING_VERSION = 2.6.5;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1903,7 +1903,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.6.4;
+				MARKETING_VERSION = 2.6.5;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
