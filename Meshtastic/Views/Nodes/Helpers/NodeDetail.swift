@@ -122,6 +122,31 @@ struct NodeDetail: View {
 						.textSelection(.enabled)
 					}
 					.accessibilityElement(children: .combine)
+					
+					if node.user?.keyMatch ?? false {
+						if let publicKey = node.user?.publicKey {
+							HStack {
+								Label {
+									Text("Public Key")
+								} icon: {
+									Image(systemName: "lock.fill")
+										.foregroundColor(.green)
+								}
+								Spacer()
+								Button(action: {
+									context.perform{
+										UIPasteboard.general.string = publicKey.base64EncodedString()
+									}
+								}) {
+									HStack {
+										Image(systemName: "key.horizontal.fill")
+										Text("Copy")
+									}
+								}
+							}
+							.accessibilityElement(children: .combine)
+						}
+					}
 
 					if let metadata = node.metadata {
 						HStack {
