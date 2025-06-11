@@ -19,19 +19,20 @@ struct MeshtasticLogo: View {
 					.renderingMode(.template)
 					.foregroundColor(.accentColor)
 					.scaledToFit()
+					.offset(x: -15)
 			}
 			.padding(.bottom, 5)
 			.padding(.top, 5)
-			.offset(x: -15)
+			
 		#else
 			VStack {
 				Image(colorScheme == .dark ? "logo-white" : "logo-black")
 					.resizable()
 					.renderingMode(.template)
 					.scaledToFit()
+					.offset(x: -15)
 			}
 			.padding(.bottom, 5)
-			.offset(x: -15)
 		#endif
 	}
 }
