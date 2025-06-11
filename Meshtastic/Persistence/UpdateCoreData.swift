@@ -388,6 +388,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					}
 					guard let positions = fetchedNode[0].positions,
 						  let mutablePositions = positions.mutableCopy() as? NSMutableOrderedSet else {
+						Logger.data.error("💥 [NodeInfoEntity] positions is nil or mutable copy failed for fetchedNode[0].positions")
 						return
 					}
 					/// Don't save nearly the same position over and over. If the next position is less than 10 meters from the new position, delete the previous position and save the new one.
