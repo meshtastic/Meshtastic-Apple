@@ -196,7 +196,7 @@ struct UserList: View {
 					}
 				}
 				.listStyle(.plain)
-				.navigationTitle(String.localizedStringWithFormat("Contacts (%@)", String(users.count == 0 ? 0 : users.count - 1)))
+				.navigationTitle(String.localizedStringWithFormat("Contacts (%@)", String(users.count)))
 			}
 			.sheet(isPresented: $editingFilters) {
 				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isPkiEncrypted: $isPkiEncrypted, isFavorite: $isFavorite, isIgnored: $isIgnored, isEnvironment: $isEnvironment, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
@@ -244,11 +244,11 @@ struct UserList: View {
 struct FilteredUserList<Content: View>: View {
 	@FetchRequest var fetchRequest: FetchedResults<UserEntity>
 	let content: (FetchedResults<UserEntity>) -> Content
-	
+
 	var body: some View {
 		content(fetchRequest)
 	}
-	
+
 	init(
 		searchText: String,
 		viaLora: Bool,
@@ -299,7 +299,7 @@ struct FilteredUserList<Content: View>: View {
 			predicates.append(compoundPredicate)
 		}
 		// Hops Away
-		if hopsAway == 0.0 {
+		if hopsAway == 0 {
 			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway == %i", Int32(hopsAway))
 			predicates.append(hopsAwayPredicate)
 		} else if hopsAway > -1.0 {
@@ -321,11 +321,14 @@ struct FilteredUserList<Content: View>: View {
 			let isFavoritePredicate = NSPredicate(format: "userNode.favorite == YES")
 			predicates.append(isFavoritePredicate)
 		}
-		// Always apply these base filters
-		let isIgnoredPredicate = NSPredicate(format: "userNode.ignored == NO")
-		predicates.append(isIgnoredPredicate)
-		let isUnmessagablePredicate = NSPredicate(format: "unmessagable == NO")
-		predicates.append(isUnmessagablePredicate)
+		// Ignored
+		if isIgnored {
+			let isIgnoredPredicate = NSPredicate(format: "userNode.ignored == YES")
+			predicates.append(isIgnoredPredicate)
+		} else if !isIgnored {
+			let isIgnoredPredicate = NSPredicate(format: "userNode.ignored == NO")
+			predicates.append(isIgnoredPredicate)
+		}
 		// Distance
 		if distanceFilter {
 			let pointOfInterest = LocationsHandler.currentLocation
@@ -343,6 +346,9 @@ struct FilteredUserList<Content: View>: View {
 				predicates.append(distancePredicate)
 			}
 		}
+		// Always apply unmessagable filter
+		let isUnmessagablePredicate = NSPredicate(format: "unmessagable == NO")
+		predicates.append(isUnmessagablePredicate)
 		// Combine all predicates
 		let finalPredicate = predicates.isEmpty ? NSPredicate(value: true) : NSCompoundPredicate(type: .and, subpredicates: predicates)
 		// Initialize the fetch request with the combined predicate
