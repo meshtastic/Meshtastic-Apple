@@ -199,7 +199,7 @@ struct Firmware: View {
 					latestStable = fw.releases.stable.first
 					let archString = currentDevice?.architecture.rawValue ?? ""
 					let ls = fw.releases.stable.first(where: { $0.zipURL.contains(archString) == true })
-					latestStable = fw.releases.stable.first(where: { $0.zipURL.contains(archString) == true })
+					latestStable = fw.releases.stable.first
 					latestAlpha = fw.releases.alpha.first
 				}
 			}
