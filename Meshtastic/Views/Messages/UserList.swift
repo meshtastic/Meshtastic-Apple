@@ -344,9 +344,11 @@ struct FilteredUserList<Content: View>: View {
 				predicates.append(distancePredicate)
 			}
 		}
-		// Always apply unmessagable filter
+		// Always apply unmessagable and connected node filters
 		let isUnmessagablePredicate = NSPredicate(format: "unmessagable == NO")
 		predicates.append(isUnmessagablePredicate)
+		let isConnectedNodePredicate = NSPredicate(format: "NOT (numString CONTAINS \(UserDefaults.preferredPeripheralNum))")
+		predicates.append(isConnectedNodePredicate)
 		// Combine all predicates
 		let finalPredicate = predicates.isEmpty ? NSPredicate(value: true) : NSCompoundPredicate(type: .and, subpredicates: predicates)
 		// Initialize the fetch request with the combined predicate
