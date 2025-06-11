@@ -667,7 +667,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					)
 				]
 				manager.schedule()
-				Logger.data.error("⚠️ Client Notification \((try? decodedInfo.clientNotification.jsonString()) ?? "JSON Decode Failure")")
+				Logger.data.error("⚠️ Client Notification \((try? decodedInfo.clientNotification.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			}
 
 			switch decodedInfo.packet.decoded.portnum {
