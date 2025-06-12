@@ -1532,9 +1532,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return false
 	}
 
-	public func sendFactoryReset(fromUser: UserEntity, toUser: UserEntity) -> Bool {
+	public func sendFactoryReset(fromUser: UserEntity, toUser: UserEntity, resetDevice: Bool = false) -> Bool {
 		var adminPacket = AdminMessage()
-		adminPacket.factoryResetConfig = 5
+		if resetDevice {
+			adminPacket.factoryResetDevice = 5
+		} else {
+			adminPacket.factoryResetConfig = 5
+		}
 		if fromUser != toUser {
 			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
 		}
