@@ -49,15 +49,18 @@ struct WaypointForm: View {
 								.foregroundColor(.secondary)
 								.font(.caption)
 
+						}
 							Button {
 								let currentLoc = LocationsHandler.currentLocation
 								waypoint.coordinate.longitude = currentLoc.longitude
 								waypoint.coordinate.latitude = currentLoc.latitude
 							} label: {
-								Image(systemName: "location")
+								HStack {
+									Text("Use my Location")
+									Image(systemName: "location")
+								}
 							}
 							.accessibilityLabel("Set to current location")
-						}
 						HStack {
 							if waypoint.coordinate.latitude != 0 && waypoint.coordinate.longitude != 0 {
 								DistanceText(meters: distance)
