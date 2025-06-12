@@ -511,7 +511,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			Logger.mesh.info("🛎️ \(logString, privacy: .public)")
 			// BLE Characteristics discovered, issue wantConfig
 			var toRadio: ToRadio = ToRadio()
-			configNonce += 1
+			configNonce = UInt32(69421)
+			if !isSubscribed {
+				configNonce = UInt32(69420) // Get config first
+			}
 			toRadio.wantConfigID = configNonce
 			guard let binaryData: Data = try? toRadio.serializedData() else {
 				return
@@ -982,7 +985,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				Logger.mesh.warning("🕸️ MESH PACKET received for Key Verification App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			}
 
-			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
+			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == 69420 {
 				invalidVersion = false
 				lastConnectionError = ""
 				isSubscribed = true
@@ -1022,6 +1025,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					} catch {
 						Logger.data.error("Failed to find a node info for the connected node \(error.localizedDescription, privacy: .public)")
 					}
+					Logger.mesh.info("🤜 [BLE] Want Config Complete. ID:\(decodedInfo.configCompleteID, privacy: .public)")
+					sendWantConfig()
+
+				}
+				if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == 69421 {
+					Logger.mesh.info("🤜 [BLE] Want Config DB Complete. ID:\(decodedInfo.configCompleteID, privacy: .public)")
 				}
 
 				// MARK: Share Location Position Update Timer
