@@ -292,9 +292,13 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				newTelemetries.append(telemetry)
 				newNode.telemetries? = NSOrderedSet(array: newTelemetries)
 			}
-
-			newNode.firstHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
-			newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
+			if nodeInfo.lastHeard > 0 {
+				newNode.firstHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
+				newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
+			} else {
+				newNode.firstHeard = Date()
+				newNode.lastHeard = Date()
+			}
 			newNode.snr = nodeInfo.snr
 			if nodeInfo.hasUser {
 
