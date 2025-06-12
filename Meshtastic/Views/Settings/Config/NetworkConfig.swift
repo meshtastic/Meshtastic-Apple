@@ -37,7 +37,7 @@ struct NetworkConfig: View {
 
 							Toggle(isOn: $wifiEnabled) {
 								Label("Enabled", systemImage: "wifi")
-								Text("Enabling WiFi will disable the bluetooth connection to the app.")
+								Text("Enabling WiFi will disable the bluetooth connection to the app. TCP node connections are not available on Apple devices.")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
@@ -83,9 +83,9 @@ struct NetworkConfig: View {
 						Section(header: Text("Ethernet Options")) {
 							Toggle(isOn: $ethEnabled) {
 								Label("Enabled", systemImage: "network")
-								Text("Enabling Ethernet will disable the bluetooth connection to the app.")
+								Text("Enabling Ethernet will disable the bluetooth connection to the app. TCP node connections are not available on Apple devices.")
 							}
-							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							.tint(.accentColor)
 						}
 					}
 
@@ -95,6 +95,7 @@ struct NetworkConfig: View {
 								Label("Enabled", systemImage: "point.3.connected.trianglepath.dotted")
 								Text("Enable broadcasting packets via UDP over the local network.")
 							}
+							.tint(.accentColor)
 						}
 					}
 				}

@@ -204,12 +204,22 @@ struct DeviceConfig: View {
 					.controlSize(.regular)
 					.padding(.trailing)
 					.confirmationDialog(
-						"All device and app data will be deleted.",
+						"Factory reset will delete device and app data.",
 						isPresented: $isPresentingFactoryResetConfirm,
 						titleVisibility: .visible
 					) {
-						Button("Factory reset your device and app? ", role: .destructive) {
+						Button("Delete all config? ", role: .destructive) {
 							if bleManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!) {
+								DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+									bleManager.disconnectPeripheral()
+									clearCoreDataDatabase(context: context, includeRoutes: false)
+								}
+							} else {
+								Logger.mesh.error("Factory Reset Failed")
+							}
+						}
+						Button("Delete all config, keys and BLE bonds? ", role: .destructive) {
+							if bleManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!, resetDevice: true) {
 								DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
 									bleManager.disconnectPeripheral()
 									clearCoreDataDatabase(context: context, includeRoutes: false)

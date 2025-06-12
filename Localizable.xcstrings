@@ -2809,34 +2809,6 @@
         }
       }
     },
-    "All device and app data will be deleted." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tutti i dati del dispositivo e delle app verranno eliminati."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Сви подаци о уређају и апликацији ће бити избрисани."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "所有设备以及 App 数据都会被删除。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "全部的設備及App資料將會被刪除。"
-          }
-        }
-      }
-    },
     "Allow incoming device control over the insecure legacy admin channel." : {
       "localizations" : {
         "de" : {
@@ -8140,6 +8112,12 @@
         }
       }
     },
+    "Delete all config, keys and BLE bonds? " : {
+
+    },
+    "Delete all config? " : {
+
+    },
     "Delete all device metrics?" : {
       "localizations" : {
         "fr" : {
@@ -10719,61 +10697,11 @@
         }
       }
     },
-    "Enabling Ethernet will disable the bluetooth connection to the app." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abilitando l'Ethernet si disabilita la connessione bluetooth all'applicazione."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Омогућавање етернета ће онемогућити блутут везу са апликацијом."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "启用以太网将禁用应用程序的蓝牙连接。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "啟用乙太網路後，將會停用與應用程式的藍牙連線。"
-          }
-        }
-      }
+    "Enabling Ethernet will disable the bluetooth connection to the app. TCP node connections are not available on Apple devices." : {
+
     },
-    "Enabling WiFi will disable the bluetooth connection to the app." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L'attivazione del WiFi disabilita la connessione bluetooth all'applicazione."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Омогућавање ВајФаја ће онемогућити блутут везу са апликацијом."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "启用 WiFi 将禁用应用程序的蓝牙连接。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "啟用 Wi-Fi 後，將會停用與應用程式的藍牙連線。"
-          }
-        }
-      }
+    "Enabling WiFi will disable the bluetooth connection to the app. TCP node connections are not available on Apple devices." : {
+
     },
     "Encoder Press Event" : {
       "localizations" : {
@@ -11673,33 +11601,8 @@
         }
       }
     },
-    "Factory reset your device and app? " : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gerät und App auf Werkseinstellungen zurücksetzen?"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Resettare il dispositivo e l'applicazione? "
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Вратите уређај и апликацију на фабричка подешавања?"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "要將您的裝置與應用程式恢復原廠設定嗎？"
-          }
-        }
-      }
+    "Factory reset will delete device and app data." : {
+
     },
     "Failed to encode message content" : {
       "localizations" : {
@@ -24451,6 +24354,7 @@
       }
     },
     "Replying to a message" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hant-TW" : {
           "stringUnit" : {
