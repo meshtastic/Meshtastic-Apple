@@ -39,8 +39,9 @@ struct TextMessageField: View {
 						} label: {
 							Image(systemName: "x.circle.fill")
 						}
-						Text("Replying to a message")
+						Text("Reply")
 					}
+					.padding(.top)
 				}
 
 				ZStack {

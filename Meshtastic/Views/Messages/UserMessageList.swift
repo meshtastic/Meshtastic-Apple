@@ -123,11 +123,11 @@ struct UserMessageList: View {
 											Spacer(minLength: 50)
 										}
 									}
-									.overlay {
-										RoundedRectangle(cornerRadius: 10)
-											.stroke(.blue, lineWidth: 2)
-											.opacity(((messageToHighlight  == message.messageId) || (replyMessageId == message.messageId)) ? 1 : 0)
-									}
+//									.overlay {
+//										RoundedRectangle(cornerRadius: 10)
+//											.stroke(.blue, lineWidth: 2)
+//											.opacity(((messageToHighlight  == message.messageId) || (replyMessageId == message.messageId)) ? 1 : 0)
+//									}
 									.padding([.leading, .trailing])
 									.frame(maxWidth: .infinity)
 									.id(message.messageId)
