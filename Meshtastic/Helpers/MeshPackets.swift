@@ -711,7 +711,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 	if let telemetryMessage = try? Telemetry(serializedBytes: packet.decoded.payload) {
 		let logString = String.localizedStringWithFormat("Telemetry received for: %@".localized, String(packet.from))
 		Logger.mesh.info("📈 \(logString, privacy: .public)")
-		if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) && telemetryMessage.variant != Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
+	if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) && telemetryMessage.variant != Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
 			/// Other unhandled telemetry packets
 			return
 		}
@@ -979,78 +979,78 @@ func textMessageAppPacket(
 				try context.save()
 				Logger.data.info("💾 Saved a new message for \(newMessage.messageId, privacy: .public)")
 				messageSaved = true
-
-				if messageSaved {
-					if packet.decoded.portnum == PortNum.detectionSensorApp && !UserDefaults.enableDetectionNotifications {
-						return
-					}
-					if newMessage.fromUser != nil && newMessage.toUser != nil {
-						// Set Unread Message Indicators
-						if packet.to == connectedNode {
-							appState.unreadDirectMessages = newMessage.toUser?.unreadMessages ?? 0
-						}
-						if !(newMessage.fromUser?.mute ?? false) {
-							// Create an iOS Notification for the received DM message
-							let manager = LocalNotificationManager()
-							manager.notifications = [
-								Notification(
-									id: ("notification.id.\(newMessage.messageId)"),
-									title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
-									subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
-									content: messageText!,
-									target: "messages",
-									path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)",
-									messageId: newMessage.messageId,
-									channel: newMessage.channel,
-									userNum: Int64(packet.from),
-									critical: critical
-								)
-							]
-							manager.schedule()
-							Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown".localized, privacy: .public)")
-						}
-					} else if newMessage.fromUser != nil && newMessage.toUser == nil {
-						let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
-						fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedNode))
-						do {
-							let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
-							if !fetchedMyInfo.isEmpty {
-								appState.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
-								for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
-									if channel.index == newMessage.channel {
-										context.refresh(channel, mergeChanges: true)
-									}
-									if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications {
-										// Create an iOS Notification for the received channel message
-										let manager = LocalNotificationManager()
-										manager.notifications = [
-											Notification(
-												id: ("notification.id.\(newMessage.messageId)"),
-												title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
-												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
-												content: messageText!,
-												target: "messages",
-												path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.messageId)",
-												messageId: newMessage.messageId,
-												channel: newMessage.channel,
-												userNum: Int64(newMessage.fromUser?.userId ?? "0"),
-												critical: critical
-											)
-										]
-										manager.schedule()
-										Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown".localized, privacy: .public)")
-									}
-								}
-							}
-						} catch {
-							// Handle error
-						}
-					}
-				}
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
 				Logger.data.error("Failed to save new MessageEntity \(nsError, privacy: .public)")
+			}
+			// Send notifications if the message saved properly to core data
+			if messageSaved {
+				if packet.decoded.portnum == PortNum.detectionSensorApp && !UserDefaults.enableDetectionNotifications {
+					return
+				}
+				if newMessage.fromUser != nil && newMessage.toUser != nil {
+					// Set Unread Message Indicators
+					if packet.to == connectedNode {
+						appState.unreadDirectMessages = newMessage.toUser?.unreadMessages ?? 0
+					}
+					if !(newMessage.fromUser?.mute ?? false) {
+						// Create an iOS Notification for the received DM message
+						let manager = LocalNotificationManager()
+						manager.notifications = [
+							Notification(
+								id: ("notification.id.\(newMessage.messageId)"),
+								title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
+								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
+								content: messageText!,
+								target: "messages",
+								path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)",
+								messageId: newMessage.messageId,
+								channel: newMessage.channel,
+								userNum: Int64(packet.from),
+								critical: critical
+							)
+						]
+						manager.schedule()
+						Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown".localized, privacy: .public)")
+					}
+				} else if newMessage.fromUser != nil && newMessage.toUser == nil {
+					let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
+					fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedNode))
+					do {
+						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
+						if !fetchedMyInfo.isEmpty {
+							appState.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
+							for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
+								if channel.index == newMessage.channel {
+									context.refresh(channel, mergeChanges: true)
+								}
+								if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications {
+									// Create an iOS Notification for the received channel message
+									let manager = LocalNotificationManager()
+									manager.notifications = [
+										Notification(
+											id: ("notification.id.\(newMessage.messageId)"),
+											title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
+											subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
+											content: messageText!,
+											target: "messages",
+											path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.messageId)",
+											messageId: newMessage.messageId,
+											channel: newMessage.channel,
+											userNum: Int64(newMessage.fromUser?.userId ?? "0"),
+											critical: critical
+										)
+									]
+									manager.schedule()
+									Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown".localized, privacy: .public)")
+								}
+							}
+						}
+					} catch {
+						// Handle error
+					}
+				}
 			}
 		} catch {
 			Logger.data.error("Fetch Message To and From Users Error")

@@ -13244,6 +13244,9 @@
         }
       }
     },
+    "GitHub Repository" : {
+
+    },
     "Good" : {
       "localizations" : {
         "it" : {
@@ -13812,34 +13815,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "心"
-          }
-        }
-      }
-    },
-    "Help with App Development" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aiuto per lo sviluppo di app"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Помози при развоју апликације"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "帮助开发应用程序"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "幫助App開發"
           }
         }
       }
@@ -24353,17 +24328,6 @@
         }
       }
     },
-    "Replying to a message" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在回覆訊息"
-          }
-        }
-      }
-    },
     "Request Legacy Admin: %@" : {
       "localizations" : {
         "it" : {
@@ -28970,6 +28934,9 @@
           }
         }
       }
+    },
+    "Sponsor App Development" : {
+
     },
     "Spread Factor" : {
       "localizations" : {
