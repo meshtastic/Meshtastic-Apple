@@ -2809,34 +2809,6 @@
         }
       }
     },
-    "Allow incoming device control over the insecure legacy admin channel." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Erlaubt die eingehende Gerätesteuerung über den unsicheren Legacy-Admin-Kanal."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Consentire il controllo del dispositivo in entrata attraverso il canale di amministrazione legacy non sicuro."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Дозволите контролу долазног уређаја над небезбедним старим администраторским каналом."
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "允許經由不安全的傳統管理通道接收裝置控制指令。"
-          }
-        }
-      }
-    },
     "Allow Position Requests" : {
       "localizations" : {
         "it" : {
@@ -15736,34 +15708,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "左"
-          }
-        }
-      }
-    },
-    "Legacy Administration" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alte Administrationsart"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Amministrazione del patrimonio"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Стари начин администрације"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "舊版遠端管理"
           }
         }
       }

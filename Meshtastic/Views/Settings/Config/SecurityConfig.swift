@@ -33,7 +33,6 @@ struct SecurityConfig: View {
 	@State var isManaged = false
 	@State var serialEnabled = false
 	@State var debugLogApiEnabled = false
-	@State var adminChannelEnabled = false
 
 	var body: some View {
 		VStack {
@@ -125,18 +124,13 @@ struct SecurityConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 				Section(header: Text("Administration")) {
-					if adminKey.length > 0 || adminChannelEnabled {
+					if adminKey.length > 0 || UserDefaults.enableAdministration {
 						Toggle(isOn: $isManaged) {
 							Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
 							Text("Device is managed by a mesh administrator, the user is unable to access any of the device settings.")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-					Toggle(isOn: $adminChannelEnabled) {
-						Label("Legacy Administration", systemImage: "lock.slash")
-						Text("Allow incoming device control over the insecure legacy admin channel.")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 			}
 		}
@@ -158,17 +152,14 @@ struct SecurityConfig: View {
 		.onChange(of: debugLogApiEnabled) { _, newDebugLogApiEnabled in
 			if newDebugLogApiEnabled != node?.securityConfig?.debugLogApiEnabled { hasChanges = true }
 		}
-		.onChange(of: adminChannelEnabled) { _, newAdminChannelEnabled in
-			if newAdminChannelEnabled != node?.securityConfig?.adminChannelEnabled { hasChanges = true }
-		}
-		.onChange(of: privateKey) {
+		.onChange(of: privateKey) { _, key in
 			let tempKey = Data(base64Encoded: privateKey) ?? Data()
 			if tempKey.count == 32 {
 				hasValidPrivateKey = true
 			} else {
 				hasValidPrivateKey = false
 			}
-			hasChanges = true
+			if key != node?.securityConfig?.privateKey?.base64EncodedString() ?? "" && hasValidPrivateKey { hasChanges = true }
 		}
 		.onChange(of: adminKey) { _, key in
 			let tempKey = Data(base64Encoded: key) ?? Data()
@@ -179,7 +170,7 @@ struct SecurityConfig: View {
 			} else {
 				hasValidAdminKey = false
 			}
-			hasChanges = true
+			if key != node?.securityConfig?.adminKey?.base64EncodedString() ?? "" && hasValidAdminKey { hasChanges = true }
 		}
 		.onChange(of: adminKey2) { _, key in
 			let tempKey = Data(base64Encoded: key) ?? Data()
@@ -190,7 +181,7 @@ struct SecurityConfig: View {
 			} else {
 				hasValidAdminKey2 = false
 			}
-			hasChanges = true
+			if key != node?.securityConfig?.adminKey2?.base64EncodedString() ?? "" && hasValidAdminKey2 { hasChanges = true }
 		}
 		.onChange(of: adminKey3) { _, key in
 			let tempKey = Data(base64Encoded: key) ?? Data()
@@ -201,10 +192,10 @@ struct SecurityConfig: View {
 			} else {
 				hasValidAdminKey3 = false
 			}
-			hasChanges = true
+			if key != node?.securityConfig?.adminKey2?.base64EncodedString() ?? "" && hasValidAdminKey3 { hasChanges = true }
 		}
 		.onFirstAppear {
-			// Need to request a DeviceConfig from the remote node before allowing changes
+			// Need to request a SecurityConfig from the remote node before allowing changes
 			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let connectedNode {
@@ -246,7 +237,6 @@ struct SecurityConfig: View {
 			config.isManaged = isManaged
 			config.serialEnabled = serialEnabled
 			config.debugLogApiEnabled = debugLogApiEnabled
-			config.adminChannelEnabled = adminChannelEnabled
 
 			let reboot = node?.securityConfig?.privateKey?.base64EncodedString() ?? "" != privateKey
 
@@ -281,7 +271,6 @@ struct SecurityConfig: View {
 		self.isManaged = node?.securityConfig?.isManaged ?? false
 		self.serialEnabled = node?.securityConfig?.serialEnabled ?? false
 		self.debugLogApiEnabled = node?.securityConfig?.debugLogApiEnabled ?? false
-		self.adminChannelEnabled = node?.securityConfig?.adminChannelEnabled ?? false
 		self.hasChanges = false
 	}
 
