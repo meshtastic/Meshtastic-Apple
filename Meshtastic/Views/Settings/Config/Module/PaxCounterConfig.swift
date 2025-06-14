@@ -69,7 +69,7 @@ struct PaxCounterConfig: View {
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.paxCounterConfig == nil {
 								Logger.mesh.info("⚙️ Empty or expired pax counter module config requesting via PKI admin")
-								_ = bleManager.requestPaxCounterModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								_ = bleManager.requestPaxCounterModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
 							}
 						} else {
 							/// Legacy Administration
@@ -100,8 +100,7 @@ struct PaxCounterConfig: View {
 			let adminMessageId = bleManager.savePaxcounterModuleConfig(
 				config: config,
 				fromUser: fromUser,
-				toUser: toUser,
-				adminIndex: connectedNode.myInfo?.adminIndex ?? 0
+				toUser: toUser
 			)
 			if adminMessageId > 0 {
 				// Should show a saved successfully alert once I know that to be true

@@ -160,7 +160,7 @@ struct Firmware: View {
 							Button {
 								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
 								if connectedNode != nil {
-									if !bleManager.sendRebootOta(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex) {
+									if !bleManager.sendRebootOta(fromUser: connectedNode!.user!, toUser: node!.user!) {
 										Logger.mesh.error("Reboot Failed")
 									}
 								}

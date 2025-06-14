@@ -65,6 +65,21 @@ struct SecurityConfig: View {
 						Text("Used to create a shared key with a remote device.")
 							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
+						HStack(alignment: .firstTextBaseline) {
+							Label("Regenerate Private Key", systemImage: "arrow.clockwise.circle")
+							Spacer()
+							Button {
+								if let keyBytes = generatePrivateKey(count: 32) {
+									privateKey = keyBytes.base64EncodedString()
+								}
+							} label: {
+								Image(systemName: "lock.rotation")
+									.font(.title)
+							}
+							.buttonStyle(.bordered)
+							.buttonBorderShape(.capsule)
+							.controlSize(.small)
+						}
 						Divider()
 						Label("Primary Admin Key", systemImage: "key.viewfinder")
 						SecureInput("Primary Admin Key", text: $adminKey, isValid: $hasValidAdminKey)
@@ -199,7 +214,7 @@ struct SecurityConfig: View {
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.securityConfig == nil {
 								Logger.mesh.info("⚙️ Empty or expired security config requesting via PKI admin")
-								_ = bleManager.requestSecurityConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								_ = bleManager.requestSecurityConfig(fromUser: connectedNode.user!, toUser: node.user!)
 							}
 						} else {
 							if node.deviceConfig == nil {
@@ -233,16 +248,25 @@ struct SecurityConfig: View {
 			config.debugLogApiEnabled = debugLogApiEnabled
 			config.adminChannelEnabled = adminChannelEnabled
 
+			let reboot = node?.securityConfig?.privateKey?.base64EncodedString() ?? "" != privateKey
+
 			let adminMessageId = bleManager.saveSecurityConfig(
 				config: config,
 				fromUser: fromUser,
-				toUser: toUser,
-				adminIndex: connectedNode.myInfo?.adminIndex ?? 0
+				toUser: toUser
 			)
 			if adminMessageId > 0 {
 				// Should show a saved successfully alert once I know that to be true
 				// for now just disable the button after a successful save
 				hasChanges = false
+				if reboot {
+					if !bleManager.sendReboot(
+						fromUser: fromUser,
+						toUser: toUser
+					) {
+						Logger.mesh.warning("Reboot Failed")
+					}
+				}
 				goBack()
 			}
 		}
@@ -259,5 +283,23 @@ struct SecurityConfig: View {
 		self.debugLogApiEnabled = node?.securityConfig?.debugLogApiEnabled ?? false
 		self.adminChannelEnabled = node?.securityConfig?.adminChannelEnabled ?? false
 		self.hasChanges = false
+	}
+
+	func generatePrivateKey(count: Int) -> Data? {
+		var randomBytes = Data(count: count)
+		let status = randomBytes.withUnsafeMutableBytes { (mutableBytes: UnsafeMutableRawBufferPointer) -> Int32 in
+			guard let pointer = mutableBytes.baseAddress?.assumingMemoryBound(to: UInt8.self) else {
+				return -1 // Indicate an error
+			}
+			return SecRandomCopyBytes(kSecRandomDefault, count, pointer)
+		}
+
+		if status == errSecSuccess {
+			return randomBytes
+		} else {
+			// Handle error, perhaps by logging or throwing an exception
+			print("Error generating random bytes: \(status)")
+			return nil
+		}
 	}
 }

@@ -53,7 +53,7 @@ struct RtttlConfig: View {
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if connectedNode != nil {
-					let adminMessageId =  bleManager.saveRtttlConfig(ringtone: ringtone.trimmingCharacters(in: .whitespacesAndNewlines), fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					let adminMessageId =  bleManager.saveRtttlConfig(ringtone: ringtone.trimmingCharacters(in: .whitespacesAndNewlines), fromUser: connectedNode!.user!, toUser: node!.user!)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
@@ -83,7 +83,7 @@ struct RtttlConfig: View {
 								let expiration = node.sessionExpiration ?? Date()
 								if expiration < Date() || node.rtttlConfig == nil {
 									Logger.mesh.info("⚙️ Empty or expired ringtone module config requesting via PKI admin")
-									_ = bleManager.requestRtttlConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+									_ = bleManager.requestRtttlConfig(fromUser: connectedNode.user!, toUser: node.user!)
 								}
 							} else {
 								/// Legacy Administration

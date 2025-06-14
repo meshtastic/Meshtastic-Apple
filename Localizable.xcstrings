@@ -23950,6 +23950,9 @@
         }
       }
     },
+    "Regenerate Private Key" : {
+
+    },
     "Region" : {
       "localizations" : {
         "de" : {
