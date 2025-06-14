@@ -52,6 +52,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
 	let LEGACY_LOGRADIO_UUID = CBUUID(string: "0x6C6FD238-78FA-436B-AACF-15C5BE1EF2E2")
 	let LOGRADIO_UUID = CBUUID(string: "0x5a3d6e49-06e6-4423-9944-e9de8cdf9547")
+	
+	let NONCE_ONLY_CONFIG = 69420
+	let NONCE_ONLY_DB = 69421
 
 	// MARK: init
 	private override init() {
@@ -511,9 +514,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			Logger.mesh.info("🛎️ \(logString, privacy: .public)")
 			// BLE Characteristics discovered, issue wantConfig
 			var toRadio: ToRadio = ToRadio()
-			configNonce = UInt32(69421)
+			configNonce = UInt32(NONCE_ONLY_DB)
 			if !isSubscribed {
-				configNonce = UInt32(69420) // Get config first
+				configNonce = UInt32(NONCE_ONLY_CONFIG) // Get config first
 			}
 			toRadio.wantConfigID = configNonce
 			guard let binaryData: Data = try? toRadio.serializedData() else {
@@ -985,7 +988,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				Logger.mesh.warning("🕸️ MESH PACKET received for Key Verification App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			}
 
-			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == 69420 {
+			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == NONCE_ONLY_CONFIG {
 				invalidVersion = false
 				lastConnectionError = ""
 				isSubscribed = true
@@ -1043,7 +1046,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 				return
 			}
-			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == 69421 {
+			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == NONCE_ONLY_DB {
 				Logger.mesh.info("🤜 [BLE] Want Config DB Complete. ID:\(decodedInfo.configCompleteID, privacy: .public)")
 			}
 
