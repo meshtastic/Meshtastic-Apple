@@ -1029,9 +1029,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					sendWantConfig()
 
 				}
-				if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == 69421 {
-					Logger.mesh.info("🤜 [BLE] Want Config DB Complete. ID:\(decodedInfo.configCompleteID, privacy: .public)")
-				}
+				
 
 				// MARK: Share Location Position Update Timer
 				// Use context to pass the radio name with the timer
@@ -1044,6 +1042,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 				}
 				return
+			}
+			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == 69421 {
+				Logger.mesh.info("🤜 [BLE] Want Config DB Complete. ID:\(decodedInfo.configCompleteID, privacy: .public)")
 			}
 
 		case FROMNUM_UUID:
