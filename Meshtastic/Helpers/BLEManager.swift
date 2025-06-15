@@ -52,6 +52,16 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
 	let LEGACY_LOGRADIO_UUID = CBUUID(string: "0x6C6FD238-78FA-436B-AACF-15C5BE1EF2E2")
 	let LOGRADIO_UUID = CBUUID(string: "0x5a3d6e49-06e6-4423-9944-e9de8cdf9547")
+	
+	let NONCE_ONLY_CONFIG = 69420
+	let NONCE_ONLY_DB = 69421
+	private var isWaitingForWantConfigResponse = false
+	
+    private var wantConfigTimer: Timer?
+    private var wantConfigRetryCount = 0
+    private let maxWantConfigRetries = 3
+    private let wantConfigTimeoutInterval: TimeInterval = 5.0
+
 
 	// MARK: init
 	private override init() {
@@ -495,32 +505,96 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		return success
 	}
+	
+ func sendWantConfig() {
+	 isWaitingForWantConfigResponse = true
+	 
+	 guard connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected else { return }
+	 
+	 if FROMRADIO_characteristic == nil {
+		 Logger.mesh.error("🚨 \("Unsupported Firmware Version Detected, unable to connect to device.".localized, privacy: .public)")
+		 invalidVersion = true
+		 return
+	 } else {
+		 
+		 let nodeName = connectedPeripheral?.peripheral.name ?? "Unknown".localized
+		 let logString = String.localizedStringWithFormat("Issuing Want Config to %@".localized, nodeName)
+		 Logger.mesh.info("🛎️ \(logString, privacy: .public)")
+		 
+		 // BLE Characteristics discovered, issue wantConfig
+		 var toRadio: ToRadio = ToRadio()
+		 configNonce = UInt32(NONCE_ONLY_DB)
+		 if !isSubscribed {
+			 configNonce = UInt32(NONCE_ONLY_CONFIG) // Get config first
+		 }
+		 toRadio.wantConfigID = configNonce
+		 guard let binaryData: Data = try? toRadio.serializedData() else {
+			 return
+		 }
+		 connectedPeripheral!.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+		 
+		 // Either Read the config complete value or from num notify value
+		 guard connectedPeripheral != nil else { return }
+		 connectedPeripheral!.peripheral.readValue(for: FROMRADIO_characteristic)
+		 
+		 // Start timeout timer
+		 startWantConfigTimeout()
+	 }
+ }
 
-	func sendWantConfig() {
-		guard connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected else { return }
+ private func startWantConfigTimeout() {
+	 // Cancel any existing timer
+	 wantConfigTimer?.invalidate()
+	 
+	 // Start new timer
+	 wantConfigTimer = Timer.scheduledTimer(withTimeInterval: wantConfigTimeoutInterval, repeats: false) { [weak self] _ in
+		 self?.handleWantConfigTimeout()
+	 }
+ }
 
-		if FROMRADIO_characteristic == nil {
-			Logger.mesh.error("🚨 \("Unsupported Firmware Version Detected, unable to connect to device.".localized, privacy: .public)")
-			invalidVersion = true
-			return
-		} else {
+ private func handleWantConfigTimeout() {
+	 guard isWaitingForWantConfigResponse else { return }
+	 
+	 wantConfigRetryCount += 1
+	 
+	 if wantConfigRetryCount < maxWantConfigRetries {
+		 Logger.mesh.warning("⏰ Want Config timeout, retrying... (attempt \(self.wantConfigRetryCount + 1)/\(self.maxWantConfigRetries))")
+		 sendWantConfig()
+	 } else {
+		 Logger.mesh.error("🚨 Want Config failed after \(self.maxWantConfigRetries) attempts, forcing disconnect")
+		 forceDisconnect()
+	 }
+ }
 
-			let nodeName = connectedPeripheral?.peripheral.name ?? "Unknown".localized
-			let logString = String.localizedStringWithFormat("Issuing Want Config to %@".localized, nodeName)
-			Logger.mesh.info("🛎️ \(logString, privacy: .public)")
-			// BLE Characteristics discovered, issue wantConfig
-			var toRadio: ToRadio = ToRadio()
-			configNonce += 1
-			toRadio.wantConfigID = configNonce
-			guard let binaryData: Data = try? toRadio.serializedData() else {
-				return
-			}
-			connectedPeripheral!.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			// Either Read the config complete value or from num notify value
-			guard connectedPeripheral != nil else { return }
-			connectedPeripheral!.peripheral.readValue(for: FROMRADIO_characteristic)
-		}
-	}
+ func onWantConfigResponseReceived() {
+	 if isWaitingForWantConfigResponse {
+		 isWaitingForWantConfigResponse = false
+		 wantConfigTimer?.invalidate()
+		 wantConfigTimer = nil
+		 wantConfigRetryCount = 0 // Reset retry count on success
+	 }
+ }
+
+ private func forceDisconnect() {
+	 isWaitingForWantConfigResponse = false
+	 wantConfigTimer?.invalidate()
+	 wantConfigTimer = nil
+	 wantConfigRetryCount = 0
+
+	 disconnectPeripheral(reconnect: false)
+	 
+	 lastConnectionError = "Want Config timeout"
+	 
+	 Logger.mesh.info("🔌 Forced disconnect due to Want Config timeout")
+ }
+
+ // Call this to reset the retry mechanism (e.g., on new connection)
+ func resetWantConfigRetries() {
+	 wantConfigRetryCount = 0
+	 wantConfigTimer?.invalidate()
+	 wantConfigTimer = nil
+	 isWaitingForWantConfigResponse = false
+ }
 
 	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
 		if let error {
@@ -693,6 +767,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 				// NodeInfo
 				if decodedInfo.nodeInfo.num > 0 {
+					onWantConfigResponseReceived()
 					nowKnown = true
 					if let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, channel: decodedInfo.packet.channel, context: context) {
 						if self.connectedPeripheral != nil && self.connectedPeripheral.num == nodeInfo.num {
@@ -715,6 +790,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 				// Module Config
 				if decodedInfo.moduleConfig.isInitialized && !invalidVersion && self.connectedPeripheral?.num != 0 {
+					onWantConfigResponseReceived()
 					nowKnown = true
 					moduleConfig(config: decodedInfo.moduleConfig, context: context, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral?.num ?? 0), nodeLongName: self.connectedPeripheral.longName)
 					if decodedInfo.moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(decodedInfo.moduleConfig.cannedMessage) {
@@ -981,7 +1057,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				Logger.mesh.warning("🕸️ MESH PACKET received for Key Verification App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			}
 
-			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
+			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == NONCE_ONLY_CONFIG {
 				invalidVersion = false
 				lastConnectionError = ""
 				isSubscribed = true
@@ -1021,7 +1097,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					} catch {
 						Logger.data.error("Failed to find a node info for the connected node \(error.localizedDescription, privacy: .public)")
 					}
+					Logger.mesh.info("🤜 [BLE] Want Config Complete. ID:\(decodedInfo.configCompleteID, privacy: .public)")
+					sendWantConfig()
+
 				}
+				
 
 				// MARK: Share Location Position Update Timer
 				// Use context to pass the radio name with the timer
@@ -1034,6 +1114,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 				}
 				return
+			}
+			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == NONCE_ONLY_DB {
+				Logger.mesh.info("🤜 [BLE] Want Config DB Complete. ID:\(decodedInfo.configCompleteID, privacy: .public)")
 			}
 
 		case FROMNUM_UUID:
