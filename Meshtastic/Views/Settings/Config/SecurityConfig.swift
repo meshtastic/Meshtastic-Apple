@@ -192,7 +192,7 @@ struct SecurityConfig: View {
 			} else {
 				hasValidAdminKey3 = false
 			}
-			if key != node?.securityConfig?.adminKey2?.base64EncodedString() ?? "" && hasValidAdminKey3 { hasChanges = true }
+			if key != node?.securityConfig?.adminKey3?.base64EncodedString() ?? "" && hasValidAdminKey3 { hasChanges = true }
 		}
 		.onFirstAppear {
 			// Need to request a SecurityConfig from the remote node before allowing changes
