@@ -114,7 +114,7 @@ struct NetworkConfig: View {
 					network.enabledProtocols = self.udpEnabled ? UInt32(Config.NetworkConfig.ProtocolFlags.udpBroadcast.rawValue) : UInt32(Config.NetworkConfig.ProtocolFlags.noBroadcast.rawValue)
 					// network.addressMode = Config.NetworkConfig.AddressMode.dhcp
 
-					let adminMessageId =  bleManager.saveNetworkConfig(config: network, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					let adminMessageId =  bleManager.saveNetworkConfig(config: network, fromUser: connectedNode!.user!, toUser: node!.user!)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
@@ -140,7 +140,7 @@ struct NetworkConfig: View {
 				Logger.mesh.info("empty network config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if node != nil && connectedNode != nil {
-					_ = bleManager.requestNetworkConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					_ = bleManager.requestNetworkConfig(fromUser: connectedNode!.user!, toUser: node!.user!)
 				}
 			}
 		}
@@ -155,7 +155,7 @@ struct NetworkConfig: View {
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.networkConfig == nil {
 								Logger.mesh.info("⚙️ Empty or expired network config requesting via PKI admin")
-								_ = bleManager.requestNetworkConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								_ = bleManager.requestNetworkConfig(fromUser: connectedNode.user!, toUser: node.user!)
 							}
 						} else {
 							/// Legacy Administration
