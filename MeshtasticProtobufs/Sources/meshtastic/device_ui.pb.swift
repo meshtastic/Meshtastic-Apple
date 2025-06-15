@@ -142,6 +142,10 @@ public enum Language: SwiftProtobuf.Enum, Swift.CaseIterable {
   case ukrainian // = 16
 
   ///
+  /// Bulgarian
+  case bulgarian // = 17
+
+  ///
   /// Simplified Chinese (experimental)
   case simplifiedChinese // = 30
 
@@ -173,6 +177,7 @@ public enum Language: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 14: self = .norwegian
     case 15: self = .slovenian
     case 16: self = .ukrainian
+    case 17: self = .bulgarian
     case 30: self = .simplifiedChinese
     case 31: self = .traditionalChinese
     default: self = .UNRECOGNIZED(rawValue)
@@ -198,6 +203,7 @@ public enum Language: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .norwegian: return 14
     case .slovenian: return 15
     case .ukrainian: return 16
+    case .bulgarian: return 17
     case .simplifiedChinese: return 30
     case .traditionalChinese: return 31
     case .UNRECOGNIZED(let i): return i
@@ -223,6 +229,7 @@ public enum Language: SwiftProtobuf.Enum, Swift.CaseIterable {
     .norwegian,
     .slovenian,
     .ukrainian,
+    .bulgarian,
     .simplifiedChinese,
     .traditionalChinese,
   ]
@@ -502,6 +509,7 @@ extension Language: SwiftProtobuf._ProtoNameProviding {
     14: .same(proto: "NORWEGIAN"),
     15: .same(proto: "SLOVENIAN"),
     16: .same(proto: "UKRAINIAN"),
+    17: .same(proto: "BULGARIAN"),
     30: .same(proto: "SIMPLIFIED_CHINESE"),
     31: .same(proto: "TRADITIONAL_CHINESE"),
   ]
