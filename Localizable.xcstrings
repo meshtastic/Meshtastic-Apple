@@ -11289,6 +11289,9 @@
         }
       }
     },
+    "Expiration" : {
+
+    },
     "Expire" : {
       "localizations" : {
         "it" : {
@@ -15598,6 +15601,12 @@
         }
       }
     },
+    "Latitude in degrees (e.g., 37.7749)" : {
+
+    },
+    "Latitude must be between -90 and 90 degrees" : {
+
+    },
     "LED Heartbeat" : {
       "localizations" : {
         "it" : {
@@ -15877,6 +15886,7 @@
       }
     },
     "Location" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -16315,6 +16325,12 @@
           }
         }
       }
+    },
+    "Longitude in degrees (e.g., -122.4194)" : {
+
+    },
+    "Longitude must be between -180 and 180 degrees" : {
+
     },
     "LoRa" : {
       "localizations" : {
@@ -27688,6 +27704,9 @@
         }
       }
     },
+    "Set to current location" : {
+
+    },
     "Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully. O hop broadcast messages will not get ACKs." : {
       "localizations" : {
         "it" : {
@@ -33245,6 +33264,9 @@
         }
       }
     },
+    "Use my Location" : {
+
+    },
     "Use Preset" : {
       "localizations" : {
         "it" : {
@@ -34071,6 +34093,9 @@
           }
         }
       }
+    },
+    "Waypoint Failed to Send" : {
+
     },
     "Waypoint Options" : {
       "localizations" : {
