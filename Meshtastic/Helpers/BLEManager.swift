@@ -52,16 +52,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
 	let LEGACY_LOGRADIO_UUID = CBUUID(string: "0x6C6FD238-78FA-436B-AACF-15C5BE1EF2E2")
 	let LOGRADIO_UUID = CBUUID(string: "0x5a3d6e49-06e6-4423-9944-e9de8cdf9547")
-	
+
 	let NONCE_ONLY_CONFIG = 69420
 	let NONCE_ONLY_DB = 69421
 	private var isWaitingForWantConfigResponse = false
-	
+
     private var wantConfigTimer: Timer?
     private var wantConfigRetryCount = 0
-    private let maxWantConfigRetries = 3
-    private let wantConfigTimeoutInterval: TimeInterval = 5.0
-
+    private let maxWantConfigRetries = 5
+    private let wantConfigTimeoutInterval: TimeInterval = 10.0
 
 	// MARK: init
 	private override init() {
@@ -194,6 +193,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			if self.mqttProxyConnected {
 				self.mqttManager.mqttClientProxy?.disconnect()
 			}
+			self.wantConfigTimer?.invalidate()
 			self.automaticallyReconnect = reconnect
 			self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
 			self.FROMRADIO_characteristic = nil
@@ -583,9 +583,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 	 disconnectPeripheral(reconnect: false)
 	 
-	 lastConnectionError = "Want Config timeout"
+	 lastConnectionError = "Bluetooth connection timeout, keep your node closer.".localized
 	 
-	 Logger.mesh.info("🔌 Forced disconnect due to Want Config timeout")
+	 Logger.mesh.error("💥 [BLE] Forced disconnect due to Want Config timeout")
  }
 
  // Call this to reset the retry mechanism (e.g., on new connection)
