@@ -255,6 +255,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 	// Disconnect Peripheral Event
 	func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+		resetWantConfigRetries()
 		self.connectedPeripheral = nil
 		self.isConnecting = false
 		self.isConnected = false
