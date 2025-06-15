@@ -713,6 +713,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				let message = CocoaMQTTMessage(topic: decodedInfo.mqttClientProxyMessage.topic, payload: [UInt8](decodedInfo.mqttClientProxyMessage.data), retained: decodedInfo.mqttClientProxyMessage.retained)
 				mqttManager.mqttClientProxy?.publish(message)
 			} else if decodedInfo.payloadVariant == FromRadio.OneOf_PayloadVariant.clientNotification(decodedInfo.clientNotification) {
+				
+				var path = "meshtastic:///settings/debugLogs"
 				if decodedInfo.clientNotification.hasReplyID {
 					/// Set Sent bool on TraceRouteEntity to false if we got rate limited
 					if decodedInfo.clientNotification.message.starts(with: "TraceRoute") {
@@ -726,6 +728,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							let nsError = error as NSError
 							Logger.data.error("💥 [TraceRouteEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 						}
+					} else if decodedInfo.clientNotification.message.starts(with: "You Device is configured with a low entropy") || decodedInfo.clientNotification.message.starts(with: "Compromised keys detected") {
+						path = "meshtastic:///settings/security"
 					}
 				}
 				let manager = LocalNotificationManager()
@@ -736,7 +740,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						subtitle: "\(decodedInfo.clientNotification.level)".capitalized,
 						content: decodedInfo.clientNotification.message,
 						target: "settings",
-						path: "meshtastic:///settings/debugLogs"
+						path: path
 					)
 				]
 				manager.schedule()

@@ -123,8 +123,8 @@ struct SecurityConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
-				Section(header: Text("Administration")) {
 					if adminKey.length > 0 || UserDefaults.enableAdministration {
+					Section(header: Text("Administration")) {
 						Toggle(isOn: $isManaged) {
 							Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
 							Text("Device is managed by a mesh administrator, the user is unable to access any of the device settings.")
