@@ -142,7 +142,7 @@ struct DisplayConfig: View {
 				dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
 				dc.units = Units(rawValue: units)!.protoEnumValue()
 
-				let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!)
 				if adminMessageId > 0 {
 
 					// Should show a saved successfully alert once I know that to be true
@@ -174,7 +174,7 @@ struct DisplayConfig: View {
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.displayConfig == nil {
 								Logger.mesh.info("⚙️ Empty or expired display config requesting via PKI admin")
-								_ = bleManager.requestDisplayConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								_ = bleManager.requestDisplayConfig(fromUser: connectedNode.user!, toUser: node.user!)
 							}
 						} else {
 							/// Legacy Administration

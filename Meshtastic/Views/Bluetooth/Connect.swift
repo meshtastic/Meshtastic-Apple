@@ -133,7 +133,7 @@ struct Connect: View {
 											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 										}
 										Button {
-											if !bleManager.sendShutdown(fromUser: node!.user!, toUser: node!.user!, adminIndex: node!.myInfo!.adminIndex) {
+											if !bleManager.sendShutdown(fromUser: node!.user!, toUser: node!.user!) {
 												Logger.mesh.error("Shutdown Failed")
 											}
 

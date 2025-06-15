@@ -245,7 +245,7 @@ struct DeviceConfig: View {
 						dc.disableTripleClick = !tripleClickAsAdHocPing
 						dc.tzdef = tzdef
 						dc.ledHeartbeatDisabled = !ledHeartbeatEnabled
-						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save
@@ -278,7 +278,7 @@ struct DeviceConfig: View {
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.deviceConfig == nil {
 								Logger.mesh.info("⚙️ Empty or expired device config requesting via PKI admin")
-								_ = bleManager.requestDeviceConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								_ = bleManager.requestDeviceConfig(fromUser: connectedNode.user!, toUser: node.user!)
 							}
 						} else {
 							if node.deviceConfig == nil {

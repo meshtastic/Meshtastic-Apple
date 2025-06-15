@@ -167,24 +167,24 @@ struct UserMessageList: View {
 					}
 					.scrollDismissesKeyboard(.interactively)
 					.onFirstAppear {
-						// Find first unread message
-						if let firstUnreadMessageId = user.messageList.first(where: { !$0.read })?.messageId {
+						if user.unreadMessages == 0 {
 							withAnimation {
-								scrollView.scrollTo(firstUnreadMessageId, anchor: .top)
-								showScrollToBottomButton = true
+								scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+								hasReachedBottom = true
 							}
 						} else {
-							// If no unread messages, scroll to bottom
-							withAnimation {
-								scrollView.scrollTo(user.messageList.last?.messageId ?? 0, anchor: .bottom)
-								hasReachedBottom = true
+							if let firstUnreadMessageId = user.messageList.first(where: { !$0.read })?.messageId {
+								withAnimation {
+									scrollView.scrollTo(firstUnreadMessageId, anchor: .top)
+									showScrollToBottomButton = true
+								}
 							}
 						}
 						gotFirstUnreadMessage = true
 					}
 					.onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
 						withAnimation {
-							scrollView.scrollTo(user.messageList.last?.messageId ?? 0, anchor: .bottom)
+							scrollView.scrollTo("bottomAnchor", anchor: .bottom)
 							hasReachedBottom = true
 							showScrollToBottomButton = false
 						}
@@ -192,7 +192,7 @@ struct UserMessageList: View {
 					.onChange(of: user.messageList) {
 						if hasReachedBottom {
 							withAnimation {
-								scrollView.scrollTo(user.messageList.last?.messageId ?? 0, anchor: .bottom)
+								scrollView.scrollTo("bottomAnchor", anchor: .bottom)
 							}
 						} else {
 							showScrollToBottomButton = true

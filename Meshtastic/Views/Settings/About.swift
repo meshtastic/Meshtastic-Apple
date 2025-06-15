@@ -38,7 +38,9 @@ struct AboutMeshtastic: View {
 							}
 						}
 					}
-					Link("Help with App Development", destination: URL(string: "https://github.com/meshtastic/Meshtastic-Apple")!)
+					Link("Sponsor App Development", destination: URL(string: "https://github.com/sponsors/garthvh")!)
+						.font(.title2)
+					Link("GitHub Repository", destination: URL(string: "https://github.com/meshtastic/Meshtastic-Apple")!)
 						.font(.title2)
 					Button("Review the app") {
 						if let scene = UIApplication.shared.connectedScenes

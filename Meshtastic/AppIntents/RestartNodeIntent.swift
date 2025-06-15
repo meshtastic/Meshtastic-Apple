@@ -24,11 +24,10 @@ struct RestartNodeIntent: AppIntent {
 		if let connectedPeripheralNum = BLEManager.shared.connectedPeripheral?.num,
 		   let connectedNode = getNodeInfo(id: connectedPeripheralNum, context: PersistenceController.shared.container.viewContext),
 		   let fromUser = connectedNode.user,
-		   let toUser = connectedNode.user,
-		   let adminIndex = connectedNode.myInfo?.adminIndex {
+		   let toUser = connectedNode.user {
 
 			// Attempt to send shutdown, throw an error if it fails
-			if !BLEManager.shared.sendReboot(fromUser: fromUser, toUser: toUser, adminIndex: adminIndex) {
+			if !BLEManager.shared.sendReboot(fromUser: fromUser, toUser: toUser) {
 				throw AppIntentErrors.AppIntentError.message("Failed to restart")
 			}
 		} else {

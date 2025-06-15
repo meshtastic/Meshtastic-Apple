@@ -62,7 +62,7 @@ struct RangeTestConfig: View {
 					rtc.enabled = enabled
 					rtc.save = save
 					rtc.sender = UInt32(sender)
-					let adminMessageId =  bleManager.saveRangeTestModuleConfig(config: rtc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					let adminMessageId =  bleManager.saveRangeTestModuleConfig(config: rtc, fromUser: connectedNode!.user!, toUser: node!.user!)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
@@ -92,7 +92,7 @@ struct RangeTestConfig: View {
 								let expiration = node.sessionExpiration ?? Date()
 								if expiration < Date() || node.rangeTestConfig == nil {
 									Logger.mesh.info("⚙️ Empty or expired range test module config requesting via PKI admin")
-									_ = bleManager.requestRangeTestModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+									_ = bleManager.requestRangeTestModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
 								}
 							} else {
 								/// Legacy Administration
