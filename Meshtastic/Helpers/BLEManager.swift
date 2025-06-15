@@ -59,8 +59,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
     private var wantConfigTimer: Timer?
     private var wantConfigRetryCount = 0
-    private let maxWantConfigRetries = 5
-    private let wantConfigTimeoutInterval: TimeInterval = 10.0
+    private let maxWantConfigRetries = 3
+	private let wantConfigTimeoutInterval: TimeInterval = 10.0
 
 	// MARK: init
 	private override init() {

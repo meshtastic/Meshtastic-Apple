@@ -327,8 +327,14 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 					}}
 				newNode.user = newUser
 			} else if nodeInfo.num > Constants.minimumNodeNum {
-				let newUser = createUser(num: Int64(nodeInfo.num), context: context)
-				newNode.user = newUser
+				do {
+					let newUser = try createUser(num: Int64(nodeInfo.num), context: context)
+					newNode.user = newUser
+				} catch CoreDataError.invalidInput(let message) {
+					Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(nodeInfo.num, privacy: .public) Error:  \(message, privacy: .public)")
+				} catch {
+					Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(nodeInfo.num, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+				}
 			}
 
 			if (nodeInfo.position.longitudeI != 0 && nodeInfo.position.latitudeI != 0) && (nodeInfo.position.latitudeI != 373346000 && nodeInfo.position.longitudeI != -1220090000) {
@@ -417,9 +423,14 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				}
 			} else {
 				if fetchedNode[0].user == nil && nodeInfo.num > Constants.minimumNodeNum {
-
-					let newUser = createUser(num: Int64(nodeInfo.num), context: context)
-					fetchedNode[0].user = newUser
+					do {
+						let newUser = try createUser(num: Int64(nodeInfo.num), context: context)
+						fetchedNode[0].user = newUser
+					} catch CoreDataError.invalidInput(let message) {
+						Logger.data.error("Error Creating a new Core Data UserEntity on an existing node (Invalid Input) from node number: \(nodeInfo.num, privacy: .public) Error:  \(message, privacy: .public)")
+					} catch {
+						Logger.data.error("Error Creating a new Core Data UserEntity on an existing node from node number: \(nodeInfo.num, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+					}
 				}
 			}
 
@@ -929,7 +940,14 @@ func textMessageAppPacket(
 					// For S&F broadcast messages, treat as a channel message (not a DM)
 					newMessage.toUser = nil
 				} else {
-					newMessage.toUser = createUser(num: Int64(truncatingIfNeeded: packet.to), context: context)
+					do {
+						let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.to), context: context)
+						newMessage.toUser = newUser
+					} catch CoreDataError.invalidInput(let message) {
+						Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.to, privacy: .public) Error:  \(message, privacy: .public)")
+					} catch {
+						Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.to, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+					}
 				}
 			}
 			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
@@ -959,7 +977,14 @@ func textMessageAppPacket(
 				}
 			} else {
 				/// Make a new from user if they are unknown
-				newMessage.fromUser = createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
+				do {
+					let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
+					newMessage.fromUser = newUser
+				} catch CoreDataError.invalidInput(let message) {
+					Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
+				} catch {
+					Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+				}
 			}
 			if packet.rxTime > 0 {
 				newMessage.fromUser?.userNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
