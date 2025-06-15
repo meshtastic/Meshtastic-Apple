@@ -245,16 +245,18 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					}
 				}
 			}
-
+			// User is messed up and has failed to create at least once, if this fails bail out
 			if newNode.user == nil && packet.from > Constants.minimumNodeNum {
 				do {
 					let newUser = try createUser(num: Int64(packet.from), context: context)
 					newNode.user = newUser
 				} catch CoreDataError.invalidInput(let message) {
 					Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
+					context.rollback()
 					return
 				} catch {
 					Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+					context.rollback()
 					return
 				}
 			}
