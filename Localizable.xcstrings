@@ -1513,6 +1513,9 @@
         }
       }
     },
+    "12 Hour Clock" : {
+
+    },
     "25" : {
       "localizations" : {
         "it" : {
@@ -27693,6 +27696,9 @@
           }
         }
       }
+    },
+    "Sets the screen clock format to 12-hour." : {
+
     },
     "Settings" : {
       "localizations" : {

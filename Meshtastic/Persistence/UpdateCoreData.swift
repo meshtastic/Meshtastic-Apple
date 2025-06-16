@@ -581,6 +581,7 @@ func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, ses
 				newDisplayConfig.displayMode = Int32(config.displaymode.rawValue)
 				newDisplayConfig.units = Int32(config.units.rawValue)
 				newDisplayConfig.headingBold = config.headingBold
+				newDisplayConfig.use12HClock = config.use12HClock
 				fetchedNode[0].displayConfig = newDisplayConfig
 			} else {
 
@@ -592,6 +593,7 @@ func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, ses
 				fetchedNode[0].displayConfig?.oledType = Int32(config.oled.rawValue)
 				fetchedNode[0].displayConfig?.displayMode = Int32(config.displaymode.rawValue)
 				fetchedNode[0].displayConfig?.units = Int32(config.units.rawValue)
+				fetchedNode[0].displayConfig?.use12HClock = config.use12HClock
 				fetchedNode[0].displayConfig?.headingBold = config.headingBold
 			}
 			if sessionPasskey != nil {

@@ -97,6 +97,7 @@
         <attribute name="screenCarouselInterval" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="screenOnSeconds" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="units" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="use12HClock" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="wakeOnTapOrMotion" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <relationship name="displayConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="displayConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
