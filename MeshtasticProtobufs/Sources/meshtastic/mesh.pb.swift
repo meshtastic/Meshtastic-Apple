@@ -458,6 +458,18 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
   /// Reserved ID for future and past use
   case qwantzTinyArms // = 101
 
+  ///*
+  /// Lilygo T-Deck Pro
+  case tDeckPro // = 102
+
+  ///*
+  /// Lilygo TLora Pager
+  case tLoraPager // = 103
+
+  ///*
+  /// GAT562 Mesh Trial Tracker
+  case gat562MeshTrialTracker // = 104
+
   ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
@@ -573,6 +585,9 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 99: self = .seeedWioTrackerL1
     case 100: self = .seeedWioTrackerL1Eink
     case 101: self = .qwantzTinyArms
+    case 102: self = .tDeckPro
+    case 103: self = .tLoraPager
+    case 104: self = .gat562MeshTrialTracker
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -682,6 +697,9 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .seeedWioTrackerL1: return 99
     case .seeedWioTrackerL1Eink: return 100
     case .qwantzTinyArms: return 101
+    case .tDeckPro: return 102
+    case .tLoraPager: return 103
+    case .gat562MeshTrialTracker: return 104
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -791,6 +809,9 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     .seeedWioTrackerL1,
     .seeedWioTrackerL1Eink,
     .qwantzTinyArms,
+    .tDeckPro,
+    .tLoraPager,
+    .gat562MeshTrialTracker,
     .privateHw,
   ]
 
@@ -2991,12 +3012,30 @@ public struct ClientNotification: Sendable {
     set {payloadVariant = .keyVerificationFinal(newValue)}
   }
 
+  public var duplicatedPublicKey: DuplicatedPublicKey {
+    get {
+      if case .duplicatedPublicKey(let v)? = payloadVariant {return v}
+      return DuplicatedPublicKey()
+    }
+    set {payloadVariant = .duplicatedPublicKey(newValue)}
+  }
+
+  public var lowEntropyKey: LowEntropyKey {
+    get {
+      if case .lowEntropyKey(let v)? = payloadVariant {return v}
+      return LowEntropyKey()
+    }
+    set {payloadVariant = .lowEntropyKey(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public enum OneOf_PayloadVariant: Equatable, Sendable {
     case keyVerificationNumberInform(KeyVerificationNumberInform)
     case keyVerificationNumberRequest(KeyVerificationNumberRequest)
     case keyVerificationFinal(KeyVerificationFinal)
+    case duplicatedPublicKey(DuplicatedPublicKey)
+    case lowEntropyKey(LowEntropyKey)
 
   }
 
@@ -3047,6 +3086,26 @@ public struct KeyVerificationFinal: Sendable {
   public var isSender: Bool = false
 
   public var verificationCharacters: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct DuplicatedPublicKey: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct LowEntropyKey: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -3578,6 +3637,9 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     99: .same(proto: "SEEED_WIO_TRACKER_L1"),
     100: .same(proto: "SEEED_WIO_TRACKER_L1_EINK"),
     101: .same(proto: "QWANTZ_TINY_ARMS"),
+    102: .same(proto: "T_DECK_PRO"),
+    103: .same(proto: "T_LORA_PAGER"),
+    104: .same(proto: "GAT562_MESH_TRIAL_TRACKER"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
@@ -5348,6 +5410,8 @@ extension ClientNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     11: .standard(proto: "key_verification_number_inform"),
     12: .standard(proto: "key_verification_number_request"),
     13: .standard(proto: "key_verification_final"),
+    14: .standard(proto: "duplicated_public_key"),
+    15: .standard(proto: "low_entropy_key"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -5399,6 +5463,32 @@ extension ClientNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
           self.payloadVariant = .keyVerificationFinal(v)
         }
       }()
+      case 14: try {
+        var v: DuplicatedPublicKey?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .duplicatedPublicKey(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .duplicatedPublicKey(v)
+        }
+      }()
+      case 15: try {
+        var v: LowEntropyKey?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .lowEntropyKey(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .lowEntropyKey(v)
+        }
+      }()
       default: break
       }
     }
@@ -5433,6 +5523,14 @@ extension ClientNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     case .keyVerificationFinal?: try {
       guard case .keyVerificationFinal(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
+    }()
+    case .duplicatedPublicKey?: try {
+      guard case .duplicatedPublicKey(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 14)
+    }()
+    case .lowEntropyKey?: try {
+      guard case .lowEntropyKey(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 15)
     }()
     case nil: break
     }
@@ -5577,6 +5675,44 @@ extension KeyVerificationFinal: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if lhs.remoteLongname != rhs.remoteLongname {return false}
     if lhs.isSender != rhs.isSender {return false}
     if lhs.verificationCharacters != rhs.verificationCharacters {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DuplicatedPublicKey: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".DuplicatedPublicKey"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DuplicatedPublicKey, rhs: DuplicatedPublicKey) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension LowEntropyKey: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".LowEntropyKey"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: LowEntropyKey, rhs: LowEntropyKey) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
