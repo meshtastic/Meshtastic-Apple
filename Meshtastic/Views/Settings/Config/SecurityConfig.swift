@@ -10,6 +10,7 @@ import SwiftUI
 import CoreData
 import MeshtasticProtobufs
 import OSLog
+import CryptoKit
 
 struct SecurityConfig: View {
 
@@ -33,6 +34,15 @@ struct SecurityConfig: View {
 	@State var isManaged = false
 	@State var serialEnabled = false
 	@State var debugLogApiEnabled = false
+	@State var privateKeyIsSecure = true
+
+	private var isValidKeyPair: Bool {
+		if let privateKeyBytes = Data(base64Encoded: privateKey),
+		   let calculatedPublicKey = generatePublicKey(from: privateKeyBytes) {
+			return calculatedPublicKey.base64EncodedString() == publicKey
+		}
+		return false
+	}
 
 	var body: some View {
 		VStack {
@@ -51,12 +61,16 @@ struct SecurityConfig: View {
 							.foregroundStyle(.tertiary)
 							.disableAutocorrection(true)
 							.textSelection(.enabled)
+							.background(
+								RoundedRectangle(cornerRadius: 10.0)
+									.stroke(isValidKeyPair ? Color.clear : Color.red, lineWidth: 2.0)
+							)
 						Text("Sent out to other nodes on the mesh to allow them to compute a shared secret key.")
 							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
 						Divider()
 						Label("Private Key", systemImage: "key.fill")
-						SecureInput("Private Key", text: $privateKey, isValid: $hasValidPrivateKey)
+						SecureInput("Private Key", text: $privateKey, isValid: $hasValidPrivateKey, isSecure: $privateKeyIsSecure)
 							.background(
 								RoundedRectangle(cornerRadius: 10.0)
 									.stroke(hasValidPrivateKey ? Color.clear : Color.red, lineWidth: 2.0)
@@ -70,6 +84,7 @@ struct SecurityConfig: View {
 							Button {
 								if let keyBytes = generatePrivateKey(count: 32) {
 									privateKey = keyBytes.base64EncodedString()
+									self.privateKeyIsSecure = false
 								}
 							} label: {
 								Image(systemName: "lock.rotation")
@@ -156,6 +171,10 @@ struct SecurityConfig: View {
 			let tempKey = Data(base64Encoded: privateKey) ?? Data()
 			if tempKey.count == 32 {
 				hasValidPrivateKey = true
+				if let privateKeyBytes = Data(base64Encoded: privateKey), privateKeyBytes.count == 32 {
+					// Valid private key -- generate the public key
+					publicKey = generatePublicKey(from: privateKeyBytes)?.base64EncodedString() ?? ""
+				}
 			} else {
 				hasValidPrivateKey = false
 			}
@@ -287,7 +306,24 @@ struct SecurityConfig: View {
 			return randomBytes
 		} else {
 			// Handle error, perhaps by logging or throwing an exception
-			print("Error generating random bytes: \(status)")
+			Logger.mesh.debug("Error generating random bytes: \(status)")
+			return nil
+		}
+	}
+
+	func generatePublicKey(from privateKeyData: Data) -> Data? {
+		guard privateKeyData.count == 32 else {
+			Logger.mesh.debug("Invalid private key length. Must be 32 bytes for Curve25519.")
+			return nil
+		}
+
+		do {
+			// Create a Curve25519 private key from raw representation
+			let privateKey = try Curve25519.KeyAgreement.PrivateKey(rawRepresentation: privateKeyData)
+			let publicKey = privateKey.publicKey
+			return publicKey.rawRepresentation
+		} catch {
+			Logger.mesh.debug("Failed to create Curve25519 key: \(error)")
 			return nil
 		}
 	}
