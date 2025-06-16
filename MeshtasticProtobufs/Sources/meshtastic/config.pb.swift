@@ -189,6 +189,11 @@ public struct Config: Sendable {
     /// If true, disable the default blinking LED (LED_PIN) behavior on the device
     public var ledHeartbeatDisabled: Bool = false
 
+    ///
+    /// Controls buzzer behavior for audio feedback
+    /// Defaults to ENABLED
+    public var buzzerMode: Config.DeviceConfig.BuzzerMode = .allEnabled
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
@@ -402,6 +407,67 @@ public struct Config: Sendable {
         .knownOnly,
         .none,
         .corePortnumsOnly,
+      ]
+
+    }
+
+    ///
+    /// Defines buzzer behavior for audio feedback
+    public enum BuzzerMode: SwiftProtobuf.Enum, Swift.CaseIterable {
+      public typealias RawValue = Int
+
+      ///
+      /// Default behavior.
+      /// Buzzer is enabled for all audio feedback including button presses and alerts.
+      case allEnabled // = 0
+
+      ///
+      /// Disabled.
+      /// All buzzer audio feedback is disabled.
+      case disabled // = 1
+
+      ///
+      /// Notifications Only.
+      /// Buzzer is enabled only for notifications and alerts, but not for button presses.
+      /// External notification config determines the specifics of the notification behavior.
+      case notificationsOnly // = 2
+
+      ///
+      /// Non-notification system buzzer tones only.
+      /// Buzzer is enabled only for non-notification tones such as button presses, startup, shutdown, but not for alerts.
+      case systemOnly // = 3
+      case UNRECOGNIZED(Int)
+
+      public init() {
+        self = .allEnabled
+      }
+
+      public init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .allEnabled
+        case 1: self = .disabled
+        case 2: self = .notificationsOnly
+        case 3: self = .systemOnly
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      public var rawValue: Int {
+        switch self {
+        case .allEnabled: return 0
+        case .disabled: return 1
+        case .notificationsOnly: return 2
+        case .systemOnly: return 3
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+      // The compiler won't synthesize support with the UNRECOGNIZED case.
+      public static let allCases: [Config.DeviceConfig.BuzzerMode] = [
+        .allEnabled,
+        .disabled,
+        .notificationsOnly,
+        .systemOnly,
       ]
 
     }
@@ -2063,6 +2129,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     10: .standard(proto: "disable_triple_click"),
     11: .same(proto: "tzdef"),
     12: .standard(proto: "led_heartbeat_disabled"),
+    13: .standard(proto: "buzzer_mode"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2082,6 +2149,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       case 10: try { try decoder.decodeSingularBoolField(value: &self.disableTripleClick) }()
       case 11: try { try decoder.decodeSingularStringField(value: &self.tzdef) }()
       case 12: try { try decoder.decodeSingularBoolField(value: &self.ledHeartbeatDisabled) }()
+      case 13: try { try decoder.decodeSingularEnumField(value: &self.buzzerMode) }()
       default: break
       }
     }
@@ -2121,6 +2189,9 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if self.ledHeartbeatDisabled != false {
       try visitor.visitSingularBoolField(value: self.ledHeartbeatDisabled, fieldNumber: 12)
     }
+    if self.buzzerMode != .allEnabled {
+      try visitor.visitSingularEnumField(value: self.buzzerMode, fieldNumber: 13)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2136,6 +2207,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if lhs.disableTripleClick != rhs.disableTripleClick {return false}
     if lhs.tzdef != rhs.tzdef {return false}
     if lhs.ledHeartbeatDisabled != rhs.ledHeartbeatDisabled {return false}
+    if lhs.buzzerMode != rhs.buzzerMode {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2166,6 +2238,15 @@ extension Config.DeviceConfig.RebroadcastMode: SwiftProtobuf._ProtoNameProviding
     3: .same(proto: "KNOWN_ONLY"),
     4: .same(proto: "NONE"),
     5: .same(proto: "CORE_PORTNUMS_ONLY"),
+  ]
+}
+
+extension Config.DeviceConfig.BuzzerMode: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "ALL_ENABLED"),
+    1: .same(proto: "DISABLED"),
+    2: .same(proto: "NOTIFICATIONS_ONLY"),
+    3: .same(proto: "SYSTEM_ONLY"),
   ]
 }
 

@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "heltec_mesh_pocket.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

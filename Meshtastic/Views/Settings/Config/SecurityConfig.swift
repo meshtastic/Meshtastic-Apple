@@ -33,7 +33,6 @@ struct SecurityConfig: View {
 	@State var isManaged = false
 	@State var serialEnabled = false
 	@State var debugLogApiEnabled = false
-	@State var adminChannelEnabled = false
 
 	var body: some View {
 		VStack {
@@ -65,6 +64,21 @@ struct SecurityConfig: View {
 						Text("Used to create a shared key with a remote device.")
 							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
+						HStack(alignment: .firstTextBaseline) {
+							Label("Regenerate Private Key", systemImage: "arrow.clockwise.circle")
+							Spacer()
+							Button {
+								if let keyBytes = generatePrivateKey(count: 32) {
+									privateKey = keyBytes.base64EncodedString()
+								}
+							} label: {
+								Image(systemName: "lock.rotation")
+									.font(.title)
+							}
+							.buttonStyle(.bordered)
+							.buttonBorderShape(.capsule)
+							.controlSize(.small)
+						}
 						Divider()
 						Label("Primary Admin Key", systemImage: "key.viewfinder")
 						SecureInput("Primary Admin Key", text: $adminKey, isValid: $hasValidAdminKey)
@@ -109,19 +123,14 @@ struct SecurityConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
-				Section(header: Text("Administration")) {
-					if adminKey.length > 0 || adminChannelEnabled {
+					if adminKey.length > 0 || UserDefaults.enableAdministration {
+					Section(header: Text("Administration")) {
 						Toggle(isOn: $isManaged) {
 							Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
 							Text("Device is managed by a mesh administrator, the user is unable to access any of the device settings.")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-					Toggle(isOn: $adminChannelEnabled) {
-						Label("Legacy Administration", systemImage: "lock.slash")
-						Text("Allow incoming device control over the insecure legacy admin channel.")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 			}
 		}
@@ -143,17 +152,14 @@ struct SecurityConfig: View {
 		.onChange(of: debugLogApiEnabled) { _, newDebugLogApiEnabled in
 			if newDebugLogApiEnabled != node?.securityConfig?.debugLogApiEnabled { hasChanges = true }
 		}
-		.onChange(of: adminChannelEnabled) { _, newAdminChannelEnabled in
-			if newAdminChannelEnabled != node?.securityConfig?.adminChannelEnabled { hasChanges = true }
-		}
-		.onChange(of: privateKey) {
+		.onChange(of: privateKey) { _, key in
 			let tempKey = Data(base64Encoded: privateKey) ?? Data()
 			if tempKey.count == 32 {
 				hasValidPrivateKey = true
 			} else {
 				hasValidPrivateKey = false
 			}
-			hasChanges = true
+			if key != node?.securityConfig?.privateKey?.base64EncodedString() ?? "" && hasValidPrivateKey { hasChanges = true }
 		}
 		.onChange(of: adminKey) { _, key in
 			let tempKey = Data(base64Encoded: key) ?? Data()
@@ -164,7 +170,7 @@ struct SecurityConfig: View {
 			} else {
 				hasValidAdminKey = false
 			}
-			hasChanges = true
+			if key != node?.securityConfig?.adminKey?.base64EncodedString() ?? "" && hasValidAdminKey { hasChanges = true }
 		}
 		.onChange(of: adminKey2) { _, key in
 			let tempKey = Data(base64Encoded: key) ?? Data()
@@ -175,7 +181,7 @@ struct SecurityConfig: View {
 			} else {
 				hasValidAdminKey2 = false
 			}
-			hasChanges = true
+			if key != node?.securityConfig?.adminKey2?.base64EncodedString() ?? "" && hasValidAdminKey2 { hasChanges = true }
 		}
 		.onChange(of: adminKey3) { _, key in
 			let tempKey = Data(base64Encoded: key) ?? Data()
@@ -186,10 +192,10 @@ struct SecurityConfig: View {
 			} else {
 				hasValidAdminKey3 = false
 			}
-			hasChanges = true
+			if key != node?.securityConfig?.adminKey3?.base64EncodedString() ?? "" && hasValidAdminKey3 { hasChanges = true }
 		}
 		.onFirstAppear {
-			// Need to request a DeviceConfig from the remote node before allowing changes
+			// Need to request a SecurityConfig from the remote node before allowing changes
 			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
 				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
 				if let connectedNode {
@@ -199,7 +205,7 @@ struct SecurityConfig: View {
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.securityConfig == nil {
 								Logger.mesh.info("⚙️ Empty or expired security config requesting via PKI admin")
-								_ = bleManager.requestSecurityConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								_ = bleManager.requestSecurityConfig(fromUser: connectedNode.user!, toUser: node.user!)
 							}
 						} else {
 							if node.deviceConfig == nil {
@@ -231,18 +237,26 @@ struct SecurityConfig: View {
 			config.isManaged = isManaged
 			config.serialEnabled = serialEnabled
 			config.debugLogApiEnabled = debugLogApiEnabled
-			config.adminChannelEnabled = adminChannelEnabled
+
+			let reboot = node?.securityConfig?.privateKey?.base64EncodedString() ?? "" != privateKey
 
 			let adminMessageId = bleManager.saveSecurityConfig(
 				config: config,
 				fromUser: fromUser,
-				toUser: toUser,
-				adminIndex: connectedNode.myInfo?.adminIndex ?? 0
+				toUser: toUser
 			)
 			if adminMessageId > 0 {
 				// Should show a saved successfully alert once I know that to be true
 				// for now just disable the button after a successful save
 				hasChanges = false
+				if reboot {
+					if !bleManager.sendReboot(
+						fromUser: fromUser,
+						toUser: toUser
+					) {
+						Logger.mesh.warning("Reboot Failed")
+					}
+				}
 				goBack()
 			}
 		}
@@ -257,7 +271,24 @@ struct SecurityConfig: View {
 		self.isManaged = node?.securityConfig?.isManaged ?? false
 		self.serialEnabled = node?.securityConfig?.serialEnabled ?? false
 		self.debugLogApiEnabled = node?.securityConfig?.debugLogApiEnabled ?? false
-		self.adminChannelEnabled = node?.securityConfig?.adminChannelEnabled ?? false
 		self.hasChanges = false
+	}
+
+	func generatePrivateKey(count: Int) -> Data? {
+		var randomBytes = Data(count: count)
+		let status = randomBytes.withUnsafeMutableBytes { (mutableBytes: UnsafeMutableRawBufferPointer) -> Int32 in
+			guard let pointer = mutableBytes.baseAddress?.assumingMemoryBound(to: UInt8.self) else {
+				return -1 // Indicate an error
+			}
+			return SecRandomCopyBytes(kSecRandomDefault, count, pointer)
+		}
+
+		if status == errSecSuccess {
+			return randomBytes
+		} else {
+			// Handle error, perhaps by logging or throwing an exception
+			print("Error generating random bytes: \(status)")
+			return nil
+		}
 	}
 }

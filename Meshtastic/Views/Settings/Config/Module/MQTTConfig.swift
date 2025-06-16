@@ -268,7 +268,7 @@ struct MQTTConfig: View {
 					mqtt.mapReportingEnabled = self.mapReportingEnabled
 					mqtt.mapReportSettings.positionPrecision = UInt32(self.mapPositionPrecision)
 					mqtt.mapReportSettings.publishIntervalSecs = UInt32(self.mapPublishIntervalSecs)
-					let adminMessageId =  bleManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					let adminMessageId =  bleManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
@@ -360,7 +360,7 @@ struct MQTTConfig: View {
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.mqttConfig == nil {
 								Logger.mesh.info("⚙️ Empty or expired mqtt module config requesting via PKI admin")
-								_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
 							}
 						} else {
 							/// Legacy Administration

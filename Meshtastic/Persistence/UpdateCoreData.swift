@@ -170,8 +170,14 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 
 				if newUserMessage.id.isEmpty {
 					if packet.from > Constants.minimumNodeNum {
-						let newUser = createUser(num: Int64(packet.from), context: context)
-						newNode.user = newUser
+						do {
+							let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
+							newNode.user = newUser
+						} catch CoreDataError.invalidInput(let message) {
+							Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
+						} catch {
+							Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+						}
 					}
 				} else {
 
@@ -225,17 +231,34 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				}
 			} else {
 				if packet.from > Constants.minimumNodeNum {
-					let newUser = createUser(num: Int64(packet.from), context: context)
-					if !packet.publicKey.isEmpty {
-						newNode.user?.pkiEncrypted = true
-						newNode.user?.publicKey = packet.publicKey
+					do {
+						let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
+						if !packet.publicKey.isEmpty {
+							newNode.user?.pkiEncrypted = true
+							newNode.user?.publicKey = packet.publicKey
+						}
+						newNode.user = newUser
+					} catch CoreDataError.invalidInput(let message) {
+						Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
+					} catch {
+						Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
 					}
-					newNode.user = newUser
 				}
 			}
-
+			// User is messed up and has failed to create at least once, if this fails bail out
 			if newNode.user == nil && packet.from > Constants.minimumNodeNum {
-				newNode.user = createUser(num: Int64(packet.from), context: context)
+				do {
+					let newUser = try createUser(num: Int64(packet.from), context: context)
+					newNode.user = newUser
+				} catch CoreDataError.invalidInput(let message) {
+					Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
+					context.rollback()
+					return
+				} catch {
+					Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+					context.rollback()
+					return
+				}
 			}
 
 			let myInfoEntity = MyInfoEntity(context: context)
@@ -317,9 +340,14 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
 			}
 			if fetchedNode[0].user == nil {
-				let newUser = createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
-				fetchedNode[0].user? = newUser
-
+				do {
+					let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
+					fetchedNode[0].user = newUser
+				} catch CoreDataError.invalidInput(let message) {
+					Logger.data.error("Error Creating a new Core Data UserEntity on an existing node (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
+				} catch {
+					Logger.data.error("Error Creating a new Core Data UserEntity on an existing node from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+				}
 			}
 			do {
 				try context.save()
@@ -553,6 +581,7 @@ func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, ses
 				newDisplayConfig.displayMode = Int32(config.displaymode.rawValue)
 				newDisplayConfig.units = Int32(config.units.rawValue)
 				newDisplayConfig.headingBold = config.headingBold
+				newDisplayConfig.use12HClock = config.use12HClock
 				fetchedNode[0].displayConfig = newDisplayConfig
 			} else {
 
@@ -564,6 +593,7 @@ func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, ses
 				fetchedNode[0].displayConfig?.oledType = Int32(config.oled.rawValue)
 				fetchedNode[0].displayConfig?.displayMode = Int32(config.displaymode.rawValue)
 				fetchedNode[0].displayConfig?.units = Int32(config.units.rawValue)
+				fetchedNode[0].displayConfig?.use12HClock = config.use12HClock
 				fetchedNode[0].displayConfig?.headingBold = config.headingBold
 			}
 			if sessionPasskey != nil {

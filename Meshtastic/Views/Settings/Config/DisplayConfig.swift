@@ -27,6 +27,7 @@ struct DisplayConfig: View {
 	@State var oledType = 0
 	@State var displayMode = 0
 	@State var units = 0
+	@State var use12HourClock = false
 
 	var body: some View {
 		Form {
@@ -74,6 +75,11 @@ struct DisplayConfig: View {
 						.font(.callout)
 				}
 				.pickerStyle(DefaultPickerStyle())
+				Toggle(isOn: $use12HourClock) {
+					Label("12 Hour Clock", systemImage: "clock")
+					Text("Sets the screen clock format to 12-hour.")
+				}
+				.tint(Color.accentColor)
 			}
 			Section(header: Text("Timing & Format")) {
 				VStack(alignment: .leading) {
@@ -141,8 +147,9 @@ struct DisplayConfig: View {
 				dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
 				dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
 				dc.units = Units(rawValue: units)!.protoEnumValue()
+				dc.use12HClock = use12HourClock
 
-				let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!)
 				if adminMessageId > 0 {
 
 					// Should show a saved successfully alert once I know that to be true
@@ -174,7 +181,7 @@ struct DisplayConfig: View {
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.displayConfig == nil {
 								Logger.mesh.info("⚙️ Empty or expired display config requesting via PKI admin")
-								_ = bleManager.requestDisplayConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								_ = bleManager.requestDisplayConfig(fromUser: connectedNode.user!, toUser: node.user!)
 							}
 						} else {
 							/// Legacy Administration
@@ -211,6 +218,9 @@ struct DisplayConfig: View {
 		.onChange(of: units) { oldUnits, newUnits in
 			if oldUnits != newUnits && newUnits != node?.displayConfig?.units ?? -1 { hasChanges = true }
 		}
+		.onChange(of: use12HourClock) { oldUse12HourClock, newUse12HourClock in
+			if oldUse12HourClock != newUse12HourClock && newUse12HourClock != node?.displayConfig?.use12HClock { hasChanges = true }
+		}
 	}
 	func setDisplayValues() {
 			self.gpsFormat = Int(node?.displayConfig?.gpsFormat ?? 0)
@@ -222,6 +232,7 @@ struct DisplayConfig: View {
 			self.oledType = Int(node?.displayConfig?.oledType ?? 0)
 			self.displayMode = Int(node?.displayConfig?.displayMode ?? 0)
 			self.units = Int(node?.displayConfig?.units ?? 0)
-			self.hasChanges = false
+			self.use12HourClock =  node?.displayConfig?.use12HClock ?? false
+			self.hasChanges = node?.displayConfig?.use12HClock ?? false
 	}
 }

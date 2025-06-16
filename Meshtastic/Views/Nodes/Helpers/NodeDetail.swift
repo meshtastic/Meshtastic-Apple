@@ -516,7 +516,6 @@ struct NodeDetail: View {
 								let adminMessageId = bleManager.requestDeviceMetadata(
 									fromUser: connectedNode.user!,
 									toUser: node.user!,
-									adminIndex: connectedNode.myInfo!.adminIndex,
 									context: context
 								)
 								if adminMessageId > 0 {
@@ -543,8 +542,7 @@ struct NodeDetail: View {
 								Button("Shutdown Node?", role: .destructive) {
 									if !bleManager.sendShutdown(
 										fromUser: connectedNode.user!,
-										toUser: node.user!,
-										adminIndex: connectedNode.myInfo!.adminIndex
+										toUser: node.user!
 									) {
 										Logger.mesh.warning("Shutdown Failed")
 									}
@@ -566,8 +564,7 @@ struct NodeDetail: View {
 							Button("Reboot node?", role: .destructive) {
 								if !bleManager.sendReboot(
 									fromUser: connectedNode.user!,
-									toUser: node.user!,
-									adminIndex: connectedNode.myInfo!.adminIndex
+									toUser: node.user!
 								) {
 									Logger.mesh.warning("Reboot Failed")
 								}

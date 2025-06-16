@@ -1513,6 +1513,9 @@
         }
       }
     },
+    "12 Hour Clock" : {
+
+    },
     "25" : {
       "localizations" : {
         "it" : {
@@ -2805,34 +2808,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "全部"
-          }
-        }
-      }
-    },
-    "Allow incoming device control over the insecure legacy admin channel." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Erlaubt die eingehende Gerätesteuerung über den unsicheren Legacy-Admin-Kanal."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Consentire il controllo del dispositivo in entrata attraverso il canale di amministrazione legacy non sicuro."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Дозволите контролу долазног уређаја над небезбедним старим администраторским каналом."
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "允許經由不安全的傳統管理通道接收裝置控制指令。"
           }
         }
       }
@@ -11317,6 +11292,9 @@
         }
       }
     },
+    "Expiration" : {
+
+    },
     "Expire" : {
       "localizations" : {
         "it" : {
@@ -13244,6 +13222,9 @@
         }
       }
     },
+    "GitHub Repository" : {
+
+    },
     "Good" : {
       "localizations" : {
         "it" : {
@@ -13812,34 +13793,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "心"
-          }
-        }
-      }
-    },
-    "Help with App Development" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aiuto per lo sviluppo di app"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Помози при развоју апликације"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "帮助开发应用程序"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "幫助App開發"
           }
         }
       }
@@ -15651,6 +15604,12 @@
         }
       }
     },
+    "Latitude in degrees (e.g., 37.7749)" : {
+
+    },
+    "Latitude must be between -90 and 90 degrees" : {
+
+    },
     "LED Heartbeat" : {
       "localizations" : {
         "it" : {
@@ -15761,34 +15720,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "左"
-          }
-        }
-      }
-    },
-    "Legacy Administration" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alte Administrationsart"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Amministrazione del patrimonio"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Стари начин администрације"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "舊版遠端管理"
           }
         }
       }
@@ -15953,40 +15884,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在載入紀錄⋯⋯"
-          }
-        }
-      }
-    },
-    "Location" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Standort"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Posizione"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Локација:"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "位置"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "位置"
           }
         }
       }
@@ -16396,6 +16293,12 @@
           }
         }
       }
+    },
+    "Longitude in degrees (e.g., -122.4194)" : {
+
+    },
+    "Longitude must be between -180 and 180 degrees" : {
+
     },
     "LoRa" : {
       "localizations" : {
@@ -23975,6 +23878,9 @@
         }
       }
     },
+    "Regenerate Private Key" : {
+
+    },
     "Region" : {
       "localizations" : {
         "de" : {
@@ -24349,17 +24255,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "回覆"
-          }
-        }
-      }
-    },
-    "Replying to a message" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在回覆訊息"
           }
         }
       }
@@ -27777,6 +27672,9 @@
         }
       }
     },
+    "Set to current location" : {
+
+    },
     "Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully. O hop broadcast messages will not get ACKs." : {
       "localizations" : {
         "it" : {
@@ -27798,6 +27696,9 @@
           }
         }
       }
+    },
+    "Sets the screen clock format to 12-hour." : {
+
     },
     "Settings" : {
       "localizations" : {
@@ -28970,6 +28871,9 @@
           }
         }
       }
+    },
+    "Sponsor App Development" : {
+
     },
     "Spread Factor" : {
       "localizations" : {
@@ -33331,6 +33235,9 @@
         }
       }
     },
+    "Use my Location" : {
+
+    },
     "Use Preset" : {
       "localizations" : {
         "it" : {
@@ -34157,6 +34064,9 @@
           }
         }
       }
+    },
+    "Waypoint Failed to Send" : {
+
     },
     "Waypoint Options" : {
       "localizations" : {

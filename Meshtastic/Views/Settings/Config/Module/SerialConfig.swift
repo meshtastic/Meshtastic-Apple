@@ -116,7 +116,7 @@ struct SerialConfig: View {
 					sc.overrideConsoleSerialPort = overrideConsoleSerialPort
 					sc.mode	= SerialModeTypes(rawValue: mode)!.protoEnumValue()
 
-					let adminMessageId =  bleManager.saveSerialModuleConfig(config: sc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					let adminMessageId =  bleManager.saveSerialModuleConfig(config: sc, fromUser: connectedNode!.user!, toUser: node!.user!)
 
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
@@ -147,7 +147,7 @@ struct SerialConfig: View {
 								let expiration = node.sessionExpiration ?? Date()
 								if expiration < Date() || node.serialConfig == nil {
 									Logger.mesh.info("⚙️ Empty or expired serial module config requesting via PKI admin")
-									_ = bleManager.requestSerialModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+									_ = bleManager.requestSerialModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
 								}
 							} else {
 								/// Legacy Administration

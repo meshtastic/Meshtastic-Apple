@@ -293,6 +293,17 @@ public struct AdminMessage: @unchecked Sendable {
   }
 
   ///
+  /// Send an input event to the node.
+  /// This is used to trigger physical input events like button presses, touch events, etc.
+  public var sendInputEvent: AdminMessage.InputEvent {
+    get {
+      if case .sendInputEvent(let v)? = payloadVariant {return v}
+      return AdminMessage.InputEvent()
+    }
+    set {payloadVariant = .sendInputEvent(newValue)}
+  }
+
+  ///
   /// Set the owner for this node
   public var setOwner: User {
     get {
@@ -663,6 +674,10 @@ public struct AdminMessage: @unchecked Sendable {
     /// Remove backups of the node's preferences
     case removeBackupPreferences(AdminMessage.BackupLocation)
     ///
+    /// Send an input event to the node.
+    /// This is used to trigger physical input events like button presses, touch events, etc.
+    case sendInputEvent(AdminMessage.InputEvent)
+    ///
     /// Set the owner for this node
     case setOwner(User)
     ///
@@ -1014,6 +1029,34 @@ public struct AdminMessage: @unchecked Sendable {
 
   }
 
+  ///
+  /// Input event message to be sent to the node.
+  public struct InputEvent: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///
+    /// The input event code
+    public var eventCode: UInt32 = 0
+
+    ///
+    /// Keyboard character code
+    public var kbChar: UInt32 = 0
+
+    ///
+    /// The touch X coordinate
+    public var touchX: UInt32 = 0
+
+    ///
+    /// The touch Y coordinate
+    public var touchY: UInt32 = 0
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
   public init() {}
 }
 
@@ -1082,6 +1125,10 @@ public struct SharedContact: Sendable {
   public var hasUser: Bool {return self._user != nil}
   /// Clears the value of `user`. Subsequent reads from it will return its default value.
   public mutating func clearUser() {self._user = nil}
+
+  ///
+  /// Add this contact to the blocked / ignored list
+  public var shouldIgnore: Bool = false
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1215,6 +1262,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     24: .standard(proto: "backup_preferences"),
     25: .standard(proto: "restore_preferences"),
     26: .standard(proto: "remove_backup_preferences"),
+    27: .standard(proto: "send_input_event"),
     32: .standard(proto: "set_owner"),
     33: .standard(proto: "set_channel"),
     34: .standard(proto: "set_config"),
@@ -1489,6 +1537,19 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         if let v = v {
           if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
           self.payloadVariant = .removeBackupPreferences(v)
+        }
+      }()
+      case 27: try {
+        var v: AdminMessage.InputEvent?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .sendInputEvent(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .sendInputEvent(v)
         }
       }()
       case 32: try {
@@ -1872,6 +1933,10 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       guard case .removeBackupPreferences(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularEnumField(value: v, fieldNumber: 26)
     }()
+    case .sendInputEvent?: try {
+      guard case .sendInputEvent(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 27)
+    }()
     case .setOwner?: try {
       guard case .setOwner(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 32)
@@ -2040,6 +2105,56 @@ extension AdminMessage.BackupLocation: SwiftProtobuf._ProtoNameProviding {
   ]
 }
 
+extension AdminMessage.InputEvent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = AdminMessage.protoMessageName + ".InputEvent"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "event_code"),
+    2: .standard(proto: "kb_char"),
+    3: .standard(proto: "touch_x"),
+    4: .standard(proto: "touch_y"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.eventCode) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.kbChar) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.touchX) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.touchY) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.eventCode != 0 {
+      try visitor.visitSingularUInt32Field(value: self.eventCode, fieldNumber: 1)
+    }
+    if self.kbChar != 0 {
+      try visitor.visitSingularUInt32Field(value: self.kbChar, fieldNumber: 2)
+    }
+    if self.touchX != 0 {
+      try visitor.visitSingularUInt32Field(value: self.touchX, fieldNumber: 3)
+    }
+    if self.touchY != 0 {
+      try visitor.visitSingularUInt32Field(value: self.touchY, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: AdminMessage.InputEvent, rhs: AdminMessage.InputEvent) -> Bool {
+    if lhs.eventCode != rhs.eventCode {return false}
+    if lhs.kbChar != rhs.kbChar {return false}
+    if lhs.touchX != rhs.touchX {return false}
+    if lhs.touchY != rhs.touchY {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".HamParameters"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -2127,6 +2242,7 @@ extension SharedContact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "node_num"),
     2: .same(proto: "user"),
+    3: .standard(proto: "should_ignore"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2137,6 +2253,7 @@ extension SharedContact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularUInt32Field(value: &self.nodeNum) }()
       case 2: try { try decoder.decodeSingularMessageField(value: &self._user) }()
+      case 3: try { try decoder.decodeSingularBoolField(value: &self.shouldIgnore) }()
       default: break
       }
     }
@@ -2153,12 +2270,16 @@ extension SharedContact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     try { if let v = self._user {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
     } }()
+    if self.shouldIgnore != false {
+      try visitor.visitSingularBoolField(value: self.shouldIgnore, fieldNumber: 3)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: SharedContact, rhs: SharedContact) -> Bool {
     if lhs.nodeNum != rhs.nodeNum {return false}
     if lhs._user != rhs._user {return false}
+    if lhs.shouldIgnore != rhs.shouldIgnore {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

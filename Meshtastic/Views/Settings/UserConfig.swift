@@ -176,7 +176,7 @@ struct UserConfig: View {
 								u.shortName = shortName
 								u.longName = longName
 								u.isUnmessagable = isUnmessagable
-								let adminMessageId = bleManager.saveUser(config: u, fromUser: connectedUser, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+								let adminMessageId = bleManager.saveUser(config: u, fromUser: connectedUser, toUser: node!.user!)
 								if adminMessageId > 0 {
 									hasChanges = false
 									goBack()
@@ -188,7 +188,7 @@ struct UserConfig: View {
 								ham.callSign = longName
 								ham.txPower = Int32(txPower)
 								ham.frequency = overrideFrequency
-								let adminMessageId = bleManager.saveLicensedUser(ham: ham, fromUser: connectedUser, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+								let adminMessageId = bleManager.saveLicensedUser(ham: ham, fromUser: connectedUser, toUser: node!.user!)
 								if adminMessageId > 0 {
 									hasChanges = false
 									goBack()
