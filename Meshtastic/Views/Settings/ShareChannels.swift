@@ -83,7 +83,7 @@ struct ShareChannels: View {
 										.labelsHidden()
 									Text(((channel.name!.isEmpty ? "Primary" : channel.name) ?? "Primary").camelCaseToWords())
 									if channel.psk?.hexDescription.count ??  0 <  3 {
-										Image(systemName: "lock.slash")
+										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
 									} else {
 										Image(systemName: "lock.fill")
