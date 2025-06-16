@@ -12,19 +12,28 @@ struct SecureInput: View {
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@Binding private var text: String
 	@Binding private var isValid: Bool
-	@State var isSecure: Bool = true
 	private var title: String
 
-	init(_ title: String, text: Binding<String>, isValid: Binding<Bool>) {
+	// Local state to store the value of iSSecure, or optionally a binding
+	private var isSecureBinding: Binding<Bool>?
+	@State private var isSecureLocal: Bool = true
+
+	private var isSecure: Binding<Bool> {
+		// Use the binding if we have one, otherwise fallback to the local state variable
+		isSecureBinding ?? $isSecureLocal
+	}
+
+	init(_ title: String, text: Binding<String>, isValid: Binding<Bool>, isSecure: Binding<Bool>? = nil) {
 		self.title = title
 		self._text = text
 		self._isValid = isValid
+		self.isSecureBinding = isSecure
 	}
 
 	var body: some View {
 		ZStack(alignment: .trailing) {
 			Group {
-				if isSecure {
+				if isSecure.wrappedValue {
 					SecureField(title, text: $text)
 						.font(idiom == .phone ? .caption : .callout)
 						.allowsTightening(true)
@@ -51,9 +60,9 @@ struct SecureInput: View {
 
 			if !text.isEmpty {
 				Button(action: {
-					isSecure.toggle()
+					isSecure.wrappedValue.toggle()
 				}) {
-					Image(systemName: self.isSecure ? "eye.slash" : "eye")
+					Image(systemName: self.isSecure.wrappedValue ? "eye.slash" : "eye")
 						.accentColor(.secondary)
 				}.buttonStyle(BorderlessButtonStyle())
 			}
