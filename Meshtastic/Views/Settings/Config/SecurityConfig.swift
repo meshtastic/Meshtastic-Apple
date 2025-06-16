@@ -37,11 +37,12 @@ struct SecurityConfig: View {
 	@State var privateKeyIsSecure = true
 
 	private var isValidKeyPair: Bool {
-		if let privateKeyBytes = Data(base64Encoded: privateKey),
-		   let calculatedPublicKey = generatePublicKey(from: privateKeyBytes) {
-			return calculatedPublicKey.base64EncodedString() == publicKey
+		guard let privateKeyBytes = Data(base64Encoded: privateKey),
+			  let calculatedPublicKey = generatePublicKey(from: privateKeyBytes),
+			  let decodedPublicKey = Data(base64Encoded: publicKey) else {
+			return false
 		}
-		return false
+		return calculatedPublicKey == decodedPublicKey
 	}
 
 	var body: some View {
