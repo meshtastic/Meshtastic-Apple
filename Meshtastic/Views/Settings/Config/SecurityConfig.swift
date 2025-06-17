@@ -38,7 +38,7 @@ struct SecurityConfig: View {
 
 	private var isValidKeyPair: Bool {
 		guard let privateKeyBytes = Data(base64Encoded: privateKey),
-			  let calculatedPublicKey = generatePublicKey(from: privateKeyBytes),
+			  let calculatedPublicKey = generatePublicKeyDisplay(from: privateKeyBytes),
 			  let decodedPublicKey = Data(base64Encoded: publicKey) else {
 			return false
 		}
@@ -174,7 +174,7 @@ struct SecurityConfig: View {
 				hasValidPrivateKey = true
 				if let privateKeyBytes = Data(base64Encoded: privateKey), privateKeyBytes.count == 32 {
 					// Valid private key -- generate the public key
-					publicKey = generatePublicKey(from: privateKeyBytes)?.base64EncodedString() ?? ""
+					publicKey = generatePublicKeyDisplay(from: privateKeyBytes)?.base64EncodedString() ?? ""
 				}
 			} else {
 				hasValidPrivateKey = false
@@ -251,15 +251,13 @@ struct SecurityConfig: View {
 			}
 
 			var config = Config.SecurityConfig()
-			config.publicKey = Data(base64Encoded: publicKey) ?? Data()
 			config.privateKey = Data(base64Encoded: privateKey) ?? Data()
 			config.adminKey = [Data(base64Encoded: adminKey) ?? Data(), Data(base64Encoded: adminKey2) ?? Data(), Data(base64Encoded: adminKey3) ?? Data()]
 			config.isManaged = isManaged
 			config.serialEnabled = serialEnabled
 			config.debugLogApiEnabled = debugLogApiEnabled
 
-			let reboot = node?.securityConfig?.privateKey?.base64EncodedString() ?? "" != privateKey
-
+			let keyUpdated = node?.securityConfig?.privateKey?.base64EncodedString() ?? "" != privateKey
 			let adminMessageId = bleManager.saveSecurityConfig(
 				config: config,
 				fromUser: fromUser,
@@ -268,15 +266,18 @@ struct SecurityConfig: View {
 			if adminMessageId > 0 {
 				// Should show a saved successfully alert once I know that to be true
 				// for now just disable the button after a successful save
-				hasChanges = false
-				if reboot {
-					if !bleManager.sendReboot(
-						fromUser: fromUser,
-						toUser: toUser
-					) {
-						Logger.mesh.warning("Reboot Failed")
+				if keyUpdated {
+					node?.user?.publicKey = Data(base64Encoded: publicKey) ?? Data()
+					do {
+						try context.save()
+						Logger.data.info("💾 Saved UserEntity Public Key to Core Data for \(node?.num ?? 0, privacy: .public)")
+					} catch {
+						context.rollback()
+						let nsError = error as NSError
+						Logger.data.error("Error Updating Core Data UserEntity: \(nsError, privacy: .public)")
 					}
 				}
+				hasChanges = false
 				goBack()
 			}
 		}
@@ -312,7 +313,8 @@ struct SecurityConfig: View {
 		}
 	}
 
-	func generatePublicKey(from privateKeyData: Data) -> Data? {
+	// Generate a new public key for display purposes to show the user what will be changed after the new private key is saved to the device
+	func generatePublicKeyDisplay(from privateKeyData: Data) -> Data? {
 		guard privateKeyData.count == 32 else {
 			Logger.mesh.debug("Invalid private key length. Must be 32 bytes for Curve25519.")
 			return nil
