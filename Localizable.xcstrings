@@ -29004,16 +29004,16 @@
     },
     "Standard" : {
       "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Predefinito"
-          }
-        },
         "he" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "סטנדרטי"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Predefinito"
           }
         },
         "pl" : {

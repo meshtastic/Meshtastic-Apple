@@ -59,8 +59,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
     private var wantConfigTimer: Timer?
     private var wantConfigRetryCount = 0
-    private let maxWantConfigRetries = 3
-	private let wantConfigTimeoutInterval: TimeInterval = 6.0
+    private let maxWantConfigRetries = 2
+	private let wantConfigTimeoutInterval: TimeInterval = 5.0
 
 	// MARK: init
 	private override init() {
@@ -193,7 +193,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			if self.mqttProxyConnected {
 				self.mqttManager.mqttClientProxy?.disconnect()
 			}
-			self.wantConfigTimer?.invalidate()
+			self.isWaitingForWantConfigResponse = false
+			if wantConfigTimer != nil {
+				self.wantConfigTimer?.invalidate()
+			}
+			self.wantConfigTimer = nil
+			self.wantConfigRetryCount = 0
 			self.automaticallyReconnect = reconnect
 			self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
 			self.FROMRADIO_characteristic = nil
@@ -506,22 +511,22 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		return success
 	}
-	
+
  func sendWantConfig() {
 	 isWaitingForWantConfigResponse = true
-	 
+
 	 guard connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected else { return }
-	 
+
 	 if FROMRADIO_characteristic == nil {
 		 Logger.mesh.error("🚨 \("Unsupported Firmware Version Detected, unable to connect to device.".localized, privacy: .public)")
 		 invalidVersion = true
 		 return
 	 } else {
-		 
+
 		 let nodeName = connectedPeripheral?.peripheral.name ?? "Unknown".localized
 		 let logString = String.localizedStringWithFormat("Issuing Want Config to %@".localized, nodeName)
 		 Logger.mesh.info("🛎️ \(logString, privacy: .public)")
-		 
+
 		 // BLE Characteristics discovered, issue wantConfig
 		 var toRadio: ToRadio = ToRadio()
 		 configNonce = UInt32(NONCE_ONLY_DB)
@@ -533,11 +538,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			 return
 		 }
 		 connectedPeripheral!.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-		 
 		 // Either Read the config complete value or from num notify value
 		 guard connectedPeripheral != nil else { return }
 		 connectedPeripheral!.peripheral.readValue(for: FROMRADIO_characteristic)
-		 
 		 // Start timeout timer
 		 startWantConfigTimeout()
 	 }
@@ -546,7 +549,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
  private func startWantConfigTimeout() {
 	 // Cancel any existing timer
 	 wantConfigTimer?.invalidate()
-	 
 	 // Start new timer
 	 wantConfigTimer = Timer.scheduledTimer(withTimeInterval: wantConfigTimeoutInterval, repeats: false) { [weak self] _ in
 		 self?.handleWantConfigTimeout()
@@ -555,9 +557,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
  private func handleWantConfigTimeout() {
 	 guard isWaitingForWantConfigResponse else { return }
-	 
 	 wantConfigRetryCount += 1
-	 
 	 if wantConfigRetryCount < maxWantConfigRetries {
 		 Logger.mesh.warning("⏰ Want Config timeout, retrying... (attempt \(self.wantConfigRetryCount + 1)/\(self.maxWantConfigRetries))")
 		 sendWantConfig()
@@ -577,15 +577,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
  }
 
  private func forceDisconnect() {
-	 isWaitingForWantConfigResponse = false
-	 wantConfigTimer?.invalidate()
-	 wantConfigTimer = nil
-	 wantConfigRetryCount = 0
-
 	 disconnectPeripheral(reconnect: false)
-	 
-	 lastConnectionError = "Bluetooth connection timeout, keep your node closer.".localized
-	 
+	 lastConnectionError = "Bluetooth connection timeout, keep your node closer or reboot your radio if the problem continues.".localized
 	 Logger.mesh.error("💥 [BLE] Forced disconnect due to Want Config timeout")
  }
 
