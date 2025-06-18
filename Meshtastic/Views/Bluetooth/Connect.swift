@@ -282,7 +282,7 @@ struct Connect: View {
 						.controlSize(.large)
 						.padding()
 					}
-					if bleManager.allowDisconnect {
+					if bleManager.isConnecting {
 						Button(role: .destructive, action: {
 							bleManager.cancelPeripheralConnection()
 
