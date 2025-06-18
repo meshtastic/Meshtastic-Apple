@@ -2251,6 +2251,7 @@
       }
     },
     "Admin & Direct Message Keys" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2283,6 +2284,9 @@
           }
         }
       }
+    },
+    "Admin Keys" : {
+
     },
     "Administration" : {
       "localizations" : {
@@ -3777,6 +3781,12 @@
           }
         }
       }
+    },
+    "Backup" : {
+
+    },
+    "Backup your private key to your iCloud keychain." : {
+
     },
     "Bad" : {
       "localizations" : {
@@ -9374,6 +9384,9 @@
         }
       }
     },
+    "Direct Message Key" : {
+
+    },
     "Direct Messages" : {
       "localizations" : {
         "de" : {
@@ -13129,6 +13142,9 @@
         }
       }
     },
+    "Generated from your public key and sent out to other nodes on the mesh to allow them to compute a shared secret key." : {
+
+    },
     "Get custom waterproof solar and detection sensor router nodes, aluminium desktop nodes and rugged handsets." : {
       "localizations" : {
         "it" : {
@@ -15510,6 +15526,9 @@
           }
         }
       }
+    },
+    "Key Backup" : {
+
     },
     "Key Mapping" : {
       "localizations" : {
@@ -24542,6 +24561,9 @@
         }
       }
     },
+    "Restore" : {
+
+    },
     "Resume" : {
       "localizations" : {
         "de" : {
@@ -27216,6 +27238,7 @@
       }
     },
     "Sent out to other nodes on the mesh to allow them to compute a shared secret key." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

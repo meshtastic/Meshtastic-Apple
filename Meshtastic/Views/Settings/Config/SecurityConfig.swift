@@ -51,7 +51,7 @@ struct SecurityConfig: View {
 				ConfigHeader(title: "Security", config: \.securityConfig, node: node, onAppear: setSecurityValues)
 				Text("Security Config Settings require a firmware version 2.5+")
 					.font(.title3)
-				Section(header: Text("Admin & Direct Message Keys")) {
+				Section(header: Text("Direct Message Key")) {
 					VStack(alignment: .leading) {
 						Label("Public Key", systemImage: "key")
 						Text(publicKey)
@@ -66,7 +66,7 @@ struct SecurityConfig: View {
 								RoundedRectangle(cornerRadius: 10.0)
 									.stroke(isValidKeyPair ? Color.clear : Color.red, lineWidth: 2.0)
 							)
-						Text("Sent out to other nodes on the mesh to allow them to compute a shared secret key.")
+						Text("Generated from your public key and sent out to other nodes on the mesh to allow them to compute a shared secret key.")
 							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
 						Divider()
@@ -79,6 +79,63 @@ struct SecurityConfig: View {
 						Text("Used to create a shared key with a remote device.")
 							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
+						if let currentNode = node {
+							Divider()
+							Label("Key Backup", systemImage: "icloud")
+							HStack(alignment: .firstTextBaseline) {
+								let keychainKey = "PrivateKeyNode\(currentNode.num)"
+								Button {
+									let status = KeychainHelper.standard.save(key: keychainKey, value: privateKey)
+									if status == errSecSuccess {
+										print("Value saved successfully!")
+									} else {
+										print("Error saving value: \(status)")
+									}
+								}
+								label: {
+									Image(systemName: "icloud.and.arrow.up")
+									Text("Backup")
+								}
+								.buttonStyle(.bordered)
+								.buttonBorderShape(.capsule)
+								.controlSize(.small)
+								Spacer()
+								Button {
+									if let value = KeychainHelper.standard.read(key: keychainKey) {
+										self.privateKey = value
+										self.privateKeyIsSecure = false
+									} else {
+										print("No value found in Keychain for key: \(keychainKey)")
+									}
+								}
+								label: {
+									Image(systemName: "key.icloud")
+									Text("Restore")
+								}
+								.buttonStyle(.bordered)
+								.buttonBorderShape(.capsule)
+								.controlSize(.small)
+								Spacer()
+								Button {
+									let status = KeychainHelper.standard.delete(key: keychainKey)
+									if status == errSecSuccess {
+										print("Value deleted successfully!")
+									} else {
+										print("Error deleting value: \(status)")
+									}
+								}
+								label: {
+									Image(systemName: "trash")
+								}
+								.buttonStyle(.bordered)
+								.buttonBorderShape(.capsule)
+								.controlSize(.small)
+							}
+							Text("Backup your private key to your iCloud keychain.")
+								.foregroundStyle(.secondary)
+								.font(idiom == .phone ? .caption : .callout)
+							Divider()
+						}
 						HStack(alignment: .firstTextBaseline) {
 							Label("Regenerate Private Key", systemImage: "arrow.clockwise.circle")
 							Spacer()
@@ -95,37 +152,38 @@ struct SecurityConfig: View {
 							.buttonBorderShape(.capsule)
 							.controlSize(.small)
 						}
-						Divider()
-						Label("Primary Admin Key", systemImage: "key.viewfinder")
-						SecureInput("Primary Admin Key", text: $adminKey, isValid: $hasValidAdminKey)
-							.background(
-								RoundedRectangle(cornerRadius: 10.0)
-									.stroke(hasValidAdminKey ? Color.clear : Color.red, lineWidth: 2.0)
-							)
-						Text("The primary public key authorized to send admin messages to this node.")
-							.foregroundStyle(.secondary)
-							.font(idiom == .phone ? .caption : .callout)
-						Divider()
-						Label("Secondary Admin Key", systemImage: "key.viewfinder")
-						SecureInput("Secondary Admin Key", text: $adminKey2, isValid: $hasValidAdminKey2)
-							.background(
-								RoundedRectangle(cornerRadius: 10.0)
-									.stroke(hasValidAdminKey2 ? Color.clear : Color.red, lineWidth: 2.0)
-							)
-						Text("The secondary public key authorized to send admin messages to this node.")
-							.foregroundStyle(.secondary)
-							.font(idiom == .phone ? .caption : .callout)
-						Divider()
-						Label("Tertiary Admin Key", systemImage: "key.viewfinder")
-						SecureInput("Tertiary Admin Key", text: $adminKey3, isValid: $hasValidAdminKey3)
-							.background(
-								RoundedRectangle(cornerRadius: 10.0)
-									.stroke(hasValidAdminKey3 ? Color.clear : Color.red, lineWidth: 2.0)
-							)
-						Text("The tertiary public key authorized to send admin messages to this node.")
-							.foregroundStyle(.secondary)
-							.font(idiom == .phone ? .caption : .callout)
 					}
+				}
+				Section(header: Text("Admin Keys")) {
+					Label("Primary Admin Key", systemImage: "key.viewfinder")
+					SecureInput("Primary Admin Key", text: $adminKey, isValid: $hasValidAdminKey)
+						.background(
+							RoundedRectangle(cornerRadius: 10.0)
+								.stroke(hasValidAdminKey ? Color.clear : Color.red, lineWidth: 2.0)
+						)
+					Text("The primary public key authorized to send admin messages to this node.")
+						.foregroundStyle(.secondary)
+						.font(idiom == .phone ? .caption : .callout)
+					Divider()
+					Label("Secondary Admin Key", systemImage: "key.viewfinder")
+					SecureInput("Secondary Admin Key", text: $adminKey2, isValid: $hasValidAdminKey2)
+						.background(
+							RoundedRectangle(cornerRadius: 10.0)
+								.stroke(hasValidAdminKey2 ? Color.clear : Color.red, lineWidth: 2.0)
+						)
+					Text("The secondary public key authorized to send admin messages to this node.")
+						.foregroundStyle(.secondary)
+						.font(idiom == .phone ? .caption : .callout)
+					Divider()
+					Label("Tertiary Admin Key", systemImage: "key.viewfinder")
+					SecureInput("Tertiary Admin Key", text: $adminKey3, isValid: $hasValidAdminKey3)
+						.background(
+							RoundedRectangle(cornerRadius: 10.0)
+								.stroke(hasValidAdminKey3 ? Color.clear : Color.red, lineWidth: 2.0)
+						)
+					Text("The tertiary public key authorized to send admin messages to this node.")
+						.foregroundStyle(.secondary)
+						.font(idiom == .phone ? .caption : .callout)
 				}
 				Section(header: Text("Logs")) {
 					Toggle(isOn: $serialEnabled) {
