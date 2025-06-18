@@ -35,6 +35,8 @@ struct SecurityConfig: View {
 	@State var serialEnabled = false
 	@State var debugLogApiEnabled = false
 	@State var privateKeyIsSecure = true
+	@State var backupStatus: KeyBackupStatus?
+	@State var backupStatusError: OSStatus?
 
 	private var isValidKeyPair: Bool {
 		guard let privateKeyBytes = Data(base64Encoded: privateKey),
@@ -87,9 +89,10 @@ struct SecurityConfig: View {
 								Button {
 									let status = KeychainHelper.standard.save(key: keychainKey, value: privateKey)
 									if status == errSecSuccess {
-										print("Value saved successfully!")
+										backupStatus = KeyBackupStatus.saved
 									} else {
-										print("Error saving value: \(status)")
+										backupStatus = KeyBackupStatus.saveFailed
+										backupStatusError = status
 									}
 								}
 								label: {
@@ -104,8 +107,9 @@ struct SecurityConfig: View {
 									if let value = KeychainHelper.standard.read(key: keychainKey) {
 										self.privateKey = value
 										self.privateKeyIsSecure = false
+										backupStatus = KeyBackupStatus.restored
 									} else {
-										print("No value found in Keychain for key: \(keychainKey)")
+										backupStatus = KeyBackupStatus.restoreFailed
 									}
 								}
 								label: {
@@ -119,9 +123,9 @@ struct SecurityConfig: View {
 								Button {
 									let status = KeychainHelper.standard.delete(key: keychainKey)
 									if status == errSecSuccess {
-										print("Value deleted successfully!")
+										backupStatus = KeyBackupStatus.deleted
 									} else {
-										print("Error deleting value: \(status)")
+										backupStatus = KeyBackupStatus.deleteFailed
 									}
 								}
 								label: {
@@ -131,11 +135,17 @@ struct SecurityConfig: View {
 								.buttonBorderShape(.capsule)
 								.controlSize(.small)
 							}
+							if let status = backupStatus {
+								let state = status.success
+								Text("\(status.description)")
+									.font(.caption)
+									.foregroundColor(state ? .green : .red)
+							}
 							Text("Backup your private key to your iCloud keychain.")
 								.foregroundStyle(.secondary)
 								.font(idiom == .phone ? .caption : .callout)
-							Divider()
 						}
+						Divider()
 						HStack(alignment: .firstTextBaseline) {
 							Label("Regenerate Private Key", systemImage: "arrow.clockwise.circle")
 							Spacer()
@@ -152,6 +162,7 @@ struct SecurityConfig: View {
 							.buttonBorderShape(.capsule)
 							.controlSize(.small)
 						}
+						Text("Generate a new private key to replace the one currently in use. Public key will automatically be regenerated as well.")
 					}
 				}
 				Section(header: Text("Admin Keys")) {

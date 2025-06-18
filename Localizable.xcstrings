@@ -13084,6 +13084,9 @@
         }
       }
     },
+    "Generate a new private key to replace the one currently in use. Public key will automatically be regenerated as well." : {
+
+    },
     "Generate QR Code" : {
       "localizations" : {
         "de" : {
