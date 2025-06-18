@@ -538,7 +538,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		 let nodeName = connectedPeripheral?.peripheral.name ?? "Unknown".localized
 		 let logString = String.localizedStringWithFormat("Issuing Want Config to %@".localized, nodeName)
 		 Logger.mesh.info("🛎️ \(logString, privacy: .public)")
-		 
 		 // BLE Characteristics discovered, issue wantConfig
 		 var toRadio: ToRadio = ToRadio()
 		 configNonce = UInt32(NONCE_ONLY_DB)
@@ -576,7 +575,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	 } else {
 		 Logger.mesh.error("🚨 Want Config failed after \(self.maxWantConfigRetries) attempts, forcing disconnect")
 		 lastConnectionError = "Bluetooth connection timeout, keep your node closer or reboot your radio if the problem continues.".localized
-		 disconnectPeripheral(reconnect: false)
+		 allowDisconnect = true
 	 }
  }
 
