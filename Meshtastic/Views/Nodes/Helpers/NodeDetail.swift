@@ -122,7 +122,7 @@ struct NodeDetail: View {
 						.textSelection(.enabled)
 					}
 					.accessibilityElement(children: .combine)
-					
+				
 					if node.user?.keyMatch ?? false {
 						if let publicKey = node.user?.publicKey {
 							HStack {

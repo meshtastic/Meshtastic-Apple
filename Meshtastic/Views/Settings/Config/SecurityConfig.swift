@@ -305,7 +305,14 @@ struct SecurityConfig: View {
 		}
 
 		if status == errSecSuccess {
-			return randomBytes
+			// Generate a random "f" value and then adjust the value to make
+			// it valid as an "s" value for eval().  According to the specification
+			// we need to mask off the 3 right-most bits of f[0], mask off the
+			// left-most bit of f[31], and set the second to left-most bit of f[31].
+			var f = randomBytes
+			f[0] &= 0xF8
+			f[31] = (f[31] & 0x7F) | 0x40
+			return f
 		} else {
 			// Handle error, perhaps by logging or throwing an exception
 			Logger.mesh.debug("Error generating random bytes: \(status)")

@@ -296,7 +296,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			if nodeInfo.hasUser {
 
 				let newUser = UserEntity(context: context)
-				newUser.userId = nodeInfo.user.id
+				newUser.userId = nodeInfo.num.toHex()
 				newUser.num = Int64(nodeInfo.num)
 				newUser.longName = nodeInfo.user.longName
 				newUser.shortName = nodeInfo.user.shortName
@@ -394,7 +394,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 					fetchedNode[0].user?.pkiEncrypted = true
 					fetchedNode[0].user?.publicKey = nodeInfo.user.publicKey
 				}
-				fetchedNode[0].user?.userId = nodeInfo.user.id
+				fetchedNode[0].user?.userId = nodeInfo.num.toHex()
 				fetchedNode[0].user?.num = Int64(nodeInfo.num)
 				fetchedNode[0].user?.numString = String(nodeInfo.num)
 				fetchedNode[0].user?.longName = nodeInfo.user.longName
