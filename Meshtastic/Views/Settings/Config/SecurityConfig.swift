@@ -10,6 +10,7 @@ import SwiftUI
 import CoreData
 import MeshtasticProtobufs
 import OSLog
+import CryptoKit
 
 struct SecurityConfig: View {
 
@@ -33,6 +34,16 @@ struct SecurityConfig: View {
 	@State var isManaged = false
 	@State var serialEnabled = false
 	@State var debugLogApiEnabled = false
+	@State var privateKeyIsSecure = true
+
+	private var isValidKeyPair: Bool {
+		guard let privateKeyBytes = Data(base64Encoded: privateKey),
+			  let calculatedPublicKey = generatePublicKeyDisplay(from: privateKeyBytes),
+			  let decodedPublicKey = Data(base64Encoded: publicKey) else {
+			return false
+		}
+		return calculatedPublicKey == decodedPublicKey
+	}
 
 	var body: some View {
 		VStack {
@@ -51,12 +62,16 @@ struct SecurityConfig: View {
 							.foregroundStyle(.tertiary)
 							.disableAutocorrection(true)
 							.textSelection(.enabled)
+							.background(
+								RoundedRectangle(cornerRadius: 10.0)
+									.stroke(isValidKeyPair ? Color.clear : Color.red, lineWidth: 2.0)
+							)
 						Text("Sent out to other nodes on the mesh to allow them to compute a shared secret key.")
 							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
 						Divider()
 						Label("Private Key", systemImage: "key.fill")
-						SecureInput("Private Key", text: $privateKey, isValid: $hasValidPrivateKey)
+						SecureInput("Private Key", text: $privateKey, isValid: $hasValidPrivateKey, isSecure: $privateKeyIsSecure)
 							.background(
 								RoundedRectangle(cornerRadius: 10.0)
 									.stroke(hasValidPrivateKey ? Color.clear : Color.red, lineWidth: 2.0)
@@ -70,6 +85,7 @@ struct SecurityConfig: View {
 							Button {
 								if let keyBytes = generatePrivateKey(count: 32) {
 									privateKey = keyBytes.base64EncodedString()
+									self.privateKeyIsSecure = false
 								}
 							} label: {
 								Image(systemName: "lock.rotation")
@@ -156,6 +172,10 @@ struct SecurityConfig: View {
 			let tempKey = Data(base64Encoded: privateKey) ?? Data()
 			if tempKey.count == 32 {
 				hasValidPrivateKey = true
+				if let privateKeyBytes = Data(base64Encoded: privateKey), privateKeyBytes.count == 32 {
+					// Valid private key -- generate the public key
+					publicKey = generatePublicKeyDisplay(from: privateKeyBytes)?.base64EncodedString() ?? ""
+				}
 			} else {
 				hasValidPrivateKey = false
 			}
@@ -231,15 +251,13 @@ struct SecurityConfig: View {
 			}
 
 			var config = Config.SecurityConfig()
-			config.publicKey = Data(base64Encoded: publicKey) ?? Data()
 			config.privateKey = Data(base64Encoded: privateKey) ?? Data()
 			config.adminKey = [Data(base64Encoded: adminKey) ?? Data(), Data(base64Encoded: adminKey2) ?? Data(), Data(base64Encoded: adminKey3) ?? Data()]
 			config.isManaged = isManaged
 			config.serialEnabled = serialEnabled
 			config.debugLogApiEnabled = debugLogApiEnabled
 
-			let reboot = node?.securityConfig?.privateKey?.base64EncodedString() ?? "" != privateKey
-
+			let keyUpdated = node?.securityConfig?.privateKey?.base64EncodedString() ?? "" != privateKey
 			let adminMessageId = bleManager.saveSecurityConfig(
 				config: config,
 				fromUser: fromUser,
@@ -248,15 +266,18 @@ struct SecurityConfig: View {
 			if adminMessageId > 0 {
 				// Should show a saved successfully alert once I know that to be true
 				// for now just disable the button after a successful save
-				hasChanges = false
-				if reboot {
-					if !bleManager.sendReboot(
-						fromUser: fromUser,
-						toUser: toUser
-					) {
-						Logger.mesh.warning("Reboot Failed")
+				if keyUpdated {
+					node?.user?.publicKey = Data(base64Encoded: publicKey) ?? Data()
+					do {
+						try context.save()
+						Logger.data.info("💾 Saved UserEntity Public Key to Core Data for \(node?.num ?? 0, privacy: .public)")
+					} catch {
+						context.rollback()
+						let nsError = error as NSError
+						Logger.data.error("Error Updating Core Data UserEntity: \(nsError, privacy: .public)")
 					}
 				}
+				hasChanges = false
 				goBack()
 			}
 		}
@@ -287,7 +308,25 @@ struct SecurityConfig: View {
 			return randomBytes
 		} else {
 			// Handle error, perhaps by logging or throwing an exception
-			print("Error generating random bytes: \(status)")
+			Logger.mesh.debug("Error generating random bytes: \(status)")
+			return nil
+		}
+	}
+
+	// Generate a new public key for display purposes to show the user what will be changed after the new private key is saved to the device
+	func generatePublicKeyDisplay(from privateKeyData: Data) -> Data? {
+		guard privateKeyData.count == 32 else {
+			Logger.mesh.debug("Invalid private key length. Must be 32 bytes for Curve25519.")
+			return nil
+		}
+
+		do {
+			// Create a Curve25519 private key from raw representation
+			let privateKey = try Curve25519.KeyAgreement.PrivateKey(rawRepresentation: privateKeyData)
+			let publicKey = privateKey.publicKey
+			return publicKey.rawRepresentation
+		} catch {
+			Logger.mesh.debug("Failed to create Curve25519 key: \(error)")
 			return nil
 		}
 	}

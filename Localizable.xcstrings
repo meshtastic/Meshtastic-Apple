@@ -1362,7 +1362,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "🦕 Versione di fine vita 🦖 ☄️"
+            "value" : "🦕 Versione a fine vita 🦖 ☄️"
           }
         },
         "sr" : {
@@ -1769,7 +1769,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Circa"
+            "value" : "Informazioni"
           }
         },
         "sr" : {
@@ -1903,7 +1903,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Riconosciuto"
+            "value" : "Confermato"
           }
         },
         "pl" : {
@@ -1943,7 +1943,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Riconosciuto da un altro nodo"
+            "value" : "Confermato da un altro nodo"
           }
         },
         "sr" : {
@@ -2152,6 +2152,12 @@
     },
     "Add Meshtastic Node %@ as a contact" : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi nodo Meshtastic %@ ai contatti"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2571,7 +2577,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ora d'aria"
+            "value" : "Tempo di trasmissione"
           }
         },
         "pl" : {
@@ -2611,7 +2617,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Allarme"
+            "value" : "Avviso"
           }
         },
         "sr" : {
@@ -2633,7 +2639,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Avvisare il buzzer GPIO quando si riceve un campanello"
+            "value" : "Attiva il cicalino GPIO alla ricezione di una campana"
           }
         },
         "sr" : {
@@ -2661,7 +2667,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Avvisare il cicalino GPIO quando si riceve un messaggio"
+            "value" : "Attiva il cicalino GPIO alla ricezione di un messaggio"
           }
         },
         "sr" : {
@@ -2683,7 +2689,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Avviso GPIO del motore a vibrazione quando si riceve una campana"
+            "value" : "Attiva la vibrazione GPIO alla ricezione di una campana"
           }
         },
         "sr" : {
@@ -2711,7 +2717,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Avviso GPIO del motore vibrante alla ricezione di un messaggio"
+            "value" : "Attiva la vibrazione GPIO alla ricezione di un messaggio"
           }
         },
         "sr" : {
@@ -2733,7 +2739,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Avviso di ricezione di un campanello"
+            "value" : "Avvisa alla ricezione di una campana"
           }
         },
         "sr" : {
@@ -2761,7 +2767,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Avviso di ricezione di un messaggio"
+            "value" : "Avvisa alla ricezione di un messaggio"
           }
         },
         "sr" : {
@@ -2817,7 +2823,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Consentire le richieste di posizione"
+            "value" : "Consenti le richieste di posizione"
           }
         },
         "sr" : {
@@ -3811,7 +3817,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Richiesta negativa"
+            "value" : "Richiesta non valida"
           }
         },
         "pl" : {
@@ -4649,7 +4655,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trasmette i pacchetti di posizione GPS come priorità."
+            "value" : "Dà priorità alla trasmissione di pacchetti di posizione GPS."
           }
         },
         "pl" : {
@@ -4707,7 +4713,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trasmette regolarmente la posizione come messaggio al canale predefinito per assistere il recupero del dispositivo."
+            "value" : "Trasmette regolarmente la posizione come messaggio al canale predefinito per aiutare il recupero del dispositivo."
           }
         },
         "pl" : {
@@ -4833,7 +4839,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Acquistare radio complete"
+            "value" : "Acquista dispositivi completi"
           }
         },
         "sr" : {
@@ -4861,7 +4867,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Buzzer GPIO"
+            "value" : "Cicalino GPIO"
           }
         },
         "sr" : {
@@ -6224,7 +6230,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Libero"
+            "value" : "Svuota"
           }
         },
         "sr" : {
@@ -6960,7 +6966,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Radio connessa"
+            "value" : "Dispositivo connesso"
           }
         },
         "zh-Hant-TW" : {
@@ -7034,7 +7040,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La connessione a una nuova radio cancellerà tutti i dati delle app sul telefono."
+            "value" : "La connessione a un nuovo dispositivo cancellerà tutti i dati dell'applicazione sul telefono."
           }
         },
         "zh-Hant-TW" : {
@@ -7248,7 +7254,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Controlla il LED lampeggiante del dispositivo.  Per la maggior parte dei dispositivi controlla uno dei 4 LED, mentre i LED del caricatore e del GPS non sono controllabili."
+            "value" : "Controlla il LED lampeggiante del dispositivo.  Per la maggior parte dei dispositivi controlla uno dei 4 LED, mentre quelli di alimentazione e del GPS non sono controllabili."
           }
         },
         "sr" : {
@@ -7282,7 +7288,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scafo convesso"
+            "value" : "Inviluppo convesso"
           }
         },
         "sr" : {
@@ -7310,7 +7316,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Coordinare"
+            "value" : "Coordinate"
           }
         },
         "sr" : {
@@ -7660,7 +7666,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Corrente: %lld"
+            "value" : "Attuale: %lld"
           }
         },
         "sr" : {
@@ -7682,7 +7688,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Attualmente mostra i moduli che potrebbero non essere supportati da questo nodo."
+            "value" : "Mostra i moduli che potrebbero non essere supportati al momento da questo nodo."
           }
         },
         "zh-Hant-TW" : {
@@ -8088,10 +8094,24 @@
       }
     },
     "Delete all config, keys and BLE bonds? " : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancellare tutte le configurazioni, le chiavi e le associazioni bluetooth?"
+          }
+        }
+      }
     },
     "Delete all config? " : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancellare tutte le configurazioni?"
+          }
+        }
+      }
     },
     "Delete all device metrics?" : {
       "localizations" : {
@@ -10664,6 +10684,12 @@
     },
     "Enables the store and forward module." : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abilita il modulo Salva & Inoltra."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10673,10 +10699,24 @@
       }
     },
     "Enabling Ethernet will disable the bluetooth connection to the app. TCP node connections are not available on Apple devices." : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abilitando l'Ethernet verrà disabilita la connessione bluetooth all'applicazione. La connessione a nodi TCP non è disponibile su dispositivi Apple."
+          }
+        }
+      }
     },
     "Enabling WiFi will disable the bluetooth connection to the app. TCP node connections are not available on Apple devices." : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'attivazione del WiFi disabilita la connessione bluetooth all'applicazione.  La connessione a nodi TCP non è disponibile su dispositivi Apple."
+          }
+        }
+      }
     },
     "Encoder Press Event" : {
       "localizations" : {
@@ -11580,7 +11620,14 @@
       }
     },
     "Factory reset will delete device and app data." : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il ripristino alle impostazioni di fabbrica eliminerà i dati del dispositivo e della app."
+          }
+        }
+      }
     },
     "Failed to encode message content" : {
       "localizations" : {
@@ -11659,7 +11706,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fiera"
+            "value" : "Discreto"
           }
         },
         "sr" : {
@@ -12471,7 +12518,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seguire"
+            "value" : "Segui"
           }
         },
         "pl" : {
@@ -12529,7 +12576,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seguire con l'intestazione"
+            "value" : "Seguire la direzione"
           }
         },
         "pl" : {
@@ -12957,7 +13004,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nome amichevole"
+            "value" : "Nome semplificato"
           }
         },
         "sr" : {
@@ -13642,7 +13689,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Intestazione"
+            "value" : "Direzione"
           }
         },
         "sr" : {
@@ -13664,7 +13711,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Intestazione: %@"
+            "value" : "Direzione: %@"
           }
         },
         "sr" : {
@@ -13967,7 +14014,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Via il luppolo"
+            "value" : "Distanza in Hop"
           }
         },
         "sr" : {
@@ -17907,7 +17954,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La maggior parte dei dati sulla rete viene inviata attraverso il canale primario. È possibile impostare canali secondari per creare gruppi di messaggistica aggiuntivi protetti da una propria chiave. [Suggerimenti per la configurazione del canale](https://meshtastic.org/docs/configuration/tips/)"
+            "value" : "La maggior parte dei dati sulla rete viene inviata attraverso il canale principale. È possibile impostare canali secondari per creare gruppi di messaggistica aggiuntivi protetti da una propria chiave. [Suggerimenti per la configurazione del canale](https://meshtastic.org/docs/configuration/tips/)"
           }
         },
         "pl" : {
@@ -21101,7 +21148,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Modalità di accoppiamento"
+            "value" : "Modalità di associazione"
           }
         },
         "pl" : {
@@ -22069,7 +22116,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Diario di posizione"
+            "value" : "Registro di posizione"
           }
         },
         "sr" : {
@@ -22711,7 +22758,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Primario"
+            "value" : "Principale"
           }
         },
         "pl" : {
@@ -22785,7 +22832,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "GPIO primario"
+            "value" : "GPIO principale"
           }
         },
         "sr" : {
@@ -23327,7 +23374,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Test della gamma"
+            "value" : "Test di portata"
           }
         },
         "pl" : {
@@ -24072,7 +24119,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rimuovere"
+            "value" : "Elimina"
           }
         },
         "sr" : {
@@ -24122,7 +24169,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rimuovere da ignorato"
+            "value" : "Elimina da ignorati"
           }
         },
         "sr" : {
@@ -24184,7 +24231,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sostituire i canali"
+            "value" : "Sostituisci canali"
           }
         },
         "sr" : {
@@ -25508,7 +25555,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sats"
+            "value" : "Sat"
           }
         },
         "sr" : {
@@ -25536,7 +25583,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Stima Sats %lld"
+            "value" : "Stima satelliti %lld"
           }
         },
         "sr" : {
@@ -25564,7 +25611,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Saturazione in vista: %@"
+            "value" : "Satelliti in vista: %@"
           }
         },
         "sr" : {
@@ -25604,7 +25651,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Risparmiare"
+            "value" : "Salva"
           }
         },
         "pl" : {
@@ -26492,7 +26539,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Invia una posizione sul canale primario quando si fa triplo clic sul pulsante utente."
+            "value" : "Invia una posizione sul canale principale quando si fa triplo clic sul pulsante utente."
           }
         },
         "sr" : {
@@ -26576,7 +26623,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Invia una campana ASCII con un messaggio di avviso. Utile per attivare una notifica esterna sul campanello."
+            "value" : "Invia una campana ASCII con un messaggio di avviso. Utile per attivare notifiche esterne alla ricezione della campana."
           }
         },
         "sr" : {
@@ -28963,6 +29010,12 @@
             "value" : "סטנדרטי"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Predefinito"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29006,7 +29059,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Standard Silenzioso"
+            "value" : "Predefinito Silenzioso"
           }
         },
         "pl" : {
@@ -29126,7 +29179,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Memorizzare e inoltrare"
+            "value" : "Salva & Inoltra"
           }
         },
         "sr" : {
@@ -29154,7 +29207,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configurazione Store & Forward"
+            "value" : "Configurazione Salva & Inoltra"
           }
         },
         "sr" : {
@@ -33190,7 +33243,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Utilizzare un'uscita PWM (come il cicalino RAK) per le sintonie invece di un'uscita on/off. In questo modo si ignorano le impostazioni di uscita, durata e attivazione e si utilizza invece l'opzione GPIO del buzzer configurata dal dispositivo."
+            "value" : "Utilizzare un'uscita PWM (come il cicalino RAK) per le sintonie invece di un'uscita on/off. In questo modo si ignorano le impostazioni di uscita, durata e attivazione e si utilizza invece l'opzione GPIO del cicalino configurata dal dispositivo."
           }
         },
         "sr" : {
@@ -35016,7 +35069,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La frequenza operativa del nodo viene calcolata in base alla regione, alla preimpostazione del modem e a questo campo. Se il campo è 0, lo slot viene calcolato automaticamente in base al nome del canale primario."
+            "value" : "La frequenza operativa del nodo viene calcolata in base alla regione, alla preimpostazione del modem e a questo campo. Se il campo è 0, lo slot viene calcolato automaticamente in base al nome del canale principale."
           }
         },
         "sr" : {
