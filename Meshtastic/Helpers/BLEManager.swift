@@ -525,11 +525,20 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		 invalidVersion = true
 		 return
 	 } else {
+		 
+		 // Send Heartbeat before wantConfig
+		var heartbeatToRadio: ToRadio = ToRadio()
+		heartbeatToRadio.payloadVariant = .heartbeat(Heartbeat())
+		guard let heartbeatBinaryData: Data = try? heartbeatToRadio.serializedData() else {
+			Logger.mesh.error("Failed to serialize Heartbeat ToRadio message")
+			return
+		}
+		connectedPeripheral!.peripheral.writeValue(heartbeatBinaryData, for: TORADIO_characteristic, type: .withResponse)
 
 		 let nodeName = connectedPeripheral?.peripheral.name ?? "Unknown".localized
 		 let logString = String.localizedStringWithFormat("Issuing Want Config to %@".localized, nodeName)
 		 Logger.mesh.info("🛎️ \(logString, privacy: .public)")
-
+		 
 		 // BLE Characteristics discovered, issue wantConfig
 		 var toRadio: ToRadio = ToRadio()
 		 configNonce = UInt32(NONCE_ONLY_DB)
@@ -567,6 +576,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	 } else {
 		 Logger.mesh.error("🚨 Want Config failed after \(self.maxWantConfigRetries) attempts, forcing disconnect")
 		 lastConnectionError = "Bluetooth connection timeout, keep your node closer or reboot your radio if the problem continues.".localized
+		 disconnectPeripheral(reconnect: false)
 	 }
  }
 
