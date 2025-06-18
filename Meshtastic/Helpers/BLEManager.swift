@@ -60,8 +60,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
     private var wantConfigTimer: Timer?
     private var wantConfigRetryCount = 0
-    private let maxWantConfigRetries = 2
-	private let wantConfigTimeoutInterval: TimeInterval = 5.0
+    private let maxWantConfigRetries = 6
+	private let wantConfigTimeoutInterval: TimeInterval = 6.0
 
 	// MARK: init
 	private override init() {
@@ -525,7 +525,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		 invalidVersion = true
 		 return
 	 } else {
-		 
 		 // Send Heartbeat before wantConfig
 		var heartbeatToRadio: ToRadio = ToRadio()
 		heartbeatToRadio.payloadVariant = .heartbeat(Heartbeat())
@@ -569,13 +568,16 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
  private func handleWantConfigTimeout() {
 	 guard isWaitingForWantConfigResponse else { return }
 	 wantConfigRetryCount += 1
+	 if wantConfigRetryCount == 1 {
+		 allowDisconnect = true
+	 }
 	 if wantConfigRetryCount < maxWantConfigRetries {
 		 Logger.mesh.warning("⏰ Want Config timeout, retrying... (attempt \(self.wantConfigRetryCount + 1)/\(self.maxWantConfigRetries))")
 		 sendWantConfig()
 	 } else {
 		 Logger.mesh.error("🚨 Want Config failed after \(self.maxWantConfigRetries) attempts, forcing disconnect")
 		 lastConnectionError = "Bluetooth connection timeout, keep your node closer or reboot your radio if the problem continues.".localized
-		 allowDisconnect = true
+		 disconnectPeripheral(reconnect: false)
 	 }
  }
 
