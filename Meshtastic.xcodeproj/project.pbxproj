@@ -97,6 +97,8 @@
 		DD1BD0EB2C601795008C0C70 /* CLLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BD0EA2C601795008C0C70 /* CLLocation.swift */; };
 		DD1BD0EE2C603C91008C0C70 /* CustomFormatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BD0ED2C603C91008C0C70 /* CustomFormatters.swift */; };
 		DD1BD0F32C63C65E008C0C70 /* SecurityConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BD0F22C63C65E008C0C70 /* SecurityConfig.swift */; };
+		DD1BEF4A2E0292320090CE24 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF492E0292220090CE24 /* KeychainHelper.swift */; };
+		DD1BEF4C2E030D310090CE24 /* KeyBackupStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF4B2E030D240090CE24 /* KeyBackupStatus.swift */; };
 		DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */; };
 		DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2160AE28C5552500C17253 /* MQTTConfig.swift */; };
 		DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */; };
@@ -372,6 +374,8 @@
 		DD1BD0F12C61D3AD008C0C70 /* MeshtasticDataModelV 42.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 42.xcdatamodel"; sourceTree = "<group>"; };
 		DD1BD0F22C63C65E008C0C70 /* SecurityConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityConfig.swift; sourceTree = "<group>"; };
 		DD1BEF462DFF284C0090CE24 /* MeshtasticDataModelV 53.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 53.xcdatamodel"; sourceTree = "<group>"; };
+		DD1BEF492E0292220090CE24 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
+		DD1BEF4B2E030D240090CE24 /* KeyBackupStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBackupStatus.swift; sourceTree = "<group>"; };
 		DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageList.swift; sourceTree = "<group>"; };
 		DD2160AE28C5552500C17253 /* MQTTConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MQTTConfig.swift; sourceTree = "<group>"; };
 		DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralModel.swift; sourceTree = "<group>"; };
@@ -876,6 +880,7 @@
 		DD8ED9C6289CE4A100B3B0AB /* Enums */ = {
 			isa = PBXGroup;
 			children = (
+				DD1BEF4B2E030D240090CE24 /* KeyBackupStatus.swift */,
 				DDA951592BC6624100CEA535 /* TelemetryWeather.swift */,
 				DDE0F7C4295F77B700B8AAB3 /* AppSettingsEnums.swift */,
 				DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */,
@@ -1067,6 +1072,7 @@
 			children = (
 				DDD43FE12A78C86B0083A3E9 /* Mqtt */,
 				DDAF8C5226EB1DF10058C060 /* BLEManager.swift */,
+				DD1BEF492E0292220090CE24 /* KeychainHelper.swift */,
 				DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */,
 				DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */,
 				DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */,
@@ -1443,6 +1449,7 @@
 				233E99C32D849D7A00CC3A77 /* WeightCompactWidget.swift in Sources */,
 				DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */,
 				DD1BD0F32C63C65E008C0C70 /* SecurityConfig.swift in Sources */,
+				DD1BEF4C2E030D310090CE24 /* KeyBackupStatus.swift in Sources */,
 				DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */,
 				DD6F65722C6AB8EC0053C113 /* SecureInput.swift in Sources */,
 				DD13AA492AB73BF400BA0C98 /* PositionPopover.swift in Sources */,
@@ -1576,6 +1583,7 @@
 				233E99C72D84A70900CC3A77 /* SoilCompactWidgets.swift in Sources */,
 				BCE2D3C92C7C377F008E6199 /* FactoryResetNodeIntent.swift in Sources */,
 				DD93800B2BA3F968008BEC06 /* NodeMapContent.swift in Sources */,
+				DD1BEF4A2E0292320090CE24 /* KeychainHelper.swift in Sources */,
 				DD41582A28585C32009B0E59 /* RangeTestConfig.swift in Sources */,
 				DD1925B728CDA5A400720036 /* CannedMessagesConfigEnums.swift in Sources */,
 				DDDB444429F8A8DD00EE2349 /* Float.swift in Sources */,
