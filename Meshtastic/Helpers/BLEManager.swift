@@ -32,6 +32,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	public var isConnecting: Bool = false
 	public var isConnected: Bool = false
 	public var isSubscribed: Bool = false
+	public var allowDisconnect: Bool = false
 	private var configNonce: UInt32 = 1
 	var timeoutTimer: Timer?
 	var timeoutTimerCount = 0
@@ -172,6 +173,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		isConnecting = false
 		isConnected = false
 		isSubscribed = false
+		allowDisconnect = false
 		self.connectedPeripheral = nil
 		invalidVersion = false
 		connectedVersion = "0.0.0"
@@ -204,6 +206,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			self.FROMRADIO_characteristic = nil
 			self.isConnected = false
 			self.isSubscribed = false
+			self.allowDisconnect = false
 			self.invalidVersion = false
 			self.connectedVersion = "0.0.0"
 			self.stopScanning()
@@ -563,7 +566,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		 sendWantConfig()
 	 } else {
 		 Logger.mesh.error("🚨 Want Config failed after \(self.maxWantConfigRetries) attempts, forcing disconnect")
-		 forceDisconnect()
+		 lastConnectionError = "Bluetooth connection timeout, keep your node closer or reboot your radio if the problem continues.".localized
 	 }
  }
 
@@ -574,12 +577,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		 wantConfigTimer = nil
 		 wantConfigRetryCount = 0 // Reset retry count on success
 	 }
- }
-
- private func forceDisconnect() {
-	 disconnectPeripheral(reconnect: false)
-	 lastConnectionError = "Bluetooth connection timeout, keep your node closer or reboot your radio if the problem continues.".localized
-	 Logger.mesh.error("💥 [BLE] Forced disconnect due to Want Config timeout")
  }
 
  // Call this to reset the retry mechanism (e.g., on new connection)
@@ -1059,6 +1056,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				invalidVersion = false
 				lastConnectionError = ""
 				isSubscribed = true
+				allowDisconnect = true
 				Logger.mesh.info("🤜 [BLE] Want Config Complete. ID:\(decodedInfo.configCompleteID, privacy: .public)")
 				if sendTime() {
 				}

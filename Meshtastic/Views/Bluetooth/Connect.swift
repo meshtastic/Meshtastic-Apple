@@ -90,7 +90,7 @@ struct Connect: View {
 								.foregroundColor(Color.gray)
 								.padding([.top])
 								.swipeActions {
-									if bleManager.isSubscribed {
+									if bleManager.allowDisconnect {
 										Button(role: .destructive) {
 											if let connectedPeripheral = bleManager.connectedPeripheral,
 											   connectedPeripheral.peripheral.state == .connected {
@@ -127,7 +127,7 @@ struct Connect: View {
 										Text("Short Name: \(node?.user?.shortName ?? "?")")
 										Text("Long Name: \(node?.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
 										Text("BLE RSSI: \(connectedPeripheral.rssi)")
-										if bleManager.isSubscribed {
+										if bleManager.allowDisconnect {
 											Button(role: .destructive) {
 												if let connectedPeripheral = bleManager.connectedPeripheral,
 												   connectedPeripheral.peripheral.state == .connected {
