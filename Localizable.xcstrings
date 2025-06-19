@@ -1379,6 +1379,12 @@
         }
       }
     },
+    "0" : {
+
+    },
+    "1" : {
+
+    },
     "1 byte" : {
       "localizations" : {
         "it" : {
@@ -1655,6 +1661,9 @@
           }
         }
       }
+    },
+    "180" : {
+
     },
     "256 bit" : {
       "localizations" : {
@@ -2477,6 +2486,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "之後"
+          }
+        }
+      }
+    },
+    "After %lld Days" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "After %lld Day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "After %lld Days"
+                }
+              }
+            }
           }
         }
       }
@@ -6354,6 +6385,9 @@
           }
         }
       }
+    },
+    "Clear Stale Nodes" : {
+
     },
     "Client" : {
       "localizations" : {
@@ -19796,6 +19830,9 @@
           }
         }
       }
+    },
+    "Nodes without PKI keys are cleared from the app database on the schedule set by the user, nodes with PKI keys are cleared only if the interval is set to 7 days or longer. This feature only purges nodes from the app that are not stored in the device node database." : {
+
     },
     "None" : {
       "localizations" : {

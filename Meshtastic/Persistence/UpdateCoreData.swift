@@ -8,6 +8,44 @@ import CoreData
 import MeshtasticProtobufs
 import OSLog
 
+public func clearStaleNodes(nodeExpireDays: Int, context: NSManagedObjectContext) -> Bool {
+	var nodeExpireTime: TimeInterval {
+		return TimeInterval(-nodeExpireDays * 86400)
+	}
+	var nodePKIExpireTime: TimeInterval {
+		return TimeInterval((nodeExpireDays < 7 ? -7 : -nodeExpireDays) * 86400)
+	}
+
+	if nodeExpireDays == 0 {
+		// Purge Disabled
+		Logger.data.info("💾 [NodeInfoEntity] Skip clearing stale nodes")
+		return false
+	}
+	let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "NodeInfoEntity")
+	fetchRequest.predicate = NSPredicate(format: "favorite == false AND ignored == false AND ((user.pkiEncrypted == NO AND lastHeard < %@) OR (user.pkiEncrypted == YES AND lastHeard < %@))",
+										 NSDate(timeIntervalSinceNow: nodeExpireTime), NSDate(timeIntervalSinceNow: nodePKIExpireTime))
+	let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+	batchDeleteRequest.resultType = .resultTypeCount
+
+	do {
+		Logger.data.info("💾 [NodeInfoEntity] Clearing nodes older than \(nodeExpireDays) days")
+		if let batchDeleteResult = try context.execute(batchDeleteRequest) as? NSBatchDeleteResult {
+			try context.save()
+			let deletedNodes = batchDeleteResult.result as? Int ?? 0
+			Logger.data.info("💾 [NodeInfoEntity] Cleared \(deletedNodes) stale nodes")
+			if deletedNodes > 0 {
+				return true
+			}
+		} else {
+			Logger.data.error("💥 [NodeInfoEntity] bad delete results")
+		}
+	} catch {
+		context.rollback()
+		Logger.data.error("💥 [NodeInfoEntity] Error deleting stale nodes")
+	}
+	return false
+}
+
 public func clearPax(destNum: Int64, context: NSManagedObjectContext) -> Bool {
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()

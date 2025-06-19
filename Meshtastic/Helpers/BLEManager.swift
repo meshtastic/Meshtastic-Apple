@@ -37,6 +37,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	var timeoutTimer: Timer?
 	var timeoutTimerCount = 0
 	var positionTimer: Timer?
+	var maintenanceTimer: Timer?
 	let mqttManager = MqttClientProxyManager.shared
 	var wantRangeTestPackets = false
 	var wantStoreAndForwardPackets = false
@@ -53,6 +54,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
 	let LEGACY_LOGRADIO_UUID = CBUUID(string: "0x6C6FD238-78FA-436B-AACF-15C5BE1EF2E2")
 	let LOGRADIO_UUID = CBUUID(string: "0x5a3d6e49-06e6-4423-9944-e9de8cdf9547")
+	@AppStorage("purgeStaleNodeDays") var purgeStaleNodeDays: Double = 0
 
 	let NONCE_ONLY_CONFIG = 69420
 	let NONCE_ONLY_DB = 69421
@@ -78,13 +80,21 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	}
 
 	private init(appState: AppState, context: NSManagedObjectContext) {
-	   self.appState = appState
-	   self.context = context
-	   self.lastConnectionError = ""
-	   self.connectedVersion = "0.0.0"
-	   super.init()
-	   centralManager = CBCentralManager(delegate: self, queue: nil)
-	   mqttManager.delegate = self
+		self.appState = appState
+		self.context = context
+		self.lastConnectionError = ""
+		self.connectedVersion = "0.0.0"
+		super.init()
+		centralManager = CBCentralManager(delegate: self, queue: nil)
+		mqttManager.delegate = self
+		// Run clearStaleNodes every hour
+		maintenanceTimer = Timer.scheduledTimer(withTimeInterval: 3600, repeats: true, block: { _ in
+			let result = clearStaleNodes(nodeExpireDays: Int(self.purgeStaleNodeDays), context: self.context)
+			// If you are connected and the clear worked, pull nodes back from the node in case we have deleted anything from that app that is in the device nodedb
+			if result && self.isSubscribed {
+				self.sendWantConfig()
+			}
+		})
 	}
 
 	// MARK: Scanning for BLE Devices
