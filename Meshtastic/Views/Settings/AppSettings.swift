@@ -72,7 +72,7 @@ struct AppSettings: View {
 								Text("180")
 							}
 						}
-						Text("Nodes without PKI keys are cleared from the app database on the schedule set by the user, nodes with PKI keys are cleared only if the interval is set to 7 days or longer.")
+						Text("Nodes without PKI keys are cleared from the app database on the schedule set by the user, nodes with PKI keys are cleared only if the interval is set to 7 days or longer. This feature only purges nodes from the app that are not stored in the device node database.")
 							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
 					}
