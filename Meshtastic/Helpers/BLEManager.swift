@@ -37,7 +37,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	var timeoutTimer: Timer?
 	var timeoutTimerCount = 0
 	var positionTimer: Timer?
-	var maintenenceTimer: Timer?
+	var maintenanceTimer: Timer?
 	let mqttManager = MqttClientProxyManager.shared
 	var wantRangeTestPackets = false
 	var wantStoreAndForwardPackets = false
