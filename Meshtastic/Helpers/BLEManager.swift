@@ -87,8 +87,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		super.init()
 		centralManager = CBCentralManager(delegate: self, queue: nil)
 		mqttManager.delegate = self
-		// Run clearStaleNodes every 10 minutes
-		maintenenceTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true, block: { _ in
+		// Run clearStaleNodes every hour
+		maintenanceTimer = Timer.scheduledTimer(withTimeInterval: 3600, repeats: true, block: { _ in
 			let result = clearStaleNodes(nodeExpireDays: Int(self.purgeStaleNodeDays), context: self.context)
 			// If you are connected and the clear worked, pull nodes back from the node in case we have deleted anything from that app that is in the device nodedb
 			if result && self.isSubscribed {
