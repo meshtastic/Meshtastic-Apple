@@ -21,8 +21,8 @@ struct ChannelList: View {
 	var channelSelection: ChannelEntity?
 
 	@State private var isPresentingDeleteChannelMessagesConfirm: Bool = false
-
 	@State private var isPresentingTraceRouteSentAlert = false
+	@State private var showingHelp = false
 
 	var restrictedChannels = ["gpio", "mqtt", "serial", "admin"]
 
@@ -168,8 +168,30 @@ struct ChannelList: View {
 				}
 				.padding([.top, .bottom])
 				.listStyle(.plain)
+				.navigationTitle("Channels")
 			}
 		}
-		.navigationTitle("Channels")
+		.sheet(isPresented: $showingHelp) {
+			ChannelsHelp()
+				.presentationDetents([.medium])
+		}
+		.safeAreaInset(edge: .bottom, alignment: .leading) {
+			HStack {
+				Button(action: {
+					withAnimation {
+						showingHelp = !showingHelp
+					}
+				}) {
+					Image(systemName: !showingHelp ? "questionmark.circle" : "questionmark.circle.fill")
+						.padding(.vertical, 5)
+				}
+				.tint(Color(UIColor.secondarySystemBackground))
+				.foregroundColor(.accentColor)
+				.buttonStyle(.borderedProminent)
+			}
+			.controlSize(.regular)
+			.padding(5)
+		}
+		.padding(.bottom, 5)
 	}
 }
