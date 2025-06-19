@@ -173,7 +173,8 @@ struct ChannelList: View {
 		}
 		.sheet(isPresented: $showingHelp) {
 			ChannelsHelp()
-				.presentationDetents([.medium])
+				.presentationDetents([.medium, .large])
+				.presentationDragIndicator(.visible)
 		}
 		.safeAreaInset(edge: .bottom, alignment: .leading) {
 			HStack {
