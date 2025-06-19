@@ -13,7 +13,7 @@ public func clearStaleNodes(nodeExpireDays: Int, context: NSManagedObjectContext
 		return TimeInterval(-nodeExpireDays * 86400)
 	}
 	var nodePKIExpireTime: TimeInterval {
-		return TimeInterval(-7 * 86400)
+		return TimeInterval((nodeExpireDays < 7 ? -7 : -nodeExpireDays) * 86400)
 	}
 
 	if nodeExpireDays == 0 {

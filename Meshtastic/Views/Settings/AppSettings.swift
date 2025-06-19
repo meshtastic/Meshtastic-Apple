@@ -6,6 +6,7 @@ import MapKit
 import OSLog
 
 struct AppSettings: View {
+	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@State var totalDownloadedTileSize = ""
@@ -71,6 +72,9 @@ struct AppSettings: View {
 								Text("180")
 							}
 						}
+						Text("Nodes without PKI keys are cleared from the app database on the schedule set by the user, nodes with PKI keys are cleared only if the interval is set to 7 days or longer.")
+							.foregroundStyle(.secondary)
+							.font(idiom == .phone ? .caption : .callout)
 					}
 					Button {
 						isPresentingCoreDataResetConfirm = true
