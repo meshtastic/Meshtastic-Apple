@@ -182,7 +182,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				} else {
 
 					let newUser = UserEntity(context: context)
-					newUser.userId = newUserMessage.id
+					newUser.userId = newNode.num.toHex()
 					newUser.num = Int64(packet.from)
 					newUser.longName = newUserMessage.longName
 					newUser.shortName = newUserMessage.shortName
@@ -306,7 +306,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].telemetries? = NSOrderedSet(array: newTelemetries)
 				}
 				if nodeInfoMessage.hasUser {
-					fetchedNode[0].user?.userId = nodeInfoMessage.user.id
+					fetchedNode[0].user?.userId = nodeInfoMessage.num.toHex()
 					fetchedNode[0].user?.num = Int64(nodeInfoMessage.num)
 					fetchedNode[0].user?.longName = nodeInfoMessage.user.longName
 					fetchedNode[0].user?.shortName = nodeInfoMessage.user.shortName

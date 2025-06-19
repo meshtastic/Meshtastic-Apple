@@ -313,7 +313,7 @@ struct ShareChannels: View {
 			guard let settingsString = try? channelSet.serializedData().base64EncodedString() else {
 				return
 			}
-			channelsUrl = ("https://meshtastic.org/e/\(replaceChannels ? "" : "?add=true")#" + settingsString.base64ToBase64url())
+			channelsUrl = ("https://meshtastic.org/e/\(replaceChannels ? "" : "?add=true")#\(settingsString.base64ToBase64url())")
 		}
 	}
 }

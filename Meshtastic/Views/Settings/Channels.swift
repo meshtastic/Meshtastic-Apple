@@ -124,6 +124,13 @@ struct Channels: View {
 										.brightness(0.1)
 									VStack {
 										HStack {
+											if channel.psk?.hexDescription.count ??  0 <  3 {
+												Image(systemName: "lock.slash.fill")
+													.foregroundColor(.red)
+											} else {
+												Image(systemName: "lock.fill")
+													.foregroundColor(.green)
+											}
 											if channel.name?.isEmpty ?? false {
 												if channel.role == 1 {
 													Text(String("PrimaryChannel").camelCaseToWords()).font(.headline)

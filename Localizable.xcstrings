@@ -1684,6 +1684,12 @@
         }
       }
     },
+    "A channel index of 0 indicates the primary channel where all broadcast packets are sent from." : {
+
+    },
+    "A green lock means the channel is securely encrypted with either a 128 or 256 bit AES key." : {
+
+    },
     "A Meshtastic QR code contains the LoRa config and channel values needed for radios to communicate. You can share a complete channel configuration using the Replace Channels option, if you choose Add Channels your shared channels will be added to the channels on the receiving radio." : {
       "localizations" : {
         "de" : {
@@ -1741,6 +1747,9 @@
           }
         }
       }
+    },
+    "A red lock with a slash means the channel is not securely encrypted, it uses either no key at all or a 1 byte known key. Traffic on this channel is easily intercepted." : {
+
     },
     "A Trace Route was sent, no response has been received." : {
       "localizations" : {
@@ -2251,6 +2260,7 @@
       }
     },
     "Admin & Direct Message Keys" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2283,6 +2293,9 @@
           }
         }
       }
+    },
+    "Admin Keys" : {
+
     },
     "Administration" : {
       "localizations" : {
@@ -3777,6 +3790,12 @@
           }
         }
       }
+    },
+    "Backup" : {
+
+    },
+    "Backup your private key to your iCloud keychain." : {
+
     },
     "Bad" : {
       "localizations" : {
@@ -6152,6 +6171,9 @@
           }
         }
       }
+    },
+    "Channels Help" : {
+
     },
     "Chart" : {
       "localizations" : {
@@ -9373,6 +9395,9 @@
           }
         }
       }
+    },
+    "Direct Message Key" : {
+
     },
     "Direct Messages" : {
       "localizations" : {
@@ -13071,6 +13096,9 @@
         }
       }
     },
+    "Generate a new private key to replace the one currently in use. Public key will automatically be regenerated as well." : {
+
+    },
     "Generate QR Code" : {
       "localizations" : {
         "de" : {
@@ -13128,6 +13156,9 @@
           }
         }
       }
+    },
+    "Generated from your public key and sent out to other nodes on the mesh to allow them to compute a shared secret key." : {
+
     },
     "Get custom waterproof solar and detection sensor router nodes, aluminium desktop nodes and rugged handsets." : {
       "localizations" : {
@@ -15510,6 +15541,9 @@
           }
         }
       }
+    },
+    "Key Backup" : {
+
     },
     "Key Mapping" : {
       "localizations" : {
@@ -24542,6 +24576,9 @@
         }
       }
     },
+    "Restore" : {
+
+    },
     "Resume" : {
       "localizations" : {
         "de" : {
@@ -27216,6 +27253,7 @@
       }
     },
     "Sent out to other nodes on the mesh to allow them to compute a shared secret key." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

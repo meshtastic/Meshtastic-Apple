@@ -118,10 +118,8 @@ public func createUser(num: Int64, context: NSManagedObjectContext) throws -> Us
 	context.performAndWait {
 		newUser = UserEntity(context: context)
 		newUser.num = num
-	
-		let userId = String(format: "%016llX", num)
-		newUser.userId = "!\(userId)"
-	
+		let userId = num.toHex()
+		newUser.userId = userId
 		let last4 = String(userId.suffix(4))
 		newUser.longName = "Meshtastic \(last4)"
 		newUser.shortName = last4
