@@ -46,9 +46,10 @@ struct Connect: View {
 			VStack {
 				List {
 					if bleManager.isSwitchedOn {
-						Section(header: Text("Connected Radio").font(.title)) {
+						Section {
 							if let connectedPeripheral = bleManager.connectedPeripheral, connectedPeripheral.peripheral.state == .connected {
 								TipView(BluetoothConnectionTip(), arrowEdge: .bottom)
+									.tipViewStyle(PersistentTip())
 								VStack(alignment: .leading) {
 									HStack {
 										VStack(alignment: .center) {

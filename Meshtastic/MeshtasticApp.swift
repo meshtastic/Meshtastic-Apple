@@ -28,17 +28,16 @@ struct MeshtasticAppleApp: App {
 			router: Router()
 		)
 		self._appState = ObservedObject(wrappedValue: appState)
-
 		// Initialize the BLEManager singleton with the necessary dependencies
 		BLEManager.setup(appState: appState, context: persistenceController.container.viewContext)
 		self.persistenceController = persistenceController
-
 		// Wire up router
 		self.appDelegate.router = appState.router
-		// Show Tips
+	#if DEBUG
+		// Show tips in development
 		try? Tips.resetDatastore()
+	#endif
 	}
-
     var body: some Scene {
         WindowGroup {
 			ContentView(
