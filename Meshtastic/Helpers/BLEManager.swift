@@ -740,7 +740,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							let nsError = error as NSError
 							Logger.data.error("💥 [TraceRouteEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 						}
-					} else if decodedInfo.clientNotification.message.starts(with: "You Device is configured with a low entropy") || decodedInfo.clientNotification.message.starts(with: "Compromised keys detected") {
+					} else if decodedInfo.clientNotification.message.starts(with: "You Device is configured with a low entropy") || decodedInfo.clientNotification.message.starts(with: "Compromised keys detected")
+					|| decodedInfo.clientNotification.message.starts(with: "Remote device"){
 						path = "meshtastic:///settings/security"
 					}
 				}
