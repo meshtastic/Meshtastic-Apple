@@ -64,6 +64,7 @@ struct Messages: View {
 				}
 
 				TipView(MessagesTip(), arrowEdge: .top)
+					.tipViewStyle(PersistentTip())
 			}
 			.navigationTitle("Messages")
 			.navigationBarTitleDisplayMode(.large)
