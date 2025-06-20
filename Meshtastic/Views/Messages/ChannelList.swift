@@ -60,7 +60,6 @@ struct ChannelList: View {
 				HStack {
 					if channel.psk?.hexDescription.count ??  0 <  3 {
 						Image(systemName: "lock.slash.fill")
-							.foregroundColor(.red)
 					} else {
 						Image(systemName: "lock.fill")
 							.foregroundColor(.green)

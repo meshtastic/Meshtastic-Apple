@@ -1699,6 +1699,9 @@
     "A green lock means the channel is securely encrypted with either a 128 or 256 bit AES key." : {
 
     },
+    "A lock with a slash means the channel is not securely encrypted, it uses either no key at all or a 1 byte known key. Traffic on this channel is easily intercepted. This is not an error, it is simply a reminder that messages sent here should be considered to be able to be received by all." : {
+
+    },
     "A Meshtastic QR code contains the LoRa config and channel values needed for radios to communicate. You can share a complete channel configuration using the Replace Channels option, if you choose Add Channels your shared channels will be added to the channels on the receiving radio." : {
       "localizations" : {
         "de" : {
@@ -1756,9 +1759,6 @@
           }
         }
       }
-    },
-    "A red lock with a slash means the channel is not securely encrypted, it uses either no key at all or a 1 byte known key. Traffic on this channel is easily intercepted." : {
-
     },
     "A Trace Route was sent, no response has been received." : {
       "localizations" : {
@@ -28238,6 +28238,7 @@
       }
     },
     "Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press start the live activity." : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -28252,6 +28253,9 @@
           }
         }
       }
+    },
+    "Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press to start the live activity." : {
+
     },
     "Shut Down" : {
       "localizations" : {
