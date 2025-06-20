@@ -84,7 +84,6 @@ struct ShareChannels: View {
 									Text(((channel.name!.isEmpty ? "Primary" : channel.name) ?? "Primary").camelCaseToWords())
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
-											.foregroundColor(.red)
 									} else {
 										Image(systemName: "lock.fill")
 											.foregroundColor(.green)
@@ -97,7 +96,6 @@ struct ShareChannels: View {
 									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
-											.foregroundColor(.red)
 									} else {
 										Image(systemName: "lock.fill")
 											.foregroundColor(.green)
@@ -110,7 +108,6 @@ struct ShareChannels: View {
 									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
-											.foregroundColor(.red)
 									} else {
 										Image(systemName: "lock.fill")
 											.foregroundColor(.green)
@@ -123,7 +120,6 @@ struct ShareChannels: View {
 									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
-											.foregroundColor(.red)
 									} else {
 										Image(systemName: "lock.fill")
 											.foregroundColor(.green)
@@ -136,7 +132,6 @@ struct ShareChannels: View {
 									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
-											.foregroundColor(.red)
 									} else {
 										Image(systemName: "lock.fill")
 											.foregroundColor(.green)
@@ -149,7 +144,6 @@ struct ShareChannels: View {
 									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
-											.foregroundColor(.red)
 									} else {
 										Image(systemName: "lock.fill")
 											.foregroundColor(.green)
@@ -162,7 +156,6 @@ struct ShareChannels: View {
 									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
-											.foregroundColor(.red)
 									} else {
 										Image(systemName: "lock.fill")
 											.foregroundColor(.green)
@@ -175,7 +168,6 @@ struct ShareChannels: View {
 									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
-											.foregroundColor(.red)
 									} else {
 										Image(systemName: "lock.fill")
 											.foregroundColor(.green)

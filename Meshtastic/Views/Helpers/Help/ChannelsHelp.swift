@@ -37,9 +37,8 @@ struct ChannelsHelp: View {
 				HStack {
 					Image(systemName: "lock.slash.fill")
 						.padding(.bottom)
-						.foregroundColor(Color.red)
 						.font(.largeTitle)
-					Text("A red lock with a slash means the channel is not securely encrypted, it uses either no key at all or a 1 byte known key. Traffic on this channel is easily intercepted.")
+					Text("A lock with a slash means the channel is not securely encrypted, it uses either no key at all or a 1 byte known key. Traffic on this channel is easily intercepted. This is not an error, it is simply a reminder that messages sent here should be considered to be able to be received by all.")
 						.fixedSize(horizontal: false, vertical: true)
 						.padding(.bottom)
 				}
