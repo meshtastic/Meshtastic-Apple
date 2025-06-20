@@ -162,7 +162,8 @@ struct SecurityConfig: View {
 							.buttonBorderShape(.capsule)
 							.controlSize(.small)
 						}
-						Text("Generate a new private key to replace the one currently in use. Public key will automatically be regenerated as well.")
+						Text("Generate a new private key to replace the one currently in use. The public key will automatically be regenerated from your private key.")
+							.font(idiom == .phone ? .caption : .callout)
 					}
 				}
 				Section(header: Text("Admin Keys")) {
