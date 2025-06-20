@@ -1379,6 +1379,12 @@
         }
       }
     },
+    "0" : {
+
+    },
+    "1" : {
+
+    },
     "1 byte" : {
       "localizations" : {
         "it" : {
@@ -1655,6 +1661,9 @@
           }
         }
       }
+    },
+    "180" : {
+
     },
     "256 bit" : {
       "localizations" : {
@@ -2259,41 +2268,6 @@
         }
       }
     },
-    "Admin & Direct Message Keys" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Schlüssel für Administrator und Direktnachrichten"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tasti amministratore e messaggi diretti"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Админ и кључеви директних порука"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "管理员 & 私信密钥"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "管理與直接訊息加密金鑰"
-          }
-        }
-      }
-    },
     "Admin Keys" : {
 
     },
@@ -2477,6 +2451,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "之後"
+          }
+        }
+      }
+    },
+    "After %lld Days" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "After %lld Day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "After %lld Days"
+                }
+              }
+            }
           }
         }
       }
@@ -4335,33 +4331,8 @@
         }
       }
     },
-    "BLE RSSI: %lld" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RSSI BLE: %lld"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE RSSI: %lld"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE RSSI: %lld"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "藍牙訊號強度（RSSI）：%lld"
-          }
-        }
-      }
+    "BLE RSSI %lld" : {
+
     },
     "BLE: %@" : {
       "localizations" : {
@@ -6354,6 +6325,9 @@
           }
         }
       }
+    },
+    "Clear Stale Nodes" : {
+
     },
     "Client" : {
       "localizations" : {
@@ -11776,6 +11750,9 @@
         }
       }
     },
+    "Favorited and ignored nodes are always retained. Nodes without PKC keys are cleared from the app database on the schedule set by the user, nodes with PKC keys are cleared only if the interval is set to 7 days or longer. This feature only purges nodes from the app that are not stored in the device node database." : {
+
+    },
     "Favorites" : {
       "localizations" : {
         "de" : {
@@ -16213,40 +16190,6 @@
         }
       }
     },
-    "Long Name: %@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Langer Name: %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nome lungo: %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Дуго име: %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "长名称: %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "完整名稱：%@"
-          }
-        }
-      }
-    },
     "Long press to favorite or mute the contact or delete a conversation." : {
       "localizations" : {
         "it" : {
@@ -20005,34 +19948,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "筆記"
-          }
-        }
-      }
-    },
-    "Num: %@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anzahl: %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Num: %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Број: %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Num: %@"
           }
         }
       }
@@ -27252,35 +27167,6 @@
         }
       }
     },
-    "Sent out to other nodes on the mesh to allow them to compute a shared secret key." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wird an andere Knoten im Netz gesendet, damit diese einen gemeinsamen geheimen Schlüssel berechnen können."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inviato agli altri nodi della rete per consentire loro di calcolare una chiave segreta condivisa."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Послато другим чворовима на меш мрежи како би им омогућило да израчунају заједнички тајни кључ."
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "傳送到網路上的其他節點，以便共同計算一組共享私鑰。"
-          }
-        }
-      }
-    },
     "Sequence number" : {
       "localizations" : {
         "de" : {
@@ -28113,40 +27999,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "簡短名稱"
-          }
-        }
-      }
-    },
-    "Short Name: %@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kurzname: %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nome breve: %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Кратко име: %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "短名称: %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "簡短名稱：%@"
           }
         }
       }

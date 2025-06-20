@@ -440,6 +440,7 @@ struct Settings: View {
 									}
 								}
 								TipView(AdminChannelTip(), arrowEdge: .top)
+									.tipViewStyle(PersistentTip())
 							} else {
 								if bleManager.connectedPeripheral != nil {
 									Text("Connected Node \(node?.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
