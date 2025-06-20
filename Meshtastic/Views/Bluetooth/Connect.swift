@@ -105,6 +105,8 @@ struct Connect: View {
 								.contextMenu {
 
 									if node != nil {
+										Label("\(String(node!.num))", systemImage: "number")
+										Label("BLE RSSI \(connectedPeripheral.rssi)", systemImage: "cellularbars")
 										#if !targetEnvironment(macCatalyst)
 										if bleManager.isSubscribed {
 											Button {
@@ -124,10 +126,6 @@ struct Connect: View {
 											}
 										}
 										#endif
-										Text("Num: \(String(node!.num))")
-										Text("Short Name: \(node?.user?.shortName ?? "?")")
-										Text("Long Name: \(node?.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
-										Text("BLE RSSI: \(connectedPeripheral.rssi)")
 										if bleManager.allowDisconnect {
 											Button(role: .destructive) {
 												if let connectedPeripheral = bleManager.connectedPeripheral,
@@ -137,7 +135,7 @@ struct Connect: View {
 											} label: {
 												Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 											}
-											Button {
+											Button(role: .destructive) {
 												if !bleManager.sendShutdown(fromUser: node!.user!, toUser: node!.user!) {
 													Logger.mesh.error("Shutdown Failed")
 												}

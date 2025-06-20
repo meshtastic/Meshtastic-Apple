@@ -4366,7 +4366,11 @@
         }
       }
     },
+    "BLE RSSI %lld" : {
+
+    },
     "BLE RSSI: %lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -16251,6 +16255,7 @@
       }
     },
     "Long Name: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -20047,6 +20052,7 @@
       }
     },
     "Num: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -28155,6 +28161,7 @@
       }
     },
     "Short Name: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
