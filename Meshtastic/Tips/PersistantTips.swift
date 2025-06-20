@@ -32,6 +32,6 @@ struct PersistentTip: TipViewStyle {
 		}
 		.frame(maxWidth: .infinity)
 		.backgroundStyle(.thinMaterial)
-		.padding(.top, 5)
+		.padding()
 	}
 }
