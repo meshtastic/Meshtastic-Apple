@@ -163,6 +163,7 @@ struct SecurityConfig: View {
 							.controlSize(.small)
 						}
 						Text("Generate a new private key to replace the one currently in use. The public key will automatically be regenerated from your private key.")
+							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
 					}
 				}
