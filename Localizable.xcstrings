@@ -312,6 +312,12 @@
             "value" : "%@ - Nessuna risposta"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ - 応答なし"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
