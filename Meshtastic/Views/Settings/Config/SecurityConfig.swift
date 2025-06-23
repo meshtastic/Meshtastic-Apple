@@ -349,6 +349,14 @@ struct SecurityConfig: View {
 					}
 				}
 				hasChanges = false
+				if keyUpdated {
+					if !bleManager.sendReboot(
+						fromUser: fromUser,
+						toUser: toUser
+					) {
+						Logger.mesh.warning("Reboot Failed")
+					}
+				}
 				goBack()
 			}
 		}
