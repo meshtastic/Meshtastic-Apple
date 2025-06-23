@@ -1693,7 +1693,7 @@
         }
       }
     },
-    "A channel index of 0 indicates the primary channel where all broadcast packets are sent from." : {
+    "A channel index of 0 indicates the primary channel where broadcast packets are sent from. Location data is broadcast from the first channel where it is enabled with firmware 2.7 forward." : {
 
     },
     "A green lock means the channel is securely encrypted with either a 128 or 256 bit AES key." : {
@@ -1757,7 +1757,10 @@
         }
       }
     },
-    "A red lock with a slash means the channel is not securely encrypted, it uses either no key at all or a 1 byte known key. Traffic on this channel is easily intercepted." : {
+    "A red open lock means the channel is not securely encrypted and is used for precise location data, it uses either no key at all or a 1 byte known key." : {
+
+    },
+    "A red open lock with a warning means the channel is not securely encrypted and is used for precise location data which is being uplinked to the internet via MQTT, it uses either no key at all or a 1 byte known key." : {
 
     },
     "A Trace Route was sent, no response has been received." : {
@@ -1781,6 +1784,9 @@
           }
         }
       }
+    },
+    "A yellow open lock lock means the channel is not securely encrypted but it not used for precise location data, it uses either no key at all or a 1 byte known key." : {
+
     },
     "About" : {
       "localizations" : {
@@ -28238,6 +28244,7 @@
       }
     },
     "Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press start the live activity." : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -28252,6 +28259,9 @@
           }
         }
       }
+    },
+    "Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press to start the live activity." : {
+
     },
     "Shut Down" : {
       "localizations" : {
