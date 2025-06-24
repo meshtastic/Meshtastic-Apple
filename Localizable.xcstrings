@@ -2639,6 +2639,12 @@
             "value" : "Aggiungi nodo Meshtastic %@ ai contatti"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meshtasticノード%@を連絡先に追加"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3539,6 +3545,12 @@
             "value" : "Altitudine %@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高度 %@"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4397,6 +4409,12 @@
             "value" : "Preimpostazioni modem disponibili, l'impostazione predefinita è Lungo veloce."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "利用可能なモデムプリセット、デフォルトは Long Fast です。"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5149,6 +5167,12 @@
             "value" : "Il pin BLE deve essere composto da 6 cifre."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BLE PINは6桁である必要があります。"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5811,6 +5835,12 @@
     },
     "By enabling this feature, you acknowledge and expressly consent to the transmission of your device’s real-time geographic location over the MQTT protocol without encryption. This location data may be used for purposes such as live map reporting, device tracking, and related telemetry functions." : {
       "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この機能を有効にすることで、お客様のデバイスのリアルタイム地理位置が暗号化されずにMQTTプロトコル経由で送信されることを承知し、明示的に同意することを認めます。この位置データは、ライブマップ報告、デバイス追跡、関連テレメトリー機能などの目的で使用される場合があります。"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7142,6 +7172,12 @@
             "value" : "Utilizzo del canale"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "チャンネル使用率"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7180,6 +7216,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Utilizzo del canale %@%%"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "チャンネル使用率 %@%%"
           }
         },
         "zh-Hant-TW" : {
@@ -7260,6 +7302,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "I canali aggiunti dal codice QR non venivano salvati. Quando si aggiungono canali, i nomi devono essere unici."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QRコードから追加されたチャンネルが保存されませんでした。チャンネルを追加する際は、名前が一意である必要があります。"
           }
         },
         "sr" : {
@@ -8452,6 +8500,12 @@
             "value" : "Connessione fallita dopo %d tentativi di connessione a %@. Potrebbe essere necessario disaccoppiare il tuo dispositivo in Impostazioni > Bluetooth."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ への接続が%d回の試行後に失敗しました。設定 > Bluetooth でデバイスを削除する必要があるかもしれません。"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9140,6 +9194,12 @@
             "value" : "Mostra i moduli che potrebbero non essere supportati al momento da questo nodo."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在、このノードでサポートされていない可能性のあるモジュールを表示しています。"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9154,6 +9214,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Attualmente il modo consigliato per aggiornare i dispositivi ESP32 è quello di utilizzare il flasher web su un computer desktop da un browser basato su chrome. Non funziona su dispositivi mobili o tramite BLE."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在、ESP32デバイスの更新の推奨方法は、デスクトップコンピューターのChromeベースのブラウザーでWebフラッシャーを使用することです。モバイルデバイスやBLE経由では動作しません。"
           }
         },
         "sr" : {
@@ -9442,6 +9508,12 @@
             "value" : "Layout dello schermo 128x64 predefinito"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デフォルト128x64スクリーンレイアウト"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9640,6 +9712,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cancellare tutte le metriche del dispositivo?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべてのデバイスメトリクスを削除しますか？"
           }
         },
         "pl" : {
@@ -10465,6 +10543,12 @@
             "value" : "Configurazione dispositivo ricevuta: %@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デバイス設定を受信しました: %@"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10589,6 +10673,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il dispositivo è gestito da un amministratore di rete, ma l'utente non può accedere alle impostazioni del dispositivo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デバイスはメッシュ管理者によって管理されており、ユーザーはデバイス設定にアクセスできません。"
           }
         },
         "sr" : {
@@ -11583,6 +11673,12 @@
             "value" : "Visualizzazione della configurazione ricevuta: %@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ディスプレイ設定を受信しました: %@"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11623,6 +11719,12 @@
             "value" : "Display Fahrenheit"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "華氏表示"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11651,6 +11753,12 @@
             "value" : "Modalità di visualizzazione"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "表示モード"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11677,6 +11785,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Unità di visualizzazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "表示単位"
           }
         },
         "sr" : {
@@ -11995,6 +12109,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il Drag & Drop è il metodo consigliato per aggiornare il firmware dei dispositivi NRF. Se l'iPhone o l'iPad è USB-C funzionerà con il normale cavo di ricarica USB-C, mentre per i dispositivi lightning è necessario l'adattatore Apple Lightning to USB camera."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグ＆ドロップはNRFデバイスのファームウェア更新に推奨される方法です。お使いのiPhoneまたはiPadがUSB-Cの場合、通常のUSB-C充電ケーブルで動作します。Lightningデバイスの場合は、Apple Lightning to USBカメラアダプターが必要です。"
           }
         },
         "sr" : {
@@ -13655,6 +13775,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Configurazione del modulo di notifica esterno ricevuta: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外部通知モジュール設定を受信しました: %@"
           }
         },
         "pl" : {
@@ -16875,6 +17001,12 @@
             "value" : "Con quale frequenza vengono inviate le metriche dei sensori sulla rete. L'impostazione predefinita è 30 minuti."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "環境メトリクスがメッシュ経由で送信される頻度。デフォルトは30分です。"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16901,6 +17033,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Con quale frequenza vengono inviate le metriche di potenza attraverso la rete. L'impostazione predefinita è 30 minuti."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電力メトリクスがメッシュ経由で送信される頻度。デフォルトは30分です。"
           }
         },
         "sr" : {
@@ -16963,6 +17101,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Con quale frequenza inviare lo stato del sensore di rilevamento alla rete, indipendentemente dal rilevamento. L'impostazione predefinita è Mai."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "検出の有無に関係なく、検出センサーの状態をメッシュに送信する頻度。デフォルトは「なし」です。"
           }
         },
         "sr" : {
@@ -17455,6 +17599,12 @@
             "value" : "Se abilitato, il pin di 'uscita' sarà tirato attivo alto, mentre se disabilitato significa attivo basso."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有効にすると、「出力」ピンがアクティブハイになり、無効にするとアクティブローになります。"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17619,6 +17769,12 @@
             "value" : "Ignorare il nodo"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ノードを無視"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17675,6 +17831,12 @@
     },
     "Ignores observed messages from foreign meshes like Local Only, but takes it step further by also ignoring messages from nodes not already in the node's known list." : {
       "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Local Onlyのように外部メッシュからの観測メッセージを無視しますが、さらに進んで、ノードの既知リストにないノードからのメッセージも無視します。"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17685,6 +17847,12 @@
     },
     "Ignores observed messages from foreign meshes that are open or those which it cannot decrypt. Only rebroadcasts message on the nodes local primary / secondary channels." : {
       "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オープンまたは復号化できない外部メッシュからの観測メッセージを無視します。ノードのローカル主要/副次チャンネルでのみメッセージを再ブロードキャストします。"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17947,6 +18115,12 @@
             "value" : "Nodo infrastrutturale solo su una torre o sulla cima di una montagna.  Non deve essere utilizzato per tetti o nodi mobili.  Necessita di una copertura eccezionale. Visibile nell'elenco dei nodi."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タワーまたは山頂のみのインフラストラクチャーノード。屋根や移動ノードには使用しないでください。優れたカバレッジが必要です。ノードリストに表示されます。"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18005,6 +18179,12 @@
             "value" : "Nodo infrastrutturale solo su una torre o sulla cima di una montagna.  Non deve essere utilizzato per tetti o nodi mobili. Trasmette i messaggi con un overhead minimo. Non visibile nell'elenco dei nodi."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タワーまたは山頂のみのインフラストラクチャーノード。屋根や移動ノードには使用しないでください。最小限のオーバーヘッドでメッセージを中継します。ノードリストには表示されません。"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18049,6 +18229,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nodo infrastruttura che ritrasmette sempre i pacchetti una volta, ma solo dopo tutte le altre modalità, garantendo una copertura aggiuntiva per i cluster locali. Visibile nell'elenco dei nodi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "常にパケットを一度だけ再ブロードキャストするインフラストラクチャーノードですが、他のすべてのモードの後にのみ実行し、ローカルクラスターの追加カバレッジを確保します。ノードリストに表示されます。"
           }
         },
         "sr" : {
@@ -19163,6 +19349,12 @@
             "value" : "Premere a lungo per privilegiare o silenziare il contatto o eliminare una conversazione."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "長押しで連絡先をお気に入りに追加、ミュート、または会話を削除できます。"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19481,6 +19673,12 @@
             "value" : "Configurazione LoRa ricevuta: %@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LoRa設定を受信しました: %@"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19599,6 +19797,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "M5 Stack Card KB / Tastiera RAK"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "M5 Stack Card KB / RAK キーパッド"
           }
         },
         "sr" : {
@@ -20443,6 +20647,12 @@
             "value" : "Messaggio ricevuto dall'app messaggi di testo."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テキストメッセージアプリからメッセージを受信しました。"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20882,6 +21092,12 @@
             "value" : "Tempo minimo tra le trasmissioni di rilevamento"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "検出ブロードキャスト間の最小時間"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20902,6 +21118,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tempo minimo tra le trasmissioni di rilevamento. L'impostazione predefinita è 45 secondi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "検出ブロードキャスト間の最小時間。デフォルトは45秒です。"
           }
         },
         "sr" : {
@@ -21172,6 +21394,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La maggior parte dei dati sulla rete viene inviata attraverso il canale principale. È possibile impostare canali secondari per creare gruppi di messaggistica aggiuntivi protetti da una propria chiave. [Suggerimenti per la configurazione del canale](https://meshtastic.org/docs/configuration/tips/)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メッシュ上のほとんどのデータはプライマリチャンネル経由で送信されます。セカンダリチャンネルを設定して、独自のキーで保護された追加のメッセージグループを作成できます。[チャンネル設定のヒント](https://meshtastic.org/docs/configuration/tips/)"
           }
         },
         "pl" : {
@@ -22880,6 +23108,12 @@
             "value" : "Backup dei dati del nucleo del nodo %1$@/%2$@ - %3$@ - %4$@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ノードコアデータバックアップ %1$@/%2$@ - %3$@ - %4$@"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23022,6 +23256,12 @@
             "value" : "Ricevute informazioni sul nodo per: %@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ノード情報を受信しました: %@"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23100,6 +23340,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Numero di nodo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ノード番号"
           }
         },
         "sr" : {
@@ -23198,6 +23444,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nodi (%@)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ノード (%@)"
           }
         },
         "pl" : {
