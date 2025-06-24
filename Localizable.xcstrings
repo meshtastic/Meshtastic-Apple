@@ -37731,6 +37731,12 @@
             "value" : "La rotta di traccia era limitata dalla velocità. È possibile inviare una rotta di tracciamento al massimo una volta ogni trenta secondi."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トレースルートの送信レートが制限されました。トレースルートは30秒ごとに最大1回送信できます。"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39313,6 +39319,12 @@
             "value" : "Utilizzare un'uscita PWM (come il cicalino RAK) per le sintonie invece di un'uscita on/off. In questo modo si ignorano le impostazioni di uscita, durata e attivazione e si utilizza invece l'opzione GPIO del cicalino configurata dal dispositivo."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オン/オフ出力ではなく、PWM出力（RAKブザーなど）をチューンに使用してください。これにより、出力、出力時間、アクティブ設定は無視され、代わりにデバイス設定のブザーGPIOオプションが使用されます。"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39445,6 +39457,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Si usa per creare una chiave condivisa con un dispositivo remoto."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リモート デバイスとの共有キーを作成するために使用されます。"
           }
         },
         "sr" : {
@@ -39877,6 +39895,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La versione %1$@ include sostanziali ottimizzazioni di rete e modifiche estese ai dispositivi e alle applicazioni client. Sono supportati solo i nodi versione %2$@ e superiori."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バージョン%1$@には、ネットワークの大幅な最適化と、デバイスおよびクライアントアプリへの広範な変更が含まれています。サポートされるノードはバージョン%2$@以降のみです。"
           }
         },
         "sr" : {
