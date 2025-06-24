@@ -5914,7 +5914,15 @@
       }
     },
     "Bytes Used" : {
-      "comment" : "VoiceOver value for bytes used"
+      "comment" : "VoiceOver value for bytes used",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用バイト"
+          }
+        }
+      }
     },
     "Call Sign" : {
       "localizations" : {
@@ -8503,7 +8511,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ への接続が%d回の試行後に失敗しました。設定 > Bluetooth でデバイスを削除する必要があるかもしれません。"
+            "value" : "%d への接続が %@ 回の試行後に失敗しました。設定 > Bluetooth でデバイスを削除する必要があるかもしれません。"
           }
         },
         "pl" : {
@@ -24072,6 +24080,12 @@
             "value" : "Per l'attivazione degli operatori con licenza è necessario il firmware 2.0.20 o superiore. Assicuratevi di consultare le normative locali e di contattare i coordinatori delle frequenze amatoriali locali per eventuali domande."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ライセンス取得者のオンボーディングにはファームウェア2.0.20以上が必要です。必ずお住まいの地域の規制を参照し、疑問がある場合は地域のアマチュア周波数コーディネーターにお問い合わせください。"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24320,6 +24334,12 @@
     },
     "Only permitted for SENSOR, TRACKER and TAK_TRACKER roles, this will inhibit all rebroadcasts, not unlike CLIENT_MUTE role." : {
       "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SENSOR、TRACKER、TAK_TRACKERロールでのみ許可されており、CLIENT_MUTEロールと同様にすべての再ブロードキャストを抑制します。"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24370,6 +24390,12 @@
             "value" : "Codice di localizzazione aperto (alias Codice Plus)"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オープンロケーションコード（プラスコード）"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24414,6 +24440,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aprire le impostazioni"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定を開く"
           }
         },
         "sr" : {
@@ -24534,6 +24566,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Campi opzionali da includere quando si assemblano i messaggi di posizione. Più campi sono inclusi, più grande sarà il messaggio, con conseguente allungamento dei tempi di trasmissione e un maggiore rischio di perdita di pacchetti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "位置メッセージを組み立てる際に含めるオプションフィールド。含めるフィールドが多いほどメッセージが大きくなり、通信時間が長くなってパケット損失のリスクが高くなります。"
           }
         },
         "sr" : {
@@ -25886,6 +25924,12 @@
             "value" : "Cacca"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "うんち"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26206,6 +26250,12 @@
             "value" : "Posizione Log %lld Punti"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "位置ログ %lld ポイント"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26272,6 +26322,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Posizione Pacchetto ricevuto dal nodo: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ノード %@ から位置パケットを受信しました"
           }
         },
         "pl" : {
@@ -28740,6 +28796,12 @@
             "value" : "Richiesta amministratore legacy: %@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "レガシー管理者要求: %@"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28760,6 +28822,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Richiesta PKI Admin: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PKI管理者要求: %@"
           }
         },
         "sr" : {
@@ -28794,6 +28862,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Messaggi in scatola richiesti Messaggi del modulo per il nodo: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ノード %@ の定型メッセージモジュールメッセージを要求しました"
           }
         },
         "pl" : {
@@ -28870,6 +28944,12 @@
             "value" : "Ripristino delle impostazioni dell'app"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリ設定をリセット"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28902,6 +28982,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Azzeramento di NodeDB"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NodeDBをリセット"
           }
         },
         "sr" : {
@@ -29340,6 +29426,12 @@
             "value" : "Ringtone Transfer Language(RTTTL) Stringa di suoneria utilizzata dai cicalini supportati nelle notifiche esterne."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外部通知でサポートされているブザーで使用されるRingtone Transfer Language（RTTTL）着信音文字列。"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29418,6 +29510,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ruolo: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "役割: %@"
           }
         },
         "sr" : {
@@ -29538,6 +29636,12 @@
             "value" : "Percorso di ritorno: %@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ルート（復路）: %@"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29558,6 +29662,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Linee di percorso"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ルートライン"
           }
         },
         "sr" : {
@@ -29582,6 +29692,12 @@
             "value" : "Registratore di percorso"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ルートレコーダー"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29602,6 +29718,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Registrazione del percorso in pausa"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ルート記録を一時停止"
           }
         },
         "sr" : {
@@ -29780,6 +29902,12 @@
             "value" : "Routing ricevuto per RequestID: %@ Ack Status: %@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リクエストID %@ のルーティングを受信、応答ステータス: %@"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29922,6 +30050,12 @@
             "value" : "RTTTL Configurazione suoneria ricevuta: %@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RTTTL着信音設定を受信しました: %@"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30006,6 +30140,12 @@
     },
     "Same as behavior as ALL but skips packet decoding and simply rebroadcasts them. Only available in Repeater role. Setting this on any other roles will result in ALL behavior." : {
       "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ALLと同じ動作ですが、パケットのデコードをスキップして単純に再ブロードキャストします。リピーター役割でのみ利用可能です。他の役割で設定するとALLの動作になります。"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31124,6 +31264,12 @@
             "value" : "Invia ${messaggioContenuto} a ${canaleNumero}"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${messageContent} をチャンネル ${channelNumber} に送信"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31144,6 +31290,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Invia ${messaggioContenuto} a ${nodoNumero}"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${messageContent} をノード ${nodeNumber} に送信"
           }
         },
         "sr" : {
@@ -31230,6 +31382,12 @@
             "value" : "Invia un heartbeat per pubblicizzare la presenza del server."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サーバーの存在を通知するためのハートビートを送信します。"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31244,6 +31402,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Inviare un messaggio a un certo canale meshtastic"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "特定のMeshtasticチャンネルにメッセージを送信"
           }
         },
         "sr" : {
@@ -31268,6 +31432,12 @@
             "value" : "Inviare un messaggio a un certo nodo meshtastico"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "特定のMeshtasticノードにメッセージを送信"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31288,6 +31458,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Invia una posizione sul canale principale quando si fa triplo clic sul pulsante utente."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ユーザーボタンが3回クリックされたときにプライマリチャンネルで位置を送信します。"
           }
         },
         "sr" : {
@@ -31358,6 +31534,12 @@
             "value" : "Inviare un waypoint"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ウェイポイントを送信"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31378,6 +31560,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Invia una campana ASCII con un messaggio di avviso. Utile per attivare notifiche esterne alla ricezione della campana."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アラートメッセージ付きASCIIベルを送信。ベルでの外部通知のトリガーに便利です。"
           }
         },
         "sr" : {
@@ -31752,6 +31940,12 @@
             "value" : "Inviato un LoRa.Config per: %@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ にLoRa設定を送信しました"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31809,6 +32003,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Inviato un pacchetto di posizione dal GPS del dispositivo Apple al nodo: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppleデバイスのGPSからノード %@ に位置パケットを送信しました"
           }
         },
         "pl" : {
@@ -31869,6 +32069,12 @@
             "value" : "Ha inviato una richiesta di tracciamento della rotta al nodo: %@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ノード %@ にトレースルート要求を送信しました"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31927,6 +32133,12 @@
             "value" : "Inviato un pacchetto Waypoint da: %@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ からウェイポイントパケットを送信しました"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31983,6 +32195,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Inviato messaggio %@ da %@ a %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メッセージ %@ を %@ から %@ に送信しました"
           }
         },
         "pl" : {
@@ -32063,6 +32281,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sequenza: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "シーケンス: %@"
           }
         },
         "sr" : {
@@ -32247,6 +32471,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Console seriale tramite l'API Stream."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stream API経由のシリアルコンソール。"
           }
         },
         "sr" : {
@@ -32581,6 +32811,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Imposta il numero massimo di hop, l'impostazione predefinita è 3. L'aumento degli hop aumenta anche la congestione e deve essere usato con attenzione. I messaggi di broadcasting a un hop non riceveranno ACK."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最大ホップ数を設定します。デフォルトは3です。ホップ数を増やすと輻輳も増加するため、慎重に使用してください。0ホップのブロードキャストメッセージはACKを受信しません。"
           }
         },
         "sr" : {
@@ -33219,6 +33455,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostra sulla mappa della mesh."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メッシュマップに表示。"
           }
         },
         "sr" : {
@@ -34267,6 +34509,12 @@
             "value" : "Salva & Inoltra"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "蓄積転送"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34293,6 +34541,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Configurazione Salva & Inoltra"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "蓄積転送設定"
           }
         },
         "sr" : {
@@ -34335,6 +34589,12 @@
             "value" : "Configurazione del modulo Store & Forward ricevuta: %@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "蓄積転送モジュール設定を受信しました: %@"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34373,6 +34633,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "I server Store and Forward richiedono un dispositivo ESP32 con PSRAM o Linux Native."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "蓄積転送サーバーには、PSRAM搭載のESP32デバイスまたはLinux Nativeが必要です。"
           }
         },
         "zh-Hant-TW" : {
@@ -34485,6 +34751,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "I sensori I2C supportati vengono rilevati automaticamente: BMP280, BME280, BME680, MCP9808, INA219, INA260, LPS22 e SHTC3."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サポートされているI2C接続センサーは自動的に検出されます。センサーはBMP280、BME280、BME680、MCP9808、INA219、INA260、LPS22、およびSHTC3です。"
           }
         },
         "sr" : {
@@ -34899,6 +35171,12 @@
             "value" : "Configurazione del modulo di telemetria ricevuta: %@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テレメトリーモジュール設定を受信しました: %@"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34955,6 +35233,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Telemetria ricevuta per: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ のテレメトリーを受信しました"
           }
         },
         "pl" : {
@@ -35635,6 +35919,12 @@
             "value" : "La chiave pubblica più recente di questo nodo non corrisponde alla chiave registrata in precedenza. È possibile eliminare il nodo e fargli scambiare nuovamente le chiavi, ma questo potrebbe indicare un problema di sicurezza più serio. Contattare l'utente attraverso un altro canale fidato per determinare se la modifica della chiave è dovuta a un reset di fabbrica o a un'altra azione intenzionale."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このノードの最新の公開キーが以前記録されたキーと一致しません。ノードを削除して再度キー交換を行うことができますが、これはより深刻なセキュリティ問題を示している可能性もあります。信頼できる別のチャンネルを通じてユーザーに連絡し、キーの変更が工場リセットやその他の intentional action によるものかどうかを確認してください。"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35767,6 +36057,12 @@
             "value" : "La chiave pubblica non corrisponde alla chiave registrata. È possibile eliminare il nodo e fargli scambiare nuovamente le chiavi, ma questo potrebbe indicare un problema di sicurezza più serio. Contattare l'utente attraverso un altro canale fidato, per determinare se la modifica della chiave è dovuta a un reset di fabbrica o a un'altra azione intenzionale."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "公開キーが記録されたキーと一致しません。ノードを削除して再度キー交換を行うことができますが、これはより深刻なセキュリティ問題を示している可能性があります。信頼できる別のチャンネルを通じてユーザーに連絡し、キーの変更が工場リセットやその他の意図的な操作によるものかどうか確認してください。"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35861,6 +36157,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "I ruoli di router sono progettati per posizioni elevate, come le cime delle montagne e le torri. Questo nodo deve essere in grado di avere una buona connessione diretta con la maggior parte dei nodi della rete, altrimenti danneggia significativamente la rete."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ルーター役割は山頂や塔のような見晴らしの良い高所での使用を想定して設計されています。このノードは、ネットワーク内の大部分のノードと良好な直接接続を保持できる必要があります。そうでなければ、ネットワークに深刻な影響を与えることになります。"
           }
         },
         "zh-Hant-TW" : {
@@ -35981,6 +36283,12 @@
             "value" : "La chiave pubblica terziaria autorizzata a inviare messaggi di amministrazione a questo nodo."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このノードに管理メッセージを送信する権限を持つ三次公開キー。"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36009,6 +36317,12 @@
             "value" : "L'URL per le impostazioni del canale"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "チャンネル設定のURL"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36025,6 +36339,12 @@
     },
     "The URL for the node to add" : {
       "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追加するノードのURL"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36039,6 +36359,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Non è stata data risposta a una richiesta di metadati del dispositivo sul canale di amministrazione per questo nodo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このノードの管理チャンネル経由でのデバイスメタデータ要求に対する応答がありません。"
           }
         },
         "sr" : {
@@ -36061,6 +36387,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Queste impostazioni saranno %@ canali. La configurazione LoRa corrente verrà sostituita; se vengono apportate modifiche sostanziali alla configurazione LoRa, il dispositivo si riavvierà"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "これらの設定はチャンネルを%@します。現在のLoRa設定は置き換えられ、LoRa設定に大幅な変更があった場合、デバイスは再起動します"
           }
         },
         "sr" : {
@@ -36305,6 +36637,12 @@
             "value" : "La risposta potrebbe richiedere un po' di tempo e verrà visualizzata nel registro delle rotte di tracciamento per il nodo a cui è stata inviata."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "これには時間がかかる場合があります。応答は送信先ノードのトレースルートログに表示されます。"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36325,6 +36663,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il dispositivo invia messaggi di test di portata all'intervallo selezionato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このデバイスは選択した間隔でレンジテストメッセージを送信します。"
           }
         },
         "sr" : {
@@ -36411,6 +36755,12 @@
             "value" : "In questo modo si disattiva la posizione fissa e si rimuove la posizione attualmente impostata."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "これにより固定位置が無効になり、現在設定されている位置が削除されます。"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36431,6 +36781,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "In questo modo si invia la posizione corrente dal telefono e si abilita la posizione fissa."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "これにより、お使いの携帯電話から現在位置を送信し、固定位置を有効にします。"
           }
         },
         "sr" : {
@@ -36607,6 +36963,12 @@
             "value" : "Pollici in giù"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "👎"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36663,6 +37025,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pollici in su"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "👍"
           }
         },
         "pl" : {
@@ -36811,6 +37179,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fuso orario per le date sullo schermo del dispositivo e sul registro."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デバイス画面とログの日付用タイムゾーン。"
           }
         },
         "sr" : {
@@ -37019,6 +37393,12 @@
     },
     "To comply with privacy laws like CCPA and GDPR, we avoid sharing exact location data. Instead, we use anonymized or approximate (imprecise) location information to protect your privacy." : {
       "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CCPAやGDPRなどのプライバシー法に準拠するため、正確な位置データの共有は避けています。代わりに、あなたのプライバシーを保護するために匿名化または近似（不正確）の位置情報を使用します。"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37033,6 +37413,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Argomento: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トピック: %@"
           }
         },
         "sr" : {
@@ -37147,6 +37533,12 @@
     },
     "Trace Route (in %@s)" : {
       "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トレースルート（%@秒）"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37207,6 +37599,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Traccia Richiesta di rotta restituita: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トレースルート要求が返されました: %@"
           }
         },
         "pl" : {
@@ -37277,6 +37675,12 @@
             "value" : "Traccia del percorso inviato a %@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ にトレースルートを送信しました"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37297,6 +37701,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La rotta di tracciamento verso %@ non è stata inviata."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ へのトレースルートは送信されませんでした。"
           }
         },
         "sr" : {
@@ -39811,6 +40221,12 @@
             "value" : "In attesa di essere riconosciuti. . ."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "承認待ち. . ."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39831,6 +40247,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Svegliare lo schermo al tocco o al movimento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タップまたはモーションで画面を起動"
           }
         },
         "sr" : {
@@ -39995,6 +40417,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pacchetto Waypoint ricevuto dal nodo: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ノードから受信したウェイポイント パケット: %@"
           }
         },
         "pl" : {
@@ -40281,6 +40709,12 @@
             "value" : "Quando è abilitato, il modulo PAX Counter conta il numero di persone che passano utilizzando il WiFi e il Bluetooth. Per il funzionamento del contatore PAX, sia il WiFI che il Bluetooth devono essere disattivati."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAXカウンターモジュールを有効にすると、WiFiとBluetoothを使用して通過する人数をカウントします。PAXカウンターを動作させるには、WiFiとBluetoothの両方を無効にする必要があります。"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -40449,6 +40883,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sospenderà tutto il più possibile, per il ruolo di tracker e sensore questo includerà anche la radio lora. Non utilizzare questa impostazione se si desidera utilizzare il dispositivo con le applicazioni del telefono o se si utilizza un dispositivo senza pulsante utente."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トラッカーとセンサーの役割では、lora無線も含め、すべてのデバイスを可能な限りスリープ状態にします。デバイスをスマートフォンアプリと連携させたい場合、またはユーザーボタンのないデバイスを使用している場合は、この設定を使用しないでください。"
           }
         },
         "pl" : {
