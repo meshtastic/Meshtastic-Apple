@@ -725,7 +725,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				let message = CocoaMQTTMessage(topic: decodedInfo.mqttClientProxyMessage.topic, payload: [UInt8](decodedInfo.mqttClientProxyMessage.data), retained: decodedInfo.mqttClientProxyMessage.retained)
 				mqttManager.mqttClientProxy?.publish(message)
 			} else if decodedInfo.payloadVariant == FromRadio.OneOf_PayloadVariant.clientNotification(decodedInfo.clientNotification) {
-				
 				var path = "meshtastic:///settings/debugLogs"
 				if decodedInfo.clientNotification.hasReplyID {
 					/// Set Sent bool on TraceRouteEntity to false if we got rate limited
@@ -740,8 +739,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							let nsError = error as NSError
 							Logger.data.error("💥 [TraceRouteEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 						}
-					} else if decodedInfo.clientNotification.message.starts(with: "You Device is configured with a low entropy") || decodedInfo.clientNotification.message.starts(with: "Compromised keys detected")
-					|| decodedInfo.clientNotification.message.starts(with: "Remote device"){
+					}
+					if decodedInfo.clientNotification.payloadVariant == ClientNotification.OneOf_PayloadVariant.lowEntropyKey(decodedInfo.clientNotification.lowEntropyKey) ||
+						decodedInfo.clientNotification.payloadVariant == ClientNotification.OneOf_PayloadVariant.duplicatedPublicKey(decodedInfo.clientNotification.duplicatedPublicKey) {
 						path = "meshtastic:///settings/security"
 					}
 				}

@@ -58,13 +58,7 @@ struct ChannelList: View {
 
 			VStack(alignment: .leading) {
 				HStack {
-					if channel.psk?.hexDescription.count ??  0 <  3 {
-						Image(systemName: "lock.slash.fill")
-							.foregroundColor(.red)
-					} else {
-						Image(systemName: "lock.fill")
-							.foregroundColor(.green)
-					}
+					ChannelLock(channel: channel)
 					if channel.name?.isEmpty ?? false {
 						if channel.role == 1 {
 							Text(String("PrimaryChannel").camelCaseToWords())
@@ -173,7 +167,7 @@ struct ChannelList: View {
 		}
 		.sheet(isPresented: $showingHelp) {
 			ChannelsHelp()
-				.presentationDetents([.medium, .large])
+				.presentationDetents([.large])
 				.presentationDragIndicator(.visible)
 		}
 		.safeAreaInset(edge: .bottom, alignment: .leading) {

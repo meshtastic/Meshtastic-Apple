@@ -47,6 +47,7 @@ struct Channels: View {
 
 	/// Minimum Version for granular position configuration
 	@State var minimumVersion = "2.2.24"
+	@State private var showingHelp = false
 
 	@FetchRequest(
 		sortDescriptors: [NSSortDescriptor(key: "favorite", ascending: false),
@@ -124,13 +125,7 @@ struct Channels: View {
 										.brightness(0.1)
 									VStack {
 										HStack {
-											if channel.psk?.hexDescription.count ??  0 <  3 {
-												Image(systemName: "lock.slash.fill")
-													.foregroundColor(.red)
-											} else {
-												Image(systemName: "lock.fill")
-													.foregroundColor(.green)
-											}
+											ChannelLock(channel: channel)
 											if channel.name?.isEmpty ?? false {
 												if channel.role == 1 {
 													Text(String("PrimaryChannel").camelCaseToWords()).font(.headline)
@@ -246,6 +241,7 @@ struct Channels: View {
 					#endif
 				}
 			}
+			
 			if node?.myInfo?.channels?.array.count ?? 0 < 8 && node != nil {
 
 				Button {
@@ -286,6 +282,29 @@ struct Channels: View {
 				.padding()
 			}
 		}
+		.sheet(isPresented: $showingHelp) {
+			ChannelsHelp()
+				.presentationDetents([.large])
+				.presentationDragIndicator(.visible)
+		}
+		.safeAreaInset(edge: .bottom, alignment: .leading) {
+			HStack {
+				Button(action: {
+					withAnimation {
+						showingHelp = !showingHelp
+					}
+				}) {
+					Image(systemName: !showingHelp ? "questionmark.circle" : "questionmark.circle.fill")
+						.padding(.vertical, 5)
+				}
+				.tint(Color(UIColor.secondarySystemBackground))
+				.foregroundColor(.accentColor)
+				.buttonStyle(.borderedProminent)
+			}
+			.controlSize(.regular)
+			.padding(5)
+		}
+		.padding(.bottom, 5)
 		.navigationTitle("Channels")
 		.navigationBarItems(trailing:
 		ZStack {

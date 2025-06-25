@@ -21,25 +21,46 @@ struct ChannelsHelp: View {
 					CircleText(text: String(0), color: .accentColor)
 						.brightness(0.2)
 						.offset(y: -10)
-					Text("A channel index of 0 indicates the primary channel where all broadcast packets are sent from.")
+					Text("A channel index of 0 indicates the primary channel where broadcast packets are sent from. Location data is broadcast from the first channel where it is enabled with firmware 2.7 forward.")
 						.fixedSize(horizontal: false, vertical: true)
 						.padding(.bottom)
+						.padding(.leading, 7)
 				}
 				HStack {
 					Image(systemName: "lock.fill")
-						.padding(.bottom)
+						.padding(.leading)
+						.padding(.trailing, 7)
 						.foregroundColor(Color.green)
-						.font(.largeTitle)
+						.font(.title)
 					Text("A green lock means the channel is securely encrypted with either a 128 or 256 bit AES key.")
 						.fixedSize(horizontal: false, vertical: true)
 						.padding(.bottom)
 				}
 				HStack {
-					Image(systemName: "lock.slash.fill")
+					Image(systemName: "lock.open.fill")
+						.padding(.leading)
+						.foregroundColor(Color.yellow)
+						.font(.title)
+					Text("A yellow open lock lock means the channel is not securely encrypted but it not used for precise location data, it uses either no key at all or a 1 byte known key.")
+						.fixedSize(horizontal: false, vertical: true)
 						.padding(.bottom)
+				}
+				HStack {
+					Image(systemName: "lock.open.fill")
+						.padding(.leading)
 						.foregroundColor(Color.red)
-						.font(.largeTitle)
-					Text("A red lock with a slash means the channel is not securely encrypted, it uses either no key at all or a 1 byte known key. Traffic on this channel is easily intercepted.")
+						.font(.title)
+					Text("A red open lock means the channel is not securely encrypted and is used for precise location data, it uses either no key at all or a 1 byte known key.")
+						.fixedSize(horizontal: false, vertical: true)
+						.padding(.bottom)
+				}
+				HStack {
+					Image(systemName: "lock.open.trianglebadge.exclamationmark.fill")
+						.padding(.leading)
+						.symbolRenderingMode(.multicolor)
+						.foregroundColor(Color.red)
+						.font(.title)
+					Text("A red open lock with a warning means the channel is not securely encrypted and is used for precise location data which is being uplinked to the internet via MQTT, it uses either no key at all or a 1 byte known key.")
 						.fixedSize(horizontal: false, vertical: true)
 						.padding(.bottom)
 				}

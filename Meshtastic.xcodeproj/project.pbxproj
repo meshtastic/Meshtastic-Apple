@@ -101,6 +101,7 @@
 		DD1BEF4C2E030D310090CE24 /* KeyBackupStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF4B2E030D240090CE24 /* KeyBackupStatus.swift */; };
 		DD1BEF4E2E03916A0090CE24 /* ChannelsHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF4D2E0391620090CE24 /* ChannelsHelp.swift */; };
 		DD1BEF502E0528AA0090CE24 /* PersistantTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF4F2E0528A80090CE24 /* PersistantTips.swift */; };
+		DD1BEF522E08E9B80090CE24 /* ChannelLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF512E08E9AE0090CE24 /* ChannelLock.swift */; };
 		DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */; };
 		DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2160AE28C5552500C17253 /* MQTTConfig.swift */; };
 		DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */; };
@@ -380,6 +381,7 @@
 		DD1BEF4B2E030D240090CE24 /* KeyBackupStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBackupStatus.swift; sourceTree = "<group>"; };
 		DD1BEF4D2E0391620090CE24 /* ChannelsHelp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsHelp.swift; sourceTree = "<group>"; };
 		DD1BEF4F2E0528A80090CE24 /* PersistantTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistantTips.swift; sourceTree = "<group>"; };
+		DD1BEF512E08E9AE0090CE24 /* ChannelLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelLock.swift; sourceTree = "<group>"; };
 		DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageList.swift; sourceTree = "<group>"; };
 		DD2160AE28C5552500C17253 /* MQTTConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MQTTConfig.swift; sourceTree = "<group>"; };
 		DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralModel.swift; sourceTree = "<group>"; };
@@ -1057,6 +1059,7 @@
 				DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */,
 				DD3CC24B2C498D6C001BD3A2 /* BatteryCompact.swift */,
 				DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */,
+				DD1BEF512E08E9AE0090CE24 /* ChannelLock.swift */,
 				DD47E3D526F17ED900029299 /* CircleText.swift */,
 				DDF924C926FBB953009FE055 /* ConnectedDevice.swift */,
 				DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */,
@@ -1385,6 +1388,7 @@
 				25F26B1E2C2F610D00C9CD9D /* Logger.swift in Sources */,
 				259792252C2F114500AD1659 /* ChannelEntityExtension.swift in Sources */,
 				BCE2D3C52C7AE369008E6199 /* RestartNodeIntent.swift in Sources */,
+				DD1BEF522E08E9B80090CE24 /* ChannelLock.swift in Sources */,
 				259792262C2F114500AD1659 /* PositionEntityExtension.swift in Sources */,
 				259792272C2F114500AD1659 /* TraceRouteEntityExtension.swift in Sources */,
 				DDDB444829F8A9C900EE2349 /* String.swift in Sources */,
@@ -1825,7 +1829,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.6.8;
+				MARKETING_VERSION = 2.6.9;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1858,7 +1862,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.6.8;
+				MARKETING_VERSION = 2.6.9;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1889,7 +1893,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.6.8;
+				MARKETING_VERSION = 2.6.9;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1921,7 +1925,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.6.8;
+				MARKETING_VERSION = 2.6.9;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

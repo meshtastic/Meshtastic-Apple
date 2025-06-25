@@ -2161,6 +2161,9 @@
         }
       }
     },
+    "A yellow open lock lock means the channel is not securely encrypted but it not used for precise location data, it uses either no key at all or a 1 byte known key." : {
+
+    },
     "About" : {
       "localizations" : {
         "it" : {
@@ -33512,6 +33515,7 @@
       }
     },
     "Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press start the live activity." : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -33532,6 +33536,9 @@
           }
         }
       }
+    },
+    "Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press to start the live activity." : {
+
     },
     "Shut Down" : {
       "localizations" : {
