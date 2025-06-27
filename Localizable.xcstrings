@@ -13648,6 +13648,9 @@
         }
       }
     },
+    "Hard Reset" : {
+
+    },
     "Hardware" : {
       "localizations" : {
         "it" : {
@@ -14986,6 +14989,9 @@
           }
         }
       }
+    },
+    "In addition to Config, Keys and BLE bonds will be wiped" : {
+
     },
     "Include" : {
       "localizations" : {
@@ -22982,6 +22988,9 @@
         }
       }
     },
+    "Provide Confirmation" : {
+
+    },
     "Public Key" : {
       "localizations" : {
         "de" : {
@@ -26383,6 +26392,7 @@
       }
     },
     "Send a Direct Message" : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -26471,6 +26481,7 @@
       }
     },
     "Send a message to a certain meshtastic node" : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -28074,6 +28085,9 @@
           }
         }
       }
+    },
+    "Show a confirmation dialog before performing the factory reset" : {
+
     },
     "Show alerts" : {
       "localizations" : {
