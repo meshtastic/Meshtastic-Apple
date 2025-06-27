@@ -17,6 +17,10 @@ struct MessageText: View {
 	let tapBackDestination: MessageDestination
 	let isCurrentUser: Bool
 	let onReply: () -> Void
+	// State for handling channel URL sheet
+	@State private var saveChannels = false
+	@State private var channelSettings: String?
+	@State private var addChannels = false
 
 	@State private var isShowingDeleteConfirmation = false
 
@@ -82,6 +86,60 @@ struct MessageText: View {
 					isShowingDeleteConfirmation: $isShowingDeleteConfirmation,
 					onReply: onReply
 				)
+			}
+			.environment(\.openURL, OpenURLAction { url in
+				channelSettings = nil
+
+	if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
+		// Handle contact URL
+		ContactURLHandler.handleContactUrl(url: url, bleManager: BLEManager.shared)
+		return .handled // Prevent default browser opening
+	} else if url.absoluteString.lowercased().contains("meshtastic.org/e/") {
+		// Handle channel URL
+		let components = url.absoluteString.components(separatedBy: "#")
+		guard !components.isEmpty, let lastComponent = components.last else {
+			Logger.services.error("No valid components found in channel URL: \(url.absoluteString, privacy: .public)")
+			return .discarded
+		}
+		
+		self.addChannels = Bool(url.query?.contains("add=true") ?? false)
+		guard let lastComponent = components.last else {
+			Logger.services.error("Channel URL missing fragment component: \(url.absoluteString, privacy: .public)")
+			self.channelSettings = nil
+			return .discarded
+		}
+
+		self.channelSettings = lastComponent.components(separatedBy: "?").first ?? ""
+
+		
+		Logger.services.debug("Add Channel: \(self.addChannels, privacy: .public)")
+			self.saveChannels = true
+		Logger.mesh.debug("Opening Channel Settings URL: \(url.absoluteString, privacy: .public)")
+		return .handled // Prevent default browser opening
+	}
+	
+	return .systemAction // Open other URLs in browser
+})
+				  
+				  // Display sheet for channel settings
+			.sheet(isPresented: Binding(
+				get: {
+					saveChannels && !(channelSettings == nil)
+				},
+				set: { newValue in
+					saveChannels = newValue
+					if !newValue {
+						channelSettings = nil
+					}
+				}
+			)) {
+				SaveChannelQRCode(
+					channelSetLink: channelSettings ?? "Empty Channel URL",
+					addChannels: addChannels,
+					bleManager: BLEManager.shared
+				)
+				.presentationDetents([.large])
+				.presentationDragIndicator(.visible)
 			}
 			.confirmationDialog(
 				"Are you sure you want to delete this message?",

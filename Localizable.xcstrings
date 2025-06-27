@@ -16446,6 +16446,9 @@
         }
       }
     },
+    "LoRa Config Changes:" : {
+
+    },
     "LoRa config received: %@" : {
       "localizations" : {
         "de" : {
