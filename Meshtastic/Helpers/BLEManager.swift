@@ -1755,7 +1755,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func saveChannelSet(base64UrlString: String, addChannels: Bool = false) -> Bool {
+	public func saveChannelSet(base64UrlString: String, addChannels: Bool = false, okToMQTT: Bool = false) -> Bool {
 		if isConnected {
 
 			var i: Int32 = 0
@@ -1837,6 +1837,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					// Save the LoRa Config and the device will reboot
 					var adminPacket = AdminMessage()
 					adminPacket.setConfig.lora = channelSet.loraConfig
+					adminPacket.setConfig.lora.configOkToMqtt = okToMQTT // Preserve users okToMQTT choice
 					var meshPacket: MeshPacket = MeshPacket()
 					meshPacket.to = UInt32(connectedPeripheral.num)
 					meshPacket.from	= UInt32(connectedPeripheral.num)
