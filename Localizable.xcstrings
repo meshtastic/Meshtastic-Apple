@@ -1330,7 +1330,7 @@
       }
     },
     "• %@" : {
-
+      "shouldTranslate" : false
     },
     "< 1%" : {
       "localizations" : {
