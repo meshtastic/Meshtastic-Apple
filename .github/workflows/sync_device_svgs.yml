@@ -1,0 +1,161 @@
+name: Sync Device SVGs
+
+on:
+  schedule:
+    # Run nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    # Allow manual triggering
+
+jobs:
+  sync-device-svgs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: |
+        npm install -g svgo
+        
+    - name: Download and process SVGs
+      run: |
+        #!/bin/bash
+        set -e
+        
+        # Create temporary directory
+        mkdir -p temp_svgs
+        cd temp_svgs
+        
+        # Clone web-flasher repo (shallow clone for speed)
+        git clone --depth 1 https://github.com/meshtastic/web-flasher.git
+        
+        # Navigate to SVG directory
+        cd web-flasher/public/img/devices
+        
+        # Create output directory
+        mkdir -p ../../../../processed_svgs
+        
+        # Process each SVG file
+        for svg_file in *.svg; do
+          if [ -f "$svg_file" ]; then
+            # Get filename without extension
+            filename=$(basename "$svg_file" .svg)
+            
+            # Optimize SVG
+            svgo "$svg_file" --output "../../../../processed_svgs/${filename}.svg"
+            
+            echo "Processed: $filename"
+          fi
+        done
+        
+        cd ../../../../
+        ls -la processed_svgs/
+        
+    - name: Update Xcode Assets
+      run: |
+        #!/bin/bash
+        set -e
+        
+        ASSETS_DIR="Meshtastic/Assets.xcassets"
+        
+        # Ensure assets directory exists
+        mkdir -p "$ASSETS_DIR"
+        
+        # Process each SVG
+        for svg_file in processed_svgs/*.svg; do
+          if [ -f "$svg_file" ]; then
+            # Get filename without extension
+            filename=$(basename "$svg_file" .svg)
+            
+            # Create imageset directory
+            imageset_dir="${ASSETS_DIR}/${filename}.imageset"
+            mkdir -p "$imageset_dir"
+            
+            # Copy SVG to imageset
+            cp "$svg_file" "${imageset_dir}/${filename}.svg"
+            
+            # Create Contents.json for the imageset
+            cat > "${imageset_dir}/Contents.json" << EOF
+        {
+          "images" : [
+            {
+              "filename" : "${filename}.svg",
+              "idiom" : "universal"
+            }
+          ],
+          "info" : {
+            "author" : "xcode",
+            "version" : 1
+          },
+          "properties" : {
+            "preserves-vector-representation" : true
+          }
+        }
+        EOF
+            
+            echo "Created imageset: ${filename}"
+          fi
+        done
+        
+    - name: Check for changes
+      id: check_changes
+      run: |
+        if git diff --quiet; then
+          echo "has_changes=false" >> $GITHUB_OUTPUT
+        else
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Commit and push changes
+      if: steps.check_changes.outputs.has_changes == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add Meshtastic/Assets.xcassets/
+        git commit -m "🤖 Sync device SVGs from web-flasher repo
+        
+        - Updated device images from meshtastic/web-flasher
+        - Automatically synced on $(date -u)
+        - Source: https://github.com/meshtastic/web-flasher/tree/main/public/img/devices"
+        git push
+        
+    - name: Create PR (alternative to direct push)
+      if: steps.check_changes.outputs.has_changes == 'true' && false  # Set to true if you prefer PRs
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "🤖 Sync device SVGs from web-flasher repo"
+        title: "Sync device SVGs from web-flasher"
+        body: |
+          This PR automatically syncs device SVG images from the [meshtastic/web-flasher](https://github.com/meshtastic/web-flasher) repository.
+          
+          **Changes:**
+          - Updated device images from web-flasher repo
+          - Source: https://github.com/meshtastic/web-flasher/tree/main/public/img/devices
+          - Automatically generated on $(date -u)
+          
+          The SVGs have been optimized and converted to Xcode asset format.
+        branch: sync-device-svgs
+        delete-branch: true
+        
+    - name: Cleanup
+      if: always()
+      run: |
+        rm -rf temp_svgs processed_svgs
+        
+    - name: Summary
+      run: |
+        if [ "${{ steps.check_changes.outputs.has_changes }}" == "true" ]; then
+          echo "✅ Device SVGs updated successfully"
+        else
+          echo "ℹ️ No changes detected - SVGs are up to date"
+        fi

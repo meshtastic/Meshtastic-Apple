@@ -79,7 +79,7 @@ struct NodeInfoItem: View {
 				if user.hwModel != "UNSET" {
 					Text(String(node.user?.hwDisplayName ?? (node.user?.hwModel ?? "Unset".localized)))
 				} else {
-					Text(String("incomplete".localized))
+					Text(String("Incomplete".localized))
 				}
 			}
 			.accessibilityElement(children: .combine)
