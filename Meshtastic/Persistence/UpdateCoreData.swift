@@ -8,6 +8,19 @@ import CoreData
 import MeshtasticProtobufs
 import OSLog
 
+// MARK: - Safe Conversion Helpers
+private func safeInt32(from value: UInt32) -> Int32 {
+    return Int32(clamping: value)
+}
+
+private func safeInt32(from value: Int) -> Int32 {
+    return Int32(clamping: value)
+}
+
+private func safeInt32(from value: UInt64) -> Int32 {
+    return Int32(clamping: value)
+}
+
 public func clearStaleNodes(nodeExpireDays: Int, context: NSManagedObjectContext) -> Bool {
 	var nodeExpireTime: TimeInterval {
 		return TimeInterval(-nodeExpireDays * 86400)
@@ -1367,6 +1380,7 @@ func upsertRangeTestModuleConfigPacket(config: ModuleConfig.RangeTestConfig, nod
 			do {
 				try context.save()
 				Logger.data.info("💾 [RangeTestConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
+			
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
@@ -1498,23 +1512,23 @@ func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nod
 		if !fetchedNode.isEmpty {
 			if fetchedNode[0].telemetryConfig == nil {
 				let newTelemetryConfig = TelemetryConfigEntity(context: context)
-				newTelemetryConfig.deviceUpdateInterval = Int32(config.deviceUpdateInterval)
-				newTelemetryConfig.environmentUpdateInterval = Int32(config.environmentUpdateInterval)
+				newTelemetryConfig.deviceUpdateInterval = safeInt32(from: config.deviceUpdateInterval)
+				newTelemetryConfig.environmentUpdateInterval = safeInt32(from: config.environmentUpdateInterval)
 				newTelemetryConfig.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 				newTelemetryConfig.environmentScreenEnabled = config.environmentScreenEnabled
 				newTelemetryConfig.environmentDisplayFahrenheit = config.environmentDisplayFahrenheit
 				newTelemetryConfig.powerMeasurementEnabled = config.powerMeasurementEnabled
-				newTelemetryConfig.powerUpdateInterval = Int32(config.powerUpdateInterval)
+				newTelemetryConfig.powerUpdateInterval = safeInt32(from: config.powerUpdateInterval)
 				newTelemetryConfig.powerScreenEnabled = config.powerScreenEnabled
 				fetchedNode[0].telemetryConfig = newTelemetryConfig
 			} else {
-				fetchedNode[0].telemetryConfig?.deviceUpdateInterval = Int32(config.deviceUpdateInterval)
-				fetchedNode[0].telemetryConfig?.environmentUpdateInterval = Int32(config.environmentUpdateInterval)
+				fetchedNode[0].telemetryConfig?.deviceUpdateInterval = safeInt32(from: config.deviceUpdateInterval)
+				fetchedNode[0].telemetryConfig?.environmentUpdateInterval = safeInt32(from: config.environmentUpdateInterval)
 				fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 				fetchedNode[0].telemetryConfig?.environmentScreenEnabled = config.environmentScreenEnabled
 				fetchedNode[0].telemetryConfig?.environmentDisplayFahrenheit = config.environmentDisplayFahrenheit
 				fetchedNode[0].telemetryConfig?.powerMeasurementEnabled = config.powerMeasurementEnabled
-				fetchedNode[0].telemetryConfig?.powerUpdateInterval = Int32(config.powerUpdateInterval)
+				fetchedNode[0].telemetryConfig?.powerUpdateInterval = safeInt32(from: config.powerUpdateInterval)
 				fetchedNode[0].telemetryConfig?.powerScreenEnabled = config.powerScreenEnabled
 			}
 			if sessionPasskey != nil {

@@ -725,7 +725,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				let message = CocoaMQTTMessage(topic: decodedInfo.mqttClientProxyMessage.topic, payload: [UInt8](decodedInfo.mqttClientProxyMessage.data), retained: decodedInfo.mqttClientProxyMessage.retained)
 				mqttManager.mqttClientProxy?.publish(message)
 			} else if decodedInfo.payloadVariant == FromRadio.OneOf_PayloadVariant.clientNotification(decodedInfo.clientNotification) {
-				
 				var path = "meshtastic:///settings/debugLogs"
 				if decodedInfo.clientNotification.hasReplyID {
 					/// Set Sent bool on TraceRouteEntity to false if we got rate limited
@@ -740,8 +739,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							let nsError = error as NSError
 							Logger.data.error("💥 [TraceRouteEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 						}
-					} else if decodedInfo.clientNotification.message.starts(with: "You Device is configured with a low entropy") || decodedInfo.clientNotification.message.starts(with: "Compromised keys detected")
-					|| decodedInfo.clientNotification.message.starts(with: "Remote device"){
+					}
+					if decodedInfo.clientNotification.payloadVariant == ClientNotification.OneOf_PayloadVariant.lowEntropyKey(decodedInfo.clientNotification.lowEntropyKey) ||
+						decodedInfo.clientNotification.payloadVariant == ClientNotification.OneOf_PayloadVariant.duplicatedPublicKey(decodedInfo.clientNotification.duplicatedPublicKey) {
 						path = "meshtastic:///settings/security"
 					}
 				}
@@ -1755,7 +1755,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func saveChannelSet(base64UrlString: String, addChannels: Bool = false) -> Bool {
+	public func saveChannelSet(base64UrlString: String, addChannels: Bool = false, okToMQTT: Bool = false) -> Bool {
 		if isConnected {
 
 			var i: Int32 = 0
@@ -1837,6 +1837,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					// Save the LoRa Config and the device will reboot
 					var adminPacket = AdminMessage()
 					adminPacket.setConfig.lora = channelSet.loraConfig
+					adminPacket.setConfig.lora.configOkToMqtt = okToMQTT // Preserve users okToMQTT choice
 					var meshPacket: MeshPacket = MeshPacket()
 					meshPacket.to = UInt32(connectedPeripheral.num)
 					meshPacket.from	= UInt32(connectedPeripheral.num)

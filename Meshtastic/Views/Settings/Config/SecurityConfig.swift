@@ -230,6 +230,9 @@ struct SecurityConfig: View {
 				name: "\(bleManager.connectedPeripheral?.shortName ?? "?")"
 			)
 		})
+		.onChange(of: node) { _, newNode in
+			setSecurityValues()
+		}
 		.onChange(of: isManaged) { _, newIsManaged in
 			if newIsManaged != node?.securityConfig?.isManaged { hasChanges = true }
 		}
@@ -349,6 +352,14 @@ struct SecurityConfig: View {
 					}
 				}
 				hasChanges = false
+				if keyUpdated {
+					if !bleManager.sendReboot(
+						fromUser: fromUser,
+						toUser: toUser
+					) {
+						Logger.mesh.warning("Reboot Failed")
+					}
+				}
 				goBack()
 			}
 		}
