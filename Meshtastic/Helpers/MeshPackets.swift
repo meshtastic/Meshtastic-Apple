@@ -15,7 +15,7 @@ import OSLog
 import ActivityKit
 #endif
 
-// Simple extension to consicely pass values through a has_XXX boolean check
+// Simple extension to concisely pass values through a has_XXX boolean check
 fileprivate extension Bool {
 	func then<T>(_ value: T) -> T? {
 		self ? value : nil
