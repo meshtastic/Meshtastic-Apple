@@ -5,6 +5,9 @@ import CoreData
 import OSLog
 import TipKit
 import MeshtasticProtobufs
+import DatadogCore
+import DatadogCrashReporting
+import DatadogRUM
 
 @main
 struct MeshtasticAppleApp: App {
@@ -25,6 +28,28 @@ struct MeshtasticAppleApp: App {
 		let persistenceController = PersistenceController.shared
 		let appState = AppState(
 			router: Router()
+		)
+		// Initialize Datadog
+		// RUM Client Tokens are NOT secret
+		let appID = "79fe92a9-74c9-4c8f-ba63-6308384ecfa9"
+		let clientToken = "pub4427bea20dbdb08a6af68034de22cd3b"
+		let environment = "testflight"
+
+		Datadog.initialize(
+			with: Datadog.Configuration(
+				clientToken: clientToken,
+				env: environment,
+				site: .us5
+			),
+			trackingConsent: .granted
+		)
+
+		RUM.enable(
+			with: RUM.Configuration(
+				applicationID: appID,
+				uiKitViewsPredicate: DefaultUIKitRUMViewsPredicate(),
+				uiKitActionsPredicate: DefaultUIKitRUMActionsPredicate()
+			)
 		)
 		self._appState = ObservedObject(wrappedValue: appState)
 		// Initialize the BLEManager singleton with the necessary dependencies
