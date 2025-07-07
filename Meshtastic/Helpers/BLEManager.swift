@@ -1245,7 +1245,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							newMessage.toUser?.userNode?.favorite = true
 							do {
 								try context.save()
-								Logger.data.info("💾 Auto favorited node bases on sending a message \(self.connectedPeripheral?.num.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
+								if let connectedPeripheral = self.connectedPeripheral {
+									Logger.data.info("💾 Auto favorited node based on sending a message \(connectedPeripheral.num.toHex(), privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
+								} else {
+									Logger.data.warning("⚠️ connectedPeripheral is nil while attempting to log auto-favoriting a node.")
+								}
 								_ = self.setFavoriteNode(node: (newMessage.toUser?.userNode)!, connectedNodeNum: fromUserNum)
 							} catch {
 								context.rollback()
