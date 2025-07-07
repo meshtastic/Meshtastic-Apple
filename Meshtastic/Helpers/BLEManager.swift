@@ -1525,8 +1525,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var adminPacket = AdminMessage()
 		adminPacket.setTimeOnly = UInt32(Date().timeIntervalSince1970)
 		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(self.connectedPeripheral?.num ?? 0)
-		meshPacket.from = UInt32(self.connectedPeripheral?.num ?? 0)
+		meshPacket.to = UInt32(self.connectedPeripheral.num)
+		meshPacket.from = UInt32(self.connectedPeripheral.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
