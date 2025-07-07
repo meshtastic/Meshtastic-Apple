@@ -1186,7 +1186,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			success = false
 
 		} else {
-			let fromUserNum: Int64 = self.connectedPeripheral?.num ?? 0
+			guard let fromUserNum = self.connectedPeripheral?.num else {
+				Logger.mesh.error("🚫 Connected peripheral user number is nil, cannot send message.")
+				return false
+			}
 
 			let messageUsers = UserEntity.fetchRequest()
 			messageUsers.predicate = NSPredicate(format: "num IN %@", [fromUserNum, Int64(toUserNum)])
