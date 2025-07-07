@@ -499,7 +499,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 			let traceRoute = TraceRouteEntity(context: context)
 			let nodes = NodeInfoEntity.fetchRequest()
-			nodes.predicate = NSPredicate(format: "num IN %@", [destNum, self.connectedPeripheral?.num ?? 0])
+			if let connectedNum = self.connectedPeripheral?.num {
+				nodes.predicate = NSPredicate(format: "num IN %@", [destNum, connectedNum])
+			} else {
+				nodes.predicate = NSPredicate(format: "num == %@", destNum)
+			}
 			do {
 				let fetchedNodes = try context.fetch(nodes)
 				let receivingNode = fetchedNodes.first(where: { $0.num == destNum })
