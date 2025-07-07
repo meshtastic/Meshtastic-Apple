@@ -1250,7 +1250,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								} else {
 									Logger.data.warning("⚠️ connectedPeripheral is nil while attempting to log auto-favoriting a node.")
 								}
-								_ = self.setFavoriteNode(node: (newMessage.toUser?.userNode)!, connectedNodeNum: fromUserNum)
+								guard let userNode = newMessage.toUser?.userNode else {
+									Logger.data.warning("⚠️ Unable to set favorite node: userNode is nil.")
+									return
+								}
+								_ = self.setFavoriteNode(node: userNode, connectedNodeNum: fromUserNum)
 							} catch {
 								context.rollback()
 								let nsError = error as NSError
