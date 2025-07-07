@@ -1252,7 +1252,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								}
 								guard let userNode = newMessage.toUser?.userNode else {
 									Logger.data.warning("⚠️ Unable to set favorite node: userNode is nil.")
-									return
+									return false
 								}
 								_ = self.setFavoriteNode(node: userNode, connectedNodeNum: fromUserNum)
 							} catch {
