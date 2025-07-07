@@ -805,15 +805,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					channelPacket(channel: decodedInfo.channel, fromNum: Int64(truncatingIfNeeded: connectedPeripheral.num), context: context)
 				}
 				// Config
-				if decodedInfo.config.isInitialized && !invalidVersion && connectedPeripheral != nil {
+				if decodedInfo.config.isInitialized && !invalidVersion && connectedPeripheral != nil && self.connectedPeripheral?.num > 0 {
 					nowKnown = true
-					localConfig(config: decodedInfo.config, context: context, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral?.num ?? 0), nodeLongName: self.connectedPeripheral?.longName ?? "Unknown")
+					localConfig(config: decodedInfo.config, context: context, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral.num), nodeLongName: self.connectedPeripheral?.longName ?? "Unknown")
 				}
 				// Module Config
 				if decodedInfo.moduleConfig.isInitialized && !invalidVersion && self.connectedPeripheral?.num != 0 {
 					onWantConfigResponseReceived()
 					nowKnown = true
-					moduleConfig(config: decodedInfo.moduleConfig, context: context, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral?.num ?? 0), nodeLongName: self.connectedPeripheral?.longName ?? "Unknown")
+					moduleConfig(config: decodedInfo.moduleConfig, context: context, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral?.num), nodeLongName: self.connectedPeripheral?.longName ?? "Unknown")
 					if decodedInfo.moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(decodedInfo.moduleConfig.cannedMessage) {
 						if decodedInfo.moduleConfig.cannedMessage.enabled {
 							if let validNum = self.connectedPeripheral?.num, validNum > 0 {
