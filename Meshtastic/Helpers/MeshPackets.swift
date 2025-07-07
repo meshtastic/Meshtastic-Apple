@@ -517,11 +517,11 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 								.replacingOccurrences(of: "11: ", with: "")
 								.replacingOccurrences(of: "\"", with: "")
 								.trimmingCharacters(in: .whitespacesAndNewlines)
-								.components(separatedBy: "\n")[0]
+								.components(separatedBy: "\n").first ?? ""
 							fetchedNode[0].cannedMessageConfig?.messages = messages
 							do {
 								try context.save()
-								Logger.data.info("💾 Updated Canned Messages Messages For: \(fetchedNode[0].num.toHex(), privacy: .public)")
+								Logger.data.info("💾 Updated Canned Messages Messages For: \(fetchedNode.first?.num.toHex() ?? "Unknown".localized), privacy: .public)")
 							} catch {
 								context.rollback()
 								let nsError = error as NSError
