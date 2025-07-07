@@ -499,7 +499,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 			let traceRoute = TraceRouteEntity(context: context)
 			let nodes = NodeInfoEntity.fetchRequest()
-			nodes.predicate = NSPredicate(format: "num IN %@", [destNum, self.connectedPeripheral.num])
+			nodes.predicate = NSPredicate(format: "num IN %@", [destNum, self.connectedPeripheral?.num ?? 0])
 			do {
 				let fetchedNodes = try context.fetch(nodes)
 				let receivingNode = fetchedNodes.first(where: { $0.num == destNum })
@@ -803,16 +803,16 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// Config
 				if decodedInfo.config.isInitialized && !invalidVersion && connectedPeripheral != nil {
 					nowKnown = true
-					localConfig(config: decodedInfo.config, context: context, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral.num), nodeLongName: self.connectedPeripheral.longName)
+					localConfig(config: decodedInfo.config, context: context, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral?.num ?? 0), nodeLongName: self.connectedPeripheral?.longName ?? "Unknown")
 				}
 				// Module Config
 				if decodedInfo.moduleConfig.isInitialized && !invalidVersion && self.connectedPeripheral?.num != 0 {
 					onWantConfigResponseReceived()
 					nowKnown = true
-					moduleConfig(config: decodedInfo.moduleConfig, context: context, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral?.num ?? 0), nodeLongName: self.connectedPeripheral.longName)
+					moduleConfig(config: decodedInfo.moduleConfig, context: context, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral?.num ?? 0), nodeLongName: self.connectedPeripheral?.longName ?? "Unknown")
 					if decodedInfo.moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(decodedInfo.moduleConfig.cannedMessage) {
 						if decodedInfo.moduleConfig.cannedMessage.enabled {
-							_ = self.getCannedMessageModuleMessages(destNum: self.connectedPeripheral.num, wantResponse: true)
+							_ = self.getCannedMessageModuleMessages(destNum: self.connectedPeripheral?.num ?? 0, wantResponse: true)
 						}
 					}
 				}
@@ -866,7 +866,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .nodeinfoApp:
 				if !invalidVersion { upsertNodeInfoPacket(packet: decodedInfo.packet, context: context) }
 			case .routingApp:
-				if !invalidVersion { routingPacket(packet: decodedInfo.packet, connectedNodeNum: self.connectedPeripheral.num, context: context) }
+				if !invalidVersion { routingPacket(packet: decodedInfo.packet, connectedNodeNum: self.connectedPeripheral?.num ?? 0, context: context) }
 			case .adminApp:
 				adminAppPacket(packet: decodedInfo.packet, context: context)
 			case .replyApp:
@@ -1174,7 +1174,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			success = false
 
 		} else {
-			let fromUserNum: Int64 = self.connectedPeripheral.num
+			let fromUserNum: Int64 = self.connectedPeripheral?.num ?? 0
 
 			let messageUsers = UserEntity.fetchRequest()
 			messageUsers.predicate = NSPredicate(format: "num IN %@", [fromUserNum, Int64(toUserNum)])
@@ -1230,7 +1230,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							newMessage.toUser?.userNode?.favorite = true
 							do {
 								try context.save()
-								Logger.data.info("💾 Auto favorited node bases on sending a message \(self.connectedPeripheral.num.toHex(), privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
+								Logger.data.info("💾 Auto favorited node bases on sending a message \(self.connectedPeripheral?.num.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
 								_ = self.setFavoriteNode(node: (newMessage.toUser?.userNode)!, connectedNodeNum: fromUserNum)
 							} catch {
 								context.rollback()
@@ -1267,7 +1267,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						Logger.mesh.info("💬 \(logString, privacy: .public)")
 						do {
 							try context.save()
-							Logger.data.info("💾 Saved a new sent message from \(self.connectedPeripheral.num.toHex(), privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
+							Logger.data.info("💾 Saved a new sent message from \(self.connectedPeripheral?.num.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
 							success = true
 
 						} catch {
@@ -1278,7 +1278,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 				}
 			} catch {
-				Logger.data.error("💥 Send message failure \(self.connectedPeripheral.num.toHex(), privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
+				Logger.data.error("💥 Send message failure \(self.connectedPeripheral?.num.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
 			}
 		}
 		return success
@@ -1495,11 +1495,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	}
 
 	public func sendTime() -> Bool {
+		if self.connectedPeripheral?.num ?? 0 <= 0 {
+			Logger.mesh.error("🚫 Unable to send time, connected node is disconnected or invalid")
+			return false
+		}
 		var adminPacket = AdminMessage()
 		adminPacket.setTimeOnly = UInt32(Date().timeIntervalSince1970)
 		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(self.connectedPeripheral.num)
-		meshPacket.from = UInt32(self.connectedPeripheral.num)
+		meshPacket.to = UInt32(self.connectedPeripheral?.num ?? 0)
+		meshPacket.from = UInt32(self.connectedPeripheral?.num ?? 0)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
