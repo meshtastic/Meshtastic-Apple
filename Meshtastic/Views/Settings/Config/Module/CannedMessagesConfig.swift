@@ -79,6 +79,7 @@ struct CannedMessagesConfig: View {
 								totalBytes = messages.utf8.count
 							}
 							hasMessagesChanges = true
+							hasChanges = true
 						}
 						.foregroundColor(.gray)
 				}

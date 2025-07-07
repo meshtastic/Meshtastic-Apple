@@ -504,9 +504,6 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 		if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getCannedMessageModuleMessagesResponse(adminMessage.getCannedMessageModuleMessagesResponse) {
 
 			if let cmmc = try? CannedMessageModuleConfig(serializedBytes: packet.decoded.payload) {
-
-				if !cmmc.messages.isEmpty {
-
 					let logString = String.localizedStringWithFormat("Canned Messages Messages Received For: %@".localized, packet.from.toHex())
 					Logger.mesh.info("🥫 \(logString, privacy: .public)")
 
@@ -520,6 +517,7 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 								.replacingOccurrences(of: "11: ", with: "")
 								.replacingOccurrences(of: "\"", with: "")
 								.trimmingCharacters(in: .whitespacesAndNewlines)
+								.components(separatedBy: "\n")[0]
 							fetchedNode[0].cannedMessageConfig?.messages = messages
 							do {
 								try context.save()
@@ -533,7 +531,6 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 					} catch {
 						Logger.data.error("💥 Error Deserializing ADMIN_APP packet.")
 					}
-				}
 			}
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getChannelResponse(adminMessage.getChannelResponse) {
 			channelPacket(channel: adminMessage.getChannelResponse, fromNum: Int64(packet.from), context: context)
