@@ -338,7 +338,7 @@ struct FilteredUserList<Content: View>: View {
 		}
 		// Always apply unmessagable and connected node filters
 		// Show unmessagable nodes only if they have messages, otherwise hide them
-		let isUnmessagablePredicate = NSPredicate(format: "unmessagable == NO OR ((SUBQUERY(receivedMessages, $msg, $msg.messageId != nil).@count > 0) OR (SUBQUERY(sentMessages, $msg, $msg.messageId != nil).@count > 0))")
+		let isUnmessagablePredicate = NSPredicate(format: "unmessagable == NO OR (receivedMessages.@count > 0 OR sentMessages.@count > 0)")
 		predicates.append(isUnmessagablePredicate)
 		let isIgnoredPredicate = NSPredicate(format: "userNode.ignored == NO")
 		predicates.append(isIgnoredPredicate)
