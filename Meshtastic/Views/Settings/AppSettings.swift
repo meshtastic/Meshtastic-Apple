@@ -16,6 +16,7 @@ struct AppSettings: View {
 	@AppStorage("purgeStaleNodeDays") private var  purgeStaleNodeDays: Double = 0
 	@AppStorage("environmentEnableWeatherKit") private var  environmentEnableWeatherKit: Bool = true
 	@AppStorage("enableAdministration") private var  enableAdministration: Bool = false
+	@AppStorage("usageDataAndCrashReporting") private var usageDataAndCrashReporting: Bool = true
 	var body: some View {
 		VStack {
 			Form {
@@ -31,6 +32,13 @@ struct AppSettings: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Text("PKI based node administration, requires firmware version 2.5+")
+						.foregroundStyle(.secondary)
+						.font(.caption)
+					Toggle(isOn: $usageDataAndCrashReporting) {
+						Label("Usage and Crash Data", systemImage: "pencil.and.list.clipboard")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Text("Provide anonymous usage statistics and crash reports.")
 						.foregroundStyle(.secondary)
 						.font(.caption)
 				}

@@ -15,7 +15,7 @@ import OSLog
 import ActivityKit
 #endif
 
-// Simple extension to consicely pass values through a has_XXX boolean check
+// Simple extension to concisely pass values through a has_XXX boolean check
 fileprivate extension Bool {
 	func then<T>(_ value: T) -> T? {
 		self ? value : nil
@@ -504,9 +504,6 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 		if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getCannedMessageModuleMessagesResponse(adminMessage.getCannedMessageModuleMessagesResponse) {
 
 			if let cmmc = try? CannedMessageModuleConfig(serializedBytes: packet.decoded.payload) {
-
-				if !cmmc.messages.isEmpty {
-
 					let logString = String.localizedStringWithFormat("Canned Messages Messages Received For: %@".localized, packet.from.toHex())
 					Logger.mesh.info("🥫 \(logString, privacy: .public)")
 
@@ -520,10 +517,11 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 								.replacingOccurrences(of: "11: ", with: "")
 								.replacingOccurrences(of: "\"", with: "")
 								.trimmingCharacters(in: .whitespacesAndNewlines)
+								.components(separatedBy: "\n").first ?? ""
 							fetchedNode[0].cannedMessageConfig?.messages = messages
 							do {
 								try context.save()
-								Logger.data.info("💾 Updated Canned Messages Messages For: \(fetchedNode[0].num.toHex(), privacy: .public)")
+								Logger.data.info("💾 Updated Canned Messages Messages For: \(fetchedNode.first?.num.toHex() ?? "Unknown".localized, privacy: .public)")
 							} catch {
 								context.rollback()
 								let nsError = error as NSError
@@ -533,7 +531,6 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 					} catch {
 						Logger.data.error("💥 Error Deserializing ADMIN_APP packet.")
 					}
-				}
 			}
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getChannelResponse(adminMessage.getChannelResponse) {
 			channelPacket(channel: adminMessage.getChannelResponse, fromNum: Int64(packet.from), context: context)
