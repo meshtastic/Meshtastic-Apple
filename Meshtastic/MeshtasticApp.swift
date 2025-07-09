@@ -41,7 +41,7 @@ struct MeshtasticAppleApp: App {
 				env: environment,
 				site: .us5
 			),
-			trackingConsent: .granted
+			trackingConsent: UserDefaults.usageDataAndCrashReporting ? .granted : .notGranted
 		)
 
 		RUM.enable(
