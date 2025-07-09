@@ -670,6 +670,7 @@
       }
     },
     "%@ config data was requested over the admin channel but no response has been returned from the remote node." : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -702,6 +703,9 @@
           }
         }
       }
+    },
+    "%@ config data was requested via PKC admin but no response has been returned from the remote node." : {
+
     },
     "%@ dB" : {
       "localizations" : {
@@ -2043,6 +2047,7 @@
       }
     },
     "A channel index of 0 indicates the primary channel where all broadcast packets are sent from." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ja" : {
           "stringUnit" : {
@@ -2051,6 +2056,9 @@
           }
         }
       }
+    },
+    "A channel index of 0 indicates the primary channel where broadcast packets are sent from. Location data is broadcast from the first channel where it is enabled with firmware 2.7 forward." : {
+
     },
     "A green lock means the channel is securely encrypted with either a 128 or 256 bit AES key." : {
       "localizations" : {
@@ -2127,6 +2135,7 @@
       }
     },
     "A red lock with a slash means the channel is not securely encrypted, it uses either no key at all or a 1 byte known key. Traffic on this channel is easily intercepted." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ja" : {
           "stringUnit" : {
@@ -2135,6 +2144,12 @@
           }
         }
       }
+    },
+    "A red open lock means the channel is not securely encrypted and is used for precise location data, it uses either no key at all or a 1 byte known key." : {
+
+    },
+    "A red open lock with a warning means the channel is not securely encrypted and is used for precise location data which is being uplinked to the internet via MQTT, it uses either no key at all or a 1 byte known key." : {
+
     },
     "A Trace Route was sent, no response has been received." : {
       "localizations" : {
@@ -36384,6 +36399,7 @@
       }
     },
     "There has been no response to a request for device metadata over the admin channel for this node." : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -36410,6 +36426,9 @@
           }
         }
       }
+    },
+    "There has been no response to a request for device metadata via PKC admin for this node." : {
+
     },
     "These settings will %@ channels. The current LoRa Config will be replaced, if there are substantial changes to the LoRa config the device will reboot" : {
       "localizations" : {
