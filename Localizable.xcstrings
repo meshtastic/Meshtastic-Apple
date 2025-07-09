@@ -27313,6 +27313,9 @@
         }
       }
     },
+    "Provide anonymous usage statistics and crash reports." : {
+
+    },
     "Provide Confirmation" : {
 
     },
@@ -39337,6 +39340,9 @@
           }
         }
       }
+    },
+    "Usage and Crash Data" : {
+
     },
     "Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead." : {
       "localizations" : {
