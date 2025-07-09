@@ -74,6 +74,7 @@ extension UserDefaults {
 		case environmentEnableWeatherKit
 		case enableAdministration
 		case mapReportingOptIn
+		case usageDataAndCrashReporting
 		case testIntEnum
 	}
 
@@ -155,6 +156,9 @@ extension UserDefaults {
 
 	@UserDefault(.mapReportingOptIn, defaultValue: false)
 	static var mapReportingOptIn: Bool
+	
+	@UserDefault(.usageDataAndCrashReporting, defaultValue: true)
+	static var usageDataAndCrashReporting: Bool
 
 	@UserDefault(.testIntEnum, defaultValue: .one)
 	static var testIntEnum: TestIntEnum
