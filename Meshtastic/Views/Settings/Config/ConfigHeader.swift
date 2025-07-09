@@ -11,7 +11,7 @@ struct ConfigHeader<T>: View {
 
 	var body: some View {
 		if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-			Text("There has been no response to a request for device metadata over the admin channel for this node.")
+			Text("There has been no response to a request for device metadata via PKC admin for this node.")
 				.font(.callout)
 				.foregroundColor(.orange)
 
@@ -19,7 +19,7 @@ struct ConfigHeader<T>: View {
 			// Let users know what is going on if they are using remote admin and don't have the config yet
 			let expiration = node?.sessionExpiration ?? Date()
 			if node?[keyPath: config] == nil  || expiration < node?.sessionExpiration ?? Date() {
-				Text("\(title) config data was requested over the admin channel but no response has been returned from the remote node.")
+				Text("\(title) config data was requested via PKC admin but no response has been returned from the remote node.")
 					.font(.callout)
 					.foregroundColor(.orange)
 			} else {
