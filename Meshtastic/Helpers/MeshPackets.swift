@@ -521,7 +521,7 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 							fetchedNode[0].cannedMessageConfig?.messages = messages
 							do {
 								try context.save()
-								Logger.data.info("💾 Updated Canned Messages Messages For: \(fetchedNode.first?.num.toHex() ?? "Unknown".localized), privacy: .public)")
+								Logger.data.info("💾 Updated Canned Messages Messages For: \(fetchedNode.first?.num.toHex(privacy: .public) ?? "Unknown".localized)")
 							} catch {
 								context.rollback()
 								let nsError = error as NSError
