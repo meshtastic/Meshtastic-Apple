@@ -669,41 +669,6 @@
         }
       }
     },
-    "%@ config data was requested over the admin channel but no response has been returned from the remote node." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "i dati di configurazione %@ sono stati richiesti attraverso il canale di amministrazione, ma non è stata fornita alcuna risposta dal nodo remoto."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 設定データが管理チャンネル経由で要求されましたが、リモートノードからの応答がありません。"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ конфигурациони подаци су затражени преко административног канала, али никакав одговор није враћен са удаљеног чвора."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已通过管理频道请求 %@ 配置数据，但远程节点未返回任何响应。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "透過管理通道請求 %@ 組態資料，但遠端節點未回應。"
-          }
-        }
-      }
-    },
     "%@ config data was requested via PKC admin but no response has been returned from the remote node." : {
 
     },
@@ -2046,17 +2011,6 @@
         }
       }
     },
-    "A channel index of 0 indicates the primary channel where all broadcast packets are sent from." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "チャンネルインデックス0は、すべてのブロードキャストパケットが送信されるプライマリチャンネルを示します。"
-          }
-        }
-      }
-    },
     "A channel index of 0 indicates the primary channel where broadcast packets are sent from. Location data is broadcast from the first channel where it is enabled with firmware 2.7 forward." : {
 
     },
@@ -2130,17 +2084,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meshtastic QR Code 包含 LoRa 設定與頻道資訊。選擇「取代頻道」可分享完整設定，「新增頻道」則會將分享的頻道新增到接收設備中。"
-          }
-        }
-      }
-    },
-    "A red lock with a slash means the channel is not securely encrypted, it uses either no key at all or a 1 byte known key. Traffic on this channel is easily intercepted." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "斜線付きの赤い鍵は、チャンネルが安全に暗号化されていないことを意味し、キーが全くないか1バイトの既知キーを使用しています。このチャンネルのトラフィックは簡単に傍受されます。"
           }
         }
       }
@@ -31348,35 +31291,6 @@
         }
       }
     },
-    "Send a Direct Message" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inviare un messaggio diretto"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ダイレクトメッセージを送信"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Пошаљи директну поруку"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "發送私訊"
-          }
-        }
-      }
-    },
     "Send a Group Message" : {
       "localizations" : {
         "de" : {
@@ -31457,35 +31371,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "向特定 Meshtastic 頻道發送訊息"
-          }
-        }
-      }
-    },
-    "Send a message to a certain meshtastic node" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inviare un messaggio a un certo nodo meshtastico"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "特定のMeshtasticノードにメッセージを送信"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Пошаљи поруку одређеном мештастик чвору"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "向特定 Meshtastic 節點發送訊息"
           }
         }
       }
@@ -33548,29 +33433,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "顯示路徑點"
-          }
-        }
-      }
-    },
-    "Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press start the live activity." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mostra le informazioni relative alla radio Lora collegata via bluetooth. È possibile scorrere il dito verso sinistra per scollegare la radio e premere a lungo per avviare l'attività live."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bluetoothで接続されたLoRaラジオの情報を表示します。左にスワイプしてラジオを切断し、長押しでライブアクティビティを開始できます。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "顯示透過藍牙連接的 LoRa 裝置資訊。您可以向左滑動來斷開裝置，長按則可啟動即時活動。"
           }
         }
       }
@@ -36394,35 +36256,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "要新增的節點網址"
-          }
-        }
-      }
-    },
-    "There has been no response to a request for device metadata over the admin channel for this node." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Non è stata data risposta a una richiesta di metadati del dispositivo sul canale di amministrazione per questo nodo."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "このノードの管理チャンネル経由でのデバイスメタデータ要求に対する応答がありません。"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Није било одговора на захтев за метаподатке уређаја преко административног канала за овај чвор."
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "此節點的管理頻道未回應設備中繼資料的請求。"
           }
         }
       }
