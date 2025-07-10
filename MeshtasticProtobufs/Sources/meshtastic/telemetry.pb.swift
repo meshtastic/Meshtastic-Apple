@@ -184,6 +184,10 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
   ///
   /// PCT2075 Temperature Sensor
   case pct2075 // = 39
+
+  ///
+  /// ADS1X15 ADC
+  case ads1X15 // = 40
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -232,6 +236,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 37: self = .rak12035
     case 38: self = .max17261
     case 39: self = .pct2075
+    case 40: self = .ads1X15
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -278,6 +283,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .rak12035: return 37
     case .max17261: return 38
     case .pct2075: return 39
+    case .ads1X15: return 40
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -324,6 +330,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     .rak12035,
     .max17261,
     .pct2075,
+    .ads1X15,
   ]
 
 }
@@ -732,6 +739,116 @@ public struct PowerMetrics: Sendable {
   /// Clears the value of `ch3Current`. Subsequent reads from it will return its default value.
   public mutating func clearCh3Current() {self._ch3Current = nil}
 
+  ///
+  /// Voltage (Ch4)
+  public var ch4Voltage: Float {
+    get {return _ch4Voltage ?? 0}
+    set {_ch4Voltage = newValue}
+  }
+  /// Returns true if `ch4Voltage` has been explicitly set.
+  public var hasCh4Voltage: Bool {return self._ch4Voltage != nil}
+  /// Clears the value of `ch4Voltage`. Subsequent reads from it will return its default value.
+  public mutating func clearCh4Voltage() {self._ch4Voltage = nil}
+
+  ///
+  /// Current (Ch4)
+  public var ch4Current: Float {
+    get {return _ch4Current ?? 0}
+    set {_ch4Current = newValue}
+  }
+  /// Returns true if `ch4Current` has been explicitly set.
+  public var hasCh4Current: Bool {return self._ch4Current != nil}
+  /// Clears the value of `ch4Current`. Subsequent reads from it will return its default value.
+  public mutating func clearCh4Current() {self._ch4Current = nil}
+
+  ///
+  /// Voltage (Ch5)
+  public var ch5Voltage: Float {
+    get {return _ch5Voltage ?? 0}
+    set {_ch5Voltage = newValue}
+  }
+  /// Returns true if `ch5Voltage` has been explicitly set.
+  public var hasCh5Voltage: Bool {return self._ch5Voltage != nil}
+  /// Clears the value of `ch5Voltage`. Subsequent reads from it will return its default value.
+  public mutating func clearCh5Voltage() {self._ch5Voltage = nil}
+
+  ///
+  /// Current (Ch5)
+  public var ch5Current: Float {
+    get {return _ch5Current ?? 0}
+    set {_ch5Current = newValue}
+  }
+  /// Returns true if `ch5Current` has been explicitly set.
+  public var hasCh5Current: Bool {return self._ch5Current != nil}
+  /// Clears the value of `ch5Current`. Subsequent reads from it will return its default value.
+  public mutating func clearCh5Current() {self._ch5Current = nil}
+
+  ///
+  /// Voltage (Ch6)
+  public var ch6Voltage: Float {
+    get {return _ch6Voltage ?? 0}
+    set {_ch6Voltage = newValue}
+  }
+  /// Returns true if `ch6Voltage` has been explicitly set.
+  public var hasCh6Voltage: Bool {return self._ch6Voltage != nil}
+  /// Clears the value of `ch6Voltage`. Subsequent reads from it will return its default value.
+  public mutating func clearCh6Voltage() {self._ch6Voltage = nil}
+
+  ///
+  /// Current (Ch6)
+  public var ch6Current: Float {
+    get {return _ch6Current ?? 0}
+    set {_ch6Current = newValue}
+  }
+  /// Returns true if `ch6Current` has been explicitly set.
+  public var hasCh6Current: Bool {return self._ch6Current != nil}
+  /// Clears the value of `ch6Current`. Subsequent reads from it will return its default value.
+  public mutating func clearCh6Current() {self._ch6Current = nil}
+
+  ///
+  /// Voltage (Ch7)
+  public var ch7Voltage: Float {
+    get {return _ch7Voltage ?? 0}
+    set {_ch7Voltage = newValue}
+  }
+  /// Returns true if `ch7Voltage` has been explicitly set.
+  public var hasCh7Voltage: Bool {return self._ch7Voltage != nil}
+  /// Clears the value of `ch7Voltage`. Subsequent reads from it will return its default value.
+  public mutating func clearCh7Voltage() {self._ch7Voltage = nil}
+
+  ///
+  /// Current (Ch7)
+  public var ch7Current: Float {
+    get {return _ch7Current ?? 0}
+    set {_ch7Current = newValue}
+  }
+  /// Returns true if `ch7Current` has been explicitly set.
+  public var hasCh7Current: Bool {return self._ch7Current != nil}
+  /// Clears the value of `ch7Current`. Subsequent reads from it will return its default value.
+  public mutating func clearCh7Current() {self._ch7Current = nil}
+
+  ///
+  /// Voltage (Ch8)
+  public var ch8Voltage: Float {
+    get {return _ch8Voltage ?? 0}
+    set {_ch8Voltage = newValue}
+  }
+  /// Returns true if `ch8Voltage` has been explicitly set.
+  public var hasCh8Voltage: Bool {return self._ch8Voltage != nil}
+  /// Clears the value of `ch8Voltage`. Subsequent reads from it will return its default value.
+  public mutating func clearCh8Voltage() {self._ch8Voltage = nil}
+
+  ///
+  /// Current (Ch8)
+  public var ch8Current: Float {
+    get {return _ch8Current ?? 0}
+    set {_ch8Current = newValue}
+  }
+  /// Returns true if `ch8Current` has been explicitly set.
+  public var hasCh8Current: Bool {return self._ch8Current != nil}
+  /// Clears the value of `ch8Current`. Subsequent reads from it will return its default value.
+  public mutating func clearCh8Current() {self._ch8Current = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -742,6 +859,16 @@ public struct PowerMetrics: Sendable {
   fileprivate var _ch2Current: Float? = nil
   fileprivate var _ch3Voltage: Float? = nil
   fileprivate var _ch3Current: Float? = nil
+  fileprivate var _ch4Voltage: Float? = nil
+  fileprivate var _ch4Current: Float? = nil
+  fileprivate var _ch5Voltage: Float? = nil
+  fileprivate var _ch5Current: Float? = nil
+  fileprivate var _ch6Voltage: Float? = nil
+  fileprivate var _ch6Current: Float? = nil
+  fileprivate var _ch7Voltage: Float? = nil
+  fileprivate var _ch7Current: Float? = nil
+  fileprivate var _ch8Voltage: Float? = nil
+  fileprivate var _ch8Current: Float? = nil
 }
 
 ///
@@ -894,6 +1021,28 @@ public struct AirQualityMetrics: Sendable {
   /// Clears the value of `co2`. Subsequent reads from it will return its default value.
   public mutating func clearCo2() {self._co2 = nil}
 
+  ///
+  /// CO2 sensor temperature in degC
+  public var co2Temperature: Float {
+    get {return _co2Temperature ?? 0}
+    set {_co2Temperature = newValue}
+  }
+  /// Returns true if `co2Temperature` has been explicitly set.
+  public var hasCo2Temperature: Bool {return self._co2Temperature != nil}
+  /// Clears the value of `co2Temperature`. Subsequent reads from it will return its default value.
+  public mutating func clearCo2Temperature() {self._co2Temperature = nil}
+
+  ///
+  /// CO2 sensor relative humidity in %
+  public var co2Humidity: Float {
+    get {return _co2Humidity ?? 0}
+    set {_co2Humidity = newValue}
+  }
+  /// Returns true if `co2Humidity` has been explicitly set.
+  public var hasCo2Humidity: Bool {return self._co2Humidity != nil}
+  /// Clears the value of `co2Humidity`. Subsequent reads from it will return its default value.
+  public mutating func clearCo2Humidity() {self._co2Humidity = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -911,6 +1060,8 @@ public struct AirQualityMetrics: Sendable {
   fileprivate var _particles50Um: UInt32? = nil
   fileprivate var _particles100Um: UInt32? = nil
   fileprivate var _co2: UInt32? = nil
+  fileprivate var _co2Temperature: Float? = nil
+  fileprivate var _co2Humidity: Float? = nil
 }
 
 ///
@@ -1104,85 +1255,91 @@ public struct HostMetrics: Sendable {
 
 ///
 /// Types of Measurements the telemetry module is equipped to handle
-public struct Telemetry: Sendable {
+public struct Telemetry: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Seconds since 1970 - or 0 for unknown/unset
-  public var time: UInt32 = 0
+  public var time: UInt32 {
+    get {return _storage._time}
+    set {_uniqueStorage()._time = newValue}
+  }
 
-  public var variant: Telemetry.OneOf_Variant? = nil
+  public var variant: OneOf_Variant? {
+    get {return _storage._variant}
+    set {_uniqueStorage()._variant = newValue}
+  }
 
   ///
   /// Key native device metrics such as battery level
   public var deviceMetrics: DeviceMetrics {
     get {
-      if case .deviceMetrics(let v)? = variant {return v}
+      if case .deviceMetrics(let v)? = _storage._variant {return v}
       return DeviceMetrics()
     }
-    set {variant = .deviceMetrics(newValue)}
+    set {_uniqueStorage()._variant = .deviceMetrics(newValue)}
   }
 
   ///
   /// Weather station or other environmental metrics
   public var environmentMetrics: EnvironmentMetrics {
     get {
-      if case .environmentMetrics(let v)? = variant {return v}
+      if case .environmentMetrics(let v)? = _storage._variant {return v}
       return EnvironmentMetrics()
     }
-    set {variant = .environmentMetrics(newValue)}
+    set {_uniqueStorage()._variant = .environmentMetrics(newValue)}
   }
 
   ///
   /// Air quality metrics
   public var airQualityMetrics: AirQualityMetrics {
     get {
-      if case .airQualityMetrics(let v)? = variant {return v}
+      if case .airQualityMetrics(let v)? = _storage._variant {return v}
       return AirQualityMetrics()
     }
-    set {variant = .airQualityMetrics(newValue)}
+    set {_uniqueStorage()._variant = .airQualityMetrics(newValue)}
   }
 
   ///
   /// Power Metrics
   public var powerMetrics: PowerMetrics {
     get {
-      if case .powerMetrics(let v)? = variant {return v}
+      if case .powerMetrics(let v)? = _storage._variant {return v}
       return PowerMetrics()
     }
-    set {variant = .powerMetrics(newValue)}
+    set {_uniqueStorage()._variant = .powerMetrics(newValue)}
   }
 
   ///
   /// Local device mesh statistics
   public var localStats: LocalStats {
     get {
-      if case .localStats(let v)? = variant {return v}
+      if case .localStats(let v)? = _storage._variant {return v}
       return LocalStats()
     }
-    set {variant = .localStats(newValue)}
+    set {_uniqueStorage()._variant = .localStats(newValue)}
   }
 
   ///
   /// Health telemetry metrics
   public var healthMetrics: HealthMetrics {
     get {
-      if case .healthMetrics(let v)? = variant {return v}
+      if case .healthMetrics(let v)? = _storage._variant {return v}
       return HealthMetrics()
     }
-    set {variant = .healthMetrics(newValue)}
+    set {_uniqueStorage()._variant = .healthMetrics(newValue)}
   }
 
   ///
   /// Linux host metrics
   public var hostMetrics: HostMetrics {
     get {
-      if case .hostMetrics(let v)? = variant {return v}
+      if case .hostMetrics(let v)? = _storage._variant {return v}
       return HostMetrics()
     }
-    set {variant = .hostMetrics(newValue)}
+    set {_uniqueStorage()._variant = .hostMetrics(newValue)}
   }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -1213,6 +1370,8 @@ public struct Telemetry: Sendable {
   }
 
   public init() {}
+
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 ///
@@ -1281,6 +1440,7 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     37: .same(proto: "RAK12035"),
     38: .same(proto: "MAX17261"),
     39: .same(proto: "PCT2075"),
+    40: .same(proto: "ADS1X15"),
   ]
 }
 
@@ -1597,6 +1757,16 @@ extension PowerMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     4: .standard(proto: "ch2_current"),
     5: .standard(proto: "ch3_voltage"),
     6: .standard(proto: "ch3_current"),
+    7: .standard(proto: "ch4_voltage"),
+    8: .standard(proto: "ch4_current"),
+    9: .standard(proto: "ch5_voltage"),
+    10: .standard(proto: "ch5_current"),
+    11: .standard(proto: "ch6_voltage"),
+    12: .standard(proto: "ch6_current"),
+    13: .standard(proto: "ch7_voltage"),
+    14: .standard(proto: "ch7_current"),
+    15: .standard(proto: "ch8_voltage"),
+    16: .standard(proto: "ch8_current"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1611,6 +1781,16 @@ extension PowerMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       case 4: try { try decoder.decodeSingularFloatField(value: &self._ch2Current) }()
       case 5: try { try decoder.decodeSingularFloatField(value: &self._ch3Voltage) }()
       case 6: try { try decoder.decodeSingularFloatField(value: &self._ch3Current) }()
+      case 7: try { try decoder.decodeSingularFloatField(value: &self._ch4Voltage) }()
+      case 8: try { try decoder.decodeSingularFloatField(value: &self._ch4Current) }()
+      case 9: try { try decoder.decodeSingularFloatField(value: &self._ch5Voltage) }()
+      case 10: try { try decoder.decodeSingularFloatField(value: &self._ch5Current) }()
+      case 11: try { try decoder.decodeSingularFloatField(value: &self._ch6Voltage) }()
+      case 12: try { try decoder.decodeSingularFloatField(value: &self._ch6Current) }()
+      case 13: try { try decoder.decodeSingularFloatField(value: &self._ch7Voltage) }()
+      case 14: try { try decoder.decodeSingularFloatField(value: &self._ch7Current) }()
+      case 15: try { try decoder.decodeSingularFloatField(value: &self._ch8Voltage) }()
+      case 16: try { try decoder.decodeSingularFloatField(value: &self._ch8Current) }()
       default: break
       }
     }
@@ -1639,6 +1819,36 @@ extension PowerMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     try { if let v = self._ch3Current {
       try visitor.visitSingularFloatField(value: v, fieldNumber: 6)
     } }()
+    try { if let v = self._ch4Voltage {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 7)
+    } }()
+    try { if let v = self._ch4Current {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 8)
+    } }()
+    try { if let v = self._ch5Voltage {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 9)
+    } }()
+    try { if let v = self._ch5Current {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 10)
+    } }()
+    try { if let v = self._ch6Voltage {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 11)
+    } }()
+    try { if let v = self._ch6Current {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 12)
+    } }()
+    try { if let v = self._ch7Voltage {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 13)
+    } }()
+    try { if let v = self._ch7Current {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 14)
+    } }()
+    try { if let v = self._ch8Voltage {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 15)
+    } }()
+    try { if let v = self._ch8Current {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 16)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1649,6 +1859,16 @@ extension PowerMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     if lhs._ch2Current != rhs._ch2Current {return false}
     if lhs._ch3Voltage != rhs._ch3Voltage {return false}
     if lhs._ch3Current != rhs._ch3Current {return false}
+    if lhs._ch4Voltage != rhs._ch4Voltage {return false}
+    if lhs._ch4Current != rhs._ch4Current {return false}
+    if lhs._ch5Voltage != rhs._ch5Voltage {return false}
+    if lhs._ch5Current != rhs._ch5Current {return false}
+    if lhs._ch6Voltage != rhs._ch6Voltage {return false}
+    if lhs._ch6Current != rhs._ch6Current {return false}
+    if lhs._ch7Voltage != rhs._ch7Voltage {return false}
+    if lhs._ch7Current != rhs._ch7Current {return false}
+    if lhs._ch8Voltage != rhs._ch8Voltage {return false}
+    if lhs._ch8Current != rhs._ch8Current {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1670,6 +1890,8 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     11: .standard(proto: "particles_50um"),
     12: .standard(proto: "particles_100um"),
     13: .same(proto: "co2"),
+    14: .standard(proto: "co2_temperature"),
+    15: .standard(proto: "co2_humidity"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1691,6 +1913,8 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       case 11: try { try decoder.decodeSingularUInt32Field(value: &self._particles50Um) }()
       case 12: try { try decoder.decodeSingularUInt32Field(value: &self._particles100Um) }()
       case 13: try { try decoder.decodeSingularUInt32Field(value: &self._co2) }()
+      case 14: try { try decoder.decodeSingularFloatField(value: &self._co2Temperature) }()
+      case 15: try { try decoder.decodeSingularFloatField(value: &self._co2Humidity) }()
       default: break
       }
     }
@@ -1740,6 +1964,12 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     try { if let v = self._co2 {
       try visitor.visitSingularUInt32Field(value: v, fieldNumber: 13)
     } }()
+    try { if let v = self._co2Temperature {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 14)
+    } }()
+    try { if let v = self._co2Humidity {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 15)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1757,6 +1987,8 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if lhs._particles50Um != rhs._particles50Um {return false}
     if lhs._particles100Um != rhs._particles100Um {return false}
     if lhs._co2 != rhs._co2 {return false}
+    if lhs._co2Temperature != rhs._co2Temperature {return false}
+    if lhs._co2Humidity != rhs._co2Humidity {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2011,154 +2243,196 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     8: .standard(proto: "host_metrics"),
   ]
 
+  fileprivate class _StorageClass {
+    var _time: UInt32 = 0
+    var _variant: Telemetry.OneOf_Variant?
+
+    #if swift(>=5.10)
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _time = source._time
+      _variant = source._variant
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularFixed32Field(value: &self.time) }()
-      case 2: try {
-        var v: DeviceMetrics?
-        var hadOneofValue = false
-        if let current = self.variant {
-          hadOneofValue = true
-          if case .deviceMetrics(let m) = current {v = m}
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularFixed32Field(value: &_storage._time) }()
+        case 2: try {
+          var v: DeviceMetrics?
+          var hadOneofValue = false
+          if let current = _storage._variant {
+            hadOneofValue = true
+            if case .deviceMetrics(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._variant = .deviceMetrics(v)
+          }
+        }()
+        case 3: try {
+          var v: EnvironmentMetrics?
+          var hadOneofValue = false
+          if let current = _storage._variant {
+            hadOneofValue = true
+            if case .environmentMetrics(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._variant = .environmentMetrics(v)
+          }
+        }()
+        case 4: try {
+          var v: AirQualityMetrics?
+          var hadOneofValue = false
+          if let current = _storage._variant {
+            hadOneofValue = true
+            if case .airQualityMetrics(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._variant = .airQualityMetrics(v)
+          }
+        }()
+        case 5: try {
+          var v: PowerMetrics?
+          var hadOneofValue = false
+          if let current = _storage._variant {
+            hadOneofValue = true
+            if case .powerMetrics(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._variant = .powerMetrics(v)
+          }
+        }()
+        case 6: try {
+          var v: LocalStats?
+          var hadOneofValue = false
+          if let current = _storage._variant {
+            hadOneofValue = true
+            if case .localStats(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._variant = .localStats(v)
+          }
+        }()
+        case 7: try {
+          var v: HealthMetrics?
+          var hadOneofValue = false
+          if let current = _storage._variant {
+            hadOneofValue = true
+            if case .healthMetrics(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._variant = .healthMetrics(v)
+          }
+        }()
+        case 8: try {
+          var v: HostMetrics?
+          var hadOneofValue = false
+          if let current = _storage._variant {
+            hadOneofValue = true
+            if case .hostMetrics(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._variant = .hostMetrics(v)
+          }
+        }()
+        default: break
         }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.variant = .deviceMetrics(v)
-        }
-      }()
-      case 3: try {
-        var v: EnvironmentMetrics?
-        var hadOneofValue = false
-        if let current = self.variant {
-          hadOneofValue = true
-          if case .environmentMetrics(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.variant = .environmentMetrics(v)
-        }
-      }()
-      case 4: try {
-        var v: AirQualityMetrics?
-        var hadOneofValue = false
-        if let current = self.variant {
-          hadOneofValue = true
-          if case .airQualityMetrics(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.variant = .airQualityMetrics(v)
-        }
-      }()
-      case 5: try {
-        var v: PowerMetrics?
-        var hadOneofValue = false
-        if let current = self.variant {
-          hadOneofValue = true
-          if case .powerMetrics(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.variant = .powerMetrics(v)
-        }
-      }()
-      case 6: try {
-        var v: LocalStats?
-        var hadOneofValue = false
-        if let current = self.variant {
-          hadOneofValue = true
-          if case .localStats(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.variant = .localStats(v)
-        }
-      }()
-      case 7: try {
-        var v: HealthMetrics?
-        var hadOneofValue = false
-        if let current = self.variant {
-          hadOneofValue = true
-          if case .healthMetrics(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.variant = .healthMetrics(v)
-        }
-      }()
-      case 8: try {
-        var v: HostMetrics?
-        var hadOneofValue = false
-        if let current = self.variant {
-          hadOneofValue = true
-          if case .hostMetrics(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.variant = .hostMetrics(v)
-        }
-      }()
-      default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    if self.time != 0 {
-      try visitor.visitSingularFixed32Field(value: self.time, fieldNumber: 1)
-    }
-    switch self.variant {
-    case .deviceMetrics?: try {
-      guard case .deviceMetrics(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    }()
-    case .environmentMetrics?: try {
-      guard case .environmentMetrics(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    }()
-    case .airQualityMetrics?: try {
-      guard case .airQualityMetrics(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
-    }()
-    case .powerMetrics?: try {
-      guard case .powerMetrics(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
-    }()
-    case .localStats?: try {
-      guard case .localStats(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
-    }()
-    case .healthMetrics?: try {
-      guard case .healthMetrics(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
-    }()
-    case .hostMetrics?: try {
-      guard case .hostMetrics(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
-    }()
-    case nil: break
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      if _storage._time != 0 {
+        try visitor.visitSingularFixed32Field(value: _storage._time, fieldNumber: 1)
+      }
+      switch _storage._variant {
+      case .deviceMetrics?: try {
+        guard case .deviceMetrics(let v)? = _storage._variant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      }()
+      case .environmentMetrics?: try {
+        guard case .environmentMetrics(let v)? = _storage._variant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+      }()
+      case .airQualityMetrics?: try {
+        guard case .airQualityMetrics(let v)? = _storage._variant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+      }()
+      case .powerMetrics?: try {
+        guard case .powerMetrics(let v)? = _storage._variant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+      }()
+      case .localStats?: try {
+        guard case .localStats(let v)? = _storage._variant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+      }()
+      case .healthMetrics?: try {
+        guard case .healthMetrics(let v)? = _storage._variant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+      }()
+      case .hostMetrics?: try {
+        guard case .hostMetrics(let v)? = _storage._variant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
+      }()
+      case nil: break
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Telemetry, rhs: Telemetry) -> Bool {
-    if lhs.time != rhs.time {return false}
-    if lhs.variant != rhs.variant {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._time != rhs_storage._time {return false}
+        if _storage._variant != rhs_storage._variant {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

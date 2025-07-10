@@ -470,6 +470,14 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
   /// GAT562 Mesh Trial Tracker
   case gat562MeshTrialTracker // = 104
 
+  ///*
+  /// RAKwireless WisMesh Tag 
+  case wismeshTag // = 105
+
+  ///*
+  /// RAKwireless WisBlock Core RAK3312 https://docs.rakwireless.com/product-categories/wisduo/rak3112-module/overview/
+  case rak3312 // = 106
+
   ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
@@ -588,6 +596,8 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 102: self = .tDeckPro
     case 103: self = .tLoraPager
     case 104: self = .gat562MeshTrialTracker
+    case 105: self = .wismeshTag
+    case 106: self = .rak3312
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -700,6 +710,8 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .tDeckPro: return 102
     case .tLoraPager: return 103
     case .gat562MeshTrialTracker: return 104
+    case .wismeshTag: return 105
+    case .rak3312: return 106
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -812,6 +824,8 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     .tDeckPro,
     .tLoraPager,
     .gat562MeshTrialTracker,
+    .wismeshTag,
+    .rak3312,
     .privateHw,
   ]
 
@@ -3640,6 +3654,8 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     102: .same(proto: "T_DECK_PRO"),
     103: .same(proto: "T_LORA_PAGER"),
     104: .same(proto: "GAT562_MESH_TRIAL_TRACKER"),
+    105: .same(proto: "WISMESH_TAG"),
+    106: .same(proto: "RAK3312"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
