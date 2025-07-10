@@ -829,11 +829,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								let adminMessageId = self.saveTimeZone(config: dc, user: connectedNum)
 							}
 						}
-						
-					//	let adminMessageId = self.saveDeviceConfig(config: dc, fromUser: connectedUser, toUser: connectedUser)
-					//	if adminMessageId > 0 {
-					//		Logger.admin.info("⌚ Device Config timezone was empty set timezone to \(dc.tzdef, privacy: .public)")
-					//	}
 					}
 				}
 				// Device Metadata
