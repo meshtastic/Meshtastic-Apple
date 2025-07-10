@@ -334,11 +334,5 @@ struct DeviceConfig: View {
 		self.tripleClickAsAdHocPing = node?.deviceConfig?.tripleClickAsAdHocPing ?? false
 		self.ledHeartbeatEnabled = node?.deviceConfig?.ledHeartbeatEnabled ?? true
 		self.tzdef = node?.deviceConfig?.tzdef ?? ""
-		if self.tzdef.isEmpty {
-			self.tzdef = TimeZone.current.posixDescription
-			self.hasChanges = true
-		} else {
-			self.hasChanges = false
-		}
 	}
 }
