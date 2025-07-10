@@ -821,6 +821,20 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							}
 						}
 					}
+					if decodedInfo.config.payloadVariant == Config.OneOf_PayloadVariant.device(decodedInfo.config.device) {
+						var dc = decodedInfo.config.device
+						if dc.tzdef.isEmpty {
+							dc.tzdef =  TimeZone.current.posixDescription
+							if let connectedNum = self.connectedPeripheral?.num, connectedNum > 0 {
+								let adminMessageId = self.saveTimeZone(config: dc, user: connectedNum)
+							}
+						}
+						
+					//	let adminMessageId = self.saveDeviceConfig(config: dc, fromUser: connectedUser, toUser: connectedUser)
+					//	if adminMessageId > 0 {
+					//		Logger.admin.info("⌚ Device Config timezone was empty set timezone to \(dc.tzdef, privacy: .public)")
+					//	}
+					}
 				}
 				// Device Metadata
 				if decodedInfo.metadata.firmwareVersion.count > 0 && !invalidVersion {
@@ -2227,6 +2241,29 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		let messageDescription = "🛟 Saved Device Config for \(toUser.longName ?? "Unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			upsertDeviceConfigPacket(config: config, nodeNum: toUser.num, sessionPasskey: toUser.userNode?.sessionPasskey, context: context)
+			return Int64(meshPacket.id)
+		}
+		return 0
+	}
+	public func saveTimeZone(config: Config.DeviceConfig, user: Int64) -> Int64 {
+
+		var adminPacket = AdminMessage()
+		adminPacket.setConfig.device = config
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(user)
+		meshPacket.from	= UInt32(user)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		var dataMessage = DataMessage()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		let messageDescription = "⌚ Device Config timezone was empty set timezone to \(config.tzdef)"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return Int64(meshPacket.id)
 		}
 		return 0

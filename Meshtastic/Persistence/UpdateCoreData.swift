@@ -574,11 +574,7 @@ func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, sessi
 				newDeviceConfig.tripleClickAsAdHocPing = !config.disableTripleClick
 				newDeviceConfig.ledHeartbeatEnabled = !config.ledHeartbeatDisabled
 				newDeviceConfig.isManaged = config.isManaged
-				if config.tzdef.isEmpty {
-					newDeviceConfig.tzdef = TimeZone.current.posixDescription
-				} else {
-					newDeviceConfig.tzdef = config.tzdef
-				}
+				newDeviceConfig.tzdef = config.tzdef
 				fetchedNode[0].deviceConfig = newDeviceConfig
 			} else {
 				fetchedNode[0].deviceConfig?.role = Int32(config.role.rawValue)
@@ -590,11 +586,7 @@ func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, sessi
 				fetchedNode[0].deviceConfig?.tripleClickAsAdHocPing = !config.disableTripleClick
 				fetchedNode[0].deviceConfig?.ledHeartbeatEnabled = !config.ledHeartbeatDisabled
 				fetchedNode[0].deviceConfig?.isManaged = config.isManaged
-				if config.tzdef.isEmpty {
-					fetchedNode[0].deviceConfig?.tzdef = TimeZone.current.posixDescription
-				} else {
-					fetchedNode[0].deviceConfig?.tzdef = config.tzdef
-				}
+				fetchedNode[0].deviceConfig?.tzdef = config.tzdef
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
