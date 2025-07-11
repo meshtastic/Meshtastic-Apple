@@ -139,12 +139,11 @@ struct PowerConfig: View {
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.powerConfig == nil {
 								Logger.mesh.info("⚙️ Empty or expired power config requesting via PKI admin")
-								_ = bleManager.requestPowerConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								_ = bleManager.requestPowerConfig(fromUser: connectedNode.user!, toUser: node.user!)
 							}
 						} else {
 							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin, empty power config")
-							_ = bleManager.requestPowerConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
 						}
 					}
 				}
@@ -195,8 +194,7 @@ struct PowerConfig: View {
 			let adminMessageId = bleManager.savePowerConfig(
 				config: config,
 				fromUser: fromUser,
-				toUser: toUser,
-				adminIndex: connectedNode.myInfo?.adminIndex ?? 0
+				toUser: toUser
 			)
 			if adminMessageId > 0 {
 				// Should show a saved successfully alert once I know that to be true

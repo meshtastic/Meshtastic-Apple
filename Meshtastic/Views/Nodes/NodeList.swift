@@ -28,6 +28,8 @@ struct NodeList: View {
 	@State private var isFavorite = false
 	@State private var isIgnored = false
 	@State private var isEnvironment = false
+	// Force refresh ID to make SwiftUI rebuild the view hierarchy
+	@State private var forceRefreshID = UUID()
 	@State private var distanceFilter = false
 	@State private var maxDistance: Double = 800000
 	@State private var hopsAway: Double = -1.0
@@ -38,6 +40,8 @@ struct NodeList: View {
 	@State private var isPresentingPositionFailedAlert = false
 	@State private var isPresentingDeleteNodeAlert = false
 	@State private var deleteNodeId: Int64 = 0
+    @State private var isPresentingShareContactQR = false
+    @State private var shareContactNode: NodeInfoEntity?
 
 	var boolFilters: [Bool] {[
 		isFavorite,
@@ -76,13 +80,21 @@ struct NodeList: View {
 		/// Allow users to mute notifications for a node even if they are not connected
 		if let user = node.user {
 			NodeAlertsButton(context: context, node: node, user: user)
+			if !user.unmessagable {
+				Button(action: {
+					shareContactNode = node
+					isPresentingShareContactQR = true
+				}) {
+					Label("Share Contact QR", systemImage: "qrcode")
+				}
+			}
 		}
 		if let connectedNode {
 			/// Favoriting a node requires being connected
 			FavoriteNodeButton(bleManager: bleManager, context: context, node: node)
 			/// Don't show message, trace route, position exchange or delete context menu items for the connected node
 			if connectedNode.num != node.num {
-				if !node.viaMqtt || node.viaMqtt && node.hopsAway == 0 {
+				if !(node.user?.unmessagable ?? true) {
 					Button(action: {
 						if let url = URL(string: "meshtastic:///messages?userNum=\(node.num)") {
 						   UIApplication.shared.open(url)
@@ -91,21 +103,10 @@ struct NodeList: View {
 						Label("Message", systemImage: "message")
 					}
 				}
-				Button {
-					let traceRouteSent = bleManager.sendTraceRouteRequest(
-						destNum: node.num,
-						wantResponse: true
-					)
-					if traceRouteSent {
-						isPresentingTraceRouteSentAlert = true
-						DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-							isPresentingTraceRouteSentAlert = false
-						}
-					}
-
-				} label: {
-					Label("Trace Route", systemImage: "signpost.right.and.left")
-				}
+				TraceRouteButton(
+					bleManager: bleManager,
+					node: node
+				)
 				Button {
 					let positionSent = bleManager.sendPosition(
 						channel: node.channel,
@@ -142,6 +143,7 @@ struct NodeList: View {
 	}
 
 	var body: some View {
+		// Use forceRefreshID to completely rebuild the view when notifications update the selected node
 		NavigationSplitView(columnVisibility: $columnVisibility) {
 			List(nodes, id: \.self, selection: $selectedNode) { node in
 				NodeListItem(
@@ -231,6 +233,13 @@ struct NodeList: View {
 						}
 					}
 				}
+			 }
+			.sheet(isPresented: $isPresentingShareContactQR) {
+				if let node = shareContactNode {
+					ShareContactQRDialog(node: node.toProto())
+				} else {
+					EmptyView()
+				}
 			}
 			.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
 			.navigationBarItems(
@@ -243,6 +252,8 @@ struct NodeList: View {
 						phoneOnly: true
 					)
 				}
+				// Make sure the ZStack passes through accessibility to the ConnectedDevice component
+				.accessibilityElement(children: .contain)
 			)
 		} content: {
 			if let node = selectedNode {
@@ -261,6 +272,7 @@ struct NodeList: View {
 								} label: {
 									Image(systemName: "rectangle")
 								}
+								.accessibilityLabel("Hide sidebar")
 							}
 							ConnectedDevice(
 								bluetoothOn: bleManager.isSwitchedOn,
@@ -269,6 +281,8 @@ struct NodeList: View {
 								phoneOnly: true
 							)
 						}
+						// Make sure the ZStack passes through accessibility to the ConnectedDevice component
+						.accessibilityElement(children: .contain)
 					)
 				}
 			 } else {
@@ -326,15 +340,39 @@ struct NodeList: View {
 		}
 		.onChange(of: router.navigationState) {
 			if let selected = router.navigationState.nodeListSelectedNodeNum {
-				self.selectedNode = getNodeInfo(id: selected, context: context)
+				// Force a complete view rebuild by generating a new UUID
+				Logger.services.info("Forcing view rebuild with new ID: \(self.forceRefreshID)")
+				// First clear selection
+				self.forceRefreshID = UUID()
+				self.selectedNode = nil
+				// Then after a short delay, set the new selection. Makes it obvious to use page is refreshing too.
+				DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+					// Generate another UUID to ensure view gets rebuilt
+					self.forceRefreshID = UUID()
+					self.selectedNode = getNodeInfo(id: selected, context: context)
+					Logger.services.info("Complete view refresh with node: \(selected, privacy: .public)")
+				}
 			} else {
 				self.selectedNode = nil
 			}
 		}
 		.onAppear {
+			// Set up notification observer for forced refreshes from notifications
+			NotificationCenter.default.addObserver(forName: NSNotification.Name("ForceNavigationRefresh"), object: nil, queue: .main) { notification in
+				if let nodeNum = notification.userInfo?["nodeNum"] as? Int64 {
+					// Force complete refresh of view
+					self.forceRefreshID = UUID()
+					self.selectedNode = getNodeInfo(id: nodeNum, context: self.context)
+					Logger.services.info("NodeList directly updated from notification for node: \(nodeNum, privacy: .public)")
+				}
+			}
 			Task {
 				await searchNodeList()
 			}
+		}
+		.onDisappear {
+			// Remove observer when view disappears
+			NotificationCenter.default.removeObserver(self, name: NSNotification.Name("ForceNavigationRefresh"), object: nil)
 		}
 	}
 

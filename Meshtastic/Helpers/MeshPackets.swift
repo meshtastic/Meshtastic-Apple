@@ -15,7 +15,7 @@ import OSLog
 import ActivityKit
 #endif
 
-// Simple extension to consicely pass values through a has_XXX boolean check
+// Simple extension to concisely pass values through a has_XXX boolean check
 fileprivate extension Bool {
 	func then<T>(_ value: T) -> T? {
 		self ? value : nil
@@ -185,9 +185,6 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 					mutableChannels.add(newChannel)
 				}
 				fetchedMyInfo[0].channels = mutableChannels.copy() as? NSOrderedSet
-				if newChannel.name?.lowercased() == "admin" {
-					fetchedMyInfo[0].adminIndex = newChannel.index
-				}
 				context.refresh(newChannel, mergeChanges: true)
 				do {
 					try context.save()
@@ -292,14 +289,18 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				newTelemetries.append(telemetry)
 				newNode.telemetries? = NSOrderedSet(array: newTelemetries)
 			}
-
-			newNode.firstHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
-			newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
+			if nodeInfo.lastHeard > 0 {
+				newNode.firstHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
+				newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
+			} else {
+				newNode.firstHeard = Date()
+				newNode.lastHeard = Date()
+			}
 			newNode.snr = nodeInfo.snr
 			if nodeInfo.hasUser {
 
 				let newUser = UserEntity(context: context)
-				newUser.userId = nodeInfo.user.id
+				newUser.userId = nodeInfo.num.toHex()
 				newUser.num = Int64(nodeInfo.num)
 				newUser.longName = nodeInfo.user.longName
 				newUser.shortName = nodeInfo.user.shortName
@@ -317,10 +318,27 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 					newUser.pkiEncrypted = true
 					newUser.publicKey = nodeInfo.user.publicKey
 				}
+				/// For nodes that have the optional isUnmessagable boolean use that, otherwise excluded roles that are unmessagable by default
+				if nodeInfo.user.hasIsUnmessagable {
+					newUser.unmessagable = nodeInfo.user.isUnmessagable
+				} else {
+					let roles = [2, 4, 5, 6, 7, 10, 11]
+					let containsRole = roles.contains(Int(newUser.role))
+					if containsRole {
+						newUser.unmessagable = true
+					} else {
+						newUser.unmessagable = false
+					}}
 				newNode.user = newUser
 			} else if nodeInfo.num > Constants.minimumNodeNum {
-				let newUser = createUser(num: Int64(nodeInfo.num), context: context)
-				newNode.user = newUser
+				do {
+					let newUser = try createUser(num: Int64(nodeInfo.num), context: context)
+					newNode.user = newUser
+				} catch CoreDataError.invalidInput(let message) {
+					Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(nodeInfo.num, privacy: .public) Error:  \(message, privacy: .public)")
+				} catch {
+					Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(nodeInfo.num, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+				}
 			}
 
 			if (nodeInfo.position.longitudeI != 0 && nodeInfo.position.latitudeI != 0) && (nodeInfo.position.latitudeI != 373346000 && nodeInfo.position.longitudeI != -1220090000) {
@@ -380,26 +398,43 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 					fetchedNode[0].user?.pkiEncrypted = true
 					fetchedNode[0].user?.publicKey = nodeInfo.user.publicKey
 				}
-				fetchedNode[0].user!.userId = nodeInfo.user.id
-				fetchedNode[0].user!.num = Int64(nodeInfo.num)
-				fetchedNode[0].user!.numString = String(nodeInfo.num)
-				fetchedNode[0].user!.longName = nodeInfo.user.longName
-				fetchedNode[0].user!.shortName = nodeInfo.user.shortName
-				fetchedNode[0].user!.isLicensed = nodeInfo.user.isLicensed
-				fetchedNode[0].user!.role = Int32(nodeInfo.user.role.rawValue)
-				fetchedNode[0].user!.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
-				fetchedNode[0].user!.hwModelId = Int32(nodeInfo.user.hwModel.rawValue)
+				fetchedNode[0].user?.userId = nodeInfo.num.toHex()
+				fetchedNode[0].user?.num = Int64(nodeInfo.num)
+				fetchedNode[0].user?.numString = String(nodeInfo.num)
+				fetchedNode[0].user?.longName = nodeInfo.user.longName
+				fetchedNode[0].user?.shortName = nodeInfo.user.shortName
+				fetchedNode[0].user?.isLicensed = nodeInfo.user.isLicensed
+				fetchedNode[0].user?.role = Int32(nodeInfo.user.role.rawValue)
+				fetchedNode[0].user?.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
+				fetchedNode[0].user?.hwModelId = Int32(nodeInfo.user.hwModel.rawValue)
+				/// For nodes that have the optional isUnmessagable boolean use that, otherwise excluded roles that are unmessagable by default
+				if nodeInfo.user.hasIsUnmessagable {
+					fetchedNode[0].user?.unmessagable = nodeInfo.user.isUnmessagable
+				} else {
+					let roles = [-1, 2, 4, 5, 6, 7, 10, 11]
+					let containsRole = roles.contains(Int(fetchedNode[0].user?.role ?? -1))
+					if containsRole {
+						fetchedNode[0].user?.unmessagable = true
+					} else {
+						fetchedNode[0].user?.unmessagable = false
+					}
+				}
 				Task {
 					Api().loadDeviceHardwareData { (hw) in
 						let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user!.hwModelId })
-						fetchedNode[0].user!.hwDisplayName = dh?.displayName
+						fetchedNode[0].user?.hwDisplayName = dh?.displayName
 					}
 				}
 			} else {
 				if fetchedNode[0].user == nil && nodeInfo.num > Constants.minimumNodeNum {
-
-					let newUser = createUser(num: Int64(nodeInfo.num), context: context)
-					fetchedNode[0].user = newUser
+					do {
+						let newUser = try createUser(num: Int64(nodeInfo.num), context: context)
+						fetchedNode[0].user = newUser
+					} catch CoreDataError.invalidInput(let message) {
+						Logger.data.error("Error Creating a new Core Data UserEntity on an existing node (Invalid Input) from node number: \(nodeInfo.num, privacy: .public) Error:  \(message, privacy: .public)")
+					} catch {
+						Logger.data.error("Error Creating a new Core Data UserEntity on an existing node from node number: \(nodeInfo.num, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+					}
 				}
 			}
 
@@ -469,9 +504,6 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 		if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getCannedMessageModuleMessagesResponse(adminMessage.getCannedMessageModuleMessagesResponse) {
 
 			if let cmmc = try? CannedMessageModuleConfig(serializedBytes: packet.decoded.payload) {
-
-				if !cmmc.messages.isEmpty {
-
 					let logString = String.localizedStringWithFormat("Canned Messages Messages Received For: %@".localized, packet.from.toHex())
 					Logger.mesh.info("🥫 \(logString, privacy: .public)")
 
@@ -485,10 +517,11 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 								.replacingOccurrences(of: "11: ", with: "")
 								.replacingOccurrences(of: "\"", with: "")
 								.trimmingCharacters(in: .whitespacesAndNewlines)
+								.components(separatedBy: "\n").first ?? ""
 							fetchedNode[0].cannedMessageConfig?.messages = messages
 							do {
 								try context.save()
-								Logger.data.info("💾 Updated Canned Messages Messages For: \(fetchedNode[0].num.toHex(), privacy: .public)")
+								Logger.data.info("💾 Updated Canned Messages Messages For: \(fetchedNode.first?.num.toHex() ?? "Unknown".localized, privacy: .public)")
 							} catch {
 								context.rollback()
 								let nsError = error as NSError
@@ -498,7 +531,6 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 					} catch {
 						Logger.data.error("💥 Error Deserializing ADMIN_APP packet.")
 					}
-				}
 			}
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getChannelResponse(adminMessage.getChannelResponse) {
 			channelPacket(channel: adminMessage.getChannelResponse, fromNum: Int64(packet.from), context: context)
@@ -688,7 +720,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 	if let telemetryMessage = try? Telemetry(serializedBytes: packet.decoded.payload) {
 		let logString = String.localizedStringWithFormat("Telemetry received for: %@".localized, String(packet.from))
 		Logger.mesh.info("📈 \(logString, privacy: .public)")
-		if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) && telemetryMessage.variant != Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
+	if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) && telemetryMessage.variant != Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
 			/// Other unhandled telemetry packets
 			return
 		}
@@ -909,7 +941,14 @@ func textMessageAppPacket(
 					// For S&F broadcast messages, treat as a channel message (not a DM)
 					newMessage.toUser = nil
 				} else {
-					newMessage.toUser = createUser(num: Int64(truncatingIfNeeded: packet.to), context: context)
+					do {
+						let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.to), context: context)
+						newMessage.toUser = newUser
+					} catch CoreDataError.invalidInput(let message) {
+						Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.to, privacy: .public) Error:  \(message, privacy: .public)")
+					} catch {
+						Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.to, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+					}
 				}
 			}
 			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
@@ -939,7 +978,14 @@ func textMessageAppPacket(
 				}
 			} else {
 				/// Make a new from user if they are unknown
-				newMessage.fromUser = createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
+				do {
+					let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
+					newMessage.fromUser = newUser
+				} catch CoreDataError.invalidInput(let message) {
+					Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
+				} catch {
+					Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+				}
 			}
 			if packet.rxTime > 0 {
 				newMessage.fromUser?.userNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
@@ -956,78 +1002,78 @@ func textMessageAppPacket(
 				try context.save()
 				Logger.data.info("💾 Saved a new message for \(newMessage.messageId, privacy: .public)")
 				messageSaved = true
-
-				if messageSaved {
-					if packet.decoded.portnum == PortNum.detectionSensorApp && !UserDefaults.enableDetectionNotifications {
-						return
-					}
-					if newMessage.fromUser != nil && newMessage.toUser != nil {
-						// Set Unread Message Indicators
-						if packet.to == connectedNode {
-							appState.unreadDirectMessages = newMessage.toUser?.unreadMessages ?? 0
-						}
-						if !(newMessage.fromUser?.mute ?? false) {
-							// Create an iOS Notification for the received DM message
-							let manager = LocalNotificationManager()
-							manager.notifications = [
-								Notification(
-									id: ("notification.id.\(newMessage.messageId)"),
-									title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
-									subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
-									content: messageText!,
-									target: "messages",
-									path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)",
-									messageId: newMessage.messageId,
-									channel: newMessage.channel,
-									userNum: Int64(packet.from),
-									critical: critical
-								)
-							]
-							manager.schedule()
-							Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown".localized, privacy: .public)")
-						}
-					} else if newMessage.fromUser != nil && newMessage.toUser == nil {
-						let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
-						fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedNode))
-						do {
-							let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
-							if !fetchedMyInfo.isEmpty {
-								appState.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
-								for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
-									if channel.index == newMessage.channel {
-										context.refresh(channel, mergeChanges: true)
-									}
-									if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications {
-										// Create an iOS Notification for the received channel message
-										let manager = LocalNotificationManager()
-										manager.notifications = [
-											Notification(
-												id: ("notification.id.\(newMessage.messageId)"),
-												title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
-												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
-												content: messageText!,
-												target: "messages",
-												path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.messageId)",
-												messageId: newMessage.messageId,
-												channel: newMessage.channel,
-												userNum: Int64(newMessage.fromUser?.userId ?? "0"),
-												critical: critical
-											)
-										]
-										manager.schedule()
-										Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown".localized, privacy: .public)")
-									}
-								}
-							}
-						} catch {
-							// Handle error
-						}
-					}
-				}
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
 				Logger.data.error("Failed to save new MessageEntity \(nsError, privacy: .public)")
+			}
+			// Send notifications if the message saved properly to core data
+			if messageSaved {
+				if packet.decoded.portnum == PortNum.detectionSensorApp && !UserDefaults.enableDetectionNotifications {
+					return
+				}
+				if newMessage.fromUser != nil && newMessage.toUser != nil {
+					// Set Unread Message Indicators
+					if packet.to == connectedNode {
+						appState.unreadDirectMessages = newMessage.toUser?.unreadMessages ?? 0
+					}
+					if !(newMessage.fromUser?.mute ?? false) {
+						// Create an iOS Notification for the received DM message
+						let manager = LocalNotificationManager()
+						manager.notifications = [
+							Notification(
+								id: ("notification.id.\(newMessage.messageId)"),
+								title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
+								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
+								content: messageText!,
+								target: "messages",
+								path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)",
+								messageId: newMessage.messageId,
+								channel: newMessage.channel,
+								userNum: Int64(packet.from),
+								critical: critical
+							)
+						]
+						manager.schedule()
+						Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown".localized, privacy: .public)")
+					}
+				} else if newMessage.fromUser != nil && newMessage.toUser == nil {
+					let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
+					fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedNode))
+					do {
+						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
+						if !fetchedMyInfo.isEmpty {
+							appState.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
+							for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
+								if channel.index == newMessage.channel {
+									context.refresh(channel, mergeChanges: true)
+								}
+								if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications {
+									// Create an iOS Notification for the received channel message
+									let manager = LocalNotificationManager()
+									manager.notifications = [
+										Notification(
+											id: ("notification.id.\(newMessage.messageId)"),
+											title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
+											subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
+											content: messageText!,
+											target: "messages",
+											path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.messageId)",
+											messageId: newMessage.messageId,
+											channel: newMessage.channel,
+											userNum: Int64(newMessage.fromUser?.userId ?? "0"),
+											critical: critical
+										)
+									]
+									manager.schedule()
+									Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown".localized, privacy: .public)")
+								}
+							}
+						}
+					} catch {
+						// Handle error
+					}
+				}
 			}
 		} catch {
 			Logger.data.error("Fetch Message To and From Users Error")
@@ -1040,17 +1086,29 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	let logString = String.localizedStringWithFormat("Waypoint Packet received from node: %@".localized, String(packet.from))
 	Logger.mesh.info("📍 \(logString, privacy: .public)")
 
-	let fetchWaypointRequest = WaypointEntity.fetchRequest()
-	fetchWaypointRequest.predicate = NSPredicate(format: "id == %lld", Int64(packet.id))
-
 	do {
-
 		if let waypointMessage = try? Waypoint(serializedBytes: packet.decoded.payload) {
-			let fetchedWaypoint = try context.fetch(fetchWaypointRequest)
-			if fetchedWaypoint.isEmpty {
-				let waypoint = WaypointEntity(context: context)
+			// Fetch waypoint by waypointMessage.id, not packet.id
+			let fetchWaypointRequest = WaypointEntity.fetchRequest()
+			fetchWaypointRequest.predicate = NSPredicate(format: "id == %lld", Int64(waypointMessage.id))
 
-				waypoint.id = Int64(packet.id)
+			let fetchedWaypoint = try context.fetch(fetchWaypointRequest)
+			// Fetch the node info to get the short name
+			var nodeShortName: String = "?"
+			let fetchNodeRequest = NodeInfoEntity.fetchRequest()
+			fetchNodeRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
+			do {
+				let fetchedNode = try context.fetch(fetchNodeRequest)
+				if let node = fetchedNode.first, let user = node.user {
+				nodeShortName = user.shortName ?? node.user?.userId ?? String(packet.from.toHex())
+				}
+			} catch {
+				Logger.data.error("Failed to fetch NodeInfoEntity for node \(packet.from.toHex(), privacy: .public): \(error)")
+			}
+			if fetchedWaypoint.isEmpty {
+				// Create a new waypoint
+				let waypoint = WaypointEntity(context: context)
+				waypoint.id = Int64(waypointMessage.id) // Use waypointMessage.id
 				waypoint.name = waypointMessage.name
 				waypoint.longDescription = waypointMessage.description_p
 				waypoint.latitudeI = waypointMessage.latitudeI
@@ -1073,7 +1131,7 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 					manager.notifications = [
 						Notification(
 							id: ("notification.id.\(waypoint.id)"),
-							title: "New Waypoint Received",
+							title: "New Waypoint From \(nodeShortName)",
 							subtitle: "\(icon) \(waypoint.name ?? "Dropped Pin")",
 							content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")",
 							target: "map",
@@ -1088,26 +1146,42 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 					Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
 				}
 			} else {
-				fetchedWaypoint[0].id = Int64(packet.id)
-				fetchedWaypoint[0].name = waypointMessage.name
-				fetchedWaypoint[0].longDescription = waypointMessage.description_p
-				fetchedWaypoint[0].latitudeI = waypointMessage.latitudeI
-				fetchedWaypoint[0].longitudeI = waypointMessage.longitudeI
-				fetchedWaypoint[0].icon = Int64(waypointMessage.icon)
-				fetchedWaypoint[0].locked = Int64(waypointMessage.lockedTo)
-				if waypointMessage.expire >= 1 {
-					fetchedWaypoint[0].expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
-				} else {
-					fetchedWaypoint[0].expire = nil
-				}
-				fetchedWaypoint[0].lastUpdated = Date()
-				do {
-					try context.save()
-					Logger.data.info("💾 Updated Node Waypoint App Packet For: \(fetchedWaypoint[0].id, privacy: .public)")
-				} catch {
-					context.rollback()
-					let nsError = error as NSError
-					Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
+				// Update existing waypoint
+				let existingWaypoint = fetchedWaypoint[0]
+				if existingWaypoint.locked == 0 || existingWaypoint.locked == packet.from {
+					let currentTime = Int64(Date().timeIntervalSince1970)
+					if waypointMessage.expire > 0 && waypointMessage.expire <= currentTime {
+						context.delete(existingWaypoint)
+						do {
+							try context.save()
+							Logger.data.info("💾 Deleted a waypoint")
+						} catch {
+							context.rollback()
+							let nsError = error as NSError
+							Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
+						}
+					} else {
+						existingWaypoint.name = waypointMessage.name
+						existingWaypoint.longDescription = waypointMessage.description_p
+						existingWaypoint.latitudeI = waypointMessage.latitudeI
+						existingWaypoint.longitudeI = waypointMessage.longitudeI
+						existingWaypoint.icon = Int64(waypointMessage.icon)
+						existingWaypoint.locked = Int64(waypointMessage.lockedTo)
+						if waypointMessage.expire >= 1 {
+							existingWaypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
+						} else {
+							existingWaypoint.expire = nil
+						}
+						existingWaypoint.lastUpdated = Date()
+						do {
+							try context.save()
+							Logger.data.info("💾 Updated Node Waypoint App Packet For: \(existingWaypoint.id, privacy: .public)")
+						} catch {
+							context.rollback()
+							let nsError = error as NSError
+							Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
+						}
+					}
 				}
 			}
 		}

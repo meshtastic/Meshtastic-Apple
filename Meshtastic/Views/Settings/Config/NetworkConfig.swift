@@ -37,7 +37,7 @@ struct NetworkConfig: View {
 
 							Toggle(isOn: $wifiEnabled) {
 								Label("Enabled", systemImage: "wifi")
-								Text("Enabling WiFi will disable the bluetooth connection to the app.")
+								Text("Enabling WiFi will disable the bluetooth connection to the app. TCP node connections are not available on Apple devices.")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
@@ -83,9 +83,9 @@ struct NetworkConfig: View {
 						Section(header: Text("Ethernet Options")) {
 							Toggle(isOn: $ethEnabled) {
 								Label("Enabled", systemImage: "network")
-								Text("Enabling Ethernet will disable the bluetooth connection to the app.")
+								Text("Enabling Ethernet will disable the bluetooth connection to the app. TCP node connections are not available on Apple devices.")
 							}
-							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							.tint(.accentColor)
 						}
 					}
 
@@ -95,6 +95,7 @@ struct NetworkConfig: View {
 								Label("Enabled", systemImage: "point.3.connected.trianglepath.dotted")
 								Text("Enable broadcasting packets via UDP over the local network.")
 							}
+							.tint(.accentColor)
 						}
 					}
 				}
@@ -113,7 +114,7 @@ struct NetworkConfig: View {
 					network.enabledProtocols = self.udpEnabled ? UInt32(Config.NetworkConfig.ProtocolFlags.udpBroadcast.rawValue) : UInt32(Config.NetworkConfig.ProtocolFlags.noBroadcast.rawValue)
 					// network.addressMode = Config.NetworkConfig.AddressMode.dhcp
 
-					let adminMessageId =  bleManager.saveNetworkConfig(config: network, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					let adminMessageId =  bleManager.saveNetworkConfig(config: network, fromUser: connectedNode!.user!, toUser: node!.user!)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
@@ -139,7 +140,7 @@ struct NetworkConfig: View {
 				Logger.mesh.info("empty network config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if node != nil && connectedNode != nil {
-					_ = bleManager.requestNetworkConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					_ = bleManager.requestNetworkConfig(fromUser: connectedNode!.user!, toUser: node!.user!)
 				}
 			}
 		}
@@ -154,12 +155,11 @@ struct NetworkConfig: View {
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.networkConfig == nil {
 								Logger.mesh.info("⚙️ Empty or expired network config requesting via PKI admin")
-								_ = bleManager.requestNetworkConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								_ = bleManager.requestNetworkConfig(fromUser: connectedNode.user!, toUser: node.user!)
 							}
 						} else {
 							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin, empty network config")
-							_ = bleManager.requestNetworkConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
 						}
 					}
 				}

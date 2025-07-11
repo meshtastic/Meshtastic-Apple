@@ -115,7 +115,7 @@ struct TelemetryConfig: View {
 					tc.powerMeasurementEnabled = powerMeasurementEnabled
 					tc.powerUpdateInterval = UInt32(powerUpdateInterval)
 					tc.powerScreenEnabled = powerScreenEnabled
-					let adminMessageId = bleManager.saveTelemetryModuleConfig(config: tc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					let adminMessageId = bleManager.saveTelemetryModuleConfig(config: tc, fromUser: connectedNode!.user!, toUser: node!.user!)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
@@ -145,12 +145,11 @@ struct TelemetryConfig: View {
 								let expiration = node.sessionExpiration ?? Date()
 								if expiration < Date() || node.telemetryConfig == nil {
 									Logger.mesh.info("⚙️ Empty or expired telemetry module config requesting via PKI admin")
-									_ = bleManager.requestTelemetryModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+									_ = bleManager.requestTelemetryModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
 								}
 							} else {
 								/// Legacy Administration
-								Logger.mesh.info("☠️ Using insecure legacy admin, empty telemetry module config")
-								_ = bleManager.requestTelemetryModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
 							}
 						}
 					}

@@ -32,10 +32,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	public var isConnecting: Bool = false
 	public var isConnected: Bool = false
 	public var isSubscribed: Bool = false
+	public var allowDisconnect: Bool = false
 	private var configNonce: UInt32 = 1
 	var timeoutTimer: Timer?
 	var timeoutTimerCount = 0
 	var positionTimer: Timer?
+	var maintenanceTimer: Timer?
 	let mqttManager = MqttClientProxyManager.shared
 	var wantRangeTestPackets = false
 	var wantStoreAndForwardPackets = false
@@ -52,6 +54,16 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
 	let LEGACY_LOGRADIO_UUID = CBUUID(string: "0x6C6FD238-78FA-436B-AACF-15C5BE1EF2E2")
 	let LOGRADIO_UUID = CBUUID(string: "0x5a3d6e49-06e6-4423-9944-e9de8cdf9547")
+	@AppStorage("purgeStaleNodeDays") var purgeStaleNodeDays: Double = 0
+
+	let NONCE_ONLY_CONFIG = 69420
+	let NONCE_ONLY_DB = 69421
+	private var isWaitingForWantConfigResponse = false
+
+    private var wantConfigTimer: Timer?
+    private var wantConfigRetryCount = 0
+    private let maxWantConfigRetries = 6
+	private let wantConfigTimeoutInterval: TimeInterval = 6.0
 
 	// MARK: init
 	private override init() {
@@ -68,13 +80,21 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	}
 
 	private init(appState: AppState, context: NSManagedObjectContext) {
-	   self.appState = appState
-	   self.context = context
-	   self.lastConnectionError = ""
-	   self.connectedVersion = "0.0.0"
-	   super.init()
-	   centralManager = CBCentralManager(delegate: self, queue: nil)
-	   mqttManager.delegate = self
+		self.appState = appState
+		self.context = context
+		self.lastConnectionError = ""
+		self.connectedVersion = "0.0.0"
+		super.init()
+		centralManager = CBCentralManager(delegate: self, queue: nil)
+		mqttManager.delegate = self
+		// Run clearStaleNodes every hour
+		maintenanceTimer = Timer.scheduledTimer(withTimeInterval: 3600, repeats: true, block: { _ in
+			let result = clearStaleNodes(nodeExpireDays: Int(self.purgeStaleNodeDays), context: self.context)
+			// If you are connected and the clear worked, pull nodes back from the node in case we have deleted anything from that app that is in the device nodedb
+			if result && self.isSubscribed {
+				self.sendWantConfig()
+			}
+		})
 	}
 
 	// MARK: Scanning for BLE Devices
@@ -163,6 +183,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		isConnecting = false
 		isConnected = false
 		isSubscribed = false
+		allowDisconnect = false
 		self.connectedPeripheral = nil
 		invalidVersion = false
 		connectedVersion = "0.0.0"
@@ -177,20 +198,30 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 	// Disconnect Connected Peripheral
 	func disconnectPeripheral(reconnect: Bool = true) {
-
-		guard let connectedPeripheral = connectedPeripheral else { return }
-		if mqttProxyConnected {
-			mqttManager.mqttClientProxy?.disconnect()
+		// Ensure all operations run on the main thread
+		DispatchQueue.main.async { [weak self] in
+			guard let self = self else { return }
+			guard let connectedPeripheral = self.connectedPeripheral else { return }
+			if self.mqttProxyConnected {
+				self.mqttManager.mqttClientProxy?.disconnect()
+			}
+			self.isWaitingForWantConfigResponse = false
+			if wantConfigTimer != nil {
+				self.wantConfigTimer?.invalidate()
+			}
+			self.wantConfigTimer = nil
+			self.wantConfigRetryCount = 0
+			self.automaticallyReconnect = reconnect
+			self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
+			self.FROMRADIO_characteristic = nil
+			self.isConnected = false
+			self.isSubscribed = false
+			self.allowDisconnect = false
+			self.invalidVersion = false
+			self.connectedVersion = "0.0.0"
+			self.stopScanning()
+			self.startScanning()
 		}
-		automaticallyReconnect = reconnect
-		centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
-		FROMRADIO_characteristic = nil
-		isConnected = false
-		isSubscribed = false
-		invalidVersion = false
-		connectedVersion = "0.0.0"
-		stopScanning()
-		startScanning()
 	}
 
 	// Called each time a peripheral is connected
@@ -242,6 +273,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 	// Disconnect Peripheral Event
 	func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+		resetWantConfigRetries()
 		self.connectedPeripheral = nil
 		self.isConnecting = false
 		self.isConnected = false
@@ -405,7 +437,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	}
 
 	// MARK: Protobuf Methods
-	func requestDeviceMetadata(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32, context: NSManagedObjectContext) -> Int64 {
+	func requestDeviceMetadata(fromUser: UserEntity, toUser: UserEntity, context: NSManagedObjectContext) -> Int64 {
 
 		guard connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected else { return 0 }
 
@@ -416,7 +448,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
 		if let serializedData: Data = try? adminPacket.serializedData() {
@@ -468,7 +499,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 			let traceRoute = TraceRouteEntity(context: context)
 			let nodes = NodeInfoEntity.fetchRequest()
-			nodes.predicate = NSPredicate(format: "num IN %@", [destNum, self.connectedPeripheral.num])
+			if let connectedNum = self.connectedPeripheral?.num {
+				nodes.predicate = NSPredicate(format: "num IN %@", [destNum, connectedNum])
+			} else {
+				nodes.predicate = NSPredicate(format: "num == %@", destNum)
+			}
 			do {
 				let fetchedNodes = try context.fetch(nodes)
 				let receivingNode = fetchedNodes.first(where: { $0.num == destNum })
@@ -494,31 +529,88 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return success
 	}
 
-	func sendWantConfig() {
-		guard connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected else { return }
+ func sendWantConfig() {
+	 isWaitingForWantConfigResponse = true
 
-		if FROMRADIO_characteristic == nil {
-			Logger.mesh.error("🚨 \("Unsupported Firmware Version Detected, unable to connect to device.".localized, privacy: .public)")
-			invalidVersion = true
+	 guard connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected else { return }
+
+	 if FROMRADIO_characteristic == nil {
+		 Logger.mesh.error("🚨 \("Unsupported Firmware Version Detected, unable to connect to device.".localized, privacy: .public)")
+		 invalidVersion = true
+		 return
+	 } else {
+		 // Send Heartbeat before wantConfig
+		var heartbeatToRadio: ToRadio = ToRadio()
+		heartbeatToRadio.payloadVariant = .heartbeat(Heartbeat())
+		guard let heartbeatBinaryData: Data = try? heartbeatToRadio.serializedData() else {
+			Logger.mesh.error("Failed to serialize Heartbeat ToRadio message")
 			return
-		} else {
-
-			let nodeName = connectedPeripheral?.peripheral.name ?? "Unknown".localized
-			let logString = String.localizedStringWithFormat("Issuing Want Config to %@".localized, nodeName)
-			Logger.mesh.info("🛎️ \(logString, privacy: .public)")
-			// BLE Characteristics discovered, issue wantConfig
-			var toRadio: ToRadio = ToRadio()
-			configNonce += 1
-			toRadio.wantConfigID = configNonce
-			guard let binaryData: Data = try? toRadio.serializedData() else {
-				return
-			}
-			connectedPeripheral!.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			// Either Read the config complete value or from num notify value
-			guard connectedPeripheral != nil else { return }
-			connectedPeripheral!.peripheral.readValue(for: FROMRADIO_characteristic)
 		}
-	}
+		connectedPeripheral!.peripheral.writeValue(heartbeatBinaryData, for: TORADIO_characteristic, type: .withResponse)
+
+		 let nodeName = connectedPeripheral?.peripheral.name ?? "Unknown".localized
+		 let logString = String.localizedStringWithFormat("Issuing Want Config to %@".localized, nodeName)
+		 Logger.mesh.info("🛎️ \(logString, privacy: .public)")
+		 // BLE Characteristics discovered, issue wantConfig
+		 var toRadio: ToRadio = ToRadio()
+		 configNonce = UInt32(NONCE_ONLY_DB)
+		 if !isSubscribed {
+			 configNonce = UInt32(NONCE_ONLY_CONFIG) // Get config first
+		 }
+		 toRadio.wantConfigID = configNonce
+		 guard let binaryData: Data = try? toRadio.serializedData() else {
+			 return
+		 }
+		 connectedPeripheral!.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+		 // Either Read the config complete value or from num notify value
+		 guard connectedPeripheral != nil else { return }
+		 connectedPeripheral!.peripheral.readValue(for: FROMRADIO_characteristic)
+		 // Start timeout timer
+		 startWantConfigTimeout()
+	 }
+ }
+
+ private func startWantConfigTimeout() {
+	 // Cancel any existing timer
+	 wantConfigTimer?.invalidate()
+	 // Start new timer
+	 wantConfigTimer = Timer.scheduledTimer(withTimeInterval: wantConfigTimeoutInterval, repeats: false) { [weak self] _ in
+		 self?.handleWantConfigTimeout()
+	 }
+ }
+
+ private func handleWantConfigTimeout() {
+	 guard isWaitingForWantConfigResponse else { return }
+	 wantConfigRetryCount += 1
+	 if wantConfigRetryCount == 1 {
+		 allowDisconnect = true
+	 }
+	 if wantConfigRetryCount < maxWantConfigRetries {
+		 Logger.mesh.warning("⏰ Want Config timeout, retrying... (attempt \(self.wantConfigRetryCount + 1)/\(self.maxWantConfigRetries))")
+		 sendWantConfig()
+	 } else {
+		 Logger.mesh.error("🚨 Want Config failed after \(self.maxWantConfigRetries) attempts, forcing disconnect")
+		 lastConnectionError = "Bluetooth connection timeout, keep your node closer or reboot your radio if the problem continues.".localized
+		 disconnectPeripheral(reconnect: false)
+	 }
+ }
+
+ func onWantConfigResponseReceived() {
+	 if isWaitingForWantConfigResponse {
+		 isWaitingForWantConfigResponse = false
+		 wantConfigTimer?.invalidate()
+		 wantConfigTimer = nil
+		 wantConfigRetryCount = 0 // Reset retry count on success
+	 }
+ }
+
+ // Call this to reset the retry mechanism (e.g., on new connection)
+ func resetWantConfigRetries() {
+	 wantConfigRetryCount = 0
+	 wantConfigTimer?.invalidate()
+	 wantConfigTimer = nil
+	 isWaitingForWantConfigResponse = false
+ }
 
 	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
 		if let error {
@@ -637,6 +729,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				let message = CocoaMQTTMessage(topic: decodedInfo.mqttClientProxyMessage.topic, payload: [UInt8](decodedInfo.mqttClientProxyMessage.data), retained: decodedInfo.mqttClientProxyMessage.retained)
 				mqttManager.mqttClientProxy?.publish(message)
 			} else if decodedInfo.payloadVariant == FromRadio.OneOf_PayloadVariant.clientNotification(decodedInfo.clientNotification) {
+				var path = "meshtastic:///settings/debugLogs"
 				if decodedInfo.clientNotification.hasReplyID {
 					/// Set Sent bool on TraceRouteEntity to false if we got rate limited
 					if decodedInfo.clientNotification.message.starts(with: "TraceRoute") {
@@ -651,20 +744,24 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							Logger.data.error("💥 [TraceRouteEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 						}
 					}
+					if decodedInfo.clientNotification.payloadVariant == ClientNotification.OneOf_PayloadVariant.lowEntropyKey(decodedInfo.clientNotification.lowEntropyKey) ||
+						decodedInfo.clientNotification.payloadVariant == ClientNotification.OneOf_PayloadVariant.duplicatedPublicKey(decodedInfo.clientNotification.duplicatedPublicKey) {
+						path = "meshtastic:///settings/security"
+					}
 				}
 				let manager = LocalNotificationManager()
 				manager.notifications = [
 					Notification(
 						id: UUID().uuidString,
-						title: "Firmware Notification",
+						title: "Firmware Notification".localized,
 						subtitle: "\(decodedInfo.clientNotification.level)".capitalized,
 						content: decodedInfo.clientNotification.message,
 						target: "settings",
-						path: "meshtastic:///settings/debugLogs"
+						path: path
 					)
 				]
 				manager.schedule()
-				Logger.data.error("⚠️ Client Notification \((try? decodedInfo.clientNotification.jsonString()) ?? "JSON Decode Failure")")
+				Logger.data.error("⚠️ Client Notification: \(decodedInfo.clientNotification.message, privacy: .public)")
 			}
 
 			switch decodedInfo.packet.decoded.portnum {
@@ -691,6 +788,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 				// NodeInfo
 				if decodedInfo.nodeInfo.num > 0 {
+					onWantConfigResponseReceived()
 					nowKnown = true
 					if let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, channel: decodedInfo.packet.channel, context: context) {
 						if self.connectedPeripheral != nil && self.connectedPeripheral.num == nodeInfo.num {
@@ -707,17 +805,20 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					channelPacket(channel: decodedInfo.channel, fromNum: Int64(truncatingIfNeeded: connectedPeripheral.num), context: context)
 				}
 				// Config
-				if decodedInfo.config.isInitialized && !invalidVersion && connectedPeripheral != nil {
+				if decodedInfo.config.isInitialized && !invalidVersion && connectedPeripheral != nil && self.connectedPeripheral?.num != 0 {
 					nowKnown = true
-					localConfig(config: decodedInfo.config, context: context, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral.num), nodeLongName: self.connectedPeripheral.longName)
+					localConfig(config: decodedInfo.config, context: context, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral.num), nodeLongName: self.connectedPeripheral?.longName ?? "Unknown")
 				}
 				// Module Config
 				if decodedInfo.moduleConfig.isInitialized && !invalidVersion && self.connectedPeripheral?.num != 0 {
+					onWantConfigResponseReceived()
 					nowKnown = true
-					moduleConfig(config: decodedInfo.moduleConfig, context: context, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral?.num ?? 0), nodeLongName: self.connectedPeripheral.longName)
+					moduleConfig(config: decodedInfo.moduleConfig, context: context, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral.num), nodeLongName: self.connectedPeripheral?.longName ?? "Unknown")
 					if decodedInfo.moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(decodedInfo.moduleConfig.cannedMessage) {
 						if decodedInfo.moduleConfig.cannedMessage.enabled {
-							_ = self.getCannedMessageModuleMessages(destNum: self.connectedPeripheral.num, wantResponse: true)
+							if let connectedNum = self.connectedPeripheral?.num, connectedNum > 0 {
+								_ = self.getCannedMessageModuleMessages(destNum: connectedNum, wantResponse: true)
+							}
 						}
 					}
 				}
@@ -771,7 +872,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .nodeinfoApp:
 				if !invalidVersion { upsertNodeInfoPacket(packet: decodedInfo.packet, context: context) }
 			case .routingApp:
-				if !invalidVersion { routingPacket(packet: decodedInfo.packet, connectedNodeNum: self.connectedPeripheral.num, context: context) }
+				if !invalidVersion {
+					guard let peripheral = self.connectedPeripheral else {
+						Logger.mesh.error("🕸️ connectedPeripheral is nil. Unable to determine connectedNodeNum for routingPacket.")
+						return
+					}
+					routingPacket(packet: decodedInfo.packet, connectedNodeNum: peripheral.num, context: context)
+				}
 			case .adminApp:
 				adminAppPacket(packet: decodedInfo.packet, context: context)
 			case .replyApp:
@@ -940,7 +1047,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 								subtitle: "TR received back from \(destinationHop.name ?? "unknown")",
 								content: "Hops from: \(tr.hopsTowards), Hops back: \(tr.hopsBack)\n\(tr.routeText ?? "Unknown".localized)\n\(tr.routeBackText ?? "Unknown".localized)",
 								target: "nodes",
-								path: "meshtastic:///nodes?nodenum=\(connectedNode.user?.num ?? 0)"
+								path: "meshtastic:///nodes?nodenum=\(tr.node?.num ?? 0)"
 							)
 						]
 						manager.schedule()
@@ -975,12 +1082,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				Logger.mesh.info("🕸️ MESH PACKET received for Power Stress App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			case .reticulumTunnelApp:
 				Logger.mesh.info("🕸️ MESH PACKET received for Reticulum Tunnel App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+			case .keyVerificationApp:
+				Logger.mesh.warning("🕸️ MESH PACKET received for Key Verification App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			}
 
-			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
+			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == NONCE_ONLY_CONFIG {
 				invalidVersion = false
 				lastConnectionError = ""
 				isSubscribed = true
+				allowDisconnect = true
 				Logger.mesh.info("🤜 [BLE] Want Config Complete. ID:\(decodedInfo.configCompleteID, privacy: .public)")
 				if UserDefaults.firstLaunch {
 					UserDefaults.showDeviceOnboarding = true
@@ -1020,7 +1130,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					} catch {
 						Logger.data.error("Failed to find a node info for the connected node \(error.localizedDescription, privacy: .public)")
 					}
+					Logger.mesh.info("🤜 [BLE] Want Config Complete. ID:\(decodedInfo.configCompleteID, privacy: .public)")
+					sendWantConfig()
+
 				}
+				
 
 				// MARK: Share Location Position Update Timer
 				// Use context to pass the radio name with the timer
@@ -1033,6 +1147,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 				}
 				return
+			}
+			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == NONCE_ONLY_DB {
+				Logger.mesh.info("🤜 [BLE] Want Config DB Complete. ID:\(decodedInfo.configCompleteID, privacy: .public)")
 			}
 
 		case FROMNUM_UUID:
@@ -1072,7 +1189,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			success = false
 
 		} else {
-			let fromUserNum: Int64 = self.connectedPeripheral.num
+			guard let fromUserNum = self.connectedPeripheral?.num else {
+				Logger.mesh.error("🚫 Connected peripheral user number is nil, cannot send message.")
+				return false
+			}
 
 			let messageUsers = UserEntity.fetchRequest()
 			messageUsers.predicate = NSPredicate(format: "num IN %@", [fromUserNum, Int64(toUserNum)])
@@ -1123,6 +1243,27 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					if newMessage.toUser?.pkiEncrypted ?? false {
 						meshPacket.pkiEncrypted = true
 						meshPacket.publicKey = newMessage.toUser?.publicKey ?? Data()
+						// Auto Favorite nodes you DM so they don't roll out of the nodedb
+						if !(newMessage.toUser?.userNode?.favorite ?? true) {
+							newMessage.toUser?.userNode?.favorite = true
+							do {
+								try context.save()
+								if let connectedPeripheral = self.connectedPeripheral {
+									Logger.data.info("💾 Auto favorited node based on sending a message \(connectedPeripheral.num.toHex(), privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
+								} else {
+									Logger.data.warning("⚠️ connectedPeripheral is nil while attempting to log auto-favoriting a node.")
+								}
+								guard let userNode = newMessage.toUser?.userNode else {
+									Logger.data.warning("⚠️ Unable to set favorite node: userNode is nil.")
+									return false
+								}
+								_ = self.setFavoriteNode(node: userNode, connectedNodeNum: fromUserNum)
+							} catch {
+								context.rollback()
+								let nsError = error as NSError
+								Logger.data.error("Unresolved Core Data error when auto favoriting in Send Message Function. Error: \(nsError, privacy: .public)")
+							}
+						}
 					}
 					meshPacket.id = UInt32(newMessage.messageId)
 					if toUserNum > 0 {
@@ -1152,7 +1293,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						Logger.mesh.info("💬 \(logString, privacy: .public)")
 						do {
 							try context.save()
-							Logger.data.info("💾 Saved a new sent message from \(self.connectedPeripheral.num.toHex(), privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
+							Logger.data.info("💾 Saved a new sent message from \(self.connectedPeripheral?.num.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
 							success = true
 
 						} catch {
@@ -1163,14 +1304,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 				}
 			} catch {
-				Logger.data.error("💥 Send message failure \(self.connectedPeripheral.num.toHex(), privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
+				Logger.data.error("💥 Send message failure \(self.connectedPeripheral?.num.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
 			}
 		}
 		return success
 	}
 
 	public func sendWaypoint(waypoint: Waypoint) -> Bool {
-		if waypoint.latitudeI == 373346000 && waypoint.longitudeI == -1220090000 {
+		if waypoint.latitudeI == 0 && waypoint.longitudeI == 0 {
 			return false
 		}
 		var success = false
@@ -1380,6 +1521,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	}
 
 	public func sendTime() -> Bool {
+		if self.connectedPeripheral?.num ?? 0 <= 0 {
+			Logger.mesh.error("🚫 Unable to send time, connected node is disconnected or invalid")
+			return false
+		}
 		var adminPacket = AdminMessage()
 		adminPacket.setTimeOnly = UInt32(Date().timeIntervalSince1970)
 		var meshPacket: MeshPacket = MeshPacket()
@@ -1404,7 +1549,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return false
 	}
 
-	public func sendShutdown(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func sendShutdown(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 		var adminPacket = AdminMessage()
 		adminPacket.shutdownSeconds = 5
 		if fromUser != toUser {
@@ -1416,7 +1561,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.channel = UInt32(adminIndex)
 		var dataMessage = DataMessage()
 		if let serializedData: Data = try? adminPacket.serializedData() {
 			dataMessage.payload = serializedData
@@ -1432,7 +1576,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return false
 	}
 
-	public func sendReboot(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func sendReboot(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 		var adminPacket = AdminMessage()
 		adminPacket.rebootSeconds = 5
 		if fromUser != toUser {
@@ -1444,7 +1588,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.channel = UInt32(adminIndex)
 		var dataMessage = DataMessage()
 		if let serializedData: Data = try? adminPacket.serializedData() {
 			dataMessage.payload = serializedData
@@ -1460,7 +1603,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return false
 	}
 
-	public func sendRebootOta(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func sendRebootOta(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 		var adminPacket = AdminMessage()
 		adminPacket.rebootOtaSeconds = 5
 		if fromUser != toUser {
@@ -1472,7 +1615,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.channel = UInt32(adminIndex)
 		var dataMessage = DataMessage()
 		if let serializedData: Data = try? adminPacket.serializedData() {
 			dataMessage.payload = serializedData
@@ -1517,9 +1659,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return false
 	}
 
-	public func sendFactoryReset(fromUser: UserEntity, toUser: UserEntity) -> Bool {
+	public func sendFactoryReset(fromUser: UserEntity, toUser: UserEntity, resetDevice: Bool = false) -> Bool {
 		var adminPacket = AdminMessage()
-		adminPacket.factoryResetConfig = 5
+		if resetDevice {
+			adminPacket.factoryResetDevice = 5
+		} else {
+			adminPacket.factoryResetConfig = 5
+		}
 		if fromUser != toUser {
 			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
 		}
@@ -1639,7 +1785,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func saveChannelSet(base64UrlString: String, addChannels: Bool = false) -> Bool {
+	public func saveChannelSet(base64UrlString: String, addChannels: Bool = false, okToMQTT: Bool = false) -> Bool {
 		if isConnected {
 
 			var i: Int32 = 0
@@ -1721,6 +1867,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					// Save the LoRa Config and the device will reboot
 					var adminPacket = AdminMessage()
 					adminPacket.setConfig.lora = channelSet.loraConfig
+					adminPacket.setConfig.lora.configOkToMqtt = okToMQTT // Preserve users okToMQTT choice
 					var meshPacket: MeshPacket = MeshPacket()
 					meshPacket.to = UInt32(connectedPeripheral.num)
 					meshPacket.from	= UInt32(connectedPeripheral.num)
@@ -1760,7 +1907,71 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return false
 	}
 
-	public func saveUser(config: User, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func addContactFromURL(base64UrlString: String) -> Bool {
+		if isConnected {
+
+			let decodedString = base64UrlString.base64urlToBase64()
+			if let decodedData = Data(base64Encoded: decodedString) {
+				do {
+					let contact: SharedContact = try SharedContact(serializedBytes: decodedData)
+					var adminPacket = AdminMessage()
+					adminPacket.addContact = contact
+					var meshPacket: MeshPacket = MeshPacket()
+					meshPacket.to = UInt32(connectedPeripheral.num)
+					meshPacket.from	= UInt32(connectedPeripheral.num)
+					meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+					meshPacket.priority =  MeshPacket.Priority.reliable
+					meshPacket.wantAck = true
+					meshPacket.channel = 0
+					var dataMessage = DataMessage()
+					guard let adminData: Data = try? adminPacket.serializedData() else {
+						return false
+					}
+					dataMessage.payload = adminData
+					dataMessage.portnum = PortNum.adminApp
+					meshPacket.decoded = dataMessage
+					var toRadio: ToRadio!
+					toRadio = ToRadio()
+					toRadio.packet = meshPacket
+					guard let binaryData: Data = try? toRadio.serializedData() else {
+						return false
+					}
+
+					// Create a NodeInfo (User) packet for the newly added contact
+					var dataNodeMessage = DataMessage()
+					if let nodeInfoData = try? contact.user.serializedData() {
+						dataNodeMessage.payload = nodeInfoData
+						dataNodeMessage.portnum = PortNum.nodeinfoApp
+						var nodeMeshPacket = MeshPacket()
+						nodeMeshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+						nodeMeshPacket.to = UInt32.max
+						nodeMeshPacket.from = UInt32(contact.nodeNum)
+						nodeMeshPacket.decoded = dataNodeMessage
+						// Update local database with the new node info
+						upsertNodeInfoPacket(packet: nodeMeshPacket, context: context)
+					}
+
+					if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
+						self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
+						let logString = String.localizedStringWithFormat("Added contact %@ to device".localized, contact.user.longName)
+						Logger.mesh.info("📻 \(logString, privacy: .public)")
+					}
+
+					if self.connectedPeripheral != nil {
+						self.sendWantConfig()
+						return true
+					}
+
+				} catch {
+					Logger.data.error("Failed to decode contact data: \(error.localizedDescription, privacy: .public)")
+					return false
+				}
+			}
+		}
+		return false
+	}
+
+	public func saveUser(config: User, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 		var adminPacket = AdminMessage()
 		adminPacket.setOwner = config
 		if fromUser != toUser {
@@ -1769,7 +1980,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -1943,7 +2153,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return false
 	}
 
-	public func saveLicensedUser(ham: HamParameters, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func saveLicensedUser(ham: HamParameters, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 		var adminPacket = AdminMessage()
 		adminPacket.setHamMode = ham
 		if fromUser != toUser {
@@ -1952,7 +2162,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -1969,7 +2178,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		return 0
 	}
-	public func saveBluetoothConfig(config: Config.BluetoothConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func saveBluetoothConfig(config: Config.BluetoothConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.bluetooth = config
 		if fromUser != toUser {
@@ -1978,7 +2187,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -1999,7 +2207,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func saveDeviceConfig(config: Config.DeviceConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func saveDeviceConfig(config: Config.DeviceConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.device = config
@@ -2009,7 +2217,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -2028,7 +2235,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func saveDisplayConfig(config: Config.DisplayConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func saveDisplayConfig(config: Config.DisplayConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.display = config
 		if fromUser != toUser {
@@ -2037,9 +2244,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		if adminIndex > 0 {
-			meshPacket.channel = UInt32(adminIndex)
-		}
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -2058,7 +2262,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func saveLoRaConfig(config: Config.LoRaConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func saveLoRaConfig(config: Config.LoRaConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.lora = config
@@ -2068,7 +2272,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -2088,7 +2291,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func savePositionConfig(config: Config.PositionConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func savePositionConfig(config: Config.PositionConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.position = config
@@ -2098,7 +2301,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -2121,7 +2323,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func savePowerConfig(config: Config.PowerConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func savePowerConfig(config: Config.PowerConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.power = config
@@ -2129,7 +2331,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -2152,7 +2353,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func saveNetworkConfig(config: Config.NetworkConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func saveNetworkConfig(config: Config.NetworkConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.network = config
@@ -2162,7 +2363,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -2185,7 +2385,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func saveSecurityConfig(config: Config.SecurityConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func saveSecurityConfig(config: Config.SecurityConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.security = config
@@ -2195,7 +2395,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -2218,7 +2417,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func saveAmbientLightingModuleConfig(config: ModuleConfig.AmbientLightingConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func saveAmbientLightingModuleConfig(config: ModuleConfig.AmbientLightingConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.ambientLighting = config
@@ -2228,7 +2427,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -2250,7 +2448,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func saveCannedMessageModuleConfig(config: ModuleConfig.CannedMessageConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func saveCannedMessageModuleConfig(config: ModuleConfig.CannedMessageConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.cannedMessage = config
@@ -2260,7 +2458,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -2282,7 +2479,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func saveCannedMessageModuleMessages(messages: String, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func saveCannedMessageModuleMessages(messages: String, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setCannedMessageModuleMessages = messages
@@ -2292,7 +2489,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -2315,7 +2511,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func saveDetectionSensorModuleConfig(config: ModuleConfig.DetectionSensorConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func saveDetectionSensorModuleConfig(config: ModuleConfig.DetectionSensorConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.detectionSensor = config
@@ -2326,7 +2522,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 
@@ -2346,7 +2541,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func saveExternalNotificationModuleConfig(config: ModuleConfig.ExternalNotificationConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func saveExternalNotificationModuleConfig(config: ModuleConfig.ExternalNotificationConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.externalNotification = config
@@ -2356,7 +2551,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -2377,7 +2571,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func savePaxcounterModuleConfig(config: ModuleConfig.PaxcounterConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func savePaxcounterModuleConfig(config: ModuleConfig.PaxcounterConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.paxcounter = config
@@ -2387,7 +2581,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -2409,7 +2602,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func saveRtttlConfig(ringtone: String, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func saveRtttlConfig(ringtone: String, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setRingtoneMessage = ringtone
@@ -2420,7 +2613,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
@@ -2441,7 +2633,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func saveMQTTConfig(config: ModuleConfig.MQTTConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func saveMQTTConfig(config: ModuleConfig.MQTTConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.mqtt = config
@@ -2452,7 +2644,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 
@@ -2473,7 +2664,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func saveRangeTestModuleConfig(config: ModuleConfig.RangeTestConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func saveRangeTestModuleConfig(config: ModuleConfig.RangeTestConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.rangeTest = config
@@ -2484,7 +2675,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
@@ -2505,7 +2695,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func saveSerialModuleConfig(config: ModuleConfig.SerialConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func saveSerialModuleConfig(config: ModuleConfig.SerialConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.serial = config
@@ -2516,7 +2706,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 
@@ -2536,7 +2725,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func saveStoreForwardModuleConfig(config: ModuleConfig.StoreForwardConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func saveStoreForwardModuleConfig(config: ModuleConfig.StoreForwardConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.storeForward = config
@@ -2547,7 +2736,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 
@@ -2567,7 +2755,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 
-	public func saveTelemetryModuleConfig(config: ModuleConfig.TelemetryConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func saveTelemetryModuleConfig(config: ModuleConfig.TelemetryConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.telemetry = config
@@ -2578,7 +2766,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 
@@ -2671,7 +2858,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return false
 	}
 
-	public func requestBluetoothConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func requestBluetoothConfig(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.bluetoothConfig
@@ -2683,7 +2870,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -2696,7 +2882,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested Bluetooth Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
+		let messageDescription = "🛎️ Requested Bluetooth Config using an admin key for node: \(String(connectedPeripheral.num))"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return true
@@ -2704,7 +2890,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return false
 	}
 
-	public func requestDeviceConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func requestDeviceConfig(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.deviceConfig
@@ -2713,7 +2899,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -2726,7 +2911,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested Device Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "Unknown".localized)"
+		let messageDescription = "🛎️ Requested Device Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return true
@@ -2734,7 +2919,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return false
 	}
 
-	public func requestDisplayConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func requestDisplayConfig(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.displayConfig
@@ -2743,7 +2928,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -2756,7 +2940,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested Display Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "Unknown".localized)"
+		let messageDescription = "🛎️ Requested Display Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return true
@@ -2764,7 +2948,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return false
 	}
 
-	public func requestLoRaConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func requestLoRaConfig(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.loraConfig
@@ -2773,7 +2957,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -2786,7 +2969,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested LoRa Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "Unknown".localized)"
+		let messageDescription = "🛎️ Requested LoRa Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 
@@ -2796,7 +2979,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return false
 	}
 
-	public func requestNetworkConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func requestNetworkConfig(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.networkConfig
@@ -2805,7 +2988,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -2817,7 +2999,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		dataMessage.wantResponse = true
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested Network Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "Unknown".localized)"
+		let messageDescription = "🛎️ Requested Network Config using an admin Key for node: \(toUser.longName ?? "Unknown".localized)"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return true
@@ -2825,7 +3007,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return false
 	}
 
-	public func requestPositionConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func requestPositionConfig(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.positionConfig
@@ -2834,7 +3016,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -2847,14 +3028,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested Position Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "Unknown".localized)"
+		let messageDescription = "🛎️ Requested Position Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return true
 		}
 		return false
 	}
 
-	public func requestPowerConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func requestPowerConfig(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.powerConfig
@@ -2863,7 +3044,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -2876,14 +3056,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested Power Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "Unknown".localized)"
+		let messageDescription = "🛎️ Requested Power Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return true
 		}
 		return false
 	}
 
-	public func requestSecurityConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func requestSecurityConfig(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.securityConfig
@@ -2892,7 +3072,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -2905,14 +3084,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested Security Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "Unknown".localized)"
+		let messageDescription = "🛎️ Requested Security Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return true
 		}
 		return false
 	}
 
-	public func requestAmbientLightingConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func requestAmbientLightingConfig(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.ambientlightingConfig
@@ -2921,7 +3100,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -2934,14 +3112,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested Ambient Lighting Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "Unknown".localized)"
+		let messageDescription = "🛎️ Requested Ambient Lighting Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return true
 		}
 		return false
 	}
 
-	public func requestCannedMessagesModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func requestCannedMessagesModuleConfig(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.cannedmsgConfig
@@ -2950,7 +3128,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -2963,14 +3140,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested Canned Messages Module Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "Unknown".localized)"
+		let messageDescription = "🛎️ Requested Canned Messages Module Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return true
 		}
 		return false
 	}
 
-	public func requestExternalNotificationModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func requestExternalNotificationModuleConfig(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.extnotifConfig
@@ -2979,7 +3156,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -2992,14 +3168,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested External Notificaiton Module Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "Unknown".localized)"
+		let messageDescription = "🛎️ Requested External Notificaiton Module Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return true
 		}
 		return false
 	}
 
-	public func requestPaxCounterModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func requestPaxCounterModuleConfig(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.paxcounterConfig
@@ -3008,7 +3184,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -3021,14 +3196,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested PAX Counter Module Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "Unknown".localized)"
+		let messageDescription = "🛎️ Requested PAX Counter Module Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return true
 		}
 		return false
 	}
 
-	public func requestRtttlConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func requestRtttlConfig(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getRingtoneRequest = true
@@ -3037,7 +3212,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -3050,14 +3224,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested RTTTL Ringtone Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "Unknown".localized)"
+		let messageDescription = "🛎️ Requested RTTTL Ringtone Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return true
 		}
 		return false
 	}
 
-	public func requestRangeTestModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func requestRangeTestModuleConfig(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.rangetestConfig
@@ -3066,7 +3240,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -3079,14 +3252,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested Range Test Module Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "Unknown".localized)"
+		let messageDescription = "🛎️ Requested Range Test Module Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return true
 		}
 		return false
 	}
 
-	public func requestMqttModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func requestMqttModuleConfig(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.mqttConfig
@@ -3095,7 +3268,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -3108,14 +3280,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested MQTT Module Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
+		let messageDescription = "🛎️ Requested MQTT Module Config using an admin key for node: \(String(connectedPeripheral.num))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return true
 		}
 		return false
 	}
 
-	public func requestDetectionSensorModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func requestDetectionSensorModuleConfig(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.detectionsensorConfig
@@ -3124,7 +3296,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -3137,14 +3308,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested Detection Sensor Module Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "Unknown".localized)"
+		let messageDescription = "🛎️ Requested Detection Sensor Module Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return true
 		}
 		return false
 	}
 
-	public func requestSerialModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func requestSerialModuleConfig(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.serialConfig
@@ -3153,7 +3324,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -3166,14 +3336,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested Serial Module Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "Unknown".localized)"
+		let messageDescription = "🛎️ Requested Serial Module Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return true
 		}
 		return false
 	}
 
-	public func requestStoreAndForwardModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func requestStoreAndForwardModuleConfig(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.storeforwardConfig
@@ -3182,7 +3352,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -3195,14 +3364,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested Store and Forward Module Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "Unknown".localized)"
+		let messageDescription = "🛎️ Requested Store and Forward Module Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return true
 		}
 		return false
 	}
 
-	public func requestTelemetryModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func requestTelemetryModuleConfig(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.telemetryConfig
@@ -3212,7 +3381,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -3225,7 +3393,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested Telemetry Module Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "Unknown".localized)"
+		let messageDescription = "🛎️ Requested Telemetry Module Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return true
 		}

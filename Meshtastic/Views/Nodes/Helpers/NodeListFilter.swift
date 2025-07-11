@@ -91,20 +91,21 @@ struct NodeListFilter: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
-					Toggle(isOn: $isIgnored) {
-
-						Label {
-							Text("Ignored")
-						} icon: {
-
-							Image(systemName: "minus.circle.fill")
-								.symbolRenderingMode(.multicolor)
-						}
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.listRowSeparator(.visible)
 
 					if filterTitle == "Node Filters" {
+						Toggle(isOn: $isIgnored) {
+
+							Label {
+								Text("Ignored")
+							} icon: {
+
+								Image(systemName: "minus.circle.fill")
+									.symbolRenderingMode(.multicolor)
+							}
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.listRowSeparator(.visible)
+
 						Toggle(isOn: $isEnvironment) {
 							Label {
 								Text("Environment")

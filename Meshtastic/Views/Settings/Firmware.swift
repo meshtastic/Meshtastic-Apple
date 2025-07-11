@@ -160,7 +160,7 @@ struct Firmware: View {
 							Button {
 								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
 								if connectedNode != nil {
-									if !bleManager.sendRebootOta(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex) {
+									if !bleManager.sendRebootOta(fromUser: connectedNode!.user!, toUser: node!.user!) {
 										Logger.mesh.error("Reboot Failed")
 									}
 								}
@@ -196,6 +196,9 @@ struct Firmware: View {
 					}
 				}
 				Api().loadFirmwareReleaseData { (fw) in
+					latestStable = fw.releases.stable.first
+					let archString = currentDevice?.architecture.rawValue ?? ""
+					let ls = fw.releases.stable.first(where: { $0.zipURL.contains(archString) == true })
 					latestStable = fw.releases.stable.first
 					latestAlpha = fw.releases.alpha.first
 				}

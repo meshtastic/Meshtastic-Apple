@@ -25,13 +25,14 @@ struct UserConfig: View {
 	@State var hasChanges = false
 	@State var shortName = ""
 	@State var longName: String = ""
+	@State var isUnmessagable: Bool = false
 	@State var isLicensed = false
 	@State var overrideDutyCycle = false
 	@State var overrideFrequency: Float = 0.0
 	@State var txPower = 0
-
 	@FocusState var focusedField: Field?
 
+	public var minimumVersion = "2.6.9"
 	let floatFormatter: NumberFormatter = {
 		let formatter = NumberFormatter()
 		formatter.numberStyle = .decimal
@@ -96,6 +97,14 @@ struct UserConfig: View {
 						Text("The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long.")
 							.foregroundColor(.gray)
 							.font(.callout)
+						let supportedVersion = UserDefaults.firmwareVersion == "0.0.0" ||  self.minimumVersion.compare(UserDefaults.firmwareVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(UserDefaults.firmwareVersion, options: .numeric) == .orderedSame
+						Toggle(isOn: $isUnmessagable) {
+							Label("Unmessagable", systemImage: "iphone.slash")
+							Text("Used to identify unmonitored or infrastructure nodes so that messaging is not avaliable to nodes that will never respond.")
+								.font(.caption2)
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.disabled(!supportedVersion)
 					}
 					// Only manage ham mode for the locally connected node
 					if node?.num ?? 0 > 0 && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
@@ -166,7 +175,8 @@ struct UserConfig: View {
 								var u = User()
 								u.shortName = shortName
 								u.longName = longName
-								let adminMessageId = bleManager.saveUser(config: u, fromUser: connectedUser, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+								u.isUnmessagable = isUnmessagable
+								let adminMessageId = bleManager.saveUser(config: u, fromUser: connectedUser, toUser: node!.user!)
 								if adminMessageId > 0 {
 									hasChanges = false
 									goBack()
@@ -174,10 +184,11 @@ struct UserConfig: View {
 							} else {
 								var ham = HamParameters()
 								ham.shortName = shortName
+								// ham.isUnmessagable = isUnmessagable
 								ham.callSign = longName
 								ham.txPower = Int32(txPower)
 								ham.frequency = overrideFrequency
-								let adminMessageId = bleManager.saveLicensedUser(ham: ham, fromUser: connectedUser, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+								let adminMessageId = bleManager.saveLicensedUser(ham: ham, fromUser: connectedUser, toUser: node!.user!)
 								if adminMessageId > 0 {
 									hasChanges = false
 									goBack()
@@ -199,6 +210,7 @@ struct UserConfig: View {
 		.onAppear {
 			self.shortName = node?.user?.shortName ?? ""
 			self.longName = node?.user?.longName ?? ""
+			self.isUnmessagable = node?.user?.unmessagable ?? false
 			self.isLicensed = node?.user?.isLicensed ?? false
 			self.txPower = Int(node?.loRaConfig?.txPower ?? 0)
 			self.overrideFrequency = node?.loRaConfig?.overrideFrequency ?? 0.00

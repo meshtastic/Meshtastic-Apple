@@ -345,7 +345,7 @@ struct PositionConfig: View {
 				if includeSpeed { pf.insert(.Speed) }
 				if includeHeading { pf.insert(.Heading) }
 				pc.positionFlags = UInt32(pf.rawValue)
-				let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: connectedNode!.user!, toUser: node!.user!)
 				if adminMessageId > 0 {
 					// Disable the button after a successful save
 					hasChanges = false
@@ -412,12 +412,11 @@ struct PositionConfig: View {
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.positionConfig == nil {
 								Logger.mesh.info("⚙️ Empty or expired position config requesting via PKI admin")
-								_ = bleManager.requestPositionConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								_ = bleManager.requestPositionConfig(fromUser: connectedNode.user!, toUser: node.user!)
 							}
 						} else {
 							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin, empty position config")
-							_ = bleManager.requestPositionConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
 						}
 					}
 				}

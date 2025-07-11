@@ -33,8 +33,15 @@ struct ChannelMessageList: View {
 				ZStack(alignment: .bottomTrailing) {
 					ScrollView {
 						LazyVStack {
-							ForEach(channel.allPrivateMessages) { (message: MessageEntity) in
+							ForEach(Array(channel.allPrivateMessages.enumerated()), id: \.element.id) { index, message in
+								// Get the previous message, if it exists
+								let previousMessage = index > 0 ? channel.allPrivateMessages[index - 1] : nil
 								let currentUser: Bool = (Int64(preferredPeripheralNum) == message.fromUser?.num ? true : false)
+								if message.displayTimestamp(aboveMessage: previousMessage) {
+									Text(message.timestamp.formatted(date: .abbreviated, time: .shortened))
+										.font(.caption)
+										.foregroundColor(.gray)
+								}
 								if message.replyID > 0 {
 									let messageReply = channel.allPrivateMessages.first(where: { $0.messageId == message.replyID })
 									HStack {
@@ -44,7 +51,6 @@ struct ChannelMessageList: View {
 													messageToHighlight = messageNum
 												}
 												scrollView.scrollTo(messageNum, anchor: .center)
-												
 												// Reset highlight after delay
 												Task {
 													try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
@@ -130,12 +136,11 @@ struct ChannelMessageList: View {
 										Spacer(minLength: 50)
 									}
 								}
-
-								.overlay {
-									RoundedRectangle(cornerRadius: 10)
-										.stroke(.blue, lineWidth: 2)
-										.opacity(((messageToHighlight  == message.messageId) || (replyMessageId == message.messageId)) ? 1 : 0)
-								}
+//								.overlay {
+//									RoundedRectangle(cornerRadius: 18)
+//										.stroke(.blue, lineWidth: 2)
+//										.opacity(((messageToHighlight  == message.messageId) || (replyMessageId == message.messageId)) ? 1 : 0)
+//								}
 								.padding([.leading, .trailing])
 								.frame(maxWidth: .infinity)
 								.id(message.messageId)
@@ -175,24 +180,24 @@ struct ChannelMessageList: View {
 					}
 					.scrollDismissesKeyboard(.interactively)
 					.onFirstAppear {
-						// Find first unread message
-						if let firstUnreadMessageId = channel.allPrivateMessages.first(where: { !$0.read })?.messageId {
+						if channel.unreadMessages == 0 {
 							withAnimation {
-								scrollView.scrollTo(firstUnreadMessageId, anchor: .top)
-								showScrollToBottomButton = true
+								scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+								hasReachedBottom = true
 							}
 						} else {
-							// If no unread messages, scroll to bottom
-							withAnimation {
-								scrollView.scrollTo(channel.allPrivateMessages.last?.messageId ?? 0, anchor: .bottom)
-								hasReachedBottom = true
+							if let firstUnreadMessageId = channel.allPrivateMessages.first(where: { !$0.read })?.messageId {
+								withAnimation {
+									scrollView.scrollTo(firstUnreadMessageId, anchor: .top)
+									showScrollToBottomButton = true
+								}
 							}
 						}
 						gotFirstUnreadMessage = true
 					}
 					.onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
 						withAnimation {
-							scrollView.scrollTo(channel.allPrivateMessages.last?.messageId ?? 0, anchor: .bottom)
+							scrollView.scrollTo("bottomAnchor", anchor: .bottom)
 							hasReachedBottom = true
 							showScrollToBottomButton = false
 						}
@@ -200,7 +205,7 @@ struct ChannelMessageList: View {
 					.onChange(of: channel.allPrivateMessages) {
 						if hasReachedBottom {
 							withAnimation {
-								scrollView.scrollTo(channel.allPrivateMessages.last?.messageId ?? 0, anchor: .bottom)
+								scrollView.scrollTo("bottomAnchor", anchor: .bottom)
 							}
 						} else {
 							showScrollToBottomButton = true

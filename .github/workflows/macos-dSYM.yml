@@ -1,0 +1,21 @@
+name: Upload dSYM Files
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate/Download dSYM Files
+        uses: ./release.sh
+
+      - name: Upload dSYMs to Datadog
+        uses: DataDog/upload-dsyms-github-action@v1
+        with:
+          api_key: ${{ secrets.DATADOG_API_KEY }}
+          site: datadoghq.com
+          dsym_paths: |
+            path/to/dsyms/folder
+            path/to/zip/dsyms.zip

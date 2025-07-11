@@ -14,6 +14,7 @@ import SwiftUI
 struct WaypointForm: View {
 
 	@EnvironmentObject var bleManager: BLEManager
+	@Environment(\.managedObjectContext) var context
 	@Environment(\.dismiss) private var dismiss
 	@State var waypoint: WaypointEntity
 	let distanceFormatter = MKDistanceFormatter()
@@ -30,6 +31,7 @@ struct WaypointForm: View {
 	@State private var lockedTo: Int64 = 0
 	@State private var detents: Set<PresentationDetent> = [.medium, .fraction(0.85)]
 	@State private var selectedDetent: PresentationDetent = .medium
+	@State private var waypointFailedAlert: Bool = false
 
 	var body: some View {
 		NavigationStack {
@@ -47,7 +49,19 @@ struct WaypointForm: View {
 								.textSelection(.enabled)
 								.foregroundColor(.secondary)
 								.font(.caption)
+
 						}
+							Button {
+								let currentLoc = LocationsHandler.currentLocation
+								waypoint.coordinate.longitude = currentLoc.longitude
+								waypoint.coordinate.latitude = currentLoc.latitude
+							} label: {
+								HStack {
+									Text("Use my Location")
+									Image(systemName: "location")
+								}
+							}
+							.accessibilityLabel("Set to current location")
 						HStack {
 							if waypoint.coordinate.latitude != 0 && waypoint.coordinate.longitude != 0 {
 								DistanceText(meters: distance)
@@ -72,6 +86,7 @@ struct WaypointForm: View {
 									name = String(name.dropLast())
 									totalBytes = name.utf8.count
 								}
+								waypoint.name = name.count > 0 ? name : "Dropped Pin"
 							}
 						}
 						HStack {
@@ -167,8 +182,8 @@ struct WaypointForm: View {
 							if bleManager.sendWaypoint(waypoint: newWaypoint) {
 								dismiss()
 							} else {
-								dismiss()
 								Logger.mesh.warning("Send waypoint failed")
+								waypointFailedAlert = true
 							}
 						} else {
 							Logger.mesh.warning("Send waypoint failed, node not connected")
@@ -196,11 +211,11 @@ struct WaypointForm: View {
 
 						Menu {
 							Button("For me", action: {
-								bleManager.context.delete(waypoint)
+								context.delete(waypoint)
 								do {
-									try bleManager.context.save()
+									try context.save()
 								} catch {
-									bleManager.context.rollback()
+									context.rollback()
 								}
 								dismiss() })
 							Button("For everyone", action: {
@@ -225,16 +240,16 @@ struct WaypointForm: View {
 								newWaypoint.expire = UInt32(1)
 								if bleManager.sendWaypoint(waypoint: newWaypoint) {
 
-									bleManager.context.delete(waypoint)
+									context.delete(waypoint)
 									do {
-										try bleManager.context.save()
+										try context.save()
 									} catch {
-										bleManager.context.rollback()
+										context.rollback()
 									}
 									dismiss()
 								} else {
-									dismiss()
 									Logger.mesh.warning("Send waypoint failed")
+									waypointFailedAlert = true
 								}
 							})
 						}
@@ -256,8 +271,8 @@ struct WaypointForm: View {
 						Text(waypoint.name ?? "?")
 							.font(.largeTitle)
 						Spacer()
-						if waypoint.locked > 0 {
-							Image(systemName: "lock.fill" )
+						if waypoint.locked > 0 && waypoint.locked != UInt32(BLEManager.shared.connectedPeripheral?.num ?? 0) {
+							Image(systemName: "lock.fill")
 								.font(.largeTitle)
 						} else {
 							Button {
@@ -368,21 +383,32 @@ struct WaypointForm: View {
 				}
 			}
 		}
+		.alert("Waypoint Failed to Send", isPresented: $waypointFailedAlert) {
+					Button("OK", role: .cancel) {
+						context.delete(waypoint)
+						do {
+							try context.save()
+						} catch {
+							context.rollback()
+						}
+						dismiss()
+					}
+				}
 		.onDisappear {
 			if waypoint.id == 0 {
 					// New, unsent waypoint created by the user: delete it
-					bleManager.context.delete(waypoint)
+					context.delete(waypoint)
 					do {
-						try bleManager.context.save()
+						try context.save()
 					} catch {
-						bleManager.context.rollback()
+						context.rollback()
 						Logger.mesh.error("Failed to save context on waypoint deletion: \(error)")
 					}
 				}
 		}
 		.onAppear {
 			if waypoint.id > 0 {
-				let waypoint  = getWaypoint(id: Int64(waypoint.id), context: bleManager.context)
+				let waypoint  = getWaypoint(id: Int64(waypoint.id), context: context)
 				name = waypoint.name ?? "Dropped Pin"
 				description = waypoint.longDescription ?? ""
 				icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")

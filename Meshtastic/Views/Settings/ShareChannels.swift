@@ -49,6 +49,7 @@ struct ShareChannels: View {
 	var node: NodeInfoEntity?
 	@State private var channelsUrl =  "https://www.meshtastic.org/e/#"
 	var qrCodeImage = QrCodeImage()
+	@State private var showingHelp = false
 
 	var body: some View {
 
@@ -82,13 +83,7 @@ struct ShareChannels: View {
 										.toggleStyle(.switch)
 										.labelsHidden()
 									Text(((channel.name!.isEmpty ? "Primary" : channel.name) ?? "Primary").camelCaseToWords())
-									if channel.psk?.hexDescription.count ??  0 <  3 {
-										Image(systemName: "lock.slash")
-											.foregroundColor(.red)
-									} else {
-										Image(systemName: "lock.fill")
-											.foregroundColor(.green)
-									}
+									ChannelLock(channel: channel)
 								} else if channel.index == 1 && channel.role > 0 {
 									Toggle("Channel 1 Included", isOn: $includeChannel1)
 										.toggleStyle(.switch)
@@ -96,7 +91,7 @@ struct ShareChannels: View {
 										.disabled(channel.role == 1)
 									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
-										Image(systemName: "lock.slash")
+										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
 									} else {
 										Image(systemName: "lock.fill")
@@ -109,7 +104,7 @@ struct ShareChannels: View {
 										.disabled(channel.role == 1)
 									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
-										Image(systemName: "lock.slash")
+										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
 									} else {
 										Image(systemName: "lock.fill")
@@ -122,7 +117,7 @@ struct ShareChannels: View {
 										.disabled(channel.role == 1)
 									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
-										Image(systemName: "lock.slash")
+										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
 									} else {
 										Image(systemName: "lock.fill")
@@ -135,7 +130,7 @@ struct ShareChannels: View {
 										.disabled(channel.role == 1)
 									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
-										Image(systemName: "lock.slash")
+										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
 									} else {
 										Image(systemName: "lock.fill")
@@ -148,7 +143,7 @@ struct ShareChannels: View {
 										.disabled(channel.role == 1)
 									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
-										Image(systemName: "lock.slash")
+										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
 									} else {
 										Image(systemName: "lock.fill")
@@ -161,7 +156,7 @@ struct ShareChannels: View {
 										.disabled(channel.role == 1)
 									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
-										Image(systemName: "lock.slash")
+										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
 									} else {
 										Image(systemName: "lock.fill")
@@ -174,7 +169,7 @@ struct ShareChannels: View {
 										.disabled(channel.role == 1)
 									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
-										Image(systemName: "lock.slash")
+										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
 									} else {
 										Image(systemName: "lock.fill")
@@ -216,16 +211,39 @@ struct ShareChannels: View {
 								.resizable()
 								.scaledToFit()
 								.frame(
-									minWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.8 : 0.6),
-									maxWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.8 : 0.6),
-									minHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.8 : 0.6),
-									maxHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.8 : 0.6),
+									minWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
+									maxWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
+									minHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
+									maxHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
 									alignment: .top
 								)
 						}
 					}
 				}
 			}
+			.sheet(isPresented: $showingHelp) {
+				ChannelsHelp()
+					.presentationDetents([.large])
+					.presentationDragIndicator(.visible)
+			}
+			.safeAreaInset(edge: .bottom, alignment: .leading) {
+				HStack {
+					Button(action: {
+						withAnimation {
+							showingHelp = !showingHelp
+						}
+					}) {
+						Image(systemName: !showingHelp ? "questionmark.circle" : "questionmark.circle.fill")
+							.padding(.vertical, 5)
+					}
+					.tint(Color(UIColor.secondarySystemBackground))
+					.foregroundColor(.accentColor)
+					.buttonStyle(.borderedProminent)
+				}
+				.controlSize(.regular)
+				.padding(5)
+			}
+			.padding(.bottom, 5)
 			.navigationTitle("Generate QR Code")
 			.navigationBarTitleDisplayMode(.inline)
 			.navigationBarItems(trailing:
@@ -313,7 +331,7 @@ struct ShareChannels: View {
 			guard let settingsString = try? channelSet.serializedData().base64EncodedString() else {
 				return
 			}
-			channelsUrl = ("https://meshtastic.org/e/\(replaceChannels ? "" : "?add=true")#" + settingsString.base64ToBase64url())
+			channelsUrl = ("https://meshtastic.org/e/\(replaceChannels ? "" : "?add=true")#\(settingsString.base64ToBase64url())")
 		}
 	}
 }

@@ -31,6 +31,7 @@ struct NodeInfoItem: View {
 								.foregroundStyle(.gray)
 								.font(.callout)
 						}
+						.accessibilityElement(children: .combine)
 						Spacer()
 					}
 					VStack(alignment: .center) {
@@ -49,9 +50,11 @@ struct NodeInfoItem: View {
 									.cornerRadius(5)
 							}
 						}
+						.accessibilityElement(children: .combine)
 					}
 					Spacer()
 				}
+				.accessibilityElement(children: .combine)
 				.onAppear {
 					Api().loadDeviceHardwareData { (hw) in
 						for device in hw {
@@ -76,9 +79,10 @@ struct NodeInfoItem: View {
 				if user.hwModel != "UNSET" {
 					Text(String(node.user?.hwDisplayName ?? (node.user?.hwModel ?? "Unset".localized)))
 				} else {
-					Text(String("incomplete".localized))
+					Text(String("Incomplete".localized))
 				}
 			}
+			.accessibilityElement(children: .combine)
 		}
 	}
 }

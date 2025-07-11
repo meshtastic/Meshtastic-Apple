@@ -57,6 +57,7 @@ extension UserDefaults {
 		case enableMapTraffic
 		case enableMapPointsOfInterest
 		case enableOfflineMaps
+		case enableMapShowFavorites
 		case mapTileServer
 		case enableOverlayServer
 		case mapOverlayServer
@@ -75,6 +76,7 @@ extension UserDefaults {
 		case mapReportingOptIn
 		case firstLaunch
 		case showDeviceOnboarding
+		case usageDataAndCrashReporting
 		case testIntEnum
 	}
 
@@ -121,6 +123,9 @@ extension UserDefaults {
 	@UserDefault(.enableMapPointsOfInterest, defaultValue: false)
 	static var enableMapPointsOfInterest: Bool
 
+	@UserDefault(.enableMapShowFavorites, defaultValue: false)
+	static var enableMapShowFavorites: Bool
+
 	@UserDefault(.enableDetectionNotifications, defaultValue: false)
 	static var enableDetectionNotifications: Bool
 
@@ -154,6 +159,8 @@ extension UserDefaults {
 	@UserDefault(.mapReportingOptIn, defaultValue: false)
 	static var mapReportingOptIn: Bool
 	
+	@UserDefault(.usageDataAndCrashReporting, defaultValue: true)
+	static var usageDataAndCrashReporting: Bool
 	@UserDefault(.firstLaunch, defaultValue: true)
 	static var firstLaunch: Bool
 	

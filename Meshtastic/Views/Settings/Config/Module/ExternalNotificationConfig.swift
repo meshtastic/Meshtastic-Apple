@@ -180,7 +180,7 @@ struct ExternalNotificationConfig: View {
 				enc.outputMs = UInt32(outputMilliseconds)
 				enc.usePwm = usePWM
 				enc.useI2SAsBuzzer = useI2SAsBuzzer
-				let adminMessageId =  bleManager.saveExternalNotificationModuleConfig(config: enc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				let adminMessageId =  bleManager.saveExternalNotificationModuleConfig(config: enc, fromUser: connectedNode!.user!, toUser: node!.user!)
 				if adminMessageId > 0 {
 					// Should show a saved successfully alert once I know that to be true
 					// for now just disable the button after a successful save
@@ -210,12 +210,11 @@ struct ExternalNotificationConfig: View {
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.externalNotificationConfig == nil {
 								Logger.mesh.info("⚙️ Empty or expired external notificaiton module config requesting via PKI admin")
-								_ = bleManager.requestExternalNotificationModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								_ = bleManager.requestExternalNotificationModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
 							}
 						} else {
 							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin, empty external notificaiton module config")
-							_ = bleManager.requestExternalNotificationModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
 						}
 					}
 				}

@@ -21,10 +21,16 @@ struct ChannelList: View {
 	var channelSelection: ChannelEntity?
 
 	@State private var isPresentingDeleteChannelMessagesConfirm: Bool = false
-
 	@State private var isPresentingTraceRouteSentAlert = false
+	@State private var showingHelp = false
 
 	var restrictedChannels = ["gpio", "mqtt", "serial", "admin"]
+
+	@FetchRequest(
+			sortDescriptors: [NSSortDescriptor(keyPath: \ChannelEntity.index, ascending: true)],
+			predicate: nil,
+			animation: .default
+		) private var channels: FetchedResults<ChannelEntity>
 
 	@ViewBuilder
 	private func makeChannelRow(
@@ -52,6 +58,7 @@ struct ChannelList: View {
 
 			VStack(alignment: .leading) {
 				HStack {
+					ChannelLock(channel: channel)
 					if channel.name?.isEmpty ?? false {
 						if channel.role == 1 {
 							Text(String("PrimaryChannel").camelCaseToWords())
@@ -87,6 +94,9 @@ struct ChannelList: View {
 								.foregroundColor(.secondary)
 						}
 					}
+					if channel.mute {
+						Image(systemName: "bell.slash")
+					}
 				}
 
 				if channel.allPrivateMessages.count > 0 {
@@ -103,7 +113,7 @@ struct ChannelList: View {
 	var body: some View {
 		VStack {
 			// Display Contacts for the rest of the non admin channels
-			if let node, let myInfo = node.myInfo, let channels = myInfo.channels?.array as? [ChannelEntity] {
+			if let node, let myInfo = node.myInfo {
 				List(selection: $channelSelection) {
 					ForEach(channels) { (channel: ChannelEntity) in
 						if !restrictedChannels.contains(channel.name?.lowercased() ?? "") {
@@ -119,7 +129,7 @@ struct ChannelList: View {
 										}
 									}
 									Button {
-										channel.mute = !channel.mute
+										channel.mute.toggle()
 										do {
 											let adminMessageId =  bleManager.saveChannel(channel: channel.protoBuf, fromUser: node.user!, toUser: node.user!)
 											if adminMessageId > 0 {
@@ -152,8 +162,31 @@ struct ChannelList: View {
 				}
 				.padding([.top, .bottom])
 				.listStyle(.plain)
+				.navigationTitle("Channels")
 			}
 		}
-		.navigationTitle("Channels")
+		.sheet(isPresented: $showingHelp) {
+			ChannelsHelp()
+				.presentationDetents([.large])
+				.presentationDragIndicator(.visible)
+		}
+		.safeAreaInset(edge: .bottom, alignment: .leading) {
+			HStack {
+				Button(action: {
+					withAnimation {
+						showingHelp = !showingHelp
+					}
+				}) {
+					Image(systemName: !showingHelp ? "questionmark.circle" : "questionmark.circle.fill")
+						.padding(.vertical, 5)
+				}
+				.tint(Color(UIColor.secondarySystemBackground))
+				.foregroundColor(.accentColor)
+				.buttonStyle(.borderedProminent)
+			}
+			.controlSize(.regular)
+			.padding(5)
+		}
+		.padding(.bottom, 5)
 	}
 }

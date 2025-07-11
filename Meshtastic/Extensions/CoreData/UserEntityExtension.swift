@@ -106,14 +106,42 @@ extension UserEntity {
 		}
 	}
 }
-public func createUser(num: Int64, context: NSManagedObjectContext) -> UserEntity {
-	let newUser = UserEntity(context: context)
-	newUser.num = Int64(num)
-	let userId = String(format: "%2X", num)
-	newUser.userId = "!\(userId)"
-	let last4 = String(userId.suffix(4))
-	newUser.longName = "Meshtastic \(last4)"
-	newUser.shortName = last4
-	newUser.hwModel = "UNSET"
+
+public func createUser(num: Int64, context: NSManagedObjectContext) throws -> UserEntity {
+	// Validate Input
+	guard num >= 0 else {
+		throw CoreDataError.invalidInput(message: "User number cannot be negative.")
+	}
+
+	var newUser: UserEntity! // Use an implicitly unwrapped optional, but ensure it's assigned
+
+	context.performAndWait {
+		newUser = UserEntity(context: context)
+		newUser.num = num
+		let userId = num.toHex()
+		newUser.userId = userId
+		let last4 = String(userId.suffix(4))
+		newUser.longName = "Meshtastic \(last4)"
+		newUser.shortName = last4
+		newUser.hwModel = "UNSET"
+	}
+
 	return newUser
+}
+
+enum CoreDataError: Error, LocalizedError {
+	case invalidInput(message: String)
+	case saveFailed(message: String)
+	case entityCreationFailed(message: String) // In case UserEntity(context:) fails for some reason
+
+	var errorDescription: String? {
+		switch self {
+		case .invalidInput(let message):
+			return "Core Data Input Error: \(message)"
+		case .saveFailed(let message):
+			return "Core Data Save Error: \(message)"
+		case .entityCreationFailed(let message):
+			return "Core Data Entity Creation Error: \(message)"
+		}
+	}
 }

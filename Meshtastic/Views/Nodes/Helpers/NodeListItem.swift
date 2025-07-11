@@ -7,8 +7,95 @@
 
 import SwiftUI
 import CoreLocation
+import Foundation
 
 struct NodeListItem: View {
+
+    // Accessibility: Synthesized description for VoiceOver
+    private var accessibilityDescription: String {
+        var desc = ""
+        if let shortName = node.user?.shortName {
+            // Format the shortName using the String extension method
+            desc = shortName.formatNodeNameForVoiceOver()
+        } else if let longName = node.user?.longName {
+            desc = longName
+        } else {
+			desc = "Unknown".localized + " " + "Node".localized
+        }
+        if connected {
+            desc += ", currently connected"
+        }
+        if node.favorite {
+            desc += ", favorite"
+        }
+        if node.lastHeard != nil {
+            let formatter = RelativeDateTimeFormatter()
+            formatter.unitsStyle = .full
+            let relative = formatter.localizedString(for: node.lastHeard!, relativeTo: Date())
+            desc += ", last heard " + relative
+        }
+        if node.isOnline {
+            desc += ", online"
+        } else {
+            desc += ", offline"
+        }
+        let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
+        if let roleName = role?.name {
+            desc += ", role: \(roleName)"
+        }
+        if node.hopsAway > 0 {
+            desc += ", \(node.hopsAway) hops away"
+        }
+        if let battery = node.latestDeviceMetrics?.batteryLevel {
+            // Check for plugged in and charging states, same logic as in BatteryCompact and BatteryGauge
+            if battery > 100 {
+				desc += ", " + "Plugged in".localized
+            } else if battery == 100 {
+				desc += ", " + "Charging".localized
+            } else {
+                desc += ", battery \(battery)%"
+            }
+        }
+        // Add distance and heading/bearing if available, but only for non-connected nodes
+        if !connected, let (lastPosition, myCoord) = locationData {
+            let nodeCoord = CLLocation(latitude: lastPosition.nodeCoordinate!.latitude, longitude: lastPosition.nodeCoordinate!.longitude)
+            let metersAway = nodeCoord.distance(from: myCoord)
+            // Distance information
+            let distanceFormatter = LengthFormatter()
+            distanceFormatter.unitStyle = .medium
+            let formattedDistance = distanceFormatter.string(fromMeters: metersAway)
+            // For VoiceOver, prepend 'Distance' (localized)
+			desc += ", " + String(format: "%@: %@", "Distance".localized, formattedDistance)
+            // Add bearing/heading information for VoiceOver
+            let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: nodeCoord)
+            let heading = Measurement(value: trueBearing, unit: UnitAngle.degrees)
+            let formattedHeading = heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0))))
+            // Using a direct format without requiring a new localization key
+			desc += ", " + "Heading".localized + " " + formattedHeading
+        }
+        // Add signal strength if available
+        if node.snr != 0 && !node.viaMqtt {
+            let signalStrength: BLESignalStrength
+            if node.snr < -10 {
+                signalStrength = .weak
+            } else if node.snr < 5 {
+                signalStrength = .normal
+            } else {
+                signalStrength = .strong
+            }
+            let signalString: String
+            switch signalStrength {
+            case .weak:
+                signalString = "Signal strength weak".localized
+            case .normal:
+                signalString = "Signal strength normal".localized
+            case .strong:
+                signalString = "Signal strength strong".localized
+            }
+            desc += ", " + signalString
+        }
+        return desc
+    }
 
 	@ObservedObject var node: NodeInfoEntity
 	var connected: Bool
@@ -85,6 +172,11 @@ struct NodeListItem: View {
 						let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
 						IconAndText(systemName: role?.systemName ?? "figure",
 									text: "Role: \(role?.name ?? "Unknown".localized)")
+						if node.user?.unmessagable ?? false {
+							IconAndText(systemName: "iphone.slash",
+										renderingMode: .multicolor,
+										text: "Unmonitored")
+						}
 						if node.isStoreForwardRouter {
 							IconAndText(systemName: "envelope.arrow.triangle.branch",
 										renderingMode: .multicolor,
@@ -167,7 +259,10 @@ struct NodeListItem: View {
 		}
 		.padding(.top, 4)
 		.padding(.bottom, 4)
-	}
+        // Accessibility: Make the whole row a single element for VoiceOver
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityDescription)
+    }
 }
 
 struct DefaultIcon: View {

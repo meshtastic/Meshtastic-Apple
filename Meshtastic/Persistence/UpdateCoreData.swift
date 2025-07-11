@@ -8,6 +8,57 @@ import CoreData
 import MeshtasticProtobufs
 import OSLog
 
+// MARK: - Safe Conversion Helpers
+private func safeInt32(from value: UInt32) -> Int32 {
+    return Int32(clamping: value)
+}
+
+private func safeInt32(from value: Int) -> Int32 {
+    return Int32(clamping: value)
+}
+
+private func safeInt32(from value: UInt64) -> Int32 {
+    return Int32(clamping: value)
+}
+
+public func clearStaleNodes(nodeExpireDays: Int, context: NSManagedObjectContext) -> Bool {
+	var nodeExpireTime: TimeInterval {
+		return TimeInterval(-nodeExpireDays * 86400)
+	}
+	var nodePKIExpireTime: TimeInterval {
+		return TimeInterval((nodeExpireDays < 7 ? -7 : -nodeExpireDays) * 86400)
+	}
+
+	if nodeExpireDays == 0 {
+		// Purge Disabled
+		Logger.data.info("💾 [NodeInfoEntity] Skip clearing stale nodes")
+		return false
+	}
+	let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "NodeInfoEntity")
+	fetchRequest.predicate = NSPredicate(format: "favorite == false AND ignored == false AND ((user.pkiEncrypted == NO AND lastHeard < %@) OR (user.pkiEncrypted == YES AND lastHeard < %@))",
+										 NSDate(timeIntervalSinceNow: nodeExpireTime), NSDate(timeIntervalSinceNow: nodePKIExpireTime))
+	let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+	batchDeleteRequest.resultType = .resultTypeCount
+
+	do {
+		Logger.data.info("💾 [NodeInfoEntity] Clearing nodes older than \(nodeExpireDays) days")
+		if let batchDeleteResult = try context.execute(batchDeleteRequest) as? NSBatchDeleteResult {
+			try context.save()
+			let deletedNodes = batchDeleteResult.result as? Int ?? 0
+			Logger.data.info("💾 [NodeInfoEntity] Cleared \(deletedNodes) stale nodes")
+			if deletedNodes > 0 {
+				return true
+			}
+		} else {
+			Logger.data.error("💥 [NodeInfoEntity] bad delete results")
+		}
+	} catch {
+		context.rollback()
+		Logger.data.error("💥 [NodeInfoEntity] Error deleting stale nodes")
+	}
+	return false
+}
+
 public func clearPax(destNum: Int64, context: NSManagedObjectContext) -> Bool {
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
@@ -160,7 +211,9 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				newNode.channel = Int32(packet.channel)
 			}
 			if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
-				newNode.hopsAway = Int32(nodeInfoMessage.hopsAway)
+				if nodeInfoMessage.hasHopsAway {
+					newNode.hopsAway = Int32(nodeInfoMessage.hopsAway)
+				}
 				newNode.favorite = nodeInfoMessage.isFavorite
 			}
 
@@ -168,19 +221,37 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 
 				if newUserMessage.id.isEmpty {
 					if packet.from > Constants.minimumNodeNum {
-						let newUser = createUser(num: Int64(packet.from), context: context)
-						newNode.user = newUser
+						do {
+							let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
+							newNode.user = newUser
+						} catch CoreDataError.invalidInput(let message) {
+							Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
+						} catch {
+							Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+						}
 					}
 				} else {
 
 					let newUser = UserEntity(context: context)
-					newUser.userId = newUserMessage.id
+					newUser.userId = newNode.num.toHex()
 					newUser.num = Int64(packet.from)
 					newUser.longName = newUserMessage.longName
 					newUser.shortName = newUserMessage.shortName
 					newUser.role = Int32(newUserMessage.role.rawValue)
 					newUser.hwModel = String(describing: newUserMessage.hwModel).uppercased()
 					newUser.hwModelId = Int32(newUserMessage.hwModel.rawValue)
+					/// For nodes that have the optional isUnmessagable boolean use that, otherwise excluded roles that are unmessagable by default
+					if newUserMessage.hasIsUnmessagable {
+						newUser.unmessagable = newUserMessage.isUnmessagable
+					} else {
+						let roles = [2, 4, 5, 6, 7, 10, 11]
+						let containsRole = roles.contains(Int(newUser.role))
+						if containsRole {
+							newUser.unmessagable = true
+						} else {
+							newUser.unmessagable = false
+						}
+					}
 					if !newUserMessage.publicKey.isEmpty {
 						newUser.pkiEncrypted = true
 						newUser.publicKey = newUserMessage.publicKey
@@ -211,17 +282,34 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				}
 			} else {
 				if packet.from > Constants.minimumNodeNum {
-					let newUser = createUser(num: Int64(packet.from), context: context)
-					if !packet.publicKey.isEmpty {
-						newNode.user?.pkiEncrypted = true
-						newNode.user?.publicKey = packet.publicKey
+					do {
+						let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
+						if !packet.publicKey.isEmpty {
+							newNode.user?.pkiEncrypted = true
+							newNode.user?.publicKey = packet.publicKey
+						}
+						newNode.user = newUser
+					} catch CoreDataError.invalidInput(let message) {
+						Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
+					} catch {
+						Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
 					}
-					newNode.user = newUser
 				}
 			}
-
+			// User is messed up and has failed to create at least once, if this fails bail out
 			if newNode.user == nil && packet.from > Constants.minimumNodeNum {
-				newNode.user = createUser(num: Int64(packet.from), context: context)
+				do {
+					let newUser = try createUser(num: Int64(packet.from), context: context)
+					newNode.user = newUser
+				} catch CoreDataError.invalidInput(let message) {
+					Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
+					context.rollback()
+					return
+				} catch {
+					Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+					context.rollback()
+					return
+				}
 			}
 
 			let myInfoEntity = MyInfoEntity(context: context)
@@ -269,22 +357,33 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].telemetries? = NSOrderedSet(array: newTelemetries)
 				}
 				if nodeInfoMessage.hasUser {
-					/// Seeing Some crashes here ?
-					fetchedNode[0].user!.userId = nodeInfoMessage.user.id
-					fetchedNode[0].user!.num = Int64(nodeInfoMessage.num)
-					fetchedNode[0].user!.longName = nodeInfoMessage.user.longName
-					fetchedNode[0].user!.shortName = nodeInfoMessage.user.shortName
-					fetchedNode[0].user!.role = Int32(nodeInfoMessage.user.role.rawValue)
-					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
-					fetchedNode[0].user!.hwModelId = Int32(nodeInfoMessage.user.hwModel.rawValue)
+					fetchedNode[0].user?.userId = nodeInfoMessage.num.toHex()
+					fetchedNode[0].user?.num = Int64(nodeInfoMessage.num)
+					fetchedNode[0].user?.longName = nodeInfoMessage.user.longName
+					fetchedNode[0].user?.shortName = nodeInfoMessage.user.shortName
+					fetchedNode[0].user?.role = Int32(nodeInfoMessage.user.role.rawValue)
+					fetchedNode[0].user?.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
+					fetchedNode[0].user?.hwModelId = Int32(nodeInfoMessage.user.hwModel.rawValue)
+					/// For nodes that have the optional isUnmessagable boolean use that, otherwise excluded roles that are unmessagable by default
+					if nodeInfoMessage.user.hasIsUnmessagable {
+						fetchedNode[0].user?.unmessagable = nodeInfoMessage.user.isUnmessagable
+					} else {
+						let roles = [-1, 2, 4, 5, 6, 7, 10, 11]
+						let containsRole = roles.contains(Int(fetchedNode[0].user?.role ?? -1))
+						if containsRole {
+							fetchedNode[0].user?.unmessagable = true
+						} else {
+							fetchedNode[0].user?.unmessagable = false
+						}
+					}
 					if !nodeInfoMessage.user.publicKey.isEmpty {
-						fetchedNode[0].user!.pkiEncrypted = true
-						fetchedNode[0].user!.publicKey = nodeInfoMessage.user.publicKey
+						fetchedNode[0].user?.pkiEncrypted = true
+						fetchedNode[0].user?.publicKey = nodeInfoMessage.user.publicKey
 					}
 					Task {
 						Api().loadDeviceHardwareData { (hw) in
 							let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user?.hwModelId ?? 0 })
-							fetchedNode[0].user!.hwDisplayName = dh?.displayName
+							fetchedNode[0].user?.hwDisplayName = dh?.displayName
 						}
 					}
 				}
@@ -292,9 +391,14 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
 			}
 			if fetchedNode[0].user == nil {
-				let newUser = createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
-				fetchedNode[0].user? = newUser
-
+				do {
+					let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
+					fetchedNode[0].user = newUser
+				} catch CoreDataError.invalidInput(let message) {
+					Logger.data.error("Error Creating a new Core Data UserEntity on an existing node (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
+				} catch {
+					Logger.data.error("Error Creating a new Core Data UserEntity on an existing node from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+				}
 			}
 			do {
 				try context.save()
@@ -358,12 +462,12 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					} else {
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
 					}
-					guard let mutablePositions = fetchedNode[0].positions!.mutableCopy() as? NSMutableOrderedSet else {
+					guard let mutablePositions = fetchedNode[0].positions?.mutableCopy() as? NSMutableOrderedSet else {
 						return
 					}
 					/// Don't save nearly the same position over and over. If the next position is less than 10 meters from the new position, delete the previous position and save the new one.
 					if mutablePositions.count > 0 && (position.precisionBits == 32 || position.precisionBits == 0) {
-						if let mostRecent = mutablePositions.lastObject as? PositionEntity, mostRecent.coordinate.distance(from: position.coordinate) < 15.0 {
+						if let mostRecent = mutablePositions.lastObject as? PositionEntity, mostRecent.coordinate.distance(from: position.coordinate) < 9.0 {
 							mutablePositions.remove(mostRecent)
 						}
 					} else if mutablePositions.count > 0 {
@@ -528,6 +632,7 @@ func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, ses
 				newDisplayConfig.displayMode = Int32(config.displaymode.rawValue)
 				newDisplayConfig.units = Int32(config.units.rawValue)
 				newDisplayConfig.headingBold = config.headingBold
+				newDisplayConfig.use12HClock = config.use12HClock
 				fetchedNode[0].displayConfig = newDisplayConfig
 			} else {
 
@@ -539,6 +644,7 @@ func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, ses
 				fetchedNode[0].displayConfig?.oledType = Int32(config.oled.rawValue)
 				fetchedNode[0].displayConfig?.displayMode = Int32(config.displaymode.rawValue)
 				fetchedNode[0].displayConfig?.units = Int32(config.units.rawValue)
+				fetchedNode[0].displayConfig?.use12HClock = config.use12HClock
 				fetchedNode[0].displayConfig?.headingBold = config.headingBold
 			}
 			if sessionPasskey != nil {
@@ -687,7 +793,7 @@ func upsertNetworkConfigPacket(config: Config.NetworkConfig, nodeNum: Int64, ses
 
 func upsertPositionConfigPacket(config: Config.PositionConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("Positon config received: %@".localized, String(nodeNum))
+	let logString = String.localizedStringWithFormat("Position config received: %@".localized, String(nodeNum))
 	Logger.data.info("🗺️ \(logString, privacy: .public)")
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
@@ -1205,6 +1311,7 @@ func upsertMqttModuleConfigPacket(config: ModuleConfig.MQTTConfig, nodeNum: Int6
 				newMQTTConfig.jsonEnabled = config.jsonEnabled
 				newMQTTConfig.tlsEnabled = config.tlsEnabled
 				newMQTTConfig.mapReportingEnabled = config.mapReportingEnabled
+				newMQTTConfig.mapReportingShouldReportLocation = config.mapReportSettings.shouldReportLocation
 				newMQTTConfig.mapPositionPrecision = Int32(config.mapReportSettings.positionPrecision)
 				newMQTTConfig.mapPublishIntervalSecs = Int32(config.mapReportSettings.publishIntervalSecs)
 				fetchedNode[0].mqttConfig = newMQTTConfig
@@ -1273,6 +1380,7 @@ func upsertRangeTestModuleConfigPacket(config: ModuleConfig.RangeTestConfig, nod
 			do {
 				try context.save()
 				Logger.data.info("💾 [RangeTestConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
+			
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
@@ -1404,23 +1512,23 @@ func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nod
 		if !fetchedNode.isEmpty {
 			if fetchedNode[0].telemetryConfig == nil {
 				let newTelemetryConfig = TelemetryConfigEntity(context: context)
-				newTelemetryConfig.deviceUpdateInterval = Int32(config.deviceUpdateInterval)
-				newTelemetryConfig.environmentUpdateInterval = Int32(config.environmentUpdateInterval)
+				newTelemetryConfig.deviceUpdateInterval = safeInt32(from: config.deviceUpdateInterval)
+				newTelemetryConfig.environmentUpdateInterval = safeInt32(from: config.environmentUpdateInterval)
 				newTelemetryConfig.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 				newTelemetryConfig.environmentScreenEnabled = config.environmentScreenEnabled
 				newTelemetryConfig.environmentDisplayFahrenheit = config.environmentDisplayFahrenheit
 				newTelemetryConfig.powerMeasurementEnabled = config.powerMeasurementEnabled
-				newTelemetryConfig.powerUpdateInterval = Int32(config.powerUpdateInterval)
+				newTelemetryConfig.powerUpdateInterval = safeInt32(from: config.powerUpdateInterval)
 				newTelemetryConfig.powerScreenEnabled = config.powerScreenEnabled
 				fetchedNode[0].telemetryConfig = newTelemetryConfig
 			} else {
-				fetchedNode[0].telemetryConfig?.deviceUpdateInterval = Int32(config.deviceUpdateInterval)
-				fetchedNode[0].telemetryConfig?.environmentUpdateInterval = Int32(config.environmentUpdateInterval)
+				fetchedNode[0].telemetryConfig?.deviceUpdateInterval = safeInt32(from: config.deviceUpdateInterval)
+				fetchedNode[0].telemetryConfig?.environmentUpdateInterval = safeInt32(from: config.environmentUpdateInterval)
 				fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 				fetchedNode[0].telemetryConfig?.environmentScreenEnabled = config.environmentScreenEnabled
 				fetchedNode[0].telemetryConfig?.environmentDisplayFahrenheit = config.environmentDisplayFahrenheit
 				fetchedNode[0].telemetryConfig?.powerMeasurementEnabled = config.powerMeasurementEnabled
-				fetchedNode[0].telemetryConfig?.powerUpdateInterval = Int32(config.powerUpdateInterval)
+				fetchedNode[0].telemetryConfig?.powerUpdateInterval = safeInt32(from: config.powerUpdateInterval)
 				fetchedNode[0].telemetryConfig?.powerScreenEnabled = config.powerScreenEnabled
 			}
 			if sessionPasskey != nil {

@@ -51,6 +51,20 @@ struct LoRaSignalStrengthMeter_Previews: PreviewProvider {
 	static var previews: some View {
 		ScrollView {
 			VStack {
+				VStack {
+					// Good
+					LoRaSignalStrengthMeter(snr: -10, rssi: -100, preset: ModemPresets.longFast, compact: true)
+						.padding(.bottom)
+					// Fair
+					LoRaSignalStrengthMeter(snr: -9.5, rssi: -119, preset: ModemPresets.longFast, compact: true)
+						.padding(.bottom)
+					// Bad
+					LoRaSignalStrengthMeter(snr: -12.75, rssi: -139, preset: ModemPresets.longFast, compact: true)
+						.padding(.bottom)
+					// None
+					LoRaSignalStrengthMeter(snr: -26.0, rssi: -128, preset: ModemPresets.longFast, compact: true)
+						.padding(.bottom)
+				}.padding()
 				HStack {
 					// Good
 					LoRaSignalStrengthMeter(snr: -1, rssi: -114, preset: ModemPresets.longFast, compact: false)
@@ -84,17 +98,6 @@ struct LoRaSignalStrengthMeter_Previews: PreviewProvider {
 				}
 			}
 			.padding(.top)
-		}
-
-		VStack {
-			// Good
-			LoRaSignalStrengthMeter(snr: -10, rssi: -100, preset: ModemPresets.longFast, compact: true)
-			// Fair
-			LoRaSignalStrengthMeter(snr: -9.5, rssi: -119, preset: ModemPresets.longFast, compact: true)
-			// Bad
-			LoRaSignalStrengthMeter(snr: -12.75, rssi: -139, preset: ModemPresets.longFast, compact: true)
-			// None
-			LoRaSignalStrengthMeter(snr: -26.0, rssi: -128, preset: ModemPresets.longFast, compact: true)
 		}
 	}
 }

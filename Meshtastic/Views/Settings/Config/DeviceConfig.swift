@@ -204,12 +204,22 @@ struct DeviceConfig: View {
 					.controlSize(.regular)
 					.padding(.trailing)
 					.confirmationDialog(
-						"All device and app data will be deleted.",
+						"Factory reset will delete device and app data.",
 						isPresented: $isPresentingFactoryResetConfirm,
 						titleVisibility: .visible
 					) {
-						Button("Factory reset your device and app? ", role: .destructive) {
+						Button("Delete all config? ", role: .destructive) {
 							if bleManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!) {
+								DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+									bleManager.disconnectPeripheral()
+									clearCoreDataDatabase(context: context, includeRoutes: false)
+								}
+							} else {
+								Logger.mesh.error("Factory Reset Failed")
+							}
+						}
+						Button("Delete all config, keys and BLE bonds? ", role: .destructive) {
+							if bleManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!, resetDevice: true) {
 								DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
 									bleManager.disconnectPeripheral()
 									clearCoreDataDatabase(context: context, includeRoutes: false)
@@ -235,7 +245,7 @@ struct DeviceConfig: View {
 						dc.disableTripleClick = !tripleClickAsAdHocPing
 						dc.tzdef = tzdef
 						dc.ledHeartbeatDisabled = !ledHeartbeatEnabled
-						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save
@@ -268,13 +278,12 @@ struct DeviceConfig: View {
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.deviceConfig == nil {
 								Logger.mesh.info("⚙️ Empty or expired device config requesting via PKI admin")
-								_ = bleManager.requestDeviceConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								_ = bleManager.requestDeviceConfig(fromUser: connectedNode.user!, toUser: node.user!)
 							}
 						} else {
 							if node.deviceConfig == nil {
 								/// Legacy Administration
-								Logger.mesh.info("☠️ Using insecure legacy admin, empty device config")
-								_ = bleManager.requestDeviceConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
 							}
 						}
 					}

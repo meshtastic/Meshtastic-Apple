@@ -31,4 +31,11 @@ extension MessageEntity {
 
 		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
 	}
+
+	func displayTimestamp(aboveMessage: MessageEntity?) -> Bool {
+		if let aboveMessage = aboveMessage {
+			return aboveMessage.timestamp.addingTimeInterval(3600) < timestamp // 60 minutes
+		}
+		return false // First message will have no timestamp
+	}
 }

@@ -432,7 +432,7 @@ struct Settings: View {
 										let connectedNode = nodes.first(where: { $0.num == preferredNodeNum })
 										preferredNodeNum = Int(connectedNode?.num ?? 0)// Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
 										if connectedNode != nil && connectedNode?.user != nil && connectedNode?.myInfo != nil && node?.user != nil {// && node?.metadata == nil {
-											let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
+											let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, context: context)
 											if adminMessageId > 0 {
 												Logger.mesh.info("Sent node metadata request from node details")
 											}
@@ -440,6 +440,7 @@ struct Settings: View {
 									}
 								}
 								TipView(AdminChannelTip(), arrowEdge: .top)
+									.tipViewStyle(PersistentTip())
 							} else {
 								if bleManager.connectedPeripheral != nil {
 									Text("Connected Node \(node?.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")

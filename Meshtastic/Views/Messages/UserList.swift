@@ -39,18 +39,6 @@ struct UserList: View {
 		roleFilter
 	]}
 
-	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false),
-						  NSSortDescriptor(key: "userNode.favorite", ascending: false),
-						  NSSortDescriptor(key: "pkiEncrypted", ascending: false),
-						  NSSortDescriptor(key: "userNode.lastHeard", ascending: false),
-						  NSSortDescriptor(key: "longName", ascending: true)],
-		predicate: NSPredicate(
-		  format: "userNode.ignored == false && longName != '' AND NOT (userNode.viaMqtt == YES AND userNode.hopsAway > 0)"
-		), animation: .default
-	)
-	var users: FetchedResults<UserEntity>
-
 	@Binding var node: NodeInfoEntity?
 	@Binding var userSelection: UserEntity?
 
@@ -60,8 +48,23 @@ struct UserList: View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 		VStack {
-			List(selection: $userSelection) {
-				ForEach(users) { (user: UserEntity) in
+			FilteredUserList(
+				searchText: searchText,
+				viaLora: viaLora,
+				viaMqtt: viaMqtt,
+				isOnline: isOnline,
+				isPkiEncrypted: isPkiEncrypted,
+				isFavorite: isFavorite,
+				isIgnored: isIgnored,
+				isEnvironment: isEnvironment,
+				distanceFilter: distanceFilter,
+				maxDistance: maxDistance,
+				hopsAway: hopsAway,
+				roleFilter: roleFilter,
+				deviceRoles: deviceRoles,
+				userSelection: $userSelection
+			) { users in
+				List(users, selection: $userSelection) { (user: UserEntity) in
 					let mostRecent = user.messageList.last
 					let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 					let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
@@ -134,18 +137,17 @@ struct UserList: View {
 						.frame(height: 62)
 						.contextMenu {
 							Button {
-
 								if node != nil && !(user.userNode?.favorite ?? false) {
 									let success = bleManager.setFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
 									if success {
-										user.userNode?.favorite = !(user.userNode?.favorite ?? true)
+										user.userNode?.favorite = !(user.userNode?.favorite ?? false)
 										Logger.data.info("Favorited a node")
 									}
 								} else {
 									let success = bleManager.removeFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
 									if success {
-										user.userNode?.favorite = !(user.userNode?.favorite ?? true)
-										Logger.data.info("Un Favorited a node")
+										user.userNode?.favorite = !(user.userNode?.favorite ?? false)
+										Logger.data.info("Unfavorited a node")
 									}
 								}
 								context.refresh(user, mergeChanges: true)
@@ -156,7 +158,7 @@ struct UserList: View {
 									Logger.data.error("Save Node Favorite Error")
 								}
 							} label: {
-								Label((user.userNode?.favorite ?? false)  ? "Un-Favorite" : "Favorite", systemImage: (user.userNode?.favorite ?? false) ? "star.slash.fill" : "star.fill")
+								Label((user.userNode?.favorite ?? false) ? "Un-Favorite" : "Favorite", systemImage: (user.userNode?.favorite ?? false) ? "star.slash.fill" : "star.fill")
 							}
 							Button {
 								user.mute = !user.mute
@@ -169,7 +171,7 @@ struct UserList: View {
 							} label: {
 								Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")
 							}
-							if user.messageList.count  > 0 {
+							if user.messageList.count > 0 {
 								Button(role: .destructive) {
 									isPresentingDeleteUserMessagesConfirm = true
 									userSelection = user
@@ -192,65 +194,14 @@ struct UserList: View {
 						}
 					}
 				}
+				.listStyle(.plain)
+				.navigationTitle(String.localizedStringWithFormat("Contacts (%@)", String(users.count)))
 			}
-			.listStyle(.plain)
-			.navigationTitle(String.localizedStringWithFormat("Contacts (%@)".localized, String(users.count == 0 ? 0 : users.count)))
 			.sheet(isPresented: $editingFilters) {
 				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isPkiEncrypted: $isPkiEncrypted, isFavorite: $isFavorite, isIgnored: $isIgnored, isEnvironment: $isEnvironment, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
 			}
 			.sheet(isPresented: $showingHelp) {
 				DirectMessagesHelp()
-			}
-			.onChange(of: searchText) {
-				Task {
-					await searchUserList()
-				}
-			}
-			.onChange(of: viaLora) {
-				if !viaLora && !viaMqtt {
-					viaMqtt = true
-				}
-				Task {
-					await searchUserList()
-				}
-			}
-			.onChange(of: viaMqtt) {
-				if !viaLora && !viaMqtt {
-					viaLora = true
-				}
-				Task {
-					await searchUserList()
-				}
-			}
-			.onChange(of: [deviceRoles]) {
-				Task {
-					await searchUserList()
-				}
-			}
-			.onChange(of: hopsAway) {
-				Task {
-					await searchUserList()
-				}
-			}
-			.onChange(of: [boolFilters]) {
-				Task {
-					await searchUserList()
-				}
-			}
-			.onChange(of: maxDistance) {
-				Task {
-					await searchUserList()
-				}
-			}
-			.onChange(of: isPkiEncrypted) {
-				Task {
-					await searchUserList()
-				}
-			}
-			.onAppear {
-				Task {
-					await searchUserList()
-				}
 			}
 			.safeAreaInset(edge: .bottom, alignment: .leading) {
 				HStack {
@@ -282,36 +233,60 @@ struct UserList: View {
 				.padding(5)
 			}
 			.padding(.bottom, 5)
-			.padding(.bottom, 5)
-			.searchable(text: $searchText, placement: users.count > 10 ? .navigationBarDrawer(displayMode: .always) : .automatic, prompt: "Find a contact")
+			.searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a contact")
 				.disableAutocorrection(true)
 				.scrollDismissesKeyboard(.immediately)
 		}
 	}
-	private func searchUserList() async {
+}
 
-		/// Case Insensitive Search Text Predicates
-		let searchPredicates = ["userId", "numString", "hwModel", "hwDisplayName", "longName", "shortName"].map { property in
-			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
-		}
-		/// Create a compound predicate using each text search preicate as an OR
-		let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
-		/// Create an array of predicates to hold our AND predicates
+struct FilteredUserList<Content: View>: View {
+	@FetchRequest var fetchRequest: FetchedResults<UserEntity>
+	let content: (FetchedResults<UserEntity>) -> Content
+
+	var body: some View {
+		content(fetchRequest)
+	}
+
+	init(
+		searchText: String,
+		viaLora: Bool,
+		viaMqtt: Bool,
+		isOnline: Bool,
+		isPkiEncrypted: Bool,
+		isFavorite: Bool,
+		isIgnored: Bool,
+		isEnvironment: Bool,
+		distanceFilter: Bool,
+		maxDistance: Double,
+		hopsAway: Double,
+		roleFilter: Bool,
+		deviceRoles: Set<Int>,
+		userSelection: Binding<UserEntity?>,
+		@ViewBuilder content: @escaping (FetchedResults<UserEntity>) -> Content
+	) {
+		self.content = content
+		// Build predicates based on filter variables
 		var predicates: [NSPredicate] = []
-		/// Mqtt and lora
+		// Search text predicates
+		if !searchText.isEmpty {
+			let searchPredicates = ["userId", "numString", "hwModel", "hwDisplayName", "longName", "shortName"].map { property in
+				return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
+			}
+			let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
+			predicates.append(textSearchPredicate)
+		}
+		// Mqtt and lora
 		if !(viaLora && viaMqtt) {
 			if viaLora {
 				let loraPredicate = NSPredicate(format: "userNode.viaMqtt == NO")
 				predicates.append(loraPredicate)
 			} else {
-				let mqttPredicate = NSPredicate(format: "userNode.viaMqtt == YES AND userNode.hopsAway == 0")
+				let mqttPredicate = NSPredicate(format: "userNode.viaMqtt == YES")
 				predicates.append(mqttPredicate)
 			}
-		} else {
-			let mqttPredicate = NSPredicate(format: "NOT (userNode.viaMqtt == YES AND userNode.hopsAway > 0)")
-			predicates.append(mqttPredicate)
 		}
-		/// Roles
+		// Roles
 		if roleFilter && deviceRoles.count > 0 {
 			var rolesArray: [NSPredicate] = []
 			for dr in deviceRoles {
@@ -321,33 +296,32 @@ struct UserList: View {
 			let compoundPredicate = NSCompoundPredicate(type: .or, subpredicates: rolesArray)
 			predicates.append(compoundPredicate)
 		}
-		/// Hops Away
-		if hopsAway == 0.0 {
+		// Hops Away
+		if hopsAway == 0 {
 			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway == %i", Int32(hopsAway))
 			predicates.append(hopsAwayPredicate)
 		} else if hopsAway > -1.0 {
 			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway > 0 AND userNode.hopsAway <= %i", Int32(hopsAway))
 			predicates.append(hopsAwayPredicate)
 		}
-		/// Online
+		// Online
 		if isOnline {
 			let isOnlinePredicate = NSPredicate(format: "userNode.lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -120, to: Date())! as NSDate)
 			predicates.append(isOnlinePredicate)
 		}
-		/// Encrypted
+		// Encrypted
 		if isPkiEncrypted {
 			let isPkiEncryptedPredicate = NSPredicate(format: "pkiEncrypted == YES")
 			predicates.append(isPkiEncryptedPredicate)
 		}
-		/// Favorites
+		// Favorites
 		if isFavorite {
 			let isFavoritePredicate = NSPredicate(format: "userNode.favorite == YES")
 			predicates.append(isFavoritePredicate)
 		}
-		/// Distance
+		// Distance
 		if distanceFilter {
 			let pointOfInterest = LocationsHandler.currentLocation
-
 			if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude && pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
 				let d: Double = maxDistance * 1.1
 				let r: Double = 6371009
@@ -362,16 +336,29 @@ struct UserList: View {
 				predicates.append(distancePredicate)
 			}
 		}
-
-		if predicates.count > 0 || !searchText.isEmpty {
-			if !searchText.isEmpty {
-				let filterPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)
-				users.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: [textSearchPredicate, filterPredicates])
-			} else {
-				users.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: predicates)
-			}
-		} else {
-			users.nsPredicate = nil
-		}
+		// Always apply unmessagable and connected node filters
+		// Show unmessagable nodes only if they have messages, otherwise hide them
+		let unmessagablePredicate = NSPredicate(format: "unmessagable == NO")
+		let hasMessagesPredicate = NSPredicate(format: "receivedMessages.@count > 0 OR sentMessages.@count > 0")
+		let isUnmessagablePredicate = NSCompoundPredicate(type: .or, subpredicates: [unmessagablePredicate, hasMessagesPredicate])
+		predicates.append(isUnmessagablePredicate)
+		let isIgnoredPredicate = NSPredicate(format: "userNode.ignored == NO")
+		predicates.append(isIgnoredPredicate)
+		let isConnectedNodePredicate = NSPredicate(format: "NOT (numString CONTAINS %@)", String(UserDefaults.preferredPeripheralNum))
+		predicates.append(isConnectedNodePredicate)
+		// Combine all predicates
+		let finalPredicate = predicates.isEmpty ? NSPredicate(value: true) : NSCompoundPredicate(type: .and, subpredicates: predicates)
+		// Initialize the fetch request with the combined predicate
+		_fetchRequest = FetchRequest<UserEntity>(
+			sortDescriptors: [
+				NSSortDescriptor(key: "lastMessage", ascending: false),
+				NSSortDescriptor(key: "userNode.favorite", ascending: false),
+				NSSortDescriptor(key: "pkiEncrypted", ascending: false),
+				NSSortDescriptor(key: "userNode.lastHeard", ascending: false),
+				NSSortDescriptor(key: "longName", ascending: true)
+			],
+			predicate: finalPredicate,
+			animation: .spring
+		)
 	}
 }

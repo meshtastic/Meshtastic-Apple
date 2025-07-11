@@ -118,7 +118,7 @@ struct StoreForwardConfig: View {
 				sfc.records = UInt32(self.records)
 				sfc.historyReturnMax = UInt32(self.historyReturnMax)
 				sfc.historyReturnWindow = UInt32(self.historyReturnWindow)
-				let adminMessageId = bleManager.saveStoreForwardModuleConfig(config: sfc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				let adminMessageId = bleManager.saveStoreForwardModuleConfig(config: sfc, fromUser: connectedNode!.user!, toUser: node!.user!)
 				if adminMessageId > 0 {
 					// Should show a saved successfully alert once I know that to be true
 					// for now just disable the button after a successful save
@@ -148,12 +148,11 @@ struct StoreForwardConfig: View {
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.storeForwardConfig == nil {
 								Logger.mesh.info("⚙️ Empty or expired store & forward module config requesting via PKI admin")
-								_ = bleManager.requestStoreAndForwardModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								_ = bleManager.requestStoreAndForwardModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
 							}
 						} else {
 							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin, empty store & forward module config")
-							_ = bleManager.requestStoreAndForwardModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
 						}
 					}
 				}

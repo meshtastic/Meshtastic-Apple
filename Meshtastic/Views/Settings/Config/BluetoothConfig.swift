@@ -80,7 +80,7 @@ struct BluetoothConfig: View {
 				bc.enabled = enabled
 				bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
 				bc.fixedPin = UInt32(fixedPin) ?? 123456
-				let adminMessageId =  bleManager.saveBluetoothConfig(config: bc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+				let adminMessageId =  bleManager.saveBluetoothConfig(config: bc, fromUser: connectedNode.user!, toUser: node!.user!)
 				if adminMessageId > 0 {
 					// Should show a saved successfully alert once I know that to be true
 					// for now just disable the button after a successful save
@@ -111,12 +111,11 @@ struct BluetoothConfig: View {
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.bluetoothConfig == nil {
 								Logger.mesh.info("⚙️ Empty or expired bluetooth config requesting via PKI admin")
-								_ = bleManager.requestBluetoothConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								_ = bleManager.requestBluetoothConfig(fromUser: connectedNode.user!, toUser: node.user!)
 							}
 						} else {
 							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin, empty bluetooth config")
-							_ = bleManager.requestBluetoothConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
 						}
 					}
 				}

@@ -172,7 +172,7 @@ struct DetectionSensorConfig: View {
 				dsc.usePullup = self.usePullup
 				dsc.minimumBroadcastSecs = UInt32(self.minimumBroadcastSecs)
 				dsc.stateBroadcastSecs = UInt32(self.stateBroadcastSecs)
-				let adminMessageId = bleManager.saveDetectionSensorModuleConfig(config: dsc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				let adminMessageId = bleManager.saveDetectionSensorModuleConfig(config: dsc, fromUser: connectedNode!.user!, toUser: node!.user!)
 				if adminMessageId > 0 {
 					// Should show a saved successfully alert once I know that to be true
 					// for now just disable the button after a successful save
@@ -202,12 +202,11 @@ struct DetectionSensorConfig: View {
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.detectionSensorConfig == nil {
 								Logger.mesh.info("⚙️ Empty or expired detection sensor module config requesting via PKI admin")
-								_ = bleManager.requestDetectionSensorModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+								_ = bleManager.requestDetectionSensorModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
 							}
 						} else {
 							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin, empty detection sensor module config")
-							_ = bleManager.requestDetectionSensorModuleConfig(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
 						}
 					}
 				}
