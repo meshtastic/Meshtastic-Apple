@@ -8109,6 +8109,9 @@
         }
       }
     },
+    "Configure Location Permissions" : {
+
+    },
     "Configure notification permissions" : {
 
     },
@@ -8611,9 +8614,6 @@
           }
         }
       }
-    },
-    "Continue to next step" : {
-
     },
     "Control Type" : {
       "localizations" : {
@@ -12450,9 +12450,6 @@
           }
         }
       }
-    },
-    "Enable MQTT" : {
-
     },
     "Enable Notifications" : {
       "localizations" : {
@@ -25665,6 +25662,9 @@
         }
       }
     },
+    "Phone Location" : {
+
+    },
     "Pin %lld" : {
       "localizations" : {
         "it" : {
@@ -31638,6 +31638,9 @@
           }
         }
       }
+    },
+    "Send Notifications" : {
+
     },
     "Send Reboot OTA" : {
       "localizations" : {

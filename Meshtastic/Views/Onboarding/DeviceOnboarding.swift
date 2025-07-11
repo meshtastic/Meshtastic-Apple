@@ -8,7 +8,6 @@ struct DeviceOnboarding: View {
 	enum SetupGuide: Hashable {
 		case notifications
 		case location
-		case mqtt
 	}
 
 	@State var navigationPath: [SetupGuide] = []
@@ -170,54 +169,22 @@ struct DeviceOnboarding: View {
 			}
 			.padding()
 			Spacer()
-			if LocationHelper.shared.locationManager.authorizationStatus != .notDetermined {
-				Button {
-					Task {
-						await goToNextStep(after: .location)
-					}
-				} label: {
-					Text("Continue to next step")
-						.frame(maxWidth: .infinity)
-				}
-				.padding()
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
-				.buttonStyle(.borderedProminent)
-			}
-		}
-	}
-
-	var mqttView: some View {
-		VStack {
-			VStack {
-				Text("MQTT")
-					.font(.largeTitle.bold())
-					.multilineTextAlignment(.center)
-					.fixedSize(horizontal: false, vertical: true)
-			}
-			Spacer()
 			Button {
 				Task {
-
+					let status = await LocationsHandler.shared.requestLocationAlwaysPermissions()
+					if status != .notDetermined {
+						dismiss()
+					}
 				}
 			} label: {
-				Text("Enable MQTT")
+				Text("Configure Location Permissions")
 					.frame(maxWidth: .infinity)
 			}
-			.padding()
 			.padding()
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
 			.padding()
 			.buttonStyle(.borderedProminent)
-
-			Button {
-				dismiss()
-			} label: {
-				Text("Set up later")
-					.frame(maxWidth: .infinity)
-			}
 		}
 	}
 
@@ -230,8 +197,6 @@ struct DeviceOnboarding: View {
 						notificationView
 					case .location:
 						locationView
-					case .mqtt:
-						mqttView
 					}
 				}
 		}
@@ -279,27 +244,21 @@ struct DeviceOnboarding: View {
 				fallthrough
 			}
 		case .notifications:
-			let status = LocationHelper.shared.locationManager.authorizationStatus
-			if status == .notDetermined {
+			let status = LocationsHandler.shared.manager.authorizationStatus
+			if status == .notDetermined ||  status == .restricted || status == .denied {
 				navigationPath.append(.location)
-				let newStatus = await LocationsHandler.shared.manager.requestAlwaysAuthorization()
 			} else {
 				fallthrough
 			}
 		case .location:
-	
-			if true {
-				navigationPath.append(.mqtt)
-			} else {
-				fallthrough
+			let status = LocationsHandler.shared.manager.authorizationStatus
+			if status != .notDetermined && status != .restricted && status != .denied {
+				dismiss()
 			}
-		case .mqtt:
-			dismiss()
 		}
 	}
 
 	// MARK: Permission Checks
-
 	func requestNotificationsPermissions() async {
 		let center = UNUserNotificationCenter.current()
 		do {

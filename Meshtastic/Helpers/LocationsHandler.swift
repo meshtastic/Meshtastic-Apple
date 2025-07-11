@@ -57,7 +57,7 @@ import OSLog
 
 	func startLocationUpdates() {
 		if self.manager.authorizationStatus == .notDetermined {
-			self.manager.requestWhenInUseAuthorization()
+		//	self.manager.requestWhenInUseAuthorization()
 		}
 		let status = self.manager.authorizationStatus
 		guard status == .authorizedAlways || status == .authorizedWhenInUse else {
