@@ -40,7 +40,7 @@ import OSLog
 	}
 	
 	// The continuation we will use to asynchronously ask the user permission to track their location.
-	private var permissionContinuation: CheckedContinuation<CLAuthorizationStatus, Never>?
+	var permissionContinuation: CheckedContinuation<CLAuthorizationStatus, Never>?
 
 	func requestLocationAlwaysPermissions() async -> CLAuthorizationStatus {
 		self.manager.requestAlwaysAuthorization()

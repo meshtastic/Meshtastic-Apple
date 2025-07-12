@@ -10,8 +10,9 @@ struct DeviceOnboarding: View {
 		case location
 	}
 
-	@State var navigationPath: [SetupGuide] = []
 	@EnvironmentObject var bleManager: BLEManager
+	@State var navigationPath: [SetupGuide] = []
+	@State var locationStatus = LocationsHandler.shared.manager.authorizationStatus
 
 	@Environment(\.dismiss) var dismiss
 
@@ -61,19 +62,20 @@ struct DeviceOnboarding: View {
 				.interactiveDismissDisabled()
 			}
 			Spacer()
-
-			Button {
-				Task {
-					await goToNextStep(after: nil)
+			if bleManager.isSwitchedOn {
+				Button {
+					Task {
+						await goToNextStep(after: nil)
+					}
+				} label: {
+					Text("Get started")
+						.frame(maxWidth: .infinity)
 				}
-			} label: {
-				Text("Get started")
-					.frame(maxWidth: .infinity)
+				.buttonBorderShape(.capsule)
+				.controlSize(.large)
+				.padding()
+				.buttonStyle(.borderedProminent)
 			}
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.buttonStyle(.borderedProminent)
 		}
 	}
 
@@ -169,22 +171,33 @@ struct DeviceOnboarding: View {
 			}
 			.padding()
 			Spacer()
-			Button {
-				Task {
-					let status = await LocationsHandler.shared.requestLocationAlwaysPermissions()
-					if status != .notDetermined {
-						dismiss()
+			if locationStatus == .notDetermined {
+				Button {
+					Task {
+						locationStatus = await LocationsHandler.shared.requestLocationAlwaysPermissions() // LocationsHandler.shared.requestLocationAlwaysPermissions()
 					}
+				} label: {
+					Text("Configure Location Permissions")
+						.frame(maxWidth: .infinity)
 				}
-			} label: {
-				Text("Configure Location Permissions")
-					.frame(maxWidth: .infinity)
+				.padding()
+				.buttonBorderShape(.capsule)
+				.controlSize(.large)
+				.padding()
+				.buttonStyle(.borderedProminent)
+			} else {
+				Button {
+					dismiss()
+				} label: {
+					Text("Finish")
+						.frame(maxWidth: .infinity)
+				}
+				.padding()
+				.buttonBorderShape(.capsule)
+				.controlSize(.large)
+				.padding()
+				.buttonStyle(.borderedProminent)
 			}
-			.padding()
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.buttonStyle(.borderedProminent)
 		}
 	}
 
@@ -244,8 +257,8 @@ struct DeviceOnboarding: View {
 				fallthrough
 			}
 		case .notifications:
-			let status = LocationsHandler.shared.manager.authorizationStatus
-			if status == .notDetermined ||  status == .restricted || status == .denied {
+			locationStatus = LocationsHandler.shared.manager.authorizationStatus
+			if locationStatus == .notDetermined ||  locationStatus == .restricted || locationStatus == .denied {
 				navigationPath.append(.location)
 			} else {
 				fallthrough
