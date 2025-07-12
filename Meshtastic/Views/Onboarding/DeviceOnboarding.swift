@@ -174,8 +174,9 @@ struct DeviceOnboarding: View {
 			Button {
 				Task {
 					await requestLocationPermissions()
-					await goToNextStep(after: .location)
+					
 				}
+				UserDefaults.firstLaunch = false
 				dismiss()
 			} label: {
 				Text("Configure Location Permissions")
