@@ -171,33 +171,21 @@ struct DeviceOnboarding: View {
 			}
 			.padding()
 			Spacer()
-			if locationStatus == .notDetermined {
-				Button {
-					Task {
-						locationStatus = await LocationsHandler.shared.requestLocationAlwaysPermissions() // LocationsHandler.shared.requestLocationAlwaysPermissions()
-					}
-				} label: {
-					Text("Configure Location Permissions")
-						.frame(maxWidth: .infinity)
+			Button {
+				Task {
+					await requestLocationPermissions()
+					await goToNextStep(after: .location)
 				}
-				.padding()
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
-				.buttonStyle(.borderedProminent)
-			} else {
-				Button {
-					dismiss()
-				} label: {
-					Text("Finish")
-						.frame(maxWidth: .infinity)
-				}
-				.padding()
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
-				.buttonStyle(.borderedProminent)
+				dismiss()
+			} label: {
+				Text("Configure Location Permissions")
+					.frame(maxWidth: .infinity)
 			}
+			.padding()
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
+			.buttonStyle(.borderedProminent)
 		}
 	}
 
@@ -283,6 +271,15 @@ struct DeviceOnboarding: View {
 			}
 		} catch {
 			Logger.services.error("Notification permissions error: \(error.localizedDescription)")
+		}
+	}
+
+	func requestLocationPermissions() async {
+		locationStatus = await LocationsHandler.shared.requestLocationAlwaysPermissions()
+		if locationStatus != .notDetermined {
+			Logger.services.info("Notification permissions are enabled")
+		} else {
+			Logger.services.info("Notification permissions denied")
 		}
 	}
 }
