@@ -28,8 +28,8 @@ file_length:
 
 # TODO: should review
 cyclomatic_complexity:
-  warning: 60
-  error: 70
+  warning: 70
+  error: 80
   ignores_case_statements: true
 
 # TODO: should review

@@ -21,6 +21,53 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
+public enum CompassMode: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+
+  ///
+  /// Compass with dynamic ring and heading
+  case dynamic // = 0
+
+  ///
+  /// Compass with fixed ring and heading
+  case fixedRing // = 1
+
+  ///
+  /// Compass with heading and freeze option
+  case freezeHeading // = 2
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .dynamic
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .dynamic
+    case 1: self = .fixedRing
+    case 2: self = .freezeHeading
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .dynamic: return 0
+    case .fixedRing: return 1
+    case .freezeHeading: return 2
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [CompassMode] = [
+    .dynamic,
+    .fixedRing,
+    .freezeHeading,
+  ]
+
+}
+
 public enum Theme: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
@@ -350,6 +397,29 @@ public struct DeviceUIConfig: @unchecked Sendable {
   /// Clears the value of `mapData`. Subsequent reads from it will return its default value.
   public mutating func clearMapData() {_uniqueStorage()._mapData = nil}
 
+  ///
+  /// Compass mode
+  public var compassMode: CompassMode {
+    get {return _storage._compassMode}
+    set {_uniqueStorage()._compassMode = newValue}
+  }
+
+  ///
+  /// RGB color for BaseUI
+  /// 0xRRGGBB format, e.g. 0xFF0000 for red
+  public var screenRgbColor: UInt32 {
+    get {return _storage._screenRgbColor}
+    set {_uniqueStorage()._screenRgbColor = newValue}
+  }
+
+  ///
+  /// Clockface analog style
+  /// true for analog clockface, false for digital clockface
+  public var isClockfaceAnalog: Bool {
+    get {return _storage._isClockfaceAnalog}
+    set {_uniqueStorage()._isClockfaceAnalog = newValue}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -482,6 +552,14 @@ public struct Map: Sendable {
 
 fileprivate let _protobuf_package = "meshtastic"
 
+extension CompassMode: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "DYNAMIC"),
+    1: .same(proto: "FIXED_RING"),
+    2: .same(proto: "FREEZE_HEADING"),
+  ]
+}
+
 extension Theme: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "DARK"),
@@ -533,6 +611,9 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     13: .standard(proto: "node_highlight"),
     14: .standard(proto: "calibration_data"),
     15: .standard(proto: "map_data"),
+    16: .standard(proto: "compass_mode"),
+    17: .standard(proto: "screen_rgb_color"),
+    18: .standard(proto: "is_clockface_analog"),
   ]
 
   fileprivate class _StorageClass {
@@ -551,6 +632,9 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     var _nodeHighlight: NodeHighlight? = nil
     var _calibrationData: Data = Data()
     var _mapData: Map? = nil
+    var _compassMode: CompassMode = .dynamic
+    var _screenRgbColor: UInt32 = 0
+    var _isClockfaceAnalog: Bool = false
 
     #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
@@ -580,6 +664,9 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       _nodeHighlight = source._nodeHighlight
       _calibrationData = source._calibrationData
       _mapData = source._mapData
+      _compassMode = source._compassMode
+      _screenRgbColor = source._screenRgbColor
+      _isClockfaceAnalog = source._isClockfaceAnalog
     }
   }
 
@@ -613,6 +700,9 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
         case 13: try { try decoder.decodeSingularMessageField(value: &_storage._nodeHighlight) }()
         case 14: try { try decoder.decodeSingularBytesField(value: &_storage._calibrationData) }()
         case 15: try { try decoder.decodeSingularMessageField(value: &_storage._mapData) }()
+        case 16: try { try decoder.decodeSingularEnumField(value: &_storage._compassMode) }()
+        case 17: try { try decoder.decodeSingularUInt32Field(value: &_storage._screenRgbColor) }()
+        case 18: try { try decoder.decodeSingularBoolField(value: &_storage._isClockfaceAnalog) }()
         default: break
         }
       }
@@ -670,6 +760,15 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       try { if let v = _storage._mapData {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 15)
       } }()
+      if _storage._compassMode != .dynamic {
+        try visitor.visitSingularEnumField(value: _storage._compassMode, fieldNumber: 16)
+      }
+      if _storage._screenRgbColor != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._screenRgbColor, fieldNumber: 17)
+      }
+      if _storage._isClockfaceAnalog != false {
+        try visitor.visitSingularBoolField(value: _storage._isClockfaceAnalog, fieldNumber: 18)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -694,6 +793,9 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
         if _storage._nodeHighlight != rhs_storage._nodeHighlight {return false}
         if _storage._calibrationData != rhs_storage._calibrationData {return false}
         if _storage._mapData != rhs_storage._mapData {return false}
+        if _storage._compassMode != rhs_storage._compassMode {return false}
+        if _storage._screenRgbColor != rhs_storage._screenRgbColor {return false}
+        if _storage._isClockfaceAnalog != rhs_storage._isClockfaceAnalog {return false}
         return true
       }
       if !storagesAreEqual {return false}

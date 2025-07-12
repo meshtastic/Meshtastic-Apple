@@ -203,6 +203,12 @@ public enum PortNum: SwiftProtobuf.Enum, Swift.CaseIterable {
   case reticulumTunnelApp // = 76
 
   ///
+  /// App for transporting Cayenne Low Power Payload, popular for LoRaWAN sensor nodes. Offers ability to send
+  /// arbitrary telemetry over meshtastic that is not covered by telemetry.proto
+  /// ENCODING: CayenneLLP
+  case cayenneApp // = 77
+
+  ///
   /// Private applications should use portnums >= 256.
   /// To simplify initial development and testing you can use "PRIVATE_APP"
   /// in your code without needing to rebuild protobuf files (via [regen-protos.sh](https://github.com/meshtastic/firmware/blob/master/bin/regen-protos.sh))
@@ -252,6 +258,7 @@ public enum PortNum: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 73: self = .mapReportApp
     case 74: self = .powerstressApp
     case 76: self = .reticulumTunnelApp
+    case 77: self = .cayenneApp
     case 256: self = .privateApp
     case 257: self = .atakForwarder
     case 511: self = .max
@@ -289,6 +296,7 @@ public enum PortNum: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .mapReportApp: return 73
     case .powerstressApp: return 74
     case .reticulumTunnelApp: return 76
+    case .cayenneApp: return 77
     case .privateApp: return 256
     case .atakForwarder: return 257
     case .max: return 511
@@ -326,6 +334,7 @@ public enum PortNum: SwiftProtobuf.Enum, Swift.CaseIterable {
     .mapReportApp,
     .powerstressApp,
     .reticulumTunnelApp,
+    .cayenneApp,
     .privateApp,
     .atakForwarder,
     .max,
@@ -365,6 +374,7 @@ extension PortNum: SwiftProtobuf._ProtoNameProviding {
     73: .same(proto: "MAP_REPORT_APP"),
     74: .same(proto: "POWERSTRESS_APP"),
     76: .same(proto: "RETICULUM_TUNNEL_APP"),
+    77: .same(proto: "CAYENNE_APP"),
     256: .same(proto: "PRIVATE_APP"),
     257: .same(proto: "ATAK_FORWARDER"),
     511: .same(proto: "MAX"),
