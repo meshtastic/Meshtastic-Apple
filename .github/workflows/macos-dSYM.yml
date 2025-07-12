@@ -1,5 +1,10 @@
 name: Upload dSYM Files
 
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: macos-latest
@@ -8,14 +13,70 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Generate/Download dSYM Files
-        uses: ./release.sh
+      - name: Select Xcode Version
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+        
+      - name: Show Xcode Version
+        run: xcodebuild -version
+        
+      - name: Setup Environment Variables
+        env:
+          DATADOG_CLIENT_TOKEN: ${{ secrets.DATADOG_CLIENT_TOKEN }}
+        run: |
+          echo "DATADOG_CLIENT_TOKEN=${DATADOG_CLIENT_TOKEN}" >> $GITHUB_ENV
+          
+      - name: Build iOS App and Generate dSYMs
+        env:
+          DATADOG_CLIENT_TOKEN: ${{ secrets.DATADOG_CLIENT_TOKEN }}
+        run: |
+          # Create build directory
+          mkdir -p ./build/dSYMs
+          
+          # Build iOS App Archive with dSYMs
+          xcodebuild \
+            -workspace Meshtastic.xcworkspace \
+            -scheme Meshtastic \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath ./build/Meshtastic.xcarchive \
+            DATADOG_CLIENT_TOKEN="${DATADOG_CLIENT_TOKEN}" \
+            DEBUG_INFORMATION_FORMAT=dwarf-with-dsym \
+            DWARF_DSYM_FOLDER_PATH=./build/dSYMs \
+            archive
+            
+      - name: Extract dSYMs from Archive
+        run: |
+          # Find and copy all dSYM files from the archive
+          find ./build/Meshtastic.xcarchive -name "*.dSYM" -exec cp -R {} ./build/dSYMs/ \;
+          
+          # List what we found
+          echo "Found dSYM files:"
+          find ./build/dSYMs -name "*.dSYM" -type d
 
+      - name: Install Datadog CI
+        run: |
+          npm install -g @datadog/datadog-ci
+          
       - name: Upload dSYMs to Datadog
-        uses: DataDog/upload-dsyms-github-action@v1
+        env:
+          DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+          DATADOG_SITE: datadoghq.com
+        run: |
+          # Upload all dSYM files to Datadog
+          if [ -d "./build/dSYMs" ] && [ "$(find ./build/dSYMs -name "*.dSYM" -type d | wc -l)" -gt 0 ]; then
+            echo "Uploading dSYM files to Datadog..."
+            datadog-ci dsyms upload ./build/dSYMs --dry-run=false
+          else
+            echo "No dSYM files found to upload"
+            exit 1
+          fi
+          
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
         with:
-          api_key: ${{ secrets.DATADOG_API_KEY }}
-          site: datadoghq.com
-          dsym_paths: |
-            path/to/dsyms/folder
-            path/to/zip/dsyms.zip
+          name: dsym-files
+          path: |
+            ./build/dSYMs
+            ./build/Meshtastic.xcarchive
+          retention-days: 30

@@ -13,6 +13,8 @@
 		102B5EB12E172F41003D191E /* DatadogRUM in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EB02E172F41003D191E /* DatadogRUM */; };
 		108FFECB2DD3F43C00BFAA81 /* ShareContactQRDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 108FFECA2DD3F43C00BFAA81 /* ShareContactQRDialog.swift */; };
 		108FFECD2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 108FFECC2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift */; };
+		10D109F22E2047D600536CE6 /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = 10D109F12E2047D600536CE6 /* DatadogSessionReplay */; };
+		10D109F42E2047D600536CE6 /* DatadogTrace in Frameworks */ = {isa = PBXBuildFile; productRef = 10D109F32E2047D600536CE6 /* DatadogTrace */; };
 		231B3F212D087A4C0069A07D /* MetricTableColumn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F202D087A4C0069A07D /* MetricTableColumn.swift */; };
 		231B3F222D087A4C0069A07D /* MetricsColumnList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F1F2D087A4C0069A07D /* MetricsColumnList.swift */; };
 		231B3F252D087C3C0069A07D /* EnvironmentDefaultColumns.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */; };
@@ -599,9 +601,11 @@
 				102B5EAD2E172F41003D191E /* DatadogCrashReporting in Frameworks */,
 				25A978BA2C13F8ED0003AAE7 /* MeshtasticProtobufs in Frameworks */,
 				102B5EAB2E172F41003D191E /* DatadogCore in Frameworks */,
+				10D109F22E2047D600536CE6 /* DatadogSessionReplay in Frameworks */,
 				102B5EAF2E172F41003D191E /* DatadogLogs in Frameworks */,
 				102B5EB12E172F41003D191E /* DatadogRUM in Frameworks */,
 				DD0D3D222A55CEB10066DB71 /* CocoaMQTT in Frameworks */,
+				10D109F42E2047D600536CE6 /* DatadogTrace in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1256,6 +1260,8 @@
 				102B5EAC2E172F41003D191E /* DatadogCrashReporting */,
 				102B5EAE2E172F41003D191E /* DatadogLogs */,
 				102B5EB02E172F41003D191E /* DatadogRUM */,
+				10D109F12E2047D600536CE6 /* DatadogSessionReplay */,
+				10D109F32E2047D600536CE6 /* DatadogTrace */,
 			);
 			productName = MeshtasticClient;
 			productReference = DDC2E15426CE248E0042C5E4 /* Meshtastic.app */;
@@ -2053,6 +2059,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
 			productName = DatadogRUM;
+		};
+		10D109F12E2047D600536CE6 /* DatadogSessionReplay */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
+			productName = DatadogSessionReplay;
+		};
+		10D109F32E2047D600536CE6 /* DatadogTrace */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
+			productName = DatadogTrace;
 		};
 		25A978B92C13F8ED0003AAE7 /* MeshtasticProtobufs */ = {
 			isa = XCSwiftPackageProductDependency;
