@@ -38,10 +38,8 @@ import OSLog
 			UserDefaults.standard.set(backgroundActivity, forKey: "BGActivitySessionStarted")
 		}
 	}
-	
 	// The continuation we will use to asynchronously ask the user permission to track their location.
 	var permissionContinuation: CheckedContinuation<CLAuthorizationStatus, Never>?
-
 	func requestLocationAlwaysPermissions() async -> CLAuthorizationStatus {
 		self.manager.requestAlwaysAuthorization()
 		return await withCheckedContinuation { continuation in
@@ -56,9 +54,6 @@ import OSLog
 	}
 
 	func startLocationUpdates() {
-		if self.manager.authorizationStatus == .notDetermined {
-		//	self.manager.requestWhenInUseAuthorization()
-		}
 		let status = self.manager.authorizationStatus
 		guard status == .authorizedAlways || status == .authorizedWhenInUse else {
 			return
