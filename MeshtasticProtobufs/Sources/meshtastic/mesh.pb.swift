@@ -442,15 +442,15 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
   /// Elecrow CrowPanel Advance models, ESP32-S3 and TFT with SX1262 radio plugin
   case crowpanel // = 97
 
-  ///*
+  ///
   /// Lilygo LINK32 board with sensors
   case link32 // = 98
 
-  ///*
+  ///
   /// Seeed Tracker L1
   case seeedWioTrackerL1 // = 99
 
-  ///*
+  ///
   /// Seeed Tracker L1 EINK driver
   case seeedWioTrackerL1Eink // = 100
 
@@ -458,25 +458,29 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
   /// Reserved ID for future and past use
   case qwantzTinyArms // = 101
 
-  ///*
+  ///
   /// Lilygo T-Deck Pro
   case tDeckPro // = 102
 
-  ///*
+  ///
   /// Lilygo TLora Pager
   case tLoraPager // = 103
 
-  ///*
+  ///
   /// GAT562 Mesh Trial Tracker
   case gat562MeshTrialTracker // = 104
 
-  ///*
-  /// RAKwireless WisMesh Tag 
+  ///
+  /// RAKwireless WisMesh Tag
   case wismeshTag // = 105
 
-  ///*
+  ///
   /// RAKwireless WisBlock Core RAK3312 https://docs.rakwireless.com/product-categories/wisduo/rak3112-module/overview/
   case rak3312 // = 106
+
+  ///
+  /// Elecrow ThinkNode M5 https://www.elecrow.com/wiki/ThinkNode_M5_Meshtastic_LoRa_Signal_Transceiver_ESP32-S3.html
+  case thinknodeM5 // = 107
 
   ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -598,6 +602,7 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 104: self = .gat562MeshTrialTracker
     case 105: self = .wismeshTag
     case 106: self = .rak3312
+    case 107: self = .thinknodeM5
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -712,6 +717,7 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .gat562MeshTrialTracker: return 104
     case .wismeshTag: return 105
     case .rak3312: return 106
+    case .thinknodeM5: return 107
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -826,6 +832,7 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     .gat562MeshTrialTracker,
     .wismeshTag,
     .rak3312,
+    .thinknodeM5,
     .privateHw,
   ]
 
@@ -1073,7 +1080,7 @@ public enum ExcludedModules: SwiftProtobuf.Enum, Swift.CaseIterable {
   /// Paxcounter module
   case paxcounterConfig // = 4096
 
-  /// 
+  ///
   /// Bluetooth config (not technically a module, but used to indicate bluetooth capabilities)
   case bluetoothConfig // = 8192
 
@@ -3656,6 +3663,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     104: .same(proto: "GAT562_MESH_TRIAL_TRACKER"),
     105: .same(proto: "WISMESH_TAG"),
     106: .same(proto: "RAK3312"),
+    107: .same(proto: "THINKNODE_M5"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
