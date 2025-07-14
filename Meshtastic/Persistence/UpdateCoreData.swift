@@ -924,6 +924,8 @@ func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, s
 					fetchedNode[0].securityConfig?.adminKey = config.adminKey[0]
 					if config.adminKey.count > 1 {
 						fetchedNode[0].securityConfig?.adminKey2 = config.adminKey[1]
+					}
+					if config.adminKey.count > 2 {
 						fetchedNode[0].securityConfig?.adminKey3 = config.adminKey[2]
 					}
 				}
