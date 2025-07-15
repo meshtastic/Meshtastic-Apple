@@ -60,7 +60,7 @@ struct ContentView: View {
 		}.sheet(
 			isPresented: $isShowingDeviceOnboardingFlow,
 			onDismiss: {
-				//UserDefaults.firstLaunch = false
+				UserDefaults.firstLaunch = false
 			}, content: {
 				DeviceOnboarding()
 			}
