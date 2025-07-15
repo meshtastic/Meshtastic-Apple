@@ -339,7 +339,7 @@ struct NodeList: View {
 			}
 		}
 		.onChange(of: selectedNode) {
-			if selectedNode === nil {
+			if selectedNode == nil {
 				router.navigationState.nodeListSelectedNodeNum = nil
 			}
 		}
