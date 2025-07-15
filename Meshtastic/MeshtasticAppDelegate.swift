@@ -50,7 +50,7 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		case "messageNotification.thumbsUpAction":
 			if let channel = userInfo["channel"] as? Int32,
 			   let replyID = userInfo["messageId"] as? Int64 {
-				let tapbackResponse = !BLEManager.shared.sendMessage(
+				let tapbackResponse = !BLEManager.shared.sendMessage (
 					message: Tapbacks.thumbsUp.emojiString,
 					toUserNum: userInfo["userNum"] as? Int64 ?? 0,
 					channel: channel,
@@ -64,7 +64,7 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		case "messageNotification.thumbsDownAction":
 			if let channel = userInfo["channel"] as? Int32,
 			   let replyID = userInfo["messageId"] as? Int64 {
-				let tapbackResponse = !BLEManager.shared.sendMessage(
+				let tapbackResponse = !BLEManager.shared.sendMessage (
 					message: Tapbacks.thumbsDown.emojiString,
 					toUserNum: userInfo["userNum"] as? Int64 ?? 0,
 					channel: channel,
@@ -79,7 +79,7 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 			if let userInput = (response as? UNTextInputNotificationResponse)?.userText,
 			   let channel = userInfo["channel"] as? Int32,
 			   let replyID = userInfo["messageId"] as? Int64 {
-				let tapbackResponse = !BLEManager.shared.sendMessage(
+				let tapbackResponse = !BLEManager.shared.sendMessage (
 					message: userInput,
 					toUserNum: userInfo["userNum"] as? Int64 ?? 0,
 					channel: channel,
@@ -98,21 +98,6 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		   let deepLink = userInfo["path"] as? String,
 		   let url = URL(string: deepLink) {
 			Logger.services.info("userNotificationCenter didReceiveResponse handling deeplink: \(targetValue, privacy: .public) \(deepLink, privacy: .public)")
-			// Handle TraceRoute notifications specially to ensure they navigate correctly
-			if deepLink.contains("meshtastic:///nodes") && deepLink.contains("nodenum=") {
-				// First extract the node number from the URL
-				if let nodeNumString = deepLink.components(separatedBy: "nodenum=").last,
-				   let nodeNum = Int64(nodeNumString) {
-					Logger.services.info("Navigation to specific node via notification: \(nodeNum, privacy: .public)")
-					self.router?.navigationState.selectedTab = .nodes
-					// Post a notification to trigger app-wide refresh
-					NotificationCenter.default.post(name: NSNotification.Name("ForceNavigationRefresh"),
-														object: nil,
-														userInfo: ["nodeNum": nodeNum])
-					self.router?.navigationState.nodeListSelectedNodeNum = nodeNum
-				}
-			}
-			// Still call the regular router in all cases
 			router?.route(url: url)
 		} else {
 			Logger.services.error("Failed to handle notification response: \(userInfo, privacy: .public)")
