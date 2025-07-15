@@ -284,9 +284,6 @@ struct NodeList: View {
 						// Make sure the ZStack passes through accessibility to the ConnectedDevice component
 						.accessibilityElement(children: .contain)
 					)
-					.onDisappear {
-						router.navigationState.nodeListSelectedNodeNum = nil
-					}
 				}
 			 } else {
 				ContentUnavailableView("Select Node", systemImage: "flipphone")
@@ -339,6 +336,11 @@ struct NodeList: View {
 		.onChange(of: distanceFilter) {
 			Task {
 				await searchNodeList()
+			}
+		}
+		.onChange(of: selectedNode) {
+			if selectedNode == nil {
+				router.navigationState.nodeListSelectedNodeNum = nil
 			}
 		}
 		.onChange(of: router.navigationState) {
