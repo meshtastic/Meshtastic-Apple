@@ -21,7 +21,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 }
 
 /// Note: There are no 'PowerMon' messages normally in use (PowerMons are sent only as structured logs - slogs).
-///But we wrap our State enum in this message to effectively nest a namespace (without our linter yelling at us)
+/// But we wrap our State enum in this message to effectively nest a namespace (without our linter yelling at us)
 public struct PowerMon: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -30,7 +30,7 @@ public struct PowerMon: Sendable {
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   /// Any significant power changing event in meshtastic should be tagged with a powermon state transition.
-  ///If you are making new meshtastic features feel free to add new entries at the end of this definition.
+  /// If you are making new meshtastic features feel free to add new entries at the end of this definition.
   public enum State: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
     case none // = 0
@@ -57,8 +57,8 @@ public struct PowerMon: Sendable {
     case wifiOn // = 1024
 
     ///
-    ///GPS is actively trying to find our location
-    ///See GPSPowerState for more details
+    /// GPS is actively trying to find our location
+    /// See GPSPowerState for more details
     case gpsActive // = 2048
     case UNRECOGNIZED(Int)
 
@@ -143,8 +143,8 @@ public struct PowerStressMessage: Sendable {
 
   ///
   /// What operation would we like the UUT to perform.
-  ///note: senders should probably set want_response in their request packets, so that they can know when the state
-  ///machine has started processing their request
+  /// note: senders should probably set want_response in their request packets, so that they can know when the state
+  /// machine has started processing their request
   public enum Opcode: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 

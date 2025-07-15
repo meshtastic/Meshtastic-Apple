@@ -436,6 +436,12 @@ public struct Config: Sendable {
       /// Non-notification system buzzer tones only.
       /// Buzzer is enabled only for non-notification tones such as button presses, startup, shutdown, but not for alerts.
       case systemOnly // = 3
+
+      ///
+      /// Direct Message notifications only.
+      /// Buzzer is enabled only for direct messages and alerts, but not for button presses.
+      /// External notification config determines the specifics of the notification behavior.
+      case directMsgOnly // = 4
       case UNRECOGNIZED(Int)
 
       public init() {
@@ -448,6 +454,7 @@ public struct Config: Sendable {
         case 1: self = .disabled
         case 2: self = .notificationsOnly
         case 3: self = .systemOnly
+        case 4: self = .directMsgOnly
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -458,6 +465,7 @@ public struct Config: Sendable {
         case .disabled: return 1
         case .notificationsOnly: return 2
         case .systemOnly: return 3
+        case .directMsgOnly: return 4
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -468,6 +476,7 @@ public struct Config: Sendable {
         .disabled,
         .notificationsOnly,
         .systemOnly,
+        .directMsgOnly,
       ]
 
     }
@@ -2268,6 +2277,7 @@ extension Config.DeviceConfig.BuzzerMode: SwiftProtobuf._ProtoNameProviding {
     1: .same(proto: "DISABLED"),
     2: .same(proto: "NOTIFICATIONS_ONLY"),
     3: .same(proto: "SYSTEM_ONLY"),
+    4: .same(proto: "DIRECT_MSG_ONLY"),
   ]
 }
 

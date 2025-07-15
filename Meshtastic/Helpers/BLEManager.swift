@@ -60,9 +60,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	let NONCE_ONLY_DB = 69421
 	private var isWaitingForWantConfigResponse = false
 
-    private var wantConfigTimer: Timer?
-    private var wantConfigRetryCount = 0
-    private let maxWantConfigRetries = 6
+	private var wantConfigTimer: Timer?
+	private var wantConfigRetryCount = 0
+	private let maxWantConfigRetries = 6
 	private let wantConfigTimeoutInterval: TimeInterval = 6.0
 
 	// MARK: init
@@ -799,42 +799,42 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						}
 					}
 				}
+				guard let cp = connectedPeripheral else {
+					return
+				}
 				// Channels
-				if decodedInfo.channel.isInitialized && connectedPeripheral != nil {
+				if decodedInfo.channel.isInitialized {
 					nowKnown = true
-					channelPacket(channel: decodedInfo.channel, fromNum: Int64(truncatingIfNeeded: connectedPeripheral.num), context: context)
+					channelPacket(channel: decodedInfo.channel, fromNum: Int64(truncatingIfNeeded: cp.num), context: context)
 				}
 				// Config
-				if decodedInfo.config.isInitialized && !invalidVersion && connectedPeripheral != nil && self.connectedPeripheral?.num != 0 {
+				if decodedInfo.config.isInitialized && !invalidVersion && cp.num != 0 {
 					nowKnown = true
-					localConfig(config: decodedInfo.config, context: context, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral.num), nodeLongName: self.connectedPeripheral?.longName ?? "Unknown")
+					localConfig(config: decodedInfo.config, context: context, nodeNum: Int64(truncatingIfNeeded: cp.num), nodeLongName: cp.longName)
 				}
 				// Module Config
-				if decodedInfo.moduleConfig.isInitialized && !invalidVersion && self.connectedPeripheral?.num != 0 {
+				if decodedInfo.moduleConfig.isInitialized && !invalidVersion && cp.num != 0 {
 					onWantConfigResponseReceived()
 					nowKnown = true
-					moduleConfig(config: decodedInfo.moduleConfig, context: context, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral.num), nodeLongName: self.connectedPeripheral?.longName ?? "Unknown")
+					moduleConfig(config: decodedInfo.moduleConfig, context: context, nodeNum: Int64(truncatingIfNeeded: cp.num), nodeLongName: cp.longName)
 					if decodedInfo.moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(decodedInfo.moduleConfig.cannedMessage) {
 						if decodedInfo.moduleConfig.cannedMessage.enabled {
-							if let connectedNum = self.connectedPeripheral?.num, connectedNum > 0 {
-								_ = self.getCannedMessageModuleMessages(destNum: connectedNum, wantResponse: true)
-							}
+							_ = self.getCannedMessageModuleMessages(destNum: cp.num, wantResponse: true)
+						
 						}
 					}
 					if decodedInfo.config.payloadVariant == Config.OneOf_PayloadVariant.device(decodedInfo.config.device) {
 						var dc = decodedInfo.config.device
 						if dc.tzdef.isEmpty {
 							dc.tzdef =  TimeZone.current.posixDescription
-							if let connectedNum = self.connectedPeripheral?.num, connectedNum > 0 {
-								let adminMessageId = self.saveTimeZone(config: dc, user: connectedNum)
-							}
+							let adminMessageId = self.saveTimeZone(config: dc, user: cp.num)
 						}
 					}
 				}
 				// Device Metadata
 				if decodedInfo.metadata.firmwareVersion.count > 0 && !invalidVersion {
 					nowKnown = true
-					deviceMetadataPacket(metadata: decodedInfo.metadata, fromNum: connectedPeripheral.num, context: context)
+					deviceMetadataPacket(metadata: decodedInfo.metadata, fromNum: cp.num, context: context)
 					connectedPeripheral.firmwareVersion = decodedInfo.metadata.firmwareVersion
 					let lastDotIndex = decodedInfo.metadata.firmwareVersion.lastIndex(of: ".")
 					if lastDotIndex == nil {
