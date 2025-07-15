@@ -60,8 +60,11 @@ struct NodeInfoItem: View {
 						for device in hw {
 							let currentHardware = node.user?.hwModel ?? "UNSET"
 							let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "").uppercased()
+							
 							if deviceString == currentHardware {
 								currentDevice = device
+								print(deviceString)
+								print(currentHardware)
 							}
 						}
 					}
