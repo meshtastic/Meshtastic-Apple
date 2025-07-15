@@ -827,7 +827,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						var dc = decodedInfo.config.device
 						if dc.tzdef.isEmpty {
 							dc.tzdef =  TimeZone.current.posixDescription
-							let adminMessageId = self.saveTimeZone(config: dc, user: cp.num)
+							_ = self.saveTimeZone(config: dc, user: cp.num)
 						}
 					}
 				}
