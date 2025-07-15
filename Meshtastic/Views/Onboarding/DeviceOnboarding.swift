@@ -275,9 +275,9 @@ struct DeviceOnboarding: View {
 	func requestLocationPermissions() async {
 		locationStatus = await LocationsHandler.shared.requestLocationAlwaysPermissions()
 		if locationStatus != .notDetermined {
-			Logger.services.info("Notification permissions are enabled")
+			Logger.services.info("Location permissions are enabled")
 		} else {
-			Logger.services.info("Notification permissions denied")
+			Logger.services.info("Location permissions denied")
 		}
 		dismiss()
 	}
