@@ -174,10 +174,8 @@ struct DeviceOnboarding: View {
 			Button {
 				Task {
 					await requestLocationPermissions()
-					
 				}
 				UserDefaults.firstLaunch = false
-				dismiss()
 			} label: {
 				Text("Configure Location Permissions")
 					.frame(maxWidth: .infinity)
@@ -282,5 +280,6 @@ struct DeviceOnboarding: View {
 		} else {
 			Logger.services.info("Notification permissions denied")
 		}
+		dismiss()
 	}
 }

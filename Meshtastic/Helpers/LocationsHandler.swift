@@ -10,14 +10,14 @@ import CoreLocation
 import OSLog
 
 // Shared state that manages the `CLLocationManager` and `CLBackgroundActivitySession`.
-@MainActor class LocationsHandler: ObservableObject {
+@MainActor class LocationsHandler: NSObject, ObservableObject, @preconcurrency CLLocationManagerDelegate {
 
 	static let shared = LocationsHandler()  // Create a single, shared instance of the object.
-	public let manager: CLLocationManager
+	public var manager = CLLocationManager()
 	private var background: CLBackgroundActivitySession?
 	var enableSmartPosition: Bool = UserDefaults.enableSmartPosition
 
-	@Published var locationsArray: [CLLocation]
+	@Published var locationsArray: [CLLocation] = [CLLocation]()
 	@Published var isStationary = false
 	@Published var count = 0
 	@Published var isRecording = false
@@ -39,18 +39,22 @@ import OSLog
 		}
 	}
 	// The continuation we will use to asynchronously ask the user permission to track their location.
-	var permissionContinuation: CheckedContinuation<CLAuthorizationStatus, Never>?
+	private var permissionContinuation: CheckedContinuation<CLAuthorizationStatus, Never>?
 	func requestLocationAlwaysPermissions() async -> CLAuthorizationStatus {
-		self.manager.requestAlwaysAuthorization()
 		return await withCheckedContinuation { continuation in
-		   permissionContinuation = continuation
+			self.permissionContinuation = continuation
+			manager.requestAlwaysAuthorization()
 		}
 	}
+	func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+		// This is the line you need to add
+		permissionContinuation?.resume(returning: manager.authorizationStatus)
+	}
 
-	private init() {
-		self.manager = CLLocationManager()  // Creating a location manager instance is safe to call here in `MainActor`.
+	override init() {
+		super.init()
+		self.manager.delegate = self
 		self.manager.allowsBackgroundLocationUpdates = true
-		locationsArray = [CLLocation]()
 	}
 
 	func startLocationUpdates() {
