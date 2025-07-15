@@ -4161,6 +4161,9 @@
         }
       }
     },
+    "App Notifications" : {
+
+    },
     "App Settings" : {
       "localizations" : {
         "it" : {
@@ -8258,6 +8261,12 @@
         }
       }
     },
+    "Configure Location Permissions" : {
+
+    },
+    "Configure notification permissions" : {
+
+    },
     "Confirm" : {
       "localizations" : {
         "it" : {
@@ -9209,6 +9218,9 @@
           }
         }
       }
+    },
+    "Critical Alerts" : {
+
     },
     "Current" : {
       "localizations" : {
@@ -16023,6 +16035,9 @@
         }
       }
     },
+    "Get started" : {
+
+    },
     "Get the latest alpha firmware" : {
       "localizations" : {
         "it" : {
@@ -20797,6 +20812,9 @@
         }
       }
     },
+    "Meshtastic" : {
+
+    },
     "Meshtastic Node %@ has shared channels with you" : {
       "localizations" : {
         "de" : {
@@ -20830,6 +20848,9 @@
           }
         }
       }
+    },
+    "Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from Settings > App Settings > Open Settings." : {
+
     },
     "Meshtastic® Copyright Meshtastic LLC" : {
       "localizations" : {
@@ -26059,6 +26080,9 @@
           }
         }
       }
+    },
+    "Phone Location" : {
+
     },
     "Pin %lld" : {
       "localizations" : {
@@ -32107,6 +32131,9 @@
           }
         }
       }
+    },
+    "Send Notifications" : {
+
     },
     "Send Reboot OTA" : {
       "localizations" : {
@@ -41148,6 +41175,9 @@
           }
         }
       }
+    },
+    "Welcome to" : {
+
     },
     "What does the lock mean?" : {
       "localizations" : {
