@@ -29,7 +29,9 @@ struct ContentView: View {
 			.tag(NavigationState.Tab.messages)
 			.badge(appState.totalUnreadMessages)
 
-			Connect()
+			Connect(
+					router: appState.router
+				)
 				.tabItem {
 					Label("Bluetooth", systemImage: "antenna.radiowaves.left.and.right")
 				}
