@@ -175,7 +175,6 @@ struct DeviceOnboarding: View {
 				Task {
 					await requestLocationPermissions()
 				}
-				UserDefaults.firstLaunch = false
 			} label: {
 				Text("Configure Location Permissions")
 					.frame(maxWidth: .infinity)
