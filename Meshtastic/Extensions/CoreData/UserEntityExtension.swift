@@ -84,6 +84,10 @@ extension UserEntity {
 			return "SEEEDXIAOS3"
 		case "WIOWM1110":
 			return "WIOWM1110"
+		case "SEEEDSOLARNODE":
+			return "SEEEDSOLARNODE"
+		case "SEEEDWIOTRACKERL1":
+			return "SEEEDWIOTRACKERL1"
 		/// RAK Wireless
 		case "RAK4631":
 			return "RAK4631"

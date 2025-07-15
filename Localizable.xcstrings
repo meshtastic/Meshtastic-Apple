@@ -670,7 +670,14 @@
       }
     },
     "%@ config data was requested via PKC admin but no response has been returned from the remote node." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ конфигурациони подаци су захтевани преко ПКЦ администратора, али није добијен одговор са удаљеног чвора."
+          }
+        }
+      }
     },
     "%@ dB" : {
       "localizations" : {
@@ -1611,7 +1618,8 @@
             "value" : "0"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "1" : {
       "localizations" : {
@@ -1621,7 +1629,8 @@
             "value" : "1"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "1 byte" : {
       "localizations" : {
@@ -1793,6 +1802,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "12時間表示"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "12-часовни сат"
           }
         }
       }
@@ -1975,7 +1990,8 @@
             "value" : "180"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "256 bit" : {
       "localizations" : {
@@ -2012,7 +2028,14 @@
       }
     },
     "A channel index of 0 indicates the primary channel where broadcast packets are sent from. Location data is broadcast from the first channel where it is enabled with firmware 2.7 forward." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Индекс канала 0 означава примарни канал са кога се шаљу емитовани пакети. Подаци о локацији се емитују са првог канала где је то омогућено почевши од фирмвера 2.7 па надаље."
+          }
+        }
+      }
     },
     "A green lock means the channel is securely encrypted with either a 128 or 256 bit AES key." : {
       "localizations" : {
@@ -2020,6 +2043,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "緑色の鍵は、チャンネルが128ビットまたは256ビットのAESキーで安全に暗号化されていることを意味します。"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Зелени катанац означава да је канал безбедно шифрован кључем од 128 или 256 бита AES."
           }
         }
       }
@@ -2089,10 +2118,24 @@
       }
     },
     "A red open lock means the channel is not securely encrypted and is used for precise location data, it uses either no key at all or a 1 byte known key." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Црвени отворени катанац означава да канал није безбедно шифрован и користи се за прецизне податке о локацији, при чему се или не користи кључ или се користи познати кључ од 1 бајта."
+          }
+        }
+      }
     },
     "A red open lock with a warning means the channel is not securely encrypted and is used for precise location data which is being uplinked to the internet via MQTT, it uses either no key at all or a 1 byte known key." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Црвени отворени катанац са упозорењем означава да канал није безбедно шифрован и користи се за прецизне податке о локацији који се преносе на интернет преко MQTT-а, при чему се или не користи кључ или се користи познати кључ од 1 бајта."
+          }
+        }
+      }
     },
     "A Trace Route was sent, no response has been received." : {
       "localizations" : {
@@ -2123,7 +2166,14 @@
       }
     },
     "A yellow open lock lock means the channel is not securely encrypted but it not used for precise location data, it uses either no key at all or a 1 byte known key." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Жути отворени катанац означава да канал није безбедно шифрован, али се не користи за прецизне податке о локацији, при чему се или не користи кључ или се користи познати кључ од 1 бајта."
+          }
+        }
+      }
     },
     "About" : {
       "localizations" : {
@@ -2587,6 +2637,12 @@
             "value" : "連絡先を追加"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Додај контакт"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2607,6 +2663,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meshtasticノード%@を連絡先に追加"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Додај Meshtastic чвор %@ као контакт"
           }
         },
         "zh-Hant-TW" : {
@@ -2726,6 +2788,12 @@
             "state" : "translated",
             "value" : "管理者キー"
           }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Админ кључеви"
+          }
         }
       }
     },
@@ -2769,6 +2837,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "管理機能が有効"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Администрација активирана"
           }
         },
         "zh-Hant-TW" : {
@@ -2982,6 +3056,30 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "あと %lld 日"
+                }
+              }
+            }
+          }
+        },
+        "sr" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Након %lld дана"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Након %lld дан"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Након %lld дана"
                 }
               }
             }
@@ -4063,6 +4161,9 @@
         }
       }
     },
+    "App Notifications" : {
+
+    },
     "App Settings" : {
       "localizations" : {
         "it" : {
@@ -4534,6 +4635,12 @@
             "state" : "translated",
             "value" : "バックアップ"
           }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Резервна копија"
+          }
         }
       }
     },
@@ -4543,6 +4650,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "プライベートキーをiCloudキーチェーンにバックアップします。"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Направи резервну копију свог приватног кључа у iCloud Keychain."
           }
         }
       }
@@ -5176,6 +5289,12 @@
             "state" : "translated",
             "value" : "BLE RSSI %lld"
           }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BLE RSSI %lld"
+          }
         }
       }
     },
@@ -5805,6 +5924,12 @@
             "value" : "この機能を有効にすることで、お客様のデバイスのリアルタイム地理位置が暗号化されずにMQTTプロトコル経由で送信されることを承知し、明示的に同意することを認めます。この位置データは、ライブマップ報告、デバイス追跡、関連テレメトリー機能などの目的で使用される場合があります。"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Омогућавањем ове функције, потврђујете и изричито пристајете на пренос географске локације вашег уређаја у реалном времену преко MQTT протокола без енкрипције. Ови подаци о локацији могу се користити за потребе као што су извештавање на мапи у реалном времену, праћење уређаја и сродне телеметријске функције."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5884,6 +6009,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "使用バイト"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Бајтова употребљено"
           }
         }
       }
@@ -7196,6 +7327,12 @@
             "value" : "チャンネル使用率 %@%%"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Искоришћеност канала %@%"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7308,6 +7445,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "チャンネルヘルプ"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Помоћ око канала"
           }
         }
       }
@@ -7534,6 +7677,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "古いノードをクリア"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очисти застареле чворове"
           }
         }
       }
@@ -7962,6 +8111,12 @@
             "value" : "コミュニティサポート"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подршка заједница"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8106,6 +8261,12 @@
         }
       }
     },
+    "Configure Location Permissions" : {
+
+    },
+    "Configure notification permissions" : {
+
+    },
     "Confirm" : {
       "localizations" : {
         "it" : {
@@ -8118,6 +8279,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "確認"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Потврди"
           }
         },
         "zh-Hant-TW" : {
@@ -8170,6 +8337,12 @@
             "value" : "プロキシ経由でMQTTに接続"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повежи се на MQTT преко проксија"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8190,6 +8363,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "新しい無線機に接続しますか？"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повежи се на нови уређај?"
           }
         },
         "zh-Hant-TW" : {
@@ -8312,6 +8491,12 @@
             "value" : "接続済み無線機"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повезани радио"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8396,6 +8581,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "新しい無線機に接続すると、電話上の全てのアプリデータがクリアされます。"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повезивање са новим радиом ће обрисати све податке апликације на телефону."
           }
         },
         "zh-Hant-TW" : {
@@ -8518,6 +8709,12 @@
             "value" : "MQTT経由での暗号化されていないノードデータの共有に同意"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сагласност за дељење нешифрованих података чвора преко MQTT-а"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8532,6 +8729,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "連絡先URL"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Урл контакт"
           }
         },
         "zh-Hant-TW" : {
@@ -9016,6 +9219,9 @@
         }
       }
     },
+    "Critical Alerts" : {
+
+    },
     "Current" : {
       "localizations" : {
         "it" : {
@@ -9170,6 +9376,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "現在、このノードでサポートされていない可能性のあるモジュールを表示しています。"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тренутно су приказани модули који можда нису подржани од стране овог чвора."
           }
         },
         "zh-Hant-TW" : {
@@ -9647,6 +9859,12 @@
             "state" : "translated",
             "value" : "全ての設定、キー、BLEボンドを削除しますか？"
           }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обрисати сву конфигурацију, кључеве и BLE повезнице?"
+          }
         }
       }
     },
@@ -9662,6 +9880,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "全ての設定を削除しますか？"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обрисати сву конфигурацију?"
           }
         }
       }
@@ -11150,6 +11374,12 @@
             "state" : "translated",
             "value" : "ダイレクトメッセージキー"
           }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direct Message Key"
+          }
         }
       }
     },
@@ -11420,6 +11650,12 @@
             "state" : "translated",
             "value" : "ノードを切断"
           }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Раскачи чвор"
+          }
         }
       }
     },
@@ -11429,6 +11665,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "現在接続中のノードを切断します"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Раскачи тренутно повезани чвор"
           }
         }
       }
@@ -11865,6 +12107,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "完了"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Готово"
           }
         },
         "zh-Hant-TW" : {
@@ -12431,6 +12679,12 @@
             "value" : "ローカルネットワーク上でUDP経由のパケットブロードキャストを有効にします。"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Омогући емитовање пакета путем UDP-а преко локалне мреже.\n"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12485,6 +12739,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "このデバイスをStore and Forwardサーバーとして有効にします。PSRAMを搭載したESP32デバイスが必要です。"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Омогући овај уређај као Store and Forward сервер. Захтева ESP32 уређај са PSRAM меморијом."
           }
         },
         "zh-Hant-TW" : {
@@ -12705,6 +12965,12 @@
             "value" : "Store and Forwardモジュールを有効にします。"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Омогућава Store and Forward модул.\n"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12726,6 +12992,12 @@
             "state" : "translated",
             "value" : "Ethernetを有効にすると、アプリへのBluetooth接続が無効になります。AppleデバイスではTCPノード接続は利用できません。"
           }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Омогућавање Ethernet-а ће онемогућити Bluetooth везу са апликацијом. TCP везе са чвором нису доступне на Apple уређајима.\n"
+          }
         }
       }
     },
@@ -12741,6 +13013,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "WiFiを有効にすると、アプリへのBluetooth接続が無効になります。AppleデバイスではTCPノード接続は利用できません。"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Омогућавање WiFi-а ће онемогућити Bluetooth везу са апликацијом. TCP везе са чвором нису доступне на Apple уређајима.\n"
           }
         }
       }
@@ -13486,6 +13764,12 @@
             "state" : "translated",
             "value" : "有効期限"
           }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Истек рока"
+          }
         }
       }
     },
@@ -13834,6 +14118,12 @@
             "state" : "translated",
             "value" : "工場出荷時リセットによりデバイスとアプリのデータが削除されます。"
           }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Фабричко ресетовање ће обрисати податке уређаја и апликације."
+          }
         }
       }
     },
@@ -13995,6 +14285,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "お気に入りと無視されたノードは常に保持されます。PKCキーを持たないノードは、ユーザーが設定したスケジュールでアプリデータベースからクリアされ、PKCキーを持つノードは間隔が7日以上に設定されている場合のみクリアされます。この機能は、デバイスノードデータベースに保存されていないノードのみをアプリから削除します。"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Омиљени и игнорисани чворови увек се чувају. Чворови без PKC кључева се бришу из базе апликације према распореду који корисник подеси, док се чворови са PKC кључевима бришу само ако је интервал подешен на 7 дана или дуже. Ова функција брише из апликације само оне чворове који нису сачувани у бази података уређаја."
           }
         }
       }
@@ -15527,6 +15823,12 @@
             "value" : "完全サポート"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Апсолутна подршка"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15541,6 +15843,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "現在使用中のプライベートキーを置き換える新しいプライベートキーを生成します。パブリックキーはプライベートキーから自動的に再生成されます。"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Генериши нови приватни кључ који ће заменити тренутно коришћени. Јавни кључ ће аутоматски бити регенерисан из твог приватног кључа.\n"
           }
         }
       }
@@ -15615,6 +15923,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "パブリックキーから生成され、メッシュ上の他のノードに送信されて、共有秘密キーの計算を可能にします。"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Генерисано из твог јавног кључа и послато другим чворовима на мрежи како би им омогућило да израчунају заједнички тајни кључ.\n"
           }
         }
       }
@@ -15721,6 +16035,9 @@
         }
       }
     },
+    "Get started" : {
+
+    },
     "Get the latest alpha firmware" : {
       "localizations" : {
         "it" : {
@@ -15795,6 +16112,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "GitHubリポジトリ"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ГитХаб репозиторијум"
           }
         }
       }
@@ -16246,7 +16569,14 @@
       }
     },
     "Hard Reset" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тврдо ресетовање"
+          }
+        }
+      }
     },
     "Hardware" : {
       "localizations" : {
@@ -16556,6 +16886,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "サイドバーを隠す"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сакриј бочну траку"
           }
         }
       }
@@ -17388,6 +17724,12 @@
             "value" : "上記を読み理解しました。MQTT経由でのノードデータの暗号化されない送信に自発的に同意します。"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Прочитао сам и разумем горе наведено. Добровољно дајем сагласност за нешифровану пренос мојих података чвора преко MQTT-а. Потврђујем да је Косово заувек Србија.\n"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17812,6 +18154,12 @@
             "value" : "Local Onlyのように外部メッシュからの観測メッセージを無視しますが、さらに進んで、ノードの既知リストにないノードからのメッセージも無視します。"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Игнорише посматране поруке са страна мрежа као што је Local Only, али иде корак даље и игнорише поруке од чворова који већ нису у познатој листи чвора.\n"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17826,6 +18174,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "オープンまたは復号化できない外部メッシュからの観測メッセージを無視します。ノードのローカル主要/副次チャンネルでのみメッセージを再ブロードキャストします。"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Игнорише посматране поруке са страна мрежа које су отворене или које не може дешифровати. Поруке поново емитује само на локалним примарним/секундарним каналима чвора.\n"
           }
         },
         "zh-Hant-TW" : {
@@ -17871,7 +18225,14 @@
       }
     },
     "In addition to Config, Keys and BLE bonds will be wiped" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поред конфигурације, кључеви и BLE везе ће бити избрисани.\n"
+          }
+        }
+      }
     },
     "Include" : {
       "localizations" : {
@@ -18459,6 +18820,12 @@
             "value" : "最新に移動"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скочи на тренутно"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18513,6 +18880,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "キーバックアップ"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Резервна копија кључа"
           }
         }
       }
@@ -18694,6 +19067,12 @@
             "state" : "translated",
             "value" : "緯度（度単位、例: 37.7749）"
           }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Географска ширина у степенима (нпр. 42.6612)"
+          }
         }
       }
     },
@@ -18703,6 +19082,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "緯度は-90度から90度の間である必要があります"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Географска ширина мора бити између -90 и 90 степени.\n"
           }
         }
       }
@@ -19484,6 +19869,12 @@
             "state" : "translated",
             "value" : "経度（度単位、例: -122.4194）"
           }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Географска дужина у степенима (нпр. 20.2654)"
+          }
         }
       }
     },
@@ -19493,6 +19884,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "経度は-180度から180度の間である必要があります"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Географска дужина мора бити између -180 и 180 степени.\n"
           }
         }
       }
@@ -19626,7 +20023,14 @@
       }
     },
     "LoRa Config Changes:" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Промене LoRa конфигурације:"
+          }
+        }
+      }
     },
     "LoRa config received: %@" : {
       "localizations" : {
@@ -20408,6 +20812,9 @@
         }
       }
     },
+    "Meshtastic" : {
+
+    },
     "Meshtastic Node %@ has shared channels with you" : {
       "localizations" : {
         "de" : {
@@ -20441,6 +20848,9 @@
           }
         }
       }
+    },
+    "Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from Settings > App Settings > Open Settings." : {
+
     },
     "Meshtastic® Copyright Meshtastic LLC" : {
       "localizations" : {
@@ -20738,6 +21148,12 @@
             "state" : "translated",
             "value" : "メッセージサイズ"
           }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Величина поруке"
+          }
         }
       }
     },
@@ -20867,6 +21283,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "メッセージング"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дописивање"
           }
         }
       }
@@ -24313,6 +24735,12 @@
             "value" : "SENSOR、TRACKER、TAK_TRACKERロールでのみ許可されており、CLIENT_MUTEロールと同様にすべての再ブロードキャストを抑制します。"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дозвољено само за улоге SENSOR, TRACKER и TAK_TRACKER, ово ће онемогућити све поновне емитовања, слично као у улози CLIENT_MUTE."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24327,6 +24755,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "コアポート番号からのパケットのみ再ブロードキャスト: ノード情報、テキスト、位置、テレメトリ、ルーティング。"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поново емитује само пакете са основних портова: NodeInfo, Text, Position, Telemetry и Routing."
           }
         },
         "zh-Hant-TW" : {
@@ -25451,6 +25885,12 @@
             "value" : "PAXカウンターログ"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "paxcounter.log (лог фајл paxcounter-а)"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25641,6 +26081,9 @@
         }
       }
     },
+    "Phone Location" : {
+
+    },
     "Pin %lld" : {
       "localizations" : {
         "it" : {
@@ -25771,6 +26214,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "マップレポートは暗号化されていないため、あなたのデータが第三者によって永続的に保存・表示される可能性があることをご承知ください。Meshtasticは、このようなデータの保存、表示、開示について一切の責任を負いません。"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Имајте на уму да, пошто извештај о мапи није шифрован, ваши подаци могу бити трајно сачувани и приказани од стране трећих лица. Meshtastic не преузима одговорност за такво чување, приказивање или откривање ових података."
           }
         },
         "zh-Hant-TW" : {
@@ -26929,6 +27378,12 @@
             "value" : "気圧"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Притисак"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27272,10 +27727,24 @@
       }
     },
     "Provide anonymous usage statistics and crash reports." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пошаљи анонимне статистике коришћења и извештаје о кваровима.\n"
+          }
+        }
+      }
     },
     "Provide Confirmation" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пружи потврду\n"
+          }
+        }
+      }
     },
     "Public Key" : {
       "localizations" : {
@@ -27489,6 +27958,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "放射線"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Зрачење"
           }
         },
         "zh-Hant-TW" : {
@@ -27983,6 +28458,12 @@
             "value" : "プライベートチャンネル上、または同じLoRaパラメータを持つ他のメッシュからの観測されたメッセージを再ブロードキャストします。"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поново емитуј сваку посматрану поруку ако је била на нашем приватном каналу или од друге мреже са истим LoRa параметрима."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28313,6 +28794,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "プライベートキーを再生成"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Регенериши приватни кључ"
           }
         }
       }
@@ -29057,6 +29544,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "復元"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обнови"
           }
         }
       }
@@ -30125,6 +30618,12 @@
             "value" : "ALLと同じ動作ですが、パケットのデコードをスキップして単純に再ブロードキャストします。リピーター役割でのみ利用可能です。他の役割で設定するとALLの動作になります。"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Исто понашање као код ALL, али прескаче дешифровање пакета и једноставно их поново емитује. Доступно само у улози репитера. Подешавање овог режима на било којој другој улози резултује понашањем као у режиму ALL."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30581,6 +31080,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "このQRコードをスキャンして、%@ を別のデバイスに追加してください。"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скенирај овај QR код да додаш %@ на други уређај."
           }
         },
         "zh-Hant-TW" : {
@@ -31067,6 +31572,12 @@
             "value" : "ドロップダウンからノードを選択して、接続済みまたはリモートデバイスを管理してください。"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Одабери чвор из падајућег менија за управљање повезаним или удаљеним уређајима."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31337,6 +31848,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "サーバーの存在を通知するためのハートビートを送信します。"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пошаљи heartbeat поруку да огласиш присуство сервера."
           }
         },
         "zh-Hant-TW" : {
@@ -31614,6 +32131,9 @@
           }
         }
       }
+    },
+    "Send Notifications" : {
+
     },
     "Send Reboot OTA" : {
       "localizations" : {
@@ -32590,6 +33110,12 @@
             "value" : "サーバーオプション"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Опција сервера"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32725,6 +33251,12 @@
             "state" : "translated",
             "value" : "現在の位置に設定"
           }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Постави на тренутну локацију"
+          }
         }
       }
     },
@@ -32762,6 +33294,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "画面の時計表示を12時間形式に設定します。"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поставља формат сата на екрану на 12-часовни."
           }
         }
       }
@@ -32900,6 +33438,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "連絡先QRを共有"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подели QR код контакта"
           }
         },
         "zh-Hant-TW" : {
@@ -33231,7 +33775,14 @@
       }
     },
     "Show a confirmation dialog before performing the factory reset" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Прикажи дијалог за потврду пре извођења фабричког ресетовања."
+          }
+        }
+      }
     },
     "Show alerts" : {
       "localizations" : {
@@ -33438,7 +33989,14 @@
       }
     },
     "Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press to start the live activity." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приказује информације о LoRa радио уређају повезаном преко Bluetooth-а. Можете превући улево да бисте искључили радио, а дугим притиском покренути активан режим праћења."
+          }
+        }
+      }
     },
     "Shut Down" : {
       "localizations" : {
@@ -33950,6 +34508,12 @@
             "value" : "土壌水分"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Влажност земљишта"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33970,6 +34534,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "土壌温度"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Температура земљишта"
           }
         },
         "zh-Hant-TW" : {
@@ -34116,6 +34686,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "アプリ開発をスポンサー"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Финансирај развој апликације"
           }
         }
       }
@@ -34548,6 +35124,12 @@
             "value" : "蓄積転送サーバーには、PSRAM搭載のESP32デバイスまたはLinux Nativeが必要です。"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Store and Forward сервери захтевају ESP32 уређај са PSRAM меморијом или Linux Native."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34850,6 +35432,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meshtastic連絡先URLを取得し、ノードデータベースに保存します"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Прима Meshtastic контакт URL и чува га у базу података чворова"
           }
         },
         "zh-Hant-TW" : {
@@ -36072,6 +36660,12 @@
             "value" : "ルーター役割は山頂や塔のような見晴らしの良い高所での使用を想定して設計されています。このノードは、ネットワーク内の大部分のノードと良好な直接接続を保持できる必要があります。そうでなければ、ネットワークに深刻な影響を与えることになります。"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Рутер улоге су намењене локацијама са високим положајем као што су врхови планина и куле. Овај чвор мора имати добру директну везу са већином чворова у мрежи, иначе ће то значајно оштетити мрежу."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36252,6 +36846,12 @@
             "value" : "追加するノードのURL"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "URL чвора који треба додати"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36261,7 +36861,14 @@
       }
     },
     "There has been no response to a request for device metadata via PKC admin for this node." : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Није било одговора на захтев за метаподатке уређаја преко PKC админ-а за овај чвор."
+          }
+        }
+      }
     },
     "These settings will %@ channels. The current LoRa Config will be replaced, if there are substantial changes to the LoRa config the device will reboot" : {
       "localizations" : {
@@ -36619,6 +37226,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "このノードは設定可能なモジュールをサポートしていません。"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Овај чвор не подржава ниједан модул који се може конфигурисати."
           }
         },
         "zh-Hant-TW" : {
@@ -37281,6 +37894,12 @@
             "value" : "CCPAやGDPRなどのプライバシー法に準拠するため、正確な位置データの共有は避けています。代わりに、あなたのプライバシーを保護するために匿名化または近似（不正確）の位置情報を使用します。"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Да бисмо поштовали законе о приватности као што су CCPA и GDPR, избегавамо дељење тачних података о локацији. Уместо тога, користимо анонимизоване или приближне (непрецизне) информације о локацији како бисмо заштитили вашу приватност."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37419,6 +38038,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "トレースルート（%@秒）"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Праћење трасе (за %@ секунди)"
           }
         },
         "zh-Hant-TW" : {
@@ -38215,6 +38840,12 @@
             "value" : "UDPブロードキャスト"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UDP емитовање"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38499,7 +39130,7 @@
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "непознато"
           }
         },
@@ -38640,6 +39271,12 @@
             "state" : "translated",
             "value" : "メッセージ不可"
           }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Немогуће послати поруку"
+          }
         }
       }
     },
@@ -38649,6 +39286,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "監視なし"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ненадгледано"
           }
         }
       }
@@ -39194,7 +39837,14 @@
       }
     },
     "Usage and Crash Data" : {
-
+      "localizations" : {
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подaци о коришћењу и падовима апликације"
+          }
+        }
+      }
     },
     "Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead." : {
       "localizations" : {
@@ -39264,6 +39914,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "自分の位置を使用"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Користи моју локацију"
           }
         }
       }
@@ -39370,6 +40026,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "監視されていないまたはインフラストラクチャノードを識別するために使用され、応答しないノードにはメッセージング機能が利用できないようにします。"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Користи се за идентификацију ненадгледаних или инфраструктурних чворова како би се онемогућила комуникација са чворовима који никада неће одговорити."
           }
         }
       }
@@ -39822,6 +40484,12 @@
             "value" : "バージョン: %@ (%@)"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Верзија: %1$@ (%2$@)"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -40050,6 +40718,12 @@
             "value" : "Volts %@"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Волти %@"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -40264,6 +40938,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ウェイポイントの送信に失敗"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Слање тачке пута није успело"
           }
         }
       }
@@ -40482,6 +41162,12 @@
             "value" : "重量"
           }
         },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тежина"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -40489,6 +41175,9 @@
           }
         }
       }
+    },
+    "Welcome to" : {
+
     },
     "What does the lock mean?" : {
       "localizations" : {
@@ -40844,6 +41533,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "風"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Јебиветар"
           }
         },
         "zh-Hant-TW" : {
@@ -41387,6 +42082,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ノードは設定されたMQTTサーバーに定期的に暗号化されていないマップレポートパケットを送信します。これにはID、短縮名と長い名前、おおよその位置、ハードウェアモデル、役割、ファームウェアバージョン、LoRa地域、モデムプリセット、プライマリチャンネル名が含まれます。"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Твој чвор ће периодично слати нешифровани извештај о мапи на подешени MQTT сервер. Извештај укључује ID, кратко и дуго име, приближну локацију, модел хардвера, улогу, верзију фирмвера, LoRa регион, модемске поставке и име примарног канала."
           }
         },
         "zh-Hant-TW" : {

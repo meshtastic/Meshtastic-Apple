@@ -17,6 +17,7 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 	case cn = 4
 	case jp = 5
 	case anz = 6
+	case anz433 = 22
 	case kr = 7
 	case tw = 8
 	case ru = 9
@@ -31,6 +32,8 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 	case ph433 = 19
 	case ph868 = 20
 	case ph915 = 21
+	case kz433 = 23
+	case kz863 = 24
 	case lora24 = 13
 	var topic: String {
 		switch self {
@@ -48,6 +51,8 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			"JP"
 		case .anz:
 			"ANZ"
+		case .anz433:
+			"ANZ_433"
 		case .kr:
 			"KR"
 		case .tw:
@@ -76,6 +81,10 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			"ph_868"
 		case .ph915:
 			"ph_915"
+		case .kz433:
+			"KZ_433"
+		case .kz863:
+			"KZ_863"
 		case .lora24:
 			"LORA_24"
 		} }
@@ -96,6 +105,8 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return "Japan".localized
 		case .anz:
 			return "Australia / New Zealand".localized
+		case .anz433:
+			return "Australia / New Zealand 433MHz".localized
 		case .kr:
 			return "Korea".localized
 		case .tw:
@@ -112,8 +123,6 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return "Ukraine 433MHz".localized
 		case .ua868:
 			return "Ukraine 868MHz".localized
-		case .lora24:
-			return "2.4 Ghz".localized
 		case .my433:
 			return "Malaysia 433MHz".localized
 		case .my919:
@@ -126,6 +135,12 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return "Philippines 868MHz".localized
 		case .ph915:
 			return "Philippines 915MHz".localized
+		case .kz433:
+			return "Kazakhstan 433MHz".localized
+		case .kz863:
+			return "Kazakhstan 863MHz".localized
+		case .lora24:
+			return "2.4 Ghz".localized
 		}
 	}
 	var dutyCycle: Int {
@@ -174,6 +189,12 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return 100
 		case .ph915:
 			return 100
+		case .anz433:
+			return 100
+		case .kz433:
+			return 100
+		case .kz863:
+			return 100
 		}
 	}
 	var isCountry: Bool {
@@ -221,6 +242,12 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 		case .ph868:
 			return true
 		case .ph915:
+			return true
+		case .anz433:
+			return false
+		case .kz433:
+			return true
+		case .kz863:
 			return true
 		}
 	}
@@ -271,6 +298,12 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return Config.LoRaConfig.RegionCode.ph868
 		case .ph915:
 			return Config.LoRaConfig.RegionCode.ph915
+		case .anz433:
+			return Config.LoRaConfig.RegionCode.anz433
+		case .kz433:
+			return Config.LoRaConfig.RegionCode.kz433
+		case .kz863:
+			return Config.LoRaConfig.RegionCode.kz863
 		}
 	}
 }

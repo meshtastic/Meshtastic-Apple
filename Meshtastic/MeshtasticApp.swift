@@ -8,6 +8,8 @@ import MeshtasticProtobufs
 import DatadogCore
 import DatadogCrashReporting
 import DatadogRUM
+import DatadogTrace
+import DatadogLogs
 
 @main
 struct MeshtasticAppleApp: App {
@@ -41,14 +43,24 @@ struct MeshtasticAppleApp: App {
 				env: environment,
 				site: .us5
 			),
-			trackingConsent: UserDefaults.usageDataAndCrashReporting ? .granted : .notGranted
+			trackingConsent: UserDefaults.usageDataAndCrashReporting ? .granted : .notGranted,
+		)
+		DatadogCrashReporting.CrashReporting.enable()
+		
+		Logs.enable()
+		
+		Trace.enable(
+			with: Trace.Configuration(
+				sampleRate: 100, networkInfoEnabled: true  // 100% sampling for development/testing, reduce for production
+			)
 		)
 
 		RUM.enable(
 			with: RUM.Configuration(
 				applicationID: appID,
 				uiKitViewsPredicate: DefaultUIKitRUMViewsPredicate(),
-				uiKitActionsPredicate: DefaultUIKitRUMActionsPredicate()
+				uiKitActionsPredicate: DefaultUIKitRUMActionsPredicate(),
+				trackBackgroundEvents: true
 			)
 		)
 		self._appState = ObservedObject(wrappedValue: appState)

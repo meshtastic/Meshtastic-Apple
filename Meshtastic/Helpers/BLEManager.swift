@@ -60,9 +60,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	let NONCE_ONLY_DB = 69421
 	private var isWaitingForWantConfigResponse = false
 
-    private var wantConfigTimer: Timer?
-    private var wantConfigRetryCount = 0
-    private let maxWantConfigRetries = 6
+	private var wantConfigTimer: Timer?
+	private var wantConfigRetryCount = 0
+	private let maxWantConfigRetries = 6
 	private let wantConfigTimeoutInterval: TimeInterval = 6.0
 
 	// MARK: init
@@ -799,33 +799,42 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						}
 					}
 				}
+				guard let cp = connectedPeripheral else {
+					return
+				}
 				// Channels
-				if decodedInfo.channel.isInitialized && connectedPeripheral != nil {
+				if decodedInfo.channel.isInitialized {
 					nowKnown = true
-					channelPacket(channel: decodedInfo.channel, fromNum: Int64(truncatingIfNeeded: connectedPeripheral.num), context: context)
+					channelPacket(channel: decodedInfo.channel, fromNum: Int64(truncatingIfNeeded: cp.num), context: context)
 				}
 				// Config
-				if decodedInfo.config.isInitialized && !invalidVersion && connectedPeripheral != nil && self.connectedPeripheral?.num != 0 {
+				if decodedInfo.config.isInitialized && !invalidVersion && cp.num != 0 {
 					nowKnown = true
-					localConfig(config: decodedInfo.config, context: context, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral.num), nodeLongName: self.connectedPeripheral?.longName ?? "Unknown")
+					localConfig(config: decodedInfo.config, context: context, nodeNum: Int64(truncatingIfNeeded: cp.num), nodeLongName: cp.longName)
 				}
 				// Module Config
-				if decodedInfo.moduleConfig.isInitialized && !invalidVersion && self.connectedPeripheral?.num != 0 {
+				if decodedInfo.moduleConfig.isInitialized && !invalidVersion && cp.num != 0 {
 					onWantConfigResponseReceived()
 					nowKnown = true
-					moduleConfig(config: decodedInfo.moduleConfig, context: context, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral.num), nodeLongName: self.connectedPeripheral?.longName ?? "Unknown")
+					moduleConfig(config: decodedInfo.moduleConfig, context: context, nodeNum: Int64(truncatingIfNeeded: cp.num), nodeLongName: cp.longName)
 					if decodedInfo.moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(decodedInfo.moduleConfig.cannedMessage) {
 						if decodedInfo.moduleConfig.cannedMessage.enabled {
-							if let connectedNum = self.connectedPeripheral?.num, connectedNum > 0 {
-								_ = self.getCannedMessageModuleMessages(destNum: connectedNum, wantResponse: true)
-							}
+							_ = self.getCannedMessageModuleMessages(destNum: cp.num, wantResponse: true)
+						
+						}
+					}
+					if decodedInfo.config.payloadVariant == Config.OneOf_PayloadVariant.device(decodedInfo.config.device) {
+						var dc = decodedInfo.config.device
+						if dc.tzdef.isEmpty {
+							dc.tzdef =  TimeZone.current.posixDescription
+							_ = self.saveTimeZone(config: dc, user: cp.num)
 						}
 					}
 				}
 				// Device Metadata
 				if decodedInfo.metadata.firmwareVersion.count > 0 && !invalidVersion {
 					nowKnown = true
-					deviceMetadataPacket(metadata: decodedInfo.metadata, fromNum: connectedPeripheral.num, context: context)
+					deviceMetadataPacket(metadata: decodedInfo.metadata, fromNum: cp.num, context: context)
 					connectedPeripheral.firmwareVersion = decodedInfo.metadata.firmwareVersion
 					let lastDotIndex = decodedInfo.metadata.firmwareVersion.lastIndex(of: ".")
 					if lastDotIndex == nil {
@@ -1084,6 +1093,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				Logger.mesh.info("🕸️ MESH PACKET received for Reticulum Tunnel App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			case .keyVerificationApp:
 				Logger.mesh.warning("🕸️ MESH PACKET received for Key Verification App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+			case .cayenneApp:
+				Logger.mesh.info("🕸️ MESH PACKET received Cayenne App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			}
 
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == NONCE_ONLY_CONFIG {
@@ -1092,6 +1103,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				isSubscribed = true
 				allowDisconnect = true
 				Logger.mesh.info("🤜 [BLE] Want Config Complete. ID:\(decodedInfo.configCompleteID, privacy: .public)")
+				if UserDefaults.firstLaunch {
+					UserDefaults.showDeviceOnboarding = true
+				}
 				if sendTime() {
 				}
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
@@ -2227,6 +2241,29 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		let messageDescription = "🛟 Saved Device Config for \(toUser.longName ?? "Unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			upsertDeviceConfigPacket(config: config, nodeNum: toUser.num, sessionPasskey: toUser.userNode?.sessionPasskey, context: context)
+			return Int64(meshPacket.id)
+		}
+		return 0
+	}
+	public func saveTimeZone(config: Config.DeviceConfig, user: Int64) -> Int64 {
+
+		var adminPacket = AdminMessage()
+		adminPacket.setConfig.device = config
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(user)
+		meshPacket.from	= UInt32(user)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		var dataMessage = DataMessage()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			return 0
+		}
+		dataMessage.payload = adminData
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		let messageDescription = "⌚ Device Config timezone was empty set timezone to \(config.tzdef)"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription) {
 			return Int64(meshPacket.id)
 		}
 		return 0

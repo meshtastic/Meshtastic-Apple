@@ -8,19 +8,6 @@ import CoreData
 import MeshtasticProtobufs
 import OSLog
 
-// MARK: - Safe Conversion Helpers
-private func safeInt32(from value: UInt32) -> Int32 {
-    return Int32(clamping: value)
-}
-
-private func safeInt32(from value: Int) -> Int32 {
-    return Int32(clamping: value)
-}
-
-private func safeInt32(from value: UInt64) -> Int32 {
-    return Int32(clamping: value)
-}
-
 public func clearStaleNodes(nodeExpireDays: Int, context: NSManagedObjectContext) -> Bool {
 	var nodeExpireTime: TimeInterval {
 		return TimeInterval(-nodeExpireDays * 86400)
@@ -807,32 +794,32 @@ func upsertPositionConfigPacket(config: Config.PositionConfig, nodeNum: Int64, s
 				let newPositionConfig = PositionConfigEntity(context: context)
 				newPositionConfig.smartPositionEnabled = config.positionBroadcastSmartEnabled
 				newPositionConfig.deviceGpsEnabled = config.gpsEnabled
-				newPositionConfig.gpsMode = Int32(config.gpsMode.rawValue)
-				newPositionConfig.rxGpio = Int32(config.rxGpio)
-				newPositionConfig.txGpio = Int32(config.txGpio)
-				newPositionConfig.gpsEnGpio = Int32(config.gpsEnGpio)
+				newPositionConfig.gpsMode = Int32(truncatingIfNeeded: config.gpsMode.rawValue)
+				newPositionConfig.rxGpio = Int32(truncatingIfNeeded: config.rxGpio)
+				newPositionConfig.txGpio = Int32(truncatingIfNeeded: config.txGpio)
+				newPositionConfig.gpsEnGpio = Int32(truncatingIfNeeded: config.gpsEnGpio)
 				newPositionConfig.fixedPosition = config.fixedPosition
 				newPositionConfig.positionBroadcastSeconds = Int32(truncatingIfNeeded: config.positionBroadcastSecs)
-				newPositionConfig.broadcastSmartMinimumIntervalSecs = Int32(config.broadcastSmartMinimumIntervalSecs)
-				newPositionConfig.broadcastSmartMinimumDistance = Int32(config.broadcastSmartMinimumDistance)
-				newPositionConfig.positionFlags = Int32(config.positionFlags)
+				newPositionConfig.broadcastSmartMinimumIntervalSecs = Int32(truncatingIfNeeded: config.broadcastSmartMinimumIntervalSecs)
+				newPositionConfig.broadcastSmartMinimumDistance = Int32(truncatingIfNeeded: config.broadcastSmartMinimumDistance)
+				newPositionConfig.positionFlags = Int32(truncatingIfNeeded: config.positionFlags)
 				newPositionConfig.gpsAttemptTime = 900
-				newPositionConfig.gpsUpdateInterval = Int32(config.gpsUpdateInterval)
+				newPositionConfig.gpsUpdateInterval = Int32(truncatingIfNeeded: config.gpsUpdateInterval)
 				fetchedNode[0].positionConfig = newPositionConfig
 			} else {
 				fetchedNode[0].positionConfig?.smartPositionEnabled = config.positionBroadcastSmartEnabled
 				fetchedNode[0].positionConfig?.deviceGpsEnabled = config.gpsEnabled
-				fetchedNode[0].positionConfig?.gpsMode = Int32(config.gpsMode.rawValue)
-				fetchedNode[0].positionConfig?.rxGpio = Int32(config.rxGpio)
-				fetchedNode[0].positionConfig?.txGpio = Int32(config.txGpio)
-				fetchedNode[0].positionConfig?.gpsEnGpio = Int32(config.gpsEnGpio)
+				fetchedNode[0].positionConfig?.gpsMode = Int32(truncatingIfNeeded: config.gpsMode.rawValue)
+				fetchedNode[0].positionConfig?.rxGpio = Int32(truncatingIfNeeded: config.rxGpio)
+				fetchedNode[0].positionConfig?.txGpio = Int32(truncatingIfNeeded: config.txGpio)
+				fetchedNode[0].positionConfig?.gpsEnGpio = Int32(truncatingIfNeeded: config.gpsEnGpio)
 				fetchedNode[0].positionConfig?.fixedPosition = config.fixedPosition
 				fetchedNode[0].positionConfig?.positionBroadcastSeconds = Int32(truncatingIfNeeded: config.positionBroadcastSecs)
-				fetchedNode[0].positionConfig?.broadcastSmartMinimumIntervalSecs = Int32(config.broadcastSmartMinimumIntervalSecs)
-				fetchedNode[0].positionConfig?.broadcastSmartMinimumDistance = Int32(config.broadcastSmartMinimumDistance)
+				fetchedNode[0].positionConfig?.broadcastSmartMinimumIntervalSecs = Int32(truncatingIfNeeded: config.broadcastSmartMinimumIntervalSecs)
+				fetchedNode[0].positionConfig?.broadcastSmartMinimumDistance = Int32(truncatingIfNeeded: config.broadcastSmartMinimumDistance)
 				fetchedNode[0].positionConfig?.gpsAttemptTime = 900
-				fetchedNode[0].positionConfig?.gpsUpdateInterval = Int32(config.gpsUpdateInterval)
-				fetchedNode[0].positionConfig?.positionFlags = Int32(config.positionFlags)
+				fetchedNode[0].positionConfig?.gpsUpdateInterval = Int32(truncatingIfNeeded: config.gpsUpdateInterval)
+				fetchedNode[0].positionConfig?.positionFlags = Int32(truncatingIfNeeded: config.positionFlags)
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey
@@ -937,6 +924,8 @@ func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, s
 					fetchedNode[0].securityConfig?.adminKey = config.adminKey[0]
 					if config.adminKey.count > 1 {
 						fetchedNode[0].securityConfig?.adminKey2 = config.adminKey[1]
+					}
+					if config.adminKey.count > 2 {
 						fetchedNode[0].securityConfig?.adminKey3 = config.adminKey[2]
 					}
 				}
@@ -1512,23 +1501,23 @@ func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nod
 		if !fetchedNode.isEmpty {
 			if fetchedNode[0].telemetryConfig == nil {
 				let newTelemetryConfig = TelemetryConfigEntity(context: context)
-				newTelemetryConfig.deviceUpdateInterval = safeInt32(from: config.deviceUpdateInterval)
-				newTelemetryConfig.environmentUpdateInterval = safeInt32(from: config.environmentUpdateInterval)
+				newTelemetryConfig.deviceUpdateInterval = Int32(truncatingIfNeeded: config.deviceUpdateInterval)
+				newTelemetryConfig.environmentUpdateInterval = Int32(truncatingIfNeeded: config.environmentUpdateInterval)
 				newTelemetryConfig.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 				newTelemetryConfig.environmentScreenEnabled = config.environmentScreenEnabled
 				newTelemetryConfig.environmentDisplayFahrenheit = config.environmentDisplayFahrenheit
 				newTelemetryConfig.powerMeasurementEnabled = config.powerMeasurementEnabled
-				newTelemetryConfig.powerUpdateInterval = safeInt32(from: config.powerUpdateInterval)
+				newTelemetryConfig.powerUpdateInterval = Int32(truncatingIfNeeded: config.powerUpdateInterval)
 				newTelemetryConfig.powerScreenEnabled = config.powerScreenEnabled
 				fetchedNode[0].telemetryConfig = newTelemetryConfig
 			} else {
-				fetchedNode[0].telemetryConfig?.deviceUpdateInterval = safeInt32(from: config.deviceUpdateInterval)
-				fetchedNode[0].telemetryConfig?.environmentUpdateInterval = safeInt32(from: config.environmentUpdateInterval)
+				fetchedNode[0].telemetryConfig?.deviceUpdateInterval = Int32(truncatingIfNeeded: config.deviceUpdateInterval)
+				fetchedNode[0].telemetryConfig?.environmentUpdateInterval = Int32(truncatingIfNeeded: config.environmentUpdateInterval)
 				fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 				fetchedNode[0].telemetryConfig?.environmentScreenEnabled = config.environmentScreenEnabled
 				fetchedNode[0].telemetryConfig?.environmentDisplayFahrenheit = config.environmentDisplayFahrenheit
 				fetchedNode[0].telemetryConfig?.powerMeasurementEnabled = config.powerMeasurementEnabled
-				fetchedNode[0].telemetryConfig?.powerUpdateInterval = safeInt32(from: config.powerUpdateInterval)
+				fetchedNode[0].telemetryConfig?.powerUpdateInterval = Int32(truncatingIfNeeded: config.powerUpdateInterval)
 				fetchedNode[0].telemetryConfig?.powerScreenEnabled = config.powerScreenEnabled
 			}
 			if sessionPasskey != nil {

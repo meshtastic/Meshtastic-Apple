@@ -436,6 +436,12 @@ public struct Config: Sendable {
       /// Non-notification system buzzer tones only.
       /// Buzzer is enabled only for non-notification tones such as button presses, startup, shutdown, but not for alerts.
       case systemOnly // = 3
+
+      ///
+      /// Direct Message notifications only.
+      /// Buzzer is enabled only for direct messages and alerts, but not for button presses.
+      /// External notification config determines the specifics of the notification behavior.
+      case directMsgOnly // = 4
       case UNRECOGNIZED(Int)
 
       public init() {
@@ -448,6 +454,7 @@ public struct Config: Sendable {
         case 1: self = .disabled
         case 2: self = .notificationsOnly
         case 3: self = .systemOnly
+        case 4: self = .directMsgOnly
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -458,6 +465,7 @@ public struct Config: Sendable {
         case .disabled: return 1
         case .notificationsOnly: return 2
         case .systemOnly: return 3
+        case .directMsgOnly: return 4
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -468,6 +476,7 @@ public struct Config: Sendable {
         .disabled,
         .notificationsOnly,
         .systemOnly,
+        .directMsgOnly,
       ]
 
     }
@@ -1579,6 +1588,18 @@ public struct Config: Sendable {
       ///
       /// Philippines 915mhz
       case ph915 // = 21
+
+      ///
+      /// Australia / New Zealand 433MHz
+      case anz433 // = 22
+
+      ///
+      /// Kazakhstan 433MHz
+      case kz433 // = 23
+
+      ///
+      /// Kazakhstan 863MHz
+      case kz863 // = 24
       case UNRECOGNIZED(Int)
 
       public init() {
@@ -1609,6 +1630,9 @@ public struct Config: Sendable {
         case 19: self = .ph433
         case 20: self = .ph868
         case 21: self = .ph915
+        case 22: self = .anz433
+        case 23: self = .kz433
+        case 24: self = .kz863
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -1637,6 +1661,9 @@ public struct Config: Sendable {
         case .ph433: return 19
         case .ph868: return 20
         case .ph915: return 21
+        case .anz433: return 22
+        case .kz433: return 23
+        case .kz863: return 24
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1665,6 +1692,9 @@ public struct Config: Sendable {
         .ph433,
         .ph868,
         .ph915,
+        .anz433,
+        .kz433,
+        .kz863,
       ]
 
     }
@@ -2247,6 +2277,7 @@ extension Config.DeviceConfig.BuzzerMode: SwiftProtobuf._ProtoNameProviding {
     1: .same(proto: "DISABLED"),
     2: .same(proto: "NOTIFICATIONS_ONLY"),
     3: .same(proto: "SYSTEM_ONLY"),
+    4: .same(proto: "DIRECT_MSG_ONLY"),
   ]
 }
 
@@ -2992,6 +3023,9 @@ extension Config.LoRaConfig.RegionCode: SwiftProtobuf._ProtoNameProviding {
     19: .same(proto: "PH_433"),
     20: .same(proto: "PH_868"),
     21: .same(proto: "PH_915"),
+    22: .same(proto: "ANZ_433"),
+    23: .same(proto: "KZ_433"),
+    24: .same(proto: "KZ_863"),
   ]
 }
 
