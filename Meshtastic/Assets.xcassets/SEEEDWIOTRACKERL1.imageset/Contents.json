@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "wio_tracker_l1_case.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
