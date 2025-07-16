@@ -62,20 +62,18 @@ struct DeviceOnboarding: View {
 				.interactiveDismissDisabled()
 			}
 			Spacer()
-			if bleManager.isSwitchedOn {
-				Button {
-					Task {
-						await goToNextStep(after: nil)
-					}
-				} label: {
-					Text("Get started")
-						.frame(maxWidth: .infinity)
+			Button {
+				Task {
+					await goToNextStep(after: nil)
 				}
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
-				.buttonStyle(.borderedProminent)
+			} label: {
+				Text("Get started")
+					.frame(maxWidth: .infinity)
 			}
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
+			.buttonStyle(.borderedProminent)
 		}
 	}
 
