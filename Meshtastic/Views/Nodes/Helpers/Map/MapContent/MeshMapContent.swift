@@ -241,11 +241,11 @@ struct MeshMapContent: MapContent {
 				let overlay = identifiable.overlay
 				if let polygon = overlay as? MKPolygon {
 					MapPolygon(polygon)
-						.stroke(.yellow.opacity(0.8), lineWidth: 0.5)
+						.stroke(.green.opacity(0.8), lineWidth: 0.5)
 						.foregroundStyle(.clear)
 				} else if let polyline = overlay as? MKPolyline {
 					MapPolyline(polyline)
-						.stroke(.yellow.opacity(0.9), lineWidth: 0.8)
+						.stroke(.green.opacity(0.9), lineWidth: 0.8)
 				}
 			}
 		}
@@ -257,8 +257,8 @@ struct MeshMapContent: MapContent {
 				let overlay = identifiable.overlay
 				if let polygon = overlay as? MKPolygon {
 					MapPolygon(polygon)
-						.stroke(.brown, lineWidth: 1)
-						.foregroundStyle(.brown.opacity(0.3))
+						.stroke(.blue, lineWidth: 2)
+						.foregroundStyle(.blue.opacity(1.0))
 				}
 			}
 		}
@@ -270,11 +270,11 @@ struct MeshMapContent: MapContent {
 				let overlay = identifiable.overlay
 				if let polyline = overlay as? MKPolyline {
 					MapPolyline(polyline)
-						.stroke(.red, lineWidth: 3)
+						.stroke(.red, lineWidth: 2)
 				} else if let polygon = overlay as? MKPolygon {
 					MapPolygon(polygon)
-						.stroke(.red, lineWidth: 3)
-						.foregroundStyle(.red.opacity(0.2))
+						.stroke(.red, lineWidth: 2)
+						.foregroundStyle(.clear)
 				}
 			}
 		}
