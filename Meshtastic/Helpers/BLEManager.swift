@@ -818,10 +818,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					nowKnown = true
 					moduleConfig(config: decodedInfo.moduleConfig, context: context, nodeNum: Int64(truncatingIfNeeded: cp.num), nodeLongName: cp.longName)
 					if decodedInfo.moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(decodedInfo.moduleConfig.cannedMessage) {
-						if decodedInfo.moduleConfig.cannedMessage.enabled {
-							_ = self.getCannedMessageModuleMessages(destNum: cp.num, wantResponse: true)
-						
-						}
+						_ = self.getCannedMessageModuleMessages(destNum: cp.num, wantResponse: true)
 					}
 					if decodedInfo.config.payloadVariant == Config.OneOf_PayloadVariant.device(decodedInfo.config.device) {
 						var dc = decodedInfo.config.device

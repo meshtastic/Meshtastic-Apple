@@ -54,13 +54,13 @@ struct ConnectedDevice: View {
                 } else {
                     // Create a container for Bluetooth off state
                     HStack {
-                        Text("bluetooth.off".localized)
+                        Text("Bluetooth is off".localized)
                             .font(.subheadline)
                             .foregroundColor(.red)
                             .accessibilityHidden(true)
                     }
                     .accessibilityElement(children: .ignore)
-                    .accessibilityLabel("bluetooth.off".localized)
+                    .accessibilityLabel("Bluetooth is off".localized)
                 }
             }
         }
