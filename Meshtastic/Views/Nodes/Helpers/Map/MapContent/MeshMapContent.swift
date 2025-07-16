@@ -8,6 +8,11 @@
 import SwiftUI
 import MapKit
 
+struct IdentifiableOverlay: Identifiable {
+    let overlay: MKOverlay
+    var id: ObjectIdentifier { ObjectIdentifier(overlay as AnyObject) }
+}
+
 struct MeshMapContent: MapContent {
 
 	/// Parameters
@@ -23,6 +28,11 @@ struct MeshMapContent: MapContent {
 	@Binding var selectedPosition: PositionEntity?
 	@AppStorage("enableMapWaypoints") private var showWaypoints = true
 	@Binding var selectedWaypoint: WaypointEntity?
+
+	// Burning Man GeoJSON overlays
+	@AppStorage("burningManShowStreets") private var showStreets = false
+	@AppStorage("burningManShowToilets") private var showToilets = false
+	@AppStorage("burningManShowTrashFence") private var showTrashFence = false
 
 	@FetchRequest(fetchRequest: PositionEntity.allPositionsFetchRequest(), animation: .easeIn)
 	var positions: FetchedResults<PositionEntity>
@@ -222,6 +232,53 @@ struct MeshMapContent: MapContent {
 					.foregroundStyle(.indigo.opacity(0.4))
 			}
 		}
+
+		/// Burning Man GeoJSON Overlays
+		if showStreets {
+			let overlays = GeoJSONOverlayManager.shared.loadOverlays(for: StaticGeoJSONOverlay.streetOutlines)
+			let identifiableOverlays = overlays.map { IdentifiableOverlay(overlay: $0) }
+			ForEach(identifiableOverlays) { identifiable in
+				let overlay = identifiable.overlay
+				if let polygon = overlay as? MKPolygon {
+					MapPolygon(polygon)
+						.stroke(.yellow.opacity(0.8), lineWidth: 0.5)
+						.foregroundStyle(.clear)
+				} else if let polyline = overlay as? MKPolyline {
+					MapPolyline(polyline)
+						.stroke(.yellow.opacity(0.9), lineWidth: 0.8)
+				}
+			}
+		}
+
+		if showToilets {
+			let overlays = GeoJSONOverlayManager.shared.loadOverlays(for: StaticGeoJSONOverlay.toilets)
+			let identifiableOverlays = overlays.map { IdentifiableOverlay(overlay: $0) }
+			ForEach(identifiableOverlays) { identifiable in
+				let overlay = identifiable.overlay
+				if let polygon = overlay as? MKPolygon {
+					MapPolygon(polygon)
+						.stroke(.brown, lineWidth: 1)
+						.foregroundStyle(.brown.opacity(0.3))
+				}
+			}
+		}
+
+		if showTrashFence {
+			let overlays = GeoJSONOverlayManager.shared.loadOverlays(for: StaticGeoJSONOverlay.trashFence)
+			let identifiableOverlays = overlays.map { IdentifiableOverlay(overlay: $0) }
+			ForEach(identifiableOverlays) { identifiable in
+				let overlay = identifiable.overlay
+				if let polyline = overlay as? MKPolyline {
+					MapPolyline(polyline)
+						.stroke(.red, lineWidth: 3)
+				} else if let polygon = overlay as? MKPolygon {
+					MapPolygon(polygon)
+						.stroke(.red, lineWidth: 3)
+						.foregroundStyle(.red.opacity(0.2))
+				}
+			}
+		}
+
 		positionAnnotations
 		routeAnnotations
 		waypointAnnotations

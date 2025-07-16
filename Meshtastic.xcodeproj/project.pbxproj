@@ -56,6 +56,10 @@
 		25F5D5C02C3F6DA6008036E3 /* Router.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5BF2C3F6DA6008036E3 /* Router.swift */; };
 		25F5D5C22C3F6E4B008036E3 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5C12C3F6E4B008036E3 /* AppState.swift */; };
 		25F5D5D12C4375DF008036E3 /* RouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5D02C4375DF008036E3 /* RouterTests.swift */; };
+		3D3417B42E2730EC006A988B /* GeoJSONOverlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */; };
+		3D3417BC2E273AC6006A988B /* Street_Outlines.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 3D3417BB2E273AC6006A988B /* Street_Outlines.geojson */; };
+		3D3417C32E274800006A988B /* Toilets.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 3D3417C12E274800006A988B /* Toilets.geojson */; };
+		3D3417C42E274800006A988B /* Trash_Fence.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 3D3417C22E274800006A988B /* Trash_Fence.geojson */; };
 		6D825E622C34786C008DBEE4 /* CommonRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D825E612C34786C008DBEE4 /* CommonRegex.swift */; };
 		6DA39D8E2A92DC52007E311C /* MeshtasticAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */; };
 		6DEDA55A2A957B8E00321D2E /* DetectionSensorLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */; };
@@ -326,6 +330,10 @@
 		25F5D5C12C3F6E4B008036E3 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		25F5D5C72C4375A8008036E3 /* MeshtasticTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MeshtasticTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		25F5D5D02C4375DF008036E3 /* RouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouterTests.swift; sourceTree = "<group>"; };
+		3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoJSONOverlayManager.swift; sourceTree = "<group>"; };
+		3D3417BB2E273AC6006A988B /* Street_Outlines.geojson */ = {isa = PBXFileReference; lastKnownFileType = text; path = Street_Outlines.geojson; sourceTree = "<group>"; };
+		3D3417C12E274800006A988B /* Toilets.geojson */ = {isa = PBXFileReference; lastKnownFileType = text; path = Toilets.geojson; sourceTree = "<group>"; };
+		3D3417C22E274800006A988B /* Trash_Fence.geojson */ = {isa = PBXFileReference; lastKnownFileType = text; path = Trash_Fence.geojson; sourceTree = "<group>"; };
 		6D825E612C34786C008DBEE4 /* CommonRegex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonRegex.swift; sourceTree = "<group>"; };
 		6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAppDelegate.swift; sourceTree = "<group>"; };
 		6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorLog.swift; sourceTree = "<group>"; };
@@ -1050,6 +1058,9 @@
 				DDB75A192A05EB67006ED576 /* alpha.png */,
 				DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */,
 				DD0E21002B8A6BC500F2D100 /* DeviceHardware.json */,
+				3D3417BB2E273AC6006A988B /* Street_Outlines.geojson */,
+				3D3417C12E274800006A988B /* Toilets.geojson */,
+				3D3417C22E274800006A988B /* Trash_Fence.geojson */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -1108,6 +1119,7 @@
 				DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */,
 				DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */,
 				6D825E612C34786C008DBEE4 /* CommonRegex.swift */,
+				3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1360,7 +1372,10 @@
 				DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */,
 				25AECD4F2C2F723200862C8E /* Localizable.xcstrings in Resources */,
 				DDDE5A1329AFEAB900490C6C /* Assets.xcassets in Resources */,
+				3D3417BC2E273AC6006A988B /* Street_Outlines.geojson in Resources */,
 				DDB75A1A2A05EB67006ED576 /* alpha.png in Resources */,
+				3D3417C32E274800006A988B /* Toilets.geojson in Resources */,
+				3D3417C42E274800006A988B /* Trash_Fence.geojson in Resources */,
 				DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */,
 				DD0E21012B8A6F1300F2D100 /* DeviceHardware.json in Resources */,
 				DDDBC87B2BC62E4E001E8DF7 /* Settings.bundle in Resources */,
@@ -1476,6 +1491,7 @@
 				DDDB445429F8AD1600EE2349 /* Data.swift in Sources */,
 				DDDB26462AACC0B7003AFCB7 /* NodeInfoItem.swift in Sources */,
 				DDE5B4042B2279A700FCDD05 /* TraceRouteLog.swift in Sources */,
+				3D3417B42E2730EC006A988B /* GeoJSONOverlayManager.swift in Sources */,
 				237B46962DC8F1C100B22D99 /* RateLimitedButton.swift in Sources */,
 				DD6193792863875F00E59241 /* SerialConfig.swift in Sources */,
 				DDDB263F2AABEE20003AFCB7 /* NodeList.swift in Sources */,
