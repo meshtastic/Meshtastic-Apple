@@ -62,7 +62,7 @@
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Smart Position</string>
+			<string>Accurate Locations Only</string>
 			<key>Key</key>
 			<string>enableSmartPosition</string>
 			<key>DefaultValue</key>
