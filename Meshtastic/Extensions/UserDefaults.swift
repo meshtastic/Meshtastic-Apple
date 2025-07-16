@@ -158,12 +158,13 @@ extension UserDefaults {
 
 	@UserDefault(.mapReportingOptIn, defaultValue: false)
 	static var mapReportingOptIn: Bool
-	
+
 	@UserDefault(.usageDataAndCrashReporting, defaultValue: true)
 	static var usageDataAndCrashReporting: Bool
+
 	@UserDefault(.firstLaunch, defaultValue: true)
 	static var firstLaunch: Bool
-	
+
 	@UserDefault(.showDeviceOnboarding, defaultValue: false)
 	static var showDeviceOnboarding: Bool
 

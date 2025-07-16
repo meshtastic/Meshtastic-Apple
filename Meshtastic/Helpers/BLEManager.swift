@@ -1142,8 +1142,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					sendWantConfig()
 
 				}
-				
-
 				// MARK: Share Location Position Update Timer
 				// Use context to pass the radio name with the timer
 				// Use a RunLoop to prevent the timer from running on the main UI thread
@@ -1159,7 +1157,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == NONCE_ONLY_DB {
 				Logger.mesh.info("🤜 [BLE] Want Config DB Complete. ID:\(decodedInfo.configCompleteID, privacy: .public)")
 			}
-
 		case FROMNUM_UUID:
 			Logger.services.info("🗞️ [BLE] (Notify) characteristic value will be read next")
 		default:

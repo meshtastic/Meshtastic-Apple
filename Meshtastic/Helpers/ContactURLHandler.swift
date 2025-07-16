@@ -11,15 +11,11 @@ import TipKit
 import MeshtasticProtobufs
 
 struct ContactURLHandler {
-	
 	static var minimumContactVersion = "2.6.9"
-
-	
 	static func handleContactUrl(url: URL, bleManager: BLEManager) {
 		let supportedVersion = UserDefaults.firmwareVersion == "0.0.0" ||
 			minimumContactVersion.compare(UserDefaults.firmwareVersion, options: .numeric) == .orderedAscending ||
 			minimumContactVersion.compare(UserDefaults.firmwareVersion, options: .numeric) == .orderedSame
-		
 		if !supportedVersion {
 			let alertController = UIAlertController(
 				title: "Firmware Upgrade Required",
