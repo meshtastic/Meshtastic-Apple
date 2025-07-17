@@ -30,9 +30,7 @@ struct MeshMapContent: MapContent {
 	@Binding var selectedWaypoint: WaypointEntity?
 
 	// Burning Man GeoJSON overlays
-	@AppStorage("burningManShowStreets") private var showStreets = false
-	@AppStorage("burningManShowToilets") private var showToilets = false
-	@AppStorage("burningManShowTrashFence") private var showTrashFence = false
+	@AppStorage("burningManShowAll") private var showBurningMan = false
 
 	@FetchRequest(fetchRequest: PositionEntity.allPositionsFetchRequest(), animation: .easeIn)
 	var positions: FetchedResults<PositionEntity>
@@ -234,10 +232,11 @@ struct MeshMapContent: MapContent {
 		}
 
 		/// Burning Man GeoJSON Overlays
-		if showStreets {
-			let overlays = GeoJSONOverlayManager.shared.loadOverlays(for: StaticGeoJSONOverlay.streetOutlines)
-			let identifiableOverlays = overlays.map { IdentifiableOverlay(overlay: $0) }
-			ForEach(identifiableOverlays) { identifiable in
+		if showBurningMan {
+			// Load and display street outlines
+			let streetOverlays = GeoJSONOverlayManager.shared.loadOverlays(for: .streetOutlines)
+			let streetIdentifiableOverlays = streetOverlays.map { IdentifiableOverlay(overlay: $0) }
+			ForEach(streetIdentifiableOverlays) { identifiable in
 				let overlay = identifiable.overlay
 				if let polygon = overlay as? MKPolygon {
 					MapPolygon(polygon)
@@ -248,12 +247,11 @@ struct MeshMapContent: MapContent {
 						.stroke(.green.opacity(0.9), lineWidth: 0.8)
 				}
 			}
-		}
 
-		if showToilets {
-			let overlays = GeoJSONOverlayManager.shared.loadOverlays(for: StaticGeoJSONOverlay.toilets)
-			let identifiableOverlays = overlays.map { IdentifiableOverlay(overlay: $0) }
-			ForEach(identifiableOverlays) { identifiable in
+			// Load and display toilets
+			let toiletOverlays = GeoJSONOverlayManager.shared.loadOverlays(for: .toilets)
+			let toiletIdentifiableOverlays = toiletOverlays.map { IdentifiableOverlay(overlay: $0) }
+			ForEach(toiletIdentifiableOverlays) { identifiable in
 				let overlay = identifiable.overlay
 				if let polygon = overlay as? MKPolygon {
 					MapPolygon(polygon)
@@ -261,12 +259,11 @@ struct MeshMapContent: MapContent {
 						.foregroundStyle(.blue.opacity(1.0))
 				}
 			}
-		}
 
-		if showTrashFence {
-			let overlays = GeoJSONOverlayManager.shared.loadOverlays(for: StaticGeoJSONOverlay.trashFence)
-			let identifiableOverlays = overlays.map { IdentifiableOverlay(overlay: $0) }
-			ForEach(identifiableOverlays) { identifiable in
+			// Load and display trash fence
+			let trashFenceOverlays = GeoJSONOverlayManager.shared.loadOverlays(for: .trashFence)
+			let trashFenceIdentifiableOverlays = trashFenceOverlays.map { IdentifiableOverlay(overlay: $0) }
+			ForEach(trashFenceIdentifiableOverlays) { identifiable in
 				let overlay = identifiable.overlay
 				if let polyline = overlay as? MKPolyline {
 					MapPolyline(polyline)

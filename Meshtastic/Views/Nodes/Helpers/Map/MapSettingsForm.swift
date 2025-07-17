@@ -116,42 +116,16 @@ struct MapSettingsForm: View {
 					}
 				}
 
-				Section(header: Text("Burning Man Overlays")) {
+				Section(header: Text("Map Overlays")) {
 					Toggle(isOn: Binding(
-						get: { UserDefaults.standard.bool(forKey: "burningManShowStreets") },
-						set: { UserDefaults.standard.set($0, forKey: "burningManShowStreets") }
+						get: { UserDefaults.standard.bool(forKey: "burningManShowAll") },
+						set: { UserDefaults.standard.set($0, forKey: "burningManShowAll") }
 					)) {
 						Label {
-							Text("Street Outlines")
+							Text("Burning Man")
 						} icon: {
-							Image(systemName: "road.lanes")
-								.foregroundColor(.yellow)
-						}
-					}
-					.tint(.accentColor)
-
-					Toggle(isOn: Binding(
-						get: { UserDefaults.standard.bool(forKey: "burningManShowToilets") },
-						set: { UserDefaults.standard.set($0, forKey: "burningManShowToilets") }
-					)) {
-						Label {
-							Text("Toilets")
-						} icon: {
-							Image(systemName: "toilet")
-								.foregroundColor(.brown)
-						}
-					}
-					.tint(.accentColor)
-
-					Toggle(isOn: Binding(
-						get: { UserDefaults.standard.bool(forKey: "burningManShowTrashFence") },
-						set: { UserDefaults.standard.set($0, forKey: "burningManShowTrashFence") }
-					)) {
-						Label {
-							Text("Trash Fence")
-						} icon: {
-							Image(systemName: "fence")
-								.foregroundColor(.red)
+							Image(systemName: "flame.fill")
+								.foregroundColor(.orange)
 						}
 					}
 					.tint(.accentColor)
