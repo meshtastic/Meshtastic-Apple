@@ -10,9 +10,7 @@ struct MessageText: View {
 		locale: Locale.current
 	)
 	static let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mm:ss:a")
-
 	@Environment(\.managedObjectContext) var context
-
 	let message: MessageEntity
 	let tapBackDestination: MessageDestination
 	let isCurrentUser: Bool
@@ -21,7 +19,6 @@ struct MessageText: View {
 	@State private var saveChannels = false
 	@State private var channelSettings: String?
 	@State private var addChannels = false
-
 	@State private var isShowingDeleteConfirmation = false
 
 	var body: some View {
@@ -41,10 +38,10 @@ struct MessageText: View {
 						HStack {
 							Spacer()
 							Image(systemName: "lock.circle.fill")
-							.symbolRenderingMode(.palette)
-							.foregroundStyle(.white, .green)
-							.font(.system(size: 20))
-							.offset(x: 8, y: 8)
+								.symbolRenderingMode(.palette)
+								.foregroundStyle(.white, .green)
+								.font(.system(size: 20))
+								.offset(x: 8, y: 8)
 						}
 					}
 				}
@@ -56,10 +53,10 @@ struct MessageText: View {
 						HStack {
 							Spacer()
 							Image(systemName: "envelope.circle.fill")
-							.symbolRenderingMode(.palette)
-							.foregroundStyle(.white, .gray)
-							.font(.system(size: 20))
-							.offset(x: 8, y: 8)
+								.symbolRenderingMode(.palette)
+								.foregroundStyle(.white, .gray)
+								.font(.system(size: 20))
+								.offset(x: 8, y: 8)
 						}
 					}
 				}
@@ -89,39 +86,32 @@ struct MessageText: View {
 			}
 			.environment(\.openURL, OpenURLAction { url in
 				channelSettings = nil
-
-	if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
-		// Handle contact URL
-		ContactURLHandler.handleContactUrl(url: url, bleManager: BLEManager.shared)
-		return .handled // Prevent default browser opening
-	} else if url.absoluteString.lowercased().contains("meshtastic.org/e/") {
-		// Handle channel URL
-		let components = url.absoluteString.components(separatedBy: "#")
-		guard !components.isEmpty, let lastComponent = components.last else {
-			Logger.services.error("No valid components found in channel URL: \(url.absoluteString, privacy: .public)")
-			return .discarded
-		}
-		
-		self.addChannels = Bool(url.query?.contains("add=true") ?? false)
-		guard let lastComponent = components.last else {
-			Logger.services.error("Channel URL missing fragment component: \(url.absoluteString, privacy: .public)")
-			self.channelSettings = nil
-			return .discarded
-		}
-
-		self.channelSettings = lastComponent.components(separatedBy: "?").first ?? ""
-
-		
-		Logger.services.debug("Add Channel: \(self.addChannels, privacy: .public)")
-			self.saveChannels = true
-		Logger.mesh.debug("Opening Channel Settings URL: \(url.absoluteString, privacy: .public)")
-		return .handled // Prevent default browser opening
-	}
-	
-	return .systemAction // Open other URLs in browser
-})
-				  
-				  // Display sheet for channel settings
+				if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
+					// Handle contact URL
+					ContactURLHandler.handleContactUrl(url: url, bleManager: BLEManager.shared)
+					return .handled // Prevent default browser opening
+				} else if url.absoluteString.lowercased().contains("meshtastic.org/e/") {
+					// Handle channel URL
+					let components = url.absoluteString.components(separatedBy: "#")
+					guard !components.isEmpty, let lastComponent = components.last else {
+						Logger.services.error("No valid components found in channel URL: \(url.absoluteString, privacy: .public)")
+						return .discarded
+					}
+					self.addChannels = Bool(url.query?.contains("add=true") ?? false)
+					guard let lastComponent = components.last else {
+						Logger.services.error("Channel URL missing fragment component: \(url.absoluteString, privacy: .public)")
+						self.channelSettings = nil
+						return .discarded
+					}
+					self.channelSettings = lastComponent.components(separatedBy: "?").first ?? ""
+					Logger.services.debug("Add Channel: \(self.addChannels, privacy: .public)")
+					self.saveChannels = true
+					Logger.mesh.debug("Opening Channel Settings URL: \(url.absoluteString, privacy: .public)")
+					return .handled // Prevent default browser opening
+				}
+				return .systemAction // Open other URLs in browser
+			})
+		// Display sheet for channel settings
 			.sheet(isPresented: Binding(
 				get: {
 					saveChannels && !(channelSettings == nil)

@@ -11,10 +11,8 @@ import AppIntents
 struct FactoryResetNodeIntent: AppIntent {
 	static var title: LocalizedStringResource = "Factory Reset"
 	static var description: IntentDescription = "Perform a factory reset on the node you are connected to"
-	
 	@Parameter(title: "Hard Reset", description: "In addition to Config, Keys and BLE bonds will be wiped", default: false)
 	var hardReset: Bool
-	
 	@Parameter(title: "Provide Confirmation", description: "Show a confirmation dialog before performing the factory reset", default: true)
 	var provideConfirmation: Bool
 

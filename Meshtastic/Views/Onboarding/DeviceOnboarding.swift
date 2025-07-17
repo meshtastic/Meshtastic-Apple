@@ -32,7 +32,7 @@ struct DeviceOnboarding: View {
 
 	var welcomeView: some View {
 		VStack {
-			ScrollView(.vertical, showsIndicators: false) {
+			ScrollView(.vertical) {
 				VStack {
 					// Title
 					title
@@ -78,110 +78,114 @@ struct DeviceOnboarding: View {
 	}
 
 	var notificationView: some View {
-		VStack {
+		ScrollView(.vertical) {
 			VStack {
-				Text("App Notifications")
-					.font(.largeTitle.bold())
-					.multilineTextAlignment(.center)
-					.fixedSize(horizontal: false, vertical: true)
-			}
-			Spacer()
-			VStack(alignment: .leading, spacing: 16) {
-				Text("Send Notifications")
-					.font(.title2.bold())
-					.multilineTextAlignment(.center)
-					.fixedSize(horizontal: false, vertical: true)
-				makeRow(
-					icon: "message",
-					title: "Incoming Messages",
-					subtitle: "Meshtastic notifications for channel messages and direct messages"
-				)
-				makeRow(
-					icon: "flipphone",
-					title: "New Nodes",
-					subtitle: "Allow Meshtastic to send notifications for messages, newly discovered nodes and low battery alerts for the connected device."
-				)
-				makeRow(
-					icon: "battery.25percent",
-					title: "Low Battery",
-					subtitle: "Allow Meshtastic to send notifications for messages, newly discovered nodes and low battery alerts for the connected device."
-				)
-				Text("Critical Alerts")
-					.font(.title2.bold())
-					.multilineTextAlignment(.center)
-					.fixedSize(horizontal: false, vertical: true)
-				makeRow(
-					icon: "exclamationmark.triangle.fill",
-					subtitle: "Select packets sent as critical will ignore the mute switch and Do Not Disturb settings in the OS notification center."
-				)
-			}
-			.padding()
-			Spacer()
-			Button {
-				Task {
-					await requestNotificationsPermissions()
-					await goToNextStep(after: .notifications)
+				VStack {
+					Text("App Notifications")
+						.font(.largeTitle.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
 				}
-			} label: {
-				Text("Configure notification permissions")
-					.frame(maxWidth: .infinity)
+				Spacer()
+				VStack(alignment: .leading, spacing: 16) {
+					Text("Send Notifications")
+						.font(.title2.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
+					makeRow(
+						icon: "message",
+						title: "Incoming Messages",
+						subtitle: "Meshtastic notifications for channel messages and direct messages"
+					)
+					makeRow(
+						icon: "flipphone",
+						title: "New Nodes",
+						subtitle: "Allow Meshtastic to send notifications for messages, newly discovered nodes and low battery alerts for the connected device."
+					)
+					makeRow(
+						icon: "battery.25percent",
+						title: "Low Battery",
+						subtitle: "Allow Meshtastic to send notifications for messages, newly discovered nodes and low battery alerts for the connected device."
+					)
+					Text("Critical Alerts")
+						.font(.title2.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
+					makeRow(
+						icon: "exclamationmark.triangle.fill",
+						subtitle: "Select packets sent as critical will ignore the mute switch and Do Not Disturb settings in the OS notification center."
+					)
+				}
+				.padding()
+				Spacer()
+				Button {
+					Task {
+						await requestNotificationsPermissions()
+						await goToNextStep(after: .notifications)
+					}
+				} label: {
+					Text("Configure notification permissions")
+						.frame(maxWidth: .infinity)
+				}
+				.buttonBorderShape(.capsule)
+				.controlSize(.large)
+				.padding()
+				.buttonStyle(.borderedProminent)
 			}
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.buttonStyle(.borderedProminent)
 		}
 	}
 
 	var locationView: some View {
-		VStack {
+		ScrollView(.vertical) {
 			VStack {
-				Text("Phone Location")
-					.font(.largeTitle.bold())
-					.multilineTextAlignment(.center)
-					.fixedSize(horizontal: false, vertical: true)
-			}
-			VStack(alignment: .leading, spacing: 16) {
-				Text("Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from Settings > App Settings > Open Settings.")
-					.font(.body.bold())
-					.multilineTextAlignment(.center)
-					.fixedSize(horizontal: false, vertical: true)
-				makeRow(
-					icon: "location",
-					title: "Share Location",
-					subtitle: "Use your phone GPS to send locations to your node to instead of using a hardware GPS on your node."
-				)
-				makeRow(
-					icon: "lines.measurement.horizontal",
-					title: "Distance Measurements",
-					subtitle: "Used to display the distance between your phone and other Meshtastic nodes where positions are available."
-				)
-				makeRow(
-					icon: "line.3.horizontal.decrease.circle",
-					title: "Distance Filters",
-					subtitle: "Filter the node list and mesh map based on proximity to your phone."
-				)
-				makeRow(
-					icon: "mappin",
-					title: "Mesh Map Location",
-					subtitle: "Enables the blue location dot for your phone in the mesh map."
-				)
-			}
-			.padding()
-			Spacer()
-			Button {
-				Task {
-					await requestLocationPermissions()
+				VStack {
+					Text("Phone Location")
+						.font(.largeTitle.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
 				}
-			} label: {
-				Text("Configure Location Permissions")
-					.frame(maxWidth: .infinity)
+				VStack(alignment: .leading, spacing: 16) {
+					Text("Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from Settings > App Settings > Open Settings.")
+						.font(.body.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
+					makeRow(
+						icon: "location",
+						title: "Share Location",
+						subtitle: "Use your phone GPS to send locations to your node to instead of using a hardware GPS on your node."
+					)
+					makeRow(
+						icon: "lines.measurement.horizontal",
+						title: "Distance Measurements",
+						subtitle: "Used to display the distance between your phone and other Meshtastic nodes where positions are available."
+					)
+					makeRow(
+						icon: "line.3.horizontal.decrease.circle",
+						title: "Distance Filters",
+						subtitle: "Filter the node list and mesh map based on proximity to your phone."
+					)
+					makeRow(
+						icon: "mappin",
+						title: "Mesh Map Location",
+						subtitle: "Enables the blue location dot for your phone in the mesh map."
+					)
+				}
+				.padding()
+				Spacer()
+				Button {
+					Task {
+						await requestLocationPermissions()
+					}
+				} label: {
+					Text("Configure Location Permissions")
+						.frame(maxWidth: .infinity)
+				}
+				.padding()
+				.buttonBorderShape(.capsule)
+				.controlSize(.large)
+				.padding()
+				.buttonStyle(.borderedProminent)
 			}
-			.padding()
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.buttonStyle(.borderedProminent)
 		}
 	}
 

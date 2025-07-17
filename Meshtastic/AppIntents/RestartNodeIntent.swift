@@ -15,7 +15,6 @@ struct RestartNodeIntent: AppIntent {
 
 	func perform() async throws -> some IntentResult {
 
-
 		if !BLEManager.shared.isConnected {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}

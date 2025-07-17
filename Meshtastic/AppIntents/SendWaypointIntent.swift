@@ -11,7 +11,7 @@ import AppIntents
 import MeshtasticProtobufs
 
 struct SendWaypointIntent: AppIntent {
-	
+
 	var defaultDate = Date.now.addingTimeInterval(60 * 480)
 
 	static var title = LocalizedStringResource("Send a Waypoint")
@@ -83,11 +83,9 @@ struct SendWaypointIntent: AppIntent {
 		newWaypoint.icon = unicode
 		newWaypoint.name = name
 		newWaypoint.description_p = description
-		
 		if let expirationDate = expiration {
 			newWaypoint.expire = UInt32(expirationDate.timeIntervalSince1970)
 		}
-		
 		if isLocked {
 			if let connectedPeripheral = BLEManager.shared.connectedPeripheral {
 				newWaypoint.lockedTo = UInt32(connectedPeripheral.num)

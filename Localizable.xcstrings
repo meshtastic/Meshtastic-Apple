@@ -36646,33 +36646,8 @@
         }
       }
     },
-    "The Router roles are designed for high vantage locations like mountaintops and towers. This node needs to be able to have a good direct connection to most of the nodes on the network or else this will significantly hurt the network." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "I ruoli di router sono progettati per posizioni elevate, come le cime delle montagne e le torri. Questo nodo deve essere in grado di avere una buona connessione diretta con la maggior parte dei nodi della rete, altrimenti danneggia significativamente la rete."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ルーター役割は山頂や塔のような見晴らしの良い高所での使用を想定して設計されています。このノードは、ネットワーク内の大部分のノードと良好な直接接続を保持できる必要があります。そうでなければ、ネットワークに深刻な影響を与えることになります。"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Рутер улоге су намењене локацијама са високим положајем као што су врхови планина и куле. Овај чвор мора имати добру директну везу са већином чворова у мрежи, иначе ће то значајно оштетити мрежу."
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Router 模式專為高處位置（如山頂或塔台）設計。此節點必須能夠與網路中的大多數節點保持良好的直接連線，否則將會嚴重影響整體網路效能。"
-          }
-        }
-      }
+    "The Router roles are only for high vantage locations like mountaintops and towers with few nearby nodes, not for use in urban areas. Improper use will hurt your local mesh." : {
+
     },
     "The secondary public key authorized to send admin messages to this node." : {
       "localizations" : {

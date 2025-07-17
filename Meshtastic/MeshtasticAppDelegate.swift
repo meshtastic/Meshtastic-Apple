@@ -50,7 +50,7 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		case "messageNotification.thumbsUpAction":
 			if let channel = userInfo["channel"] as? Int32,
 			   let replyID = userInfo["messageId"] as? Int64 {
-				let tapbackResponse = !BLEManager.shared.sendMessage (
+				let tapbackResponse = !BLEManager.shared.sendMessage(
 					message: Tapbacks.thumbsUp.emojiString,
 					toUserNum: userInfo["userNum"] as? Int64 ?? 0,
 					channel: channel,
@@ -64,7 +64,7 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		case "messageNotification.thumbsDownAction":
 			if let channel = userInfo["channel"] as? Int32,
 			   let replyID = userInfo["messageId"] as? Int64 {
-				let tapbackResponse = !BLEManager.shared.sendMessage (
+				let tapbackResponse = !BLEManager.shared.sendMessage(
 					message: Tapbacks.thumbsDown.emojiString,
 					toUserNum: userInfo["userNum"] as? Int64 ?? 0,
 					channel: channel,
@@ -79,7 +79,7 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 			if let userInput = (response as? UNTextInputNotificationResponse)?.userText,
 			   let channel = userInfo["channel"] as? Int32,
 			   let replyID = userInfo["messageId"] as? Int64 {
-				let tapbackResponse = !BLEManager.shared.sendMessage (
+				let tapbackResponse = !BLEManager.shared.sendMessage(
 					message: userInput,
 					toUserNum: userInfo["userNum"] as? Int64 ?? 0,
 					channel: channel,

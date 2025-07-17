@@ -46,9 +46,7 @@ struct MeshtasticAppleApp: App {
 			trackingConsent: UserDefaults.usageDataAndCrashReporting ? .granted : .notGranted,
 		)
 		DatadogCrashReporting.CrashReporting.enable()
-		
 		Logs.enable()
-		
 		Trace.enable(
 			with: Trace.Configuration(
 				sampleRate: 100, networkInfoEnabled: true  // 100% sampling for development/testing, reduce for production
