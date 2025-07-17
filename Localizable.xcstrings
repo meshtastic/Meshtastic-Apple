@@ -5814,6 +5814,9 @@
         }
       }
     },
+    "Burning Man Overlays" : {
+
+    },
     "Button GPIO" : {
       "localizations" : {
         "it" : {
@@ -35138,6 +35141,9 @@
         }
       }
     },
+    "Street Outlines" : {
+
+    },
     "Subscribed" : {
       "localizations" : {
         "he" : {
@@ -37883,6 +37889,9 @@
         }
       }
     },
+    "Toilets" : {
+
+    },
     "Topic: %@" : {
       "localizations" : {
         "it" : {
@@ -38356,6 +38365,9 @@
           }
         }
       }
+    },
+    "Trash Fence" : {
+
     },
     "Treat double tap on supported accelerometers as a user button press." : {
       "localizations" : {

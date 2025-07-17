@@ -115,6 +115,47 @@ struct MapSettingsForm: View {
 						UserDefaults.enableMapPointsOfInterest = self.pointsOfInterest
 					}
 				}
+
+				Section(header: Text("Burning Man Overlays")) {
+					Toggle(isOn: Binding(
+						get: { UserDefaults.standard.bool(forKey: "burningManShowStreets") },
+						set: { UserDefaults.standard.set($0, forKey: "burningManShowStreets") }
+					)) {
+						Label {
+							Text("Street Outlines")
+						} icon: {
+							Image(systemName: "road.lanes")
+								.foregroundColor(.yellow)
+						}
+					}
+					.tint(.accentColor)
+
+					Toggle(isOn: Binding(
+						get: { UserDefaults.standard.bool(forKey: "burningManShowToilets") },
+						set: { UserDefaults.standard.set($0, forKey: "burningManShowToilets") }
+					)) {
+						Label {
+							Text("Toilets")
+						} icon: {
+							Image(systemName: "toilet")
+								.foregroundColor(.brown)
+						}
+					}
+					.tint(.accentColor)
+
+					Toggle(isOn: Binding(
+						get: { UserDefaults.standard.bool(forKey: "burningManShowTrashFence") },
+						set: { UserDefaults.standard.set($0, forKey: "burningManShowTrashFence") }
+					)) {
+						Label {
+							Text("Trash Fence")
+						} icon: {
+							Image(systemName: "fence")
+								.foregroundColor(.red)
+						}
+					}
+					.tint(.accentColor)
+				}
 			}
 
 #if targetEnvironment(macCatalyst)
