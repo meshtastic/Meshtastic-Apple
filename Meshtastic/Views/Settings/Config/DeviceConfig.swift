@@ -21,7 +21,6 @@ struct DeviceConfig: View {
 	@State private var isPresentingFactoryResetConfirm = false
 	@State var hasChanges = false
 	@State var deviceRole = 0
-	@State private var pendingDeviceRole = 0
 	@State var buzzerGPIO = 0
 	@State var buttonGPIO = 0
 	@State var rebroadcastMode = 0
