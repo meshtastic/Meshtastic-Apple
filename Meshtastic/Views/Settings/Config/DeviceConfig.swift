@@ -44,7 +44,7 @@ struct DeviceConfig: View {
 							}
 						}
 						.onChange(of: deviceRole) { _, newRole in
-							if hasChanges && [2, 4, 11].contains(newRole) {
+							if hasChanges && [DeviceRoles.router.rawValue, DeviceRoles.routerLate.rawValue, DeviceRoles.repeater.rawValue].contains(newRole) {
 								showRouterWarning = true
 							}
 						}
