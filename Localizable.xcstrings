@@ -36647,6 +36647,7 @@
       }
     },
     "The Router roles are designed for high vantage locations like mountaintops and towers. This node needs to be able to have a good direct connection to most of the nodes on the network or else this will significantly hurt the network." : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -36673,6 +36674,9 @@
           }
         }
       }
+    },
+    "The Router roles are only for high vantage locations like mountaintops and towers with few nearby nodes, not for use in urban areas. Improper use will hurt your local mesh." : {
+
     },
     "The secondary public key authorized to send admin messages to this node." : {
       "localizations" : {
