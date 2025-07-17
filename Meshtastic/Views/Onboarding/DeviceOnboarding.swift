@@ -32,7 +32,7 @@ struct DeviceOnboarding: View {
 
 	var welcomeView: some View {
 		VStack {
-			ScrollView(.vertical, showsIndicators: false) {
+			ScrollView(.vertical) {
 				VStack {
 					// Title
 					title
@@ -78,7 +78,7 @@ struct DeviceOnboarding: View {
 	}
 
 	var notificationView: some View {
-		ScrollView(.vertical, showsIndicators: false) {
+		ScrollView(.vertical) {
 			VStack {
 				VStack {
 					Text("App Notifications")
@@ -136,7 +136,7 @@ struct DeviceOnboarding: View {
 	}
 
 	var locationView: some View {
-		ScrollView(.vertical, showsIndicators: false) {
+		ScrollView(.vertical) {
 			VStack {
 				VStack {
 					Text("Phone Location")
