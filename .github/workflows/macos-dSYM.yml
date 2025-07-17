@@ -36,6 +36,7 @@ jobs:
           xcodebuild \
             -workspace Meshtastic.xcworkspace \
             -scheme Meshtastic \
+            -allowProvisioningUpdates \
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -archivePath ./build/Meshtastic.xcarchive \
