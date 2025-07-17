@@ -31,7 +31,6 @@ struct DeviceConfig: View {
 	@State var tripleClickAsAdHocPing = true
 	@State var tzdef = ""
 	@State private var showRouterWarning = false
-	@State private var confirmWarning = false
 
 	var body: some View {
 		VStack {
@@ -45,15 +44,9 @@ struct DeviceConfig: View {
 								Text(dr.name).tag(dr.rawValue as Int)
 							}
 						}
-						.onChange(of: deviceRole) { oldValue, newValue in
-							if !confirmWarning {
-								if [2, 11].contains(newValue) {
-									pendingDeviceRole = newValue
-									deviceRole = oldValue // Reset selection until confirmed
-									showRouterWarning = true
-								}
-							} else {
-								confirmWarning = false
+						.onChange(of: deviceRole) { _, newRole in
+							if hasChanges && [2, 4, 11].contains(newRole) {
+								showRouterWarning = true
 							}
 						}
 						.confirmationDialog(
@@ -63,15 +56,13 @@ struct DeviceConfig: View {
 						) {
 
 							Button("Confirm") {
-								deviceRole = pendingDeviceRole
-								pendingDeviceRole = 0
-								confirmWarning = true
+								hasChanges = true
 							}
 							Button("Cancel", role: .cancel) {
-								pendingDeviceRole = 0
+								setDeviceValues()
 							}
 						} message: {
-							Text("The Router roles are designed for high vantage locations like mountaintops and towers. This node needs to be able to have a good direct connection to most of the nodes on the network or else this will significantly hurt the network.")
+							Text("The Router roles are only for high vantage locations like mountaintops and towers with few nearby nodes, not for use in urban areas. Improper use will hurt your local mesh.")
 						}
 						Text(DeviceRoles(rawValue: deviceRole)?.description ?? "")
 							.foregroundColor(.gray)
@@ -334,5 +325,6 @@ struct DeviceConfig: View {
 		self.tripleClickAsAdHocPing = node?.deviceConfig?.tripleClickAsAdHocPing ?? false
 		self.ledHeartbeatEnabled = node?.deviceConfig?.ledHeartbeatEnabled ?? true
 		self.tzdef = node?.deviceConfig?.tzdef ?? ""
+		hasChanges = false
 	}
 }
