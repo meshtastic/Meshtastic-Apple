@@ -115,6 +115,21 @@ struct MapSettingsForm: View {
 						UserDefaults.enableMapPointsOfInterest = self.pointsOfInterest
 					}
 				}
+
+				Section(header: Text("Map Overlays")) {
+					Toggle(isOn: Binding(
+						get: { UserDefaults.standard.bool(forKey: "burningManShowAll") },
+						set: { UserDefaults.standard.set($0, forKey: "burningManShowAll") }
+					)) {
+						Label {
+							Text("Burning Man")
+						} icon: {
+							Image(systemName: "flame.fill")
+								.foregroundColor(.orange)
+						}
+					}
+					.tint(.accentColor)
+				}
 			}
 
 #if targetEnvironment(macCatalyst)

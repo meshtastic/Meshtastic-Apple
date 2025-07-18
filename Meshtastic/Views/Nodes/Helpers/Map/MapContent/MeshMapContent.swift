@@ -8,6 +8,11 @@
 import SwiftUI
 import MapKit
 
+struct IdentifiableOverlay: Identifiable {
+    let overlay: MKOverlay
+    var id: ObjectIdentifier { ObjectIdentifier(overlay as AnyObject) }
+}
+
 struct MeshMapContent: MapContent {
 
 	/// Parameters
@@ -23,6 +28,9 @@ struct MeshMapContent: MapContent {
 	@Binding var selectedPosition: PositionEntity?
 	@AppStorage("enableMapWaypoints") private var showWaypoints = true
 	@Binding var selectedWaypoint: WaypointEntity?
+
+	// Burning Man GeoJSON overlays
+	@AppStorage("burningManShowAll") private var showBurningMan = false
 
 	@FetchRequest(fetchRequest: PositionEntity.allPositionsFetchRequest(), animation: .easeIn)
 	var positions: FetchedResults<PositionEntity>
@@ -222,6 +230,40 @@ struct MeshMapContent: MapContent {
 					.foregroundStyle(.indigo.opacity(0.4))
 			}
 		}
+
+						/// GeoJSON Overlays (Configuration-Driven)
+		if showBurningMan {
+			let overlayManager = GeoJSONOverlayManager.shared
+			let availableOverlays = overlayManager.getAvailableOverlayIds()
+
+			ForEach(Array(availableOverlays.enumerated()), id: \.element) { _, overlayId in
+				let overlays = overlayManager.loadOverlays(for: overlayId)
+				let rendering = overlayManager.getRenderingProperties(for: overlayId)
+
+				ForEach(Array(overlays.enumerated()), id: \.offset) { _, overlay in
+					if let polygon = overlay as? MKPolygon {
+						MapPolygon(polygon)
+							.stroke(
+								Color(hex: rendering?.lineColor ?? "#000000")
+									.opacity(rendering?.lineOpacity ?? 1.0),
+								lineWidth: rendering?.lineThickness ?? 1.0
+							)
+							.foregroundStyle(
+								Color(hex: rendering?.lineColor ?? "#000000")
+									.opacity(rendering?.fillOpacity ?? 0.0)
+							)
+					} else if let polyline = overlay as? MKPolyline {
+						MapPolyline(polyline)
+							.stroke(
+								Color(hex: rendering?.lineColor ?? "#000000")
+									.opacity(rendering?.lineOpacity ?? 1.0),
+								lineWidth: rendering?.lineThickness ?? 1.0
+							)
+					}
+				}
+			}
+		}
+
 		positionAnnotations
 		routeAnnotations
 		waypointAnnotations
