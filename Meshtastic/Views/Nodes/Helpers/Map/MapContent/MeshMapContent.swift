@@ -231,47 +231,37 @@ struct MeshMapContent: MapContent {
 			}
 		}
 
-		/// Burning Man GeoJSON Overlays
+		/// GeoJSON Overlays (Configuration-Driven)
 		if showBurningMan {
-			// Load and display street outlines
-			let streetOverlays = GeoJSONOverlayManager.shared.loadOverlays(for: .streetOutlines)
-			let streetIdentifiableOverlays = streetOverlays.map { IdentifiableOverlay(overlay: $0) }
-			ForEach(streetIdentifiableOverlays) { identifiable in
-				let overlay = identifiable.overlay
-				if let polygon = overlay as? MKPolygon {
-					MapPolygon(polygon)
-						.stroke(.green.opacity(0.8), lineWidth: 0.5)
-						.foregroundStyle(.clear)
-				} else if let polyline = overlay as? MKPolyline {
-					MapPolyline(polyline)
-						.stroke(.green.opacity(0.9), lineWidth: 0.8)
-				}
-			}
+			let overlayManager = GeoJSONOverlayManager.shared
+			let availableOverlays = overlayManager.getAvailableOverlayIds()
 
-			// Load and display toilets
-			let toiletOverlays = GeoJSONOverlayManager.shared.loadOverlays(for: .toilets)
-			let toiletIdentifiableOverlays = toiletOverlays.map { IdentifiableOverlay(overlay: $0) }
-			ForEach(toiletIdentifiableOverlays) { identifiable in
-				let overlay = identifiable.overlay
-				if let polygon = overlay as? MKPolygon {
-					MapPolygon(polygon)
-						.stroke(.blue, lineWidth: 2)
-						.foregroundStyle(.blue.opacity(1.0))
-				}
-			}
+			ForEach(availableOverlays, id: \.self) { overlayId in
+				let overlays = overlayManager.loadOverlays(for: overlayId)
+				let rendering = overlayManager.getRenderingProperties(for: overlayId)
 
-			// Load and display trash fence
-			let trashFenceOverlays = GeoJSONOverlayManager.shared.loadOverlays(for: .trashFence)
-			let trashFenceIdentifiableOverlays = trashFenceOverlays.map { IdentifiableOverlay(overlay: $0) }
-			ForEach(trashFenceIdentifiableOverlays) { identifiable in
-				let overlay = identifiable.overlay
-				if let polyline = overlay as? MKPolyline {
-					MapPolyline(polyline)
-						.stroke(.red, lineWidth: 2)
-				} else if let polygon = overlay as? MKPolygon {
-					MapPolygon(polygon)
-						.stroke(.red, lineWidth: 2)
-						.foregroundStyle(.clear)
+				ForEach(overlays.map { IdentifiableOverlay(overlay: $0) }) { identifiable in
+					let overlay = identifiable.overlay
+
+					if let polygon = overlay as? MKPolygon {
+						MapPolygon(polygon)
+							.stroke(
+								Color(hex: rendering?.lineColor ?? "#000000")
+									.opacity(rendering?.lineOpacity ?? 1.0),
+								lineWidth: rendering?.lineThickness ?? 1.0
+							)
+							.foregroundStyle(
+								Color(hex: rendering?.lineColor ?? "#000000")
+									.opacity(rendering?.fillOpacity ?? 0.0)
+							)
+					} else if let polyline = overlay as? MKPolyline {
+						MapPolyline(polyline)
+							.stroke(
+								Color(hex: rendering?.lineColor ?? "#000000")
+									.opacity(rendering?.lineOpacity ?? 1.0),
+								lineWidth: rendering?.lineThickness ?? 1.0
+							)
+					}
 				}
 			}
 		}
