@@ -12693,6 +12693,9 @@
         }
       }
     },
+    "Enable Location Sharing" : {
+
+    },
     "Enable Notifications" : {
       "localizations" : {
         "it" : {
@@ -20848,9 +20851,6 @@
           }
         }
       }
-    },
-    "Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from Settings > App Settings > Open Settings." : {
-
     },
     "Meshtastic® Copyright Meshtastic LLC" : {
       "localizations" : {
@@ -33453,6 +33453,9 @@
           }
         }
       }
+    },
+    "Share Location" : {
+
     },
     "Share QR Code" : {
       "localizations" : {

@@ -19,10 +19,7 @@ struct AmbientLightingConfig: View {
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State var ledState: Bool = false
-	@State var current = 10
-	@State var red = 0
-	@State var green = 0
-	@State var blue = 0
+	@State var current = 0
 	@State private var color = Color(red: 51, green: 199, blue: 88) // Color(.sRGB, red: 0.98, green: 0.9, blue: 0.2)
 	@State private var components: Color.Resolved?
 	var body: some View {
@@ -60,6 +57,7 @@ struct AmbientLightingConfig: View {
 					var al = ModuleConfig.AmbientLightingConfig()
 					al.ledState = ledState
 					al.current = UInt32(current)
+					components = color.resolve(in: environment)
 					if let components {
 						al.red = UInt32(components.red * 255)
 						al.green = UInt32(components.green * 255)
@@ -119,7 +117,7 @@ struct AmbientLightingConfig: View {
 	}
 	func setAmbientLightingConfigValue() {
 		self.ledState = node?.ambientLightingConfig?.ledState ?? false
-		self.current = Int(node?.ambientLightingConfig?.current ?? 10)
+		self.current = Int(node?.ambientLightingConfig?.current ?? 0)
 		let red = Double(node?.ambientLightingConfig?.red ?? 255)
 		let green = Double(node?.ambientLightingConfig?.green ?? 255)
 		let blue = Double(node?.ambientLightingConfig?.blue ?? 255)

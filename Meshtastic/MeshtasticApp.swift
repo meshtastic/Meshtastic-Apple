@@ -43,7 +43,7 @@ struct MeshtasticAppleApp: App {
 				env: environment,
 				site: .us5
 			),
-			trackingConsent: UserDefaults.usageDataAndCrashReporting ? .granted : .notGranted,
+			trackingConsent: UserDefaults.usageDataAndCrashReporting ? .granted : .notGranted
 		)
 		DatadogCrashReporting.CrashReporting.enable()
 		Logs.enable()
