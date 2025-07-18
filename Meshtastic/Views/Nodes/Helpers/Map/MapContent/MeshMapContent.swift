@@ -231,18 +231,16 @@ struct MeshMapContent: MapContent {
 			}
 		}
 
-		/// GeoJSON Overlays (Configuration-Driven)
+						/// GeoJSON Overlays (Configuration-Driven)
 		if showBurningMan {
 			let overlayManager = GeoJSONOverlayManager.shared
 			let availableOverlays = overlayManager.getAvailableOverlayIds()
 
-			ForEach(availableOverlays, id: \.self) { overlayId in
+			ForEach(Array(availableOverlays.enumerated()), id: \.element) { _, overlayId in
 				let overlays = overlayManager.loadOverlays(for: overlayId)
 				let rendering = overlayManager.getRenderingProperties(for: overlayId)
 
-				ForEach(overlays.map { IdentifiableOverlay(overlay: $0) }) { identifiable in
-					let overlay = identifiable.overlay
-
+				ForEach(Array(overlays.enumerated()), id: \.offset) { _, overlay in
 					if let polygon = overlay as? MKPolygon {
 						MapPolygon(polygon)
 							.stroke(
