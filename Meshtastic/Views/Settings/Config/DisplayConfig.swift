@@ -40,7 +40,7 @@ struct DisplayConfig: View {
 					Label("Always point north", systemImage: "location.north.circle")
 					Text("The compass heading on the screen outside of the circle will always point north.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(Color.accentColor)
 
 				Toggle(isOn: $use12HourClock) {
 					Label("12 Hour Clock", systemImage: "clock")
@@ -216,8 +216,6 @@ struct DisplayConfig: View {
 		.onChange(of: headingBold) { oldHeadingBold, newHeadingBold in
 			if oldHeadingBold != newHeadingBold && newHeadingBold != node?.displayConfig?.headingBold { hasChanges = true }
 		}
-		
-		headingBold
 	}
 	func setDisplayValues() {
 		self.screenOnSeconds = Int(node?.displayConfig?.screenOnSeconds ?? 0)

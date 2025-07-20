@@ -5588,6 +5588,12 @@
         }
       }
     },
+    "Bold Heading" : {
+
+    },
+    "Bold the heading text on the screen." : {
+
+    },
     "Broadcast Interval" : {
       "localizations" : {
         "it" : {
@@ -9556,71 +9562,6 @@
         }
       }
     },
-    "Decimal Degrees Format" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dezimalgrad Format"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Format décimal pour les degrés"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "פורמט קואורדינטות"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Formato dei gradi decimali"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "十進度形式"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Format Dziesiętny Stopni"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Decimalgrader"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Формат децималних степени"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "十进制"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "十進制"
-          }
-        }
-      }
-    },
     "Default" : {
       "localizations" : {
         "de" : {
@@ -9715,71 +9656,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "預設 128x64 版型"
-          }
-        }
-      }
-    },
-    "Degrees Minutes Seconds" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Grad Minuten Sekunden"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Degrés Minutes Secondes"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מעלות דקות שניות"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gradi Minuti Secondi"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "度分秒"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stopnie Minuty Sekundy"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Grader Minuter Sekunder"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Степени Минути Секунде"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "度分秒"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "度分秒"
           }
         }
       }
@@ -16363,41 +16239,6 @@
         }
       }
     },
-    "GPS Format" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Formato GPS"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GPS形式"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GPS формат"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GPS 格式"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GPS 格式"
-          }
-        }
-      }
-    },
     "GPS Receive GPIO" : {
       "localizations" : {
         "it" : {
@@ -21358,71 +21199,6 @@
         }
       }
     },
-    "Military Grid Reference System" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Militärisches Gitternetz-Referenzsystem"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Military Grid Reference System"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Military Grid Reference System"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sistema di riferimento della griglia militare"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "軍用格子座標系"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wojskowa siatka odniesienia"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Militärt rutnätsreferenssystem"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Војни референтни систем мреже"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "军事网格参考系统"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "軍事網格參考系統"
-          }
-        }
-      }
-    },
     "Minimum Distance" : {
       "localizations" : {
         "de" : {
@@ -24775,71 +24551,6 @@
         }
       }
     },
-    "Open Location Code (aka Plus Codes)" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open Location Code (aka Plus Codes)"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open Location Code (alias Plus Codes)"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open Location Code (aka Plus Codes)"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Codice di localizzazione aperto (alias Codice Plus)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "オープンロケーションコード（プラスコード）"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Otwarty Kod Lokalizacji (tzw. Plus Kody)"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Öppen Platskod (även känd som Pluskoder)"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Отворени код локације (тј. Плус кодови)"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "开放的位置代码（又称加码）"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "開放位置代碼"
-          }
-        }
-      }
-    },
     "Open Settings" : {
       "localizations" : {
         "de" : {
@@ -25094,71 +24805,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選項"
-          }
-        }
-      }
-    },
-    "Ordnance Survey Grid Reference" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ordnance Survey Gitterreferenz"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ordnance Survey Grid Reference"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ordnance Survey Grid Reference"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Riferimento di griglia Ordnance Survey"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "英国陸地測量部格子座標"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Brytyjski Układ Odniesienia"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ordnance Survey Rutnätsreferens"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Референца мреже Орданс Сурвеја"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "英国国土测量局网格参考"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "英國國土測量局網格參考系統"
           }
         }
       }
@@ -36254,41 +35900,6 @@
         }
       }
     },
-    "The format used to display GPS coordinates on the device screen." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Il formato utilizzato per visualizzare le coordinate GPS sullo schermo del dispositivo."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "デバイス画面でGPS座標を表示する形式。"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Формат који се користи за приказивање GPS координата на екрану уређаја."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "用于在设备屏幕上显示 GPS 坐标的格式。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "用於在裝置螢幕上顯示 GPS 座標的格式。"
-          }
-        }
-      }
-    },
     "The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long." : {
       "localizations" : {
         "it" : {
@@ -37812,37 +37423,8 @@
         }
       }
     },
-    "Timing" : {
+    "Timing and Overrides" : {
 
-    },
-    "Timing & Format" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tempi e formati"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "タイミング・フォーマット"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Време и формат"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "時序與格式"
-          }
-        }
-      }
     },
     "TLS Enabled" : {
       "localizations" : {
@@ -39038,71 +38620,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "裝置螢幕上顯示的單位"
-          }
-        }
-      }
-    },
-    "Universal Transverse Mercator" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Universal Transversal Mercator"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Projection Mercator Transverse Universelle"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Universal Transverse Mercator"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mercatore Universale Trasverso"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ユニバーサル横メルカトル図法"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Uniwersalny Układ Transwersalny Mercatora"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Universal Transversal Mercator"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Универзални трансверзални Меркаторов пројекат"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "通用横轴墨卡托投影"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "通用橫軸墨卡托投影"
           }
         }
       }
