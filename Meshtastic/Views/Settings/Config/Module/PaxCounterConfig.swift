@@ -11,7 +11,7 @@ import OSLog
 
 struct PaxCounterConfig: View {
 	@Environment(\.managedObjectContext) private var context
-	@EnvironmentObject private var bleManager: BLEManager
+	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 
 	let node: NodeInfoEntity?
@@ -49,27 +49,32 @@ struct PaxCounterConfig: View {
 				Text("Options")
 			}
 		}
-		.disabled(self.bleManager.connectedPeripheral == nil || node?.powerConfig == nil)
+		.disabled(!accessoryManager.isConnected || node?.powerConfig == nil)
 		.navigationTitle("PAX Counter Config")
 		.navigationBarItems(trailing: ZStack {
 			ConnectedDevice(
-				bluetoothOn: bleManager.isSwitchedOn,
-				deviceConnected: bleManager.connectedPeripheral != nil,
-				name: "\(bleManager.connectedPeripheral?.shortName ?? "?")"
+				deviceConnected: accessoryManager.isConnected,
+				name: "\(accessoryManager.activeConnection?.device.shortName ?? "?")"
 			)
 		})
 		.onFirstAppear {
 			// Need to request a PaxCounterModuleConfig from the remote node before allowing changes
-			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+			if let deviceNum = accessoryManager.activeDeviceNum, let node {
+				let connectedNode = getNodeInfo(id: deviceNum, context: context)
 				if let connectedNode {
-					if node.num != connectedNode.num {
+					if node.num != deviceNum {
 						if UserDefaults.enableAdministration && node.num != connectedNode.num {
 							/// 2.5 Administration with session passkey
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.paxCounterConfig == nil {
-								Logger.mesh.info("⚙️ Empty or expired pax counter module config requesting via PKI admin")
-								_ = bleManager.requestPaxCounterModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
+								Task {
+									do {
+										Logger.mesh.info("⚙️ Empty or expired pax counter module config requesting via PKI admin")
+										try await accessoryManager.requestPaxCounterModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
+									} catch {
+										Logger.mesh.info("🚨 Request for pax counter module config failed")
+									}
+								}
 							}
 						} else {
 							/// Legacy Administration
@@ -87,7 +92,7 @@ struct PaxCounterConfig: View {
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			guard let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context),
+			guard let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context),
 				  let fromUser = connectedNode.user,
 				  let toUser = node?.user else {
 				return
@@ -97,16 +102,18 @@ struct PaxCounterConfig: View {
 			config.enabled = enabled
 			config.paxcounterUpdateInterval = UInt32(paxcounterUpdateInterval)
 
-			let adminMessageId = bleManager.savePaxcounterModuleConfig(
-				config: config,
-				fromUser: fromUser,
-				toUser: toUser
-			)
-			if adminMessageId > 0 {
-				// Should show a saved successfully alert once I know that to be true
-				// for now just disable the button after a successful save
-				hasChanges = false
-				goBack()
+			Task {
+				try await accessoryManager.savePaxcounterModuleConfig(
+					config: config,
+					fromUser: fromUser,
+					toUser: toUser
+				)
+				Task { @MainActor in
+					// Should show a saved successfully alert once I know that to be true
+					// for now just disable the button after a successful save
+					hasChanges = false
+					goBack()
+				}
 			}
 		}
 	}

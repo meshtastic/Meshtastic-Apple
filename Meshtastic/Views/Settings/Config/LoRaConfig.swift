@@ -25,7 +25,7 @@ struct LoRaConfig: View {
 	}()
 
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	@FocusState var focusedField: Field?
 
@@ -195,11 +195,10 @@ struct LoRaConfig: View {
 					}
 				}
 			}
-			.disabled(self.bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
+			.disabled(!accessoryManager.isConnected || node?.loRaConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
-				if connectedNode != nil {
+				if let deviceNum = accessoryManager.activeDeviceNum, let connectedNode = getNodeInfo(id: deviceNum, context: context) {
 					var lc = Config.LoRaConfig()
 					lc.hopLimit = UInt32(hopLimit)
 					lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
@@ -215,15 +214,17 @@ struct LoRaConfig: View {
 					lc.overrideFrequency = overrideFrequency
 					lc.ignoreMqtt = ignoreMqtt
 					lc.configOkToMqtt = okToMqtt
-					if connectedNode?.num ?? -1 == node?.user?.num ?? 0 {
+					if connectedNode.num ?? -1 == node?.user?.num ?? 0 {
 						UserDefaults.modemPreset = modemPreset
 					}
-					let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: connectedNode!.user!, toUser: node!.user!)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
+					Task {
+						try await accessoryManager.saveLoRaConfig(config: lc, fromUser: connectedNode.user!, toUser: node!.user!)
+						Task { @MainActor in
+							// Should show a saved successfully alert once I know that to be true
+							// for now just disable the button after a successful save
+							hasChanges = false
+							goBack()
+						}
 					}
 				}
 			}
@@ -231,26 +232,30 @@ struct LoRaConfig: View {
 		.navigationTitle("LoRa Config")
 		.navigationBarItems(
 			trailing: ZStack {
-				ConnectedDevice(
-					bluetoothOn: bleManager.isSwitchedOn,
-					deviceConnected: bleManager.connectedPeripheral != nil,
-					name: bleManager.connectedPeripheral?.shortName ?? "?"
-				)
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+
 			}
 		)
 		.onFirstAppear {
 			// Need to request a LoRaConfig from the remote node before allowing changes
-			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
-				if let connectedNode {
-					if node.num != connectedNode.num {
+			if let deviceNum = accessoryManager.activeDeviceNum, let node {
+				if let connectedNode = getNodeInfo(id: deviceNum, context: context) {
+					if node.num != deviceNum {
 						if UserDefaults.enableAdministration {
 							/// 2.5 Administration with session passkey
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.loRaConfig == nil {
-								Logger.mesh.info("⚙️ Empty or expired lora config requesting via PKI admin")
-								if connectedNode.user != nil && node.user != nil {
-									_ = bleManager.requestLoRaConfig(fromUser: connectedNode.user!, toUser: node.user!)
+								Task {
+									do {
+										if connectedNode.user != nil && node.user != nil {
+											Logger.mesh.info("⚙️ Empty or expired lora config requesting via PKI admin")
+											_ = try await accessoryManager.requestLoRaConfig(fromUser: connectedNode.user!, toUser: node.user!)
+										} else {
+											Logger.mesh.info("🚫 No User or node for lora config request")
+										}
+									} catch {
+										Logger.mesh.info("🚨 Lora config request failed")
+									}
 								}
 							}
 						} else {

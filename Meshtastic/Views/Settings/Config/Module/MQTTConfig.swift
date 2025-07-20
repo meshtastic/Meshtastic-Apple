@@ -12,7 +12,7 @@ import SwiftUI
 struct MQTTConfig: View {
 
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	var node: NodeInfoEntity?
 	@State private var isPresentingSaveConfirm: Bool = false
@@ -68,8 +68,8 @@ struct MQTTConfig: View {
 					if enabled && proxyToClientEnabled && node?.mqttConfig?.proxyToClientEnabled ?? false == true {
 						Toggle(isOn: $mqttConnected) {
 							Label("Connect to MQTT via Proxy", systemImage: "server.rack")
-							if bleManager.mqttError.count > 0 {
-								Text(bleManager.mqttError)
+							if accessoryManager.mqttError.count > 0 {
+								Text(accessoryManager.mqttError)
 									.fixedSize(horizontal: false, vertical: true)
 									.foregroundColor(.red)
 							}
@@ -250,10 +250,10 @@ struct MQTTConfig: View {
 					.font(.callout)
 			}
 			.scrollDismissesKeyboard(.interactively)
-			.disabled(self.bleManager.connectedPeripheral == nil || node?.mqttConfig == nil)
+			.disabled(!accessoryManager.isConnected || node?.mqttConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
+				let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
 				if connectedNode != nil {
 					var mqtt = ModuleConfig.MQTTConfig()
 					mqtt.enabled = self.enabled
@@ -268,12 +268,16 @@ struct MQTTConfig: View {
 					mqtt.mapReportingEnabled = self.mapReportingEnabled
 					mqtt.mapReportSettings.positionPrecision = UInt32(self.mapPositionPrecision)
 					mqtt.mapReportSettings.publishIntervalSecs = UInt32(self.mapPublishIntervalSecs)
-					let adminMessageId =  bleManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
+					Task {
+						do {
+							try await accessoryManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!)
+							Task { @MainActor in
+								// Should show a saved successfully alert once I know that to be true
+								// for now just disable the button after a successful save
+								hasChanges = false
+								goBack()
+							}
+						}
 					}
 				}
 			}.onChange(of: enabled) { _, newEnabled in
@@ -323,12 +327,12 @@ struct MQTTConfig: View {
 			}
 			.onChange(of: mqttConnected) { _, newMqttConnected in
 				if newMqttConnected == false {
-					if bleManager.mqttProxyConnected {
-						bleManager.mqttManager.disconnect()
+					if accessoryManager.mqttProxyConnected {
+						accessoryManager.mqttManager.disconnect()
 					}
 				} else {
-					if !bleManager.mqttProxyConnected && node != nil {
-						bleManager.mqttManager.connectFromConfigSettings(node: node!)
+					if !accessoryManager.mqttProxyConnected && node != nil {
+						accessoryManager.mqttManager.connectFromConfigSettings(node: node!)
 					}
 				}
 			}
@@ -343,24 +347,29 @@ struct MQTTConfig: View {
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(
-					bluetoothOn: bleManager.isSwitchedOn,
-					deviceConnected: bleManager.connectedPeripheral != nil,
-					name: bleManager.connectedPeripheral?.shortName ?? "?"
+					deviceConnected: accessoryManager.isConnected,
+					name: accessoryManager.activeConnection?.device.shortName ?? "?"
 				)
 			}
 		)
 		.onFirstAppear {
 			// Need to request a MqttModuleConfig from the remote node before allowing changes
-			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+			if let deviceNum = accessoryManager.activeDeviceNum, let node {
+				let connectedNode = getNodeInfo(id: deviceNum, context: context)
 				if let connectedNode {
-					if node.num != connectedNode.num {
-						if UserDefaults.enableAdministration && node.num != connectedNode.num {
+					if node.num != deviceNum {
+						if UserDefaults.enableAdministration && node.num != deviceNum {
 							/// 2.5 Administration with session passkey
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.mqttConfig == nil {
-								Logger.mesh.info("⚙️ Empty or expired mqtt module config requesting via PKI admin")
-								_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
+								Task {
+									do {
+										Logger.mesh.info("⚙️ Empty or expired mqtt module config requesting via PKI admin")
+										try await accessoryManager.requestMqttModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
+									} catch {
+										Logger.mesh.error("🚨 Mqtt module config request failed")
+									}
+								}
 							}
 						} else {
 							/// Legacy Administration
@@ -426,7 +435,7 @@ struct MQTTConfig: View {
 		self.encryptionEnabled = node?.mqttConfig?.encryptionEnabled ?? false
 		self.jsonEnabled = node?.mqttConfig?.jsonEnabled ?? false
 		self.tlsEnabled = node?.mqttConfig?.tlsEnabled ?? false
-		self.mqttConnected = bleManager.mqttProxyConnected
+		self.mqttConnected = accessoryManager.mqttProxyConnected
 		self.mapReportingEnabled = node?.mqttConfig?.mapReportingEnabled ?? false
 		if node?.mqttConfig?.mapPublishIntervalSecs ?? 0 < 3600 {
 			self.mapPublishIntervalSecs = 3600

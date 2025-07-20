@@ -12,11 +12,9 @@ struct NodeList: View {
 	@Environment(\.managedObjectContext)
 	var context
 
-	@EnvironmentObject
-	var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 
-	@ObservedObject
-	var router: Router
+	@ObservedObject var router: Router
 
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
@@ -40,8 +38,8 @@ struct NodeList: View {
 	@State private var isPresentingPositionFailedAlert = false
 	@State private var isPresentingDeleteNodeAlert = false
 	@State private var deleteNodeId: Int64 = 0
-    @State private var isPresentingShareContactQR = false
-    @State private var shareContactNode: NodeInfoEntity?
+	@State private var isPresentingShareContactQR = false
+	@State private var shareContactNode: NodeInfoEntity?
 
 	var boolFilters: [Bool] {[
 		isFavorite,
@@ -69,7 +67,10 @@ struct NodeList: View {
 	var nodes: FetchedResults<NodeInfoEntity>
 
 	var connectedNode: NodeInfoEntity? {
-		getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
+		if let num = accessoryManager.activeDeviceNum {
+			return getNodeInfo(id: num, context: context)
+		}
+		return nil
 	}
 
 	@ViewBuilder
@@ -91,45 +92,43 @@ struct NodeList: View {
 		}
 		if let connectedNode {
 			/// Favoriting a node requires being connected
-			FavoriteNodeButton(bleManager: bleManager, context: context, node: node)
+			FavoriteNodeButton(node: node)
 			/// Don't show message, trace route, position exchange or delete context menu items for the connected node
 			if connectedNode.num != node.num {
 				if !(node.user?.unmessagable ?? true) {
 					Button(action: {
 						if let url = URL(string: "meshtastic:///messages?userNum=\(node.num)") {
-						   UIApplication.shared.open(url)
+							UIApplication.shared.open(url)
 						}
 					}) {
 						Label("Message", systemImage: "message")
 					}
 				}
 				TraceRouteButton(
-					bleManager: bleManager,
 					node: node
 				)
 				Button {
-					let positionSent = bleManager.sendPosition(
-						channel: node.channel,
-						destNum: node.num,
-						wantResponse: true
-					)
-					if positionSent {
-						isPresentingPositionSentAlert = true
-						DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-							isPresentingPositionSentAlert = false
-						}
-					} else {
-						isPresentingPositionFailedAlert = true
-						DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-							isPresentingPositionFailedAlert = false
+					Task {
+						do {
+							try await accessoryManager.sendPosition(
+								channel: node.channel,
+								destNum: node.num,
+								wantResponse: true
+							)
+							Task { @MainActor in
+								isPresentingPositionSentAlert = true
+								DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+									isPresentingPositionSentAlert = false
+								}
+							}
+						} catch {
+							Logger.mesh.warning("Failed to sendPosition")
 						}
 					}
 				} label: {
 					Label("Exchange Positions", systemImage: "arrow.triangle.2.circlepath")
 				}
 				IgnoreNodeButton(
-					bleManager: bleManager,
-					context: context,
 					node: node
 				)
 				Button(role: .destructive) {
@@ -148,8 +147,8 @@ struct NodeList: View {
 			List(nodes, id: \.self, selection: $selectedNode) { node in
 				NodeListItem(
 					node: node,
-					connected: bleManager.connectedPeripheral?.num ?? -1 == node.num,
-					connectedNode: bleManager.connectedPeripheral?.num ?? -1
+					connected: accessoryManager.isConnected,
+					connectedNode: accessoryManager.activeConnection?.device.num ?? -1
 				)
 				.contextMenu {
 					contextMenuActions(
@@ -201,60 +200,62 @@ struct NodeList: View {
 				isPresented: $isPresentingPositionSentAlert) {
 					Button("OK") {	}.keyboardShortcut(.defaultAction)
 				} message: {
-				Text("Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned.")
-			}
-			.alert(
-				"Position Exchange Failed",
-				isPresented: $isPresentingPositionFailedAlert) {
-					Button("OK") {	}.keyboardShortcut(.defaultAction)
-				} message: {
-				Text("Failed to get a valid position to exchange")
-			}
-			.alert(
-				"Trace Route Sent",
-				isPresented: $isPresentingTraceRouteSentAlert) {
-					Button("OK") {	}.keyboardShortcut(.defaultAction)
-				} message: {
-					Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
-			}
-			.confirmationDialog(
-				"Are you sure?",
-				isPresented: $isPresentingDeleteNodeAlert,
-				titleVisibility: .visible
-			) {
-				Button("Delete Node") {
-					let deleteNode = getNodeInfo(id: deleteNodeId, context: context)
-					if connectedNode != nil {
-						if deleteNode != nil {
-							let success = bleManager.removeNode(node: deleteNode!, connectedNodeNum: Int64(bleManager.connectedPeripheral?.num ?? -1))
-							if !success {
-								Logger.data.error("Failed to delete node \(deleteNode?.user?.longName ?? "Unknown".localized, privacy: .public)")
+					Text("Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned.")
+				}
+				.alert(
+					"Position Exchange Failed",
+					isPresented: $isPresentingPositionFailedAlert) {
+						Button("OK") {	}.keyboardShortcut(.defaultAction)
+					} message: {
+						Text("Failed to get a valid position to exchange")
+					}
+					.alert(
+						"Trace Route Sent",
+						isPresented: $isPresentingTraceRouteSentAlert) {
+							Button("OK") {	}.keyboardShortcut(.defaultAction)
+						} message: {
+							Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
+						}
+						.confirmationDialog(
+							"Are you sure?",
+							isPresented: $isPresentingDeleteNodeAlert,
+							titleVisibility: .visible
+						) {
+							Button("Delete Node") {
+								let deleteNode = getNodeInfo(id: deleteNodeId, context: context)
+								if connectedNode != nil {
+									if deleteNode != nil {
+										Task {
+											do {
+												try await accessoryManager.removeNode(node: deleteNode!, connectedNodeNum: Int64(accessoryManager.activeDeviceNum ?? -1))
+											} catch {
+												Logger.data.error("Failed to delete node \(deleteNode?.user?.longName ?? "Unknown".localized, privacy: .public)")
+											}
+										}
+									}
+								}
 							}
 						}
-					}
-				}
-			 }
-			.sheet(isPresented: $isPresentingShareContactQR) {
-				if let node = shareContactNode {
-					ShareContactQRDialog(node: node.toProto())
-				} else {
-					EmptyView()
-				}
-			}
-			.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
-			.navigationBarItems(
-				leading: MeshtasticLogo(),
-				trailing: ZStack {
-					ConnectedDevice(
-						bluetoothOn: bleManager.isSwitchedOn,
-						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: bleManager.connectedPeripheral?.shortName ?? "?",
-						phoneOnly: true
-					)
-				}
-				// Make sure the ZStack passes through accessibility to the ConnectedDevice component
-				.accessibilityElement(children: .contain)
-			)
+						.sheet(isPresented: $isPresentingShareContactQR) {
+							if let node = shareContactNode {
+								ShareContactQRDialog(node: node.toProto())
+							} else {
+								EmptyView()
+							}
+						}
+						.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
+						.navigationBarItems(
+							leading: MeshtasticLogo(),
+							trailing: ZStack {
+								ConnectedDevice(
+									deviceConnected: accessoryManager.isConnected,
+									name: accessoryManager.activeConnection?.device.shortName ?? "?",
+									phoneOnly: true
+								)
+							}
+							// Make sure the ZStack passes through accessibility to the ConnectedDevice component
+								.accessibilityElement(children: .contain)
+						)
 		} content: {
 			if let node = selectedNode {
 				NavigationStack {
@@ -275,19 +276,18 @@ struct NodeList: View {
 								.accessibilityLabel("Hide sidebar")
 							}
 							ConnectedDevice(
-								bluetoothOn: bleManager.isSwitchedOn,
-								deviceConnected: bleManager.connectedPeripheral != nil,
-								name: bleManager.connectedPeripheral?.shortName ?? "?",
+								deviceConnected: accessoryManager.isConnected,
+								name: accessoryManager.activeConnection?.device.shortName ?? "?",
 								phoneOnly: true
 							)
 						}
 						// Make sure the ZStack passes through accessibility to the ConnectedDevice component
-						.accessibilityElement(children: .contain)
+							.accessibilityElement(children: .contain)
 					)
 				}
-			 } else {
+			} else {
 				ContentUnavailableView("Select Node", systemImage: "flipphone")
-			 }
+			}
 		} detail: {
 			ContentUnavailableView("", systemImage: "line.3.horizontal")
 		}

@@ -11,7 +11,7 @@ import SwiftUI
 struct StoreForwardConfig: View {
 
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	var node: NodeInfoEntity?
 	@State private var isPresentingSaveConfirm: Bool = false
@@ -94,11 +94,11 @@ struct StoreForwardConfig: View {
 				}
 			}
 			.scrollDismissesKeyboard(.interactively)
-			.disabled(self.bleManager.connectedPeripheral == nil || node?.storeForwardConfig == nil)
+			.disabled(!accessoryManager.isConnected || node?.storeForwardConfig == nil)
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
+			let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
 			if connectedNode != nil {
 				/// Let the user set isServer for the connected node, for nodes on the mesh set isServer based
 				/// on receipt of a primary heartbeat
@@ -118,12 +118,15 @@ struct StoreForwardConfig: View {
 				sfc.records = UInt32(self.records)
 				sfc.historyReturnMax = UInt32(self.historyReturnMax)
 				sfc.historyReturnWindow = UInt32(self.historyReturnWindow)
-				let adminMessageId = bleManager.saveStoreForwardModuleConfig(config: sfc, fromUser: connectedNode!.user!, toUser: node!.user!)
-				if adminMessageId > 0 {
-					// Should show a saved successfully alert once I know that to be true
-					// for now just disable the button after a successful save
-					hasChanges = false
-					goBack()
+
+				Task {
+					try await accessoryManager.saveStoreForwardModuleConfig(config: sfc, fromUser: connectedNode!.user!, toUser: node!.user!)
+					Task { @MainActor in
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						goBack()
+					}
 				}
 			}
 		}
@@ -131,24 +134,29 @@ struct StoreForwardConfig: View {
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(
-					bluetoothOn: bleManager.isSwitchedOn,
-					deviceConnected: bleManager.connectedPeripheral != nil,
-					name: bleManager.connectedPeripheral?.shortName ?? "?"
+					deviceConnected: accessoryManager.isConnected,
+					name: accessoryManager.activeConnection?.device.shortName ?? "?"
 				)
 			}
 		)
 		.onFirstAppear {
 			// Need to request a StoreForwardModuleConfig from the remote node before allowing changes
-			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+			if let deviceNum = accessoryManager.activeDeviceNum, let node {
+				let connectedNode = getNodeInfo(id: deviceNum, context: context)
 				if let connectedNode {
-					if node.num != connectedNode.num {
-						if UserDefaults.enableAdministration && node.num != connectedNode.num {
+					if node.num != deviceNum {
+						if UserDefaults.enableAdministration && node.num != deviceNum {
 							/// 2.5 Administration with session passkey
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.storeForwardConfig == nil {
-								Logger.mesh.info("⚙️ Empty or expired store & forward module config requesting via PKI admin")
-								_ = bleManager.requestStoreAndForwardModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
+								Task {
+									do {
+										Logger.mesh.info("⚙️ Empty or expired store & forward module config requesting via PKI admin")
+										try await accessoryManager.requestStoreAndForwardModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
+									} catch {
+										Logger.mesh.info("🚨 Request for store & forward module config failed")
+									}
+								}
 							}
 						} else {
 							/// Legacy Administration

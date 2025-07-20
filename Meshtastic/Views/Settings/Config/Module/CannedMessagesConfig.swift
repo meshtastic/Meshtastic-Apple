@@ -10,7 +10,7 @@ import SwiftUI
 
 struct CannedMessagesConfig: View {
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	var node: NodeInfoEntity?
 	@State private var isPresentingSaveConfirm: Bool = false
@@ -176,10 +176,10 @@ struct CannedMessagesConfig: View {
 				.disabled(configPreset > 0)
 			}
 			.scrollDismissesKeyboard(.immediately)
-			.disabled(self.bleManager.connectedPeripheral == nil || node?.cannedMessageConfig == nil)
+			.disabled(!accessoryManager.isConnected || node?.cannedMessageConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
+				let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
 				if hasChanges {
 					if connectedNode != nil {
 						var cmc = ModuleConfig.CannedMessageConfig()
@@ -202,24 +202,37 @@ struct CannedMessagesConfig: View {
 						cmc.inputbrokerEventCw = InputEventChars(rawValue: inputbrokerEventCw)!.protoEnumValue()
 						cmc.inputbrokerEventCcw = InputEventChars(rawValue: inputbrokerEventCcw)!.protoEnumValue()
 						cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
-						let adminMessageId =  bleManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!)
-						if adminMessageId > 0 {
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							hasChanges = false
-							goBack()
+						Task {
+							do {
+								try await accessoryManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!)
+								Task { @MainActor in
+									// Should show a saved successfully alert once I know that to be true
+									// for now just disable the button after a successful save
+									hasChanges = false
+									goBack()
+								}
+							} catch {
+								Logger.mesh.error("Unable to save canned message module config")
+							}
 						}
 					}
 				}
 				if hasMessagesChanges {
-					let adminMessageId =  bleManager.saveCannedMessageModuleMessages(messages: messages, fromUser: node!.user!, toUser: node!.user!)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasMessagesChanges = false
-						if !hasChanges {
-							bleManager.sendWantConfig()
-							goBack()
+					Task {
+						do {
+							try await accessoryManager.saveCannedMessageModuleMessages(messages: messages, fromUser: node!.user!, toUser: node!.user!)
+
+							Task { @MainActor in
+								// Should show a saved successfully alert once I know that to be true
+								// for now just disable the button after a successful save
+								hasMessagesChanges = false
+								if !hasChanges {
+									Task { await accessoryManager.sendWantConfig() }
+									goBack()
+								}
+							}
+						} catch {
+							Logger.mesh.error("Unable to save canned message module messages")
 						}
 					}
 				}
@@ -228,24 +241,29 @@ struct CannedMessagesConfig: View {
 			.navigationBarItems(
 				trailing: ZStack {
 					ConnectedDevice(
-						bluetoothOn: bleManager.isSwitchedOn,
-						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: bleManager.connectedPeripheral?.shortName ?? "?"
+						deviceConnected: accessoryManager.isConnected,
+						name: accessoryManager.activeConnection?.device.shortName ?? "?"
 					)
 				}
 			)
 			.onFirstAppear {
 				// Need to request a CannedMessagesModuleConfig from the remote node before allowing changes
-				if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let deviceNum = accessoryManager.activeDeviceNum, let node {
+					let connectedNode = getNodeInfo(id: deviceNum, context: context)
 					if let connectedNode {
-						if node.num != connectedNode.num {
+						if node.num != deviceNum {
 							if UserDefaults.enableAdministration && node.num != connectedNode.num {
 								/// 2.5 Administration with session passkey
 								let expiration = node.sessionExpiration ?? Date()
 								if expiration < Date() || node.cannedMessageConfig == nil {
-									Logger.mesh.info("⚙️ Empty or expired canned messages module config requesting via PKI admin")
-									_ = bleManager.requestCannedMessagesModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
+									Task {
+										do {
+											Logger.mesh.info("⚙️ Empty or expired canned messages module config requesting via PKI admin")
+											try await accessoryManager.requestCannedMessagesModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
+										} catch {
+											Logger.mesh.info("🚨 Unable to send canned message module config request")
+										}
+									}
 								}
 							} else {
 								/// Legacy Administration

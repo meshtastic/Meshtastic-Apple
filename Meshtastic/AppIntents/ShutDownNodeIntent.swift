@@ -16,18 +16,20 @@ struct ShutDownNodeIntent: AppIntent {
 	func perform() async throws -> some IntentResult {
 		try await requestConfirmation(result: .result(dialog: "Shut Down Node?"))
 
-		if !BLEManager.shared.isConnected {
+		if !AccessoryManager.shared.isConnected {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 
 		// Safely unwrap the connectedNode using if let
-		if let connectedPeripheralNum = BLEManager.shared.connectedPeripheral?.num,
+		if let connectedPeripheralNum = AccessoryManager.shared.activeDeviceNum,
 		   let connectedNode = getNodeInfo(id: connectedPeripheralNum, context: PersistenceController.shared.container.viewContext),
 		   let fromUser = connectedNode.user,
 		   let toUser = connectedNode.user {
 
 			// Attempt to send shutdown, throw an error if it fails
-			if !BLEManager.shared.sendShutdown(fromUser: fromUser, toUser: toUser) {
+			do {
+				try await AccessoryManager.shared.sendShutdown(fromUser: fromUser, toUser: toUser)
+			} catch {
 				throw AppIntentErrors.AppIntentError.message("Failed to shut down")
 			}
 		} else {

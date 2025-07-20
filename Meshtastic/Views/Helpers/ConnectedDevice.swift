@@ -6,7 +6,7 @@ A view draws the indicator used in the upper right corner for views using BLE
 import SwiftUI
 
 struct ConnectedDevice: View {
-    var bluetoothOn: Bool
+	var bluetoothOn: Bool?
     var deviceConnected: Bool
     var name: String
 
@@ -16,10 +16,21 @@ struct ConnectedDevice: View {
         var mqttTopic: String = ""
     var phoneOnly: Bool = false
 
+	init(bluetoothOn: Bool? = nil, deviceConnected: Bool, name: String, mqttProxyConnected: Bool = false, mqttUplinkEnabled: Bool = false, mqttDownlinkEnabled: Bool = false, mqttTopic: String = "", phoneOnly: Bool = false) {
+		self.bluetoothOn = bluetoothOn
+		self.deviceConnected = deviceConnected
+		self.name = name
+		self.mqttProxyConnected = mqttProxyConnected
+		self.mqttUplinkEnabled = mqttUplinkEnabled
+		self.mqttDownlinkEnabled = mqttDownlinkEnabled
+		self.mqttTopic = mqttTopic
+		self.phoneOnly = phoneOnly
+	}
+
     var body: some View {
         HStack {
             if (phoneOnly && UIDevice.current.userInterfaceIdiom == .phone) || !phoneOnly {
-                if bluetoothOn {
+                if bluetoothOn ?? true {
                     if deviceConnected {
                         // Create an HStack for connected state with proper accessibility
                         HStack {

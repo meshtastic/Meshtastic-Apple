@@ -4,7 +4,7 @@ import OSLog
 
 struct PowerConfig: View {
 	@Environment(\.managedObjectContext) private var context
-	@EnvironmentObject private var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 
 	let node: NodeInfoEntity?
@@ -100,14 +100,11 @@ struct PowerConfig: View {
 //				}
 			}
 		}
-		.disabled(self.bleManager.connectedPeripheral == nil || node?.powerConfig == nil)
+		.disabled(!accessoryManager.isConnected || node?.powerConfig == nil)
 		.navigationTitle("Power Config")
 		.navigationBarItems(trailing: ZStack {
-			ConnectedDevice(
-				bluetoothOn: bleManager.isSwitchedOn,
-				deviceConnected: bleManager.connectedPeripheral != nil,
-				name: "\(bleManager.connectedPeripheral?.shortName ?? "?")"
-			)
+			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+
 		})
 		.toolbar {
 			ToolbarItemGroup(placement: .keyboard) {
@@ -129,17 +126,22 @@ struct PowerConfig: View {
 				}
 			}
 			// Need to request a NetworkConfig from the remote node before allowing changes
-			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-
-				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+			if let deviceNum = accessoryManager.activeDeviceNum, let node {
+				let connectedNode = getNodeInfo(id: deviceNum, context: context)
 				if let connectedNode {
-					if node.num != connectedNode.num {
+					if node.num != deviceNum {
 						if UserDefaults.enableAdministration {
 							/// 2.5 Administration with session passkey
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.powerConfig == nil {
-								Logger.mesh.info("⚙️ Empty or expired power config requesting via PKI admin")
-								_ = bleManager.requestPowerConfig(fromUser: connectedNode.user!, toUser: node.user!)
+								Task {
+									do {
+										Logger.mesh.info("⚙️ Empty or expired power config requesting via PKI admin")
+										try await accessoryManager.requestPowerConfig(fromUser: connectedNode.user!, toUser: node.user!)
+									} catch {
+										Logger.mesh.info("🚨 Power config request failed")
+									}
+								}
 							}
 						} else {
 							/// Legacy Administration
@@ -177,7 +179,8 @@ struct PowerConfig: View {
 		}
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			guard let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context),
+			guard let deviceNum = accessoryManager.activeDeviceNum,
+				  let connectedNode = getNodeInfo(id: deviceNum, context: context),
 				  let fromUser = connectedNode.user,
 				  let toUser = node?.user else {
 				return
@@ -190,17 +193,18 @@ struct PowerConfig: View {
 			config.waitBluetoothSecs = UInt32(waitBluetoothSecs)
 			config.lsSecs = UInt32(lsSecs)
 			config.minWakeSecs = UInt32(minWakeSecs)
-
-			let adminMessageId = bleManager.savePowerConfig(
-				config: config,
-				fromUser: fromUser,
-				toUser: toUser
-			)
-			if adminMessageId > 0 {
-				// Should show a saved successfully alert once I know that to be true
-				// for now just disable the button after a successful save
-				hasChanges = false
-				goBack()
+			Task {
+				try await accessoryManager.savePowerConfig(
+					config: config,
+					fromUser: fromUser,
+					toUser: toUser
+				)
+				Task { @MainActor in
+					// Should show a saved successfully alert once I know that to be true
+					// for now just disable the button after a successful save
+					hasChanges = false
+					goBack()
+				}
 			}
 		}
 	}

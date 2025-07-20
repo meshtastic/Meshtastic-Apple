@@ -21,7 +21,7 @@ struct SaveChannelSettingsIntent: AppIntent {
 	// Define the function that performs the main logic
 	func perform() async throws -> some IntentResult {
 		// Ensure the BLE Manager is connected
-		if !BLEManager.shared.isConnected {
+		if !AccessoryManager.shared.isConnected {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 
@@ -39,10 +39,13 @@ struct SaveChannelSettingsIntent: AppIntent {
 
 			// If valid channel settings are extracted, attempt to save them
 			if let channelSettings = channelSettings {
-				// Call the BLEManager to save the channel settings
-				let saveResult = BLEManager.shared.saveChannelSet(base64UrlString: channelSettings, addChannels: addChannels)
-				if !saveResult {
-					throw AppIntentErrors.AppIntentError.message("Failed to save the channel settings.")
+				Task {
+					do {
+						// Call the AcessoryManager to save the channel settings
+						try await AccessoryManager.shared.saveChannelSet(base64UrlString: channelSettings, addChannels: addChannels)
+					} catch {
+						throw AppIntentErrors.AppIntentError.message("Failed to save the channel settings.")
+					}
 				}
 			} else {
 				throw AppIntentErrors.AppIntentError.message("Invalid Channel URL: Unable to extract settings.")

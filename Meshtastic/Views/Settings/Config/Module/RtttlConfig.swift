@@ -10,7 +10,7 @@ import OSLog
 
 struct RtttlConfig: View {
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 
 	var node: NodeInfoEntity?
@@ -48,17 +48,19 @@ struct RtttlConfig: View {
 						.font(.callout)
 				}
 			}
-			.disabled(self.bleManager.connectedPeripheral == nil || node?.rtttlConfig == nil)
+			.disabled(!accessoryManager.isConnected || node?.rtttlConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+				let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
 				if connectedNode != nil {
-					let adminMessageId =  bleManager.saveRtttlConfig(ringtone: ringtone.trimmingCharacters(in: .whitespacesAndNewlines), fromUser: connectedNode!.user!, toUser: node!.user!)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
+					Task {
+						try await accessoryManager.saveRtttlConfig(ringtone: ringtone.trimmingCharacters(in: .whitespacesAndNewlines), fromUser: connectedNode!.user!, toUser: node!.user!)
+						Task { @MainActor in
+							// Should show a saved successfully alert once I know that to be true
+							// for now just disable the button after a successful save
+							hasChanges = false
+							goBack()
+						}
 					}
 				}
 			}
@@ -66,24 +68,29 @@ struct RtttlConfig: View {
 			.navigationBarItems(
 				trailing: ZStack {
 					ConnectedDevice(
-						bluetoothOn: bleManager.isSwitchedOn,
-						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: bleManager.connectedPeripheral?.shortName ?? "?"
+						deviceConnected: accessoryManager.isConnected,
+						name: accessoryManager.activeConnection?.device.shortName ?? "?"
 					)
 				}
 			)
 			.onFirstAppear {
 				// Need to request a RtttlConfig from the remote node before allowing changes
-				if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let deviceNum = accessoryManager.activeDeviceNum, let node {
+					let connectedNode = getNodeInfo(id: deviceNum, context: context)
 					if let connectedNode {
-						if node.num != connectedNode.num {
+						if node.num != deviceNum {
 							if UserDefaults.enableAdministration && node.num != connectedNode.num {
 								/// 2.5 Administration with session passkey
 								let expiration = node.sessionExpiration ?? Date()
 								if expiration < Date() || node.rtttlConfig == nil {
-									Logger.mesh.info("⚙️ Empty or expired ringtone module config requesting via PKI admin")
-									_ = bleManager.requestRtttlConfig(fromUser: connectedNode.user!, toUser: node.user!)
+									Task {
+										do {
+											Logger.mesh.info("⚙️ Empty or expired ringtone module config requesting via PKI admin")
+											try await accessoryManager.requestRtttlConfig(fromUser: connectedNode.user!, toUser: node.user!)
+										} catch {
+											Logger.mesh.info("🚨 Request for ringtone module config failed")
+										}
+									}
 								}
 							} else {
 								/// Legacy Administration

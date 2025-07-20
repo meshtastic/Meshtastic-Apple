@@ -11,7 +11,7 @@ import MapKit
 
 struct NodeMapSwiftUI: View {
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	/// Parameters
 	@ObservedObject var node: NodeInfoEntity
 	@State var showUserLocation: Bool = false
@@ -193,9 +193,8 @@ struct NodeMapSwiftUI: View {
 			.navigationBarItems(trailing:
 									ZStack {
 				ConnectedDevice(
-					bluetoothOn: bleManager.isSwitchedOn,
-					deviceConnected: bleManager.connectedPeripheral != nil,
-					name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
+					deviceConnected: accessoryManager.isConnected,
+					name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			})
 		} else {
 			ContentUnavailableView("No Positions", systemImage: "mappin.slash")

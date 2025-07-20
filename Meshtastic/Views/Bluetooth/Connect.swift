@@ -19,7 +19,7 @@ import ActivityKit
 struct Connect: View {
 
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@ObservedObject var router: Router
 	@State var node: NodeInfoEntity?
 	@State var isUnsetRegion = false
@@ -32,9 +32,9 @@ struct Connect: View {
 		NavigationStack {
 			VStack {
 				List {
-					if bleManager.isSwitchedOn {
+					// if bleManager.isSwitchedOn {
 						Section {
-							if let connectedPeripheral = bleManager.connectedPeripheral, connectedPeripheral.peripheral.state == .connected {
+							if let connectedDevice = accessoryManager.activeConnection?.device, accessoryManager.isConnected {
 								TipView(BluetoothConnectionTip(), arrowEdge: .bottom)
 									.tipViewStyle(PersistentTip())
 								VStack(alignment: .leading) {
@@ -50,15 +50,15 @@ struct Connect: View {
 										.padding(.trailing)
 										VStack(alignment: .leading) {
 											if node != nil {
-												Text(connectedPeripheral.longName.addingVariationSelectors).font(.title2)
+												Text(connectedDevice.longName?.addingVariationSelectors ?? "Unknown".localized).font(.title2)
 											}
-											Text("BLE Name").font(.callout)+Text(": \(bleManager.connectedPeripheral?.peripheral.name?.addingVariationSelectors ?? "Unknown".localized)")
+											Text("BLE Name").font(.callout)+Text(": \(accessoryManager.activeConnection?.device.name.addingVariationSelectors ?? "Unknown".localized)")
 												.font(.callout).foregroundColor(Color.gray)
 											if node != nil {
 												Text("Firmware Version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "Unknown".localized)")
 													.font(.callout).foregroundColor(Color.gray)
 											}
-											if bleManager.isSubscribed {
+											if accessoryManager.state == .subscribed {
 												Text("Subscribed").font(.callout)
 													.foregroundColor(.green)
 											} else {
@@ -78,11 +78,13 @@ struct Connect: View {
 								.foregroundColor(Color.gray)
 								.padding([.top])
 								.swipeActions {
-									if bleManager.allowDisconnect {
+									if accessoryManager.allowDisconnect {
 										Button(role: .destructive) {
-											if let connectedPeripheral = bleManager.connectedPeripheral,
-											   connectedPeripheral.peripheral.state == .connected {
-												bleManager.disconnectPeripheral(reconnect: false)
+											if accessoryManager.isConnected {
+												// bleManager.disconnectPeripheral(reconnect: false)
+												Task {
+													try await accessoryManager.disconnect()
+												}
 											}
 										} label: {
 											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
@@ -93,9 +95,9 @@ struct Connect: View {
 
 									if node != nil {
 										Label("\(String(node!.num))", systemImage: "number")
-										Label("BLE RSSI \(connectedPeripheral.rssi)", systemImage: "cellularbars")
+										Label("BLE RSSI \(connectedDevice.rssi)", systemImage: "cellularbars")
 										#if !targetEnvironment(macCatalyst)
-										if bleManager.isSubscribed {
+										if accessoryManager.state == .subscribed {
 											Button {
 												if !liveActivityStarted {
 												#if canImport(ActivityKit)
@@ -113,18 +115,23 @@ struct Connect: View {
 											}
 										}
 										#endif
-										if bleManager.allowDisconnect {
+										if accessoryManager.allowDisconnect {
 											Button(role: .destructive) {
-												if let connectedPeripheral = bleManager.connectedPeripheral,
-												   connectedPeripheral.peripheral.state == .connected {
-													bleManager.disconnectPeripheral(reconnect: false)
+												if accessoryManager.isConnected {
+													Task {
+														try await accessoryManager.disconnect()
+													}
 												}
 											} label: {
 												Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 											}
 											Button(role: .destructive) {
-												if !bleManager.sendShutdown(fromUser: node!.user!, toUser: node!.user!) {
-													Logger.mesh.error("Shutdown Failed")
+												Task {
+													do {
+														try await accessoryManager.sendShutdown(fromUser: node!.user!, toUser: node!.user!)
+													} catch {
+														Logger.mesh.error("Shutdown Failed: \(error)")
+													}
 												}
 
 											} label: {
@@ -145,7 +152,7 @@ struct Connect: View {
 									}
 								}
 							} else {
-								if bleManager.isConnecting {
+								if accessoryManager.state == .connecting {
 									HStack {
 										Image(systemName: "antenna.radiowaves.left.and.right")
 											.resizable()
@@ -153,23 +160,27 @@ struct Connect: View {
 											.foregroundColor(.orange)
 											.frame(width: 60, height: 60)
 											.padding(.trailing)
-										if bleManager.timeoutTimerCount == 0 {
+										switch accessoryManager.state {
+										case .connecting:
 											Text("Connecting . .")
 												.font(.title2)
 												.foregroundColor(.orange)
-										} else {
+										case .retrying(let attempt):
 											VStack {
-
-												Text("Connection Attempt \(bleManager.timeoutTimerCount) of 10")
+												Text("Connection Attempt \(attempt) of 10")
 													.font(.callout)
 													.foregroundColor(.orange)
 											}
+										default:
+											Text("Some OTHER state")
 										}
 									}
 									.padding()
 									.swipeActions {
 										Button(role: .destructive) {
-											bleManager.cancelPeripheralConnection()
+											Task {
+												try await accessoryManager.disconnect()
+											}
 										} label: {
 											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 										}
@@ -177,8 +188,8 @@ struct Connect: View {
 
 								} else {
 
-									if bleManager.lastConnectionError.count > 0 {
-										Text(bleManager.lastConnectionError).font(.callout).foregroundColor(.red)
+									if let lastError = accessoryManager.lastConnectionError {
+										Text(lastError.localizedDescription).font(.callout).foregroundColor(.red)
 									}
 									HStack {
 										Image(systemName: "antenna.radiowaves.left.and.right.slash")
@@ -195,11 +206,11 @@ struct Connect: View {
 						}
 						.textCase(nil)
 
-						if !self.bleManager.isConnected {
+						if !accessoryManager.isConnected {
 							Section(header: Text("Available Radios").font(.title)) {
-								ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.name < $1.name })) { peripheral in
+								ForEach(accessoryManager.devices.sorted(by: { $0.name < $1.name })) { device in
 									HStack {
-										if UserDefaults.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
+										if UserDefaults.preferredPeripheralId == device.id.uuidString {
 											Image(systemName: "star.fill")
 												.imageScale(.large).foregroundColor(.yellow)
 												.padding(.trailing)
@@ -208,22 +219,45 @@ struct Connect: View {
 												.imageScale(.large).foregroundColor(.gray)
 												.padding(.trailing)
 										}
-										Button(action: {
-											if UserDefaults.preferredPeripheralId.count > 0 && peripheral.peripheral.identifier.uuidString != UserDefaults.preferredPeripheralId {
-												if let connectedPeripheral = bleManager.connectedPeripheral, connectedPeripheral.peripheral.state == CBPeripheralState.connected {
-													bleManager.disconnectPeripheral()
+										VStack(alignment: .leading) {
+											Button(action: {
+												if UserDefaults.preferredPeripheralId.count > 0 && device.id.uuidString != UserDefaults.preferredPeripheralId {
+													if let connectedDevice = accessoryManager.activeConnection?.device, accessoryManager.isConnected {
+														Task { try await accessoryManager.disconnect() }
+													}
+													presentingSwitchPreferredPeripheral = true
+													selectedPeripherialId = device.id.uuidString
+												} else {
+													Task {
+														try? await accessoryManager.connect(to: device)
+													}
+													// self.bleManager.connectTo(peripheral: peripheral.peripheral)
 												}
-												presentingSwitchPreferredPeripheral = true
-												selectedPeripherialId = peripheral.peripheral.identifier.uuidString
-											} else {
-												self.bleManager.connectTo(peripheral: peripheral.peripheral)
+											}) {
+												Text(device.name).font(.callout)
 											}
-										}) {
-											Text(peripheral.name).font(.callout)
+											// Show transport type
+											switch device.transportType {
+											case .ble:
+												HStack {
+													Image(systemName: "wave.3.forward.circle")
+													Text("BLE")
+												}
+											case .serial:
+												HStack {
+													Image(systemName: "cable.connector.horizontal")
+													Text("Serial")
+												}
+											case .tcp:
+												HStack {
+													Image(systemName: "network")
+													Text("TCP")
+												}
+											}
 										}
 										Spacer()
 										VStack {
-											SignalStrengthIndicator(signalStrength: peripheral.getSignalStrength())
+											device.getSignalStrength().map { SignalStrengthIndicator(signalStrength: $0) }
 										}
 									}.padding([.bottom, .top])
 								}
@@ -232,33 +266,37 @@ struct Connect: View {
 								Button("Connect to new radio?", role: .destructive) {
 									UserDefaults.preferredPeripheralId = selectedPeripherialId
 									UserDefaults.preferredPeripheralNum = 0
-									if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
-										bleManager.disconnectPeripheral()
+									if accessoryManager.isConnected {
+										Task { try await accessoryManager.disconnect() }
 									}
 									clearCoreDataDatabase(context: context, includeRoutes: false)
-									let radio = bleManager.peripherals.first(where: { $0.peripheral.identifier.uuidString == selectedPeripherialId })
-									if radio != nil {
-										bleManager.connectTo(peripheral: radio!.peripheral)
+									if let radio = accessoryManager.devices.first(where: { $0.id.uuidString == selectedPeripherialId }) {
+										Task {
+											try await accessoryManager.connect(to: radio)
+										}
 									}
 								}
 							}
 							.textCase(nil)
 						}
 
-					} else {
-						Text("Bluetooth is off")
-							.foregroundColor(.red)
-							.font(.title)
-					}
+//					} else {
+//						Text("Bluetooth is off")
+//							.foregroundColor(.red)
+//							.font(.title)
+//					}
 				}
 
 				HStack(alignment: .center) {
 					Spacer()
 					#if targetEnvironment(macCatalyst)
-					if let connectedPeripheral = bleManager.connectedPeripheral {
+					// TODO: should this be allowDisconnect?
+					if accessoryManager.isConnected {
 						Button(role: .destructive, action: {
-							if connectedPeripheral.peripheral.state == CBPeripheralState.connected {
-								bleManager.disconnectPeripheral(reconnect: false)
+							if accessoryManager.isConnected {
+								Task {
+									await accessoryManager.disconnect()
+								}
 							}
 						}) {
 							Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
@@ -268,10 +306,11 @@ struct Connect: View {
 						.controlSize(.large)
 						.padding()
 					}
-					if bleManager.isConnecting {
+					if accessoryManager.state == .connecting {
 						Button(role: .destructive, action: {
-							bleManager.cancelPeripheralConnection()
-
+							Task {
+								await accessoryManager.disconnect()
+							}
 						}) {
 							Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 						}
@@ -290,29 +329,29 @@ struct Connect: View {
 				leading: MeshtasticLogo(),
 				trailing: ZStack {
 					ConnectedDevice(
-						bluetoothOn: bleManager.isSwitchedOn,
-						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: bleManager.connectedPeripheral?.shortName ?? "?",
-						mqttProxyConnected: bleManager.mqttProxyConnected,
-						mqttTopic: bleManager.mqttManager.topic
+						deviceConnected: accessoryManager.isConnected,
+						name: accessoryManager.activeConnection?.device.name ?? "?",
+						mqttProxyConnected: accessoryManager.mqttProxyConnected,
+						mqttTopic: accessoryManager.mqttManager.topic
 					)
 				}
 			)
 		}
-		.sheet(isPresented: $invalidFirmwareVersion, onDismiss: didDismissSheet) {
-			InvalidVersion(minimumVersion: self.bleManager.minimumVersion, version: self.bleManager.connectedVersion)
-				.presentationDetents([.large])
-				.presentationDragIndicator(.automatic)
-		}
-    	.onChange(of: self.bleManager.invalidVersion) {
-			invalidFirmwareVersion = self.bleManager.invalidVersion
-		}
-		.onChange(of: self.bleManager.isSubscribed) { _, sub in
+		// TODO: REMOVING VERSION STUFF?
+//		.sheet(isPresented: $invalidFirmwareVersion, onDismiss: didDismissSheet) {
+//			InvalidVersion(minimumVersion: accessoryManager.minimumVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
+//				.presentationDetents([.large])
+//				.presentationDragIndicator(.automatic)
+//		}
+//		.onChange(of: accessoryManager) {
+//			invalidFirmwareVersion = self.bleManager.invalidVersion
+//		}
+		.onChange(of: self.accessoryManager.state) { _, state in
 
-			if UserDefaults.preferredPeripheralId.count > 0 && sub {
+			if let deviceNum = accessoryManager.activeDeviceNum, UserDefaults.preferredPeripheralId.count > 0 && state == .subscribed {
 
 				let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
-				fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(bleManager.connectedPeripheral?.num ?? -1))
+				fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", deviceNum)
 
 				do {
 					node = try context.fetch(fetchNodeInfoRequest).first
@@ -374,6 +413,9 @@ struct Connect: View {
 #endif
 #endif
 	func didDismissSheet() {
-		bleManager.disconnectPeripheral(reconnect: false)
+		// bleManager.disconnectPeripheral(reconnect: false)
+		Task {
+			try await accessoryManager.disconnect()
+		}
 	}
 }

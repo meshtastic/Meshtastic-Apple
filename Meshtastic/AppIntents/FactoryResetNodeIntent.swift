@@ -24,18 +24,20 @@ struct FactoryResetNodeIntent: AppIntent {
 		}
 
 		// Ensure the node is connected
-		if !BLEManager.shared.isConnected {
+		if !AccessoryManager.shared.isConnected {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 
 		// Safely unwrap the connected node information
-		if let connectedPeripheralNum = BLEManager.shared.connectedPeripheral?.num,
+		if let connectedPeripheralNum = AccessoryManager.shared.activeDeviceNum,
 		   let connectedNode = getNodeInfo(id: connectedPeripheralNum, context: PersistenceController.shared.container.viewContext),
 		   let fromUser = connectedNode.user,
 		   let toUser = connectedNode.user {
 
 			// Attempt to send a factory reset command, throw an error if it fails
-			if !BLEManager.shared.sendFactoryReset(fromUser: fromUser, toUser: toUser, resetDevice: hardReset) {
+			do {
+				try await AccessoryManager.shared.sendFactoryReset(fromUser: fromUser, toUser: toUser, resetDevice: hardReset)
+			} catch {
 				throw AppIntentErrors.AppIntentError.message("Failed to perform factory reset")
 			}
 		} else {

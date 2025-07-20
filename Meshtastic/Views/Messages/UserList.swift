@@ -13,7 +13,7 @@ import TipKit
 struct UserList: View {
 
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var searchText = ""
 	@State private var viaLora = true
 	@State private var viaMqtt = true
@@ -69,7 +69,7 @@ struct UserList: View {
 					let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 					let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 					let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
-					if user.num != bleManager.connectedPeripheral?.num ?? 0 {
+					if user.num != accessoryManager.activeDeviceNum ?? 0 {
 						NavigationLink(value: user) {
 							ZStack {
 								Image(systemName: "circle.fill")
@@ -138,15 +138,15 @@ struct UserList: View {
 						.contextMenu {
 							Button {
 								if node != nil && !(user.userNode?.favorite ?? false) {
-									let success = bleManager.setFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
-									if success {
-										user.userNode?.favorite = !(user.userNode?.favorite ?? false)
+									user.userNode?.favorite = !(user.userNode?.favorite ?? false)
+									Task {
+										try await accessoryManager.setFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
 										Logger.data.info("Favorited a node")
 									}
 								} else {
-									let success = bleManager.removeFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
-									if success {
-										user.userNode?.favorite = !(user.userNode?.favorite ?? false)
+									user.userNode?.favorite = !(user.userNode?.favorite ?? false)
+									Task {
+										try await accessoryManager.removeFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
 										Logger.data.info("Unfavorited a node")
 									}
 								}

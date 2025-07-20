@@ -3,7 +3,7 @@ import OSLog
 
 struct TextMessageField: View {
 	static let maxbytes = 200
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	let destination: MessageDestination
 	@Binding var replyMessageId: Int64
@@ -100,33 +100,38 @@ struct TextMessageField: View {
 	}
 
 	private func requestPosition() {
-		let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
+		let userLongName = accessoryManager.activeConnection?.device.longName ?? "Unknown"
 		sendPositionWithMessage = true
 		typingMessage = "📍 " + userLongName + " \(destination.positionShareMessage)."
 	}
 
 	private func sendMessage() {
-		let messageSent = bleManager.sendMessage(
-			message: typingMessage,
-			toUserNum: destination.userNum,
-			channel: destination.channelNum,
-			isEmoji: false,
-			replyID: replyMessageId
-		)
-		if messageSent {
-			typingMessage = ""
-			isFocused = false
-			replyMessageId = 0
-			onSubmit()
-			if sendPositionWithMessage {
-				let positionSent = bleManager.sendPosition(
+		Task {
+			do {
+				try await accessoryManager.sendMessage(
+					message: typingMessage,
+					toUserNum: destination.userNum,
 					channel: destination.channelNum,
-					destNum: destination.positionDestNum,
-					wantResponse: destination.wantPositionResponse
-				)
-				if positionSent {
+					isEmoji: false,
+					replyID: replyMessageId)
+
+				// If nothing thrown, then successful.  Reset for the next message
+				typingMessage = ""
+				isFocused = false
+				replyMessageId = 0
+				onSubmit()
+
+				if sendPositionWithMessage {
+					try await accessoryManager.sendPosition(
+						channel: destination.channelNum,
+						destNum: destination.positionDestNum,
+						wantResponse: destination.wantPositionResponse
+					)
+					// If nothing thrown, then successful.
 					Logger.mesh.info("Location Sent")
 				}
+			} catch {
+				Logger.mesh.info("Error sending message")
 			}
 		}
 	}

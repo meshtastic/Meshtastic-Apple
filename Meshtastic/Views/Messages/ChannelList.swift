@@ -12,7 +12,7 @@ import OSLog
 struct ChannelList: View {
 
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	@Binding
 	var node: NodeInfoEntity?
@@ -131,14 +131,22 @@ struct ChannelList: View {
 									Button {
 										channel.mute.toggle()
 										do {
-											let adminMessageId =  bleManager.saveChannel(channel: channel.protoBuf, fromUser: node.user!, toUser: node.user!)
-											if adminMessageId > 0 {
-												context.refresh(channel, mergeChanges: true)
+											Task {
+												do {
+													_ = try await accessoryManager.saveChannel(channel: channel.protoBuf, fromUser: node.user!, toUser: node.user!)
+													Task { @MainActor in
+														do {
+															context.refresh(channel, mergeChanges: true)
+															try context.save()
+														} catch {
+															context.rollback()
+															Logger.data.error("💥 Save Channel Mute Error")
+														}
+													}
+												} catch {
+													Logger.mesh.error("Unable to save channel")
+												}
 											}
-											try context.save()
-										} catch {
-											context.rollback()
-											Logger.data.error("💥 Save Channel Mute Error")
 										}
 									} label: {
 										Label(channel.mute ? "Show Alerts" : "Hide Alerts", systemImage: channel.mute ? "bell" : "bell.slash")

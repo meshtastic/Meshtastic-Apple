@@ -19,7 +19,7 @@ struct MeshtasticAppleApp: App {
 	@ObservedObject	var appState: AppState
 
 	private let persistenceController: PersistenceController
-
+	private let accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) var scenePhase
 	@State var saveChannels = false
 	@State var incomingUrl: URL?
@@ -27,7 +27,9 @@ struct MeshtasticAppleApp: App {
 	@State var addChannels = false
 
 	init() {
+
 		let persistenceController = PersistenceController.shared
+
 		let appState = AppState(
 			router: Router()
 		)
@@ -61,9 +63,12 @@ struct MeshtasticAppleApp: App {
 				trackBackgroundEvents: true
 			)
 		)
+
+		accessoryManager = AccessoryManager.shared
+		accessoryManager.appState = appState
+
 		self._appState = ObservedObject(wrappedValue: appState)
-		// Initialize the BLEManager singleton with the necessary dependencies
-		BLEManager.setup(appState: appState, context: persistenceController.container.viewContext)
+
 		self.persistenceController = persistenceController
 		// Wire up router
 		self.appDelegate.router = appState.router
@@ -71,6 +76,7 @@ struct MeshtasticAppleApp: App {
 		// Show tips in development
 		try? Tips.resetDatastore()
 	#endif
+		accessoryManager.startDiscovery()
 	}
     var body: some Scene {
         WindowGroup {
@@ -92,8 +98,7 @@ struct MeshtasticAppleApp: App {
 				SaveChannelQRCode(
 					channelSetLink: channelSettings ?? "Empty Channel URL",
 					addChannels: addChannels,
-					bleManager: BLEManager.shared
-				)
+					accessoryManager: accessoryManager				)
 				.presentationDetents([.large])
 				.presentationDragIndicator(.visible)
 			}
@@ -102,7 +107,7 @@ struct MeshtasticAppleApp: App {
 				self.incomingUrl = userActivity.webpageURL
 				self.saveChannels = false
 				if self.incomingUrl?.absoluteString.lowercased().contains("meshtastic.org/v/#") == true {
-					ContactURLHandler.handleContactUrl(url: self.incomingUrl!, bleManager: BLEManager.shared)
+					ContactURLHandler.handleContactUrl(url: self.incomingUrl!, accessoryManager: accessoryManager)
 				} else if self.incomingUrl?.absoluteString.lowercased().contains("meshtastic.org/e/") == true {
 					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
 						self.addChannels = Bool(self.incomingUrl?["add"] ?? "false") ?? false
@@ -130,7 +135,7 @@ struct MeshtasticAppleApp: App {
 				Logger.mesh.debug("Some sort of URL was received \(url, privacy: .public)")
 				self.incomingUrl = url
 				if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
-					ContactURLHandler.handleContactUrl(url: url, bleManager: BLEManager.shared)
+					ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
 				} else if url.absoluteString.lowercased().contains("meshtastic.org/e/") {
 					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
 						self.addChannels = Bool(self.incomingUrl?["add"] ?? "false") ?? false
@@ -188,7 +193,7 @@ struct MeshtasticAppleApp: App {
 		}
 		.environment(\.managedObjectContext, persistenceController.container.viewContext)
 		.environmentObject(appState)
-		.environmentObject(BLEManager.shared)
+		.environmentObject(accessoryManager)
 	}
 
 }

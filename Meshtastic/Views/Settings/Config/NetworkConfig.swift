@@ -11,7 +11,7 @@ import SwiftUI
 struct NetworkConfig: View {
 
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 
 	var node: NodeInfoEntity?
@@ -101,11 +101,10 @@ struct NetworkConfig: View {
 				}
 			}
 			.scrollDismissesKeyboard(.interactively)
-			.disabled(self.bleManager.connectedPeripheral == nil || node?.networkConfig == nil)
+			.disabled(!accessoryManager.isConnected || node?.networkConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode != nil {
+				if let deviceNum = accessoryManager.activeDeviceNum, let connectedNode = getNodeInfo(id: deviceNum, context: context) {
 					var network = Config.NetworkConfig()
 					network.wifiEnabled = self.wifiEnabled
 					network.wifiSsid = self.wifiSsid
@@ -113,13 +112,14 @@ struct NetworkConfig: View {
 					network.ethEnabled = self.ethEnabled
 					network.enabledProtocols = self.udpEnabled ? UInt32(Config.NetworkConfig.ProtocolFlags.udpBroadcast.rawValue) : UInt32(Config.NetworkConfig.ProtocolFlags.noBroadcast.rawValue)
 					// network.addressMode = Config.NetworkConfig.AddressMode.dhcp
-
-					let adminMessageId =  bleManager.saveNetworkConfig(config: network, fromUser: connectedNode!.user!, toUser: node!.user!)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
+					Task {
+						_ = try await accessoryManager.saveNetworkConfig(config: network, fromUser: connectedNode.user!, toUser: node!.user!)
+						Task { @MainActor in
+							// Should show a saved successfully alert once I know that to be true
+							// for now just disable the button after a successful save
+							hasChanges = false
+							goBack()
+						}
 					}
 				}
 			}
@@ -127,35 +127,39 @@ struct NetworkConfig: View {
 		.navigationTitle("Network Config")
 		.navigationBarItems(
 			trailing: ZStack {
-				ConnectedDevice(
-					bluetoothOn: bleManager.isSwitchedOn,
-					deviceConnected: bleManager.connectedPeripheral != nil,
-					name: bleManager.connectedPeripheral?.shortName ?? "?"
-				)
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+
 			}
 		)
 		.onAppear {
 			// Need to request a NetworkConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.networkConfig == nil {
+			if accessoryManager.isConnected && node?.networkConfig == nil {
 				Logger.mesh.info("empty network config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestNetworkConfig(fromUser: connectedNode!.user!, toUser: node!.user!)
+				if let deviceNum = accessoryManager.activeDeviceNum, let connectedNode = getNodeInfo(id: deviceNum, context: context), node != nil {
+					Task {
+						try await accessoryManager.requestNetworkConfig(fromUser: connectedNode.user!, toUser: node!.user!)
+					}
 				}
 			}
 		}
 		.onFirstAppear {
 			// Need to request a NetworkConfig from the remote node before allowing changes
-			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+			if let deviceNum = accessoryManager.activeDeviceNum, let node {
+				let connectedNode = getNodeInfo(id: deviceNum, context: context)
 				if let connectedNode {
-					if node.num != connectedNode.num {
+					if node.num != deviceNum {
 						if UserDefaults.enableAdministration {
 							/// 2.5 Administration with session passkey
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.networkConfig == nil {
-								Logger.mesh.info("⚙️ Empty or expired network config requesting via PKI admin")
-								_ = bleManager.requestNetworkConfig(fromUser: connectedNode.user!, toUser: node.user!)
+								Task {
+									do {
+										Logger.mesh.info("⚙️ Empty or expired network config requesting via PKI admin")
+										try await accessoryManager.requestNetworkConfig(fromUser: connectedNode.user!, toUser: node.user!)
+									} catch {
+										Logger.mesh.error("🚨 Network config request failed")
+									}
+								}
 							}
 						} else {
 							/// Legacy Administration

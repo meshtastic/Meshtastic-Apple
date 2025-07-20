@@ -18,7 +18,7 @@ struct AddContactIntent: AppIntent {
 	// Define the function that performs the main logic
 	func perform() async throws -> some IntentResult {
 		// Ensure the BLE Manager is connected
-		if !BLEManager.shared.isConnected {
+		if !AccessoryManager.shared.isConnected {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 
@@ -29,13 +29,9 @@ struct AddContactIntent: AppIntent {
 				let decodedString = contactData.base64urlToBase64()
 				if let decodedData = Data(base64Encoded: decodedString) {
 					do {
-						let success = BLEManager.shared.addContactFromURL(base64UrlString: contactData)
-						if !success {
-							throw AppIntentErrors.AppIntentError.message("Failed to add contact")
-						}
-
+						try await AccessoryManager.shared.addContactFromURL(base64UrlString: contactData)
 					} catch {
-						throw AppIntentErrors.AppIntentError.message("Failed to parse contact data: \(error.localizedDescription)")
+						throw AppIntentErrors.AppIntentError.message("Failed to add/parse contact data: \(error.localizedDescription)")
 					}
 				}
 			}

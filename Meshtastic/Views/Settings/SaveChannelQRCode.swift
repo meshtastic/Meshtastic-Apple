@@ -14,7 +14,8 @@ struct SaveChannelQRCode: View {
 	@Environment(\.managedObjectContext) var context
 	let channelSetLink: String
 	var addChannels: Bool = false
-	var bleManager: BLEManager
+	var accessoryManager: AccessoryManager
+
 	@State private var showError: Bool = false
 	@State private var errorMessage: String = ""
 	@State private var connectedToDevice: Bool = false
@@ -66,12 +67,19 @@ struct SaveChannelQRCode: View {
 						} else {
 							channelData = channelSetLink
 						}
-						let success = bleManager.saveChannelSet(base64UrlString: channelData, addChannels: addChannels, okToMQTT: okToMQTT)
-						if success {
-							dismiss()
-						} else {
-							errorMessage = "Failed to save channel configuration"
-							showError = true
+
+						Task {
+							do {
+								try await accessoryManager.saveChannelSet(base64UrlString: channelData, addChannels: addChannels, okToMQTT: okToMQTT)
+								Task { @MainActor in
+									dismiss()
+								}
+							} catch {
+								Task { @MainActor in
+									errorMessage = "Failed to save channel configuration"
+									showError = true
+								}
+							}
 						}
 					} label: {
 						Label("Save", systemImage: "square.and.arrow.down")
@@ -108,7 +116,7 @@ struct SaveChannelQRCode: View {
 		}
 		.onAppear {
 			Logger.data.info("Ch set link \(channelSetLink)")
-			connectedToDevice = bleManager.connectToPreferredPeripheral()
+			connectedToDevice = accessoryManager.connectToPreferredDevice()
 			fetchLoRaConfigChanges()
 		}
 	}
@@ -153,7 +161,8 @@ struct SaveChannelQRCode: View {
 		Logger.data.info("Processing channel data: \(channelData)")
 		// Fetch current LoRa config from Core Data
 		let fetchRequest = NodeInfoEntity.fetchRequest()
-		fetchRequest.predicate = NSPredicate(format: "num == %lld", Int64(bleManager.connectedPeripheral?.num ?? 0))
+		fetchRequest.predicate = NSPredicate(format: "num == %lld", Int64(accessoryManager.activeDeviceNum ?? 0))
+
 		do {
 			let nodes = try context.fetch(fetchRequest)
 			if let node = nodes.first {

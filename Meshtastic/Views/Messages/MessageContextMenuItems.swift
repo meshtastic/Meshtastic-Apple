@@ -1,9 +1,10 @@
 import SwiftUI
 import CoreData
+import OSLog
 
 struct MessageContextMenuItems: View {
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	let message: MessageEntity
 	let tapBackDestination: MessageDestination
@@ -22,15 +23,21 @@ struct MessageContextMenuItems: View {
 		Menu("Tapback") {
 			ForEach(Tapbacks.allCases) { tb in
 				Button {
-					let sentMessage = bleManager.sendMessage(
-						message: tb.emojiString,
-						toUserNum: tapBackDestination.userNum,
-						channel: tapBackDestination.channelNum,
-						isEmoji: true,
-						replyID: message.messageId
-					)
-					if sentMessage {
-						self.context.refresh(tapBackDestination.managedObject, mergeChanges: true)
+					Task {
+						do {
+							try await accessoryManager.sendMessage(
+								message: tb.emojiString,
+								toUserNum: tapBackDestination.userNum,
+								channel: tapBackDestination.channelNum,
+								isEmoji: true,
+								replyID: message.messageId
+							)
+							Task { @MainActor in
+								self.context.refresh(tapBackDestination.managedObject, mergeChanges: true)
+							}
+						} catch {
+							Logger.services.warning("Failed to send tapback.")
+						}
 					}
 				} label: {
 					Text(tb.description)

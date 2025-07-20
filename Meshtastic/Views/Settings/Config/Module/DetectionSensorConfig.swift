@@ -25,7 +25,7 @@ enum DetectionSensorRole: String, CaseIterable, Equatable, Decodable {
 struct DetectionSensorConfig: View {
 
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	var node: NodeInfoEntity?
 	@State private var isPresentingSaveConfirm: Bool = false
@@ -158,10 +158,10 @@ struct DetectionSensorConfig: View {
 			}
 		}
 		.scrollDismissesKeyboard(.interactively)
-		.disabled(self.bleManager.connectedPeripheral == nil || node?.detectionSensorConfig == nil)
+		.disabled(!accessoryManager.isConnected || node?.detectionSensorConfig == nil)
 
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
+			let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
 			if connectedNode != nil {
 				var dsc = ModuleConfig.DetectionSensorConfig()
 				dsc.enabled = self.enabled
@@ -172,12 +172,18 @@ struct DetectionSensorConfig: View {
 				dsc.usePullup = self.usePullup
 				dsc.minimumBroadcastSecs = UInt32(self.minimumBroadcastSecs)
 				dsc.stateBroadcastSecs = UInt32(self.stateBroadcastSecs)
-				let adminMessageId = bleManager.saveDetectionSensorModuleConfig(config: dsc, fromUser: connectedNode!.user!, toUser: node!.user!)
-				if adminMessageId > 0 {
-					// Should show a saved successfully alert once I know that to be true
-					// for now just disable the button after a successful save
-					hasChanges = false
-					goBack()
+				Task {
+					do {
+						try await accessoryManager.saveDetectionSensorModuleConfig(config: dsc, fromUser: connectedNode!.user!, toUser: node!.user!)
+						Task { @MainActor in
+							// Should show a saved successfully alert once I know that to be true
+							// for now just disable the button after a successful save
+							hasChanges = false
+							goBack()
+						}
+					} catch {
+						Logger.mesh.error("Unable to save detection sensor module config")
+					}
 				}
 			}
 		}
@@ -185,24 +191,30 @@ struct DetectionSensorConfig: View {
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(
-					bluetoothOn: bleManager.isSwitchedOn,
-					deviceConnected: bleManager.connectedPeripheral != nil,
-					name: bleManager.connectedPeripheral?.shortName ?? "?"
+					deviceConnected: accessoryManager.isConnected,
+					name: accessoryManager.activeConnection?.device.shortName ?? "?"
 				)
 			}
 		)
 		.onFirstAppear {
 			// Need to request a DetectionSensorModuleConfig from the remote node before allowing changes
-			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+			if let deviceNum = accessoryManager.activeDeviceNum, let node {
+				let connectedNode = getNodeInfo(id: deviceNum, context: context)
 				if let connectedNode {
-					if node.num != connectedNode.num {
+					if node.num != deviceNum {
 						if UserDefaults.enableAdministration && node.num != connectedNode.num {
 							/// 2.5 Administration with session passkey
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.detectionSensorConfig == nil {
-								Logger.mesh.info("⚙️ Empty or expired detection sensor module config requesting via PKI admin")
-								_ = bleManager.requestDetectionSensorModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
+								Task {
+									do {
+										Logger.mesh.info("⚙️ Empty or expired detection sensor module config requesting via PKI admin")
+										try await accessoryManager.requestDetectionSensorModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
+									} catch {
+										Logger.mesh.info("🚨 Unable to send  detection sensor module config request")
+									}
+								}
+
 							}
 						} else {
 							/// Legacy Administration

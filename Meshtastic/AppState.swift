@@ -2,19 +2,14 @@ import Combine
 import SwiftUI
 
 class AppState: ObservableObject {
-	@Published
-	var router: Router
 
-	@Published
-	var unreadChannelMessages: Int
-
-	@Published
-	var unreadDirectMessages: Int
+	@Published var router: Router
+	@Published var unreadChannelMessages: Int
+	@Published var unreadDirectMessages: Int
 
 	var totalUnreadMessages: Int {
 		unreadChannelMessages + unreadDirectMessages
 	}
-
 	private var cancellables: Set<AnyCancellable> = []
 
 	init(router: Router) {
