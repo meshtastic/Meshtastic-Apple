@@ -1100,9 +1100,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				isSubscribed = true
 				allowDisconnect = true
 				Logger.mesh.info("🤜 [BLE] Want Config Complete. ID:\(decodedInfo.configCompleteID, privacy: .public)")
-				if UserDefaults.firstLaunch {
-					UserDefaults.showDeviceOnboarding = true
-				}
 				if sendTime() {
 				}
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
