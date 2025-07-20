@@ -610,7 +610,6 @@ func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, ses
 			if fetchedNode[0].displayConfig == nil {
 
 				let newDisplayConfig = DisplayConfigEntity(context: context)
-				newDisplayConfig.gpsFormat = Int32(config.gpsFormat.rawValue)
 				newDisplayConfig.screenOnSeconds = Int32(truncatingIfNeeded: config.screenOnSecs)
 				newDisplayConfig.screenCarouselInterval = Int32(truncatingIfNeeded: config.autoScreenCarouselSecs)
 				newDisplayConfig.compassNorthTop = config.compassNorthTop
@@ -622,8 +621,6 @@ func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, ses
 				newDisplayConfig.use12HClock = config.use12HClock
 				fetchedNode[0].displayConfig = newDisplayConfig
 			} else {
-
-				fetchedNode[0].displayConfig?.gpsFormat = Int32(config.gpsFormat.rawValue)
 				fetchedNode[0].displayConfig?.screenOnSeconds = Int32(truncatingIfNeeded: config.screenOnSecs)
 				fetchedNode[0].displayConfig?.screenCarouselInterval = Int32(truncatingIfNeeded: config.autoScreenCarouselSecs)
 				fetchedNode[0].displayConfig?.compassNorthTop = config.compassNorthTop
@@ -631,8 +628,8 @@ func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, ses
 				fetchedNode[0].displayConfig?.oledType = Int32(config.oled.rawValue)
 				fetchedNode[0].displayConfig?.displayMode = Int32(config.displaymode.rawValue)
 				fetchedNode[0].displayConfig?.units = Int32(config.units.rawValue)
-				fetchedNode[0].displayConfig?.use12HClock = config.use12HClock
 				fetchedNode[0].displayConfig?.headingBold = config.headingBold
+				fetchedNode[0].displayConfig?.use12HClock = config.use12HClock
 			}
 			if sessionPasskey != nil {
 				fetchedNode[0].sessionPasskey = sessionPasskey

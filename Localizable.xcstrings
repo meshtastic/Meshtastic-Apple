@@ -9557,6 +9557,7 @@
       }
     },
     "Decimal Degrees Format" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9719,6 +9720,7 @@
       }
     },
     "Degrees Minutes Seconds" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -16362,6 +16364,7 @@
       }
     },
     "GPS Format" : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -21356,6 +21359,7 @@
       }
     },
     "Military Grid Reference System" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -24772,6 +24776,7 @@
       }
     },
     "Open Location Code (aka Plus Codes)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -25094,6 +25099,7 @@
       }
     },
     "Ordnance Survey Grid Reference" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -25460,6 +25466,9 @@
           }
         }
       }
+    },
+    "Override default screen layout." : {
+
     },
     "Pairing Mode" : {
       "localizations" : {
@@ -36246,6 +36255,7 @@
       }
     },
     "The format used to display GPS coordinates on the device screen." : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -37802,7 +37812,11 @@
         }
       }
     },
+    "Timing" : {
+
+    },
     "Timing & Format" : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -39029,6 +39043,7 @@
       }
     },
     "Universal Transverse Mercator" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
