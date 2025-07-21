@@ -26,17 +26,19 @@ class MqttClientProxyManager {
 	var topic = "msh"
 	var debugLog = false
 	func connectFromConfigSettings(node: NodeInfoEntity) {
-		var host = node.mqttConfig?.address ?? "mqtt.meshtastic.org"
+		let originalAddress = node.mqttConfig?.address ?? "mqtt.meshtastic.org"
 		let defaultServerAddress = "mqtt.meshtastic.org"
 		var useSsl = node.mqttConfig?.tlsEnabled == true
+		var defaultServerPort = useSsl ? 8883 : 1883
+		var host = originalAddress
+		if originalAddress.contains(":") {
+			host = host.components(separatedBy: ":")[0]
+			defaultServerPort = Int(originalAddress.components(separatedBy: ":")[1]) ?? (useSsl ? 8883 : 1883)
+		}
 		// Require TLS for the public Server
 		if host.lowercased() == defaultServerAddress {
 			useSsl = true
-		}
-		var defaultServerPort = useSsl ? 8883 : 1883
-		if host.contains(":") {
-			host = host.components(separatedBy: ":")[0]
-			defaultServerPort = Int(host.components(separatedBy: ":")[1]) ?? (useSsl ? 8883 : 1883)
+			defaultServerPort = 8883
 		}
 		let port = defaultServerPort
 		let root = node.mqttConfig?.root?.count ?? 0 > 0 ? node.mqttConfig?.root : "msh"
