@@ -963,7 +963,10 @@ public struct Config: Sendable {
     public var screenOnSecs: UInt32 = 0
 
     ///
+    /// Deprecated in 2.7.4: Unused
     /// How the GPS coordinates are formatted on the OLED screen.
+    ///
+    /// NOTE: This field was marked as deprecated in the .proto file.
     public var gpsFormat: Config.DisplayConfig.GpsCoordinateFormat = .dec
 
     ///

@@ -40,27 +40,75 @@ import OSLog
 			UserDefaults.standard.set(backgroundActivity, forKey: "BGActivitySessionStarted")
 		}
 	}
+
 	// The continuation we will use to asynchronously ask the user permission to track their location.
 	// This is an Optional to ensure it can be nilled out after use.
 	private var permissionContinuation: CheckedContinuation<CLAuthorizationStatus, Never>?
+
+	// A flag to prevent multiple concurrent permission requests
+	private var isRequestingPermission = false
+
 	/// Requests "Always" location authorization from the user.
 	/// This method uses Swift's structured concurrency to await the user's decision.
+	/// It includes a timeout to prevent continuation leaks if the delegate method isn't called.
 	/// - Returns: The `CLAuthorizationStatus` reflecting the user's choice.
 	func requestLocationAlwaysPermissions() async -> CLAuthorizationStatus {
+		// If a request is already in progress, return the current status immediately.
+		// This prevents creating multiple continuations and potential leaks.
+		guard !isRequestingPermission else {
+			Logger.services.debug("📍 [App] requestLocationAlwaysPermissions called while a request is already active. Returning current status.")
+			return manager.authorizationStatus
+		}
+		// Set flag to indicate a request is in progress
+		isRequestingPermission = true
+
 		return await withCheckedContinuation { continuation in
 			// Store the continuation.
 			self.permissionContinuation = continuation
+
 			// Request authorization. The response will come via `locationManagerDidChangeAuthorization`.
 			manager.requestAlwaysAuthorization()
+
+			// Add a timeout to ensure the continuation is always resumed.
+			// If the delegate method doesn't fire within a reasonable time (e.g., 10 seconds),
+			// we'll resume the continuation with .notDetermined to prevent a leak.
+			Task { @MainActor in // Ensure this task runs on the MainActor
+				do {
+					try await Task.sleep(for: .seconds(10)) // Wait for 10 seconds
+					if let currentContinuation = self.permissionContinuation {
+						// If the continuation hasn't been nilled out yet, it means
+						// locationManagerDidChangeAuthorization hasn't been called.
+						Logger.services.warning("📍 [App] Location permission request timed out. Resuming continuation with .notDetermined.")
+						currentContinuation.resume(returning: .notDetermined)
+						self.permissionContinuation = nil // Clear the reference
+					}
+				} catch is CancellationError {
+					// This task was cancelled, likely because the main continuation was already resumed
+					// by locationManagerDidChangeAuthorization. This is expected and safe.
+					Logger.services.debug("📍 [App] Permission timeout task cancelled.")
+				} catch {
+					Logger.services.error("💥 [App] Error in permission timeout task: \(error.localizedDescription, privacy: .public)")
+				}
+			}
+		}
+		// This defer block ensures `isRequestingPermission` is reset and `permissionContinuation` is nilled out
+		// regardless of how the `withCheckedContinuation` block exits (success, error, or cancellation).
+		// It acts as a final cleanup mechanism.
+		defer {
+			self.isRequestingPermission = false
+			// This nil assignment is somewhat redundant with the one in locationManagerDidChangeAuthorization
+			// and the timeout Task, but it provides an extra layer of safety.
+			self.permissionContinuation = nil
 		}
 	}
+
 	/// Delegate method called when the location authorization status changes.
 	/// - Parameter manager: The CLLocationManager instance.
 	func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
 		// Ensure the continuation exists before attempting to resume it.
-		// If it's nil, it means either no request was pending or it was already resumed.
+		// If it's nil, it means either no request was pending or it was already resumed (e.g., by the timeout).
 		guard let continuation = permissionContinuation else {
-			Logger.services.debug("📍 [App] locationManagerDidChangeAuthorization called but no permissionContinuation is active.")
+			Logger.services.debug("📍 [App] locationManagerDidChangeAuthorization called but no permissionContinuation is active or it was already handled.")
 			return
 		}
 		// Resume the continuation with the current authorization status.
@@ -69,7 +117,9 @@ import OSLog
 		// This prevents attempting to resume the same continuation multiple times,
 		// which would lead to a runtime crash.
 		self.permissionContinuation = nil
+		self.isRequestingPermission = false // Reset the flag as the request has completed
 	}
+
 	override init() {
 		super.init()
 		self.manager.delegate = self

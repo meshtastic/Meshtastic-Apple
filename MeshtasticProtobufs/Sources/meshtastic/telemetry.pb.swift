@@ -188,6 +188,14 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
   ///
   /// ADS1X15 ADC
   case ads1X15 // = 40
+
+  ///
+  /// ADS1X15 ADC_ALT
+  case ads1X15Alt // = 41
+
+  ///
+  /// Sensirion SFA30 Formaldehyde sensor
+  case sfa30 // = 42
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -237,6 +245,8 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 38: self = .max17261
     case 39: self = .pct2075
     case 40: self = .ads1X15
+    case 41: self = .ads1X15Alt
+    case 42: self = .sfa30
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -284,6 +294,8 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .max17261: return 38
     case .pct2075: return 39
     case .ads1X15: return 40
+    case .ads1X15Alt: return 41
+    case .sfa30: return 42
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -331,6 +343,8 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     .max17261,
     .pct2075,
     .ads1X15,
+    .ads1X15Alt,
+    .sfa30,
   ]
 
 }
@@ -873,7 +887,7 @@ public struct PowerMetrics: Sendable {
 
 ///
 /// Air quality metrics
-public struct AirQualityMetrics: Sendable {
+public struct AirQualityMetrics: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -881,187 +895,206 @@ public struct AirQualityMetrics: Sendable {
   ///
   /// Concentration Units Standard PM1.0
   public var pm10Standard: UInt32 {
-    get {return _pm10Standard ?? 0}
-    set {_pm10Standard = newValue}
+    get {return _storage._pm10Standard ?? 0}
+    set {_uniqueStorage()._pm10Standard = newValue}
   }
   /// Returns true if `pm10Standard` has been explicitly set.
-  public var hasPm10Standard: Bool {return self._pm10Standard != nil}
+  public var hasPm10Standard: Bool {return _storage._pm10Standard != nil}
   /// Clears the value of `pm10Standard`. Subsequent reads from it will return its default value.
-  public mutating func clearPm10Standard() {self._pm10Standard = nil}
+  public mutating func clearPm10Standard() {_uniqueStorage()._pm10Standard = nil}
 
   ///
   /// Concentration Units Standard PM2.5
   public var pm25Standard: UInt32 {
-    get {return _pm25Standard ?? 0}
-    set {_pm25Standard = newValue}
+    get {return _storage._pm25Standard ?? 0}
+    set {_uniqueStorage()._pm25Standard = newValue}
   }
   /// Returns true if `pm25Standard` has been explicitly set.
-  public var hasPm25Standard: Bool {return self._pm25Standard != nil}
+  public var hasPm25Standard: Bool {return _storage._pm25Standard != nil}
   /// Clears the value of `pm25Standard`. Subsequent reads from it will return its default value.
-  public mutating func clearPm25Standard() {self._pm25Standard = nil}
+  public mutating func clearPm25Standard() {_uniqueStorage()._pm25Standard = nil}
 
   ///
   /// Concentration Units Standard PM10.0
   public var pm100Standard: UInt32 {
-    get {return _pm100Standard ?? 0}
-    set {_pm100Standard = newValue}
+    get {return _storage._pm100Standard ?? 0}
+    set {_uniqueStorage()._pm100Standard = newValue}
   }
   /// Returns true if `pm100Standard` has been explicitly set.
-  public var hasPm100Standard: Bool {return self._pm100Standard != nil}
+  public var hasPm100Standard: Bool {return _storage._pm100Standard != nil}
   /// Clears the value of `pm100Standard`. Subsequent reads from it will return its default value.
-  public mutating func clearPm100Standard() {self._pm100Standard = nil}
+  public mutating func clearPm100Standard() {_uniqueStorage()._pm100Standard = nil}
 
   ///
   /// Concentration Units Environmental PM1.0
   public var pm10Environmental: UInt32 {
-    get {return _pm10Environmental ?? 0}
-    set {_pm10Environmental = newValue}
+    get {return _storage._pm10Environmental ?? 0}
+    set {_uniqueStorage()._pm10Environmental = newValue}
   }
   /// Returns true if `pm10Environmental` has been explicitly set.
-  public var hasPm10Environmental: Bool {return self._pm10Environmental != nil}
+  public var hasPm10Environmental: Bool {return _storage._pm10Environmental != nil}
   /// Clears the value of `pm10Environmental`. Subsequent reads from it will return its default value.
-  public mutating func clearPm10Environmental() {self._pm10Environmental = nil}
+  public mutating func clearPm10Environmental() {_uniqueStorage()._pm10Environmental = nil}
 
   ///
   /// Concentration Units Environmental PM2.5
   public var pm25Environmental: UInt32 {
-    get {return _pm25Environmental ?? 0}
-    set {_pm25Environmental = newValue}
+    get {return _storage._pm25Environmental ?? 0}
+    set {_uniqueStorage()._pm25Environmental = newValue}
   }
   /// Returns true if `pm25Environmental` has been explicitly set.
-  public var hasPm25Environmental: Bool {return self._pm25Environmental != nil}
+  public var hasPm25Environmental: Bool {return _storage._pm25Environmental != nil}
   /// Clears the value of `pm25Environmental`. Subsequent reads from it will return its default value.
-  public mutating func clearPm25Environmental() {self._pm25Environmental = nil}
+  public mutating func clearPm25Environmental() {_uniqueStorage()._pm25Environmental = nil}
 
   ///
   /// Concentration Units Environmental PM10.0
   public var pm100Environmental: UInt32 {
-    get {return _pm100Environmental ?? 0}
-    set {_pm100Environmental = newValue}
+    get {return _storage._pm100Environmental ?? 0}
+    set {_uniqueStorage()._pm100Environmental = newValue}
   }
   /// Returns true if `pm100Environmental` has been explicitly set.
-  public var hasPm100Environmental: Bool {return self._pm100Environmental != nil}
+  public var hasPm100Environmental: Bool {return _storage._pm100Environmental != nil}
   /// Clears the value of `pm100Environmental`. Subsequent reads from it will return its default value.
-  public mutating func clearPm100Environmental() {self._pm100Environmental = nil}
+  public mutating func clearPm100Environmental() {_uniqueStorage()._pm100Environmental = nil}
 
   ///
   /// 0.3um Particle Count
   public var particles03Um: UInt32 {
-    get {return _particles03Um ?? 0}
-    set {_particles03Um = newValue}
+    get {return _storage._particles03Um ?? 0}
+    set {_uniqueStorage()._particles03Um = newValue}
   }
   /// Returns true if `particles03Um` has been explicitly set.
-  public var hasParticles03Um: Bool {return self._particles03Um != nil}
+  public var hasParticles03Um: Bool {return _storage._particles03Um != nil}
   /// Clears the value of `particles03Um`. Subsequent reads from it will return its default value.
-  public mutating func clearParticles03Um() {self._particles03Um = nil}
+  public mutating func clearParticles03Um() {_uniqueStorage()._particles03Um = nil}
 
   ///
   /// 0.5um Particle Count
   public var particles05Um: UInt32 {
-    get {return _particles05Um ?? 0}
-    set {_particles05Um = newValue}
+    get {return _storage._particles05Um ?? 0}
+    set {_uniqueStorage()._particles05Um = newValue}
   }
   /// Returns true if `particles05Um` has been explicitly set.
-  public var hasParticles05Um: Bool {return self._particles05Um != nil}
+  public var hasParticles05Um: Bool {return _storage._particles05Um != nil}
   /// Clears the value of `particles05Um`. Subsequent reads from it will return its default value.
-  public mutating func clearParticles05Um() {self._particles05Um = nil}
+  public mutating func clearParticles05Um() {_uniqueStorage()._particles05Um = nil}
 
   ///
   /// 1.0um Particle Count
   public var particles10Um: UInt32 {
-    get {return _particles10Um ?? 0}
-    set {_particles10Um = newValue}
+    get {return _storage._particles10Um ?? 0}
+    set {_uniqueStorage()._particles10Um = newValue}
   }
   /// Returns true if `particles10Um` has been explicitly set.
-  public var hasParticles10Um: Bool {return self._particles10Um != nil}
+  public var hasParticles10Um: Bool {return _storage._particles10Um != nil}
   /// Clears the value of `particles10Um`. Subsequent reads from it will return its default value.
-  public mutating func clearParticles10Um() {self._particles10Um = nil}
+  public mutating func clearParticles10Um() {_uniqueStorage()._particles10Um = nil}
 
   ///
   /// 2.5um Particle Count
   public var particles25Um: UInt32 {
-    get {return _particles25Um ?? 0}
-    set {_particles25Um = newValue}
+    get {return _storage._particles25Um ?? 0}
+    set {_uniqueStorage()._particles25Um = newValue}
   }
   /// Returns true if `particles25Um` has been explicitly set.
-  public var hasParticles25Um: Bool {return self._particles25Um != nil}
+  public var hasParticles25Um: Bool {return _storage._particles25Um != nil}
   /// Clears the value of `particles25Um`. Subsequent reads from it will return its default value.
-  public mutating func clearParticles25Um() {self._particles25Um = nil}
+  public mutating func clearParticles25Um() {_uniqueStorage()._particles25Um = nil}
 
   ///
   /// 5.0um Particle Count
   public var particles50Um: UInt32 {
-    get {return _particles50Um ?? 0}
-    set {_particles50Um = newValue}
+    get {return _storage._particles50Um ?? 0}
+    set {_uniqueStorage()._particles50Um = newValue}
   }
   /// Returns true if `particles50Um` has been explicitly set.
-  public var hasParticles50Um: Bool {return self._particles50Um != nil}
+  public var hasParticles50Um: Bool {return _storage._particles50Um != nil}
   /// Clears the value of `particles50Um`. Subsequent reads from it will return its default value.
-  public mutating func clearParticles50Um() {self._particles50Um = nil}
+  public mutating func clearParticles50Um() {_uniqueStorage()._particles50Um = nil}
 
   ///
   /// 10.0um Particle Count
   public var particles100Um: UInt32 {
-    get {return _particles100Um ?? 0}
-    set {_particles100Um = newValue}
+    get {return _storage._particles100Um ?? 0}
+    set {_uniqueStorage()._particles100Um = newValue}
   }
   /// Returns true if `particles100Um` has been explicitly set.
-  public var hasParticles100Um: Bool {return self._particles100Um != nil}
+  public var hasParticles100Um: Bool {return _storage._particles100Um != nil}
   /// Clears the value of `particles100Um`. Subsequent reads from it will return its default value.
-  public mutating func clearParticles100Um() {self._particles100Um = nil}
+  public mutating func clearParticles100Um() {_uniqueStorage()._particles100Um = nil}
 
   ///
   /// CO2 concentration in ppm
   public var co2: UInt32 {
-    get {return _co2 ?? 0}
-    set {_co2 = newValue}
+    get {return _storage._co2 ?? 0}
+    set {_uniqueStorage()._co2 = newValue}
   }
   /// Returns true if `co2` has been explicitly set.
-  public var hasCo2: Bool {return self._co2 != nil}
+  public var hasCo2: Bool {return _storage._co2 != nil}
   /// Clears the value of `co2`. Subsequent reads from it will return its default value.
-  public mutating func clearCo2() {self._co2 = nil}
+  public mutating func clearCo2() {_uniqueStorage()._co2 = nil}
 
   ///
   /// CO2 sensor temperature in degC
   public var co2Temperature: Float {
-    get {return _co2Temperature ?? 0}
-    set {_co2Temperature = newValue}
+    get {return _storage._co2Temperature ?? 0}
+    set {_uniqueStorage()._co2Temperature = newValue}
   }
   /// Returns true if `co2Temperature` has been explicitly set.
-  public var hasCo2Temperature: Bool {return self._co2Temperature != nil}
+  public var hasCo2Temperature: Bool {return _storage._co2Temperature != nil}
   /// Clears the value of `co2Temperature`. Subsequent reads from it will return its default value.
-  public mutating func clearCo2Temperature() {self._co2Temperature = nil}
+  public mutating func clearCo2Temperature() {_uniqueStorage()._co2Temperature = nil}
 
   ///
   /// CO2 sensor relative humidity in %
   public var co2Humidity: Float {
-    get {return _co2Humidity ?? 0}
-    set {_co2Humidity = newValue}
+    get {return _storage._co2Humidity ?? 0}
+    set {_uniqueStorage()._co2Humidity = newValue}
   }
   /// Returns true if `co2Humidity` has been explicitly set.
-  public var hasCo2Humidity: Bool {return self._co2Humidity != nil}
+  public var hasCo2Humidity: Bool {return _storage._co2Humidity != nil}
   /// Clears the value of `co2Humidity`. Subsequent reads from it will return its default value.
-  public mutating func clearCo2Humidity() {self._co2Humidity = nil}
+  public mutating func clearCo2Humidity() {_uniqueStorage()._co2Humidity = nil}
+
+  ///
+  /// Formaldehyde sensor formaldehyde concentration in ppb
+  public var formFormaldehyde: Float {
+    get {return _storage._formFormaldehyde ?? 0}
+    set {_uniqueStorage()._formFormaldehyde = newValue}
+  }
+  /// Returns true if `formFormaldehyde` has been explicitly set.
+  public var hasFormFormaldehyde: Bool {return _storage._formFormaldehyde != nil}
+  /// Clears the value of `formFormaldehyde`. Subsequent reads from it will return its default value.
+  public mutating func clearFormFormaldehyde() {_uniqueStorage()._formFormaldehyde = nil}
+
+  ///
+  /// Formaldehyde sensor relative humidity in %RH
+  public var formHumidity: Float {
+    get {return _storage._formHumidity ?? 0}
+    set {_uniqueStorage()._formHumidity = newValue}
+  }
+  /// Returns true if `formHumidity` has been explicitly set.
+  public var hasFormHumidity: Bool {return _storage._formHumidity != nil}
+  /// Clears the value of `formHumidity`. Subsequent reads from it will return its default value.
+  public mutating func clearFormHumidity() {_uniqueStorage()._formHumidity = nil}
+
+  ///
+  /// Formaldehyde sensor temperature in degrees Celsius
+  public var formTemperature: Float {
+    get {return _storage._formTemperature ?? 0}
+    set {_uniqueStorage()._formTemperature = newValue}
+  }
+  /// Returns true if `formTemperature` has been explicitly set.
+  public var hasFormTemperature: Bool {return _storage._formTemperature != nil}
+  /// Clears the value of `formTemperature`. Subsequent reads from it will return its default value.
+  public mutating func clearFormTemperature() {_uniqueStorage()._formTemperature = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
-  fileprivate var _pm10Standard: UInt32? = nil
-  fileprivate var _pm25Standard: UInt32? = nil
-  fileprivate var _pm100Standard: UInt32? = nil
-  fileprivate var _pm10Environmental: UInt32? = nil
-  fileprivate var _pm25Environmental: UInt32? = nil
-  fileprivate var _pm100Environmental: UInt32? = nil
-  fileprivate var _particles03Um: UInt32? = nil
-  fileprivate var _particles05Um: UInt32? = nil
-  fileprivate var _particles10Um: UInt32? = nil
-  fileprivate var _particles25Um: UInt32? = nil
-  fileprivate var _particles50Um: UInt32? = nil
-  fileprivate var _particles100Um: UInt32? = nil
-  fileprivate var _co2: UInt32? = nil
-  fileprivate var _co2Temperature: Float? = nil
-  fileprivate var _co2Humidity: Float? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 ///
@@ -1441,6 +1474,8 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     38: .same(proto: "MAX17261"),
     39: .same(proto: "PCT2075"),
     40: .same(proto: "ADS1X15"),
+    41: .same(proto: "ADS1X15_ALT"),
+    42: .same(proto: "SFA30"),
   ]
 }
 
@@ -1892,103 +1927,195 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     13: .same(proto: "co2"),
     14: .standard(proto: "co2_temperature"),
     15: .standard(proto: "co2_humidity"),
+    16: .standard(proto: "form_formaldehyde"),
+    17: .standard(proto: "form_humidity"),
+    18: .standard(proto: "form_temperature"),
   ]
 
+  fileprivate class _StorageClass {
+    var _pm10Standard: UInt32? = nil
+    var _pm25Standard: UInt32? = nil
+    var _pm100Standard: UInt32? = nil
+    var _pm10Environmental: UInt32? = nil
+    var _pm25Environmental: UInt32? = nil
+    var _pm100Environmental: UInt32? = nil
+    var _particles03Um: UInt32? = nil
+    var _particles05Um: UInt32? = nil
+    var _particles10Um: UInt32? = nil
+    var _particles25Um: UInt32? = nil
+    var _particles50Um: UInt32? = nil
+    var _particles100Um: UInt32? = nil
+    var _co2: UInt32? = nil
+    var _co2Temperature: Float? = nil
+    var _co2Humidity: Float? = nil
+    var _formFormaldehyde: Float? = nil
+    var _formHumidity: Float? = nil
+    var _formTemperature: Float? = nil
+
+    #if swift(>=5.10)
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _pm10Standard = source._pm10Standard
+      _pm25Standard = source._pm25Standard
+      _pm100Standard = source._pm100Standard
+      _pm10Environmental = source._pm10Environmental
+      _pm25Environmental = source._pm25Environmental
+      _pm100Environmental = source._pm100Environmental
+      _particles03Um = source._particles03Um
+      _particles05Um = source._particles05Um
+      _particles10Um = source._particles10Um
+      _particles25Um = source._particles25Um
+      _particles50Um = source._particles50Um
+      _particles100Um = source._particles100Um
+      _co2 = source._co2
+      _co2Temperature = source._co2Temperature
+      _co2Humidity = source._co2Humidity
+      _formFormaldehyde = source._formFormaldehyde
+      _formHumidity = source._formHumidity
+      _formTemperature = source._formTemperature
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularUInt32Field(value: &self._pm10Standard) }()
-      case 2: try { try decoder.decodeSingularUInt32Field(value: &self._pm25Standard) }()
-      case 3: try { try decoder.decodeSingularUInt32Field(value: &self._pm100Standard) }()
-      case 4: try { try decoder.decodeSingularUInt32Field(value: &self._pm10Environmental) }()
-      case 5: try { try decoder.decodeSingularUInt32Field(value: &self._pm25Environmental) }()
-      case 6: try { try decoder.decodeSingularUInt32Field(value: &self._pm100Environmental) }()
-      case 7: try { try decoder.decodeSingularUInt32Field(value: &self._particles03Um) }()
-      case 8: try { try decoder.decodeSingularUInt32Field(value: &self._particles05Um) }()
-      case 9: try { try decoder.decodeSingularUInt32Field(value: &self._particles10Um) }()
-      case 10: try { try decoder.decodeSingularUInt32Field(value: &self._particles25Um) }()
-      case 11: try { try decoder.decodeSingularUInt32Field(value: &self._particles50Um) }()
-      case 12: try { try decoder.decodeSingularUInt32Field(value: &self._particles100Um) }()
-      case 13: try { try decoder.decodeSingularUInt32Field(value: &self._co2) }()
-      case 14: try { try decoder.decodeSingularFloatField(value: &self._co2Temperature) }()
-      case 15: try { try decoder.decodeSingularFloatField(value: &self._co2Humidity) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularUInt32Field(value: &_storage._pm10Standard) }()
+        case 2: try { try decoder.decodeSingularUInt32Field(value: &_storage._pm25Standard) }()
+        case 3: try { try decoder.decodeSingularUInt32Field(value: &_storage._pm100Standard) }()
+        case 4: try { try decoder.decodeSingularUInt32Field(value: &_storage._pm10Environmental) }()
+        case 5: try { try decoder.decodeSingularUInt32Field(value: &_storage._pm25Environmental) }()
+        case 6: try { try decoder.decodeSingularUInt32Field(value: &_storage._pm100Environmental) }()
+        case 7: try { try decoder.decodeSingularUInt32Field(value: &_storage._particles03Um) }()
+        case 8: try { try decoder.decodeSingularUInt32Field(value: &_storage._particles05Um) }()
+        case 9: try { try decoder.decodeSingularUInt32Field(value: &_storage._particles10Um) }()
+        case 10: try { try decoder.decodeSingularUInt32Field(value: &_storage._particles25Um) }()
+        case 11: try { try decoder.decodeSingularUInt32Field(value: &_storage._particles50Um) }()
+        case 12: try { try decoder.decodeSingularUInt32Field(value: &_storage._particles100Um) }()
+        case 13: try { try decoder.decodeSingularUInt32Field(value: &_storage._co2) }()
+        case 14: try { try decoder.decodeSingularFloatField(value: &_storage._co2Temperature) }()
+        case 15: try { try decoder.decodeSingularFloatField(value: &_storage._co2Humidity) }()
+        case 16: try { try decoder.decodeSingularFloatField(value: &_storage._formFormaldehyde) }()
+        case 17: try { try decoder.decodeSingularFloatField(value: &_storage._formHumidity) }()
+        case 18: try { try decoder.decodeSingularFloatField(value: &_storage._formTemperature) }()
+        default: break
+        }
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    try { if let v = self._pm10Standard {
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 1)
-    } }()
-    try { if let v = self._pm25Standard {
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 2)
-    } }()
-    try { if let v = self._pm100Standard {
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 3)
-    } }()
-    try { if let v = self._pm10Environmental {
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 4)
-    } }()
-    try { if let v = self._pm25Environmental {
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 5)
-    } }()
-    try { if let v = self._pm100Environmental {
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 6)
-    } }()
-    try { if let v = self._particles03Um {
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 7)
-    } }()
-    try { if let v = self._particles05Um {
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 8)
-    } }()
-    try { if let v = self._particles10Um {
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 9)
-    } }()
-    try { if let v = self._particles25Um {
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 10)
-    } }()
-    try { if let v = self._particles50Um {
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 11)
-    } }()
-    try { if let v = self._particles100Um {
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 12)
-    } }()
-    try { if let v = self._co2 {
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 13)
-    } }()
-    try { if let v = self._co2Temperature {
-      try visitor.visitSingularFloatField(value: v, fieldNumber: 14)
-    } }()
-    try { if let v = self._co2Humidity {
-      try visitor.visitSingularFloatField(value: v, fieldNumber: 15)
-    } }()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._pm10Standard {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 1)
+      } }()
+      try { if let v = _storage._pm25Standard {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 2)
+      } }()
+      try { if let v = _storage._pm100Standard {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 3)
+      } }()
+      try { if let v = _storage._pm10Environmental {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 4)
+      } }()
+      try { if let v = _storage._pm25Environmental {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 5)
+      } }()
+      try { if let v = _storage._pm100Environmental {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 6)
+      } }()
+      try { if let v = _storage._particles03Um {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 7)
+      } }()
+      try { if let v = _storage._particles05Um {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 8)
+      } }()
+      try { if let v = _storage._particles10Um {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 9)
+      } }()
+      try { if let v = _storage._particles25Um {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 10)
+      } }()
+      try { if let v = _storage._particles50Um {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 11)
+      } }()
+      try { if let v = _storage._particles100Um {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 12)
+      } }()
+      try { if let v = _storage._co2 {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 13)
+      } }()
+      try { if let v = _storage._co2Temperature {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 14)
+      } }()
+      try { if let v = _storage._co2Humidity {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 15)
+      } }()
+      try { if let v = _storage._formFormaldehyde {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 16)
+      } }()
+      try { if let v = _storage._formHumidity {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 17)
+      } }()
+      try { if let v = _storage._formTemperature {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 18)
+      } }()
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: AirQualityMetrics, rhs: AirQualityMetrics) -> Bool {
-    if lhs._pm10Standard != rhs._pm10Standard {return false}
-    if lhs._pm25Standard != rhs._pm25Standard {return false}
-    if lhs._pm100Standard != rhs._pm100Standard {return false}
-    if lhs._pm10Environmental != rhs._pm10Environmental {return false}
-    if lhs._pm25Environmental != rhs._pm25Environmental {return false}
-    if lhs._pm100Environmental != rhs._pm100Environmental {return false}
-    if lhs._particles03Um != rhs._particles03Um {return false}
-    if lhs._particles05Um != rhs._particles05Um {return false}
-    if lhs._particles10Um != rhs._particles10Um {return false}
-    if lhs._particles25Um != rhs._particles25Um {return false}
-    if lhs._particles50Um != rhs._particles50Um {return false}
-    if lhs._particles100Um != rhs._particles100Um {return false}
-    if lhs._co2 != rhs._co2 {return false}
-    if lhs._co2Temperature != rhs._co2Temperature {return false}
-    if lhs._co2Humidity != rhs._co2Humidity {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._pm10Standard != rhs_storage._pm10Standard {return false}
+        if _storage._pm25Standard != rhs_storage._pm25Standard {return false}
+        if _storage._pm100Standard != rhs_storage._pm100Standard {return false}
+        if _storage._pm10Environmental != rhs_storage._pm10Environmental {return false}
+        if _storage._pm25Environmental != rhs_storage._pm25Environmental {return false}
+        if _storage._pm100Environmental != rhs_storage._pm100Environmental {return false}
+        if _storage._particles03Um != rhs_storage._particles03Um {return false}
+        if _storage._particles05Um != rhs_storage._particles05Um {return false}
+        if _storage._particles10Um != rhs_storage._particles10Um {return false}
+        if _storage._particles25Um != rhs_storage._particles25Um {return false}
+        if _storage._particles50Um != rhs_storage._particles50Um {return false}
+        if _storage._particles100Um != rhs_storage._particles100Um {return false}
+        if _storage._co2 != rhs_storage._co2 {return false}
+        if _storage._co2Temperature != rhs_storage._co2Temperature {return false}
+        if _storage._co2Humidity != rhs_storage._co2Humidity {return false}
+        if _storage._formFormaldehyde != rhs_storage._formFormaldehyde {return false}
+        if _storage._formHumidity != rhs_storage._formHumidity {return false}
+        if _storage._formTemperature != rhs_storage._formTemperature {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
