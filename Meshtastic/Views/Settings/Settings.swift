@@ -344,37 +344,37 @@ struct Settings: View {
 		) {
 			let node = nodes.first(where: { $0.num == preferredNodeNum })
 			List {
-//				NavigationLink(value: SettingsNavigationState.about) {
-//					Label {
-//						Text("About Meshtastic")
-//					} icon: {
-//						Image(systemName: "questionmark.app")
-//					}
-//				}
-//
-//				NavigationLink(value: SettingsNavigationState.appSettings) {
-//					Label {
-//						Text("App Settings")
-//					} icon: {
-//						Image(systemName: "gearshape")
-//					}
-//				}
-//				NavigationLink(value: SettingsNavigationState.routes) {
-//					Label {
-//						Text("Routes")
-//					} icon: {
-//						Image(systemName: "road.lanes.curved.right")
-//					}
-//				}
-//
-//				NavigationLink(value: SettingsNavigationState.routeRecorder) {
-//					Label {
-//						Text("Route Recorder")
-//					} icon: {
-//						Image(systemName: "record.circle")
-//							.foregroundColor(.red)
-//					}
-//				}
+				NavigationLink(value: SettingsNavigationState.about) {
+					Label {
+						Text("About Meshtastic")
+					} icon: {
+						Image(systemName: "questionmark.app")
+					}
+				}
+
+				NavigationLink(value: SettingsNavigationState.appSettings) {
+					Label {
+						Text("App Settings")
+					} icon: {
+						Image(systemName: "gearshape")
+					}
+				}
+				NavigationLink(value: SettingsNavigationState.routes) {
+					Label {
+						Text("Routes")
+					} icon: {
+						Image(systemName: "road.lanes.curved.right")
+					}
+				}
+
+				NavigationLink(value: SettingsNavigationState.routeRecorder) {
+					Label {
+						Text("Route Recorder")
+					} icon: {
+						Image(systemName: "record.circle")
+							.foregroundColor(.red)
+					}
+				}
 
 				if !(node?.deviceConfig?.isManaged ?? false) {
 					if accessoryManager.isConnected {
@@ -426,21 +426,21 @@ struct Settings: View {
 									}
 								}
 								.pickerStyle(.navigationLink)
-//								.onChange(of: selectedNode) { _, newValue in
-//									if selectedNode > 0 {
-//										let node = nodes.first(where: { $0.num == newValue })
-//										let connectedNode = nodes.first(where: { $0.num == preferredNodeNum })
-//										preferredNodeNum = Int(connectedNode?.num ?? 0)// Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
-//										if connectedNode != nil && connectedNode?.user != nil && connectedNode?.myInfo != nil && node?.user != nil {// && node?.metadata == nil {
-//											Task {
-//												try await accessoryManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, context: context)
-//												Task { @MainActor in
-//													Logger.mesh.info("Sent node metadata request from node details")
-//												}
-//											}
-//										}
-//									}
-//								}
+								.onChange(of: selectedNode) { _, newValue in
+									if selectedNode > 0 {
+										let node = nodes.first(where: { $0.num == newValue })
+										let connectedNode = nodes.first(where: { $0.num == preferredNodeNum })
+										preferredNodeNum = Int(connectedNode?.num ?? 0)// Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
+										if connectedNode != nil && connectedNode?.user != nil && connectedNode?.myInfo != nil && node?.user != nil {// && node?.metadata == nil {
+											Task {
+												_ = try await accessoryManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!)
+												Task { @MainActor in
+													Logger.mesh.info("Sent node metadata request from node details")
+												}
+											}
+										}
+									}
+								}
 								TipView(AdminChannelTip(), arrowEdge: .top)
 									.tipViewStyle(PersistentTip())
 							} else {

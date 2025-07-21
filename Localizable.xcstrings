@@ -2207,7 +2207,6 @@
       }
     },
     "About Meshtastic" : {
-      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -30165,7 +30164,6 @@
       }
     },
     "Route Recorder" : {
-      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -30330,7 +30328,6 @@
       }
     },
     "Routes" : {
-      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
