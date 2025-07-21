@@ -228,6 +228,6 @@ struct DisplayConfig: View {
 		self.units = Int(node?.displayConfig?.units ?? 0)
 		self.use12HourClock =  node?.displayConfig?.use12HClock ?? false
 		self.headingBold =  node?.displayConfig?.headingBold ?? false
-		self.hasChanges = node?.displayConfig?.use12HClock ?? false
+		self.hasChanges = false
 	}
 }
