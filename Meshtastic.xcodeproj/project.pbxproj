@@ -60,7 +60,8 @@
 		3D3417C82E29D38A006A988B /* GeoJSONOverlayConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417C72E29D38A006A988B /* GeoJSONOverlayConfig.swift */; };
 		3D3417CB2E29D3B0006A988B /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417C92E29D3B0006A988B /* Color+Hex.swift */; };
 		3D3417CC2E29D3B0006A988B /* Data+Gzip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417CA2E29D3B0006A988B /* Data+Gzip.swift */; };
-		3D3417CE2E29D5D6006A988B /* BurningManGeoJSONMapConfig.json.zlib in Resources */ = {isa = PBXBuildFile; fileRef = 3D3417CD2E29D5D6006A988B /* BurningManGeoJSONMapConfig.json.zlib */; };
+		3D3417D22E2DC260006A988B /* MapDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417D12E2DC260006A988B /* MapDataManager.swift */; };
+		3D3417D42E2DC293006A988B /* MapDataUpload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417D32E2DC293006A988B /* MapDataUpload.swift */; };
 		6D825E622C34786C008DBEE4 /* CommonRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D825E612C34786C008DBEE4 /* CommonRegex.swift */; };
 		6DA39D8E2A92DC52007E311C /* MeshtasticAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */; };
 		6DEDA55A2A957B8E00321D2E /* DetectionSensorLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */; };
@@ -335,7 +336,8 @@
 		3D3417C72E29D38A006A988B /* GeoJSONOverlayConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoJSONOverlayConfig.swift; sourceTree = "<group>"; };
 		3D3417C92E29D3B0006A988B /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
 		3D3417CA2E29D3B0006A988B /* Data+Gzip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Gzip.swift"; sourceTree = "<group>"; };
-		3D3417CD2E29D5D6006A988B /* BurningManGeoJSONMapConfig.json.zlib */ = {isa = PBXFileReference; lastKnownFileType = file; path = BurningManGeoJSONMapConfig.json.zlib; sourceTree = "<group>"; };
+		3D3417D12E2DC260006A988B /* MapDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDataManager.swift; sourceTree = "<group>"; };
+		3D3417D32E2DC293006A988B /* MapDataUpload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDataUpload.swift; sourceTree = "<group>"; };
 		6D825E612C34786C008DBEE4 /* CommonRegex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonRegex.swift; sourceTree = "<group>"; };
 		6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAppDelegate.swift; sourceTree = "<group>"; };
 		6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorLog.swift; sourceTree = "<group>"; };
@@ -797,6 +799,7 @@
 		DD4A911C2708C57100501B7E /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				3D3417D32E2DC293006A988B /* MapDataUpload.swift */,
 				DDD5BB0E2C285F92007E03CA /* Logs */,
 				DD93800C2BA74CE3008BEC06 /* Channels */,
 				DD61937A2863876A00E59241 /* Config */,
@@ -1057,7 +1060,6 @@
 		DDC2E18926CE24F70042C5E4 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				3D3417CD2E29D5D6006A988B /* BurningManGeoJSONMapConfig.json.zlib */,
 				DDB75A192A05EB67006ED576 /* alpha.png */,
 				DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */,
 				DD0E21002B8A6BC500F2D100 /* DeviceHardware.json */,
@@ -1110,6 +1112,7 @@
 		DDC2E1A526CEB32B0042C5E4 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				3D3417D12E2DC260006A988B /* MapDataManager.swift */,
 				3D3417C72E29D38A006A988B /* GeoJSONOverlayConfig.swift */,
 				BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */,
 				DDD43FE12A78C86B0083A3E9 /* Mqtt */,
@@ -1377,7 +1380,6 @@
 				DDDE5A1329AFEAB900490C6C /* Assets.xcassets in Resources */,
 				DDB75A1A2A05EB67006ED576 /* alpha.png in Resources */,
 				DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */,
-				3D3417CE2E29D5D6006A988B /* BurningManGeoJSONMapConfig.json.zlib in Resources */,
 				DD0E21012B8A6F1300F2D100 /* DeviceHardware.json in Resources */,
 				DDDBC87B2BC62E4E001E8DF7 /* Settings.bundle in Resources */,
 			);
@@ -1454,6 +1456,7 @@
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
 				DDDB444C29F8AAA600EE2349 /* Color.swift in Sources */,
 				DDDFE73F2D0D48FF0044463C /* IgnoreNodeButton.swift in Sources */,
+				3D3417D42E2DC293006A988B /* MapDataUpload.swift in Sources */,
 				DDB8F4122A9EE5DD00230ECE /* UserList.swift in Sources */,
 				DDB75A0F2A05920E006ED576 /* FileManager.swift in Sources */,
 				DD3D17E02C3FB67200561584 /* LocalWeatherConditions.swift in Sources */,
@@ -1601,6 +1604,7 @@
 				251926922C3CB52300249DF5 /* DeleteNodeButton.swift in Sources */,
 				DDB6ABE428B13FFF00384BA1 /* DisplayEnums.swift in Sources */,
 				DD4975A52B147BA90026544E /* AmbientLightingConfig.swift in Sources */,
+				3D3417D22E2DC260006A988B /* MapDataManager.swift in Sources */,
 				D93068D92B81509C0066FBC8 /* TapbackResponses.swift in Sources */,
 				DDF82CBD2D5BC69200DC25EC /* NavigateToButton.swift in Sources */,
 				8D3F8A3F2D44BB02009EAAA4 /* PowerMetrics.swift in Sources */,

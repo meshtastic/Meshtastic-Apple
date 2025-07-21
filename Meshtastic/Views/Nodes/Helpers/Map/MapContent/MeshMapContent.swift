@@ -29,8 +29,8 @@ struct MeshMapContent: MapContent {
 	@AppStorage("enableMapWaypoints") private var showWaypoints = true
 	@Binding var selectedWaypoint: WaypointEntity?
 
-	// Burning Man GeoJSON overlays
-	@AppStorage("burningManShowAll") private var showBurningMan = false
+	// Map overlays
+	@AppStorage("mapOverlaysEnabled") private var showMapOverlays = false
 
 	@FetchRequest(fetchRequest: PositionEntity.allPositionsFetchRequest(), animation: .easeIn)
 	var positions: FetchedResults<PositionEntity>
@@ -232,7 +232,7 @@ struct MeshMapContent: MapContent {
 		}
 
 						/// GeoJSON Overlays (Configuration-Driven)
-		if showBurningMan {
+		if showMapOverlays {
 			let overlayManager = GeoJSONOverlayManager.shared
 			let availableOverlays = overlayManager.getAvailableOverlayIds()
 

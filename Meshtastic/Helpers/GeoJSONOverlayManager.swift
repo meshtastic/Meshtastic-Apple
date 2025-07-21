@@ -9,26 +9,20 @@ class GeoJSONOverlayManager {
     private var configuration: GeoJSONOverlayConfiguration?
     private var overlays: [String: [MKOverlay]] = [:]
 
-    /// Load and decompress the consolidated configuration
+    /// Load user-uploaded configuration only
     func loadConfiguration() -> GeoJSONOverlayConfiguration? {
         if let cached = configuration {
             return cached
         }
 
-                        guard let url = Bundle.main.url(forResource: "BurningManGeoJSONMapConfig", withExtension: "json.zlib") else {
-            return nil
+        // Load user-uploaded configuration
+        if let userConfig = MapDataManager.shared.loadUserConfiguration() {
+            configuration = userConfig
+            return userConfig
         }
 
-        do {
-            let compressedData = try Data(contentsOf: url)
-            let decompressedData = try compressedData.zlibDecompressed()
-            let config = try JSONDecoder().decode(GeoJSONOverlayConfiguration.self, from: decompressedData)
-
-            configuration = config
-            return config
-        } catch {
-            return nil
-        }
+        // No configuration available
+        return nil
     }
 
     /// Load overlays for a specific overlay ID
@@ -110,5 +104,19 @@ class GeoJSONOverlayManager {
     func clearCache() {
         overlays.removeAll()
         configuration = nil
+    }
+
+    /// Check if user-uploaded data is available
+    func hasUserData() -> Bool {
+        return MapDataManager.shared.getUploadedFiles().contains { $0.isActive }
+    }
+
+    /// Get the active data source name
+    func getActiveDataSource() -> String {
+        if hasUserData() {
+            return NSLocalizedString("User Uploaded", comment: "Data source label for user uploaded files")
+        } else {
+            return NSLocalizedString("No Data", comment: "Data source label when no files are available")
+        }
     }
 }

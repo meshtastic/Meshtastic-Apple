@@ -116,19 +116,56 @@ struct MapSettingsForm: View {
 					}
 				}
 
-				Section(header: Text("Map Overlays")) {
+								Section(header: Text("Map Overlays")) {
+					let hasUserData = GeoJSONOverlayManager.shared.hasUserData()
+
+					// Master toggle for map overlays
 					Toggle(isOn: Binding(
-						get: { UserDefaults.standard.bool(forKey: "burningManShowAll") },
-						set: { UserDefaults.standard.set($0, forKey: "burningManShowAll") }
+						get: { hasUserData && UserDefaults.standard.bool(forKey: "mapOverlaysEnabled") },
+						set: { UserDefaults.standard.set($0, forKey: "mapOverlaysEnabled") }
 					)) {
 						Label {
-							Text("Burning Man")
+							VStack(alignment: .leading) {
+								Text("Map Overlays")
+								Text(GeoJSONOverlayManager.shared.getActiveDataSource())
+									.font(.caption)
+									.foregroundColor(.secondary)
+							}
 						} icon: {
-							Image(systemName: "flame.fill")
-								.foregroundColor(.orange)
+							Image(systemName: "map")
+								.foregroundColor(hasUserData ? .accentColor : .secondary)
 						}
 					}
 					.tint(.accentColor)
+					.disabled(!hasUserData)
+
+					// Show data source info or upload prompt
+					if hasUserData && UserDefaults.standard.bool(forKey: "mapOverlaysEnabled") {
+						HStack {
+							Image(systemName: "info.circle")
+								.foregroundColor(.secondary)
+							Text(String(format: NSLocalizedString("Using %@ data", comment: "Shows which data source is being used"), GeoJSONOverlayManager.shared.getActiveDataSource()))
+								.font(.caption)
+								.foregroundColor(.secondary)
+							Spacer()
+						}
+						.padding(.leading, 35)
+					} else if !hasUserData {
+						NavigationLink(destination: MapDataUpload()) {
+							HStack {
+								Image(systemName: "arrow.up.doc")
+									.foregroundColor(.accentColor)
+								Text(NSLocalizedString("Upload map data to enable overlays", comment: "Prompt to upload map data when none is available"))
+									.font(.caption)
+									.foregroundColor(.secondary)
+								Spacer()
+								Image(systemName: "chevron.right")
+									.font(.caption2)
+									.foregroundColor(.secondary)
+							}
+						}
+						.padding(.leading, 35)
+					}
 				}
 			}
 
