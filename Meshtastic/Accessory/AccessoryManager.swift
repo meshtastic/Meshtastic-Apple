@@ -15,6 +15,7 @@ enum AccessoryError: Error {
 	case connectionFailed(String)
 	case ioFailed(String)
 	case appError(String)
+	case timeout
 	// Transport-specific sub-errors can be nested
 }
 
@@ -28,7 +29,8 @@ enum AccessoryManagerState: Equatable {
 	case subscribed
 }
 
-class AccessoryManager: ObservableObject, PacketDelegate, MqttClientProxyManagerDelegate {
+@MainActor
+class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Singleton Access
 	static let shared = AccessoryManager()
 
@@ -65,8 +67,14 @@ class AccessoryManager: ObservableObject, PacketDelegate, MqttClientProxyManager
 	public var wantRangeTestPackets = true
 	var wantStoreAndForwardPackets = false
 
+	// Tasks
+	private var packetTask: Task <Void, Error>?
+	private var logTask: Task <Void, Error>?
+	private var rssiTask: Task <Void, Error>?
+	private var rssiUpdateDuringDiscoveryTask: Task <Void, Error>?
+
 	var isConnected: Bool {
-		self.activeConnection?.connection.isConnected ?? false
+		self.activeConnection?.connection != nil
 	}
 
 	init(transports: [any Transport] = [BLETransport(), TCPTransport()]) {
@@ -78,11 +86,7 @@ class AccessoryManager: ObservableObject, PacketDelegate, MqttClientProxyManager
 	func startDiscovery() {
 		stopDiscovery()
 		updateState(.discovering)
-		for transport in transports {
-			if var wirelessTransport = transport as? any WirelessTransport {
-				wirelessTransport.rssiDelegate = self
-			}
-		}
+
 		discoveryTask = Task {
 			var allDevices: [Device] = []
 			for await newDevice in self.discoverAllDevices() {
@@ -107,19 +111,33 @@ class AccessoryManager: ObservableObject, PacketDelegate, MqttClientProxyManager
 				}
 			}
 		}
+
+		rssiUpdateDuringDiscoveryTask = Task {
+			for await rssiUpdate in self.rssiUpdatesDuringDiscovery() {
+				updateDevice(deviceId: rssiUpdate.deviceId, key: \.rssi, value: rssiUpdate.rssi)
+			}
+		}
 	}
 
 	func stopDiscovery() {
 		discoveryTask?.cancel()
 		updateState(.idle)
+		discoveryTask?.cancel()
 		discoveryTask = nil
-		for transport in transports {
-			if var wirelessTransport = transport as? any WirelessTransport {
-				wirelessTransport.rssiDelegate = nil
-			}
-		}
 	}
 
+	private func rssiUpdatesDuringDiscovery() -> AsyncStream<TransportRSSIUpdate> {
+		AsyncStream { continuation in
+			let tasks = transports.compactMap({ $0 as? WirelessTransport }).compactMap { transport in
+				Task {
+					for await rssiUpdate in await transport.rssiStream() {
+						continuation.yield(rssiUpdate)
+					}
+				}
+			}
+			continuation.onTermination = { _ in tasks.forEach { $0.cancel() } }
+		}
+	}
 	private func discoverAllDevices() -> AsyncStream<Device> {
 		AsyncStream { continuation in
 			let tasks = transports.map { transport in
@@ -146,10 +164,8 @@ class AccessoryManager: ObservableObject, PacketDelegate, MqttClientProxyManager
 		}
 
 		// Update device state to connecting
-		Task { @MainActor in
-			updateState(.connecting)
-			updateDevice(deviceId: device.id, key: \.connectionState, value: .connecting)
-		}
+		updateState(.connecting)
+		updateDevice(deviceId: device.id, key: \.connectionState, value: .connecting)
 
 		// Find the transport that handles this device
 		guard let transport = transports.first(where: { $0.type == device.transportType }) else {
@@ -167,26 +183,41 @@ class AccessoryManager: ObservableObject, PacketDelegate, MqttClientProxyManager
 		for attempt in 1...maxRetries {
 			if attempt > 1 {
 				Logger.services.info("Retrying connection to \(device.name) (\(attempt)/\(maxRetries))")
-				Task { @MainActor in
-					updateState(.retrying(attempt: attempt))
-				}
+				updateState(.retrying(attempt: attempt))
 			} else {
-				Task { @MainActor in
-					updateState(.connecting)
-				}
+				updateState(.connecting)
 			}
 
 			do {
 				// Ask the transport to connect to the device and return a connection
-				var connection = try await transport.connect(to: device)
+				let connection = try await transport.connect(to: device)
+				let (packetStream, logStream) = await connection.connect()
 
 				// If this is a wireless connection, have it report the RSSI to the AccessoryManager
-				if var wirelessConnection = connection as? any WirelessConnection {
-					wirelessConnection.rssiDelegate = self
+				if let wirelessConnection = connection as? any WirelessConnection {
+					rssiTask = Task {
+						for await rssiValue in await wirelessConnection.getRSSIStream() {
+							self.didUpdateRSSI(rssiValue, for: device.id)
+						}
+					}
 				}
 
-				// Tell the connection to report its packets to the AccessoryManager
-				connection.packetDelegate = self
+				// Connections emit FromRadio protobufs.  Process them in didReceive
+				packetTask = Task {
+					for await packet in packetStream {
+						self.didReceive(result: .success(packet))
+					}
+					self.didReceive(result: .failure(AccessoryError.connectionFailed("Connection closed")))
+				}
+
+				// Not all connections emit log messages.  Process them if they do.
+				if let logStream {
+					packetTask = Task {
+						for await logString in logStream {
+							self.didReceiveLog(message: logString)
+						}
+					}
+				}
 
 				updateState(.communicating)
 
@@ -202,6 +233,9 @@ class AccessoryManager: ObservableObject, PacketDelegate, MqttClientProxyManager
 				if UserDefaults.firstLaunch {
 					UserDefaults.showDeviceOnboarding = true
 				}
+
+				// Send Heartbeat before wantConfig
+				try? await connection.send(heartbeatToRadio)
 
 				await sendWantDatabase()
 
@@ -276,7 +310,7 @@ class AccessoryManager: ObservableObject, PacketDelegate, MqttClientProxyManager
 		try await self.send(data: toRadio)
 
 		// Start draining packets in the background
-		try connection.startDrainPendingPackets()
+		try await connection.startDrainPendingPackets()
 
 		// Wait for the nonce request to be completed before continuing
 		try await withCheckedThrowingContinuation { cont in
@@ -286,7 +320,10 @@ class AccessoryManager: ObservableObject, PacketDelegate, MqttClientProxyManager
 
 	func didDisconnect() {
 		allowDisconnect = false
-
+		logTask?.cancel()
+		logTask = nil
+		packetTask?.cancel()
+		packetTask = nil
 		startDiscovery()
 	}
 
@@ -338,7 +375,7 @@ class AccessoryManager: ObservableObject, PacketDelegate, MqttClientProxyManager
 	func send(data: ToRadio, debugDescription: String? = nil) async throws {
 		Logger.services.info("✅ [Accessory] Sending \(data.debugDescription)")
 		guard let active = activeConnection,
-			  active.connection.isConnected else {
+			  await active.connection.isConnected else {
 			throw AccessoryError.connectionFailed("Not connected to any device")
 		}
 		try await active.connection.send(data)
@@ -351,12 +388,14 @@ class AccessoryManager: ObservableObject, PacketDelegate, MqttClientProxyManager
 		Logger.services.info("✅ [Accessory] Received packet")
 		switch result {
 		case .success(let fromRadio):
+			Logger.services.info("\t✅ [Accessory] Received packet \(fromRadio.debugDescription)")
 			self.processFromRadio(fromRadio)
 
 		case .failure(let error):
 			// Handle error, perhaps log and disconnect
+			Logger.services.info("\t✅ [Accessory] Received packet \(error.localizedDescription)")
 			print("Error receiving packet: \(error)")
-			// try? await self.disconnect()
+			Task { try? await self.disconnect() }
 		}
 	}
 
@@ -570,7 +609,7 @@ class AccessoryManager: ObservableObject, PacketDelegate, MqttClientProxyManager
 	}
 }
 
-extension AccessoryManager: RSSIDelegate {
+extension AccessoryManager {
 	func didUpdateRSSI(_ rssi: Int, for deviceId: UUID) {
 		updateDevice(deviceId: deviceId, key: \.rssi, value: rssi)
 	}

@@ -8,26 +8,17 @@
 import Foundation
 import MeshtasticProtobufs
 
-protocol RSSIDelegate: AnyObject {
-	func didUpdateRSSI(_ rssi: Int, for deviceId: UUID)
-}
-
-protocol PacketDelegate: AnyObject {
-	func didReceive(result: Result<FromRadio, Error>)
-	func didReceiveLog(message: String)
-}
-
-protocol Connection {
+protocol Connection: Actor {
 	var isConnected: Bool { get }
 	func send(_ data: ToRadio) async throws
-	var packetDelegate: PacketDelegate? { get set }
+	func connect() async -> (AsyncStream<FromRadio>, AsyncStream<String>?)
 	func disconnect() async throws
 	func drainPendingPackets() async throws
 	func startDrainPendingPackets() throws
 }
 
 protocol WirelessConnection: Connection {
-	var rssiDelegate: RSSIDelegate? { get set }
+	func getRSSIStream() async -> AsyncStream<Int>
 }
 
 enum ConnectionState: Equatable {

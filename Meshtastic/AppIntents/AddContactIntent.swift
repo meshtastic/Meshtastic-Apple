@@ -18,7 +18,7 @@ struct AddContactIntent: AppIntent {
 	// Define the function that performs the main logic
 	func perform() async throws -> some IntentResult {
 		// Ensure the BLE Manager is connected
-		if !AccessoryManager.shared.isConnected {
+		if !(await AccessoryManager.shared.isConnected) {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 

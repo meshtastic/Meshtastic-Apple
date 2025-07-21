@@ -57,7 +57,7 @@ extension AccessoryManager {
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
 		guard let adminData: Data = try? adminPacket.serializedData() else {
-			return 0
+			throw AccessoryError.ioFailed("saveTimeZone: Unable to serialize Admin packet")
 		}
 		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
@@ -358,7 +358,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("Remove node %@ as favorite on %@".localized, node.num.toHex(), connectedNodeNum.toHex())
-		try await send(data: toRadio)
+		try await send(data: toRadio, debugDescription: logString)
 	}
 
 	public func saveChannelSet(base64UrlString: String, addChannels: Bool = false, okToMQTT: Bool = false) async throws {

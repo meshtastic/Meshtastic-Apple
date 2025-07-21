@@ -10,13 +10,11 @@ import Network
 import OSLog
 import MeshtasticProtobufs
 
-class TCPConnection: Connection {
+actor TCPConnection: Connection {
+
 	private let connection: NWConnection
 	private let queue = DispatchQueue(label: "tcp.connection")
 	private var readerTask: Task<Void, Never>?
-	private var logMessage: Data = Data()
-
-	weak var packetDelegate: PacketDelegate?
 
 	var isConnected: Bool {
 		connection.state == .ready
@@ -31,11 +29,24 @@ class TCPConnection: Connection {
 			connection.stateUpdateHandler = { state in
 				switch state {
 				case .ready:
+					Logger.mesh.debug("state is now READY")
 					cont.resume()
-				case .failed(let error):
-					cont.resume(throwing: error)
-				default:
-					break
+				case .failed:
+					Logger.mesh.debug("state is now FAILED")
+					Task {
+						try? await self.disconnect()
+					}
+				case .preparing:
+					Logger.mesh.debug("state is now PREPARING")
+
+				case .cancelled:
+					Logger.mesh.debug("state is now CANCELLED")
+
+				case .setup:
+					Logger.mesh.debug("state is now SETUP")
+
+				case .waiting:
+					Logger.mesh.debug("state is now SETUP")
 				}
 			}
 			connection.start(queue: queue)
@@ -57,24 +68,12 @@ class TCPConnection: Connection {
 			if data[0] == startOfFrame[waitingOnByte] {
 				waitingOnByte += 1
 			} else {
-				handleLogByte(data[0])
 				waitingOnByte = 0
 			}
 
 			if waitingOnByte > 1 {
 				return true
 			}
-		}
-	}
-
-	private func handleLogByte(_ byte: UInt8) {
-		if byte == UInt8(ascii: "\n") {
-			if let logString = String(data: logMessage, encoding: .utf8) {
-				packetDelegate?.didReceiveLog(message: logString)
-			}
-			logMessage.removeAll(keepingCapacity: true)
-		} else {
-			logMessage.append(byte)
 		}
 	}
 
@@ -90,7 +89,7 @@ class TCPConnection: Connection {
 	private func startReader() {
 		// TODO: @MainActor here because packets come into AccessoryManager out of order otherwise.  Need to figure out the concurrency
 		readerTask = Task { @MainActor in
-			while isConnected {
+			while await isConnected {
 				do {
 					if try await waitForMagicBytes() == false {
 						Logger.data.debug("TCPConnection: EOF while waiting for magic bytes")
@@ -101,20 +100,20 @@ class TCPConnection: Connection {
 					if let length = try? await readInteger() {
 						let payload = try await receiveData(min: Int(length), max: Int(length))
 						if let fromRadio = try? FromRadio(serializedBytes: payload) {
-							packetDelegate?.didReceive(result: .success(fromRadio))
+							await packetStream?.yield(fromRadio)
 						} else {
-							Logger.services.error("Failed to deserialize FromRadio")
+							await packetStream?.finish()
 						}
 					} else {
 						Logger.data.debug("TCPConnection: EOF while waiting for length")
 					}
 				} catch {
 					Logger.services.error("Error reading from TCP: \(error)")
-					packetDelegate?.didReceive(result: .failure(error))
+					await packetStream?.finish()
 					break
 				}
 			}
-			Logger.services.error("End of TCP reading task: isConnected:\(self.isConnected)")
+			// Logger.services.error("End of TCP reading task: isConnected:\(self.isConnected)")
 		}
 	}
 
@@ -157,6 +156,12 @@ class TCPConnection: Connection {
 	func disconnect() async throws {
 		readerTask?.cancel()
 		connection.cancel()
+
+		packetStream?.finish()
+		packetStream = nil
+
+		logStream?.finish()
+		logStream = nil
 	}
 
 	func drainPendingPackets() async throws {
@@ -166,4 +171,25 @@ class TCPConnection: Connection {
 	func startDrainPendingPackets() throws {
 		// For TCP, reader is already started
 	}
+
+	private var packetStream: AsyncStream<MeshtasticProtobufs.FromRadio>.Continuation?
+	private var logStream: AsyncStream<String>.Continuation?
+
+	private func getPacketStream() -> AsyncStream<MeshtasticProtobufs.FromRadio> {
+		AsyncStream<MeshtasticProtobufs.FromRadio> { continuation in
+			self.packetStream = continuation
+			continuation.onTermination = { _ in
+				Task { try await self.disconnect() }
+			}
+		}
+	}
+
+	private func getRadioLogStream() -> AsyncStream<String>? {
+		return nil
+	}
+
+	func connect() async -> (AsyncStream<FromRadio>, AsyncStream<String>?) {
+		return (getPacketStream(), getRadioLogStream())
+	}
+
 }

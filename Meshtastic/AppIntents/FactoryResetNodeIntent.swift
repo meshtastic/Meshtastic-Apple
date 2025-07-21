@@ -24,12 +24,12 @@ struct FactoryResetNodeIntent: AppIntent {
 		}
 
 		// Ensure the node is connected
-		if !AccessoryManager.shared.isConnected {
+		if !(await AccessoryManager.shared.isConnected) {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 
 		// Safely unwrap the connected node information
-		if let connectedPeripheralNum = AccessoryManager.shared.activeDeviceNum,
+		if let connectedPeripheralNum = await AccessoryManager.shared.activeDeviceNum,
 		   let connectedNode = getNodeInfo(id: connectedPeripheralNum, context: PersistenceController.shared.container.viewContext),
 		   let fromUser = connectedNode.user,
 		   let toUser = connectedNode.user {

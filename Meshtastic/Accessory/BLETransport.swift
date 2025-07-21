@@ -10,6 +10,7 @@ import CoreBluetooth
 import SwiftUI
 
 actor BLETransport: WirelessTransport {
+
 	let meshtasticServiceCBUUID = CBUUID(string: "0x6BA1B218-15A8-461F-9FA8-5DCAE273EAFD")
 
 	let type: TransportType = .ble
@@ -18,8 +19,6 @@ actor BLETransport: WirelessTransport {
 	private var continuation: AsyncStream<Device>.Continuation?
 	private let delegate: BLEDelegate
 	private var connectedPeripheral: CBPeripheral?
-
-	nonisolated(unsafe) weak var rssiDelegate: RSSIDelegate?
 
 	private nonisolated(unsafe) var _status: TransportStatus = .uninitialized
 	nonisolated var status: TransportStatus { _status }
@@ -105,7 +104,7 @@ actor BLETransport: WirelessTransport {
 		let rssiVal = rssi.intValue
 		let deviceId = id
 		Task {
-			await self.rssiDelegate?.didUpdateRSSI(rssiVal, for: deviceId)
+			rssiUpdateContinuation?.yield((deviceId: deviceId, rssi: rssiVal))
 		}
 	}
 
@@ -133,6 +132,13 @@ actor BLETransport: WirelessTransport {
 	func handlePeripheralDisconnect(peripheral: CBPeripheral) {
 		if self.connectedPeripheral?.identifier == peripheral.identifier {
 			self.connectedPeripheral = nil
+		}
+	}
+
+	private var rssiUpdateContinuation: 	AsyncStream<TransportRSSIUpdate>.Continuation?
+	func rssiStream() async -> AsyncStream<TransportRSSIUpdate> {
+		AsyncStream<TransportRSSIUpdate> { cont in
+			self.rssiUpdateContinuation = cont
 		}
 	}
 }
@@ -189,9 +195,7 @@ class BLEDelegate: NSObject, CBCentralManagerDelegate {
 				cont.resume(returning: connection)
 			case .failure(let error):
 				cont.resume(throwing: error)
-				if let central = connection.central {
-					central.cancelPeripheralConnection(peripheral)
-				}
+				central.cancelPeripheralConnection(peripheral)
 			}
 			self.connectContinuation = nil
 			self.connectingPeripheral = nil

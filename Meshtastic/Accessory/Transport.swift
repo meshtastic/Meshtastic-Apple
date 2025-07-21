@@ -31,6 +31,8 @@ protocol Transport {
 	func connect(to device: Device) async throws -> any Connection
 }
 
+typealias TransportRSSIUpdate = (deviceId: UUID, rssi: Int)
+
 protocol WirelessTransport: Transport {
-	var rssiDelegate: RSSIDelegate? { get set }
+	func rssiStream() async -> AsyncStream<TransportRSSIUpdate>
 }

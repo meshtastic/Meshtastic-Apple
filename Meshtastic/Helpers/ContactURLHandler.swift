@@ -14,6 +14,7 @@ struct ContactURLHandler {
 
 	static var minimumContactVersion = "2.6.9"
 
+	@MainActor
 	static func handleContactUrl(url: URL, accessoryManager: AccessoryManager) {
 		let supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumContactVersion)
 
