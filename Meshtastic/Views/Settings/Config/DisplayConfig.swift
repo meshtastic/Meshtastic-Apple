@@ -226,8 +226,8 @@ struct DisplayConfig: View {
 		self.oledType = Int(node?.displayConfig?.oledType ?? 0)
 		self.displayMode = Int(node?.displayConfig?.displayMode ?? 0)
 		self.units = Int(node?.displayConfig?.units ?? 0)
-		self.use12HourClock =  node?.displayConfig?.use12HClock ?? false
 		self.headingBold =  node?.displayConfig?.headingBold ?? false
+		self.use12HourClock = node?.displayConfig?.use12HClock ?? false
 		self.hasChanges = false
 	}
 }
