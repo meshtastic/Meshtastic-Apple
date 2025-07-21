@@ -35528,6 +35528,9 @@
         }
       }
     },
+    "TCP" : {
+      "shouldTranslate" : false
+    },
     "Telemetry" : {
       "localizations" : {
         "de" : {

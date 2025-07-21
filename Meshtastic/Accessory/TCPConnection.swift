@@ -14,6 +14,7 @@ class TCPConnection: Connection {
 	private let connection: NWConnection
 	private let queue = DispatchQueue(label: "tcp.connection")
 	private var readerTask: Task<Void, Never>?
+	private var logMessage: Data = Data()
 
 	weak var packetDelegate: PacketDelegate?
 
@@ -56,12 +57,24 @@ class TCPConnection: Connection {
 			if data[0] == startOfFrame[waitingOnByte] {
 				waitingOnByte += 1
 			} else {
+				handleLogByte(data[0])
 				waitingOnByte = 0
 			}
 
 			if waitingOnByte > 1 {
 				return true
 			}
+		}
+	}
+
+	private func handleLogByte(_ byte: UInt8) {
+		if byte == UInt8(ascii: "\n") {
+			if let logString = String(data: logMessage, encoding: .utf8) {
+				packetDelegate?.didReceiveLog(message: logString)
+			}
+			logMessage.removeAll(keepingCapacity: true)
+		} else {
+			logMessage.append(byte)
 		}
 	}
 

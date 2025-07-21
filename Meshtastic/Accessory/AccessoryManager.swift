@@ -285,6 +285,8 @@ class AccessoryManager: ObservableObject, PacketDelegate, MqttClientProxyManager
 	}
 
 	func didDisconnect() {
+		allowDisconnect = false
+
 		startDiscovery()
 	}
 
@@ -296,8 +298,10 @@ class AccessoryManager: ObservableObject, PacketDelegate, MqttClientProxyManager
 		try await active.connection.disconnect()
 		updateDevice(deviceId: active.device.id, key: \.connectionState, value: .disconnected)
 		updateState(.idle)
-		allowDisconnect = false
-		didDisconnect()
+
+		Task { @MainActor in
+			didDisconnect()
+		}
 	}
 
 	// Update device attributes on MainActor for presentation in the UI
@@ -344,17 +348,65 @@ class AccessoryManager: ObservableObject, PacketDelegate, MqttClientProxyManager
 	}
 
 	func didReceive(result: Result<FromRadio, Error>) {
-			Logger.services.info("✅ [Accessory] Received packet")
-			switch result {
-			case .success(let fromRadio):
-				self.processFromRadio(fromRadio)
+		Logger.services.info("✅ [Accessory] Received packet")
+		switch result {
+		case .success(let fromRadio):
+			self.processFromRadio(fromRadio)
 
-			case .failure(let error):
-				// Handle error, perhaps log and disconnect
-				print("Error receiving packet: \(error)")
-				// try? await self.disconnect()
-			}
+		case .failure(let error):
+			// Handle error, perhaps log and disconnect
+			print("Error receiving packet: \(error)")
+			// try? await self.disconnect()
 		}
+	}
+
+	func didReceiveLog(message: String) {
+		var log = message
+		/// Debug Log Level
+		if log.starts(with: "DEBUG |") {
+			do {
+				let logString = log
+				if let coordsMatch = try CommonRegex.COORDS_REGEX.firstMatch(in: logString) {
+					log = "\(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces))"
+					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+					Logger.radio.debug("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0.replacingOccurrences(of: "[,]", with: "", options: .regularExpression), privacy: .private(mask: .none)) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
+				} else {
+					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+					Logger.radio.debug("🕵🏻‍♂️ \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+				}
+			} catch {
+				log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+				Logger.radio.debug("🕵🏻‍♂️ \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+			}
+		} else if log.starts(with: "INFO  |") {
+			do {
+				let logString = log
+				if let coordsMatch = try CommonRegex.COORDS_REGEX.firstMatch(in: logString) {
+					log = "\(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces))"
+					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+					Logger.radio.info("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0.replacingOccurrences(of: "[,]", with: "", options: .regularExpression), privacy: .private) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
+				} else {
+					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+					Logger.radio.info("📢 \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+				}
+			} catch {
+				log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+				Logger.radio.info("📢 \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+			}
+		} else if log.starts(with: "WARN  |") {
+			log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+			Logger.radio.warning("⚠️ \(log.replacingOccurrences(of: "WARN  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+		} else if log.starts(with: "ERROR |") {
+			log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+			Logger.radio.error("💥 \(log.replacingOccurrences(of: "ERROR |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+		} else if log.starts(with: "CRIT  |") {
+			log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+			Logger.radio.critical("🧨 \(log.replacingOccurrences(of: "CRIT  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
+		} else {
+			log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+			Logger.radio.debug("📟 \(log, privacy: .public)")
+		}
+	}
 
 	private func processFromRadio(_ decodedInfo: FromRadio) {
 		switch decodedInfo.payloadVariant {
@@ -625,8 +677,8 @@ extension AccessoryManager {
 	func checkIsVersionSupported(forVersion: String) -> Bool {
 		let myVersion = connectedVersion ?? "0.0.0"
 		let supportedVersion = UserDefaults.firmwareVersion == "0.0.0" ||
-			forVersion.compare(myVersion, options: .numeric) == .orderedAscending ||
-			forVersion.compare(myVersion, options: .numeric) == .orderedSame
+		forVersion.compare(myVersion, options: .numeric) == .orderedAscending ||
+		forVersion.compare(myVersion, options: .numeric) == .orderedSame
 		return supportedVersion
 	}
 }

@@ -14,6 +14,7 @@ protocol RSSIDelegate: AnyObject {
 
 protocol PacketDelegate: AnyObject {
 	func didReceive(result: Result<FromRadio, Error>)
+	func didReceiveLog(message: String)
 }
 
 protocol Connection {

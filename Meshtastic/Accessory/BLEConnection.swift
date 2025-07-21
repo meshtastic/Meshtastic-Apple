@@ -277,9 +277,30 @@ class BLEConnection: NSObject, WirelessConnection, CBPeripheralDelegate {
 					await performDrain()
 				}
 			}
+
 		case LOGRADIO_UUID:
-		// TODO: Yield to a log stream if needed
-			break
+			do {
+				let logRecord = try LogRecord(serializedBytes: characteristic.value!)
+				var message = logRecord.source.isEmpty ? logRecord.message : "[\(logRecord.source)] \(logRecord.message)"
+				switch logRecord.level {
+				case .debug:
+					message = "DEBUG | \(message)"
+				case .info:
+					message = "INFO  | \(message)"
+				case .warning:
+					message = "WARN  | \(message)"
+				case .error:
+					message = "ERROR | \(message)"
+				case .critical:
+					message = "CRIT  | \(message)"
+				default:
+					message = "DEBUG | \(message)"
+				}
+				packetDelegate?.didReceiveLog(message: message)
+			} catch {
+				// Ignore fail to parse as LogRecord
+			}
+
 		default:
 			break
 		}
