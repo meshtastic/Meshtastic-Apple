@@ -214,11 +214,11 @@ struct LoRaConfig: View {
 					lc.overrideFrequency = overrideFrequency
 					lc.ignoreMqtt = ignoreMqtt
 					lc.configOkToMqtt = okToMqtt
-					if connectedNode.num ?? -1 == node?.user?.num ?? 0 {
+					if connectedNode.num == node?.user?.num ?? 0 {
 						UserDefaults.modemPreset = modemPreset
 					}
 					Task {
-						try await accessoryManager.saveLoRaConfig(config: lc, fromUser: connectedNode.user!, toUser: node!.user!)
+						_ = try await accessoryManager.saveLoRaConfig(config: lc, fromUser: connectedNode.user!, toUser: node!.user!)
 						Task { @MainActor in
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save

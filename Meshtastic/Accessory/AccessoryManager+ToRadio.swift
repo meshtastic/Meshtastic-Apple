@@ -1712,7 +1712,7 @@ extension AccessoryManager {
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
 
-	public func requestTelemetryModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32? = nil) async throws {
+	public func requestTelemetryModuleConfig(fromUser: UserEntity, toUser: UserEntity) async throws {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.telemetryConfig
@@ -1722,9 +1722,6 @@ extension AccessoryManager {
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		if let adminIndex {
-			meshPacket.channel = UInt32(adminIndex)
-		}
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -1737,7 +1734,7 @@ extension AccessoryManager {
 
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested Telemetry Module Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "unknown".localized)"
+		let messageDescription = "🛎️ Requested Telemetry Module Config for node: \(toUser.longName ?? "unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
 
@@ -1765,7 +1762,7 @@ extension AccessoryManager {
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
 
-	public func requestBluetoothConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32? = nil) async throws {
+	public func requestBluetoothConfig(fromUser: UserEntity, toUser: UserEntity) async throws {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.bluetoothConfig
@@ -1777,9 +1774,6 @@ extension AccessoryManager {
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		if let adminIndex = adminIndex {
-			meshPacket.channel = UInt32(adminIndex)
-		}
 		meshPacket.wantAck = true
 
 		var dataMessage = DataMessage()
@@ -1792,7 +1786,7 @@ extension AccessoryManager {
 
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "🛎️ Requested Bluetooth Config on admin channel \(adminIndex) for node: \(String(activeDeviceNum ?? -1))"
+		let messageDescription = "🛎️ Requested Bluetooth Config for node: \(String(activeDeviceNum ?? -1))"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
 

@@ -117,7 +117,7 @@ struct TelemetryConfig: View {
 					tc.powerScreenEnabled = powerScreenEnabled
 
 					Task {
-						try await accessoryManager.saveTelemetryModuleConfig(config: tc, fromUser: connectedNode!.user!, toUser: node!.user!)
+						_ = try await accessoryManager.saveTelemetryModuleConfig(config: tc, fromUser: connectedNode!.user!, toUser: node!.user!)
 						Task { @MainActor in
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save

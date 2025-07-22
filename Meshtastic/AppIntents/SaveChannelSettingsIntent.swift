@@ -21,7 +21,7 @@ struct SaveChannelSettingsIntent: AppIntent {
 	// Define the function that performs the main logic
 	func perform() async throws -> some IntentResult {
 		// Ensure the BLE Manager is connected
-		if !(await AccessoryManager.shared.isConnected) {
+		if !AccessoryManager.shared.isConnected {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 

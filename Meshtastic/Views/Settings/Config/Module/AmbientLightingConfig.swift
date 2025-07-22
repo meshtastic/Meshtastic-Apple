@@ -69,7 +69,7 @@ struct AmbientLightingConfig: View {
 
 					Task {
 						do {
-							try await accessoryManager.saveAmbientLightingModuleConfig(config: al, fromUser: connectedNode!.user!, toUser: node!.user!)
+							_ = try await accessoryManager.saveAmbientLightingModuleConfig(config: al, fromUser: connectedNode!.user!, toUser: node!.user!)
 							Task { @MainActor in
 								hasChanges = false
 								goBack()

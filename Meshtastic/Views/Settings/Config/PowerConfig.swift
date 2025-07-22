@@ -194,7 +194,7 @@ struct PowerConfig: View {
 			config.lsSecs = UInt32(lsSecs)
 			config.minWakeSecs = UInt32(minWakeSecs)
 			Task {
-				try await accessoryManager.savePowerConfig(
+				_ = try await accessoryManager.savePowerConfig(
 					config: config,
 					fromUser: fromUser,
 					toUser: toUser

@@ -13,6 +13,7 @@ import CoreLocation
 enum AccessoryError: Error {
 	case discoveryFailed(String)
 	case connectionFailed(String)
+	case versionMismatch(String)
 	case ioFailed(String)
 	case appError(String)
 	case timeout
@@ -29,7 +30,6 @@ enum AccessoryManagerState: Equatable {
 	case subscribed
 }
 
-@MainActor
 class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Singleton Access
 	static let shared = AccessoryManager()
@@ -179,102 +179,124 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 		// Start trying to connect
 		Task { @MainActor in lastConnectionError = nil }
-		var shouldRetry = true
-		for attempt in 1...maxRetries {
+		retryLoop: for attempt in 1...maxRetries {
 			if attempt > 1 {
-				Logger.services.info("Retrying connection to \(device.name) (\(attempt)/\(maxRetries))")
+				Logger.transport.info("Retrying connection to \(device.name) (\(attempt)/\(maxRetries))")
 				updateState(.retrying(attempt: attempt))
 			} else {
 				updateState(.connecting)
 			}
 
 			do {
-				// Ask the transport to connect to the device and return a connection
-				let connection = try await transport.connect(to: device)
-				let (packetStream, logStream) = await connection.connect()
+//				try await withTimeout(4.0) {
+					Logger.transport.debug("[Connect] Attempting to connect to device: \(device.name, privacy: .public) retry: \(attempt)")
+					// Ask the transport to connect to the device and return a connection
+					let connection = try await transport.connect(to: device)
+					let (packetStream, logStream) = await connection.connect()
 
-				// If this is a wireless connection, have it report the RSSI to the AccessoryManager
-				if let wirelessConnection = connection as? any WirelessConnection {
-					rssiTask = Task {
-						for await rssiValue in await wirelessConnection.getRSSIStream() {
-							self.didUpdateRSSI(rssiValue, for: device.id)
+					try Task.checkCancellation()
+
+					// If this is a wireless connection, have it report the RSSI to the AccessoryManager
+					if let wirelessConnection = connection as? any WirelessConnection {
+						self.rssiTask = Task {
+							for await rssiValue in await wirelessConnection.getRSSIStream() {
+								self.didUpdateRSSI(rssiValue, for: device.id)
+							}
 						}
 					}
-				}
 
-				// Connections emit FromRadio protobufs.  Process them in didReceive
-				packetTask = Task {
-					for await packet in packetStream {
-						self.didReceive(result: .success(packet))
+					try Task.checkCancellation()
+
+					// Connections emit FromRadio protobufs.  Process them in didReceive
+					self.packetTask = Task {
+						for await packet in packetStream {
+							self.didReceive(result: .success(packet))
+						}
+						self.didReceive(result: .failure(AccessoryError.connectionFailed("Connection closed")))
 					}
-					self.didReceive(result: .failure(AccessoryError.connectionFailed("Connection closed")))
-				}
 
-				// Not all connections emit log messages.  Process them if they do.
-				if let logStream {
-					packetTask = Task {
-						for await logString in logStream {
-							self.didReceiveLog(message: logString)
+					try Task.checkCancellation()
+
+					// Not all connections emit log messages.  Process them if they do.
+					if let logStream {
+						self.packetTask = Task {
+							for await logString in logStream {
+								self.didReceiveLog(message: logString)
+							}
 						}
 					}
-				}
 
-				updateState(.communicating)
+					try Task.checkCancellation()
 
-				activeConnection = (device: device, connection: connection)
+					self.updateState(.communicating)
+					self.activeConnection = (device: device, connection: connection)
 
-				// Send Heartbeat before wantConfig
-				var heartbeatToRadio: ToRadio = ToRadio()
-				heartbeatToRadio.payloadVariant = .heartbeat(Heartbeat())
-				try? await connection.send(heartbeatToRadio)
+					// Send Heartbeat before wantConfig
+					var heartbeatToRadio: ToRadio = ToRadio()
+					heartbeatToRadio.payloadVariant = .heartbeat(Heartbeat())
+					try? await connection.send(heartbeatToRadio)
 
-				await sendWantConfig()
+					try Task.checkCancellation()
 
-				if UserDefaults.firstLaunch {
-					UserDefaults.showDeviceOnboarding = true
-				}
+					await self.sendWantConfig()
 
-				// Send Heartbeat before wantConfig
-				try? await connection.send(heartbeatToRadio)
+					try Task.checkCancellation()
 
-				await sendWantDatabase()
+					if UserDefaults.firstLaunch {
+						UserDefaults.showDeviceOnboarding = true
+					}
 
-				Task { @MainActor in self.allowDisconnect = true }
+					try Task.checkCancellation()
+					// Send Heartbeat before wantConfig
+					try? await connection.send(heartbeatToRadio)
 
-				guard let firmwareVersion = activeConnection?.device.firmwareVersion else {
-					throw AccessoryError.connectionFailed("Firmware version not available")
-				}
+					try Task.checkCancellation()
 
-				let lastDotIndex = firmwareVersion.lastIndex(of: ".")
-				if lastDotIndex == nil {
-					shouldRetry = false
-					throw AccessoryError.connectionFailed("🚨" + "Update Your Firmware".localized)
-				}
+					await self.sendWantDatabase()
 
-				let version = firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: firmwareVersion))]
-				let connectedVersion = String(version.dropLast())
-				UserDefaults.firmwareVersion = connectedVersion
+					try Task.checkCancellation()
 
-				let supportedVersion = checkIsVersionSupported(forVersion: minimumVersion)
-				if !supportedVersion {
-					shouldRetry = false
-					throw AccessoryError.connectionFailed("🚨" + "Update Your Firmware".localized)
-				}
+					Task { @MainActor in self.allowDisconnect = true }
 
-				// We have an active connection
-				updateDevice(deviceId: device.id, key: \.connectionState, value: .connected)
-				updateState(.subscribed)
+					guard let firmwareVersion = self.activeConnection?.device.firmwareVersion else {
+						throw AccessoryError.connectionFailed("Firmware version not available")
+					}
 
-				await initializeMqtt()
-				initializeLocationProvider()
+					let lastDotIndex = firmwareVersion.lastIndex(of: ".")
+					if lastDotIndex == nil {
+						throw AccessoryError.connectionFailed("🚨" + "Update Your Firmware".localized)
+					}
 
-				return
+					let version = firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: firmwareVersion))]
+					let connectedVersion = String(version.dropLast())
+					UserDefaults.firmwareVersion = connectedVersion
+
+					let supportedVersion = self.checkIsVersionSupported(forVersion: self.minimumVersion)
+					if !supportedVersion {
+						throw AccessoryError.connectionFailed("🚨" + "Update Your Firmware".localized)
+					}
+
+					// We have an active connection
+					self.updateDevice(deviceId: device.id, key: \.connectionState, value: .connected)
+					self.updateState(.subscribed)
+
+					await self.initializeMqtt()
+					self.initializeLocationProvider()
+
+					return
+				// } // End of withTimeout
 			} catch {
-				Logger.services.error("🚨 Connection ERROR: \(error)")
 				Task { @MainActor in lastConnectionError = error }
-				if attempt < maxRetries && shouldRetry {
-					try? await Task.sleep(for: retryDelay)
+				Logger.transport.error("🚨 Connection ERROR: \(error)")
+				switch error {
+				case AccessoryError.versionMismatch(let message):
+					Logger.transport.error("🚨 Node firmware is too old. Disconnecting: \(message)")
 					try? await self.disconnect()
+					break retryLoop
+				default:
+					if attempt < maxRetries {
+						try? await Task.sleep(for: retryDelay)
+					}
 				}
 			}
 		}
@@ -284,21 +306,21 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 	func sendWantConfig() async {
 		guard let connection = activeConnection?.connection else {
-			Logger.mesh.error("Unable to send wantConfig (config): No device connected")
+			Logger.transport.error("Unable to send wantConfig (config): No device connected")
 			return
 		}
 		try? await sendNonceRequest(nonce: UInt32(NONCE_ONLY_CONFIG), connection: connection)
-		Logger.services.info("✅ [Accessory] NONCE_ONLY_CONFIG Done")
+		Logger.transport.info("✅ [Accessory] NONCE_ONLY_CONFIG Done")
 	}
 
 	func sendWantDatabase() async {
 		guard let connection = activeConnection?.connection else {
-			Logger.mesh.error("Unable to send wantConfig (database) : No device connected")
+			Logger.transport.error("Unable to send wantConfig (database) : No device connected")
 			return
 		}
 
 		try? await sendNonceRequest(nonce: UInt32(NONCE_ONLY_DB), connection: connection)
-		Logger.services.info("✅ [Accessory] NONCE_ONLY_DB Done")
+		Logger.transport.info("✅ [Accessory] NONCE_ONLY_DB Done")
 	}
 
 	private func sendNonceRequest(nonce: UInt32, connection: any Connection) async throws {
@@ -344,7 +366,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Update device attributes on MainActor for presentation in the UI
 	func updateDevice<T>(deviceId: UUID? = nil, key: WritableKeyPath<Device, T>, value: T) {
 		guard let deviceId = deviceId ?? self.activeConnection?.device.id else {
-			Logger.services.error("updateDevice<T> with nil deviceId")
+			Logger.transport.error("updateDevice<T> with nil deviceId")
 			return
 		}
 		if let index = devices.firstIndex(where: { $0.id == deviceId }) {
@@ -361,7 +383,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				activeDeviceNum = device.num
 			}
 		} else {
-			Logger.services.error("Device with ID \(deviceId) not found in devices list.")
+			Logger.transport.error("Device with ID \(deviceId) not found in devices list.")
 		}
 	}
 
@@ -373,29 +395,34 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 
 	func send(data: ToRadio, debugDescription: String? = nil) async throws {
-		Logger.services.info("✅ [Accessory] Sending \(data.debugDescription)")
+		Logger.transport.info("✅ [Accessory] Sending \(data.debugDescription)")
 		guard let active = activeConnection,
 			  await active.connection.isConnected else {
 			throw AccessoryError.connectionFailed("Not connected to any device")
 		}
 		try await active.connection.send(data)
 		if let debugDescription {
-			Logger.mesh.info("📻 \(debugDescription, privacy: .public)")
+			Logger.transport.info("📻 \(debugDescription, privacy: .public)")
 		}
 	}
 
 	func didReceive(result: Result<FromRadio, Error>) {
-		Logger.services.info("✅ [Accessory] Received packet")
+		Logger.transport.info("✅ [Accessory] Received packet")
 		switch result {
 		case .success(let fromRadio):
-			Logger.services.info("\t✅ [Accessory] Received packet \(fromRadio.debugDescription)")
+			Logger.transport.info("\t✅ [Accessory] Received packet \(fromRadio.debugDescription)")
 			self.processFromRadio(fromRadio)
 
 		case .failure(let error):
 			// Handle error, perhaps log and disconnect
-			Logger.services.info("\t✅ [Accessory] Received packet \(error.localizedDescription)")
+			Logger.transport.info("\t✅ [Accessory] Received packet \(error.localizedDescription)")
 			print("Error receiving packet: \(error)")
-			Task { try? await self.disconnect() }
+			switch self.state {
+			case .connecting, .retrying:
+				break
+			default:
+				Task { try? await self.disconnect() }
+			}
 		}
 	}
 
@@ -596,14 +623,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			// Logger.mesh.error("✅ [Accessory] Unknown UNHANDLED confligCompleteID: \(configCompleteID)")
 			// }
 
-			Logger.services.info("✅ [Accessory] Notifying completions that have completed for confligCompleteID: \(configCompleteID)")
+			Logger.transport.info("✅ [Accessory] Notifying completions that have completed for confligCompleteID: \(configCompleteID)")
 			if let continuation = wantConfigContinuations[configCompleteID] {
 				wantConfigContinuations.removeValue(forKey: configCompleteID)
 				continuation.resume()
 			}
 
 		default:
-			Logger.services.error("Unknown FromRadio variant: \(decodedInfo.payloadVariant.debugDescription)")
+			Logger.mesh.error("Unknown FromRadio variant: \(decodedInfo.payloadVariant.debugDescription)")
 		}
 
 	}
@@ -719,5 +746,26 @@ extension AccessoryManager {
 		forVersion.compare(myVersion, options: .numeric) == .orderedAscending ||
 		forVersion.compare(myVersion, options: .numeric) == .orderedSame
 		return supportedVersion
+	}
+}
+
+func withTimeout<T>(
+	_ seconds: TimeInterval,
+	operation: @escaping @Sendable () async throws -> T
+) async throws -> T {
+	try await withThrowingTaskGroup(of: T.self) { group in
+		// Start the main operation
+		group.addTask {
+			return try await operation()
+		}
+		// Start a timeout task
+		group.addTask {
+			try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+			throw AccessoryError.timeout
+		}
+		// Return whichever finishes first
+		let result = try await group.next()!
+		group.cancelAll() // Cancel the other task (timeout or operation)
+		return result
 	}
 }

@@ -103,7 +103,7 @@ struct PaxCounterConfig: View {
 			config.paxcounterUpdateInterval = UInt32(paxcounterUpdateInterval)
 
 			Task {
-				try await accessoryManager.savePaxcounterModuleConfig(
+				_ = try await accessoryManager.savePaxcounterModuleConfig(
 					config: config,
 					fromUser: fromUser,
 					toUser: toUser

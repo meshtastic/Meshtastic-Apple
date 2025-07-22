@@ -177,7 +177,8 @@ import OSLog
 		return true
 	}
 	// Default location (Apple Park) used as a fallback.
-	static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
+	// nonisolated because it is never mutated
+	nonisolated static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
 	/// Provides the current location, falling back to last known or a default if necessary.
 	static var currentLocation: CLLocationCoordinate2D {
 		// Attempt to get the most recent location from the manager.

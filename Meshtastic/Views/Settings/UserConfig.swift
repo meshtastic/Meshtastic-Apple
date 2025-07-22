@@ -178,7 +178,7 @@ struct UserConfig: View {
 								u.isUnmessagable = isUnmessagable
 
 								Task {
-									try await accessoryManager.saveUser(config: u, fromUser: connectedUser, toUser: node!.user!)
+									_ = try await accessoryManager.saveUser(config: u, fromUser: connectedUser, toUser: node!.user!)
 									Task { @MainActor in
 										hasChanges = false
 										goBack()
@@ -192,7 +192,7 @@ struct UserConfig: View {
 								ham.txPower = Int32(txPower)
 								ham.frequency = overrideFrequency
 								Task {
-									try await accessoryManager.saveLicensedUser(ham: ham, fromUser: connectedUser, toUser: node!.user!)
+									_ = try await accessoryManager.saveLicensedUser(ham: ham, fromUser: connectedUser, toUser: node!.user!)
 									Task { @MainActor in
 										hasChanges = false
 										goBack()

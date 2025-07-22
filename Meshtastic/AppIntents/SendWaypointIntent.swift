@@ -39,7 +39,7 @@ struct SendWaypointIntent: AppIntent {
 	var expiration: Date?
 
 	func perform() async throws -> some IntentResult {
-		if !(await AccessoryManager.shared.isConnected) {
+		if !AccessoryManager.shared.isConnected {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 
@@ -87,7 +87,7 @@ struct SendWaypointIntent: AppIntent {
 			newWaypoint.expire = UInt32(expirationDate.timeIntervalSince1970)
 		}
 		if isLocked {
-			if let deviceNum = await AccessoryManager.shared.activeDeviceNum {
+			if let deviceNum = AccessoryManager.shared.activeDeviceNum {
 				newWaypoint.lockedTo = UInt32(deviceNum)
 			} else {
 				throw AppIntentErrors.AppIntentError.notConnected

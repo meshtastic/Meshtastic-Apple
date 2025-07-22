@@ -5285,6 +5285,9 @@
         }
       }
     },
+    "BLE RSSI %@" : {
+
+    },
     "BLE RSSI %lld" : {
       "localizations" : {
         "ja" : {

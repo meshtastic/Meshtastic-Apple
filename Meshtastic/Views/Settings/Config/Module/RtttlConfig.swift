@@ -54,7 +54,7 @@ struct RtttlConfig: View {
 				let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
 				if connectedNode != nil {
 					Task {
-						try await accessoryManager.saveRtttlConfig(ringtone: ringtone.trimmingCharacters(in: .whitespacesAndNewlines), fromUser: connectedNode!.user!, toUser: node!.user!)
+						_ = try await accessoryManager.saveRtttlConfig(ringtone: ringtone.trimmingCharacters(in: .whitespacesAndNewlines), fromUser: connectedNode!.user!, toUser: node!.user!)
 						Task { @MainActor in
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save

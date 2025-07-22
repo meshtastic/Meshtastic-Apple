@@ -336,7 +336,7 @@ struct SecurityConfig: View {
 
 			let keyUpdated = node?.securityConfig?.privateKey?.base64EncodedString() ?? "" != privateKey
 			Task {
-				try await accessoryManager.saveSecurityConfig(
+				_ = try await accessoryManager.saveSecurityConfig(
 					config: config,
 					fromUser: fromUser,
 					toUser: toUser

@@ -241,7 +241,7 @@ struct DeviceConfig: View {
 						dc.tzdef = tzdef
 						dc.ledHeartbeatDisabled = !ledHeartbeatEnabled
 						Task {
-							try await accessoryManager.saveDeviceConfig(config: dc, fromUser: connectedNode.user!, toUser: node!.user!)
+							_ = try await accessoryManager.saveDeviceConfig(config: dc, fromUser: connectedNode.user!, toUser: node!.user!)
 							Task { @MainActor in
 								// Should show a saved successfully alert once I know that to be true
 								// for now just disable the button after a successful save

@@ -31,6 +31,14 @@ struct Device: Identifiable, Hashable {
 		self.rssi = rssi
 	}
 
+	var rssiString: String {
+		if let rssi {
+			return "\(rssi) dBm"
+		} else {
+			return "n/a"
+		}
+	}
+
 	func getSignalStrength() -> BLESignalStrength? {
 		guard let rssi else { return nil }
 		if NSNumber(value: rssi).compare(NSNumber(-65)) == ComparisonResult.orderedDescending {

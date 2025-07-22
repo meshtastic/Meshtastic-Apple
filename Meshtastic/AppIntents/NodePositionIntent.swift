@@ -19,7 +19,7 @@ struct NodePositionIntent: AppIntent {
 	static var description: IntentDescription = "Fetch the latest position of a cetain node"
 
 	func perform() async throws -> some IntentResult & ReturnsValue<CLPlacemark> {
-		if !(await AccessoryManager.shared.isConnected) {
+		if !AccessoryManager.shared.isConnected {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "NodeInfoEntity")

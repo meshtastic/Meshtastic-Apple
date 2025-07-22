@@ -213,7 +213,7 @@ struct Channels: View {
 							}
 						}
 						Task {
-							try await accessoryManager.saveChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
+							_ = try await accessoryManager.saveChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
 
 							Task { @MainActor in
 								selectedChannel = nil

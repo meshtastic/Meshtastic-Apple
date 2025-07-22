@@ -52,17 +52,18 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 		}
 	}
 
+	private var resumeContinuation: CheckedContinuation<Bool, Never>?
+	private var resumed = false
+	private func resumeOnce(with value: Bool) {
+		if !resumed {
+			resumed = true
+			resumeContinuation?.resume(returning: value)
+		}
+	}
+
 	private func requestLocalNetworkAuthorization() async -> Bool {
 		await withCheckedContinuation { continuation in
-			var resumed = false
-
-			func resumeOnce(with value: Bool) {
-				if !resumed {
-					resumed = true
-					continuation.resume(returning: value)
-				}
-			}
-
+			resumeContinuation = continuation
 			guard let port = NWEndpoint.Port(rawValue: 0) else {
 				resumeOnce(with: false)
 				return
@@ -75,7 +76,7 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 			listener.newConnectionHandler = { _ in }
 			listener.stateUpdateHandler = { state in
 				if case .failed = state {
-					resumeOnce(with: false)
+					self.resumeOnce(with: false)
 					listener.cancel()
 				}
 			}
@@ -87,11 +88,11 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 			browser.stateUpdateHandler = { state in
 				switch state {
 				case .ready:
-					resumeOnce(with: true)
+					self.resumeOnce(with: true)
 					browser.cancel()
 					listener.cancel()
-				case .failed(let error):
-					resumeOnce(with: false)
+				case .failed:
+					self.resumeOnce(with: false)
 					browser.cancel()
 					listener.cancel()
 				default:
@@ -110,26 +111,28 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 
 	func netServiceDidResolveAddress(_ service: NetService) {
 		guard let host = service.hostName else {
-			Logger.services.error("Failed to resolve host for service \(service.name)")
+			Logger.transport.error("[TCP] Failed to resolve host for service \(service.name)")
 			return
 		}
 		let port = service.port
 		services[service.name] = ResolvedService(service: service, host: host, port: port)
+		let ip = service.ipv4Address ?? "Unknown IP"
 
-		// Use service.name hash for stable ID
-		let idString = String(format: "%llu", UInt64(abs(Int64(service.name.hashValue))))
-		let device = Device(id: UUID(),
-							name: "\(service.name) \(service.ipv4Address ?? "")",
+		// Use a mishmash of things and hash for stable? ID.
+		let idString = "\(service.name):\(host):\(ip):\(port)".toUUIDFormatHash() ?? UUID()
+		let device = Device(id: idString,
+							name: "\(service.name) (\(ip))",
 							transportType: .tcp,
 							identifier: "\(host):\(port)")
 		continuation?.yield(device)
 	}
 
 	func netService(_ sender: NetService, didNotResolve errorDict: [String: NSNumber]) {
-		Logger.services.error("Failed to resolve service \(sender.name): \(errorDict)")
+		Logger.transport.error("[TCP] Failed to resolve service \(sender.name): \(errorDict)")
 	}
 
 	func connect(to device: Device) async throws -> any Connection {
+		Logger.transport.error("[TCP] Connect to device: \(device.name) with identifier: \(device.identifier)")
 		let parts = device.identifier.split(separator: ":")
 		guard parts.count == 2, let port = Int(parts[1]) else {
 			throw AccessoryError.connectionFailed("Invalid identifier format")

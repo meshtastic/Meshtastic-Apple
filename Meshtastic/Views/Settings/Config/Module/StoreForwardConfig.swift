@@ -120,7 +120,7 @@ struct StoreForwardConfig: View {
 				sfc.historyReturnWindow = UInt32(self.historyReturnWindow)
 
 				Task {
-					try await accessoryManager.saveStoreForwardModuleConfig(config: sfc, fromUser: connectedNode!.user!, toUser: node!.user!)
+					_ = try await accessoryManager.saveStoreForwardModuleConfig(config: sfc, fromUser: connectedNode!.user!, toUser: node!.user!)
 					Task { @MainActor in
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save

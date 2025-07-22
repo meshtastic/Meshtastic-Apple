@@ -204,7 +204,7 @@ struct CannedMessagesConfig: View {
 						cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
 						Task {
 							do {
-								try await accessoryManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!)
+								_ = try await accessoryManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!)
 								Task { @MainActor in
 									// Should show a saved successfully alert once I know that to be true
 									// for now just disable the button after a successful save
@@ -220,7 +220,7 @@ struct CannedMessagesConfig: View {
 				if hasMessagesChanges {
 					Task {
 						do {
-							try await accessoryManager.saveCannedMessageModuleMessages(messages: messages, fromUser: node!.user!, toUser: node!.user!)
+							_ = try await accessoryManager.saveCannedMessageModuleMessages(messages: messages, fromUser: node!.user!, toUser: node!.user!)
 
 							Task { @MainActor in
 								// Should show a saved successfully alert once I know that to be true

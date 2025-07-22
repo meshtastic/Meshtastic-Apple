@@ -18,7 +18,7 @@ struct AddContactIntent: AppIntent {
 	// Define the function that performs the main logic
 	func perform() async throws -> some IntentResult {
 		// Ensure the BLE Manager is connected
-		if !(await AccessoryManager.shared.isConnected) {
+		if !AccessoryManager.shared.isConnected {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 
@@ -27,7 +27,7 @@ struct AddContactIntent: AppIntent {
 			// Extract contact information from the URL
 			if let contactData = components.last {
 				let decodedString = contactData.base64urlToBase64()
-				if let decodedData = Data(base64Encoded: decodedString) {
+				if let _ = Data(base64Encoded: decodedString) {
 					do {
 						try await AccessoryManager.shared.addContactFromURL(base64UrlString: contactData)
 					} catch {

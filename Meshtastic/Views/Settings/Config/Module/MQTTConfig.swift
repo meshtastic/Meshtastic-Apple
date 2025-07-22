@@ -270,7 +270,7 @@ struct MQTTConfig: View {
 					mqtt.mapReportSettings.publishIntervalSecs = UInt32(self.mapPublishIntervalSecs)
 					Task {
 						do {
-							try await accessoryManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!)
+							_ = try await accessoryManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!)
 							Task { @MainActor in
 								// Should show a saved successfully alert once I know that to be true
 								// for now just disable the button after a successful save

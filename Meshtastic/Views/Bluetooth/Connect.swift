@@ -95,7 +95,7 @@ struct Connect: View {
 
 									if node != nil {
 										Label("\(String(node!.num))", systemImage: "number")
-										Label("BLE RSSI \(connectedDevice.rssi)", systemImage: "cellularbars")
+										Label("BLE RSSI \(connectedDevice.rssiString)", systemImage: "cellularbars")
 										#if !targetEnvironment(macCatalyst)
 										if accessoryManager.state == .subscribed {
 											Button {
@@ -222,7 +222,7 @@ struct Connect: View {
 										VStack(alignment: .leading) {
 											Button(action: {
 												if UserDefaults.preferredPeripheralId.count > 0 && device.id.uuidString != UserDefaults.preferredPeripheralId {
-													if let connectedDevice = accessoryManager.activeConnection?.device, accessoryManager.isConnected {
+													if accessoryManager.isConnected {
 														Task { try await accessoryManager.disconnect() }
 													}
 													presentingSwitchPreferredPeripheral = true

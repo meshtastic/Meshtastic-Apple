@@ -182,7 +182,7 @@ struct ExternalNotificationConfig: View {
 				enc.useI2SAsBuzzer = useI2SAsBuzzer
 				Task {
 					do {
-						try await accessoryManager.saveExternalNotificationModuleConfig(config: enc, fromUser: connectedNode!.user!, toUser: node!.user!)
+						_ = try await accessoryManager.saveExternalNotificationModuleConfig(config: enc, fromUser: connectedNode!.user!, toUser: node!.user!)
 						Task { @MainActor in
 							hasChanges = false
 							goBack()

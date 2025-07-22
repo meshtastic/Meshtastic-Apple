@@ -117,7 +117,7 @@ struct SerialConfig: View {
 					sc.mode	= SerialModeTypes(rawValue: mode)!.protoEnumValue()
 
 					Task {
-						try await accessoryManager.saveSerialModuleConfig(config: sc, fromUser: connectedNode!.user!, toUser: node!.user!)
+						_ = try await accessoryManager.saveSerialModuleConfig(config: sc, fromUser: connectedNode!.user!, toUser: node!.user!)
 
 						Task { @MainActor in
 							// Should show a saved successfully alert once I know that to be true
