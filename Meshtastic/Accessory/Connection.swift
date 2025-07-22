@@ -11,7 +11,7 @@ import MeshtasticProtobufs
 protocol Connection: Actor {
 	var isConnected: Bool { get }
 	func send(_ data: ToRadio) async throws
-	func connect() async -> (AsyncStream<FromRadio>, AsyncStream<String>?)
+	func connect() async throws -> (AsyncStream<FromRadio>, AsyncStream<String>?)
 	func disconnect() async throws
 	func drainPendingPackets() async throws
 	func startDrainPendingPackets() throws

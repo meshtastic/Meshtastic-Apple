@@ -12,36 +12,18 @@ import MeshtasticProtobufs
 
 actor TCPConnection: Connection {
 
-	private let connection: NWConnection
+	private var connection: NWConnection?
 	private let queue = DispatchQueue(label: "tcp.connection")
 	private var readerTask: Task<Void, Never>?
-
+	private let nwHost: NWEndpoint.Host
+	private let nwPort: NWEndpoint.Port
 	var isConnected: Bool {
-		connection.state == .ready
+		connection?.state == .ready
 	}
 
 	init(host: String, port: Int) async throws {
-		let nwHost = NWEndpoint.Host(host)
-		let nwPort = NWEndpoint.Port(integerLiteral: UInt16(port))
-		connection = NWConnection(host: nwHost, port: nwPort, using: .tcp)
-
-		try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
-			connection.stateUpdateHandler = { state in
-				switch state {
-				case .ready:
-					cont.resume()
-				case .failed:
-					Task {
-						try? await self.disconnect()
-					}
-				default:
-					break
-				}
-			}
-			connection.start(queue: queue)
-		}
-
-		startReader()
+		self.nwHost = NWEndpoint.Host(host)
+		self.nwPort = NWEndpoint.Port(integerLiteral: UInt16(port))
 	}
 
 	private func waitForMagicBytes() async throws -> Bool {
@@ -108,7 +90,7 @@ actor TCPConnection: Connection {
 
 	private func receiveData(min: Int, max: Int) async throws -> Data {
 		try await withCheckedThrowingContinuation { cont in
-			connection.receive(minimumIncompleteLength: min, maximumLength: max) { content, _, isComplete, error in
+			connection?.receive(minimumIncompleteLength: min, maximumLength: max) { content, _, isComplete, error in
 				if let error = error {
 					cont.resume(throwing: error)
 					return
@@ -132,7 +114,7 @@ actor TCPConnection: Connection {
 		buffer.append(serialized)
 
 		try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
-			connection.send(content: buffer, completion: .contentProcessed { error in
+			connection?.send(content: buffer, completion: .contentProcessed { error in
 				if let error = error {
 					cont.resume(throwing: error)
 				} else {
@@ -145,7 +127,7 @@ actor TCPConnection: Connection {
 	func disconnect() async throws {
 		Logger.transport.debug("[TCP] Disconnecting from TCP connection")
 		readerTask?.cancel()
-		connection.cancel()
+		connection?.cancel()
 
 		packetStream?.finish()
 		packetStream = nil
@@ -178,7 +160,28 @@ actor TCPConnection: Connection {
 		return nil
 	}
 
-	func connect() async -> (AsyncStream<FromRadio>, AsyncStream<String>?) {
+	func connect() async throws -> (AsyncStream<FromRadio>, AsyncStream<String>?) {
+		let connection = NWConnection(host: nwHost, port: nwPort, using: .tcp)
+		self.connection = connection
+
+		try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
+			connection.stateUpdateHandler = { state in
+				switch state {
+				case .ready:
+					cont.resume()
+				case .failed:
+					Task {
+						try? await self.disconnect()
+					}
+				default:
+					break
+				}
+			}
+			connection.start(queue: queue)
+		}
+
+		startReader()
+
 		return (getPacketStream(), getRadioLogStream())
 	}
 

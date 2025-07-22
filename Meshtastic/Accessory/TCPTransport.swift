@@ -33,6 +33,9 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 		super.init()
 		browser = NetServiceBrowser()
 		browser?.delegate = self
+		Task {
+			_ = await self.requestLocalNetworkAuthorization()
+		}
 	}
 
 	func discoverDevices() -> AsyncStream<Device> {
@@ -40,7 +43,6 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 			self.continuation = cont
 			self.status = .discovering
 			Task {
-				_ = await self.requestLocalNetworkAuthorization()
 				self.browser?.searchForServices(ofType: MESHTASTIC_SERVICE_TYPE, inDomain: MESHTASTIC_DOMAIN)
 			}
 			cont.onTermination = { _ in

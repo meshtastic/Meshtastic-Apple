@@ -29631,6 +29631,15 @@
         }
       }
     },
+    "Retreiving database . ." : {
+
+    },
+    "Retreiving Database . ." : {
+
+    },
+    "Retrying (attempt %lld)" : {
+
+    },
     "Review the app" : {
       "localizations" : {
         "de" : {
@@ -34569,9 +34578,6 @@
           }
         }
       }
-    },
-    "Some OTHER state" : {
-
     },
     "Specifies how long the monitored GPIO should output." : {
       "localizations" : {

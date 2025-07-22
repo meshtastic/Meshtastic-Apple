@@ -14,7 +14,7 @@ enum TransportType: String, CaseIterable {
 	case serial = "Serial"
 }
 
-enum TransportStatus {
+enum TransportStatus: Equatable {
 	case uninitialized
 	case ready
 	case discovering

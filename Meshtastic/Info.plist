@@ -97,6 +97,7 @@
 	<array>
 		<string>bluetooth-central</string>
 		<string>location</string>
+		<string>external-accessory</string>
 	</array>
 	<key>UILaunchScreen</key>
 	<dict/>

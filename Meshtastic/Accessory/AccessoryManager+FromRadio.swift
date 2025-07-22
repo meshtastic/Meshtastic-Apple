@@ -167,9 +167,10 @@ extension AccessoryManager {
 			return
 		}
 
-		Logger.mesh.debug("GOT DEVICE VERSION: \(metadata.firmwareVersion)")
+		Logger.transport.debug("[Version] handleDeviceMetadata returned version: \(metadata.firmwareVersion)")
 
 		updateDevice(key: \.firmwareVersion, value: metadata.firmwareVersion)
+
 		Task { @MainActor in
 			deviceMetadataPacket(metadata: metadata, fromNum: deviceNum, context: context)
 		}

@@ -32,9 +32,11 @@ struct Connect: View {
 		NavigationStack {
 			VStack {
 				List {
+					Text(accessoryManager.state.description)
 					// if bleManager.isSwitchedOn {
 						Section {
-							if let connectedDevice = accessoryManager.activeConnection?.device, accessoryManager.isConnected {
+							if let connectedDevice = accessoryManager.activeConnection?.device,
+							   accessoryManager.isConnected || accessoryManager.isConnecting {
 								TipView(ConnectionTip(), arrowEdge: .bottom)
 									.tipViewStyle(PersistentTip())
 								VStack(alignment: .leading) {
@@ -58,18 +60,39 @@ struct Connect: View {
 												Text("Firmware Version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "Unknown".localized)")
 													.font(.callout).foregroundColor(Color.gray)
 											}
-											if accessoryManager.state == .subscribed {
+											switch accessoryManager.state {
+											case .subscribed:
 												Text("Subscribed").font(.callout)
 													.foregroundColor(.green)
-											} else {
+											case .retreivingDatabase:
 												HStack {
 													Image(systemName: "square.stack.3d.down.forward")
 														.symbolRenderingMode(.multicolor)
 														.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 														.foregroundColor(.orange)
-													Text("Communicating").font(.callout)
+													Text("Retreiving Database . .").font(.callout)
+														.foregroundColor(.green)
+												}
+											case .communicating:
+												HStack {
+													Image(systemName: "square.stack.3d.down.forward")
+														.symbolRenderingMode(.multicolor)
+														.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+														.foregroundColor(.orange)
+														Text("Communicating").font(.callout)
+															.foregroundColor(.orange)
+													}
+											case .retrying(let attempt):
+												HStack {
+													Image(systemName: "square.stack.3d.down.forward")
+														.symbolRenderingMode(.multicolor)
+														.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+														.foregroundColor(.orange)
+													Text("Retrying (attempt \(attempt))").font(.callout)
 														.foregroundColor(.orange)
 												}
+											default:
+												EmptyView()
 											}
 										}
 									}
@@ -152,7 +175,7 @@ struct Connect: View {
 									}
 								}
 							} else {
-								if accessoryManager.state == .connecting {
+								if accessoryManager.isConnecting {
 									HStack {
 										Image(systemName: "antenna.radiowaves.left.and.right")
 											.resizable()
@@ -161,18 +184,20 @@ struct Connect: View {
 											.frame(width: 60, height: 60)
 											.padding(.trailing)
 										switch accessoryManager.state {
-										case .connecting:
+										case .connecting, .communicating:
 											Text("Connecting . .")
 												.font(.title2)
 												.foregroundColor(.orange)
+										case .retreivingDatabase:
+											Text("Retreiving database . .")
+												.font(.callout)
+												.foregroundColor(.orange)
 										case .retrying(let attempt):
-											VStack {
-												Text("Connection Attempt \(attempt) of 10")
-													.font(.callout)
-													.foregroundColor(.orange)
-											}
+											Text("Connection Attempt \(attempt) of 10")
+												.font(.callout)
+												.foregroundColor(.orange)
 										default:
-											Text("Some OTHER state")
+											EmptyView()
 										}
 									}
 									.padding()
@@ -206,7 +231,7 @@ struct Connect: View {
 						}
 						.textCase(nil)
 
-						if !accessoryManager.isConnected {
+					if !(accessoryManager.isConnected || accessoryManager .isConnecting) {
 							Section(header: Text("Available Radios").font(.title)) {
 								ForEach(accessoryManager.devices.sorted(by: { $0.name < $1.name })) { device in
 									HStack {
@@ -291,7 +316,7 @@ struct Connect: View {
 					Spacer()
 					#if targetEnvironment(macCatalyst)
 					// TODO: should this be allowDisconnect?
-					if accessoryManager.isConnected {
+					if accessoryManager.allowDisconnect {
 						Button(role: .destructive, action: {
 							if accessoryManager.isConnected {
 								Task {
