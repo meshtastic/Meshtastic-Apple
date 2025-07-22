@@ -26,6 +26,8 @@ struct MeshMap: View {
 	@AppStorage("enableMapTraffic") private var showTraffic: Bool = false
 	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = false
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .standard
+	/// Map overlay configs
+	@State private var enabledOverlayConfigs: Set<UUID> = []
 	// Map Configuration
 	@Namespace var mapScope
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .flat, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .excludingAll, showsTraffic: false)
@@ -70,7 +72,8 @@ struct MeshMap: View {
 							showPointsOfInterest: $showPointsOfInterest,
 							selectedMapLayer: $selectedMapLayer,
 							selectedPosition: $selectedPosition,
-							selectedWaypoint: $selectedWaypoint
+							selectedWaypoint: $selectedWaypoint,
+							enabledOverlayConfigs: $enabledOverlayConfigs
 						)
 					}
 					.mapScope(mapScope)
@@ -134,7 +137,7 @@ struct MeshMap: View {
 					.padding()
 			}
 			.sheet(isPresented: $editingSettings) {
-				MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap)
+				MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap, enabledOverlayConfigs: $enabledOverlayConfigs)
 			}
 			.onChange(of: router.navigationState) {
 				guard case .map = router.navigationState.selectedTab else { return }
@@ -195,6 +198,11 @@ struct MeshMap: View {
 		})
 		.onFirstAppear {
 			UIApplication.shared.isIdleTimerDisabled = true
+			
+			// Initialize enabled overlay configs with all active files
+			let activeFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState().filter { $0.isActive }
+			enabledOverlayConfigs = Set(activeFiles.map { $0.id })
+			print("🚨 MeshMap: Initialized with \(enabledOverlayConfigs.count) enabled overlay configs")
 
 			//	let wayPointEntity = getWaypoint(id: Int64(deepLinkManager.waypointId) ?? -1, context: context)
 			// if wayPointEntity.id > 0 {

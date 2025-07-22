@@ -33,6 +33,7 @@ struct MeshMapContent: MapContent {
 
 	// Map overlays
 	@AppStorage("mapOverlaysEnabled") private var showMapOverlays = false
+	@Binding var enabledOverlayConfigs: Set<UUID>
 
 	@FetchRequest(fetchRequest: PositionEntity.allPositionsFetchRequest(), animation: .easeIn)
 	var positions: FetchedResults<PositionEntity>
@@ -244,11 +245,15 @@ struct MeshMapContent: MapContent {
 	}
 
 	var overlayContent: some MapContent {
-		let styledFeatures = GeoJSONOverlayManager.shared.loadStyledFeatures()
+		// Get all features but filter by enabled configs
+		let allStyledFeatures = GeoJSONOverlayManager.shared.loadStyledFeaturesForConfigs(enabledOverlayConfigs)
+		
+		// Log with error level to make it visible
+		print("🚨 MeshMapContent: overlayContent computed - \(enabledOverlayConfigs.count) enabled configs, \(allStyledFeatures.count) features")
 		
 		return Group {
-			ForEach(0..<styledFeatures.count, id: \.self) { index in
-				let styledFeature = styledFeatures[index]
+			ForEach(0..<allStyledFeatures.count, id: \.self) { index in
+				let styledFeature = allStyledFeatures[index]
 				let feature = styledFeature.feature
 				let geometryType = feature.geometry.type
 				

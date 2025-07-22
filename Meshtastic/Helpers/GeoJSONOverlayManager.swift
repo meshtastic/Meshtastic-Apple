@@ -31,7 +31,48 @@ class GeoJSONOverlayManager {
         return nil
     }
 
-    /// Load styled features for direct rendering
+    /// Load styled features for specific enabled configs
+    func loadStyledFeaturesForConfigs(_ enabledConfigs: Set<UUID>) -> [GeoJSONStyledFeature] {
+        Logger.services.debug("🗺️ GeoJSONOverlayManager: loadStyledFeaturesForConfigs() called with \(enabledConfigs.count) configs")
+        
+        // Get files that match the enabled configs
+        let enabledFiles = MapDataManager.shared.getUploadedFiles().filter { enabledConfigs.contains($0.id) }
+        
+        guard !enabledFiles.isEmpty else {
+            Logger.services.debug("🗺️ GeoJSONOverlayManager: No enabled files found, returning empty array")
+            return []
+        }
+        
+        // Load feature collection from enabled files only
+        guard let collection = MapDataManager.shared.loadFeatureCollectionForFiles(enabledFiles) else {
+            Logger.services.debug("🗺️ GeoJSONOverlayManager: No feature collection available for enabled files, returning empty array")
+            return []
+        }
+        
+        var styledFeatures: [GeoJSONStyledFeature] = []
+        
+        Logger.services.info("🗺️ GeoJSONOverlayManager: Processing \(collection.features.count) features from \(enabledFiles.count) enabled files")
+        
+        for feature in collection.features {
+            // Skip invisible features
+            guard feature.isVisible else { 
+                Logger.services.debug("🗺️ GeoJSONOverlayManager: Skipping invisible feature")
+                continue 
+            }
+            
+            let layerId = feature.layerId ?? "default"
+            let styledFeature = GeoJSONStyledFeature(
+                feature: feature,
+                overlayId: layerId
+            )
+            styledFeatures.append(styledFeature)
+        }
+        
+        Logger.services.info("🗺️ GeoJSONOverlayManager: Returning \(styledFeatures.count) styled features from enabled configs")
+        return styledFeatures
+    }
+
+    /// Load styled features for direct rendering (legacy method)
     func loadStyledFeatures() -> [GeoJSONStyledFeature] {
         Logger.services.debug("🗺️ GeoJSONOverlayManager: loadStyledFeatures() called")
         
@@ -123,9 +164,10 @@ class GeoJSONOverlayManager {
     
     /// Toggle the active state of an uploaded file
     func toggleFileActive(_ fileId: UUID) {
-        Logger.services.debug("🗺️ GeoJSONOverlayManager: Toggling active state for file: \(fileId)")
+        Logger.services.error("🚨 GeoJSONOverlayManager: ENTRY - Toggling active state for file: \(fileId)")
         MapDataManager.shared.toggleFileActive(fileId)
         // Clear cache to force reload with new file states
         clearCache()
+        Logger.services.error("🚨 GeoJSONOverlayManager: EXIT - Completed toggle and cache clear for file: \(fileId)")
     }
 }

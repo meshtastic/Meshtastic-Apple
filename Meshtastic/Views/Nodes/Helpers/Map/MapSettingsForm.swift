@@ -24,6 +24,7 @@ struct MapSettingsForm: View {
 	@Binding var mapLayer: MapLayer
 	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 800000
 	@Binding var meshMap: Bool
+	@Binding var enabledOverlayConfigs: Set<UUID>
 
 	var body: some View {
 
@@ -160,15 +161,18 @@ struct MapSettingsForm: View {
 							ForEach(uploadedFiles) { file in
 								Toggle(isOn: Binding(
 									get: { 
-										Logger.services.debug("🔧 MapSettingsForm: File '\(file.originalName)' toggle getter - current state: \(file.isActive)")
-										return file.isActive
+										let isEnabled = enabledOverlayConfigs.contains(file.id)
+										Logger.services.debug("🔧 MapSettingsForm: File '\(file.originalName)' toggle getter - enabled: \(isEnabled)")
+										return isEnabled
 									},
 									set: { newValue in
-										Logger.services.info("🔧 MapSettingsForm: File '\(file.originalName)' toggle setter - changing to: \(newValue)")
-										GeoJSONOverlayManager.shared.toggleFileActive(file.id)
-										// Update local state
-										uploadedFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState()
-										Logger.services.info("🔧 MapSettingsForm: Updated local uploadedFiles state after toggle")
+										Logger.services.error("🚨 SETTER CALLED: File '\(file.originalName)' toggle setter - changing to: \(newValue)")
+										if newValue {
+											enabledOverlayConfigs.insert(file.id)
+										} else {
+											enabledOverlayConfigs.remove(file.id)
+										}
+										Logger.services.error("🚨 SETTER COMPLETED: enabledOverlayConfigs now has \(enabledOverlayConfigs.count) items")
 									}
 								)) {
 									Label {
@@ -186,8 +190,9 @@ struct MapSettingsForm: View {
 											}
 										}
 									} icon: {
-										Image(systemName: file.isActive ? "doc.fill" : "doc")
-											.foregroundColor(file.isActive ? .accentColor : .secondary)
+										let isEnabled = enabledOverlayConfigs.contains(file.id)
+										Image(systemName: isEnabled ? "doc.fill" : "doc")
+											.foregroundColor(isEnabled ? .accentColor : .secondary)
 									}
 								}
 								.tint(.accentColor)

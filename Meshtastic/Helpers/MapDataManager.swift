@@ -184,6 +184,38 @@ class MapDataManager {
 
     // MARK: - Configuration Loading
 
+    /// Load combined feature collection from specific files
+    func loadFeatureCollectionForFiles(_ files: [MapDataMetadata]) -> GeoJSONFeatureCollection? {
+        Logger.services.debug("📁 MapDataManager: Loading feature collection for \(files.count) specific files")
+        
+        guard !files.isEmpty else {
+            Logger.services.debug("📁 MapDataManager: No files provided, returning nil")
+            return nil
+        }
+        
+        var allFeatures: [GeoJSONFeature] = []
+        
+        for file in files {
+            do {
+                if let featureCollection = try loadFeatureCollectionFromFile(file) {
+                    allFeatures.append(contentsOf: featureCollection.features)
+                    Logger.services.info("📁 MapDataManager: Successfully loaded \(featureCollection.features.count) features from \(file.filename, privacy: .public)")
+                }
+            } catch {
+                Logger.services.error("📁 MapDataManager: Failed to load feature collection from \(file.filename, privacy: .public): \(error.localizedDescription, privacy: .public)")
+                continue
+            }
+        }
+        
+        guard !allFeatures.isEmpty else {
+            Logger.services.debug("📁 MapDataManager: No features loaded from any files")
+            return nil
+        }
+        
+        Logger.services.info("📁 MapDataManager: Successfully combined \(allFeatures.count) total features from \(files.count) files")
+        return GeoJSONFeatureCollection(type: "FeatureCollection", features: allFeatures)
+    }
+
     /// Load and combine raw GeoJSON feature collections from all active files
     func loadFeatureCollection() -> GeoJSONFeatureCollection? {
         if let cached = activeFeatureCollection {
@@ -261,23 +293,27 @@ class MapDataManager {
     
     /// Toggle the active state of an uploaded file
     func toggleFileActive(_ fileId: UUID) {
-        Logger.services.debug("📁 MapDataManager: Toggling active state for file: \(fileId)")
+        Logger.services.error("🚨 MapDataManager: ENTRY - Toggling active state for file: \(fileId)")
         
         if let index = uploadedFiles.firstIndex(where: { $0.id == fileId }) {
+            let oldState = uploadedFiles[index].isActive
             uploadedFiles[index].isActive.toggle()
-            Logger.services.info("📁 MapDataManager: File '\(self.uploadedFiles[index].filename)' active state: \(self.uploadedFiles[index].isActive)")
+            let newState = uploadedFiles[index].isActive
+            Logger.services.error("🚨 MapDataManager: File '\(self.uploadedFiles[index].filename)' changed from \(oldState) to \(newState)")
             
             // Save metadata changes
             do {
                 try saveMetadata()
                 // Clear cached data to force reload
                 activeFeatureCollection = nil
+                Logger.services.error("🚨 MapDataManager: Successfully saved metadata and cleared cache")
             } catch {
-                Logger.services.error("📁 MapDataManager: Failed to save metadata after toggling file: \(error.localizedDescription)")
+                Logger.services.error("🚨 MapDataManager: FAILED to save metadata after toggling file: \(error.localizedDescription)")
             }
         } else {
-            Logger.services.error("📁 MapDataManager: Could not find file with ID: \(fileId)")
+            Logger.services.error("🚨 MapDataManager: ERROR - Could not find file with ID: \(fileId)")
         }
+        Logger.services.error("🚨 MapDataManager: EXIT - Completed toggle operation for file: \(fileId)")
     }
 
     /// Delete uploaded file
