@@ -132,6 +132,7 @@ extension AccessoryManager {
 
 				// Refresh the config from the node, in a background task
 				Task {
+					Logger.transport.debug("[AccessoryManager] sending wantConfig for addContactFromURL")
 					await sendWantConfig()
 				}
 
@@ -461,6 +462,7 @@ extension AccessoryManager {
 			let logString = String.localizedStringWithFormat("Sent a LoRa.Config for: %@".localized, String(deviceNum))
 			try await send(data: toRadio, debugDescription: logString)
 
+			Logger.transport.debug("[AccessoryManager] sending wantConfig for saveChannelSet")
 			await sendWantConfig()
 		}
 	}
