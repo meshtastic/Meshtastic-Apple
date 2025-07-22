@@ -106,11 +106,7 @@ struct MapDataUpload: View {
             isPresented: $isShowingFilePicker,
             allowedContentTypes: [
                 UTType.json,
-                UTType(filenameExtension: "geojson") ?? UTType.json,
-                UTType(filenameExtension: "kml") ?? UTType.xml,
-                UTType(filenameExtension: "kmz") ?? UTType.zip,
-                UTType(filenameExtension: "gz") ?? UTType.data,
-                UTType(filenameExtension: "zlib") ?? UTType.data
+                UTType(filenameExtension: "geojson") ?? UTType.json
             ],
             allowsMultipleSelection: false
         ) { result in
@@ -183,20 +179,19 @@ struct MapDataUpload: View {
     }
 
     private func toggleFileActive(_ file: MapDataMetadata) {
-        do {
-            try mapDataManager.toggleFileActive(file)
-        } catch {
-            errorMessage = "Failed to toggle file: \(error.localizedDescription)"
-            showError = true
-        }
+        mapDataManager.toggleFileActive(file.id)
     }
 
     private func deleteFile(_ file: MapDataMetadata) {
-        do {
-            try mapDataManager.deleteFile(file)
-        } catch {
-            errorMessage = "Failed to delete file: \(error.localizedDescription)"
-            showError = true
+        Task {
+            do {
+                try await mapDataManager.deleteFile(file)
+            } catch {
+                await MainActor.run {
+                    errorMessage = "Failed to delete file: \(error.localizedDescription)"
+                    showError = true
+                }
+            }
         }
     }
 }

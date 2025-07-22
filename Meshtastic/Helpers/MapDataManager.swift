@@ -115,7 +115,7 @@ class MapDataManager {
         }
 
         // Check file extension
-        let allowedExtensions = ["json", "geojson", "kml", "kmz", "gz", "zlib"]
+        let allowedExtensions = ["json", "geojson"]
         let fileExtension = url.pathExtension.lowercased()
         guard allowedExtensions.contains(fileExtension) else {
             throw MapDataError.unsupportedFormat
@@ -133,14 +133,21 @@ class MapDataManager {
             Task.detached {
                 do {
                     let data = try Data(contentsOf: url)
-                    let processedData = try self.processData(data, filename: url.lastPathComponent)
-                    let overlayCount = try self.getOverlayCount(from: processedData)
-                    continuation.resume(returning: (processedData, overlayCount))
+                    let overlayCount = try self.getOverlayCount(from: data)
+                    continuation.resume(returning: (data, overlayCount))
                 } catch {
                     continuation.resume(throwing: error)
                 }
             }
         }
+
+        // TODO: Add proper GeoJSON schema validation here
+        // - Validate required properties (type, features)
+        // - Validate geometry types and coordinates
+        // - Validate feature structure
+        // - Consider using JSONSchema validation
+        // - Ensure coordinates are within valid ranges (lat: -90 to 90, lon: -180 to 180)
+        // - Validate that feature properties follow expected patterns
 
         // If this is the first file uploaded, make it active by default
         let isFirstFile = uploadedFiles.isEmpty
@@ -158,17 +165,6 @@ class MapDataManager {
         )
     }
 
-    /// Process data (decompress if needed)
-    private func processData(_ data: Data, filename: String) throws -> Data {
-        let fileExtension = filename.components(separatedBy: ".").last?.lowercased() ?? ""
-
-        switch fileExtension {
-        case "gz", "zlib":
-            return try data.zlibDecompressed()
-        default:
-            return data
-        }
-    }
 
     /// Get overlay count from raw GeoJSON data
     private func getOverlayCount(from data: Data) throws -> Int {
@@ -178,6 +174,16 @@ class MapDataManager {
             return features.count
         }
         throw MapDataError.invalidContent
+    }
+
+    /// Load feature collection from a single file
+    private func loadFeatureCollectionFromFile(_ file: MapDataMetadata) throws -> GeoJSONFeatureCollection? {
+        guard let fileURL = getUserUploadedDirectory()?.appendingPathComponent(file.filename) else {
+            throw MapDataError.fileNotFound
+        }
+        
+        let data = try Data(contentsOf: fileURL)
+        return try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
     }
 
     // MARK: - Configuration Loading
@@ -248,8 +254,7 @@ class MapDataManager {
 
             do {
                 let data = try Data(contentsOf: fileURL)
-                let processedData = try processData(data, filename: activeFile.filename)
-                let featureCollection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: processedData)
+                let featureCollection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
 
                 allFeatures.append(contentsOf: featureCollection.features)
             } catch {
@@ -291,7 +296,7 @@ class MapDataManager {
     }
 
     /// Delete uploaded file
-    func deleteFile(_ metadata: MapDataMetadata) throws {
+    func deleteFile(_ metadata: MapDataMetadata) async throws {
         
         guard let fileURL = getUserUploadedDirectory()?.appendingPathComponent(metadata.filename) else {
             Logger.services.error("🗑️ MapDataManager: Could not construct file URL for: \(metadata.filename, privacy: .public)")
@@ -334,27 +339,6 @@ class MapDataManager {
 
     }
 
-        /// Toggle file active status
-    func toggleFileActive(_ metadata: MapDataMetadata) throws {
-        if let index = uploadedFiles.firstIndex(where: { $0.filename == metadata.filename }) {
-            let newActiveState = !uploadedFiles[index].isActive
-
-            // If making this file active, deactivate all others (only one can be active)
-            if newActiveState {
-                for i in uploadedFiles.indices {
-                    uploadedFiles[i].isActive = (i == index)
-                }
-            } else {
-                // Just deactivate this file
-                uploadedFiles[index].isActive = false
-            }
-
-            try saveMetadata()
-
-            // Clear cache to force reload
-            activeFeatureCollection = nil
-        }
-    }
 
     // MARK: - Metadata Persistence
 

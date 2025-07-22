@@ -30,6 +30,7 @@ struct NodeMapSwiftUI: View {
 	@State var isShowingAltitude = false
 	@State var isEditingSettings = false
 	@State var isMeshMap = false
+	@State var enabledOverlayConfigs: Set<UUID> = Set()
 
 	@State private var mapRegion = MKCoordinateRegion.init()
 
@@ -40,165 +41,191 @@ struct NodeMapSwiftUI: View {
 	private var waypoints: FetchedResults<WaypointEntity>
 
 	var body: some View {
-		var mostRecent = node.positions?.lastObject as? PositionEntity
-
 		if node.hasPositions {
+			mapWithNavigation
+		} else {
+			ContentUnavailableView("No Positions", systemImage: "mappin.slash")
+		}
+	}
+	
+	private var mapWithNavigation: some View {
+		ZStack {
+			MapReader { _ in
+				configuredMap
+			}
+		}
+		.navigationBarTitle(String((node.user?.shortName ?? "Unknown".localized) + (" \(node.positions?.count ?? 0) points")), displayMode: .inline)
+		.navigationBarItems(trailing:
 			ZStack {
-				MapReader { _ in
-					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 0, maximumDistance: .infinity), scope: mapScope) {
-						NodeMapContent(node: node)
-					}
-					.mapScope(mapScope)
-					.mapStyle(mapStyle)
-					.mapControls {
-						MapScaleView(scope: mapScope)
-							.mapControlVisibility(.visible)
-						if showUserLocation {
-							MapUserLocationButton(scope: mapScope)
-								.mapControlVisibility(.visible)
-						}
-						MapPitchToggle(scope: mapScope)
-							.mapControlVisibility(.visible)
-						MapCompass(scope: mapScope)
-							.mapControlVisibility(.visible)
-					}
-					.controlSize(.regular)
-					.overlay(alignment: .bottom) {
-						if scene != nil && isLookingAround {
-							LookAroundPreview(initialScene: scene)
-								.frame(height: UIDevice.current.userInterfaceIdiom == .phone ? 250 : 400)
-								.clipShape(RoundedRectangle(cornerRadius: 12))
-								.padding(.horizontal, 20)
-						}
-					}
-					.overlay(alignment: .bottom) {
-						if !isLookingAround && isShowingAltitude {
-							PositionAltitudeChart(node: node)
-								.frame(height: UIDevice.current.userInterfaceIdiom == .phone ? 250 : 400)
-								.clipShape(RoundedRectangle(cornerRadius: 12))
-								.padding(.horizontal, 20)
-						}
-					}
-					.sheet(isPresented: $isEditingSettings) {
-						MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap)
-							.onChange(of: (selectedMapLayer)) { _, newMapLayer in
-								switch selectedMapLayer {
-								case .standard:
-									UserDefaults.mapLayer = newMapLayer
-									mapStyle = MapStyle.standard(elevation: .flat, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
-								case .hybrid:
-									UserDefaults.mapLayer = newMapLayer
-									mapStyle = MapStyle.hybrid(elevation: .flat, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
-								case .satellite:
-									UserDefaults.mapLayer = newMapLayer
-									mapStyle = MapStyle.imagery(elevation: .flat)
-								case .offline:
-									return
-								}
-							}
-					}
-					.onChange(of: node) {
-						isLookingAround = false
-						isShowingAltitude = false
-						mostRecent = node.positions?.lastObject as? PositionEntity
-						if node.positions?.count ?? 0 > 1 {
-							position = .automatic
-						} else {
-							position = .camera(MapCamera(centerCoordinate: mostRecent!.coordinate, distance: distance, heading: 0, pitch: 0))
-						}
-						if let mostRecent {
-							Task {
-								scene = try? await fetchScene(for: mostRecent.coordinate)
-							}
-						}
-					}
-					.onAppear {
-						UIApplication.shared.isIdleTimerDisabled = true
-						switch selectedMapLayer {
-						case .standard:
-							mapStyle = MapStyle.standard(elevation: .flat, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
-						case .hybrid:
-							mapStyle = MapStyle.hybrid(elevation: .flat, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
-						case .satellite:
-							mapStyle = MapStyle.imagery(elevation: .flat)
-						case .offline:
-							mapStyle = MapStyle.hybrid(elevation: .flat, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
-						}
-						mostRecent = node.positions?.lastObject as? PositionEntity
-						if node.positions?.count ?? 0 > 1 {
-							position = .automatic
-						} else {
-							if let mrCoord = mostRecent?.coordinate {
-								position = .camera(MapCamera(centerCoordinate: mrCoord, distance: distance, heading: 0, pitch: 0))
-							}
-						}
-						if self.scene == nil {
-							Task {
-								scene = try? await fetchScene(for: mostRecent!.coordinate)
-							}
-						}
-					}
-					.safeAreaInset(edge: .bottom, alignment: .trailing) {
-						HStack {
-							Button(action: {
-								withAnimation {
-									isEditingSettings = !isEditingSettings
-								}
-							}) {
-								Image(systemName: isEditingSettings ? "info.circle.fill" : "info.circle")
-									.padding(.vertical, 5)
-							}
-							.tint(Color(UIColor.secondarySystemBackground))
-							.foregroundColor(.accentColor)
-							.buttonStyle(.borderedProminent)
-							/// Look Around Button
-							if self.scene != nil {
-								Button(action: {
-									if isShowingAltitude {
-										isShowingAltitude = false
-									}
-									isLookingAround = !isLookingAround
-								}) {
-									Image(systemName: isLookingAround ? "binoculars.fill" : "binoculars")
-										.padding(.vertical, 5)
-								}
-								.tint(Color(UIColor.secondarySystemBackground))
-								.foregroundColor(.accentColor)
-								.buttonStyle(.borderedProminent)
-							}
-							/// Altitude Button
-							if node.positions?.count ?? 0 > 1 {
-								Button(action: {
-									if isLookingAround {
-										isLookingAround = false
-									}
-									isShowingAltitude = !isShowingAltitude
-								}) {
-									Image(systemName: isShowingAltitude ? "mountain.2.fill" : "mountain.2")
-										.padding(.vertical, 5)
-								}
-								.tint(Color(UIColor.secondarySystemBackground))
-								.foregroundColor(.accentColor)
-								.buttonStyle(.borderedProminent)
-							}
-						}
-						.controlSize(.regular)
-						.padding(5)
-					}
-					.onDisappear {
-						UIApplication.shared.isIdleTimerDisabled = false
-					}
-				}}
-			.navigationBarTitle(String((node.user?.shortName ?? "Unknown".localized) + (" \(node.positions?.count ?? 0) points")), displayMode: .inline)
-			.navigationBarItems(trailing:
-									ZStack {
 				ConnectedDevice(
 					bluetoothOn: bleManager.isSwitchedOn,
 					deviceConnected: bleManager.connectedPeripheral != nil,
 					name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 			})
-		} else {
-			ContentUnavailableView("No Positions", systemImage: "mappin.slash")
+	}
+	
+	private var configuredMap: some View {
+		baseMap
+			.overlay(alignment: .bottom) {
+				lookAroundView
+			}
+			.overlay(alignment: .bottom) {
+				altitudeView
+			}
+			.sheet(isPresented: $isEditingSettings) {
+				MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap, enabledOverlayConfigs: $enabledOverlayConfigs)
+			}
+			.onChange(of: selectedMapLayer) { _, newMapLayer in
+				updateMapStyle(for: newMapLayer)
+			}
+			.onChange(of: node) {
+				handleNodeChange()
+			}
+			.onAppear {
+				handleAppear()
+			}
+			.safeAreaInset(edge: .bottom, alignment: .trailing) {
+				controlButtons
+			}
+			.onDisappear {
+				UIApplication.shared.isIdleTimerDisabled = false
+			}
+	}
+	
+	private var baseMap: some View {
+		Map(position: $position, bounds: MapCameraBounds(minimumDistance: 0, maximumDistance: .infinity), scope: mapScope) {
+			NodeMapContent(node: node)
+		}
+		.mapScope(mapScope)
+		.mapStyle(mapStyle)
+		.mapControls {
+			MapScaleView(scope: mapScope)
+				.mapControlVisibility(.visible)
+			if showUserLocation {
+				MapUserLocationButton(scope: mapScope)
+					.mapControlVisibility(.visible)
+			}
+			MapPitchToggle(scope: mapScope)
+				.mapControlVisibility(.visible)
+			MapCompass(scope: mapScope)
+				.mapControlVisibility(.visible)
+		}
+		.controlSize(.regular)
+	}
+	
+	private var lookAroundView: some View {
+		Group {
+			if scene != nil && isLookingAround {
+				LookAroundPreview(initialScene: scene)
+					.frame(height: UIDevice.current.userInterfaceIdiom == .phone ? 250 : 400)
+					.clipShape(RoundedRectangle(cornerRadius: 12))
+					.padding(.horizontal, 20)
+			}
+		}
+	}
+	
+	private var altitudeView: some View {
+		Group {
+			if !isLookingAround && isShowingAltitude {
+				PositionAltitudeChart(node: node)
+					.frame(height: UIDevice.current.userInterfaceIdiom == .phone ? 250 : 400)
+					.clipShape(RoundedRectangle(cornerRadius: 12))
+					.padding(.horizontal, 20)
+			}
+		}
+	}
+	
+	private var controlButtons: some View {
+		HStack {
+			Button(action: {
+				withAnimation {
+					isEditingSettings = !isEditingSettings
+				}
+			}) {
+				Image(systemName: isEditingSettings ? "info.circle.fill" : "info.circle")
+					.padding(.vertical, 5)
+			}
+			.tint(Color(UIColor.secondarySystemBackground))
+			.foregroundColor(.accentColor)
+			.buttonStyle(.borderedProminent)
+			
+			if scene != nil {
+				Button(action: {
+					if isShowingAltitude {
+						isShowingAltitude = false
+					}
+					isLookingAround = !isLookingAround
+				}) {
+					Image(systemName: isLookingAround ? "binoculars.fill" : "binoculars")
+						.padding(.vertical, 5)
+				}
+				.tint(Color(UIColor.secondarySystemBackground))
+				.foregroundColor(.accentColor)
+				.buttonStyle(.borderedProminent)
+			}
+			
+			if node.positions?.count ?? 0 > 1 {
+				Button(action: {
+					if isLookingAround {
+						isLookingAround = false
+					}
+					isShowingAltitude = !isShowingAltitude
+				}) {
+					Image(systemName: isShowingAltitude ? "mountain.2.fill" : "mountain.2")
+						.padding(.vertical, 5)
+				}
+				.tint(Color(UIColor.secondarySystemBackground))
+				.foregroundColor(.accentColor)
+				.buttonStyle(.borderedProminent)
+			}
+		}
+		.controlSize(.regular)
+		.padding(5)
+	}
+	
+	private func updateMapStyle(for layer: MapLayer) {
+		UserDefaults.mapLayer = layer
+		switch layer {
+		case .standard:
+			mapStyle = MapStyle.standard(elevation: .flat, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+		case .hybrid:
+			mapStyle = MapStyle.hybrid(elevation: .flat, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+		case .satellite:
+			mapStyle = MapStyle.imagery(elevation: .flat)
+		case .offline:
+			break
+		}
+	}
+	
+	private func handleNodeChange() {
+		isLookingAround = false
+		isShowingAltitude = false
+		let newMostRecent = node.positions?.lastObject as? PositionEntity
+		if node.positions?.count ?? 0 > 1 {
+			position = .automatic
+		} else if let mrCoord = newMostRecent?.coordinate {
+			position = .camera(MapCamera(centerCoordinate: mrCoord, distance: distance, heading: 0, pitch: 0))
+		}
+		if let newMostRecent {
+			Task {
+				scene = try? await fetchScene(for: newMostRecent.coordinate)
+			}
+		}
+	}
+	
+	private func handleAppear() {
+		UIApplication.shared.isIdleTimerDisabled = true
+		updateMapStyle(for: selectedMapLayer)
+		let mostRecent = node.positions?.lastObject as? PositionEntity
+		if node.positions?.count ?? 0 > 1 {
+			position = .automatic
+		} else if let mrCoord = mostRecent?.coordinate {
+			position = .camera(MapCamera(centerCoordinate: mrCoord, distance: distance, heading: 0, pitch: 0))
+		}
+		if scene == nil, let mrCoord = mostRecent?.coordinate {
+			Task {
+				scene = try? await fetchScene(for: mrCoord)
+			}
 		}
 	}
 	/// Get the look around scene
