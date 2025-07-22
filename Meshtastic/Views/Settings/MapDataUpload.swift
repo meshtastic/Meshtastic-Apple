@@ -87,8 +87,6 @@ struct MapDataUpload: View {
                         LazyVStack(spacing: 8) {
                             ForEach(uploadedFiles) { file in
                                 MapDataFileRow(file: file) {
-                                    toggleFileActive(file)
-                                } onDelete: {
                                     deleteFile(file)
                                 }
                             }
@@ -178,9 +176,6 @@ struct MapDataUpload: View {
         }
     }
 
-    private func toggleFileActive(_ file: MapDataMetadata) {
-        mapDataManager.toggleFileActive(file.id)
-    }
 
     private func deleteFile(_ file: MapDataMetadata) {
         Task {
@@ -200,7 +195,6 @@ struct MapDataUpload: View {
 
 struct MapDataFileRow: View {
     let file: MapDataMetadata
-    let onToggle: () -> Void
     let onDelete: () -> Void
 
     var body: some View {
@@ -212,12 +206,6 @@ struct MapDataFileRow: View {
                         .lineLimit(1)
 
                     Spacer()
-
-                    Toggle("", isOn: Binding(
-                        get: { file.isActive },
-                        set: { _ in onToggle() }
-                    ))
-                    .toggleStyle(SwitchToggleStyle(tint: .accentColor))
                 }
 
                 HStack {
