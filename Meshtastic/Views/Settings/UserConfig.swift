@@ -216,15 +216,11 @@ struct UserConfig: View {
 			self.overrideFrequency = node?.loRaConfig?.overrideFrequency ?? 0.00
 			self.hasChanges = false
 		}
-		.onChange(of: shortName) { _, newShort in
-			if node != nil && node!.user != nil {
-				if newShort != node?.user!.shortName { hasChanges = true }
-			}
+		.onChange(of: shortName) { oldShort, newShort in
+			if oldShort != newShort && newShort != node?.user?.shortName ?? "Unknown" { hasChanges = true }
 		}
-		.onChange(of: longName) { _, newLong in
-			if node != nil && node!.user != nil {
-				if newLong != node?.user!.longName { hasChanges = true }
-			}
+		.onChange(of: longName) { oldLong, newLong in
+			if oldLong != newLong && newLong != node?.user?.longName ?? "Unknown" { hasChanges = true }
 		}
 		.onChange(of: isLicensed) { _, newIsLicensed in
 			if node != nil && node!.user != nil {
@@ -239,10 +235,10 @@ struct UserConfig: View {
 			}
 		}
 		.onChange(of: overrideFrequency) {
-			 hasChanges = true
+			if isLicensed { hasChanges = true }
 		}
 		.onChange(of: txPower) {
-			hasChanges = true
+			if isLicensed { hasChanges = true }
 		}
 	}
 }
