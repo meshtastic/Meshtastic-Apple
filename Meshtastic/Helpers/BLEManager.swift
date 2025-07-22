@@ -296,7 +296,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							subtitle: "\(peripheral.name ?? "Unknown".localized)",
 							content: e.localizedDescription,
 							target: "bluetooth",
-							path: "meshtastic:///bluetooth"
+							path: "meshtastic:///connect"
 						)
 					]
 					manager.schedule()
@@ -316,7 +316,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							subtitle: "\(peripheral.name ?? "Unknown".localized)",
 							content: e.localizedDescription,
 							target: "bluetooth",
-							path: "meshtastic:///bluetooth"
+							path: "meshtastic:///connect"
 						)
 					]
 					manager.schedule()

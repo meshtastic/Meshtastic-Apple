@@ -13,7 +13,7 @@ class Router: ObservableObject {
 
 	init(
 		navigationState: NavigationState = NavigationState(
-			selectedTab: .bluetooth
+			selectedTab: .connect
 		)
 	) {
 		self.navigationState = navigationState
@@ -35,8 +35,8 @@ class Router: ObservableObject {
 
 		if components.path == "/messages" {
 			routeMessages(components)
-		} else if components.path == "/bluetooth" {
-			navigationState.selectedTab = .bluetooth
+		} else if components.path == "/connect" {
+			navigationState.selectedTab = .connect
 		} else if components.path == "/nodes" {
 			routeNodes(components)
 		} else if components.path == "/map" {

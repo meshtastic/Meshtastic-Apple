@@ -33,9 +33,9 @@ struct ContentView: View {
 					router: appState.router
 				)
 				.tabItem {
-					Label("Bluetooth", systemImage: "antenna.radiowaves.left.and.right")
+					Label("Connect", systemImage: "link")
 				}
-				.tag(NavigationState.Tab.bluetooth)
+				.tag(NavigationState.Tab.connect)
 
 			NodeList(
 				router: appState.router

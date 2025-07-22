@@ -8298,6 +8298,9 @@
         }
       }
     },
+    "Connect" : {
+
+    },
     "Connect to a Node" : {
       "localizations" : {
         "de" : {
@@ -33998,7 +34001,11 @@
         }
       }
     },
+    "Shows information for the connected Lora radio. You can swipe left to disconnect the radio and long press to start the live activity." : {
+
+    },
     "Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press to start the live activity." : {
+      "extractionState" : "stale",
       "localizations" : {
         "sr" : {
           "stringUnit" : {

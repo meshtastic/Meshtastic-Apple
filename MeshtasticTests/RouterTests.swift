@@ -47,10 +47,10 @@ final class RouterTests: XCTestCase {
 		)
 	}
 
-	func testRouteBluetooth() async throws {
+	func testRouteConnect() async throws {
 		try await assertRoute(
 			router: Router(),
-			"meshtastic:///bluetooth",
+			"meshtastic:///connect",
 			NavigationState(selectedTab: .bluetooth)
 		)
 	}

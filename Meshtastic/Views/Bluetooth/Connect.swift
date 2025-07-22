@@ -35,7 +35,7 @@ struct Connect: View {
 					// if bleManager.isSwitchedOn {
 						Section {
 							if let connectedDevice = accessoryManager.activeConnection?.device, accessoryManager.isConnected {
-								TipView(BluetoothConnectionTip(), arrowEdge: .bottom)
+								TipView(ConnectionTip(), arrowEdge: .bottom)
 									.tipViewStyle(PersistentTip())
 								VStack(alignment: .leading) {
 									HStack {
@@ -324,7 +324,7 @@ struct Connect: View {
 				}
 				.padding(.bottom, 10)
 			}
-			.navigationTitle("Bluetooth")
+			.navigationTitle("Connect")
 			.navigationBarItems(
 				leading: MeshtasticLogo(),
 				trailing: ZStack {
