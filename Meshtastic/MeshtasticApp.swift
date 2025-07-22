@@ -56,11 +56,15 @@ struct MeshtasticAppleApp: App {
 		RUM.enable(
 			with: RUM.Configuration(
 				applicationID: appID,
-				uiKitViewsPredicate: DefaultUIKitRUMViewsPredicate(),
-				uiKitActionsPredicate: DefaultUIKitRUMActionsPredicate(),
+				swiftUIViewsPredicate: DefaultSwiftUIRUMViewsPredicate(),
+				swiftUIActionsPredicate: DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true),
 				trackBackgroundEvents: true
 			)
 		)
+		let attributes: [String: Encodable] = [
+			"firmware_version": UserDefaults.firmwareVersion
+		]
+		RUMMonitor.shared().addAttributes(attributes)
 		self._appState = ObservedObject(wrappedValue: appState)
 		// Initialize the BLEManager singleton with the necessary dependencies
 		BLEManager.setup(appState: appState, context: persistenceController.container.viewContext)
