@@ -202,7 +202,6 @@ struct MeshMap: View {
 			// Initialize enabled overlay configs with all active files
 			let activeFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState().filter { $0.isActive }
 			enabledOverlayConfigs = Set(activeFiles.map { $0.id })
-			print("🚨 MeshMap: Initialized with \(enabledOverlayConfigs.count) enabled overlay configs")
 
 			//	let wayPointEntity = getWaypoint(id: Int64(deepLinkManager.waypointId) ?? -1, context: context)
 			// if wayPointEntity.id > 0 {

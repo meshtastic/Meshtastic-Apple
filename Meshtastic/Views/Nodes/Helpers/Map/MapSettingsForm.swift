@@ -139,9 +139,6 @@ struct MapSettingsForm: View {
 					}
 					.tint(.accentColor)
 					.disabled(!hasUserData)
-					.onChange(of: mapOverlaysEnabled) { oldValue, newValue in
-						Logger.services.info("🔧 MapSettingsForm: Master overlay toggle changed from \(oldValue) to \(newValue)")
-					}
 
 					// Show individual file toggles when overlays are enabled
 					if mapOverlaysEnabled && hasUserData {
@@ -161,18 +158,14 @@ struct MapSettingsForm: View {
 							ForEach(uploadedFiles) { file in
 								Toggle(isOn: Binding(
 									get: { 
-										let isEnabled = enabledOverlayConfigs.contains(file.id)
-										Logger.services.debug("🔧 MapSettingsForm: File '\(file.originalName)' toggle getter - enabled: \(isEnabled)")
-										return isEnabled
+										return enabledOverlayConfigs.contains(file.id)
 									},
 									set: { newValue in
-										Logger.services.error("🚨 SETTER CALLED: File '\(file.originalName)' toggle setter - changing to: \(newValue)")
 										if newValue {
 											enabledOverlayConfigs.insert(file.id)
 										} else {
 											enabledOverlayConfigs.remove(file.id)
 										}
-										Logger.services.error("🚨 SETTER COMPLETED: enabledOverlayConfigs now has \(enabledOverlayConfigs.count) items")
 									}
 								)) {
 									Label {

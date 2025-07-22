@@ -57,7 +57,6 @@ class MapDataManager {
 
     /// Process and store an uploaded file
     func processUploadedFile(from sourceURL: URL) async throws -> MapDataMetadata {
-        Logger.services.info("📁 Processing uploaded file: \(sourceURL.lastPathComponent, privacy: .public)")
 
         // 1. Start accessing security-scoped resource
         let isAccessing = sourceURL.startAccessingSecurityScopedResource()
@@ -98,7 +97,6 @@ class MapDataManager {
         // 7. Clear cached configuration to force reload
         activeFeatureCollection = nil
 
-        Logger.services.info("📁 Successfully processed file: \(newFilename, privacy: .public)")
         return metadata
     }
 
@@ -186,10 +184,7 @@ class MapDataManager {
 
     /// Load combined feature collection from specific files
     func loadFeatureCollectionForFiles(_ files: [MapDataMetadata]) -> GeoJSONFeatureCollection? {
-        Logger.services.debug("📁 MapDataManager: Loading feature collection for \(files.count) specific files")
-        
         guard !files.isEmpty else {
-            Logger.services.debug("📁 MapDataManager: No files provided, returning nil")
             return nil
         }
         
@@ -199,7 +194,6 @@ class MapDataManager {
             do {
                 if let featureCollection = try loadFeatureCollectionFromFile(file) {
                     allFeatures.append(contentsOf: featureCollection.features)
-                    Logger.services.info("📁 MapDataManager: Successfully loaded \(featureCollection.features.count) features from \(file.filename, privacy: .public)")
                 }
             } catch {
                 Logger.services.error("📁 MapDataManager: Failed to load feature collection from \(file.filename, privacy: .public): \(error.localizedDescription, privacy: .public)")
@@ -208,27 +202,21 @@ class MapDataManager {
         }
         
         guard !allFeatures.isEmpty else {
-            Logger.services.debug("📁 MapDataManager: No features loaded from any files")
             return nil
         }
-        
-        Logger.services.info("📁 MapDataManager: Successfully combined \(allFeatures.count) total features from \(files.count) files")
         return GeoJSONFeatureCollection(type: "FeatureCollection", features: allFeatures)
     }
 
     /// Load and combine raw GeoJSON feature collections from all active files
     func loadFeatureCollection() -> GeoJSONFeatureCollection? {
         if let cached = activeFeatureCollection {
-            Logger.services.debug("📁 MapDataManager: Returning cached feature collection")
             return cached
         }
 
         // Find active user files
         let activeFiles = uploadedFiles.filter { $0.isActive }
-        Logger.services.debug("📁 MapDataManager: Found \(activeFiles.count) active files out of \(self.uploadedFiles.count) total files")
         
         guard !activeFiles.isEmpty else {
-            Logger.services.debug("📁 MapDataManager: No active files found")
             return nil
         }
 
@@ -236,7 +224,6 @@ class MapDataManager {
         
         // Load features from all active files
         for activeFile in activeFiles {
-            Logger.services.info("📁 MapDataManager: Attempting to load active file: \(activeFile.filename, privacy: .public)")
 
             guard let fileURL = getUserUploadedDirectory()?.appendingPathComponent(activeFile.filename) else {
                 Logger.services.error("📁 MapDataManager: Could not construct file URL for: \(activeFile.filename, privacy: .public)")
@@ -246,14 +233,12 @@ class MapDataManager {
             // Check if file exists before trying to load it
             if !FileManager.default.fileExists(atPath: fileURL.path) {
                 Logger.services.error("📁 MapDataManager: Active file does not exist at path: \(fileURL.path, privacy: .public)")
-                Logger.services.info("📁 MapDataManager: Removing missing file from metadata")
                 
                 // Remove the missing file from our metadata
                 if let index = uploadedFiles.firstIndex(where: { $0.filename == activeFile.filename }) {
                     uploadedFiles.remove(at: index)
                     do {
                         try saveMetadata()
-                        Logger.services.info("📁 MapDataManager: Successfully cleaned up missing file from metadata")
                     } catch {
                         Logger.services.error("📁 MapDataManager: Failed to save cleaned metadata: \(error.localizedDescription, privacy: .public)")
                     }
@@ -266,7 +251,6 @@ class MapDataManager {
                 let processedData = try processData(data, filename: activeFile.filename)
                 let featureCollection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: processedData)
 
-                Logger.services.info("📁 MapDataManager: Successfully loaded \(featureCollection.features.count) features from \(activeFile.filename, privacy: .public)")
                 allFeatures.append(contentsOf: featureCollection.features)
             } catch {
                 Logger.services.error("📁 MapDataManager: Failed to load feature collection from \(activeFile.filename, privacy: .public): \(error.localizedDescription, privacy: .public)")
@@ -279,7 +263,6 @@ class MapDataManager {
             features: allFeatures
         )
         
-        Logger.services.info("📁 MapDataManager: Successfully combined \(allFeatures.count) total features from \(activeFiles.count) active files")
         activeFeatureCollection = combinedCollection
         return combinedCollection
     }
@@ -293,39 +276,28 @@ class MapDataManager {
     
     /// Toggle the active state of an uploaded file
     func toggleFileActive(_ fileId: UUID) {
-        Logger.services.error("🚨 MapDataManager: ENTRY - Toggling active state for file: \(fileId)")
-        
         if let index = uploadedFiles.firstIndex(where: { $0.id == fileId }) {
-            let oldState = uploadedFiles[index].isActive
             uploadedFiles[index].isActive.toggle()
-            let newState = uploadedFiles[index].isActive
-            Logger.services.error("🚨 MapDataManager: File '\(self.uploadedFiles[index].filename)' changed from \(oldState) to \(newState)")
             
             // Save metadata changes
             do {
                 try saveMetadata()
                 // Clear cached data to force reload
                 activeFeatureCollection = nil
-                Logger.services.error("🚨 MapDataManager: Successfully saved metadata and cleared cache")
             } catch {
                 Logger.services.error("🚨 MapDataManager: FAILED to save metadata after toggling file: \(error.localizedDescription)")
             }
-        } else {
-            Logger.services.error("🚨 MapDataManager: ERROR - Could not find file with ID: \(fileId)")
         }
-        Logger.services.error("🚨 MapDataManager: EXIT - Completed toggle operation for file: \(fileId)")
     }
 
     /// Delete uploaded file
     func deleteFile(_ metadata: MapDataMetadata) throws {
-        Logger.services.info("🗑️ MapDataManager: Attempting to delete file: \(metadata.filename, privacy: .public)")
         
         guard let fileURL = getUserUploadedDirectory()?.appendingPathComponent(metadata.filename) else {
             Logger.services.error("🗑️ MapDataManager: Could not construct file URL for: \(metadata.filename, privacy: .public)")
             throw MapDataError.fileNotFound
         }
 
-        Logger.services.debug("🗑️ MapDataManager: File URL: \(fileURL.path, privacy: .public)")
         
         // Check if file exists before trying to delete
         if !FileManager.default.fileExists(atPath: fileURL.path) {
@@ -334,7 +306,6 @@ class MapDataManager {
 
         do {
             try FileManager.default.removeItem(at: fileURL)
-            Logger.services.info("🗑️ MapDataManager: Successfully removed file from filesystem")
         } catch {
             Logger.services.error("🗑️ MapDataManager: Failed to remove file: \(error.localizedDescription, privacy: .public)")
             throw error
@@ -342,14 +313,12 @@ class MapDataManager {
 
         if let index = uploadedFiles.firstIndex(where: { $0.filename == metadata.filename }) {
             uploadedFiles.remove(at: index)
-            Logger.services.debug("🗑️ MapDataManager: Removed file from uploadedFiles array at index \(index)")
         } else {
             Logger.services.warning("🗑️ MapDataManager: File not found in uploadedFiles array")
         }
 
         do {
             try saveMetadata()
-            Logger.services.debug("🗑️ MapDataManager: Successfully saved updated metadata")
         } catch {
             Logger.services.error("🗑️ MapDataManager: Failed to save metadata: \(error.localizedDescription, privacy: .public)")
             throw error
@@ -358,13 +327,11 @@ class MapDataManager {
         // Clear cache if this was the active file
         if activeFeatureCollection != nil {
             activeFeatureCollection = nil
-            Logger.services.debug("🗑️ MapDataManager: Cleared active configuration cache")
         }
         
         // Clear GeoJSON overlay manager cache
         GeoJSONOverlayManager.shared.clearCache()
 
-        Logger.services.info("🗑️ MapDataManager: Successfully deleted file: \(metadata.filename, privacy: .public)")
     }
 
         /// Toggle file active status

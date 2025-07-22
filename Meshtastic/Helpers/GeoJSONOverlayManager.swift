@@ -11,52 +11,38 @@ class GeoJSONOverlayManager {
 
     /// Load raw GeoJSON feature collection from user uploads
     func loadFeatureCollection() -> GeoJSONFeatureCollection? {
-        Logger.services.debug("🗺️ GeoJSONOverlayManager: loadFeatureCollection() called")
-        
         if let cached = featureCollection {
-            Logger.services.debug("🗺️ GeoJSONOverlayManager: Returning cached feature collection with \(cached.features.count) features")
             return cached
         }
 
         // Load user-uploaded feature collection
-        Logger.services.debug("🗺️ GeoJSONOverlayManager: Loading feature collection from MapDataManager")
         if let userFeatures = MapDataManager.shared.loadFeatureCollection() {
-            Logger.services.info("🗺️ GeoJSONOverlayManager: Loaded feature collection with \(userFeatures.features.count) features")
             featureCollection = userFeatures
             return userFeatures
         }
 
-        // No feature collection available
-        Logger.services.debug("🗺️ GeoJSONOverlayManager: No feature collection available")
         return nil
     }
 
     /// Load styled features for specific enabled configs
     func loadStyledFeaturesForConfigs(_ enabledConfigs: Set<UUID>) -> [GeoJSONStyledFeature] {
-        Logger.services.debug("🗺️ GeoJSONOverlayManager: loadStyledFeaturesForConfigs() called with \(enabledConfigs.count) configs")
-        
         // Get files that match the enabled configs
         let enabledFiles = MapDataManager.shared.getUploadedFiles().filter { enabledConfigs.contains($0.id) }
         
         guard !enabledFiles.isEmpty else {
-            Logger.services.debug("🗺️ GeoJSONOverlayManager: No enabled files found, returning empty array")
             return []
         }
         
         // Load feature collection from enabled files only
         guard let collection = MapDataManager.shared.loadFeatureCollectionForFiles(enabledFiles) else {
-            Logger.services.debug("🗺️ GeoJSONOverlayManager: No feature collection available for enabled files, returning empty array")
             return []
         }
         
         var styledFeatures: [GeoJSONStyledFeature] = []
         
-        Logger.services.info("🗺️ GeoJSONOverlayManager: Processing \(collection.features.count) features from \(enabledFiles.count) enabled files")
-        
         for feature in collection.features {
             // Skip invisible features
             guard feature.isVisible else { 
-                Logger.services.debug("🗺️ GeoJSONOverlayManager: Skipping invisible feature")
                 continue 
             }
             
@@ -68,27 +54,20 @@ class GeoJSONOverlayManager {
             styledFeatures.append(styledFeature)
         }
         
-        Logger.services.info("🗺️ GeoJSONOverlayManager: Returning \(styledFeatures.count) styled features from enabled configs")
         return styledFeatures
     }
 
     /// Load styled features for direct rendering (legacy method)
     func loadStyledFeatures() -> [GeoJSONStyledFeature] {
-        Logger.services.debug("🗺️ GeoJSONOverlayManager: loadStyledFeatures() called")
-        
         guard let collection = loadFeatureCollection() else {
-            Logger.services.debug("🗺️ GeoJSONOverlayManager: No feature collection available, returning empty array")
             return []
         }
         
         var styledFeatures: [GeoJSONStyledFeature] = []
         
-        Logger.services.info("🗺️ GeoJSONOverlayManager: Processing \(collection.features.count) features")
-        
         for feature in collection.features {
             // Skip invisible features
             guard feature.isVisible else { 
-                Logger.services.debug("🗺️ GeoJSONOverlayManager: Skipping invisible feature")
                 continue 
             }
             
@@ -100,7 +79,6 @@ class GeoJSONOverlayManager {
             styledFeatures.append(styledFeature)
         }
         
-        Logger.services.info("🗺️ GeoJSONOverlayManager: Returning \(styledFeatures.count) styled features")
         return styledFeatures
     }
 
@@ -130,7 +108,6 @@ class GeoJSONOverlayManager {
 
     /// Clear cached data (useful for testing or memory management)
     func clearCache() {
-        Logger.services.info("🗺️ GeoJSONOverlayManager: Clearing cache")
         featureCollection = nil
     }
 
@@ -164,10 +141,8 @@ class GeoJSONOverlayManager {
     
     /// Toggle the active state of an uploaded file
     func toggleFileActive(_ fileId: UUID) {
-        Logger.services.error("🚨 GeoJSONOverlayManager: ENTRY - Toggling active state for file: \(fileId)")
         MapDataManager.shared.toggleFileActive(fileId)
         // Clear cache to force reload with new file states
         clearCache()
-        Logger.services.error("🚨 GeoJSONOverlayManager: EXIT - Completed toggle and cache clear for file: \(fileId)")
     }
 }

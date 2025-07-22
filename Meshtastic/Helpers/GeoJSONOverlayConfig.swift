@@ -188,11 +188,7 @@ struct GeoJSONStyledFeature: Identifiable {
                 if let geometry = mkFeature.geometry.first as? MKOverlay {
                     // Successfully created overlay
                     return geometry
-                } else {
-                    Logger.services.warning("🗺️ GeoJSONStyledFeature: First geometry is not an MKOverlay: \(type(of: mkFeature.geometry.first))")
                 }
-            } else {
-                Logger.services.warning("🗺️ GeoJSONStyledFeature: First feature is not an MKGeoJSONFeature: \(type(of: mkFeatures.first))")
             }
         } catch {
             Logger.services.error("🗺️ GeoJSONStyledFeature: Failed to convert feature to overlay: \(error.localizedDescription)")
