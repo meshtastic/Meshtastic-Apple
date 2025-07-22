@@ -18,7 +18,7 @@ struct MapSettingsForm: View {
 	@AppStorage("enableMapWaypoints") private var enableMapWaypoints = true
 	@AppStorage("enableMapShowFavorites") private var enableMapShowFavorites = false
 	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
-	@State private var uploadedFiles: [MapDataMetadata] = []
+	@ObservedObject private var mapDataManager = MapDataManager.shared
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
 	@Binding var mapLayer: MapLayer
@@ -142,7 +142,7 @@ struct MapSettingsForm: View {
 
 					// Show individual file toggles when overlays are enabled
 					if mapOverlaysEnabled && hasUserData {
-						if !uploadedFiles.isEmpty {
+						if !mapDataManager.getUploadedFiles().isEmpty {
 							// Data source info
 							HStack {
 								Image(systemName: "info.circle")
@@ -155,7 +155,7 @@ struct MapSettingsForm: View {
 							.padding(.leading, 35)
 							
 							// Individual file toggles
-							ForEach(uploadedFiles) { file in
+							ForEach(mapDataManager.getUploadedFiles()) { file in
 								Toggle(isOn: Binding(
 									get: { 
 										return enabledOverlayConfigs.contains(file.id)
@@ -193,7 +193,7 @@ struct MapSettingsForm: View {
 							}
 							
 							// Manage data link
-							NavigationLink(destination: MapDataUpload()) {
+							NavigationLink(destination: MapDataFiles()) {
 								HStack {
 									Image(systemName: "folder")
 										.foregroundColor(.accentColor)
@@ -221,7 +221,7 @@ struct MapSettingsForm: View {
 						}
 					} else if !hasUserData {
 						// Upload prompt when no data available
-						NavigationLink(destination: MapDataUpload()) {
+						NavigationLink(destination: MapDataFiles()) {
 							HStack {
 								Image(systemName: "arrow.up.doc")
 									.foregroundColor(.accentColor)
@@ -257,8 +257,8 @@ Spacer()
 		.presentationDragIndicator(.visible)
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 		.onAppear {
-			// Load files on appear
-			uploadedFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState()
+			// Initialize map data manager
+			mapDataManager.initialize()
 		}
 
 	}

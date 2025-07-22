@@ -60,7 +60,7 @@
 		3D3417C82E29D38A006A988B /* GeoJSONOverlayConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417C72E29D38A006A988B /* GeoJSONOverlayConfig.swift */; };
 		3D3417CB2E29D3B0006A988B /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417C92E29D3B0006A988B /* Color+Hex.swift */; };
 		3D3417D22E2DC260006A988B /* MapDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417D12E2DC260006A988B /* MapDataManager.swift */; };
-		3D3417D42E2DC293006A988B /* MapDataUpload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417D32E2DC293006A988B /* MapDataUpload.swift */; };
+		3D3417D42E2DC293006A988B /* MapDataFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417D32E2DC293006A988B /* MapDataFiles.swift */; };
 		6D825E622C34786C008DBEE4 /* CommonRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D825E612C34786C008DBEE4 /* CommonRegex.swift */; };
 		6DA39D8E2A92DC52007E311C /* MeshtasticAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */; };
 		6DEDA55A2A957B8E00321D2E /* DetectionSensorLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */; };
@@ -335,7 +335,7 @@
 		3D3417C72E29D38A006A988B /* GeoJSONOverlayConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoJSONOverlayConfig.swift; sourceTree = "<group>"; };
 		3D3417C92E29D3B0006A988B /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
 		3D3417D12E2DC260006A988B /* MapDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDataManager.swift; sourceTree = "<group>"; };
-		3D3417D32E2DC293006A988B /* MapDataUpload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDataUpload.swift; sourceTree = "<group>"; };
+		3D3417D32E2DC293006A988B /* MapDataFiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDataFiles.swift; sourceTree = "<group>"; };
 		6D825E612C34786C008DBEE4 /* CommonRegex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonRegex.swift; sourceTree = "<group>"; };
 		6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAppDelegate.swift; sourceTree = "<group>"; };
 		6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorLog.swift; sourceTree = "<group>"; };
@@ -797,7 +797,7 @@
 		DD4A911C2708C57100501B7E /* Settings */ = {
 			isa = PBXGroup;
 			children = (
-				3D3417D32E2DC293006A988B /* MapDataUpload.swift */,
+				3D3417D32E2DC293006A988B /* MapDataManager.swift */,
 				DDD5BB0E2C285F92007E03CA /* Logs */,
 				DD93800C2BA74CE3008BEC06 /* Channels */,
 				DD61937A2863876A00E59241 /* Config */,
@@ -1453,7 +1453,7 @@
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
 				DDDB444C29F8AAA600EE2349 /* Color.swift in Sources */,
 				DDDFE73F2D0D48FF0044463C /* IgnoreNodeButton.swift in Sources */,
-				3D3417D42E2DC293006A988B /* MapDataUpload.swift in Sources */,
+				3D3417D42E2DC293006A988B /* MapDataManager.swift in Sources */,
 				DDB8F4122A9EE5DD00230ECE /* UserList.swift in Sources */,
 				DDB75A0F2A05920E006ED576 /* FileManager.swift in Sources */,
 				DD3D17E02C3FB67200561584 /* LocalWeatherConditions.swift in Sources */,

@@ -2,9 +2,10 @@ import SwiftUI
 import UniformTypeIdentifiers
 import OSLog
 
-struct MapDataUpload: View {
+struct MapDataFiles: View {
     @Environment(\.managedObjectContext) var context
     @EnvironmentObject var bleManager: BLEManager
+    @ObservedObject private var mapDataManager = MapDataManager.shared
 
     @State private var isShowingFilePicker = false
     @State private var isProcessing = false
@@ -13,8 +14,6 @@ struct MapDataUpload: View {
     @State private var errorMessage = ""
     @State private var showSuccess = false
     @State private var successMessage = ""
-
-    private let mapDataManager = MapDataManager.shared
 
     var body: some View {
         VStack(spacing: 20) {
@@ -251,6 +250,6 @@ struct MapDataFileRow: View {
 
 #Preview {
     NavigationView {
-        MapDataUpload()
+        MapDataFiles()
     }
 }

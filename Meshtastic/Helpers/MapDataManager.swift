@@ -1,9 +1,10 @@
 import Foundation
 import MapKit
 import OSLog
+import Combine
 
 /// Manager for handling user-uploaded map data files
-class MapDataManager {
+class MapDataManager: ObservableObject {
     static let shared = MapDataManager()
     private init() {}
 
@@ -14,7 +15,7 @@ class MapDataManager {
     private let metadataFileName = "upload_history.json"
 
     // MARK: - Properties
-    private var uploadedFiles: [MapDataMetadata] = []
+    @Published private var uploadedFiles: [MapDataMetadata] = []
     private var activeFeatureCollection: GeoJSONFeatureCollection?
 
     // MARK: - File Management
@@ -90,12 +91,13 @@ class MapDataManager {
         // 5. Process and validate content
         let metadata = try await processFileContent(at: destURL, originalName: originalName)
 
-        // 6. Save metadata
-        uploadedFiles.append(metadata)
+        // 6. Save metadata and update UI on main thread
+        await MainActor.run {
+            uploadedFiles.append(metadata)
+            // Clear cached configuration to force reload
+            activeFeatureCollection = nil
+        }
         try saveMetadata()
-
-        // 7. Clear cached configuration to force reload
-        activeFeatureCollection = nil
 
         return metadata
     }
@@ -181,7 +183,7 @@ class MapDataManager {
         guard let fileURL = getUserUploadedDirectory()?.appendingPathComponent(file.filename) else {
             throw MapDataError.fileNotFound
         }
-        
+
         let data = try Data(contentsOf: fileURL)
         return try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
     }
@@ -193,9 +195,9 @@ class MapDataManager {
         guard !files.isEmpty else {
             return nil
         }
-        
+
         var allFeatures: [GeoJSONFeature] = []
-        
+
         for file in files {
             do {
                 if let featureCollection = try loadFeatureCollectionFromFile(file) {
@@ -206,7 +208,7 @@ class MapDataManager {
                 continue
             }
         }
-        
+
         guard !allFeatures.isEmpty else {
             return nil
         }
@@ -221,13 +223,13 @@ class MapDataManager {
 
         // Find active user files
         let activeFiles = uploadedFiles.filter { $0.isActive }
-        
+
         guard !activeFiles.isEmpty else {
             return nil
         }
 
         var allFeatures: [GeoJSONFeature] = []
-        
+
         // Load features from all active files
         for activeFile in activeFiles {
 
@@ -239,7 +241,7 @@ class MapDataManager {
             // Check if file exists before trying to load it
             if !FileManager.default.fileExists(atPath: fileURL.path) {
                 Logger.services.error("📁 MapDataManager: Active file does not exist at path: \(fileURL.path, privacy: .public)")
-                
+
                 // Remove the missing file from our metadata
                 if let index = uploadedFiles.firstIndex(where: { $0.filename == activeFile.filename }) {
                     uploadedFiles.remove(at: index)
@@ -261,13 +263,13 @@ class MapDataManager {
                 Logger.services.error("📁 MapDataManager: Failed to load feature collection from \(activeFile.filename, privacy: .public): \(error.localizedDescription, privacy: .public)")
             }
         }
-        
+
         // Create combined feature collection
         let combinedCollection = GeoJSONFeatureCollection(
             type: "FeatureCollection",
             features: allFeatures
         )
-        
+
         activeFeatureCollection = combinedCollection
         return combinedCollection
     }
@@ -278,12 +280,12 @@ class MapDataManager {
     func getUploadedFiles() -> [MapDataMetadata] {
         return uploadedFiles
     }
-    
+
     /// Toggle the active state of an uploaded file
     func toggleFileActive(_ fileId: UUID) {
         if let index = uploadedFiles.firstIndex(where: { $0.id == fileId }) {
             uploadedFiles[index].isActive.toggle()
-            
+
             // Save metadata changes
             do {
                 try saveMetadata()
@@ -297,13 +299,13 @@ class MapDataManager {
 
     /// Delete uploaded file
     func deleteFile(_ metadata: MapDataMetadata) async throws {
-        
+
         guard let fileURL = getUserUploadedDirectory()?.appendingPathComponent(metadata.filename) else {
             Logger.services.error("🗑️ MapDataManager: Could not construct file URL for: \(metadata.filename, privacy: .public)")
             throw MapDataError.fileNotFound
         }
 
-        
+
         // Check if file exists before trying to delete
         if !FileManager.default.fileExists(atPath: fileURL.path) {
             Logger.services.warning("🗑️ MapDataManager: File does not exist at path: \(fileURL.path, privacy: .public)")
@@ -316,10 +318,13 @@ class MapDataManager {
             throw error
         }
 
-        if let index = uploadedFiles.firstIndex(where: { $0.filename == metadata.filename }) {
-            uploadedFiles.remove(at: index)
-        } else {
-            Logger.services.warning("🗑️ MapDataManager: File not found in uploadedFiles array")
+        // Update UI-related properties on main thread
+        await MainActor.run {
+            if let index = uploadedFiles.firstIndex(where: { $0.filename == metadata.filename }) {
+                uploadedFiles.remove(at: index)
+            } else {
+                Logger.services.warning("🗑️ MapDataManager: File not found in uploadedFiles array")
+            }
         }
 
         do {
@@ -330,12 +335,19 @@ class MapDataManager {
         }
 
         // Clear cache if this was the active file
-        if activeFeatureCollection != nil {
-            activeFeatureCollection = nil
+        await MainActor.run {
+            if activeFeatureCollection != nil {
+                activeFeatureCollection = nil
+            }
         }
-        
+
         // Clear GeoJSON overlay manager cache
         GeoJSONOverlayManager.shared.clearCache()
+
+        // Notify UI components that a file was deleted
+        await MainActor.run {
+            NotificationCenter.default.post(name: Foundation.Notification.Name.mapDataFileDeleted, object: metadata.id)
+        }
 
     }
 
@@ -446,4 +458,9 @@ enum MapDataError: Error, LocalizedError {
             return "Failed to save file."
         }
     }
+}
+
+// MARK: - Notification Names
+extension Foundation.Notification.Name {
+    static let mapDataFileDeleted = Foundation.Notification.Name("mapDataFileDeleted")
 }

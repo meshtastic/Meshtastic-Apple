@@ -220,6 +220,11 @@ struct MeshMap: View {
 		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false
 		})
+		.onReceive(NotificationCenter.default.publisher(for: Foundation.Notification.Name.mapDataFileDeleted)) { notification in
+			if let deletedFileId = notification.object as? UUID {
+				enabledOverlayConfigs.remove(deletedFileId)
+			}
+		}
 	}
 
 	// moves the map to a new coordinate
