@@ -295,7 +295,7 @@ struct Connect: View {
 						Button(role: .destructive, action: {
 							if accessoryManager.isConnected {
 								Task {
-									await accessoryManager.disconnect()
+									try await accessoryManager.disconnect()
 								}
 							}
 						}) {
@@ -309,7 +309,7 @@ struct Connect: View {
 					if accessoryManager.state == .connecting {
 						Button(role: .destructive, action: {
 							Task {
-								await accessoryManager.disconnect()
+								try await accessoryManager.disconnect()
 							}
 						}) {
 							Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")

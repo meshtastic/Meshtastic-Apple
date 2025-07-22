@@ -8,7 +8,7 @@ final class RouterTests: XCTestCase {
 	func testInitialState() async throws {
 		let router = await Router()
 		let tab = await router.navigationState.selectedTab
-		XCTAssertEqual(tab, .bluetooth)
+		XCTAssertEqual(tab, .connect)
 	}
 
 	func testRouteMessages() async throws {
@@ -51,7 +51,7 @@ final class RouterTests: XCTestCase {
 		try await assertRoute(
 			router: Router(),
 			"meshtastic:///connect",
-			NavigationState(selectedTab: .bluetooth)
+			NavigationState(selectedTab: .connect)
 		)
 	}
 
