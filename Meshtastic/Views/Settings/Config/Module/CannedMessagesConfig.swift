@@ -206,7 +206,7 @@ struct CannedMessagesConfig: View {
 						cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
 						let messagesAdminMessageId =  bleManager.saveCannedMessageModuleMessages(messages: messages, fromUser: node!.user!, toUser: node!.user!)
 						if messagesAdminMessageId > 0 {
-							// Fire off the message update ever time
+							// Fire off the message update every time
 							hasMessagesChanges = false
 						}
 						let adminMessageId =  bleManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!)
