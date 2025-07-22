@@ -216,9 +216,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				}
 
 				do {
-					self.connectionTask = Task(timeout: .seconds(5)) {
+					self.connectionTask = Task(timeout: .seconds(15)) {
 						try await self.connectionProcess(device: device, attempt: attempt)
-						try await Task.sleep(for: .seconds(6))
 					}
 					try await self.connectionTask?.value
 
@@ -405,11 +404,16 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 
 	func disconnect() async throws {
+		Logger.transport.debug("[AccessoryManager] received disconnect request")
 		guard let active = activeConnection else {
 			return // No connection to disconnect
 		}
+		
+		Logger.transport.debug("[AccessoryManager] disconnecting")
 		activeConnection = nil
 		try await active.connection.disconnect()
+		
+		
 		updateDevice(deviceId: active.device.id, key: \.connectionState, value: .disconnected)
 		updateState(.idle)
 
@@ -449,7 +453,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	private func updateState(_ newState: AccessoryManagerState) {
 		Task { @MainActor in
 			Logger.transport.info("Updating state from \(self.state.description) to \(newState.description)")
-			switch state {
+			switch newState {
 			case .uninitialized, .idle, .discovering:
 				self.isConnected = false
 				self.isConnecting = false
@@ -485,7 +489,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		case .failure(let error):
 			// Handle error, perhaps log and disconnect
 			Logger.transport.info("🚨 [Accessory] didReceive with failure: \(error.localizedDescription)")
-			print("Error receiving packet: \(error)")
 			switch self.state {
 			case .connecting, .retrying:
 				break

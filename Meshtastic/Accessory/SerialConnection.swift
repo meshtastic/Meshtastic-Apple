@@ -9,21 +9,11 @@ import Foundation
 import OSLog
 import MeshtasticProtobufs
 import Darwin.POSIX.termios
-import Dispatch
 
 actor SerialConnection: Connection {
-	func drainPendingPackets() async throws {
-		//
-	}
-
-	func startDrainPendingPackets() throws {
-		//
-	}
-
 	private let path: String
 	private var fd: Int32 = -1
 	private var isOpen: Bool = false
-	private var dispatchIO: DispatchIO?
 	private var readerTask: Task<Void, Never>?
 
 	var isConnected: Bool { isOpen }
@@ -32,72 +22,76 @@ actor SerialConnection: Connection {
 		self.path = path
 	}
 
+	private func waitForMagicBytes() throws -> Bool {
+		let startOfFrame: [UInt8] = [0x94, 0xc3]
+		var waitingOnByte = 0
+		while isOpen {
+			var byte: UInt8 = 0
+			let bytesRead = read(fd, &byte, 1)
+			if bytesRead <= 0 {
+				continue
+			}
+			if byte == startOfFrame[waitingOnByte] {
+				waitingOnByte += 1
+			} else {
+				waitingOnByte = 0
+			}
+			if waitingOnByte > 1 {
+				return true
+			}
+		}
+		return false
+	}
+
+	private func readInteger() throws -> UInt16? {
+		var buffer = [UInt8](repeating: 0, count: 2)
+		let bytesRead = read(fd, &buffer, 2)
+		if bytesRead == 2 {
+			return buffer.withUnsafeBytes { $0.load(as: UInt16.self).bigEndian }
+		}
+		return nil
+	}
+
 	private func startReader() {
 		readerTask = Task { @MainActor in
-			guard let dispatchIO = dispatchIO else { return }
-			let bufferSize = 1024
-			while await self.isOpen && !Task.isCancelled {
-				try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-					dispatchIO.read(offset: 0, length: bufferSize, queue: .global()) { done, data, error in
-						if error != 0 {
-							continuation.resume(throwing: POSIXError(POSIXErrorCode(rawValue: error)!))
-							return
-						}
-
-						guard let data = data, !data.isEmpty else {
-							if done != 0 {
-								continuation.resume()
-							}
-							return
-						}
-
-						var bytes = [UInt8](repeating: 0, count: data.count)
-						data.copyBytes(to: &bytes, count: data.count)
-
-						do {
-							try self.processIncoming(bytes)
-							continuation.resume()
-						} catch {
-							continuation.resume(throwing: error)
-						}
+			while await self.isOpen {
+				do {
+					if try await self.waitForMagicBytes() == false {
+						Logger.transport.debug("[Serial] startReader: EOF while waiting for magic bytes")
+						continue
 					}
+					if let length = try await self.readInteger() {
+						let payload = try await self.receiveData(exact: Int(length))
+						if let fromRadio = try? FromRadio(serializedBytes: payload) {
+							await self.packetStream?.yield(fromRadio)
+						} else {
+							await self.packetStream?.finish()
+						}
+					} else {
+						Logger.transport.debug("[Serial] startReader: EOF while waiting for length")
+					}
+				} catch {
+					Logger.transport.error("[Serial] startReader: Error reading from Serial: \(error)")
+					await self.packetStream?.finish()
+					break
 				}
 			}
 		}
 	}
 
-	private func processIncoming(_ bytes: [UInt8]) throws {
-		var index = 0
-		while index < bytes.count {
-			// Scan for magic bytes
-			if index + 1 < bytes.count && bytes[index] == 0x94 && bytes[index + 1] == 0xc3 {
-				index += 2
-				// Read length
-				if index + 1 < bytes.count {
-					let length = UInt16(bytes[index]) << 8 | UInt16(bytes[index + 1])
-					index += 2
-
-					// Read payload
-					if index + Int(length) <= bytes.count {
-						let payload = Data(bytes[index ..< index + Int(length)])
-						if let fromRadio = try? FromRadio(serializedBytes: payload) {
-							await packetStream?.yield(fromRadio)
-						} else {
-							await packetStream?.finish()
-						}
-						index += Int(length)
-					} else {
-						// Not enough data, wait for more
-						break
-					}
-				} else {
-					// Not enough data, wait for more
-					break
-				}
-			} else {
-				index += 1 // Skip byte until magic found
+	private func receiveData(exact: Int) throws -> Data {
+		var data = Data(capacity: exact)
+		var remaining = exact
+		while remaining > 0 {
+			var buffer = [UInt8](repeating: 0, count: remaining)
+			let bytesRead = read(fd, &buffer, remaining)
+			if bytesRead <= 0 {
+				throw POSIXError(POSIXErrorCode(rawValue: errno)!)
 			}
+			data.append(contentsOf: buffer[0..<bytesRead])
+			remaining -= bytesRead
 		}
+		return data
 	}
 
 	func send(_ data: ToRadio) async throws {
@@ -121,12 +115,19 @@ actor SerialConnection: Connection {
 	func disconnect() async throws {
 		if isOpen {
 			readerTask?.cancel()
-			dispatchIO?.close(flags: .stop)
 			close(fd)
 			isOpen = false
 			packetStream?.finish()
 			packetStream = nil
 		}
+	}
+
+	func drainPendingPackets() async throws {
+		// For Serial, since reader is always running, no need to drain separately
+	}
+
+	func startDrainPendingPackets() throws {
+		// For Serial, reader is already started
 	}
 
 	private var packetStream: AsyncStream<MeshtasticProtobufs.FromRadio>.Continuation?
@@ -164,18 +165,16 @@ actor SerialConnection: Connection {
 			throw POSIXError(POSIXErrorCode(rawValue: errno)!)
 		}
 
-		// Set up DispatchIO
-		let io = DispatchIO(type: .stream, fileDescriptor: fd, queue: .global()) { error in
-			if error != 0 {
-				Logger.transport.error("[Serial] DispatchIO closed with error: \(error)")
-			}
-		}
-		io.setLimit(highWater: 1024)
-		dispatchIO = io
+		//		// Clear non-blocking for reads
+		//		let flags = fcntl(fd, F_GETFL)
+		//		if flags == -1 || fcntl(fd, F_SETFL, flags & ~O_NONBLOCK) == -1 {
+		//			close(fd)
+		//			throw POSIXError(POSIXErrorCode(rawValue: errno)!)
+		//		}
 
 		isOpen = true
-		startReader()
 
+		startReader()
 		return (getPacketStream(), nil)
 	}
 }

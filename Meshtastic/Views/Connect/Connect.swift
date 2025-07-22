@@ -316,7 +316,7 @@ struct Connect: View {
 					Spacer()
 					#if targetEnvironment(macCatalyst)
 					// TODO: should this be allowDisconnect?
-					if accessoryManager.isConnected {
+					if accessoryManager.allowDisconnect {
 						Button(role: .destructive, action: {
 							if accessoryManager.isConnected {
 								Task {
