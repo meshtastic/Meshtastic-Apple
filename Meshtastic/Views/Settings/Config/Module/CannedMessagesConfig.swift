@@ -78,8 +78,10 @@ struct CannedMessagesConfig: View {
 								messages = String(messages.dropLast())
 								totalBytes = messages.utf8.count
 							}
-							hasMessagesChanges = true
-							hasChanges = true
+							if messages != node?.cannedMessageConfig?.messages ?? "" {
+								hasChanges = true
+								hasMessagesChanges = true
+							}
 						}
 						.foregroundColor(.gray)
 				}
@@ -202,23 +204,16 @@ struct CannedMessagesConfig: View {
 						cmc.inputbrokerEventCw = InputEventChars(rawValue: inputbrokerEventCw)!.protoEnumValue()
 						cmc.inputbrokerEventCcw = InputEventChars(rawValue: inputbrokerEventCcw)!.protoEnumValue()
 						cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
+						let messagesAdminMessageId =  bleManager.saveCannedMessageModuleMessages(messages: messages, fromUser: node!.user!, toUser: node!.user!)
+						if messagesAdminMessageId > 0 {
+							// Fire off the message update ever time
+							hasMessagesChanges = false
+						}
 						let adminMessageId =  bleManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save
 							hasChanges = false
-							goBack()
-						}
-					}
-				}
-				if hasMessagesChanges {
-					let adminMessageId =  bleManager.saveCannedMessageModuleMessages(messages: messages, fromUser: node!.user!, toUser: node!.user!)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasMessagesChanges = false
-						if !hasChanges {
-							bleManager.sendWantConfig()
 							goBack()
 						}
 					}
