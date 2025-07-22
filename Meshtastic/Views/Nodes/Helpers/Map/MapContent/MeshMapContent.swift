@@ -247,23 +247,23 @@ struct MeshMapContent: MapContent {
 	var overlayContent: some MapContent {
 		// Get all features but filter by enabled configs
 		let allStyledFeatures = GeoJSONOverlayManager.shared.loadStyledFeaturesForConfigs(enabledOverlayConfigs)
-		
-		
+
+
 		return Group {
 			ForEach(0..<allStyledFeatures.count, id: \.self) { index in
 				let styledFeature = allStyledFeatures[index]
 				let feature = styledFeature.feature
 				let geometryType = feature.geometry.type
-				
+
 				if geometryType == "Point" {
 					if let coordinate = feature.geometry.coordinates.toCoordinate() {
-						Annotation("", coordinate: coordinate) {
+						Annotation(feature.name, coordinate: coordinate) {
 							Circle()
 								.fill(styledFeature.fillColor)
 								.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
 								.frame(width: feature.markerRadius * 2, height: feature.markerRadius * 2)
 						}
-						.annotationTitles(.hidden)
+						.annotationTitles(.visible)
 						.annotationSubtitles(.hidden)
 					}
 				} else if geometryType == "LineString" {

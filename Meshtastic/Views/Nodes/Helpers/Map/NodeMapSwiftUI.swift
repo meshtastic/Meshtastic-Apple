@@ -47,7 +47,7 @@ struct NodeMapSwiftUI: View {
 			ContentUnavailableView("No Positions", systemImage: "mappin.slash")
 		}
 	}
-	
+
 	private var mapWithNavigation: some View {
 		ZStack {
 			MapReader { _ in
@@ -63,7 +63,7 @@ struct NodeMapSwiftUI: View {
 					name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 			})
 	}
-	
+
 	private var configuredMap: some View {
 		baseMap
 			.overlay(alignment: .bottom) {
@@ -91,7 +91,7 @@ struct NodeMapSwiftUI: View {
 				UIApplication.shared.isIdleTimerDisabled = false
 			}
 	}
-	
+
 	private var baseMap: some View {
 		Map(position: $position, bounds: MapCameraBounds(minimumDistance: 0, maximumDistance: .infinity), scope: mapScope) {
 			NodeMapContent(node: node)
@@ -112,7 +112,7 @@ struct NodeMapSwiftUI: View {
 		}
 		.controlSize(.regular)
 	}
-	
+
 	private var lookAroundView: some View {
 		Group {
 			if scene != nil && isLookingAround {
@@ -123,7 +123,7 @@ struct NodeMapSwiftUI: View {
 			}
 		}
 	}
-	
+
 	private var altitudeView: some View {
 		Group {
 			if !isLookingAround && isShowingAltitude {
@@ -134,7 +134,7 @@ struct NodeMapSwiftUI: View {
 			}
 		}
 	}
-	
+
 	private var controlButtons: some View {
 		HStack {
 			Button(action: {
@@ -148,7 +148,7 @@ struct NodeMapSwiftUI: View {
 			.tint(Color(UIColor.secondarySystemBackground))
 			.foregroundColor(.accentColor)
 			.buttonStyle(.borderedProminent)
-			
+
 			if scene != nil {
 				Button(action: {
 					if isShowingAltitude {
@@ -163,7 +163,7 @@ struct NodeMapSwiftUI: View {
 				.foregroundColor(.accentColor)
 				.buttonStyle(.borderedProminent)
 			}
-			
+
 			if node.positions?.count ?? 0 > 1 {
 				Button(action: {
 					if isLookingAround {
@@ -182,7 +182,7 @@ struct NodeMapSwiftUI: View {
 		.controlSize(.regular)
 		.padding(5)
 	}
-	
+
 	private func updateMapStyle(for layer: MapLayer) {
 		UserDefaults.mapLayer = layer
 		switch layer {
@@ -196,7 +196,7 @@ struct NodeMapSwiftUI: View {
 			break
 		}
 	}
-	
+
 	private func handleNodeChange() {
 		isLookingAround = false
 		isShowingAltitude = false
@@ -212,7 +212,7 @@ struct NodeMapSwiftUI: View {
 			}
 		}
 	}
-	
+
 	private func handleAppear() {
 		UIApplication.shared.isIdleTimerDisabled = true
 		updateMapStyle(for: selectedMapLayer)

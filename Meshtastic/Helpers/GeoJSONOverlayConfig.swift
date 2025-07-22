@@ -19,6 +19,18 @@ struct GeoJSONFeature: Codable {
     
     // MARK: - GeoJSON Styling Properties
     
+    /// Extract feature name from properties, defaulting to empty string
+    var name: String {
+        // Check for "NAME" first (uppercase), then "name" (lowercase)
+        if case .string(let value) = properties?["NAME"] {
+            return value
+        }
+        if case .string(let value) = properties?["name"] {
+            return value
+        }
+        return ""
+    }
+    
     /// Extract layer metadata from properties
     var layerId: String? {
         if case .string(let value) = properties?["layer_id"] {
@@ -147,10 +159,10 @@ struct GeoJSONFeature: Codable {
     /// Convert marker size to point radius
     var markerRadius: CGFloat {
         switch markerSize {
-        case "small": return 8.0
-        case "medium": return 12.0
-        case "large": return 16.0
-        default: return 12.0
+        case "small": return 4.0
+        case "medium": return 8.0
+        case "large": return 12.0
+        default: return 4.0
         }
     }
 }
