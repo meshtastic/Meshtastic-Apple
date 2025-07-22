@@ -7,6 +7,8 @@
 
 import SwiftUI
 import MapKit
+import CoreLocation
+import OSLog
 
 struct IdentifiableOverlay: Identifiable {
     let overlay: MKOverlay
@@ -231,42 +233,50 @@ struct MeshMapContent: MapContent {
 			}
 		}
 
-						/// GeoJSON Overlays (Configuration-Driven)
+		/// GeoJSON Overlays with embedded styling
 		if showMapOverlays {
-			let overlayManager = GeoJSONOverlayManager.shared
-			let availableOverlays = overlayManager.getAvailableOverlayIds()
-
-			ForEach(Array(availableOverlays.enumerated()), id: \.element) { _, overlayId in
-				let overlays = overlayManager.loadOverlays(for: overlayId)
-				let rendering = overlayManager.getRenderingProperties(for: overlayId)
-
-				ForEach(Array(overlays.enumerated()), id: \.offset) { _, overlay in
-					if let polygon = overlay as? MKPolygon {
-						MapPolygon(polygon)
-							.stroke(
-								Color(hex: rendering?.lineColor ?? "#000000")
-									.opacity(rendering?.lineOpacity ?? 1.0),
-								lineWidth: rendering?.lineThickness ?? 1.0
-							)
-							.foregroundStyle(
-								Color(hex: rendering?.lineColor ?? "#000000")
-									.opacity(rendering?.fillOpacity ?? 0.0)
-							)
-					} else if let polyline = overlay as? MKPolyline {
-						MapPolyline(polyline)
-							.stroke(
-								Color(hex: rendering?.lineColor ?? "#000000")
-									.opacity(rendering?.lineOpacity ?? 1.0),
-								lineWidth: rendering?.lineThickness ?? 1.0
-							)
-					}
-				}
-			}
+			overlayContent
 		}
 
 		positionAnnotations
 		routeAnnotations
 		waypointAnnotations
+	}
+
+	var overlayContent: some MapContent {
+		let styledFeatures = GeoJSONOverlayManager.shared.loadStyledFeatures()
+		
+		return Group {
+			ForEach(0..<styledFeatures.count, id: \.self) { index in
+				let styledFeature = styledFeatures[index]
+				let feature = styledFeature.feature
+				let geometryType = feature.geometry.type
+				
+				if geometryType == "Point" {
+					if let coordinate = feature.geometry.coordinates.toCoordinate() {
+						Annotation("", coordinate: coordinate) {
+							Circle()
+								.fill(styledFeature.fillColor)
+								.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
+								.frame(width: feature.markerRadius * 2, height: feature.markerRadius * 2)
+						}
+						.annotationTitles(.hidden)
+						.annotationSubtitles(.hidden)
+					}
+				} else if geometryType == "LineString" {
+					if let overlay = styledFeature.createOverlay() as? MKPolyline {
+						MapPolyline(overlay)
+							.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
+					}
+				} else if geometryType == "Polygon" {
+					if let overlay = styledFeature.createOverlay() as? MKPolygon {
+						MapPolygon(overlay)
+							.foregroundStyle(styledFeature.fillColor)
+							.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
+					}
+				}
+			}
+		}
 	}
 
 	@MapContentBuilder

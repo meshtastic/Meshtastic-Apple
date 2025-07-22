@@ -1347,6 +1347,9 @@
         }
       }
     },
+    "%lld features" : {
+
+    },
     "%lld or less hops away" : {
       "localizations" : {
         "de" : {
@@ -14554,6 +14557,9 @@
         }
       }
     },
+    "Files Available" : {
+      "comment" : "Data source label when files exist but none are active"
+    },
     "Find a contact" : {
       "localizations" : {
         "de" : {
@@ -20402,6 +20408,9 @@
         }
       }
     },
+    "Manage map data" : {
+      "comment" : "Link to manage uploaded map data"
+    },
     "Managed Device" : {
       "localizations" : {
         "it" : {
@@ -23414,6 +23423,9 @@
           }
         }
       }
+    },
+    "No map data files uploaded" : {
+      "comment" : "Message when no files are uploaded"
     },
     "No PAX Counter Logs" : {
       "localizations" : {

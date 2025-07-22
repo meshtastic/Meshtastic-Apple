@@ -7,6 +7,7 @@
 
 import SwiftUI
 import MapKit
+import OSLog
 
 struct MapSettingsForm: View {
 	@Environment(\.dismiss) private var dismiss
@@ -16,6 +17,8 @@ struct MapSettingsForm: View {
 	@AppStorage("enableMapConvexHull") private var convexHull = false
 	@AppStorage("enableMapWaypoints") private var enableMapWaypoints = true
 	@AppStorage("enableMapShowFavorites") private var enableMapShowFavorites = false
+	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
+	@State private var uploadedFiles: [MapDataMetadata] = []
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
 	@Binding var mapLayer: MapLayer
@@ -120,10 +123,7 @@ struct MapSettingsForm: View {
 					let hasUserData = GeoJSONOverlayManager.shared.hasUserData()
 
 					// Master toggle for map overlays
-					Toggle(isOn: Binding(
-						get: { hasUserData && UserDefaults.standard.bool(forKey: "mapOverlaysEnabled") },
-						set: { UserDefaults.standard.set($0, forKey: "mapOverlaysEnabled") }
-					)) {
+					Toggle(isOn: $mapOverlaysEnabled) {
 						Label {
 							VStack(alignment: .leading) {
 								Text("Map Overlays")
@@ -138,19 +138,91 @@ struct MapSettingsForm: View {
 					}
 					.tint(.accentColor)
 					.disabled(!hasUserData)
+					.onChange(of: mapOverlaysEnabled) { oldValue, newValue in
+						Logger.services.info("🔧 MapSettingsForm: Master overlay toggle changed from \(oldValue) to \(newValue)")
+					}
 
-					// Show data source info or upload prompt
-					if hasUserData && UserDefaults.standard.bool(forKey: "mapOverlaysEnabled") {
-						HStack {
-							Image(systemName: "info.circle")
-								.foregroundColor(.secondary)
-							Text(String(format: NSLocalizedString("Using %@ data", comment: "Shows which data source is being used"), GeoJSONOverlayManager.shared.getActiveDataSource()))
-								.font(.caption)
-								.foregroundColor(.secondary)
-							Spacer()
+					// Show individual file toggles when overlays are enabled
+					if mapOverlaysEnabled && hasUserData {
+						if !uploadedFiles.isEmpty {
+							// Data source info
+							HStack {
+								Image(systemName: "info.circle")
+									.foregroundColor(.secondary)
+								Text(String(format: NSLocalizedString("Using %@ data", comment: "Shows which data source is being used"), GeoJSONOverlayManager.shared.getActiveDataSource()))
+									.font(.caption)
+									.foregroundColor(.secondary)
+								Spacer()
+							}
+							.padding(.leading, 35)
+							
+							// Individual file toggles
+							ForEach(uploadedFiles) { file in
+								Toggle(isOn: Binding(
+									get: { 
+										Logger.services.debug("🔧 MapSettingsForm: File '\(file.originalName)' toggle getter - current state: \(file.isActive)")
+										return file.isActive
+									},
+									set: { newValue in
+										Logger.services.info("🔧 MapSettingsForm: File '\(file.originalName)' toggle setter - changing to: \(newValue)")
+										GeoJSONOverlayManager.shared.toggleFileActive(file.id)
+										// Update local state
+										uploadedFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState()
+										Logger.services.info("🔧 MapSettingsForm: Updated local uploadedFiles state after toggle")
+									}
+								)) {
+									Label {
+										VStack(alignment: .leading) {
+											Text(file.originalName)
+												.font(.subheadline)
+											HStack {
+												Text("\(file.overlayCount) features")
+													.font(.caption2)
+													.foregroundColor(.secondary)
+												Spacer()
+												Text(ByteCountFormatter.string(fromByteCount: file.fileSize, countStyle: .file))
+													.font(.caption2)
+													.foregroundColor(.secondary)
+											}
+										}
+									} icon: {
+										Image(systemName: file.isActive ? "doc.fill" : "doc")
+											.foregroundColor(file.isActive ? .accentColor : .secondary)
+									}
+								}
+								.tint(.accentColor)
+								.padding(.leading, 35)
+							}
+							
+							// Manage data link
+							NavigationLink(destination: MapDataUpload()) {
+								HStack {
+									Image(systemName: "folder")
+										.foregroundColor(.accentColor)
+									Text(NSLocalizedString("Manage map data", comment: "Link to manage uploaded map data"))
+										.font(.caption)
+										.foregroundColor(.secondary)
+									Spacer()
+									Image(systemName: "chevron.right")
+										.font(.caption2)
+										.foregroundColor(.secondary)
+								}
+							}
+							.padding(.leading, 35)
+						} else {
+							// No files uploaded
+							HStack {
+								Image(systemName: "exclamationmark.triangle")
+									.foregroundColor(.orange)
+								Text(NSLocalizedString("No map data files uploaded", comment: "Message when no files are uploaded"))
+									.font(.caption)
+									.foregroundColor(.secondary)
+								Spacer()
+							}
+							.padding(.leading, 35)
 						}
-						.padding(.leading, 35)
 					} else if !hasUserData {
+						// Upload prompt when no data available
 						NavigationLink(destination: MapDataUpload()) {
 							HStack {
 								Image(systemName: "arrow.up.doc")
@@ -186,6 +258,10 @@ Spacer()
 		.presentationContentInteraction(.scrolls)
 		.presentationDragIndicator(.visible)
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
+		.onAppear {
+			// Load files on appear
+			uploadedFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState()
+		}
 
 	}
 }

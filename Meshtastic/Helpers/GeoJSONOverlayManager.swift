@@ -1,122 +1,131 @@
 import SwiftUI
 import MapKit
+import OSLog
 
-/// Manager for loading and managing GeoJSON overlays from consolidated configuration
+/// Manager for loading and managing raw GeoJSON feature collections with embedded styling
 class GeoJSONOverlayManager {
     static let shared = GeoJSONOverlayManager()
     private init() {}
 
-    private var configuration: GeoJSONOverlayConfiguration?
-    private var overlays: [String: [MKOverlay]] = [:]
+    private var featureCollection: GeoJSONFeatureCollection?
 
-    /// Load user-uploaded configuration only
-    func loadConfiguration() -> GeoJSONOverlayConfiguration? {
-        if let cached = configuration {
+    /// Load raw GeoJSON feature collection from user uploads
+    func loadFeatureCollection() -> GeoJSONFeatureCollection? {
+        Logger.services.debug("🗺️ GeoJSONOverlayManager: loadFeatureCollection() called")
+        
+        if let cached = featureCollection {
+            Logger.services.debug("🗺️ GeoJSONOverlayManager: Returning cached feature collection with \(cached.features.count) features")
             return cached
         }
 
-        // Load user-uploaded configuration
-        if let userConfig = MapDataManager.shared.loadUserConfiguration() {
-            configuration = userConfig
-            return userConfig
+        // Load user-uploaded feature collection
+        Logger.services.debug("🗺️ GeoJSONOverlayManager: Loading feature collection from MapDataManager")
+        if let userFeatures = MapDataManager.shared.loadFeatureCollection() {
+            Logger.services.info("🗺️ GeoJSONOverlayManager: Loaded feature collection with \(userFeatures.features.count) features")
+            featureCollection = userFeatures
+            return userFeatures
         }
 
-        // No configuration available
+        // No feature collection available
+        Logger.services.debug("🗺️ GeoJSONOverlayManager: No feature collection available")
         return nil
     }
 
-    /// Load overlays for a specific overlay ID
-    func loadOverlays(for overlayId: String) -> [MKOverlay] {
-        if let cached = overlays[overlayId] {
-            return cached
-        }
-
-        guard let config = loadConfiguration() else {
+    /// Load styled features for direct rendering
+    func loadStyledFeatures() -> [GeoJSONStyledFeature] {
+        Logger.services.debug("🗺️ GeoJSONOverlayManager: loadStyledFeatures() called")
+        
+        guard let collection = loadFeatureCollection() else {
+            Logger.services.debug("🗺️ GeoJSONOverlayManager: No feature collection available, returning empty array")
             return []
         }
-
-        guard let overlayDef = config.overlays.first(where: { $0.id == overlayId }) else {
-            return []
-        }
-
-        do {
-            // Convert our custom GeoJSON structure to the format expected by MKGeoJSONDecoder
-            let standardGeoJSON: [String: Any] = [
-                "type": overlayDef.geojson.type,
-                "features": overlayDef.geojson.features.map { feature in
-                    var featureDict: [String: Any] = [
-                        "type": feature.type,
-                        "geometry": [
-                            "type": feature.geometry.type,
-                            "coordinates": feature.geometry.coordinates.toAnyObject()
-                        ],
-                        "properties": [:]
-                    ]
-
-                    if let id = feature.id {
-                        featureDict["id"] = id
-                    }
-
-                    return featureDict
-                }
-            ]
-
-            let geojsonData = try JSONSerialization.data(withJSONObject: standardGeoJSON)
-            let features = try MKGeoJSONDecoder().decode(geojsonData)
-
-            var allOverlays: [MKOverlay] = []
-            for (index, feature) in features.enumerated() {
-                if let mkFeature = feature as? MKGeoJSONFeature {
-                    for (geoIndex, geometry) in mkFeature.geometry.enumerated() {
-                        if let overlay = geometry as? MKOverlay {
-                            allOverlays.append(overlay)
-                        }
-                    }
-                }
+        
+        var styledFeatures: [GeoJSONStyledFeature] = []
+        
+        Logger.services.info("🗺️ GeoJSONOverlayManager: Processing \(collection.features.count) features")
+        
+        for feature in collection.features {
+            // Skip invisible features
+            guard feature.isVisible else { 
+                Logger.services.debug("🗺️ GeoJSONOverlayManager: Skipping invisible feature")
+                continue 
             }
-
-                        overlays[overlayId] = allOverlays
-            return allOverlays
-        } catch {
-            return []
+            
+            let layerId = feature.layerId ?? "default"
+            let styledFeature = GeoJSONStyledFeature(
+                feature: feature,
+                overlayId: layerId
+            )
+            styledFeatures.append(styledFeature)
         }
+        
+        Logger.services.info("🗺️ GeoJSONOverlayManager: Returning \(styledFeatures.count) styled features")
+        return styledFeatures
     }
 
-    /// Get rendering properties for an overlay
-    func getRenderingProperties(for overlayId: String) -> RenderingProperties? {
-        guard let config = loadConfiguration() else { return nil }
-        return config.overlays.first(where: { $0.id == overlayId })?.rendering
+    /// Get all features grouped by layer ID
+    func getFeaturesByLayer() -> [String: [GeoJSONFeature]] {
+        guard let collection = loadFeatureCollection() else { return [:] }
+        
+        var featuresByLayer: [String: [GeoJSONFeature]] = [:]
+        
+        for feature in collection.features {
+            let layerId = feature.layerId ?? "default"
+            if featuresByLayer[layerId] == nil {
+                featuresByLayer[layerId] = []
+            }
+            featuresByLayer[layerId]?.append(feature)
+        }
+        
+        return featuresByLayer
     }
 
-    /// Get all available overlay IDs
-    func getAvailableOverlayIds() -> [String] {
-        guard let config = loadConfiguration() else { return [] }
-        return config.overlays.map { $0.id }
+    /// Get all available layer IDs from features
+    func getAvailableLayerIds() -> [String] {
+        guard let collection = loadFeatureCollection() else { return [] }
+        let layerIds = Set(collection.features.compactMap { $0.layerId ?? "default" })
+        return Array(layerIds).sorted()
     }
 
-    /// Get overlay definition by ID
-    func getOverlayDefinition(for overlayId: String) -> OverlayDefinition? {
-        guard let config = loadConfiguration() else { return nil }
-        return config.overlays.first(where: { $0.id == overlayId })
-    }
-
-    /// Clear cached overlays (useful for testing or memory management)
+    /// Clear cached data (useful for testing or memory management)
     func clearCache() {
-        overlays.removeAll()
-        configuration = nil
+        Logger.services.info("🗺️ GeoJSONOverlayManager: Clearing cache")
+        featureCollection = nil
     }
 
-    /// Check if user-uploaded data is available
+    /// Check if user-uploaded data is available (regardless of active state)
     func hasUserData() -> Bool {
+        return !MapDataManager.shared.getUploadedFiles().isEmpty
+    }
+    
+    /// Check if there are any active files
+    func hasActiveData() -> Bool {
         return MapDataManager.shared.getUploadedFiles().contains { $0.isActive }
     }
 
     /// Get the active data source name
     func getActiveDataSource() -> String {
-        if hasUserData() {
+        if hasActiveData() {
             return NSLocalizedString("User Uploaded", comment: "Data source label for user uploaded files")
+        } else if hasUserData() {
+            return NSLocalizedString("Files Available", comment: "Data source label when files exist but none are active")
         } else {
             return NSLocalizedString("No Data", comment: "Data source label when no files are available")
         }
+    }
+    
+    // MARK: - File-based Filtering
+    
+    /// Get all uploaded files with their active states for UI display
+    func getUploadedFilesWithState() -> [MapDataMetadata] {
+        return MapDataManager.shared.getUploadedFiles()
+    }
+    
+    /// Toggle the active state of an uploaded file
+    func toggleFileActive(_ fileId: UUID) {
+        Logger.services.debug("🗺️ GeoJSONOverlayManager: Toggling active state for file: \(fileId)")
+        MapDataManager.shared.toggleFileActive(fileId)
+        // Clear cache to force reload with new file states
+        clearCache()
     }
 }
