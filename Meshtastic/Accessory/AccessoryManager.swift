@@ -188,10 +188,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			throw AccessoryError.connectionFailed("Already connecting to a device")
 		}
 
-		// Stop discovery so that the discovery process doesn't clobber
-		// our active devices.
-		self.stopDiscovery()
-
 		// Prevent new connection if one is active
 		if activeConnection != nil {
 			throw AccessoryError.connectionFailed("Already connected to a device")
@@ -255,6 +251,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// Ask the transport to connect to the device and return a connection
 		let connection = try await transport.connect(to: device)
 		let (packetStream, logStream) = try await connection.connect()
+
+		// Stop discovery so that the discovery process doesn't clobber
+		// our active devices.
+		self.stopDiscovery()
 
 		// If this is a wireless connection, have it report the RSSI to the AccessoryManager
 		if let wirelessConnection = connection as? any WirelessConnection {
@@ -408,12 +408,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		guard let active = activeConnection else {
 			return // No connection to disconnect
 		}
-		
+
 		Logger.transport.debug("[AccessoryManager] disconnecting")
 		activeConnection = nil
 		try await active.connection.disconnect()
-		
-		
+
 		updateDevice(deviceId: active.device.id, key: \.connectionState, value: .disconnected)
 		updateState(.idle)
 
