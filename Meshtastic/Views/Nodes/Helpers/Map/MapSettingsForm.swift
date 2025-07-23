@@ -7,6 +7,7 @@
 
 import SwiftUI
 import MapKit
+import OSLog
 
 struct MapSettingsForm: View {
 	@Environment(\.dismiss) private var dismiss
@@ -16,11 +17,14 @@ struct MapSettingsForm: View {
 	@AppStorage("enableMapConvexHull") private var convexHull = false
 	@AppStorage("enableMapWaypoints") private var enableMapWaypoints = true
 	@AppStorage("enableMapShowFavorites") private var enableMapShowFavorites = false
+	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
+	@ObservedObject private var mapDataManager = MapDataManager.shared
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
 	@Binding var mapLayer: MapLayer
 	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 800000
 	@Binding var meshMap: Bool
+	@Binding var enabledOverlayConfigs: Set<UUID>
 
 	var body: some View {
 
@@ -115,6 +119,124 @@ struct MapSettingsForm: View {
 						UserDefaults.enableMapPointsOfInterest = self.pointsOfInterest
 					}
 				}
+
+								Section(header: Text("Map Overlays")) {
+					let hasUserData = GeoJSONOverlayManager.shared.hasUserData()
+
+					// Master toggle for map overlays
+					Toggle(isOn: $mapOverlaysEnabled) {
+						Label {
+							VStack(alignment: .leading) {
+								Text("Map Overlays")
+								Text(GeoJSONOverlayManager.shared.getActiveDataSource())
+									.font(.caption)
+									.foregroundColor(.secondary)
+							}
+						} icon: {
+							Image(systemName: "map")
+								.foregroundColor(hasUserData ? .accentColor : .secondary)
+						}
+					}
+					.tint(.accentColor)
+					.disabled(!hasUserData)
+
+					// Show individual file toggles when overlays are enabled
+					if mapOverlaysEnabled && hasUserData {
+						if !mapDataManager.getUploadedFiles().isEmpty {
+							// Data source info
+							HStack {
+								Image(systemName: "info.circle")
+									.foregroundColor(.secondary)
+								Text(String(format: NSLocalizedString("Using %@ data", comment: "Shows which data source is being used"), GeoJSONOverlayManager.shared.getActiveDataSource()))
+									.font(.caption)
+									.foregroundColor(.secondary)
+								Spacer()
+							}
+							.padding(.leading, 35)
+
+							// Individual file toggles
+							ForEach(mapDataManager.getUploadedFiles()) { file in
+								Toggle(isOn: Binding(
+									get: {
+										return enabledOverlayConfigs.contains(file.id)
+									},
+									set: { newValue in
+										if newValue {
+											enabledOverlayConfigs.insert(file.id)
+										} else {
+											enabledOverlayConfigs.remove(file.id)
+										}
+									}
+								)) {
+									Label {
+										VStack(alignment: .leading) {
+											Text(file.originalName)
+												.font(.subheadline)
+											HStack {
+												Text("\(file.overlayCount) features")
+													.font(.caption2)
+													.foregroundColor(.secondary)
+												Spacer()
+												Text(ByteCountFormatter.string(fromByteCount: file.fileSize, countStyle: .file))
+													.font(.caption2)
+													.foregroundColor(.secondary)
+											}
+										}
+									} icon: {
+										let isEnabled = enabledOverlayConfigs.contains(file.id)
+										Image(systemName: isEnabled ? "doc.fill" : "doc")
+											.foregroundColor(isEnabled ? .accentColor : .secondary)
+									}
+								}
+								.tint(.accentColor)
+								.padding(.leading, 35)
+							}
+
+							// Manage data link
+							NavigationLink(destination: MapDataFiles()) {
+								HStack {
+									Image(systemName: "folder")
+										.foregroundColor(.accentColor)
+									Text(NSLocalizedString("Manage map data", comment: "Link to manage uploaded map data"))
+										.font(.caption)
+										.foregroundColor(.secondary)
+									Spacer()
+									Image(systemName: "chevron.right")
+										.font(.caption2)
+										.foregroundColor(.secondary)
+								}
+							}
+							.padding(.leading, 35)
+						} else {
+							// No files uploaded
+							HStack {
+								Image(systemName: "exclamationmark.triangle")
+									.foregroundColor(.orange)
+								Text(NSLocalizedString("No map data files uploaded", comment: "Message when no files are uploaded"))
+									.font(.caption)
+									.foregroundColor(.secondary)
+								Spacer()
+							}
+							.padding(.leading, 35)
+						}
+					} else if !hasUserData {
+						// Upload prompt when no data available
+						NavigationLink(destination: MapDataFiles()) {
+							HStack {
+								Image(systemName: "arrow.up.doc")
+									.foregroundColor(.accentColor)
+								Text(NSLocalizedString("Upload map data to enable overlays", comment: "Prompt to upload map data when none is available"))
+									.font(.caption)
+									.foregroundColor(.secondary)
+								Spacer()
+								Image(systemName: "chevron.right")
+									.font(.caption2)
+									.foregroundColor(.secondary)
+							}
+						}
+						.padding(.leading, 35)
+					}
+				}
 			}
 
 #if targetEnvironment(macCatalyst)
@@ -134,6 +256,10 @@ Spacer()
 		.presentationContentInteraction(.scrolls)
 		.presentationDragIndicator(.visible)
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
+		.onAppear {
+			// Initialize map data manager
+			mapDataManager.initialize()
+		}
 
 	}
 }

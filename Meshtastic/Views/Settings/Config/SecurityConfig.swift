@@ -230,7 +230,7 @@ struct SecurityConfig: View {
 				name: "\(bleManager.connectedPeripheral?.shortName ?? "?")"
 			)
 		})
-		.onChange(of: node) { _, newNode in
+		.onChange(of: node) { _, _ in
 			setSecurityValues()
 		}
 		.onChange(of: isManaged) { _, newIsManaged in
