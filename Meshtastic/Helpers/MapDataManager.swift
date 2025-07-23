@@ -167,7 +167,6 @@ class MapDataManager: ObservableObject {
         )
     }
 
-
     /// Get overlay count from raw GeoJSON data
     private func getOverlayCount(from data: Data) throws -> Int {
         // Parse as raw GeoJSON FeatureCollection
@@ -305,7 +304,6 @@ class MapDataManager: ObservableObject {
             throw MapDataError.fileNotFound
         }
 
-
         // Check if file exists before trying to delete
         if !FileManager.default.fileExists(atPath: fileURL.path) {
             Logger.services.warning("🗑️ MapDataManager: File does not exist at path: \(fileURL.path, privacy: .public)")
@@ -350,7 +348,6 @@ class MapDataManager: ObservableObject {
         }
 
     }
-
 
     // MARK: - Metadata Persistence
 

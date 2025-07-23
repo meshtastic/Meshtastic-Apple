@@ -248,7 +248,6 @@ struct MeshMapContent: MapContent {
 		// Get all features but filter by enabled configs
 		let allStyledFeatures = GeoJSONOverlayManager.shared.loadStyledFeaturesForConfigs(enabledOverlayConfigs)
 
-
 		return Group {
 			ForEach(0..<allStyledFeatures.count, id: \.self) { index in
 				let styledFeature = allStyledFeatures[index]

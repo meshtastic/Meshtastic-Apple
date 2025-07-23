@@ -28,24 +28,24 @@ class GeoJSONOverlayManager {
     func loadStyledFeaturesForConfigs(_ enabledConfigs: Set<UUID>) -> [GeoJSONStyledFeature] {
         // Get files that match the enabled configs
         let enabledFiles = MapDataManager.shared.getUploadedFiles().filter { enabledConfigs.contains($0.id) }
-        
+
         guard !enabledFiles.isEmpty else {
             return []
         }
-        
+
         // Load feature collection from enabled files only
         guard let collection = MapDataManager.shared.loadFeatureCollectionForFiles(enabledFiles) else {
             return []
         }
-        
+
         var styledFeatures: [GeoJSONStyledFeature] = []
-        
+
         for feature in collection.features {
             // Skip invisible features
-            guard feature.isVisible else { 
-                continue 
+            guard feature.isVisible else {
+                continue
             }
-            
+
             let layerId = feature.layerId ?? "default"
             let styledFeature = GeoJSONStyledFeature(
                 feature: feature,
@@ -53,7 +53,7 @@ class GeoJSONOverlayManager {
             )
             styledFeatures.append(styledFeature)
         }
-        
+
         return styledFeatures
     }
 
@@ -62,15 +62,15 @@ class GeoJSONOverlayManager {
         guard let collection = loadFeatureCollection() else {
             return []
         }
-        
+
         var styledFeatures: [GeoJSONStyledFeature] = []
-        
+
         for feature in collection.features {
             // Skip invisible features
-            guard feature.isVisible else { 
-                continue 
+            guard feature.isVisible else {
+                continue
             }
-            
+
             let layerId = feature.layerId ?? "default"
             let styledFeature = GeoJSONStyledFeature(
                 feature: feature,
@@ -78,16 +78,16 @@ class GeoJSONOverlayManager {
             )
             styledFeatures.append(styledFeature)
         }
-        
+
         return styledFeatures
     }
 
     /// Get all features grouped by layer ID
     func getFeaturesByLayer() -> [String: [GeoJSONFeature]] {
         guard let collection = loadFeatureCollection() else { return [:] }
-        
+
         var featuresByLayer: [String: [GeoJSONFeature]] = [:]
-        
+
         for feature in collection.features {
             let layerId = feature.layerId ?? "default"
             if featuresByLayer[layerId] == nil {
@@ -95,7 +95,7 @@ class GeoJSONOverlayManager {
             }
             featuresByLayer[layerId]?.append(feature)
         }
-        
+
         return featuresByLayer
     }
 
@@ -115,7 +115,7 @@ class GeoJSONOverlayManager {
     func hasUserData() -> Bool {
         return !MapDataManager.shared.getUploadedFiles().isEmpty
     }
-    
+
     /// Check if there are any active files
     func hasActiveData() -> Bool {
         return MapDataManager.shared.getUploadedFiles().contains { $0.isActive }
@@ -131,14 +131,14 @@ class GeoJSONOverlayManager {
             return NSLocalizedString("No Data", comment: "Data source label when no files are available")
         }
     }
-    
+
     // MARK: - File-based Filtering
-    
+
     /// Get all uploaded files with their active states for UI display
     func getUploadedFilesWithState() -> [MapDataMetadata] {
         return MapDataManager.shared.getUploadedFiles()
     }
-    
+
     /// Toggle the active state of an uploaded file
     func toggleFileActive(_ fileId: UUID) {
         MapDataManager.shared.toggleFileActive(fileId)

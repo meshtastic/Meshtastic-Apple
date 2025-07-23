@@ -198,7 +198,7 @@ struct MeshMap: View {
 		})
 		.onFirstAppear {
 			UIApplication.shared.isIdleTimerDisabled = true
-			
+
 			// Initialize enabled overlay configs with all active files
 			let activeFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState().filter { $0.isActive }
 			enabledOverlayConfigs = Set(activeFiles.map { $0.id })

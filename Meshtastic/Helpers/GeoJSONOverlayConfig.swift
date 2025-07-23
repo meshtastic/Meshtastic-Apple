@@ -16,9 +16,9 @@ struct GeoJSONFeature: Codable {
     let id: Int?
     let geometry: GeoJSONGeometry
     let properties: [String: AnyCodableValue]?
-    
+
     // MARK: - GeoJSON Styling Properties
-    
+
     /// Extract feature name from properties, defaulting to empty string
     var name: String {
         // Check for "NAME" first (uppercase), then "name" (lowercase)
@@ -30,7 +30,7 @@ struct GeoJSONFeature: Codable {
         }
         return ""
     }
-    
+
     /// Extract layer metadata from properties
     var layerId: String? {
         if case .string(let value) = properties?["layer_id"] {
@@ -38,60 +38,60 @@ struct GeoJSONFeature: Codable {
         }
         return nil
     }
-    
+
     var layerName: String? {
         if case .string(let value) = properties?["layer_name"] {
             return value
         }
         return nil
     }
-    
+
     var layerDescription: String? {
         if case .string(let value) = properties?["description"] {
             return value
         }
         return nil
     }
-    
+
     var isVisible: Bool {
         if case .bool(let value) = properties?["visible"] {
             return value
         }
         return true // Default to visible
     }
-    
+
     // MARK: - Point/Marker Styling
-    
+
     var markerColor: String? {
         if case .string(let value) = properties?["marker-color"] {
             return value
         }
         return nil
     }
-    
+
     var markerSize: String? {
         if case .string(let value) = properties?["marker-size"] {
             return value
         }
         return "medium" // Default size
     }
-    
+
     var markerSymbol: String? {
         if case .string(let value) = properties?["marker-symbol"] {
             return value
         }
         return nil
     }
-    
+
     // MARK: - Stroke/Line Styling
-    
+
     var strokeColor: String? {
         if case .string(let value) = properties?["stroke"] {
             return value
         }
         return nil
     }
-    
+
     var strokeWidth: Double {
         if case .double(let value) = properties?["stroke-width"] {
             return value
@@ -100,7 +100,7 @@ struct GeoJSONFeature: Codable {
         }
         return 1.0 // Default width
     }
-    
+
     var strokeOpacity: Double {
         if case .double(let value) = properties?["stroke-opacity"] {
             return value
@@ -109,7 +109,7 @@ struct GeoJSONFeature: Codable {
         }
         return 1.0 // Default opacity
     }
-    
+
     var lineDashArray: [Double]? {
         if case .array(let values) = properties?["line-dasharray"] {
             return values.compactMap { value in
@@ -122,16 +122,16 @@ struct GeoJSONFeature: Codable {
         }
         return nil
     }
-    
+
     // MARK: - Fill Styling
-    
+
     var fillColor: String? {
         if case .string(let value) = properties?["fill"] {
             return value
         }
         return nil
     }
-    
+
     var fillOpacity: Double {
         if case .double(let value) = properties?["fill-opacity"] {
             return value
@@ -140,14 +140,14 @@ struct GeoJSONFeature: Codable {
         }
         return 0.0 // Default to no fill
     }
-    
+
     // MARK: - Computed Rendering Properties
-    
+
     /// Get effective stroke color (fallback to marker color for points)
     var effectiveStrokeColor: String {
         return strokeColor ?? markerColor ?? "#000000"
     }
-    
+
     /// Get effective fill color (fallback to stroke color if fill opacity > 0)
     var effectiveFillColor: String {
         if fillOpacity > 0 {
@@ -155,7 +155,7 @@ struct GeoJSONFeature: Codable {
         }
         return "#000000"
     }
-    
+
     /// Convert marker size to point radius
     var markerRadius: CGFloat {
         switch markerSize {
@@ -174,7 +174,7 @@ struct GeoJSONStyledFeature: Identifiable {
     let id = UUID()
     let feature: GeoJSONFeature
     let overlayId: String
-    
+
     /// Create MKOverlay from this styled feature
     func createOverlay() -> MKOverlay? {
         do {
@@ -187,14 +187,14 @@ struct GeoJSONStyledFeature: Identifiable {
                 ],
                 "properties": feature.properties?.mapValues { $0.toAnyObject() } ?? [:]
             ]
-            
+
             // Creating overlay for geometry
-            
+
             let geojsonData = try JSONSerialization.data(withJSONObject: featureDict)
             let mkFeatures = try MKGeoJSONDecoder().decode(geojsonData)
-            
+
             // MKGeoJSONDecoder processing
-            
+
             if let mkFeature = mkFeatures.first as? MKGeoJSONFeature {
                 // Processing geometry objects
                 if let geometry = mkFeature.geometry.first as? MKOverlay {
@@ -207,7 +207,7 @@ struct GeoJSONStyledFeature: Identifiable {
         }
         return nil
     }
-    
+
     /// Get stroke style for this feature
     var strokeStyle: StrokeStyle {
         let dashArray = feature.lineDashArray
@@ -226,12 +226,12 @@ struct GeoJSONStyledFeature: Identifiable {
             )
         }
     }
-    
+
     /// Get stroke color with opacity
     var strokeColor: Color {
         return Color(hex: feature.effectiveStrokeColor).opacity(feature.strokeOpacity)
     }
-    
+
     /// Get fill color with opacity
     var fillColor: Color {
         return Color(hex: feature.effectiveFillColor).opacity(feature.fillOpacity)
@@ -316,26 +316,26 @@ enum AnyCodableValue: Codable {
             return dict.mapValues { $0.toAnyObject() }
         }
     }
-    
+
     // Helper to convert Point coordinates to CLLocationCoordinate2D
     func toCoordinate() -> CLLocationCoordinate2D? {
         if case .array(let coords) = self,
            coords.count >= 2 {
             let lon: Double
             let lat: Double
-            
+
             switch coords[0] {
             case .double(let d): lon = d
             case .int(let i): lon = Double(i)
             default: return nil
             }
-            
+
             switch coords[1] {
             case .double(let d): lat = d
             case .int(let i): lat = Double(i)
             default: return nil
             }
-            
+
             return CLLocationCoordinate2D(latitude: lat, longitude: lon)
         }
         return nil

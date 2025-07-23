@@ -175,7 +175,6 @@ struct MapDataFiles: View {
         }
     }
 
-
     private func deleteFile(_ file: MapDataMetadata) {
         Task {
             do {

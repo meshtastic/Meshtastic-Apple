@@ -153,11 +153,11 @@ struct MapSettingsForm: View {
 								Spacer()
 							}
 							.padding(.leading, 35)
-							
+
 							// Individual file toggles
 							ForEach(mapDataManager.getUploadedFiles()) { file in
 								Toggle(isOn: Binding(
-									get: { 
+									get: {
 										return enabledOverlayConfigs.contains(file.id)
 									},
 									set: { newValue in
@@ -191,7 +191,7 @@ struct MapSettingsForm: View {
 								.tint(.accentColor)
 								.padding(.leading, 35)
 							}
-							
+
 							// Manage data link
 							NavigationLink(destination: MapDataFiles()) {
 								HStack {
