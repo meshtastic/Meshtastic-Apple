@@ -263,7 +263,7 @@ struct MeshMapContent: MapContent {
 								.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
 								.frame(width: feature.markerRadius * 2, height: feature.markerRadius * 2)
 						}
-						.annotationTitles(.visible)
+						.annotationTitles(.automatic)
 						.annotationSubtitles(.hidden)
 					}
 				} else if geometryType == "LineString" {
