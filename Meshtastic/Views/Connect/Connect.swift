@@ -69,9 +69,9 @@ struct Connect: View {
 													Image(systemName: "square.stack.3d.down.forward")
 														.symbolRenderingMode(.multicolor)
 														.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
-														.foregroundColor(.orange)
+														.foregroundColor(.teal)
 													Text("Retreiving Database . .").font(.callout)
-														.foregroundColor(.green)
+														.foregroundColor(.teal)
 												}
 											case .communicating:
 												HStack {
@@ -140,7 +140,7 @@ struct Connect: View {
 										#endif
 										if accessoryManager.allowDisconnect {
 											Button(role: .destructive) {
-												if accessoryManager.isConnected {
+												if accessoryManager.allowDisconnect {
 													Task {
 														try await accessoryManager.disconnect()
 													}
@@ -247,7 +247,7 @@ struct Connect: View {
 										VStack(alignment: .leading) {
 											Button(action: {
 												if UserDefaults.preferredPeripheralId.count > 0 && device.id.uuidString != UserDefaults.preferredPeripheralId {
-													if accessoryManager.isConnected {
+													if accessoryManager.allowDisconnect {
 														Task { try await accessoryManager.disconnect() }
 													}
 													presentingSwitchPreferredPeripheral = true
@@ -291,7 +291,7 @@ struct Connect: View {
 								Button("Connect to new radio?", role: .destructive) {
 									UserDefaults.preferredPeripheralId = selectedPeripherialId
 									UserDefaults.preferredPeripheralNum = 0
-									if accessoryManager.isConnected {
+									if accessoryManager.allowDisconnect {
 										Task { try await accessoryManager.disconnect() }
 									}
 									clearCoreDataDatabase(context: context, includeRoutes: false)
@@ -318,7 +318,7 @@ struct Connect: View {
 					// TODO: should this be allowDisconnect?
 					if accessoryManager.allowDisconnect {
 						Button(role: .destructive, action: {
-							if accessoryManager.isConnected {
+							if accessoryManager.allowDisconnect {
 								Task {
 									try await accessoryManager.disconnect()
 								}

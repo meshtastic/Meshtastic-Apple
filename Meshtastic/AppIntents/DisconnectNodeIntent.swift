@@ -14,13 +14,14 @@ struct DisconnectNodeIntent: AppIntent {
 	static var description: IntentDescription = "Disconnect the currently connected node"
 
 	func perform() async throws -> some IntentResult {
-		if !AccessoryManager.shared.isConnected {
+		let isConnected = await AccessoryManager.shared.isConnected
+		if !isConnected {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 
-		if !AccessoryManager.shared.isConnected {
+		do {
 			try await AccessoryManager.shared.disconnect()
-		} else {
+		} catch {
 			throw AppIntentErrors.AppIntentError.message("Error disconnecting node")
 		}
 

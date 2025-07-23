@@ -62,37 +62,47 @@ actor BLEConnection: WirelessConnection {
 		try proxy.disconnect()
 	}
 
-	func drainPendingPackets() async throws {
-		guard isConnected else {
-			throw AccessoryError.ioFailed("Not connected")
-		}
-		repeat {
-			do {
-				let data = try await proxy.read()
-
-				if data.count == 0 {
-					break
-				}
-
-				let decodedInfo = try FromRadio(serializedBytes: data)
-				packetStreamContinuation?.yield(decodedInfo)
-			} catch {
-				packetStreamContinuation?.finish()
-			}
-		} while true
-	}
-
 	func startDrainPendingPackets() throws {
-		guard isConnected else {
-			throw AccessoryError.ioFailed("Not connected")
-		}
-		needsDrain = true
-		if !isDraining {
-			Task {
-				try? await drainPendingPackets()
+			guard isConnected else {
+				throw AccessoryError.ioFailed("Not connected")
+			}
+			needsDrain = true
+			if !isDraining {
+				Task {
+					isDraining = true
+					defer { isDraining = false }
+					while needsDrain {
+						needsDrain = false
+						do {
+							try await drainPendingPackets()
+						} catch {
+							// Handle or log error as needed; for now, just continue to allow retry on next notification
+						}
+					}
+				}
 			}
 		}
-	}
+
+		func drainPendingPackets() async throws {
+			guard isConnected else {
+				throw AccessoryError.ioFailed("Not connected")
+			}
+			repeat {
+				do {
+					let data = try await proxy.read()
+
+					if data.count == 0 {
+						break
+					}
+
+					let decodedInfo = try FromRadio(serializedBytes: data)
+					packetStreamContinuation?.yield(decodedInfo)
+				} catch {
+					packetStreamContinuation?.finish()
+					throw error  // Re-throw to propagate up to the caller for handling
+				}
+			} while true
+		}
 
 	private var packetStreamContinuation: AsyncStream<MeshtasticProtobufs.FromRadio>.Continuation?
 
@@ -334,6 +344,7 @@ class BLEConnectionProxy: NSObject, CBPeripheralDelegate {
 			central.cancelPeripheralConnection(peripheral)
 		}
 		peripheral.delegate = nil
+		readContinuation?.resume(throwing: AccessoryError.ioFailed("Disconnected"))
 		readContinuation = nil
 		rssiStreamContinuation?.finish()
 		rssiStreamContinuation = nil
