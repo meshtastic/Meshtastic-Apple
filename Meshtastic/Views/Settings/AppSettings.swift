@@ -48,7 +48,7 @@ struct AppSettings: View {
 						Text("App Icon")
 					}
 					.sheet(isPresented: $isPresentingAppIconSheet) {
-						AppIconPicker()
+						AppIconPicker(isPresenting: self.$isPresentingAppIconSheet)
 					}
 				}
 				Section(header: Text("environment")) {

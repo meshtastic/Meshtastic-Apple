@@ -10,6 +10,7 @@ import SwiftUI
 struct AppIconButton: View {
 	@Binding var iconDescription: String
 	@Binding var iconName: String?
+	@Binding var isPresenting: Bool
 	@State var errorDetails: String?
 	@State var didError = false
 
@@ -19,6 +20,8 @@ struct AppIconButton: View {
 				if let error = error {
 					errorDetails = error.localizedDescription
 					didError = true
+				} else {
+					self.isPresenting = false
 				}
 			}
 		} label: {
@@ -42,6 +45,6 @@ struct AppIconButton: View {
 
 #Preview {
 	List {
-		AppIconButton(iconDescription: .constant("Default"), iconName: .constant("AppIcon"))
+		AppIconButton(iconDescription: .constant("Default"), iconName: .constant("AppIcon"), isPresenting: .constant(true))
 	}
 }
