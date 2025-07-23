@@ -42,7 +42,7 @@ struct Connect: View {
 								VStack(alignment: .leading) {
 									HStack {
 										VStack(alignment: .center) {
-											CircleText(text: node?.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90)
+											CircleText(text: node?.user?.shortName?.addingVariationSelectors ?? "?", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90)
 												.padding(.trailing, 5)
 											if node?.latestDeviceMetrics != nil {
 												BatteryCompact(batteryLevel: node?.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
@@ -322,19 +322,6 @@ struct Connect: View {
 								Task {
 									try await accessoryManager.disconnect()
 								}
-							}
-						}) {
-							Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
-						}
-						.buttonStyle(.bordered)
-						.buttonBorderShape(.capsule)
-						.controlSize(.large)
-						.padding()
-					}
-					if accessoryManager.state == .connecting {
-						Button(role: .destructive, action: {
-							Task {
-								try await accessoryManager.disconnect()
 							}
 						}) {
 							Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")

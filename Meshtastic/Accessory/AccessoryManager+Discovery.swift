@@ -27,7 +27,7 @@ extension AccessoryManager {
 		stopDiscovery()
 		updateState(.discovering)
 
-		discoveryTask = Task {
+		discoveryTask = Task { @MainActor in
 			for await newDevice in self.discoverAllDevices() {
 				do {
 					try Task.checkCancellation()

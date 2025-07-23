@@ -165,11 +165,11 @@ actor SerialConnection: Connection {
 		term.c_cc.16 = 0 // VMIN
 		term.c_cc.17 = 1 // VTIME (1 decisecond = 100ms)
 
-		if cfsetspeed(&term, 921600) == -1 {
+		if cfsetspeed(&term, 115200) == -1 {
 			close(fd)
 			throw POSIXError(POSIXErrorCode(rawValue: errno)!)
 		}
-
+		
 		if tcsetattr(fd, TCSANOW, &term) == -1 {
 			close(fd)
 			throw POSIXError(POSIXErrorCode(rawValue: errno)!)

@@ -7,7 +7,8 @@
 
 import Foundation
 import OSLog
-import IOKit
+import IOKit.serial
+
 class SerialTransport: Transport {
 
 	let type: TransportType = .serial
