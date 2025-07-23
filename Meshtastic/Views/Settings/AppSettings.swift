@@ -12,6 +12,7 @@ struct AppSettings: View {
 	@State var totalDownloadedTileSize = ""
 	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var isPresentingDeleteMapTilesConfirm = false
+	@State private var isPresentingAppIconSheet = false
 	@State private var purgeStaleNodes: Bool = false
 	@AppStorage("purgeStaleNodeDays") private var  purgeStaleNodeDays: Double = 0
 	@AppStorage("environmentEnableWeatherKit") private var  environmentEnableWeatherKit: Bool = true
@@ -41,6 +42,14 @@ struct AppSettings: View {
 					Text("Provide anonymous usage statistics and crash reports.")
 						.foregroundStyle(.secondary)
 						.font(.caption)
+					Button {
+						isPresentingAppIconSheet.toggle()
+					} label: {
+						Text("App Icon")
+					}
+					.sheet(isPresented: $isPresentingAppIconSheet) {
+						AppIconPicker()
+					}
 				}
 				Section(header: Text("environment")) {
 					VStack(alignment: .leading) {

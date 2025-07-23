@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "AppIcon_Dev.png",
+      "filename" : "MSPM_4.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -25,7 +25,7 @@
           "value" : "tinted"
         }
       ],
-      "filename" : "AppIcon_Dev_Dark 1.png",
+      "filename" : "logo-tinted.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"

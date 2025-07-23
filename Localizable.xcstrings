@@ -4161,6 +4161,9 @@
         }
       }
     },
+    "App Icon" : {
+
+    },
     "App Notifications" : {
 
     },
@@ -15837,6 +15840,9 @@
         }
       }
     },
+    "General" : {
+
+    },
     "Generate a new private key to replace the one currently in use. The public key will automatically be regenerated from your private key." : {
       "localizations" : {
         "ja" : {
@@ -19417,6 +19423,9 @@
           }
         }
       }
+    },
+    "Local Meshes" : {
+
     },
     "Location:" : {
       "localizations" : {

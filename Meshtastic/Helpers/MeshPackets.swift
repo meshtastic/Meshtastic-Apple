@@ -1027,7 +1027,7 @@ func textMessageAppPacket(
 								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 								content: messageText!,
 								target: "messages",
-								path:  "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.isEmoji ? newMessage.replyID : newMessage.messageId)",
+								path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.isEmoji ? newMessage.replyID : newMessage.messageId)",
 								messageId: newMessage.messageId,
 								channel: newMessage.channel,
 								userNum: Int64(packet.from),
