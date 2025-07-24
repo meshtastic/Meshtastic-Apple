@@ -45,7 +45,7 @@ struct AppSettings: View {
 					Button {
 						isPresentingAppIconSheet.toggle()
 					} label: {
-						Text("App Icon")
+						Label("App Icon", systemImage: "app")
 					}
 					.sheet(isPresented: $isPresentingAppIconSheet) {
 						AppIconPicker(isPresenting: self.$isPresentingAppIconSheet)
