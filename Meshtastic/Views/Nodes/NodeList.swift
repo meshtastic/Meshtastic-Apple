@@ -339,7 +339,10 @@ struct NodeList: View {
 			}
 		}
 		.onChange(of: selectedNode) {
-			if selectedNode == nil {
+			if selectedNode != nil {
+				columnVisibility = .doubleColumn
+			} else {
+				columnVisibility = .all
 				router.navigationState.nodeListSelectedNodeNum = nil
 			}
 		}
