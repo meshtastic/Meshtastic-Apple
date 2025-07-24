@@ -27,7 +27,7 @@ enum AccessoryManagerState: Equatable {
 	case discovering
 	case connecting
 	case retrying(attempt: Int)
-	case retreivingDatabase
+	case retreivingDatabase(nodeCount: Int)
 	case communicating
 	case subscribed
 
@@ -47,8 +47,8 @@ enum AccessoryManagerState: Equatable {
 			return "Communicating"
 		case .subscribed:
 			return "Subscribed"
-		case .retreivingDatabase:
-			return "Retreiving Database"
+		case .retreivingDatabase(let nodeCount):
+			return "Retreiving Database \(nodeCount)"
 		}
 	}
 }
@@ -259,7 +259,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 		Logger.transport.debug("[Connect] Sending wantConfig (database) for initial request")
 		Task { @MainActor in self.allowDisconnect = true }
-		await updateState(.retreivingDatabase)
+		await updateState(.retreivingDatabase(nodeCount: 0))
 		await self.sendWantDatabase()
 
 		try Task.checkCancellation()
@@ -270,7 +270,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		
 		let connectedVersion = try await Task { @MainActor in
 			Logger.transport.debug("[Connect] Performing version check")
-			guard let firmwareVersion = await self.activeConnection?.device.firmwareVersion else {
+			guard let firmwareVersion = self.activeConnection?.device.firmwareVersion else {
 				Logger.transport.error("[Connect] Firmware version not available for device \(device.name, privacy: .public)")
 				throw AccessoryError.connectionFailed("Firmware version not available")
 			}
@@ -299,8 +299,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		await self.updateDevice(deviceId: device.id, key: \.connectionState, value: .connected)
 		await self.updateState(.subscribed)
 
-
-		
 		Logger.transport.debug("[Connect] Initialize MQTT and Location Provider")
 		await self.initializeMqtt()
 		await self.initializeLocationProvider()
@@ -421,7 +419,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			self.isConnecting = false
 		}
 		self.state = newState
-
 	}
 
 	func send(data: ToRadio, debugDescription: String? = nil) async throws {

@@ -39,15 +39,15 @@ struct MeshtasticAppleApp: App {
 		let clientToken = "pub4427bea20dbdb08a6af68034de22cd3b"
 		let environment = "testflight"
 
-		Datadog.initialize(
-			with: Datadog.Configuration(
-				clientToken: clientToken,
-				env: environment,
-				site: .us5
-			),
-			trackingConsent: UserDefaults.usageDataAndCrashReporting ? .granted : .notGranted
-		)
-		DatadogCrashReporting.CrashReporting.enable()
+//		Datadog.initialize(
+//			with: Datadog.Configuration(
+//				clientToken: clientToken,
+//				env: environment,
+//				site: .us5
+//			),
+//			trackingConsent: UserDefaults.usageDataAndCrashReporting ? .granted : .notGranted
+//		)
+//		DatadogCrashReporting.CrashReporting.enable()
 		Logs.enable()
 		Trace.enable(
 			with: Trace.Configuration(

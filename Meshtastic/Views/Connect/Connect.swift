@@ -64,13 +64,13 @@ struct Connect: View {
 											case .subscribed:
 												Text("Subscribed").font(.callout)
 													.foregroundColor(.green)
-											case .retreivingDatabase:
+											case .retreivingDatabase(let nodeCount):
 												HStack {
 													Image(systemName: "square.stack.3d.down.forward")
 														.symbolRenderingMode(.multicolor)
 														.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 														.foregroundColor(.teal)
-													Text("Retreiving Database . .").font(.callout)
+													Text("Retreiving Database \(nodeCount)").font(.callout)
 														.foregroundColor(.teal)
 												}
 											case .communicating:
@@ -342,7 +342,7 @@ struct Connect: View {
 				trailing: ZStack {
 					ConnectedDevice(
 						deviceConnected: accessoryManager.isConnected,
-						name: accessoryManager.activeConnection?.device.name ?? "?",
+						name: accessoryManager.activeConnection?.device.shortName ?? "?",
 						mqttProxyConnected: accessoryManager.mqttProxyConnected,
 						mqttTopic: accessoryManager.mqttManager.topic
 					)

@@ -108,6 +108,11 @@ extension AccessoryManager {
 				}
 			}
 		}
+		
+		// Bump the nodeCount
+		if case let .retreivingDatabase(nodeCount: nodeCount) = self.state {
+			updateState(.retreivingDatabase(nodeCount: nodeCount+1))
+		}
 
 	}
 
