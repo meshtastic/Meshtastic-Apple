@@ -9,19 +9,28 @@ import Foundation
 import Network
 import OSLog
 import MeshtasticProtobufs
+import SwiftUI
 
 let MESHTASTIC_SERVICE_TYPE = "_meshtastic._tcp."
 let MESHTASTIC_DOMAIN = "local."
 
 class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDelegate {
+	
 	let type: TransportType = .tcp
 	var status: TransportStatus = .uninitialized
-
+	// TODO: Move to NWBrowser (NetServiceBrowser is depricated)
 	private var browser: NetServiceBrowser?
 	private var services: [String: ResolvedService] = [:] // Key: service.name
 	private var continuation: AsyncStream<Device>.Continuation?
 
 	private var service: NetService?
+
+	// Transport Properties
+	let requiresPeriodicHeartbeat = true
+	let supportsManualConnection = true
+	
+	let icon = Image(systemName: "network")
+	let name = "TCP"
 
 	struct ResolvedService {
 		let service: NetService
@@ -136,12 +145,37 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 	func connect(to device: Device) async throws -> any Connection {
 		Logger.transport.error("[TCP] Connect to device: \(device.name) with identifier: \(device.identifier)")
 		let parts = device.identifier.split(separator: ":")
-		guard parts.count == 2, let port = Int(parts[1]) else {
+		
+		var host: String?
+		var port: Int?
+		
+		switch parts.count {
+		case 1:
+			// host & default port
+			host = String(parts[0])
+			port = 4403
+		case 2:
+			// host & port
+			host = String(parts[0])
+			port = Int(parts[1])
+		default:
 			throw AccessoryError.connectionFailed("Invalid identifier format")
 		}
-		let host = String(parts[0])
+		guard let host, let port else {
+			throw AccessoryError.connectionFailed("Invalid identifier format")
+		}
+		
 		return try await TCPConnection(host: host, port: port)
 	}
+	
+	func manuallyConnect(withConnectionString: String) async throws {
+		let hashedIdentifier = withConnectionString.toUUIDFormatHash() ?? UUID()
+		let manualDevice = Device(id: hashedIdentifier,
+								  name: "\(withConnectionString) (Manual)",
+								  transportType: .tcp, identifier: withConnectionString)
+		try await AccessoryManager.shared.connect(to: manualDevice)
+	}
+
 }
 
 extension NetService {

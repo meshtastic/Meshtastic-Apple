@@ -18,7 +18,7 @@ struct SaveChannelQRCode: View {
 
 	@State private var showError: Bool = false
 	@State private var errorMessage: String = ""
-	@State private var connectedToDevice: Bool = false
+	// @State private var connectedToDevice: Bool = false
 	@State private var loraChanges: [String] = []
 	@State private var okToMQTT: Bool = false
 	var body: some View {
@@ -88,7 +88,7 @@ struct SaveChannelQRCode: View {
 					.buttonBorderShape(.capsule)
 					.controlSize(.large)
 					.padding()
-					.disabled(!connectedToDevice)
+					.disabled(!accessoryManager.isConnected)
 
 					#if targetEnvironment(macCatalyst)
 					Button {
@@ -116,7 +116,7 @@ struct SaveChannelQRCode: View {
 		}
 		.onAppear {
 			Logger.data.info("Ch set link \(channelSetLink)")
-			connectedToDevice = accessoryManager.connectToPreferredDevice()
+			//connectedToDevice = accessoryManager.connectToPreferredDevice()
 			fetchLoRaConfigChanges()
 		}
 	}

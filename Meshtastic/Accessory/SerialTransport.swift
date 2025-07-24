@@ -5,15 +5,27 @@
 //  Created by Jake Bordens on 7/22/25.
 //
 
+#if targetEnvironment(macCatalyst)
+
 import Foundation
 import OSLog
 import IOKit.serial
+import SwiftUI
 
 class SerialTransport: Transport {
 
 	let type: TransportType = .serial
 	var status: TransportStatus = .uninitialized
 
+	// Transport Properties
+	let requiresPeriodicHeartbeat = true
+	let supportsManualConnection = false
+
+	let icon = Image(systemName: "cable.connector.horizontal")
+	let name = "Serial"
+
+	var portsAlreadyNotified = [String]()
+	
 	func discoverDevices() -> AsyncStream<Device> {
 		AsyncStream { cont in
 			self.status = .discovering
@@ -22,10 +34,21 @@ class SerialTransport: Transport {
 					let ports = self.getSerialPorts()
 					for port in ports {
 						let id = port.toUUIDFormatHash() ?? UUID()
-						cont.yield(Device(id: id,
-										  name: port.components(separatedBy: "/").last ?? port,
-										  transportType: .serial,
-										  identifier: port))
+						if !portsAlreadyNotified.contains(port) {
+							Logger.transport.info("[Serial] Port \(port) found.")
+							cont.yield(Device(id: id,
+											  name: port.components(separatedBy: "/").last ?? port,
+											  transportType: .serial,
+											  identifier: port))
+							portsAlreadyNotified.append(port)
+						}
+					}
+					for knownPort in portsAlreadyNotified {
+						if !ports.contains(knownPort) {
+							// Port is no longer there.
+							Logger.transport.info("[Serial] Port \(knownPort) is no longer connected.")
+							portsAlreadyNotified.removeAll(where: {$0 == knownPort})
+						}
 					}
 					try? await Task.sleep(for: .seconds(5))
 				}
@@ -91,4 +114,9 @@ class SerialTransport: Transport {
 	func connect(to device: Device) async throws -> any Connection {
 		return SerialConnection(path: device.identifier)
 	}
+	
+	func manuallyConnect(withConnectionString: String) async throws {
+		Logger.transport.error("This transport does not support manual connections")
+	}
 }
+#endif

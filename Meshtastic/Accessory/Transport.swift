@@ -7,7 +7,7 @@
 
 import Foundation
 import CommonCrypto
-
+import SwiftUI
 enum TransportType: String, CaseIterable {
 	case ble = "BLE"
 	case tcp = "TCP"
@@ -30,6 +30,14 @@ protocol Transport {
 
 	// Connects to a device and returns a Connection.
 	func connect(to device: Device) async throws -> any Connection
+	
+	var requiresPeriodicHeartbeat: Bool { get }
+	var supportsManualConnection: Bool { get }
+	
+	var icon: Image { get }
+	var name: String { get }
+	
+	func manuallyConnect(withConnectionString: String) async throws
 }
 
 typealias TransportRSSIUpdate = (deviceId: UUID, rssi: Int)

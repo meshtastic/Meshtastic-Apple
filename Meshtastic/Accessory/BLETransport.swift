@@ -7,7 +7,8 @@
 
 import Foundation
 import CoreBluetooth
-
+import SwiftUI
+import OSLog
 class BLETransport: WirelessTransport {
 
 	let meshtasticServiceCBUUID = CBUUID(string: "0x6BA1B218-15A8-461F-9FA8-5DCAE273EAFD")
@@ -25,6 +26,12 @@ class BLETransport: WirelessTransport {
 	private nonisolated(unsafe) var _status: TransportStatus = .uninitialized
 	nonisolated var status: TransportStatus { _status }
 
+	// Transport properties
+	var supportsManualConnection: Bool = false
+	let requiresPeriodicHeartbeat = false
+	var icon = Image(systemName: "wave.3.forward.circle")
+	var name = "BLE"
+			
 	init() {
 		self.centralManager = nil
 		self.discoveredPeripherals = [:]
@@ -189,6 +196,11 @@ class BLETransport: WirelessTransport {
 			self.rssiUpdateContinuation = cont
 		}
 	}
+	
+	func manuallyConnect(withConnectionString: String) async throws {
+		Logger.transport.error("This transport does not support manual connections")
+	}
+
 }
 
 class BLEDelegate: NSObject, CBCentralManagerDelegate {

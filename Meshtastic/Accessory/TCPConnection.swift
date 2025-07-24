@@ -161,28 +161,33 @@ actor TCPConnection: Connection {
 	}
 
 	func connect() async throws -> (AsyncStream<FromRadio>, AsyncStream<String>?) {
-		let connection = NWConnection(host: nwHost, port: nwPort, using: .tcp)
-		self.connection = connection
-
-		try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
-			connection.stateUpdateHandler = { state in
-				switch state {
-				case .ready:
-					cont.resume()
-				case .failed:
-					Task {
-						try? await self.disconnect()
+		let newConnection = NWConnection(host: nwHost, port: nwPort, using: .tcp)
+		self.connection = newConnection
+			
+		try await withTaskCancellationHandler {
+			try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
+				newConnection.stateUpdateHandler = { state in
+					switch state {
+					case .ready:
+						cont.resume()
+					case .failed:
+						Task {
+							try? await self.disconnect()
+						}
+					case .cancelled:
+						break
+					default:
+						break
 					}
-				default:
-					break
 				}
+				newConnection.start(queue: queue)
 			}
-			connection.start(queue: queue)
+		} onCancel: {
+			newConnection.cancel()
 		}
-
 		startReader()
-
 		return (getPacketStream(), getRadioLogStream())
+		
 	}
 
 }

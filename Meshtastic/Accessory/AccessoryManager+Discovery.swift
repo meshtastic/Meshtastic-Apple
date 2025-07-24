@@ -34,7 +34,7 @@ extension AccessoryManager {
 
 					// Update existing device or add new
 					if let index = self.devices.firstIndex(where: { $0.id == newDevice.id }) {
-						Logger.transport.debug("[Discovery] Device \(self.devices[index].name) already exists, updating its properties.")
+						// This device already exists.
 						var existing = self.devices[index]
 						existing.name = newDevice.name
 						existing.transportType = newDevice.transportType
@@ -43,8 +43,14 @@ extension AccessoryManager {
 						existing.rssi = newDevice.rssi
 						self.devices[index] = existing
 					} else {
-						Logger.transport.debug("[Discovery] \(newDevice.name) discovered with id \(newDevice.id), adding.")
+						// This is a new device, add it to our list
 						self.devices.append(newDevice)
+					}
+					
+					if self.shouldAutomaticallyConnectToPreferredPeripheral, UserDefaults.preferredPeripheralId == newDevice.id.uuidString {
+						Logger.transport.debug("[Discovery] Found preferred peripheral \(newDevice.name)")
+						self.connectToPreferredDevice()
+						self.shouldAutomaticallyConnectToPreferredPeripheral = false
 					}
 
 					// Update the list of discovered devices on the main thread for presentation

@@ -44,7 +44,7 @@ extension AccessoryManager {
 
 		let logString = String.localizedStringWithFormat("Requested Canned Messages Module Messages for node: %@".localized, String(deviceNum))
 		Task {
-			try await send(data: toRadio, debugDescription: logString)
+			try await send(toRadio, debugDescription: logString)
 		}
 	}
 
@@ -77,7 +77,7 @@ extension AccessoryManager {
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
 
-		try await send(data: toRadio)
+		try await send(toRadio)
 		if let adminDescription {
 			Logger.mesh.debug("\(adminDescription, privacy: .public)")
 		}
@@ -114,7 +114,7 @@ extension AccessoryManager {
 				toRadio.packet = meshPacket
 
 				let logString = String.localizedStringWithFormat("Added contact %@ to device".localized, contact.user.longName)
-				try await send(data: toRadio, debugDescription: logString)
+				try await send(toRadio, debugDescription: logString)
 
 				// Create a NodeInfo (User) packet for the newly added contact
 				var dataNodeMessage = DataMessage()
@@ -141,6 +141,17 @@ extension AccessoryManager {
 				Logger.data.error("Failed to decode contact data: \(error.localizedDescription, privacy: .public)")
 				throw AccessoryError.appError("Unable to decode contact data from QR code.")
 			}
+		}
+	}
+	
+	// toConnection parameter can be used during connection process before the AccessoryManager is fully setup
+	public func sendHeartbeat(toConnection: Connection? = nil) async throws {
+		var heartbeatToRadio: ToRadio = ToRadio()
+		heartbeatToRadio.payloadVariant = .heartbeat(Heartbeat())
+		if let toConnection {
+			try? await toConnection.send(heartbeatToRadio)
+		} else {
+			try? await self.send(heartbeatToRadio)
 		}
 	}
 
@@ -297,7 +308,7 @@ extension AccessoryManager {
 					toRadio.packet = meshPacket
 					Task {
 						let logString = String.localizedStringWithFormat("Sent message %@ from %@ to %@".localized, String(newMessage.messageId), fromUserNum.toHex(), toUserNum.toHex())
-						try await send(data: toRadio, debugDescription: logString)
+						try await send(toRadio, debugDescription: logString)
 					}
 					do {
 						try context.save()
@@ -336,7 +347,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("Set node %@ as favorite on %@".localized, node.num.toHex(), connectedNodeNum.toHex())
-		try await send(data: toRadio, debugDescription: logString)
+		try await send(toRadio, debugDescription: logString)
 	}
 
 	public func removeFavoriteNode(node: NodeInfoEntity, connectedNodeNum: Int64) async throws {
@@ -359,7 +370,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("Remove node %@ as favorite on %@".localized, node.num.toHex(), connectedNodeNum.toHex())
-		try await send(data: toRadio, debugDescription: logString)
+		try await send(toRadio, debugDescription: logString)
 	}
 
 	public func saveChannelSet(base64UrlString: String, addChannels: Bool = false, okToMQTT: Bool = false) async throws {
@@ -434,7 +445,7 @@ extension AccessoryManager {
 				toRadio = ToRadio()
 				toRadio.packet = meshPacket
 				let logString = String.localizedStringWithFormat("Sent a Channel for: %@ Channel Index %d".localized, String(deviceNum), chan.index)
-				try await send(data: toRadio, debugDescription: logString)
+				try await send(toRadio, debugDescription: logString)
 			}
 
 			// Save the LoRa Config and the device will reboot
@@ -460,7 +471,7 @@ extension AccessoryManager {
 			toRadio.packet = meshPacket
 
 			let logString = String.localizedStringWithFormat("Sent a LoRa.Config for: %@".localized, String(deviceNum))
-			try await send(data: toRadio, debugDescription: logString)
+			try await send(toRadio, debugDescription: logString)
 
 			Logger.transport.debug("[AccessoryManager] sending wantConfig for saveChannelSet")
 			await sendWantConfig()
@@ -518,7 +529,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("Sent a Waypoint Packet from: %@".localized, String(fromNodeNum))
-		try await send(data: toRadio, debugDescription: logString)
+		try await send(toRadio, debugDescription: logString)
 		Logger.mesh.info("📍 \(logString, privacy: .public)")
 
 			let wayPointEntity = getWaypoint(id: Int64(waypoint.id), context: context)
@@ -580,7 +591,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("Sent a TraceRoute Packet from: %@ to: %@".localized, String(fromNodeNum), String(destNum))
-		try await send(data: toRadio, debugDescription: logString)
+		try await send(toRadio, debugDescription: logString)
 
 			let traceRoute = TraceRouteEntity(context: context)
 			let nodes = NodeInfoEntity.fetchRequest()
@@ -641,7 +652,7 @@ extension AccessoryManager {
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
 		let logString = String.localizedStringWithFormat("📮 Sent a request for a Store & Forward Client History to \(toUser.num.toHex()) for the last \(120) minutes.")
-		try await send(data: toRadio, debugDescription: logString)
+		try await send(toRadio, debugDescription: logString)
 	}
 
 	public func setIgnoredNode(node: NodeInfoEntity, connectedNodeNum: Int64) async throws {
@@ -664,7 +675,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("📮 Sent a request to  ignore \(node.num.toHex())")
-		try await send(data: toRadio, debugDescription: logString)
+		try await send(toRadio, debugDescription: logString)
 	}
 
 	public func removeIgnoredNode(node: NodeInfoEntity, connectedNodeNum: Int64) async throws {
@@ -687,7 +698,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("📮 Sent a request to un-ignore \(node.num.toHex())")
-		try await send(data: toRadio, debugDescription: logString)
+		try await send(toRadio, debugDescription: logString)
 	}
 
 	public func removeNode(node: NodeInfoEntity, connectedNodeNum: Int64) async throws {
@@ -711,7 +722,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("🗑️ Sent a request to remove node \(node.num.toHex())")
-		try await send(data: toRadio, debugDescription: logString)
+		try await send(toRadio, debugDescription: logString)
 
 			do {
 				context.delete(node.user!)

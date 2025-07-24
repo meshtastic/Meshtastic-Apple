@@ -41,7 +41,6 @@ extension AccessoryManager {
 			if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].storeForwardConfig?.enabled == true {
 				wantStoreAndForwardPackets = true
 			}
-
 		} catch {
 			Logger.data.error("Failed to find a node info for the connected node \(error.localizedDescription, privacy: .public)")
 		}
@@ -74,7 +73,7 @@ extension AccessoryManager {
 		toRadio = ToRadio()
 		toRadio.mqttClientProxyMessage = proxyMessage
 		Task {
-			try? await self.send(data: toRadio)
+			try? await self.send(toRadio)
 		}
 	}
 

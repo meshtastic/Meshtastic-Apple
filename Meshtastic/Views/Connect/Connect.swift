@@ -32,7 +32,6 @@ struct Connect: View {
 		NavigationStack {
 			VStack {
 				List {
-					Text(accessoryManager.state.description)
 					// if bleManager.isSwitchedOn {
 						Section {
 							if let connectedDevice = accessoryManager.activeConnection?.device,
@@ -54,8 +53,9 @@ struct Connect: View {
 											if node != nil {
 												Text(connectedDevice.longName?.addingVariationSelectors ?? "Unknown".localized).font(.title2)
 											}
-											Text("BLE Name").font(.callout)+Text(": \(accessoryManager.activeConnection?.device.name.addingVariationSelectors ?? "Unknown".localized)")
+											Text("Connection Name").font(.callout)+Text(": \(connectedDevice.name.addingVariationSelectors)")
 												.font(.callout).foregroundColor(Color.gray)
+											TransportIcon(transportType: connectedDevice.transportType)
 											if node != nil {
 												Text("Firmware Version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "Unknown".localized)")
 													.font(.callout).foregroundColor(Color.gray)
@@ -213,7 +213,7 @@ struct Connect: View {
 
 								} else {
 
-									if let lastError = accessoryManager.lastConnectionError {
+									if let lastError = accessoryManager.lastConnectionError as? LocalizedError {
 										Text(lastError.localizedDescription).font(.callout).foregroundColor(.red)
 									}
 									HStack {
@@ -232,7 +232,11 @@ struct Connect: View {
 						.textCase(nil)
 
 					if !(accessoryManager.isConnected || accessoryManager .isConnecting) {
-							Section(header: Text("Available Radios").font(.title)) {
+						Section(header: HStack {
+							Text("Available Radios").font(.title)
+							Spacer()
+							ManualConnectionMenu()
+						}) {
 								ForEach(accessoryManager.devices.sorted(by: { $0.name < $1.name })) { device in
 									HStack {
 										if UserDefaults.preferredPeripheralId == device.id.uuidString {
@@ -262,23 +266,7 @@ struct Connect: View {
 												Text(device.name).font(.callout)
 											}
 											// Show transport type
-											switch device.transportType {
-											case .ble:
-												HStack {
-													Image(systemName: "wave.3.forward.circle")
-													Text("BLE")
-												}
-											case .serial:
-												HStack {
-													Image(systemName: "cable.connector.horizontal")
-													Text("Serial")
-												}
-											case .tcp:
-												HStack {
-													Image(systemName: "network")
-													Text("TCP")
-												}
-											}
+											TransportIcon(transportType: device.transportType)
 										}
 										Spacer()
 										VStack {
@@ -429,5 +417,61 @@ struct Connect: View {
 		Task {
 			try await accessoryManager.disconnect()
 		}
+	}
+}
+
+struct TransportIcon: View {
+	var transportType: TransportType
+	@EnvironmentObject var accessoryManager: AccessoryManager
+	
+	var body: some View {
+		let transport = accessoryManager.transports.first(where: {$0.type == transportType})
+		return HStack {
+			transport?.icon ?? Image(systemName: "questionmark")
+			Text(transport?.name ?? "Unknown".localized)
+		}
+	}
+}
+
+struct ManualConnectionMenu: View {
+	private struct IterableTransport: Identifiable {
+		let id: UUID
+		let icon: Image
+		let title: String
+		let transport: any Transport
+	}
+	
+	private var transports: [IterableTransport]
+	
+	init() {
+		self.transports = AccessoryManager.shared.transports.filter { $0.supportsManualConnection}.map { transport in
+			IterableTransport(id: UUID(), icon: transport.icon, title: transport.name, transport: transport)
+		}
+	}
+	
+	@State private var selectedTransport: IterableTransport?
+	@State private var showAlert: Bool = false
+	@State private var connectionString = ""
+	
+	var body: some View {
+		Menu {
+			ForEach(transports) { transport in
+				Button {
+					self.selectedTransport = transport
+					self.showAlert = true
+				} label: {
+					Label(title: { Text(transport.title)}, icon: { transport.icon })
+				}
+			}
+	   } label: {
+		   Label("Manual", systemImage: "plus")
+	   }.alert("Manual connection string", isPresented: $showAlert, presenting: selectedTransport) { selectedTransport in
+		   TextField("Connection details", text: $connectionString)
+					Button("OK", action: {
+						Task {
+							try await selectedTransport.transport.manuallyConnect(withConnectionString: connectionString)
+						}
+					})
+				}
 	}
 }

@@ -5158,6 +5158,7 @@
       }
     },
     "BLE Name" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8652,6 +8653,9 @@
         }
       }
     },
+    "Connection details" : {
+
+    },
     "Connection failed after %d attempts to connect to %@. You may need to forget your device under Settings > Bluetooth." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -8716,6 +8720,9 @@
           }
         }
       }
+    },
+    "Connection Name" : {
+
     },
     "Consent to Share Unencrypted Node Data via MQTT" : {
       "localizations" : {
@@ -20222,6 +20229,9 @@
         }
       }
     },
+    "Manual" : {
+
+    },
     "Manual Configuration" : {
       "localizations" : {
         "de" : {
@@ -20285,6 +20295,9 @@
           }
         }
       }
+    },
+    "Manual connection string" : {
+
     },
     "Map Options" : {
       "localizations" : {

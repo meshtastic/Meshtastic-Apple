@@ -97,8 +97,6 @@ extension AccessoryManager {
 			return
 		}
 
-		Logger.services.info("handleNodeInfo: \(nodeInfo.debugDescription)")
-
 		// TODO: nodeInfoPacket's channel: parameter is not used
 		if let nodeInfo = nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, context: context) {
 			if let activeDevice = activeConnection?.device, activeDevice.num == nodeInfo.num {
