@@ -78,8 +78,10 @@ struct CannedMessagesConfig: View {
 								messages = String(messages.dropLast())
 								totalBytes = messages.utf8.count
 							}
-							hasMessagesChanges = true
-							hasChanges = true
+							if messages != node?.cannedMessageConfig?.messages ?? "" {
+								hasChanges = true
+								hasMessagesChanges = true
+							}
 						}
 						.foregroundColor(.gray)
 				}
@@ -229,7 +231,6 @@ struct CannedMessagesConfig: View {
 								if !hasChanges {
 									Task {
 										Logger.transport.debug("[CannedMessagesConfig] sending wantConfig for save cannedMessagesConfig")
-										await accessoryManager.sendWantConfig()
 									}
 									goBack()
 								}

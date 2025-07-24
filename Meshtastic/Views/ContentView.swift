@@ -72,7 +72,7 @@ struct ContentView: View {
 				isShowingDeviceOnboardingFlow = true
 			}
 		}
-		.onChange(of: UserDefaults.showDeviceOnboarding) { newValue in
+		.onChange(of: UserDefaults.showDeviceOnboarding) {_, newValue in
 			isShowingDeviceOnboardingFlow = newValue
 		}
 	}

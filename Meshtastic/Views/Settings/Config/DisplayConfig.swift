@@ -28,60 +28,44 @@ struct DisplayConfig: View {
 	@State var displayMode = 0
 	@State var units = 0
 	@State var use12HourClock = false
+	@State var headingBold = false
 
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Display", config: \.displayConfig, node: node, onAppear: setDisplayValues)
 
 			Section(header: Text("Device Screen")) {
-				VStack(alignment: .leading) {
-					Picker("Display Mode", selection: $displayMode ) {
-						ForEach(DisplayModes.allCases) { dm in
-							Text(dm.description)
-						}
-					}
 
-					Text("Override automatic OLED screen detection.")
-						.foregroundColor(.gray)
-						.font(.callout)
-				}
-				.pickerStyle(DefaultPickerStyle())
 				Toggle(isOn: $compassNorthTop) {
 					Label("Always point north", systemImage: "location.north.circle")
 					Text("The compass heading on the screen outside of the circle will always point north.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(Color.accentColor)
 
-				Toggle(isOn: $wakeOnTapOrMotion) {
-					Label("Wake Screen on tap or motion", systemImage: "gyroscope")
-					Text("Requires that there be an accelerometer on your device.")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-				Toggle(isOn: $flipScreen) {
-					Label("Flip Screen", systemImage: "pip.swap")
-					Text("Flip screen vertically")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-				VStack(alignment: .leading) {
-					Picker("OLED Type", selection: $oledType ) {
-						ForEach(OledTypes.allCases) { ot in
-							Text(ot.description)
-						}
-					}
-					Text("Override automatic OLED screen detection.")
-						.foregroundColor(.gray)
-						.font(.callout)
-				}
-				.pickerStyle(DefaultPickerStyle())
 				Toggle(isOn: $use12HourClock) {
 					Label("12 Hour Clock", systemImage: "clock")
 					Text("Sets the screen clock format to 12-hour.")
 				}
 				.tint(Color.accentColor)
+				
+				Toggle(isOn: $headingBold) {
+					Label("Bold Heading", systemImage: "bold")
+					Text("Bold the heading text on the screen.")
+				}
+				.tint(Color.accentColor)
+				VStack(alignment: .leading) {
+					Picker("Display Units", selection: $units ) {
+						ForEach(Units.allCases) { un in
+							Text(un.description)
+						}
+					}
+					Text("Units displayed on the device screen")
+						.foregroundColor(.gray)
+						.font(.callout)
+				}
+				.pickerStyle(DefaultPickerStyle())
 			}
-			Section(header: Text("Timing & Format")) {
+			Section(header: Text("Timing and Overrides")) {
 				VStack(alignment: .leading) {
 					Picker("Screen on for", selection: $screenOnSeconds ) {
 						ForEach(ScreenOnIntervals.allCases) { soi in
@@ -107,25 +91,36 @@ struct DisplayConfig: View {
 				}
 				.pickerStyle(DefaultPickerStyle())
 
+				Toggle(isOn: $wakeOnTapOrMotion) {
+					Label("Wake Screen on tap or motion", systemImage: "gyroscope")
+					Text("Requires that there be an accelerometer on your device.")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				
+				Toggle(isOn: $flipScreen) {
+					Label("Flip Screen", systemImage: "pip.swap")
+					Text("Flip screen vertically")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				
 				VStack(alignment: .leading) {
-					Picker("GPS Format", selection: $gpsFormat ) {
-						ForEach(GpsFormats.allCases) { lu in
-							Text(lu.description)
+					Picker("Display Mode", selection: $displayMode ) {
+						ForEach(DisplayModes.allCases) { dm in
+							Text(dm.description)
 						}
 					}
-					Text("The format used to display GPS coordinates on the device screen.")
+					Text("Override default screen layout.")
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
 				.pickerStyle(DefaultPickerStyle())
-
 				VStack(alignment: .leading) {
-					Picker("Display Units", selection: $units ) {
-						ForEach(Units.allCases) { un in
-							Text(un.description)
+					Picker("OLED Type", selection: $oledType ) {
+						ForEach(OledTypes.allCases) { ot in
+							Text(ot.description)
 						}
 					}
-					Text("Units displayed on the device screen")
+					Text("Override automatic OLED screen detection.")
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
@@ -137,7 +132,6 @@ struct DisplayConfig: View {
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			if let deviceNum = accessoryManager.activeDeviceNum, let connectedNode = getNodeInfo(id: deviceNum, context: context) {
 				var dc = Config.DisplayConfig()
-				dc.gpsFormat = GpsFormats(rawValue: gpsFormat)!.protoEnumValue()
 				dc.screenOnSecs = UInt32(screenOnSeconds)
 				dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
 				dc.compassNorthTop = compassNorthTop
@@ -147,6 +141,7 @@ struct DisplayConfig: View {
 				dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
 				dc.units = Units(rawValue: units)!.protoEnumValue()
 				dc.use12HClock = use12HourClock
+				dc.headingBold = headingBold
 
 				Task {
 					_ = try await accessoryManager.saveDisplayConfig(config: dc, fromUser: connectedNode.user!, toUser: node!.user!)
@@ -205,9 +200,6 @@ struct DisplayConfig: View {
 		.onChange(of: wakeOnTapOrMotion) { oldWakeOnTapOrMotion, newWakeOnTapOrMotion in
 			if oldWakeOnTapOrMotion != newWakeOnTapOrMotion && newWakeOnTapOrMotion != node?.displayConfig?.wakeOnTapOrMotion { hasChanges = true }
 		}
-		.onChange(of: gpsFormat) { oldGpsFormat, newGpsFormat in
-			if oldGpsFormat != newGpsFormat && newGpsFormat != node?.displayConfig?.gpsFormat ?? -1 { hasChanges = true }
-		}
 		.onChange(of: flipScreen) { oldFlipScreen, newFlipScreen in
 			if oldFlipScreen != newFlipScreen && newFlipScreen != node?.displayConfig?.flipScreen { hasChanges = true }
 		}
@@ -223,18 +215,21 @@ struct DisplayConfig: View {
 		.onChange(of: use12HourClock) { oldUse12HourClock, newUse12HourClock in
 			if oldUse12HourClock != newUse12HourClock && newUse12HourClock != node?.displayConfig?.use12HClock { hasChanges = true }
 		}
+		.onChange(of: headingBold) { oldHeadingBold, newHeadingBold in
+			if oldHeadingBold != newHeadingBold && newHeadingBold != node?.displayConfig?.headingBold { hasChanges = true }
+		}
 	}
 	func setDisplayValues() {
-			self.gpsFormat = Int(node?.displayConfig?.gpsFormat ?? 0)
-			self.screenOnSeconds = Int(node?.displayConfig?.screenOnSeconds ?? 0)
-			self.screenCarouselInterval = Int(node?.displayConfig?.screenCarouselInterval ?? 0)
-			self.compassNorthTop = node?.displayConfig?.compassNorthTop ?? false
-			self.wakeOnTapOrMotion = node?.displayConfig?.wakeOnTapOrMotion ?? false
-			self.flipScreen = node?.displayConfig?.flipScreen ?? false
-			self.oledType = Int(node?.displayConfig?.oledType ?? 0)
-			self.displayMode = Int(node?.displayConfig?.displayMode ?? 0)
-			self.units = Int(node?.displayConfig?.units ?? 0)
-			self.use12HourClock =  node?.displayConfig?.use12HClock ?? false
-			self.hasChanges = node?.displayConfig?.use12HClock ?? false
+		self.screenOnSeconds = Int(node?.displayConfig?.screenOnSeconds ?? 0)
+		self.screenCarouselInterval = Int(node?.displayConfig?.screenCarouselInterval ?? 0)
+		self.compassNorthTop = node?.displayConfig?.compassNorthTop ?? false
+		self.wakeOnTapOrMotion = node?.displayConfig?.wakeOnTapOrMotion ?? false
+		self.flipScreen = node?.displayConfig?.flipScreen ?? false
+		self.oledType = Int(node?.displayConfig?.oledType ?? 0)
+		self.displayMode = Int(node?.displayConfig?.displayMode ?? 0)
+		self.units = Int(node?.displayConfig?.units ?? 0)
+		self.headingBold =  node?.displayConfig?.headingBold ?? false
+		self.use12HourClock = node?.displayConfig?.use12HClock ?? false
+		self.hasChanges = false
 	}
 }
