@@ -101,21 +101,19 @@ struct Connect: View {
 								.foregroundColor(Color.gray)
 								.padding([.top])
 								.swipeActions {
-									if accessoryManager.allowDisconnect {
-										Button(role: .destructive) {
-											if accessoryManager.isConnected {
-												// bleManager.disconnectPeripheral(reconnect: false)
-												Task {
-													try await accessoryManager.disconnect()
-												}
+									Button(role: .destructive) {
+										if accessoryManager.isConnected {
+											// bleManager.disconnectPeripheral(reconnect: false)
+											Task {
+												try await accessoryManager.disconnect()
 											}
-										} label: {
-											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 										}
-									}
+									} label: {
+										Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+									}.disabled(!accessoryManager.allowDisconnect)
 								}
 								.contextMenu {
-
+									
 									if node != nil {
 										Label("\(String(node!.num))", systemImage: "number")
 										Label("BLE RSSI \(connectedDevice.rssiString)", systemImage: "cellularbars")
@@ -208,7 +206,7 @@ struct Connect: View {
 											}
 										} label: {
 											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
-										}
+										}.disabled(!accessoryManager.allowDisconnect)
 									}
 
 								} else {
@@ -260,7 +258,6 @@ struct Connect: View {
 													Task {
 														try? await accessoryManager.connect(to: device)
 													}
-													// self.bleManager.connectTo(peripheral: peripheral.peripheral)
 												}
 											}) {
 												Text(device.name).font(.callout)
