@@ -96,7 +96,8 @@ actor TCPConnection: Connection {
 					return
 				}
 				if isComplete {
-					cont.resume(returning: Data())
+					// cont.resume(returning: Data())
+					cont.resume(throwing: AccessoryError.disconnected)
 					return
 				}
 				cont.resume(returning: content ?? Data())
@@ -127,8 +128,11 @@ actor TCPConnection: Connection {
 	func disconnect() async throws {
 		Logger.transport.debug("[TCP] Disconnecting from TCP connection")
 		readerTask?.cancel()
+		readerTask = nil
+		
 		connection?.cancel()
-
+		connection = nil
+		
 		packetStream?.finish()
 		packetStream = nil
 
@@ -165,26 +169,42 @@ actor TCPConnection: Connection {
 		self.connection = newConnection
 			
 		try await withTaskCancellationHandler {
-			try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
-				newConnection.stateUpdateHandler = { state in
-					switch state {
-					case .ready:
-						cont.resume()
-					case .failed:
-						Task {
-							try? await self.disconnect()
+				try await withCheckedThrowingContinuation { cont in
+					newConnection.stateUpdateHandler = { state in
+						switch state {
+						case .ready:
+							cont.resume()
+						case .failed(let error):
+							cont.resume(throwing: error)
+						case .cancelled:
+							cont.resume(throwing: CancellationError())
+						default:
+							break
 						}
-					case .cancelled:
-						break
-					default:
-						break
 					}
+					newConnection.start(queue: queue)
 				}
-				newConnection.start(queue: queue)
+			} onCancel: {
+				newConnection.cancel()
 			}
-		} onCancel: {
-			newConnection.cancel()
-		}
+		
+		// We've gotten here past the connection and since we haven't thrown, the
+		// connection is in the ready state.
+		
+		// Update the state connection handler for in-progress monitoring of state
+		// changes while connected.
+		newConnection.stateUpdateHandler = { state in
+				switch state {
+				case .failed(let error):
+					Logger.transport.error("[TCP] Connection failed after ready: \(error)")
+					Task { try? await self.disconnect() }
+				case .cancelled:
+					Logger.transport.debug("[TCP] Connection cancelled")
+				default:
+					break
+				}
+			}
+		
 		startReader()
 		return (getPacketStream(), getRadioLogStream())
 		
