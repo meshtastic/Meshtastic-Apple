@@ -37,6 +37,7 @@ struct MeshtasticAppleApp: App {
 		let clientToken = "pub4427bea20dbdb08a6af68034de22cd3b"
 		let environment = "testflight"
 
+#if !targetEnvironment(macCatalyst)
 		Datadog.initialize(
 			with: Datadog.Configuration(
 				clientToken: clientToken,
@@ -62,9 +63,11 @@ struct MeshtasticAppleApp: App {
 			)
 		)
 		let attributes: [String: Encodable] = [
-			"firmware_version": UserDefaults.firmwareVersion
+			"firmware_version": UserDefaults.firmwareVersion,
+			"hardware_model": UserDefaults.hardwareModel
 		]
 		RUMMonitor.shared().addAttributes(attributes)
+#endif
 		self._appState = ObservedObject(wrappedValue: appState)
 		// Initialize the BLEManager singleton with the necessary dependencies
 		BLEManager.setup(appState: appState, context: persistenceController.container.viewContext)
