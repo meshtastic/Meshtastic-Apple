@@ -44,6 +44,8 @@ extension UserEntity {
 			return "HELTECMESHNODET114"
 		case "HELTECV3":
 			return "HELTECV3"
+		case "HELTECMESHPOCKET":
+			return "HELTECMESHPOCKET"
 		case "HELTECVISIONMASTERE213":
 			return "HELTECVISIONMASTERE213"
 		case "HELTECVISIONMASTERE290":
@@ -69,7 +71,7 @@ extension UserEntity {
 			return "TLORAC6"
 		case "TLORAT3S3EPAPER":
 			return "TLORAT3S3EPAPER"
-		case "TLORAT3S3V1":
+		case "TLORAT3S3V1", "TLORAT3S3" :
 			return "TLORAT3S3V1"
 		case "TLORAV211P6":
 			return "TLORAV211P6"
