@@ -74,6 +74,9 @@ struct MeshtasticAppleApp: App {
 		self.persistenceController = persistenceController
 		// Wire up router
 		self.appDelegate.router = appState.router
+
+		// Initialize map data manager
+		MapDataManager.shared.initialize()
 	#if DEBUG
 		// Show tips in development
 		try? Tips.resetDatastore()
