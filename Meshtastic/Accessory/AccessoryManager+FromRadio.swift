@@ -92,6 +92,10 @@ extension AccessoryManager {
 	}
 
 	func handleNodeInfo(_ nodeInfo: NodeInfo) {
+		if let continuation = self.firstDatabaseNodeInfoContinuation {
+			continuation.resume()
+		}
+		
 		guard nodeInfo.num > 0 else {
 			Logger.services.error("NodeInfo packet with a zero nodeNum")
 			return

@@ -66,7 +66,7 @@ actor TCPConnection: Connection {
 						Logger.transport.debug("[TCP] startReader: EOF while waiting for magic bytes")
 						continue
 					}
-					Logger.transport.debug("[TCP] startReader: Found magic byte, waiting for length")
+					//Logger.transport.debug("[TCP] startReader: Found magic byte, waiting for length")
 
 					if let length = try? await readInteger() {
 						let payload = try await receiveData(min: Int(length), max: Int(length))

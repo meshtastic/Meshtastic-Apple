@@ -90,11 +90,17 @@ extension AccessoryManager {
 			}
 			
 			// Step 5: Send WantConfig (database)
-			Step { @MainActor _ in
+			Step(timeout: .seconds(3.0), onFailure: .retryStep(attempts: 3)) { @MainActor _ in
 				Logger.transport.info("[Connect] Step 5: Send wantConfig (database)")
 				self.updateState(.retreivingDatabase(nodeCount: 0))
 				self.allowDisconnect = true
 				await self.sendWantDatabase()
+			}
+			
+			// Step 5a: Wait for end of WantConfig (database)
+			Step { @MainActor _ in
+				Logger.transport.info("[Connect] Step 5a: Wait for the final database")
+				try await self.waitForWantDatabaseResponse()
 			}
 			
 			// Step 6: Version check
@@ -166,14 +172,20 @@ actor SequentialSteps {
 	
 	typealias StepClosure = @Sendable (_ retryAttempt: Int) async throws -> Void
 	
+	enum FailureBehavior {
+		case fail
+		case retryStep(attempts: Int)
+		case retryAll
+	}
+	
 	struct Step {
 		let timeout: Duration?
-		let failureTriggersRetry: Bool
+		let failureBehavior: FailureBehavior
 		let operation: StepClosure
 		
-		init(timeout: Duration? = nil, failureTriggersRetry: Bool = true, operation: @escaping StepClosure) {
+		init(timeout: Duration? = nil, onFailure: FailureBehavior = .retryAll, operation: @escaping StepClosure) {
 			self.timeout = timeout
-			self.failureTriggersRetry = failureTriggersRetry
+			self.failureBehavior = onFailure
 			self.operation = operation
 		}
 	}
@@ -212,29 +224,50 @@ actor SequentialSteps {
 					try await Task.sleep(for: retryDelay)
 				}
 				do {
-					if let duration = currentStep.timeout {
-						// Execute this task with a timeout
-						self.currentlyExecutingStep = executeWithTimeout(stepNumber: stepNumber, timeout: duration) {
-							@MainActor in
-							try await currentStep.operation(attempt)
+					let stepRetries = if case let .retryStep(attempts) = currentStep.failureBehavior, attempts > 0 { attempts } else { 1 }
+					stepRetryLoop: for stepRetryAttempt in 0..<stepRetries {
+						if stepRetryAttempt > 0 {
+							Logger.transport.info("[Retry Step Loop] Retrying step \(stepNumber + 1) for the \(stepRetryAttempt + 1) time.")
+							try await Task.sleep(for: retryDelay)
 						}
-						try await self.currentlyExecutingStep!.value
-					} else {
-						// Execute this task without a timeout
-						self.currentlyExecutingStep = Task {
-							@MainActor in
-							try await currentStep.operation(attempt)
+						do {
+							if let duration = currentStep.timeout {
+								// Execute this task with a timeout
+								self.currentlyExecutingStep = executeWithTimeout(stepNumber: stepNumber, timeout: duration) {
+									try await currentStep.operation(attempt)
+								}
+								try await self.currentlyExecutingStep!.value
+							} else {
+								// Execute this task without a timeout
+								self.currentlyExecutingStep = Task {
+									try await currentStep.operation(attempt)
+								}
+								try await self.currentlyExecutingStep!.value
+							}
+							break stepRetryLoop // Exit retry loop if successful
+						} catch {
+							if stepRetryAttempt == stepRetries - 1 {
+								// If this is the last retry attempt, we throw the error to the outer loop
+								throw error
+							} else {
+								
+								switch error {
+								case let SequentialStepError.timeout(stepNumber, afterWaiting):
+									Logger.transport.info("[Inner Retry Step Loop] Sequential process timed out on step \(stepNumber) after waiting \(afterWaiting)")
+								default:
+									Logger.transport.error("[Inner Retry Step Loop] Sequential process failed on step \(stepNumber) with error: \(error.localizedDescription)")
+								}
+							}
 						}
-						try await self.currentlyExecutingStep!.value
 					}
 				} catch {
 					switch error {
 					case let SequentialStepError.timeout(stepNumber, afterWaiting):
-						Logger.transport.info("Sequential process timed out on step \(stepNumber) after waiting \(afterWaiting)")
+						Logger.transport.info("[Outer Step Retry Loop] Sequential process timed out on step \(stepNumber) after waiting \(afterWaiting)")
 					default:
-						Logger.transport.error("Sequential process failed on step \(stepNumber) with error: \(error.localizedDescription)")
+						Logger.transport.error("[Outer Step Retry Loop] Sequential process failed on step \(stepNumber) with error: \(error.localizedDescription)")
 					}
-					if currentStep.failureTriggersRetry {
+					if case .fail = currentStep.failureBehavior {
 						continue retryLoop
 					}
 				}

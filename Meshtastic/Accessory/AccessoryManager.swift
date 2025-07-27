@@ -122,12 +122,15 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	var discoveryTask: Task<Void, Never>?
 	var packetTask: Task <Void, Error>?
 	var logTask: Task <Void, Error>?
+	var heartbeatTask: Task<Void, Error>?
 	var rssiTask: Task <Void, Error>?
 	var locationTask: Task<Void, Error>?
 	var connectionStepper: SequentialSteps?
 	
 	// Continuations
-	private var wantConfigContinuations: [UInt32: CheckedContinuation<Void, Error>] = [:]
+	var wantConfigContinuation: CheckedContinuation<Void, Error>?
+	var firstDatabaseNodeInfoContinuation: CheckedContinuation<Void, Error>?
+	var wantDatabaseContinuation: PossiblyAlreadyDoneContinuation?
 
 	init(transports: [any Transport] = [BLETransport(), TCPTransport()]) {
 		self.transports = transports
@@ -143,57 +146,148 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 
 	func sendWantConfig() async {
+		if let inProgressWantConfigContinuation = wantConfigContinuation {
+			Logger.transport.info("[Accessory] Existing continuation for wantConfig(Config). Cancelling.")
+			inProgressWantConfigContinuation.resume(throwing: CancellationError())
+			wantConfigContinuation = nil
+		}
 		guard let connection = activeConnection?.connection else {
 			Logger.transport.error("Unable to send wantConfig (config): No device connected")
 			return
 		}
-		try? await sendNonceRequest(nonce: UInt32(NONCE_ONLY_CONFIG), connection: connection)
-		Logger.transport.info("✅ [Accessory] NONCE_ONLY_CONFIG Done")
+		do {
+			var toRadio: ToRadio = ToRadio()
+			toRadio.wantConfigID = UInt32(NONCE_ONLY_CONFIG)
+			try await self.send(toRadio)
+			try await withCheckedThrowingContinuation { cont in
+				self.wantConfigContinuation = cont
+			}
+			self.wantConfigContinuation = nil
+			Logger.transport.info("✅ [Accessory] NONCE_ONLY_CONFIG Done")
+		} catch {
+			Logger.transport.error("✅ [Accessory] NONCE_ONLY_CONFIG returned with error \(error)")
+		}
+
 	}
 
 	func sendWantDatabase() async {
+		if case let .notDone(inProgressWantDatabaseContinuation) = wantDatabaseContinuation {
+			inProgressWantDatabaseContinuation.resume(throwing: CancellationError())
+			Logger.transport.info("[Accessory] Existing continuation for wantConfig(Database). Cancelling.")
+			self.wantDatabaseContinuation = nil
+		}
+		if let firstDatabaseNodeInfoContinuation = firstDatabaseNodeInfoContinuation {
+			Logger.transport.info("[Accessory] Existing continuation for firstDatabaseNodeInfo. Cancelling.")
+			firstDatabaseNodeInfoContinuation.resume(throwing: CancellationError())
+			self.firstDatabaseNodeInfoContinuation = nil
+		}
+		
 		guard let connection = activeConnection?.connection else {
-			Logger.transport.error("Unable to send wantConfig (database) : No device connected")
+			Logger.transport.error("Unable to send wantConfig (Database): No device connected")
 			return
 		}
-
-		try? await sendNonceRequest(nonce: UInt32(NONCE_ONLY_DB), connection: connection)
-		Logger.transport.info("✅ [Accessory] NONCE_ONLY_DB Done")
-	}
-
-	private func sendNonceRequest(nonce: UInt32, connection: any Connection) async throws {
-		try await withTaskCancellationHandler {
-			// Create the protobuf with the wantConfigID nonce
-			var toRadio: ToRadio = ToRadio()
-			toRadio.wantConfigID = nonce
-			
-			// Send it to the radio
-			try await self.send(toRadio)
-			
-			// Start draining packets in the background
-			try await connection.startDrainPendingPackets()
-			
-			// Wait for the nonce request to be completed before continuing
-			try await withCheckedThrowingContinuation { cont in
-				wantConfigContinuations[nonce] = cont
+		
+		do {
+			try await withTaskCancellationHandler {
+				var toRadio: ToRadio = ToRadio()
+				toRadio.wantConfigID = UInt32(NONCE_ONLY_DB)
+				try await self.send(toRadio)
+				try await withCheckedThrowingContinuation { cont in
+					firstDatabaseNodeInfoContinuation = cont
+				}
+				firstDatabaseNodeInfoContinuation = nil
+				Logger.transport.info("✅ [Accessory] NONCE_ONLY_DB first NodeInfo received.")
+			} onCancel: {
+				Task { @MainActor in
+					firstDatabaseNodeInfoContinuation?.resume(throwing: CancellationError())
+					firstDatabaseNodeInfoContinuation = nil
+				}
 			}
-		} onCancel: {
-			Task { @MainActor in
-				wantConfigContinuations[nonce]?.resume(throwing: CancellationError())
-				wantConfigContinuations[nonce] = nil
-			}
+		} catch {
+			Logger.transport.error("✅ [Accessory] NONCE_ONLY_DB returned with error \(error)")
 		}
 	}
+	
+	func waitForWantDatabaseResponse() async throws {
+		if case .alreadyDone = wantDatabaseContinuation {
+			Logger.transport.info("[Accessory] wantConfig(Database) already done, skipping wait.")
+		} else {
+			Logger.transport.info("[Accessory] waiting for wantConfig(Database)")
+			try await withTaskCancellationHandler {
+				
+				try await withCheckedThrowingContinuation { cont in
+					self.wantDatabaseContinuation = .notDone(cont)
+				}
+				self.wantDatabaseContinuation = nil
+			} onCancel: {
+				Task {@MainActor in
+					if case let .notDone(wantDatabaseContinuation) = self.wantDatabaseContinuation {
+						wantDatabaseContinuation.resume(throwing: CancellationError())
+						self.wantDatabaseContinuation = nil
+					}
+				}
+			}
+			Logger.transport.info("[Accessory] wantConfig(Database) complete.")
+		}
+	}
+
+//	private func sendNonceRequest(nonce: UInt32, connection: any Connection) async throws {
+//		if let inProgressNonceRequest = wantConfigContinuations[nonce] {
+//			Logger.transport.info("[Accessory] Existing nonce request for \(nonce) in progress. Cancelling.")
+//			inProgressNonceRequest.resume(throwing: CancellationError())
+//			wantConfigContinuations.removeValue(forKey: nonce)
+//		}
+//		try await withTaskCancellationHandler {
+//			// Create the protobuf with the wantConfigID nonce
+//			var toRadio: ToRadio = ToRadio()
+//			toRadio.wantConfigID = nonce
+//			
+//			// Send it to the radio
+//			try await self.send(toRadio)
+//			
+//			// Start draining packets in the background
+//			try await connection.startDrainPendingPackets()
+//			
+//			// Wait for the nonce request to be completed before continuing
+//			try await withCheckedThrowingContinuation { cont in
+//				wantConfigContinuations[nonce] = cont
+//			}
+//		} onCancel: {
+//			Task { @MainActor in
+//				wantConfigContinuations[nonce]?.resume(throwing: CancellationError())
+//				wantConfigContinuations[nonce] = nil
+//			}
+//		}
+//	}
 
 	func closeConnection() async throws {
 		Logger.transport.debug("[AccessoryManager] received disconnect request")
 
-		// Clean up continuations
-		for continuation in self.wantConfigContinuations.values {
-			continuation.resume(throwing: AccessoryError.disconnected)
-		}
-		self.wantConfigContinuations.removeAll()
+		packetTask?.cancel()
+		packetTask = nil
 		
+		logTask?.cancel()
+		logTask = nil
+		
+		rssiTask?.cancel()
+		rssiTask = nil
+		
+		locationTask?.cancel()
+		locationTask = nil
+		
+		heartbeatTask?.cancel()
+		heartbeatTask = nil
+		
+		// Clean up continuations
+		wantConfigContinuation?.resume(throwing: CancellationError())
+		wantConfigContinuation = nil
+		firstDatabaseNodeInfoContinuation?.resume(throwing: CancellationError())
+		firstDatabaseNodeInfoContinuation = nil
+		if case .notDone(let wantDatabaseContiniuation) = wantDatabaseContinuation {
+			wantDatabaseContiniuation.resume(throwing: CancellationError())
+		}
+		self.wantDatabaseContinuation = nil
+
 		// Close out the connection
 		if let activeConnection = activeConnection {
 			self.activeConnection = nil
@@ -493,9 +587,21 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			// }
 
 			Logger.transport.info("✅ [Accessory] Notifying completions that have completed for confligCompleteID: \(configCompleteID)")
-			if let continuation = wantConfigContinuations[configCompleteID] {
-				wantConfigContinuations.removeValue(forKey: configCompleteID)
-				continuation.resume()
+			switch configCompleteID {
+			case UInt32(NONCE_ONLY_CONFIG):
+				if let continuation = wantConfigContinuation {
+					continuation.resume()
+				}
+				
+			case UInt32(NONCE_ONLY_DB):
+				if case let .notDone(continuation) = wantDatabaseContinuation {
+					continuation.resume()
+				} else {
+					wantDatabaseContinuation = .alreadyDone
+				}
+				
+			default:
+				Logger.transport.error("[Accessory] Unknown nonce completed: \(configCompleteID)")
 			}
 			
 		case .rebooted:
@@ -517,7 +623,6 @@ extension AccessoryManager {
 	}
 }
 
-
 extension AccessoryManager {
 	var connectedVersion: String? {
 		return activeConnection?.device.firmwareVersion
@@ -534,7 +639,12 @@ extension AccessoryManager {
 
 extension AccessoryManager {
 	func setupPeriodicHeartbeat() async {
-		Task {
+		if let heartbeatTask {
+			Logger.transport.debug("[Heartbeat] Cancelling existing heartbeat task")
+			heartbeatTask.cancel()
+			self.heartbeatTask = nil
+		}
+		self.heartbeatTask = Task {
 			while Task.isCancelled == false {
 				try? await Task.sleep(for: .seconds(5 * 60))
 				Logger.transport.debug("[Heartbeat] Sending periodic heartbeat")
@@ -542,4 +652,9 @@ extension AccessoryManager {
 			}
 		}
 	}
+}
+
+enum PossiblyAlreadyDoneContinuation {
+	case alreadyDone
+	case notDone(CheckedContinuation<Void, Error>)
 }
