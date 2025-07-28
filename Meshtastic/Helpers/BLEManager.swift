@@ -795,6 +795,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							if nodeInfo.user != nil {
 								connectedPeripheral.shortName = nodeInfo.user?.shortName ?? "?"
 								connectedPeripheral.longName = nodeInfo.user?.longName ?? "Unknown".localized
+								UserDefaults.hardwareModel = nodeInfo.user?.hwModel ?? "Unset".localized
 							}
 						}
 					}
