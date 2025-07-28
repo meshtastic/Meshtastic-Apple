@@ -20,6 +20,8 @@ struct AppSettings: View {
 	@AppStorage("environmentEnableWeatherKit") private var  environmentEnableWeatherKit: Bool = true
 	@AppStorage("enableAdministration") private var  enableAdministration: Bool = false
 	@AppStorage("usageDataAndCrashReporting") private var usageDataAndCrashReporting: Bool = true
+	@AppStorage("enableCompactLayout") private var enableCompactLayout: Bool = false
+
 	
 	let autoconnectBinding = Binding<Bool>(get: {
 		return UserDefaults.autoconnectOnDiscovery
@@ -69,6 +71,17 @@ struct AppSettings: View {
 							.presentationDetents([.medium])
 					}
 #endif
+				}
+				Section(header: Text("Layout")) {
+					Toggle(isOn: $enableCompactLayout) {
+						Label("Compact Layout", systemImage: "arrowshape.right.arrowshape.left")
+					}
+#endif
+				}
+				Section(header: Text("Layout")) {
+					Toggle(isOn: $enableCompactLayout) {
+						Label("Compact Layout", systemImage: "arrowshape.right.arrowshape.left")
+					}
 				}
 				Section(header: Text("environment")) {
 					VStack(alignment: .leading) {
