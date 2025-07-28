@@ -22448,9 +22448,6 @@
         }
       }
     },
-    "Layout" : {
-
-    },
     "LED Heartbeat" : {
       "localizations" : {
         "it" : {
@@ -27916,6 +27913,9 @@
           }
         }
       }
+    },
+    "Node List Density" : {
+
     },
     "Node Map" : {
       "localizations" : {

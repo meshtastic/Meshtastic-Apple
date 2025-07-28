@@ -142,10 +142,6 @@ struct NodeListItemCompact: View {
 					VStack(alignment: .center) {
 						CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 50)
 							.padding(.trailing, 5)
-						if node.latestDeviceMetrics != nil {
-							BatteryCompact(batteryLevel: node.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
-								.padding(.trailing, 5)
-						}
 					}
 //					User Info
 					VStack(alignment: .leading) {
@@ -199,28 +195,36 @@ struct NodeListItemCompact: View {
 											text: "MQTT")
 							}
 						}
-						let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
-
-//						Compact Info Stack
-						HStack {
-							Spacer()
-							Image(systemName: role?.systemName ?? "figure")
-							if node.user?.unmessagable ?? false {
-								Image(systemName: "iphone.slash")
-							}
-							if node.isStoreForwardRouter {
-								Image(systemName: "envelope.arrow.triangle.branch")
-							}
-							if node.hopsAway > 0 {
-								Image(systemName: "\(node.hopsAway).square")
-									.font(.title2)
-							} else {
-								Image(systemName: "dot.radiowaves.left.and.right")
-									.foregroundColor(getSnrColor(snr: node.snr, preset: modemPreset))
-							}
-						}
 					}
 					.frame(maxWidth: .infinity, alignment: .leading)
+				}
+				let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
+
+//					Compact Info Stack
+				HStack(alignment: .center) {
+					if node.latestDeviceMetrics != nil {
+						BatteryCompact(batteryLevel: node.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
+					}
+					Spacer()
+					//	Node Unmessagable Indicator
+					if node.user?.unmessagable ?? false {
+						Image(systemName: "iphone.slash")
+					}
+					//	Node Store/Forward Indicator
+					if node.isStoreForwardRouter {
+						Image(systemName: "envelope.arrow.triangle.branch")
+					}
+					//	Node Role Image
+					Image(systemName: role?.systemName ?? "figure")
+					//	Node Hops/Signal Indicator
+					if node.hopsAway > 0 {
+						Image(systemName: "\(node.hopsAway).square")
+							.font(.title2)
+							.scaledToFit()
+					} else {
+						Image(systemName: "dot.radiowaves.left.and.right")
+							.foregroundColor(getSnrColor(snr: node.snr, preset: modemPreset))
+					}
 				}
 			}
 		}
@@ -241,9 +245,27 @@ struct NodeListItemCompact: View {
 			user.longName = "Test User"
 			user.shortName = "TU"
 			user.unmessagable = true
+			nodeInfo.favorite = true
+			nodeInfo.channel = 2
+			nodeInfo.num = 2
+			nodeInfo.viaMqtt = true
 			nodeInfo.user = user
 			nodeInfo.lastHeard = Date.now
 			return nodeInfo
 		}(), connected: true, connectedNode: 0, modemPreset: .longFast)
+		NodeListItemCompact(node: {
+			let context = PersistenceController.preview.container.viewContext
+			let nodeInfo = NodeInfoEntity(context: context)
+			let user = UserEntity(context: context)
+			user.longName = "Test User 2"
+			user.shortName = "TU2"
+			user.unmessagable = true
+			nodeInfo.favorite = true
+			nodeInfo.num = 2
+			nodeInfo.user = user
+			nodeInfo.lastHeard = Date.now - 8192
+			nodeInfo.hopsAway = 5
+			return nodeInfo
+		}(), connected: false, connectedNode: 0, modemPreset: .longFast)
 	}
 }

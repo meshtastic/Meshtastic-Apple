@@ -20,7 +20,7 @@ struct AppSettings: View {
 	@AppStorage("environmentEnableWeatherKit") private var  environmentEnableWeatherKit: Bool = true
 	@AppStorage("enableAdministration") private var  enableAdministration: Bool = false
 	@AppStorage("usageDataAndCrashReporting") private var usageDataAndCrashReporting: Bool = true
-	@AppStorage("enableCompactLayout") private var enableCompactLayout: Bool = false
+	@AppStorage("nodeListDensity") private var nodeListDensity: NodeListDensity = .standard
 
 	
 	let autoconnectBinding = Binding<Bool>(get: {
@@ -78,10 +78,26 @@ struct AppSettings: View {
 					}
 #endif
 				}
+				Section(header: Text("Node List Density")) {
+					Picker("Node List Density", selection: $enableCompactLayout) {
+						Text("Standard").tag(false)
+						Text("Compact").tag(true)
+					}
+					.pickerStyle(.segmented)
+				}
 				Section(header: Text("Layout")) {
 					Toggle(isOn: $enableCompactLayout) {
 						Label("Compact Layout", systemImage: "arrowshape.right.arrowshape.left")
 					}
+					.pickerStyle(.segmented)
+				}
+				Section(header: Text("Node List Density")) {
+					Picker("Node List Density", selection: $nodeListDensity) {
+						ForEach(NodeListDensity.allCases) { item in
+							Text(item.description).tag(item)
+						}
+					}
+					.pickerStyle(.segmented)
 				}
 				Section(header: Text("environment")) {
 					VStack(alignment: .leading) {

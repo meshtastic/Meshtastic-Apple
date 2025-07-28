@@ -14,7 +14,7 @@ struct NodeList: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@StateObject var router: Router
-	@AppStorage("enableCompactLayout") private var enableCompactLayout: Bool = false
+	@AppStorage("nodeListDensity") private var nodeListDensity: NodeListDensity = .standard
 	@State private var selectedNode: NodeInfoEntity?
 	@State private var isPresentingTraceRouteSentAlert = false
 	@State private var isPresentingPositionSentAlert = false
