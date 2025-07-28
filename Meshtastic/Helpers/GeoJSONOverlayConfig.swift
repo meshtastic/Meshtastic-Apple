@@ -177,33 +177,38 @@ struct GeoJSONStyledFeature: Identifiable {
 
 	/// Create MKOverlay from this styled feature
 	func createOverlay() -> MKOverlay? {
+		// Convert feature to standard GeoJSON format for MKGeoJSONDecoder
+		let featureDict: [String: Any] = [
+			"type": feature.type,
+			"geometry": [
+				"type": feature.geometry.type,
+				"coordinates": feature.geometry.coordinates.toAnyObject()
+			],
+			"properties": feature.properties?.mapValues { $0.toAnyObject() } ?? [:]
+		]
+
 		do {
-			// Convert feature to standard GeoJSON format for MKGeoJSONDecoder
-			let featureDict: [String: Any] = [
-				"type": feature.type,
-				"geometry": [
-					"type": feature.geometry.type,
-					"coordinates": feature.geometry.coordinates.toAnyObject()
-				],
-				"properties": feature.properties?.mapValues { $0.toAnyObject() } ?? [:]
-			]
-
-			// Creating overlay for geometry
-
+			// Serialize feature dictionary to JSON data
 			let geojsonData = try JSONSerialization.data(withJSONObject: featureDict)
-			let mkFeatures = try MKGeoJSONDecoder().decode(geojsonData)
-
-			// MKGeoJSONDecoder processing
-
-			if let mkFeature = mkFeatures.first as? MKGeoJSONFeature {
-				// Processing geometry objects
-				if let geometry = mkFeature.geometry.first as? MKOverlay {
-					// Successfully created overlay
-					return geometry
+			do {
+				// Decode GeoJSON data into MKGeoJSONFeature objects
+				let mkFeatures = try MKGeoJSONDecoder().decode(geojsonData)
+				if let mkFeature = mkFeatures.first as? MKGeoJSONFeature {
+					// Extract geometry and create overlay
+					if let geometry = mkFeature.geometry.first as? MKOverlay {
+						// Successfully created overlay
+						return geometry
+					} else {
+						Logger.services.error("🗺️ GeoJSONStyledFeature: Failed to create overlay - Geometry is not an MKOverlay.")
+					}
+				} else {
+					Logger.services.error("🗺️ GeoJSONStyledFeature: Failed to decode GeoJSON - No valid MKGeoJSONFeature found.")
 				}
+			} catch {
+				Logger.services.error("🗺️ GeoJSONStyledFeature: Failed to decode GeoJSON data: \(error.localizedDescription)")
 			}
 		} catch {
-			Logger.services.error("🗺️ GeoJSONStyledFeature: Failed to convert feature to overlay: \(error.localizedDescription)")
+			Logger.services.error("🗺️ GeoJSONStyledFeature: Failed to serialize feature dictionary to JSON: \(error.localizedDescription)")
 		}
 		return nil
 	}
