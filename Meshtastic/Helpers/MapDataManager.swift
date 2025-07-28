@@ -131,7 +131,7 @@ class MapDataManager: ObservableObject {
 		let uploadDate = fileAttributes.creationDate ?? Date()
 
 		// Read and process file content on background queue
-		let (_, overlayCount) = try await withCheckedThrowingContinuation { continuation in
+		let (data, overlayCount) = try await withCheckedThrowingContinuation { continuation in
 			Task.detached {
 				do {
 					let data = try Data(contentsOf: url)
@@ -162,9 +162,6 @@ class MapDataManager: ObservableObject {
 				  let geometryType = geometry["type"] as? String else {
 				throw NSError(domain: "MapDataManager", code: 3, userInfo: [NSLocalizedDescriptionKey: "Invalid feature structure in GeoJSON"])
 			}
-			
-			// Validate coordinates based on geometry type
-			try validateCoordinates(coordinates, for: geometryType)
 		}
 
 		// If this is the first file uploaded, make it active by default
