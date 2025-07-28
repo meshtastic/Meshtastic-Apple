@@ -200,11 +200,11 @@ struct MapDataFileRow: View {
 						.cornerRadius(4)
 					
 					Text("\(file.overlayCount) \(file.overlayCount > 1 ? "features".localized : "feature".localized)")
-						.font(.caption)
+						.font(.caption2)
 						.foregroundColor(.secondary)
 					Spacer()
 					Text(file.uploadDate.formatted())
-						.font(.caption)
+						.font(.caption2)
 						.foregroundColor(.secondary)
 				}
 			}
