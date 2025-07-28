@@ -25,9 +25,9 @@ struct MapSettingsForm: View {
 	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 800000
 	@Binding var meshMap: Bool
 	@Binding var enabledOverlayConfigs: Set<UUID>
-
+	
 	var body: some View {
-
+		
 		NavigationStack {
 			Form {
 				Section(header: Text("Map Options")) {
@@ -119,10 +119,9 @@ struct MapSettingsForm: View {
 						UserDefaults.enableMapPointsOfInterest = self.pointsOfInterest
 					}
 				}
-
+				
 				Section(header: Text("Map Overlays")) {
 					let hasUserData = GeoJSONOverlayManager.shared.hasUserData()
-
 					// Master toggle for map overlays
 					Toggle(isOn: $mapOverlaysEnabled) {
 						Label {
@@ -134,26 +133,15 @@ struct MapSettingsForm: View {
 							}
 						} icon: {
 							Image(systemName: "map")
-								.foregroundColor(hasUserData ? .accentColor : .secondary)
+								.symbolRenderingMode(.multicolor)
 						}
 					}
 					.tint(.accentColor)
-					.disabled(!hasUserData)
-
+					.disabled(!hasUserData && !mapOverlaysEnabled)
+					
 					// Show individual file toggles when overlays are enabled
 					if mapOverlaysEnabled && hasUserData {
 						if !mapDataManager.getUploadedFiles().isEmpty {
-							// Data source info
-							HStack {
-								Image(systemName: "info.circle")
-									.foregroundColor(.secondary)
-								Text(String(format: NSLocalizedString("Using %@ data", comment: "Shows which data source is being used"), GeoJSONOverlayManager.shared.getActiveDataSource()))
-									.font(.caption)
-									.foregroundColor(.secondary)
-								Spacer()
-							}
-							.padding(.leading, 35)
-
 							// Individual file toggles
 							ForEach(mapDataManager.getUploadedFiles()) { file in
 								Toggle(isOn: Binding(
@@ -173,7 +161,7 @@ struct MapSettingsForm: View {
 											Text(file.originalName)
 												.font(.subheadline)
 											HStack {
-												Text("\(file.overlayCount) features")
+												Text("\(file.overlayCount) \(file.overlayCount > 1 ? "features".localized : "feature".localized)")
 													.font(.caption2)
 													.foregroundColor(.secondary)
 												Spacer()
@@ -189,67 +177,43 @@ struct MapSettingsForm: View {
 									}
 								}
 								.tint(.accentColor)
-								.padding(.leading, 35)
 							}
-
-							// Manage data link
 							NavigationLink(destination: MapDataFiles()) {
-								HStack {
+								Label {
+									Text("Manage map data")
+								} icon: {
 									Image(systemName: "folder")
-										.foregroundColor(.accentColor)
-									Text(NSLocalizedString("Manage map data", comment: "Link to manage uploaded map data"))
-										.font(.caption)
-										.foregroundColor(.secondary)
-									Spacer()
-									Image(systemName: "chevron.right")
-										.font(.caption2)
-										.foregroundColor(.secondary)
+										.symbolRenderingMode(.multicolor)
 								}
 							}
-							.padding(.leading, 35)
 						} else {
-							// No files uploaded
-							HStack {
-								Image(systemName: "exclamationmark.triangle")
-									.foregroundColor(.orange)
-								Text(NSLocalizedString("No map data files uploaded", comment: "Message when no files are uploaded"))
-									.font(.caption)
-									.foregroundColor(.secondary)
-								Spacer()
-							}
-							.padding(.leading, 35)
+							ContentUnavailableView ("No map data files uploaded", systemImage: "exclamationmark.triangle")
 						}
 					} else if !hasUserData {
 						// Upload prompt when no data available
 						NavigationLink(destination: MapDataFiles()) {
-							HStack {
+							Label {
+								Text("Upload map data to enable overlays")
+							} icon: {
 								Image(systemName: "arrow.up.doc")
-									.foregroundColor(.accentColor)
-								Text(NSLocalizedString("Upload map data to enable overlays", comment: "Prompt to upload map data when none is available"))
-									.font(.caption)
-									.foregroundColor(.secondary)
-								Spacer()
-								Image(systemName: "chevron.right")
-									.font(.caption2)
-									.foregroundColor(.secondary)
+									.symbolRenderingMode(.multicolor)
 							}
 						}
-						.padding(.leading, 35)
 					}
 				}
 			}
-
+			
 #if targetEnvironment(macCatalyst)
-Spacer()
-				Button {
-					dismiss()
-				} label: {
-					Label("Close", systemImage: "xmark")
-				}
-				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding(.bottom)
+			Spacer()
+			Button {
+				dismiss()
+			} label: {
+				Label("Close", systemImage: "xmark")
+			}
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding(.bottom)
 #endif
 		}
 		.presentationDetents([.medium, .large], selection: $currentDetent)
@@ -260,6 +224,6 @@ Spacer()
 			// Initialize map data manager
 			mapDataManager.initialize()
 		}
-
+		
 	}
 }

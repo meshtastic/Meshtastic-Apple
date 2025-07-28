@@ -58,21 +58,12 @@ struct MapDataFiles: View {
 				let uploadedFiles = mapDataManager.getUploadedFiles()
 				
 				if uploadedFiles.isEmpty {
-					VStack(spacing: 8) {
-						Image(systemName: "doc.text")
-							.font(.title)
-							.foregroundColor(.secondary)
-						Text("No files uploaded yet")
-							.font(.caption)
-							.foregroundColor(.secondary)
-					}
-					.frame(maxWidth: .infinity)
-					//.padding(.vertical, 40)
+					ContentUnavailableView ("No files uploaded", systemImage: "doc.text")
 				} else {
 					ScrollView {
 						LazyVStack() {
-							ForEach(uploadedFiles) { file in
-								MapDataFileRow(file: file) {
+							ForEach(Array(uploadedFiles.enumerated()), id: \.offset) { index, file in
+								MapDataFileRow(file: file, showDivider: index < uploadedFiles.count - 1) {
 									deleteFile(file)
 								}
 							}
@@ -176,6 +167,7 @@ struct MapDataFiles: View {
 
 struct MapDataFileRow: View {
 	let file: MapDataMetadata
+	let showDivider: Bool
 	let onDelete: () -> Void
 	
 	var body: some View {
@@ -222,7 +214,9 @@ struct MapDataFileRow: View {
 				}
 			}
 		}
-		Divider()
+		if showDivider {
+			Divider()
+		}
 	}
 }
 

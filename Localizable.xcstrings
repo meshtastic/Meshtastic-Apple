@@ -1347,8 +1347,15 @@
         }
       }
     },
-    "%lld features" : {
-
+    "%lld %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld %2$@"
+          }
+        }
+      }
     },
     "%lld or less hops away" : {
       "localizations" : {
@@ -23105,40 +23112,8 @@
         }
       }
     },
-    "No files uploaded yet" : {
-      "comment" : "Empty state text when no files are uploaded",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nessun file caricato ancora"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "まだファイルがアップロードされていません"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Još uvek nema otpremljenih datoteka"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "尚未上传文件"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "尚未上傳檔案"
-          }
-        }
-      }
+    "No files uploaded" : {
+
     },
     "No Interface" : {
       "localizations" : {
@@ -31582,42 +31557,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選擇頻道"
-          }
-        }
-      }
-    },
-    "Select Map Data File" : {
-      "comment" : "Button text for selecting map data file",
-      "extractionState" : "stale",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seleziona File Dati Mappa"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "マップデータファイルを選択"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Izaberi Datoteku Podataka Mape"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "选择地图数据文件"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "選擇地圖資料檔案"
           }
         }
       }
@@ -40375,41 +40314,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "使用上拉電阻"
-          }
-        }
-      }
-    },
-    "Using %@ data" : {
-      "comment" : "Shows which data source is being used",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Utilizzo dati %@"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@データを使用"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Koristi %@ podatke"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "使用%@数据"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "使用%@資料"
           }
         }
       }

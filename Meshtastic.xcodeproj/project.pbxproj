@@ -1086,6 +1086,7 @@
 			children = (
 				233E99B42D849C2D00CC3A77 /* Compact Widgets */,
 				DD6F65772C6EAB860053C113 /* Help */,
+				DD5E523D298F5A7D00D21B61 /* Weather */,
 				DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */,
 				DD3CC24B2C498D6C001BD3A2 /* BatteryCompact.swift */,
 				DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */,
@@ -1098,7 +1099,6 @@
 				DDB75A1D2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift */,
 				DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */,
 				DDF45C332BC1A48E005ED5F2 /* MQTTIcon.swift */,
-				DD5E523D298F5A7D00D21B61 /* Weather */,
 				DD6F65712C6AB8EC0053C113 /* SecureInput.swift */,
 				8D3F8A3E2D44BB02009EAAA4 /* PowerMetrics.swift */,
 				237B46952DC8F1C100B22D99 /* RateLimitedButton.swift */,
