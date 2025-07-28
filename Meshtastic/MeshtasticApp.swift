@@ -59,13 +59,17 @@ struct MeshtasticAppleApp: App {
 		RUM.enable(
 			with: RUM.Configuration(
 				applicationID: appID,
-				uiKitViewsPredicate: DefaultUIKitRUMViewsPredicate(),
-				uiKitActionsPredicate: DefaultUIKitRUMActionsPredicate(),
+				swiftUIViewsPredicate: DefaultSwiftUIRUMViewsPredicate(),
+				swiftUIActionsPredicate: DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true),
 				trackBackgroundEvents: true
 			)
 		)
+		let attributes: [String: Encodable] = [
+			"firmware_version": UserDefaults.firmwareVersion,
+			"hardware_model": UserDefaults.hardwareModel
+		]
+		RUMMonitor.shared().addAttributes(attributes)
 #endif
-
 		accessoryManager = AccessoryManager.shared
 		accessoryManager.appState = appState
 
@@ -74,6 +78,9 @@ struct MeshtasticAppleApp: App {
 		self.persistenceController = persistenceController
 		// Wire up router
 		self.appDelegate.router = appState.router
+
+		// Initialize map data manager
+		MapDataManager.shared.initialize()
 	#if DEBUG
 		// Show tips in development
 		try? Tips.resetDatastore()

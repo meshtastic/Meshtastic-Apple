@@ -25,6 +25,33 @@ struct AppData: View {
 				GPSStatus()
 			}
 			Divider()
+
+			// Map Data Section
+			Section(header: Text("Map Data")) {
+				NavigationLink(destination: MapDataFiles()) {
+					HStack {
+						Image(systemName: "map")
+							.symbolRenderingMode(.hierarchical)
+							.font(idiom == .phone ? .callout : .title)
+							.frame(width: 35)
+
+						VStack(alignment: .leading) {
+							Text(NSLocalizedString("Upload Map Data", comment: "Title for map data upload screen"))
+								.font(.headline)
+							Text(NSLocalizedString("Manage custom map overlays", comment: "Subtitle for map data management"))
+								.font(.caption)
+								.foregroundColor(.secondary)
+						}
+
+						Spacer()
+
+						Image(systemName: "chevron.right")
+							.font(.caption)
+							.foregroundColor(.secondary)
+					}
+				}
+			}
+			Divider()
 		}
 
 		List(files, id: \.self) { file in
