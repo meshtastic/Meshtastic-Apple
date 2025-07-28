@@ -143,13 +143,29 @@ class MapDataManager: ObservableObject {
 			}
 		}
 
-		// TODO: Add proper GeoJSON schema validation here
-		// - Validate required properties (type, features)
-		// - Validate geometry types and coordinates
-		// - Validate feature structure
-		// - Consider using JSONSchema validation
-		// - Ensure coordinates are within valid ranges (lat: -90 to 90, lon: -180 to 180)
-		// - Validate that feature properties follow expected patterns
+		// Validate GeoJSON schema
+		let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
+		guard let geoJSON = jsonObject as? [String: Any] else {
+			throw NSError(domain: "MapDataManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid GeoJSON format"])
+		}
+		
+		// Check required properties
+		guard let type = geoJSON["type"] as? String, type == "FeatureCollection",
+			  let features = geoJSON["features"] as? [[String: Any]] else {
+			throw NSError(domain: "MapDataManager", code: 2, userInfo: [NSLocalizedDescriptionKey: "GeoJSON must be a FeatureCollection with features"])
+		}
+		
+		// Validate each feature
+		for feature in features {
+			guard let geometry = feature["geometry"] as? [String: Any],
+				  let coordinates = geometry["coordinates"] as? [Any],
+				  let geometryType = geometry["type"] as? String else {
+				throw NSError(domain: "MapDataManager", code: 3, userInfo: [NSLocalizedDescriptionKey: "Invalid feature structure in GeoJSON"])
+			}
+			
+			// Validate coordinates based on geometry type
+			try validateCoordinates(coordinates, for: geometryType)
+		}
 
 		// If this is the first file uploaded, make it active by default
 		let isFirstFile = uploadedFiles.isEmpty
