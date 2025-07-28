@@ -66,7 +66,7 @@ class BLETransport: Transport {
 			while !Task.isCancelled {
 				var keysToRemove: [UUID] = []
 				for (deviceId, discoveryEntry) in self.discoveredPeripherals
-				where Date().timeIntervalSince(discoveryEntry.lastSeen) > 45 {
+				where Date().timeIntervalSince(discoveryEntry.lastSeen) > 30 {
 						keysToRemove.append(deviceId)
 				}
 				for deviceId in keysToRemove {
@@ -152,6 +152,7 @@ class BLETransport: Transport {
 		} else {
 			let rssiVal = rssi.intValue
 			let deviceId = id
+			discoveredPeripherals[id]?.lastSeen = Date()
 			discoveredDeviceContinuation?.yield(.deviceReportedRssi(deviceId, rssiVal))
 		}
 	}

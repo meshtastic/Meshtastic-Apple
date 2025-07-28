@@ -33,6 +33,7 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 	let name = "TCP"
 
 	struct ResolvedService {
+		let id: UUID
 		let service: NetService
 		let host: String
 		let port: Int
@@ -126,11 +127,14 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 			return
 		}
 		let port = service.port
-		services[service.name] = ResolvedService(service: service, host: host, port: port)
 		let ip = service.ipv4Address ?? "Unknown IP"
 
 		// Use a mishmash of things and hash for stable? ID.
 		let idString = "\(service.name):\(host):\(ip):\(port)".toUUIDFormatHash() ?? UUID()
+		
+		// Save the resolved service locally for later
+		services[service.name] = ResolvedService(id: idString, service: service, host: host, port: port)
+		
 		let device = Device(id: idString,
 							name: "\(service.name) (\(ip))",
 							transportType: .tcp,
@@ -169,21 +173,13 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 	}
 	
 	func netServiceBrowser(_ browser: NetServiceBrowser, didRemove service: NetService, moreComing: Bool) {
-		guard let host = service.hostName else {
-			Logger.transport.error("[TCP] Failed to resolve host for service \(service.name)")
-			return
-		}
-		let port = service.port
-		let ip = service.ipv4Address ?? "Unknown IP"
-		// Use a mishmash of things and hash for stable? ID.
-		
-		guard let idString = "\(service.name):\(host):\(ip):\(port)".toUUIDFormatHash() else {
-			Logger.transport.error("[TCP] Unable to synthesize an UUID for service \(service.name)")
+		guard let leavingService = services[service.name] else {
+			Logger.transport.error("[TCP] Service \(service.name) not found in resolved services")
 			return
 		}
 
 		// Notify the downstream
-		self.continuation?.yield(.deviceLost(idString))
+		self.continuation?.yield(.deviceLost(leavingService.id))
 		
 		// Clean up the resolved services list
 		var keysToRemove = [String]()
