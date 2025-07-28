@@ -796,7 +796,6 @@
 		DD4A911C2708C57100501B7E /* Settings */ = {
 			isa = PBXGroup;
 			children = (
-				3D3417D32E2DC293006A988B /* MapDataFiles.swift */,
 				DDD5BB0E2C285F92007E03CA /* Logs */,
 				DD93800C2BA74CE3008BEC06 /* Channels */,
 				DD61937A2863876A00E59241 /* Config */,
@@ -804,16 +803,17 @@
 				DDD5BB152C28B1E4007E03CA /* AppData.swift */,
 				DDD5BB082C285DDC007E03CA /* AppLog.swift */,
 				DD4A911D2708C65400501B7E /* AppSettings.swift */,
-				DDAB580C2B0DAA9E00147258 /* Routes.swift */,
-				DDE9659B2B1C3B6A00531070 /* RouteRecorder.swift */,
 				DDA0B6B1294CDC55001356EC /* Channels.swift */,
 				DDD6EEAE29BC024700383354 /* Firmware.swift */,
 				DD33DB612B3D27C7003E1EA0 /* FirmwareApi.swift */,
+				DD1B8F3F2B35E2F10022AABC /* GPSStatus.swift */,
+				3D3417D32E2DC293006A988B /* MapDataFiles.swift */,
+				DDAB580C2B0DAA9E00147258 /* Routes.swift */,
+				DDE9659B2B1C3B6A00531070 /* RouteRecorder.swift */,
 				DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */,
 				DD3501882852FC3B000FC853 /* Settings.swift */,
 				DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */,
 				DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */,
-				DD1B8F3F2B35E2F10022AABC /* GPSStatus.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";

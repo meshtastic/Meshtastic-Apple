@@ -24327,6 +24327,9 @@
         }
       }
     },
+    "Ok" : {
+
+    },
     "OK" : {
       "localizations" : {
         "de" : {
@@ -31585,6 +31588,7 @@
     },
     "Select Map Data File" : {
       "comment" : "Button text for selecting map data file",
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -31617,6 +31621,9 @@
           }
         }
       }
+    },
+    "Select Map File" : {
+
     },
     "Select Node" : {
       "localizations" : {
@@ -39771,6 +39778,9 @@
         }
       }
     },
+    "Upload Map Overlays" : {
+
+    },
     "Upload Success" : {
       "localizations" : {
         "it" : {
@@ -39805,40 +39815,8 @@
         }
       }
     },
-    "Uploaded Files" : {
-      "comment" : "Section header for uploaded files",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "File Caricati"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アップロードされたファイル"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Otpremljene Datoteke"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已上传文件"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已上傳檔案"
-          }
-        }
-      }
+    "Uploaded Map Overlays" : {
+
     },
     "Uptime" : {
       "localizations" : {

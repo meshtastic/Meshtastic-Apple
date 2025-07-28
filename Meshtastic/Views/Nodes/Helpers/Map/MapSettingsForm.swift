@@ -120,7 +120,7 @@ struct MapSettingsForm: View {
 					}
 				}
 
-								Section(header: Text("Map Overlays")) {
+				Section(header: Text("Map Overlays")) {
 					let hasUserData = GeoJSONOverlayManager.shared.hasUserData()
 
 					// Master toggle for map overlays
