@@ -807,7 +807,6 @@
 				DDD6EEAE29BC024700383354 /* Firmware.swift */,
 				DD33DB612B3D27C7003E1EA0 /* FirmwareApi.swift */,
 				DD1B8F3F2B35E2F10022AABC /* GPSStatus.swift */,
-				3D3417D32E2DC293006A988B /* MapDataFiles.swift */,
 				DDAB580C2B0DAA9E00147258 /* Routes.swift */,
 				DDE9659B2B1C3B6A00531070 /* RouteRecorder.swift */,
 				DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */,
@@ -961,6 +960,7 @@
 			isa = PBXGroup;
 			children = (
 				DDDC22362BA9232C002C44F1 /* MapContent */,
+				3D3417D32E2DC293006A988B /* MapDataFiles.swift */,
 				DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */,
 				DDB6CCFA2AAF805100945AF6 /* NodeMapSwiftUI.swift */,
 				DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */,

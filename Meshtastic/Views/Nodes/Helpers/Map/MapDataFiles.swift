@@ -179,6 +179,9 @@ struct MapDataFileRow: View {
 						.lineLimit(1)
 					
 					Spacer()
+					Text(file.fileSizeString)
+						.font(.caption)
+						.foregroundColor(.secondary)
 					Button(action: onDelete) {
 						Image(systemName: "trash")
 							.foregroundColor(.red)
@@ -196,19 +199,11 @@ struct MapDataFileRow: View {
 						.background(Color.secondary.opacity(0.2))
 						.cornerRadius(4)
 					
-					Text(file.fileSizeString)
-						.font(.caption)
-						.foregroundColor(.secondary)
-					
-					Text("•")
-						.font(.caption)
-						.foregroundColor(.secondary)
-					
-					Text("\(file.overlayCount) overlays")
+					Text("\(file.overlayCount) \(file.overlayCount > 1 ? "features".localized : "feature".localized)")
 						.font(.caption)
 						.foregroundColor(.secondary)
 					Spacer()
-					Text(file.uploadDateString)
+					Text(file.uploadDate.formatted())
 						.font(.caption)
 						.foregroundColor(.secondary)
 				}

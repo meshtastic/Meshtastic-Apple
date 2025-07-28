@@ -1391,40 +1391,6 @@
         }
       }
     },
-    "%lld overlays" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld sovrapposizioni"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lldオーバーレイ"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld slojeva"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld覆盖层"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld覆蓋層"
-          }
-        }
-      }
-    },
     "%lld Readings Total" : {
       "localizations" : {
         "it" : {
@@ -1588,9 +1554,6 @@
           }
         }
       }
-    },
-    "•" : {
-      "shouldTranslate" : false
     },
     "• %@" : {
       "shouldTranslate" : false

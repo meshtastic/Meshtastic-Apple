@@ -415,13 +415,6 @@ struct MapDataMetadata: Codable, Identifiable {
 		formatter.countStyle = .file
 		return formatter.string(fromByteCount: fileSize)
 	}
-
-	var uploadDateString: String {
-		let formatter = DateFormatter()
-		formatter.dateStyle = .medium
-		formatter.timeStyle = .short
-		return formatter.string(from: uploadDate)
-	}
 }
 
 /// Errors that can occur during map data operations
