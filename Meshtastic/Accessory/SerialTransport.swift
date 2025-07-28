@@ -26,7 +26,7 @@ class SerialTransport: Transport {
 
 	var portsAlreadyNotified = [String]()
 	
-	func discoverDevices() -> AsyncStream<Device> {
+	func discoverDevices() -> AsyncStream<DiscoveryEvent> {
 		AsyncStream { cont in
 			self.status = .discovering
 			Task {
@@ -36,19 +36,21 @@ class SerialTransport: Transport {
 						let id = port.toUUIDFormatHash() ?? UUID()
 						if !portsAlreadyNotified.contains(port) {
 							Logger.transport.info("[Serial] Port \(port) found.")
-							cont.yield(Device(id: id,
-											  name: port.components(separatedBy: "/").last ?? port,
-											  transportType: .serial,
-											  identifier: port))
+							let newDevice = Device(id: id,
+												   name: port.components(separatedBy: "/").last ?? port,
+												transportType: .serial,
+												identifier: port)
+							cont.yield(.deviceFound(newDevice))
 							portsAlreadyNotified.append(port)
 						}
 					}
-					for knownPort in portsAlreadyNotified {
-						if !ports.contains(knownPort) {
-							// Port is no longer there.
-							Logger.transport.info("[Serial] Port \(knownPort) is no longer connected.")
-							portsAlreadyNotified.removeAll(where: {$0 == knownPort})
+					for knownPort in portsAlreadyNotified where !ports.contains(knownPort) {
+						// Previosuly seen port is no longer available
+						Logger.transport.info("[Serial] Port \(knownPort) is no longer connected.")
+						if let uuid = knownPort.toUUIDFormatHash() {
+							cont.yield(.deviceLost(uuid))
 						}
+						portsAlreadyNotified.removeAll(where: {$0 == knownPort})
 					}
 					try? await Task.sleep(for: .seconds(5))
 				}

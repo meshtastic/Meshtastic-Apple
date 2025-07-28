@@ -44,29 +44,13 @@ extension AccessoryManager {
 			Step(timeout: .seconds(2)) { @MainActor _ in
 				Logger.transport.info("[Connect] Step 1: connection to \(device.id)")
 				let connection = try await transport.connect(to: device)
-				let (packetStream, logStream) = try await connection.connect()
+				let eventStream = try await connection.connect()
 				self.updateState(.communicating)
-				if let wirelessConnection = connection as? any WirelessConnection {
-					self.rssiTask = Task {
-						for await rssiValue in await wirelessConnection.getRSSIStream() {
-							self.didUpdateRSSI(rssiValue, for: device.id)
-						}
+				self.connectionEventTask = Task {
+					for await event in eventStream {
+						self.didReceive(event)
 					}
-				}
-				self.packetTask = Task {
-					for await packet in packetStream {
-						self.didReceive(result: .success(packet))
-					}
-					self.didReceive(result: .failure(AccessoryError.connectionFailed("Connection closed")))
-				}
-				if let logStream {
-					Task { @MainActor in
-						self.logTask = Task {
-							for await logString in logStream {
-								self.didReceiveLog(message: logString)
-							}
-						}
-					}
+					self.didReceive(.error(AccessoryError.connectionFailed("Connection closed")))
 				}
 				self.activeConnection = (device: device, connection: connection)
 			}

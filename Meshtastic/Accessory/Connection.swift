@@ -11,14 +11,17 @@ import MeshtasticProtobufs
 protocol Connection: Actor {
 	var isConnected: Bool { get }
 	func send(_ data: ToRadio) async throws
-	func connect() async throws -> (AsyncStream<FromRadio>, AsyncStream<String>?)
+	func connect() async throws -> AsyncStream<ConnectionEvent>
 	func disconnect() async throws
 	func drainPendingPackets() async throws
 	func startDrainPendingPackets() throws
 }
 
-protocol WirelessConnection: Connection {
-	func getRSSIStream() async -> AsyncStream<Int>
+enum ConnectionEvent {
+	case data(FromRadio)
+	case logMessage(String)
+	case rssiUpdate(Int)
+	case error(Error)
 }
 
 enum ConnectionState: Equatable {

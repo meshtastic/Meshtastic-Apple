@@ -21,7 +21,7 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 	// TODO: Move to NWBrowser (NetServiceBrowser is depricated)
 	private var browser: NetServiceBrowser?
 	private var services: [String: ResolvedService] = [:] // Key: service.name
-	private var continuation: AsyncStream<Device>.Continuation?
+	private var continuation: AsyncStream<DiscoveryEvent>.Continuation?
 
 	private var service: NetService?
 
@@ -47,7 +47,7 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 		}
 	}
 
-	func discoverDevices() -> AsyncStream<Device> {
+	func discoverDevices() -> AsyncStream<DiscoveryEvent> {
 		AsyncStream { cont in
 			self.continuation = cont
 			self.status = .discovering
@@ -135,7 +135,7 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 							name: "\(service.name) (\(ip))",
 							transportType: .tcp,
 							identifier: "\(host):\(port)")
-		continuation?.yield(device)
+		continuation?.yield(.deviceFound(device))
 	}
 
 	func netService(_ sender: NetService, didNotResolve errorDict: [String: NSNumber]) {
@@ -166,6 +166,33 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 		}
 		
 		return try await TCPConnection(host: host, port: port)
+	}
+	
+	func netServiceBrowser(_ browser: NetServiceBrowser, didRemove service: NetService, moreComing: Bool) {
+		guard let host = service.hostName else {
+			Logger.transport.error("[TCP] Failed to resolve host for service \(service.name)")
+			return
+		}
+		let port = service.port
+		let ip = service.ipv4Address ?? "Unknown IP"
+		// Use a mishmash of things and hash for stable? ID.
+		
+		guard let idString = "\(service.name):\(host):\(ip):\(port)".toUUIDFormatHash() else {
+			Logger.transport.error("[TCP] Unable to synthesize an UUID for service \(service.name)")
+			return
+		}
+
+		// Notify the downstream
+		self.continuation?.yield(.deviceLost(idString))
+		
+		// Clean up the resolved services list
+		var keysToRemove = [String]()
+		for (key, value) in services where value.service == service {
+			keysToRemove.append(key)
+		}
+		for removeKey in keysToRemove {
+			services.removeValue(forKey: removeKey)
+		}
 	}
 	
 	func manuallyConnect(withConnectionString: String) async throws {

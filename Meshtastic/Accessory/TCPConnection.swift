@@ -17,6 +17,9 @@ actor TCPConnection: Connection {
 	private var readerTask: Task<Void, Never>?
 	private let nwHost: NWEndpoint.Host
 	private let nwPort: NWEndpoint.Port
+	
+	private var connectionStreamContinuation: AsyncStream<ConnectionEvent>.Continuation?
+	
 	var isConnected: Bool {
 		connection?.state == .ready
 	}
@@ -71,16 +74,16 @@ actor TCPConnection: Connection {
 					if let length = try? await readInteger() {
 						let payload = try await receiveData(min: Int(length), max: Int(length))
 						if let fromRadio = try? FromRadio(serializedBytes: payload) {
-							await packetStream?.yield(fromRadio)
+							await connectionStreamContinuation?.yield(.data(fromRadio))
 						} else {
-							await packetStream?.finish()
+							await connectionStreamContinuation?.finish()
 						}
 					} else {
 						Logger.transport.debug("[TCP] startReader: EOF while waiting for length")
 					}
 				} catch {
 					Logger.transport.error("[TCP] startReader: Error reading from TCP: \(error)")
-					await packetStream?.finish()
+					await connectionStreamContinuation?.finish()
 					break
 				}
 			}
@@ -133,11 +136,8 @@ actor TCPConnection: Connection {
 		connection?.cancel()
 		connection = nil
 		
-		packetStream?.finish()
-		packetStream = nil
-
-		logStream?.finish()
-		logStream = nil
+		connectionStreamContinuation?.finish()
+		connectionStreamContinuation = nil
 	}
 
 	func drainPendingPackets() async throws {
@@ -148,23 +148,16 @@ actor TCPConnection: Connection {
 		// For TCP, reader is already started
 	}
 
-	private var packetStream: AsyncStream<MeshtasticProtobufs.FromRadio>.Continuation?
-	private var logStream: AsyncStream<String>.Continuation?
-
-	private func getPacketStream() -> AsyncStream<MeshtasticProtobufs.FromRadio> {
-		AsyncStream<MeshtasticProtobufs.FromRadio> { continuation in
-			self.packetStream = continuation
+	private func getPacketStream() -> AsyncStream<ConnectionEvent> {
+		AsyncStream<ConnectionEvent> { continuation in
+			self.connectionStreamContinuation = continuation
 			continuation.onTermination = { _ in
 				Task { try await self.disconnect() }
 			}
 		}
 	}
 
-	private func getRadioLogStream() -> AsyncStream<String>? {
-		return nil
-	}
-
-	func connect() async throws -> (AsyncStream<FromRadio>, AsyncStream<String>?) {
+	func connect() async throws -> AsyncStream<ConnectionEvent> {
 		let newConnection = NWConnection(host: nwHost, port: nwPort, using: .tcp)
 		self.connection = newConnection
 			
@@ -206,7 +199,7 @@ actor TCPConnection: Connection {
 			}
 		
 		startReader()
-		return (getPacketStream(), getRadioLogStream())
+		return getPacketStream()
 		
 	}
 
