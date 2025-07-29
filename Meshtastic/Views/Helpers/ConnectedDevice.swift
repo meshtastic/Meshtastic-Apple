@@ -74,7 +74,7 @@ struct ConnectedDevice: View {
                     .accessibilityLabel("Bluetooth is off".localized)
                 }
             }
-        }
+		}.iOS26Modifier { $0.padding(.horizontal, 5.0) }
     }
 }
 
