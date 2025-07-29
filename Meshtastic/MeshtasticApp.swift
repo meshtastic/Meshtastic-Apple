@@ -37,13 +37,14 @@ struct MeshtasticAppleApp: App {
 		let clientToken = "pub4427bea20dbdb08a6af68034de22cd3b"
 		let environment = "testflight"
 
+#if !targetEnvironment(macCatalyst)
 		Datadog.initialize(
 			with: Datadog.Configuration(
 				clientToken: clientToken,
 				env: environment,
 				site: .us5
 			),
-			trackingConsent: UserDefaults.usageDataAndCrashReporting ? .granted : .notGranted,
+			trackingConsent: UserDefaults.usageDataAndCrashReporting ? .granted : .notGranted
 		)
 		DatadogCrashReporting.CrashReporting.enable()
 		Logs.enable()
@@ -56,17 +57,26 @@ struct MeshtasticAppleApp: App {
 		RUM.enable(
 			with: RUM.Configuration(
 				applicationID: appID,
-				uiKitViewsPredicate: DefaultUIKitRUMViewsPredicate(),
-				uiKitActionsPredicate: DefaultUIKitRUMActionsPredicate(),
+				swiftUIViewsPredicate: DefaultSwiftUIRUMViewsPredicate(),
+				swiftUIActionsPredicate: DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true),
 				trackBackgroundEvents: true
 			)
 		)
+		let attributes: [String: Encodable] = [
+			"firmware_version": UserDefaults.firmwareVersion,
+			"hardware_model": UserDefaults.hardwareModel
+		]
+		RUMMonitor.shared().addAttributes(attributes)
+#endif
 		self._appState = ObservedObject(wrappedValue: appState)
 		// Initialize the BLEManager singleton with the necessary dependencies
 		BLEManager.setup(appState: appState, context: persistenceController.container.viewContext)
 		self.persistenceController = persistenceController
 		// Wire up router
 		self.appDelegate.router = appState.router
+
+		// Initialize map data manager
+		MapDataManager.shared.initialize()
 	#if DEBUG
 		// Show tips in development
 		try? Tips.resetDatastore()

@@ -85,7 +85,7 @@ enum ScreenCarouselIntervals: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .off:
-			return "off".localized
+			return "off".localized.capitalized
 		case .fifteenSeconds:
 			return "Fifteen Seconds".localized
 		case .thirtySeconds:

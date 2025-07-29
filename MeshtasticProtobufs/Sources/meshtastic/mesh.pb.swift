@@ -1746,6 +1746,11 @@ public struct Routing: Sendable {
     ///
     /// Admin packet sent using PKC, but not from a public key on the admin key list
     case adminPublicKeyUnauthorized // = 37
+
+    ///
+    /// Airtime fairness rate limit exceeded for a packet
+    /// This typically enforced per portnum and is used to prevent a single node from monopolizing airtime
+    case rateLimitExceeded // = 38
     case UNRECOGNIZED(Int)
 
     public init() {
@@ -1770,6 +1775,7 @@ public struct Routing: Sendable {
       case 35: self = .pkiUnknownPubkey
       case 36: self = .adminBadSessionKey
       case 37: self = .adminPublicKeyUnauthorized
+      case 38: self = .rateLimitExceeded
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -1792,6 +1798,7 @@ public struct Routing: Sendable {
       case .pkiUnknownPubkey: return 35
       case .adminBadSessionKey: return 36
       case .adminPublicKeyUnauthorized: return 37
+      case .rateLimitExceeded: return 38
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -1814,6 +1821,7 @@ public struct Routing: Sendable {
       .pkiUnknownPubkey,
       .adminBadSessionKey,
       .adminPublicKeyUnauthorized,
+      .rateLimitExceeded,
     ]
 
   }
@@ -4221,6 +4229,7 @@ extension Routing.Error: SwiftProtobuf._ProtoNameProviding {
     35: .same(proto: "PKI_UNKNOWN_PUBKEY"),
     36: .same(proto: "ADMIN_BAD_SESSION_KEY"),
     37: .same(proto: "ADMIN_PUBLIC_KEY_UNAUTHORIZED"),
+    38: .same(proto: "RATE_LIMIT_EXCEEDED"),
   ]
 }
 

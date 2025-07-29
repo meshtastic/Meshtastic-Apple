@@ -8,52 +8,6 @@
 import Foundation
 import MeshtasticProtobufs
 
-enum GpsFormats: Int, CaseIterable, Identifiable {
-
-	case gpsFormatDec = 0
-	case gpsFormatDms = 1
-	case gpsFormatUtm = 2
-	case gpsFormatMgrs = 3
-	case gpsFormatOlc = 4
-	case gpsFormatOsgr = 5
-
-	var id: Int { self.rawValue }
-	var description: String {
-		switch self {
-		case .gpsFormatDec:
-			return "Decimal Degrees Format".localized
-		case .gpsFormatDms:
-			return "Degrees Minutes Seconds".localized
-		case .gpsFormatUtm:
-			return "Universal Transverse Mercator".localized
-		case .gpsFormatMgrs:
-			return "Military Grid Reference System".localized
-		case .gpsFormatOlc:
-			return "Open Location Code (aka Plus Codes)".localized
-		case .gpsFormatOsgr:
-			return "Ordnance Survey Grid Reference".localized
-		}
-	}
-	func protoEnumValue() -> Config.DisplayConfig.GpsCoordinateFormat {
-
-		switch self {
-
-		case .gpsFormatDec:
-			return Config.DisplayConfig.GpsCoordinateFormat.dec
-		case .gpsFormatDms:
-			return Config.DisplayConfig.GpsCoordinateFormat.dms
-		case .gpsFormatUtm:
-			return Config.DisplayConfig.GpsCoordinateFormat.utm
-		case .gpsFormatMgrs:
-			return Config.DisplayConfig.GpsCoordinateFormat.mgrs
-		case .gpsFormatOlc:
-			return Config.DisplayConfig.GpsCoordinateFormat.olc
-		case .gpsFormatOsgr:
-			return Config.DisplayConfig.GpsCoordinateFormat.osgr
-		}
-	}
-}
-
 enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 
 	case thirtySeconds = 30

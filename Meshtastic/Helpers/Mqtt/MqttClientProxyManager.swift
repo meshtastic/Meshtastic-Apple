@@ -26,30 +26,29 @@ class MqttClientProxyManager {
 	var topic = "msh"
 	var debugLog = false
 	func connectFromConfigSettings(node: NodeInfoEntity) {
+		let originalAddress = node.mqttConfig?.address ?? "mqtt.meshtastic.org"
 		let defaultServerAddress = "mqtt.meshtastic.org"
-		let useSsl = node.mqttConfig?.tlsEnabled == true
+		var useSsl = node.mqttConfig?.tlsEnabled == true
 		var defaultServerPort = useSsl ? 8883 : 1883
-		var host = node.mqttConfig?.address
-		if host == nil || host!.isEmpty {
-			host = defaultServerAddress
-		} else if host != nil && host!.contains(":") {
-			if let fullHost = host {
-				host = fullHost.components(separatedBy: ":")[0]
-				defaultServerPort = Int(fullHost.components(separatedBy: ":")[1]) ?? (useSsl ? 8883 : 1883)
-			}
+		var host = originalAddress
+		if originalAddress.contains(":") {
+			host = host.components(separatedBy: ":")[0]
+			defaultServerPort = Int(originalAddress.components(separatedBy: ":")[1]) ?? (useSsl ? 8883 : 1883)
 		}
-
-		if let host = host {
-			let port = defaultServerPort
-			let root = node.mqttConfig?.root?.count ?? 0 > 0 ? node.mqttConfig?.root : "msh"
-			let prefix = root!
-			topic = prefix + "/2/e" + "/#"
-			// Require opt in to map report terms to connect
-			if node.mqttConfig?.mapReportingEnabled ?? false && UserDefaults.mapReportingOptIn || !(node.mqttConfig?.mapReportingEnabled ?? false) {
-				connect(host: host, port: port, useSsl: useSsl, topic: topic, node: node)
-			} else {
-				delegate?.onMqttError(message: "MQTT Map Reporting Terms need to be accepted.")
-			}
+		// Require TLS for the public Server
+		if host.lowercased() == defaultServerAddress {
+			useSsl = true
+			defaultServerPort = 8883
+		}
+		let port = defaultServerPort
+		let root = node.mqttConfig?.root?.count ?? 0 > 0 ? node.mqttConfig?.root : "msh"
+		let prefix = root!
+		topic = prefix + "/2/e" + "/#"
+		// Require opt in to map report terms to connect
+		if node.mqttConfig?.mapReportingEnabled ?? false && UserDefaults.mapReportingOptIn || !(node.mqttConfig?.mapReportingEnabled ?? false) {
+			connect(host: host, port: port, useSsl: useSsl, topic: topic, node: node)
+		} else {
+			delegate?.onMqttError(message: "MQTT Map Reporting Terms need to be accepted.")
 		}
 	}
 	func connect(host: String, port: Int, useSsl: Bool, topic: String?, node: NodeInfoEntity) {

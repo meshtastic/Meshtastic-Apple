@@ -1347,6 +1347,16 @@
         }
       }
     },
+    "%lld %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld %2$@"
+          }
+        }
+      }
+    },
     "%lld or less hops away" : {
       "localizations" : {
         "de" : {
@@ -5591,6 +5601,12 @@
         }
       }
     },
+    "Bold Heading" : {
+
+    },
+    "Bold the heading text on the screen." : {
+
+    },
     "Broadcast Interval" : {
       "localizations" : {
         "it" : {
@@ -9559,70 +9575,6 @@
         }
       }
     },
-    "Decimal Degrees Format" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dezimalgrad Format"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Format décimal pour les degrés"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "פורמט קואורדינטות"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Formato dei gradi decimali"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "十進度形式"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Format Dziesiętny Stopni"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Decimalgrader"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Формат децималних степени"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "十进制"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "十進制"
-          }
-        }
-      }
-    },
     "Default" : {
       "localizations" : {
         "de" : {
@@ -9717,70 +9669,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "預設 128x64 版型"
-          }
-        }
-      }
-    },
-    "Degrees Minutes Seconds" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Grad Minuten Sekunden"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Degrés Minutes Secondes"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מעלות דקות שניות"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gradi Minuti Secondi"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "度分秒"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stopnie Minuty Sekundy"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Grader Minuter Sekunder"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Степени Минути Секунде"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "度分秒"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "度分秒"
           }
         }
       }
@@ -12696,6 +12584,9 @@
         }
       }
     },
+    "Enable Location Sharing" : {
+
+    },
     "Enable Notifications" : {
       "localizations" : {
         "it" : {
@@ -14519,6 +14410,9 @@
           }
         }
       }
+    },
+    "Files Available" : {
+      "comment" : "Data source label when files exist but none are active"
     },
     "Find a contact" : {
       "localizations" : {
@@ -16360,40 +16254,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "GPS 啟用 GPIO"
-          }
-        }
-      }
-    },
-    "GPS Format" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Formato GPS"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GPS形式"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GPS формат"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GPS 格式"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GPS 格式"
           }
         }
       }
@@ -20339,6 +20199,44 @@
         }
       }
     },
+    "Manage custom map overlays" : {
+      "comment" : "Subtitle for map data management",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestisci sovrapposizioni mappa personalizzate"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カスタムマップオーバーレイを管理"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upravljaj prilagođenim slojevima mape"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理自定义地图覆盖层"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理自訂地圖覆蓋層"
+          }
+        }
+      }
+    },
+    "Manage map data" : {
+      "comment" : "Link to manage uploaded map data"
+    },
     "Managed Device" : {
       "localizations" : {
         "it" : {
@@ -20437,6 +20335,40 @@
         }
       }
     },
+    "Map Data" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dati Mappa"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マップデータ"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podaci Mape"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地图数据"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地圖資料"
+          }
+        }
+      }
+    },
     "Map Options" : {
       "localizations" : {
         "de" : {
@@ -20473,6 +20405,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "地圖選項"
+          }
+        }
+      }
+    },
+    "Map Overlays" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Karten-Overlays"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Superpositions de cartes"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "שכבות מפה"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sovrapposizioni mappa"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マップオーバーレイ"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nakładki map"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kartöverlägg"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Преклапања мапе"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地图覆盖层"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地圖覆蓋層"
           }
         }
       }
@@ -20857,9 +20853,6 @@
           }
         }
       }
-    },
-    "Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from Settings > App Settings > Open Settings." : {
-
     },
     "Meshtastic® Copyright Meshtastic LLC" : {
       "localizations" : {
@@ -21360,70 +21353,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "中午"
-          }
-        }
-      }
-    },
-    "Military Grid Reference System" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Militärisches Gitternetz-Referenzsystem"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Military Grid Reference System"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Military Grid Reference System"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sistema di riferimento della griglia militare"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "軍用格子座標系"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wojskowa siatka odniesienia"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Militärt rutnätsreferenssystem"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Војни референтни систем мреже"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "军事网格参考系统"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "軍事網格參考系統"
           }
         }
       }
@@ -22994,6 +22923,41 @@
         }
       }
     },
+    "No Data" : {
+      "comment" : "Data source label when no files are available",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun Dato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "データなし"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bez Podataka"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无数据"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無資料"
+          }
+        }
+      }
+    },
     "No device connected" : {
       "localizations" : {
         "de" : {
@@ -23120,6 +23084,9 @@
         }
       }
     },
+    "No files uploaded" : {
+
+    },
     "No Interface" : {
       "localizations" : {
         "de" : {
@@ -23183,6 +23150,9 @@
           }
         }
       }
+    },
+    "No map data files uploaded" : {
+      "comment" : "Message when no files are uploaded"
     },
     "No PAX Counter Logs" : {
       "localizations" : {
@@ -24304,6 +24274,9 @@
         }
       }
     },
+    "Ok" : {
+
+    },
     "OK" : {
       "localizations" : {
         "de" : {
@@ -24780,70 +24753,6 @@
         }
       }
     },
-    "Open Location Code (aka Plus Codes)" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open Location Code (aka Plus Codes)"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open Location Code (alias Plus Codes)"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open Location Code (aka Plus Codes)"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Codice di localizzazione aperto (alias Codice Plus)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "オープンロケーションコード（プラスコード）"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Otwarty Kod Lokalizacji (tzw. Plus Kody)"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Öppen Platskod (även känd som Pluskoder)"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Отворени код локације (тј. Плус кодови)"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "开放的位置代码（又称加码）"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "開放位置代碼"
-          }
-        }
-      }
-    },
     "Open Settings" : {
       "localizations" : {
         "de" : {
@@ -25098,70 +25007,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選項"
-          }
-        }
-      }
-    },
-    "Ordnance Survey Grid Reference" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ordnance Survey Gitterreferenz"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ordnance Survey Grid Reference"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ordnance Survey Grid Reference"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Riferimento di griglia Ordnance Survey"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "英国陸地測量部格子座標"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Brytyjski Układ Odniesienia"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ordnance Survey Rutnätsreferens"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Референца мреже Орданс Сурвеја"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "英国国土测量局网格参考"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "英國國土測量局網格參考系統"
           }
         }
       }
@@ -25469,6 +25314,9 @@
           }
         }
       }
+    },
+    "Override default screen layout." : {
+
     },
     "Pairing Mode" : {
       "localizations" : {
@@ -27633,6 +27481,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Process"
+          }
+        }
+      }
+    },
+    "Processing file..." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elaborazione file..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ファイル処理中..."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obrada datoteke..."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在处理文件..."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在處理檔案..."
           }
         }
       }
@@ -31651,6 +31533,9 @@
         }
       }
     },
+    "Select Map File" : {
+
+    },
     "Select Node" : {
       "localizations" : {
         "de" : {
@@ -33462,6 +33347,9 @@
           }
         }
       }
+    },
+    "Share Location" : {
+
     },
     "Share QR Code" : {
       "localizations" : {
@@ -36251,40 +36139,6 @@
         }
       }
     },
-    "The format used to display GPS coordinates on the device screen." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Il formato utilizzato per visualizzare le coordinate GPS sullo schermo del dispositivo."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "デバイス画面でGPS座標を表示する形式。"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Формат који се користи за приказивање GPS координата на екрану уређаја."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "用于在设备屏幕上显示 GPS 坐标的格式。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "用於在裝置螢幕上顯示 GPS 座標的格式。"
-          }
-        }
-      }
-    },
     "The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long." : {
       "localizations" : {
         "it" : {
@@ -37808,33 +37662,8 @@
         }
       }
     },
-    "Timing & Format" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tempi e formati"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "タイミング・フォーマット"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Време и формат"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "時序與格式"
-          }
-        }
-      }
+    "Timing and Overrides" : {
+
     },
     "TLS Enabled" : {
       "localizations" : {
@@ -39034,70 +38863,6 @@
         }
       }
     },
-    "Universal Transverse Mercator" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Universal Transversal Mercator"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Projection Mercator Transverse Universelle"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Universal Transverse Mercator"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mercatore Universale Trasverso"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ユニバーサル横メルカトル図法"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Uniwersalny Układ Transwersalny Mercatora"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Universal Transversal Mercator"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Универзални трансверзални Меркаторов пројекат"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "通用横轴墨卡托投影"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "通用橫軸墨卡托投影"
-          }
-        }
-      }
-    },
     "unknown" : {
       "localizations" : {
         "it" : {
@@ -39786,6 +39551,184 @@
         }
       }
     },
+    "Upload Error" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Errore Caricamento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップロードエラー"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Greška Otpremanja"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上传错误"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上傳錯誤"
+          }
+        }
+      }
+    },
+    "Upload GeoJSON files to display custom map overlays. Files are stored locally and can be up to 10MB." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carica file GeoJSON per visualizzare sovrapposizioni mappa personalizzate. I file sono memorizzati localmente e possono essere fino a 10MB."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カスタムマップオーバーレイを表示するためにGeoJSONファイルをアップロードしてください。ファイルはローカルに保存され、最大10MBまでです。"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otpremi GeoJSON datoteke da prikažeš prilagođene slojeve mape. Datoteke se čuvaju lokalno i mogu biti do 10MB."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上传GeoJSON文件以显示自定义地图覆盖层。文件本地存储，最大10MB。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上傳GeoJSON檔案以顯示自訂地圖覆蓋層。檔案本機儲存，最大10MB。"
+          }
+        }
+      }
+    },
+    "Upload Map Data" : {
+      "comment" : "Title for map data upload screen",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carica Dati Mappa"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マップデータをアップロード"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otpremi Podatke Mape"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上传地图数据"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上傳地圖資料"
+          }
+        }
+      }
+    },
+    "Upload map data to enable overlays" : {
+      "comment" : "Prompt to upload map data when none is available",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carica dati mappa per abilitare sovrapposizioni"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オーバーレイを有効にするにはマップデータをアップロード"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otpremi podatke mape da omogućiš slojeve"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上传地图数据以启用覆盖层"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上傳地圖資料以啟用覆蓋層"
+          }
+        }
+      }
+    },
+    "Upload Map Overlays" : {
+
+    },
+    "Upload Success" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caricamento Riuscito"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップロード成功"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uspešno Otpremanje"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上传成功"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上傳成功"
+          }
+        }
+      }
+    },
+    "Uploaded Map Overlays" : {
+
+    },
     "Uptime" : {
       "localizations" : {
         "it" : {
@@ -40216,6 +40159,41 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "使用者主動斷線"
+          }
+        }
+      }
+    },
+    "User Uploaded" : {
+      "comment" : "Data source label for user uploaded files",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caricato dall'Utente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ユーザーがアップロード"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otpremio Korisnik"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用户上传"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用者上傳"
           }
         }
       }

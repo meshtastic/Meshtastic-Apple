@@ -26,6 +26,7 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 	case pkiUnknownPubkey = 35
 	case adminBadSessionKey = 36
 	case adminPublicKeyUnauthorized = 37
+	case rateLimitExceeded = 38
 
 	var id: Int { self.rawValue }
 	var display: String {
@@ -63,6 +64,8 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 			return "Bad admin session key".localized
 		case .adminPublicKeyUnauthorized:
 			return "Unauthorized admin public key".localized
+		case .rateLimitExceeded:
+			return "Rate Limit Exceeded".localized
 		}
 	}
 	var color: Color {
@@ -108,6 +111,8 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 			return true
 		case .adminPublicKeyUnauthorized:
 			return true
+		case .rateLimitExceeded:
+			return true
 		}
 	}
 	func protoEnumValue() -> Routing.Error {
@@ -146,6 +151,8 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 			return Routing.Error.adminBadSessionKey
 		case .adminPublicKeyUnauthorized:
 			return Routing.Error.adminPublicKeyUnauthorized
+		case .rateLimitExceeded:
+			return Routing.Error.rateLimitExceeded
 		}
 	}
 }
