@@ -118,12 +118,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	var connectionSteps: SequentialSteps?
 	
 	// Public due to file separation
-	var rssiUpdateDuringDiscoveryTask: Task <Void, Error>?
 	var discoveryTask: Task<Void, Never>?
-	var packetTask: Task <Void, Error>?
-	var logTask: Task <Void, Error>?
+	var connectionEventTask: Task <Void, Error>?
 	var heartbeatTask: Task<Void, Error>?
-	var rssiTask: Task <Void, Error>?
 	var locationTask: Task<Void, Error>?
 	var connectionStepper: SequentialSteps?
 	
@@ -159,6 +156,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			var toRadio: ToRadio = ToRadio()
 			toRadio.wantConfigID = UInt32(NONCE_ONLY_CONFIG)
 			try await self.send(toRadio)
+			try await connection.startDrainPendingPackets()
 			try await withCheckedThrowingContinuation { cont in
 				self.wantConfigContinuation = cont
 			}
@@ -192,6 +190,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				var toRadio: ToRadio = ToRadio()
 				toRadio.wantConfigID = UInt32(NONCE_ONLY_DB)
 				try await self.send(toRadio)
+				try await connection.startDrainPendingPackets()
 				try await withCheckedThrowingContinuation { cont in
 					firstDatabaseNodeInfoContinuation = cont
 				}
@@ -263,14 +262,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	func closeConnection() async throws {
 		Logger.transport.debug("[AccessoryManager] received disconnect request")
 
-		packetTask?.cancel()
-		packetTask = nil
-		
-		logTask?.cancel()
-		logTask = nil
-		
-		rssiTask?.cancel()
-		rssiTask = nil
+		connectionEventTask?.cancel()
+		connectionEventTask = nil
 		
 		locationTask?.cancel()
 		locationTask = nil
@@ -370,13 +363,23 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
-	func didReceive(result: Result<FromRadio, Error>) {
-		switch result {
-		case .success(let fromRadio):
+	func didReceive(_ event: ConnectionEvent) {
+		switch event {
+		case .data(let fromRadio):
 			// Logger.transport.info("✅ [Accessory] didReceive: \(fromRadio.payloadVariant.debugDescription)")
 			self.processFromRadio(fromRadio)
 
-		case .failure(let error):
+		case .logMessage(let message):
+			self.didReceiveLog(message: message)
+		
+		case .rssiUpdate(let rssi):
+			guard let deviceId = self.activeConnection?.device.id else {
+				Logger.transport.error("Could not update RSSI, no active connection")
+				return
+			}
+			updateDevice(deviceId: deviceId, key: \.rssi, value: rssi)
+			
+		case .error(let error):
 			// Handle error, perhaps log and disconnect
 			Logger.transport.info("🚨 [Accessory] didReceive with failure: \(error.localizedDescription)")
 			lastConnectionError = error
@@ -614,12 +617,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.mesh.error("Unknown FromRadio variant: \(decodedInfo.payloadVariant.debugDescription)")
 		}
 
-	}
-}
-
-extension AccessoryManager {
-	func didUpdateRSSI(_ rssi: Int, for deviceId: UUID) {
-		updateDevice(deviceId: deviceId, key: \.rssi, value: rssi)
 	}
 }
 

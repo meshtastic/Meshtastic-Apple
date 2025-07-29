@@ -34,7 +34,7 @@ extension CBCharacteristic {
 	}
 }
 
-actor BLEConnection: WirelessConnection {
+actor BLEConnection: Connection {
 
 	var proxy: BLEConnectionProxy
 	var isConnected: Bool { proxy.isConnected }
@@ -44,6 +44,8 @@ actor BLEConnection: WirelessConnection {
 
 	private var fromNumTask: Task <Void, Error>?
 
+	private var connectionStreamContinuation: AsyncStream<ConnectionEvent>.Continuation?
+	
 	init(peripheral: CBPeripheral, central: CBCentralManager, readyCallback: @escaping (Result<Void, Error>) -> Void) {
 		self.proxy = BLEConnectionProxy(peripheral: peripheral,
 										central: central, readyCallback: readyCallback)
@@ -96,44 +98,56 @@ actor BLEConnection: WirelessConnection {
 					}
 
 					let decodedInfo = try FromRadio(serializedBytes: data)
-					packetStreamContinuation?.yield(decodedInfo)
+					connectionStreamContinuation?.yield(.data(decodedInfo))
 				} catch {
-					packetStreamContinuation?.finish()
+					connectionStreamContinuation?.finish()
 					throw error  // Re-throw to propagate up to the caller for handling
 				}
 			} while true
 		}
+	
+	func didReceiveLogMessage(_ logMessage: String) {
+		self.connectionStreamContinuation?.yield(.logMessage(logMessage))
+	}
+	
+	func didUpdateRssi(_ rssi: Int) {
+		self.connectionStreamContinuation?.yield(.rssiUpdate(rssi))
+	}
 
-	private var packetStreamContinuation: AsyncStream<MeshtasticProtobufs.FromRadio>.Continuation?
-
-	func getPacketStream() -> AsyncStream<MeshtasticProtobufs.FromRadio> {
-		AsyncStream<MeshtasticProtobufs.FromRadio> { continuation in
-			self.packetStreamContinuation = continuation
+	func getPacketStream() -> AsyncStream<ConnectionEvent> {
+		AsyncStream<ConnectionEvent> { continuation in
+			self.connectionStreamContinuation = continuation
 			continuation.onTermination = { _ in
 				Task { try await self.disconnect() }
 			}
 		}
 	}
 
-	func getRadioLogStream() -> AsyncStream<String>? {
-		return self.proxy.logRadioMessages()
-	}
-
-	func getRSSIStream() async -> AsyncStream<Int> {
-		return await self.proxy.getRSSIStream()
-	}
-
-	func connect() async -> (AsyncStream<FromRadio>, AsyncStream<String>?) {
+	func connect() async -> AsyncStream<ConnectionEvent> {
 		self.fromNumTask = Task {
-			for await _ in self.proxy.fromNumNotifications() {
-				try? await self.drainPendingPackets()
+			for await event in self.proxy.eventNotifications() {
+				switch event {
+				case .fromNum:
+					try? await self.drainPendingPackets()
+				case .logMessage(let message):
+					self.didReceiveLogMessage(message)
+				case .rssiUpdate(let rssi):
+					self.didUpdateRssi(rssi)
+				}
 			}
 		}
-		return (self.getPacketStream(), self.getRadioLogStream())
+		return self.getPacketStream()
 	}
 }
 
 class BLEConnectionProxy: NSObject, CBPeripheralDelegate {
+	// Similar to ConnectionEvent, but this one has .fromNum
+	enum ProxyEvent {
+		case fromNum(Data)
+		case logMessage(String)
+		case rssiUpdate(Int)
+	}
+	
 	private var writeContinuations: [CheckedContinuation<Void, Error>] = []
 
 	fileprivate var TORADIO_characteristic: CBCharacteristic?
@@ -142,8 +156,7 @@ class BLEConnectionProxy: NSObject, CBPeripheralDelegate {
 	fileprivate var LOGRADIO_characteristic: CBCharacteristic?
 
 	private let readyCallback: (Result<Void, Error>) -> Void
-	private var logRadioContinuation: AsyncStream<String>.Continuation?
-	private var fromNumContinuation: AsyncStream<Data>.Continuation?
+	private var eventContinuation: AsyncStream<ProxyEvent>.Continuation?
 
 	let peripheral: CBPeripheral
 	weak var central: CBCentralManager?
@@ -240,7 +253,7 @@ class BLEConnectionProxy: NSObject, CBPeripheralDelegate {
 				self.readContinuation = nil
 			}
 		case FROMNUM_UUID:
-			fromNumContinuation?.yield(value)
+			eventContinuation?.yield(.fromNum(value))
 
 		case LOGRADIO_UUID:
 			do {
@@ -260,7 +273,7 @@ class BLEConnectionProxy: NSObject, CBPeripheralDelegate {
 				default:
 					message = "DEBUG | \(message)"
 				}
-				logRadioContinuation?.yield(message)
+				eventContinuation?.yield(.logMessage(message))
 			} catch {
 				// Ignore fail to parse as LogRecord
 			}
@@ -287,7 +300,7 @@ class BLEConnectionProxy: NSObject, CBPeripheralDelegate {
 			Logger.transport.error("[BLE] Error reading RSSI: \(error.localizedDescription)")
 			return
 		}
-		rssiStreamContinuation?.yield(RSSI.intValue)
+		eventContinuation?.yield(.rssiUpdate(RSSI.intValue))
 	}
 
 	func send(_ data: ToRadio) async throws {
@@ -340,41 +353,26 @@ class BLEConnectionProxy: NSObject, CBPeripheralDelegate {
 				peripheral.setNotifyValue(false, for: characteristic)
 			}
 		}
+		
 		if let central = central, peripheral.state == .connected {
 			central.cancelPeripheralConnection(peripheral)
 		}
 		peripheral.delegate = nil
+		
+		eventContinuation?.finish()
+		eventContinuation = nil
+		
 		readContinuation?.resume(throwing: AccessoryError.ioFailed("Disconnected"))
 		readContinuation = nil
-		rssiStreamContinuation?.finish()
-		rssiStreamContinuation = nil
 	}
 
-	func logRadioMessages() -> AsyncStream<String> {
+	func eventNotifications() -> AsyncStream<ProxyEvent> {
 		return AsyncStream { continuation in
-			self.logRadioContinuation = continuation
+			self.eventContinuation = continuation
 			continuation.onTermination = { _ in
-				self.logRadioContinuation = nil
+				self.eventContinuation = nil
 			}
 		}
 	}
 
-	func fromNumNotifications() -> AsyncStream<Data> {
-		return AsyncStream { continuation in
-			self.fromNumContinuation = continuation
-			continuation.onTermination = { _ in
-				self.fromNumContinuation = nil
-			}
-		}
-	}
-
-	private var rssiStreamContinuation: AsyncStream<Int>.Continuation?
-	func getRSSIStream() async -> AsyncStream<Int> {
-		AsyncStream<Int> { continuation in
-			self.rssiStreamContinuation = continuation
-			continuation.onTermination = { _ in
-				Task { try self.disconnect() }
-			}
-		}
-	}
 }

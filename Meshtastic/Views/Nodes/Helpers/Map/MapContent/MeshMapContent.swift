@@ -7,6 +7,13 @@
 
 import SwiftUI
 import MapKit
+import CoreLocation
+import OSLog
+
+struct IdentifiableOverlay: Identifiable {
+    let overlay: MKOverlay
+    var id: ObjectIdentifier { ObjectIdentifier(overlay as AnyObject) }
+}
 
 struct MeshMapContent: MapContent {
 
@@ -23,6 +30,10 @@ struct MeshMapContent: MapContent {
 	@Binding var selectedPosition: PositionEntity?
 	@AppStorage("enableMapWaypoints") private var showWaypoints = true
 	@Binding var selectedWaypoint: WaypointEntity?
+
+	// Map overlays
+	@AppStorage("mapOverlaysEnabled") private var showMapOverlays = false
+	@Binding var enabledOverlayConfigs: Set<UUID>
 
 	@FetchRequest(fetchRequest: PositionEntity.allPositionsFetchRequest(), animation: .easeIn)
 	var positions: FetchedResults<PositionEntity>
@@ -222,9 +233,52 @@ struct MeshMapContent: MapContent {
 					.foregroundStyle(.indigo.opacity(0.4))
 			}
 		}
+
+		/// GeoJSON Overlays with embedded styling
+		if showMapOverlays {
+			overlayContent
+		}
+
 		positionAnnotations
 		routeAnnotations
 		waypointAnnotations
+	}
+
+	var overlayContent: some MapContent {
+		// Get all features but filter by enabled configs
+		let allStyledFeatures = GeoJSONOverlayManager.shared.loadStyledFeaturesForConfigs(enabledOverlayConfigs)
+
+		return Group {
+			ForEach(0..<allStyledFeatures.count, id: \.self) { index in
+				let styledFeature = allStyledFeatures[index]
+				let feature = styledFeature.feature
+				let geometryType = feature.geometry.type
+
+				if geometryType == "Point" {
+					if let coordinate = feature.geometry.coordinates.toCoordinate() {
+						Annotation(feature.name, coordinate: coordinate) {
+							Circle()
+								.fill(styledFeature.fillColor)
+								.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
+								.frame(width: feature.markerRadius * 2, height: feature.markerRadius * 2)
+						}
+						.annotationTitles(.automatic)
+						.annotationSubtitles(.hidden)
+					}
+				} else if geometryType == "LineString" {
+					if let overlay = styledFeature.createOverlay() as? MKPolyline {
+						MapPolyline(overlay)
+							.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
+					}
+				} else if geometryType == "Polygon" {
+					if let overlay = styledFeature.createOverlay() as? MKPolygon {
+						MapPolygon(overlay)
+							.foregroundStyle(styledFeature.fillColor)
+							.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
+					}
+				}
+			}
+		}
 	}
 
 	@MapContentBuilder

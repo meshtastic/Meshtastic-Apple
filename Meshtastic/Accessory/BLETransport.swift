@@ -9,23 +9,24 @@ import Foundation
 import CoreBluetooth
 import SwiftUI
 import OSLog
-class BLETransport: WirelessTransport {
+class BLETransport: Transport {
 
 	let meshtasticServiceCBUUID = CBUUID(string: "0x6BA1B218-15A8-461F-9FA8-5DCAE273EAFD")
 
 	let type: TransportType = .ble
 	private var centralManager: CBCentralManager?
-	private var discoveredPeripherals: [UUID: CBPeripheral] = [:]
-	private var discoveredDeviceContinuation: AsyncStream<Device>.Continuation?
+	private var discoveredPeripherals: [UUID: (peripheral: CBPeripheral, lastSeen: Date)] = [:]
+	private var discoveredDeviceContinuation: AsyncStream<DiscoveryEvent>.Continuation?
 	private let delegate: BLEDelegate
 	private var connectingPeripheral: CBPeripheral?
 	private var connectedPeripheral: CBPeripheral?
 	private var connectContinuation: CheckedContinuation<any Connection, Error>?
 	private var setupCompleteContinuation: CheckedContinuation<Void, Error>?
 
-	private nonisolated(unsafe) var _status: TransportStatus = .uninitialized
-	nonisolated var status: TransportStatus { _status }
+	var status: TransportStatus = .uninitialized
 
+	private var cleanupTask: Task<Void, Never>?
+	
 	// Transport properties
 	var supportsManualConnection: Bool = false
 	let requiresPeriodicHeartbeat = false
@@ -40,7 +41,7 @@ class BLETransport: WirelessTransport {
 		self.delegate.setTransport(self)
 	}
 
-	nonisolated func discoverDevices() -> AsyncStream<Device> {
+	nonisolated func discoverDevices() -> AsyncStream<DiscoveryEvent> {
 		AsyncStream { cont in
 			Task {
 				self.discoveredDeviceContinuation = cont
@@ -48,9 +49,32 @@ class BLETransport: WirelessTransport {
 					try await self.setupCentralManager()
 				}
 				centralManager?.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: nil)
+				
+				setupCleanupTask()
 			}
 			cont.onTermination = { _ in
 				self.stopScanning()
+			}
+		}
+	}
+	
+	private func setupCleanupTask() {
+		if let task = self.cleanupTask {
+			task.cancel()
+		}
+		self.cleanupTask = Task {
+			while !Task.isCancelled {
+				var keysToRemove: [UUID] = []
+				for (deviceId, discoveryEntry) in self.discoveredPeripherals
+				where Date().timeIntervalSince(discoveryEntry.lastSeen) > 30 {
+						keysToRemove.append(deviceId)
+				}
+				for deviceId in keysToRemove {
+					self.discoveredDeviceContinuation?.yield(.deviceLost(deviceId))
+					self.discoveredPeripherals.removeValue(forKey: deviceId)
+				}
+		
+				try? await Task.sleep(for: .seconds(15)) // Cleanup every 15 seconds
 			}
 		}
 	}
@@ -67,44 +91,46 @@ class BLETransport: WirelessTransport {
 		discoveredPeripherals.removeAll()
 		discoveredDeviceContinuation = nil
 		if let state = centralManager?.state, state == .poweredOn {
-			_status = .ready
+			status = .ready
 		} else {
-			_status = .uninitialized
+			status = .uninitialized
 		}
 		centralManager = nil
+		cleanupTask?.cancel()
+		cleanupTask = nil
 	}
 
 	func handleCentralState(_ state: CBManagerState, central: CBCentralManager) {
 		switch state {
 		case .poweredOn:
-			_status = .discovering
+			status = .discovering
 			self.setupCompleteContinuation?.resume()
 			self.setupCompleteContinuation = nil
 
 		case .poweredOff:
-			_status = .error("Bluetooth is powered off")
+			status = .error("Bluetooth is powered off")
 			self.connectContinuation?.resume(throwing: AccessoryError.connectionFailed("Bluetooth is powered off"))
 			self.setupCompleteContinuation = nil
 
 		case .unauthorized:
-			_status = .error("Bluetooth access is unauthorized")
+			status = .error("Bluetooth access is unauthorized")
 			self.connectContinuation?.resume(throwing: AccessoryError.connectionFailed("Bluetooth is unauthiorized"))
 			self.setupCompleteContinuation = nil
 
 		case .unsupported:
-			_status = .error("Bluetooth is unsupported on this device")
+			status = .error("Bluetooth is unsupported on this device")
 			self.connectContinuation?.resume(throwing: AccessoryError.connectionFailed("Bluetooth is unsupported"))
 			self.setupCompleteContinuation = nil
 
 		case .resetting:
-			_status = .error("Bluetooth is resetting")
+			status = .error("Bluetooth is resetting")
 			// Perhaps don't finish, wait for next state
 
 		case .unknown:
-			_status = .error("Bluetooth state is unknown")
+			status = .error("Bluetooth state is unknown")
 			// Perhaps wait
 		@unknown default:
-			_status = .error("Unknown Bluetooth state")
+			status = .error("Unknown Bluetooth state")
 			self.connectContinuation?.resume(throwing: AccessoryError.connectionFailed("Unknown Bluetooth State"))
 			self.setupCompleteContinuation = nil
 		}
@@ -114,7 +140,7 @@ class BLETransport: WirelessTransport {
 		let id = peripheral.identifier
 		let isNew = discoveredPeripherals[id] == nil
 		if isNew {
-			discoveredPeripherals[id] = peripheral
+			discoveredPeripherals[id] = (peripheral, Date())
 		}
 		let device = Device(id: id,
 							name: peripheral.name ?? "Unknown",
@@ -122,11 +148,13 @@ class BLETransport: WirelessTransport {
 							identifier: id.uuidString,
 							rssi: rssi.intValue)
 		if isNew {
-			discoveredDeviceContinuation?.yield(device)
+			discoveredDeviceContinuation?.yield(.deviceFound(device))
+		} else {
+			let rssiVal = rssi.intValue
+			let deviceId = id
+			discoveredPeripherals[id]?.lastSeen = Date()
+			discoveredDeviceContinuation?.yield(.deviceReportedRssi(deviceId, rssiVal))
 		}
-		let rssiVal = rssi.intValue
-		let deviceId = id
-		rssiUpdateContinuation?.yield((deviceId: deviceId, rssi: rssiVal))
 	}
 
 	func connect(to device: Device) async throws -> any Connection {
@@ -142,8 +170,8 @@ class BLETransport: WirelessTransport {
 				return
 			}
 			self.connectContinuation = cont
-			self.connectingPeripheral = peripheral
-			cm.connect(peripheral)
+			self.connectingPeripheral = peripheral.peripheral
+			cm.connect(peripheral.peripheral)
 		}
 	}
 
@@ -188,13 +216,6 @@ class BLETransport: WirelessTransport {
 		cont.resume(throwing: error ?? AccessoryError.connectionFailed("Connection failed"))
 		self.connectContinuation = nil
 		self.connectingPeripheral = nil
-	}
-
-	private var rssiUpdateContinuation: AsyncStream<TransportRSSIUpdate>.Continuation?
-	func rssiStream() async -> AsyncStream<TransportRSSIUpdate> {
-		AsyncStream<TransportRSSIUpdate> { cont in
-			self.rssiUpdateContinuation = cont
-		}
 	}
 	
 	func manuallyConnect(withConnectionString: String) async throws {

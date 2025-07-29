@@ -21,7 +21,7 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 	// TODO: Move to NWBrowser (NetServiceBrowser is depricated)
 	private var browser: NetServiceBrowser?
 	private var services: [String: ResolvedService] = [:] // Key: service.name
-	private var continuation: AsyncStream<Device>.Continuation?
+	private var continuation: AsyncStream<DiscoveryEvent>.Continuation?
 
 	private var service: NetService?
 
@@ -33,6 +33,7 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 	let name = "TCP"
 
 	struct ResolvedService {
+		let id: UUID
 		let service: NetService
 		let host: String
 		let port: Int
@@ -47,7 +48,7 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 		}
 	}
 
-	func discoverDevices() -> AsyncStream<Device> {
+	func discoverDevices() -> AsyncStream<DiscoveryEvent> {
 		AsyncStream { cont in
 			self.continuation = cont
 			self.status = .discovering
@@ -126,16 +127,19 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 			return
 		}
 		let port = service.port
-		services[service.name] = ResolvedService(service: service, host: host, port: port)
 		let ip = service.ipv4Address ?? "Unknown IP"
 
 		// Use a mishmash of things and hash for stable? ID.
 		let idString = "\(service.name):\(host):\(ip):\(port)".toUUIDFormatHash() ?? UUID()
+		
+		// Save the resolved service locally for later
+		services[service.name] = ResolvedService(id: idString, service: service, host: host, port: port)
+		
 		let device = Device(id: idString,
 							name: "\(service.name) (\(ip))",
 							transportType: .tcp,
 							identifier: "\(host):\(port)")
-		continuation?.yield(device)
+		continuation?.yield(.deviceFound(device))
 	}
 
 	func netService(_ sender: NetService, didNotResolve errorDict: [String: NSNumber]) {
@@ -166,6 +170,25 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 		}
 		
 		return try await TCPConnection(host: host, port: port)
+	}
+	
+	func netServiceBrowser(_ browser: NetServiceBrowser, didRemove service: NetService, moreComing: Bool) {
+		guard let leavingService = services[service.name] else {
+			Logger.transport.error("[TCP] Service \(service.name) not found in resolved services")
+			return
+		}
+
+		// Notify the downstream
+		self.continuation?.yield(.deviceLost(leavingService.id))
+		
+		// Clean up the resolved services list
+		var keysToRemove = [String]()
+		for (key, value) in services where value.service == service {
+			keysToRemove.append(key)
+		}
+		for removeKey in keysToRemove {
+			services.removeValue(forKey: removeKey)
+		}
 	}
 	
 	func manuallyConnect(withConnectionString: String) async throws {

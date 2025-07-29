@@ -10,12 +10,12 @@ import OSLog
 
 extension AccessoryManager {
 
-	private func discoverAllDevices() -> AsyncStream<Device> {
+	private func discoverAllDevices() -> AsyncStream<DiscoveryEvent> {
 		AsyncStream { continuation in
 			let tasks = transports.map { transport in
 				Task {
-					for await device in transport.discoverDevices() {
-						continuation.yield(device)
+					for await event in transport.discoverDevices() {
+						continuation.yield(event)
 					}
 				}
 			}
@@ -28,44 +28,45 @@ extension AccessoryManager {
 		updateState(.discovering)
 
 		discoveryTask = Task { @MainActor in
-			for await newDevice in self.discoverAllDevices() {
+			for await event in self.discoverAllDevices() {
 				do {
 					try Task.checkCancellation()
-
-					// Update existing device or add new
-					if let index = self.devices.firstIndex(where: { $0.id == newDevice.id }) {
-						// This device already exists.
-						var existing = self.devices[index]
-						existing.name = newDevice.name
-						existing.transportType = newDevice.transportType
-						existing.identifier = newDevice.identifier
-						existing.connectionState = newDevice.connectionState
-						existing.rssi = newDevice.rssi
-						self.devices[index] = existing
-					} else {
-						// This is a new device, add it to our list
-						self.devices.append(newDevice)
-					}
+					switch event {
+					case .deviceFound(let newDevice), .deviceUpdated(let newDevice):
+						// Update existing device or add new
+						if let index = self.devices.firstIndex(where: { $0.id == newDevice.id }) {
+							// This device already exists.
+							var existing = self.devices[index]
+							existing.name = newDevice.name
+							existing.transportType = newDevice.transportType
+							existing.identifier = newDevice.identifier
+							existing.connectionState = newDevice.connectionState
+							existing.rssi = newDevice.rssi
+							self.devices[index] = existing
+						} else {
+							// This is a new device, add it to our list
+							self.devices.append(newDevice)
+						}
+						
+						if self.shouldAutomaticallyConnectToPreferredPeripheral, UserDefaults.preferredPeripheralId == newDevice.id.uuidString {
+							Logger.transport.debug("[Discovery] Found preferred peripheral \(newDevice.name)")
+							self.connectToPreferredDevice()
+							self.shouldAutomaticallyConnectToPreferredPeripheral = false
+						}
+						
+						// Update the list of discovered devices on the main thread for presentation
+						// in the user interface
+						self.devices = devices.sorted { $0.name < $1.name }
+						
+					case .deviceLost(let deviceId):
+						devices.removeAll { $0.id == deviceId }
 					
-					if self.shouldAutomaticallyConnectToPreferredPeripheral, UserDefaults.preferredPeripheralId == newDevice.id.uuidString {
-						Logger.transport.debug("[Discovery] Found preferred peripheral \(newDevice.name)")
-						self.connectToPreferredDevice()
-						self.shouldAutomaticallyConnectToPreferredPeripheral = false
+					case .deviceReportedRssi(let deviceId, let newRssi):
+						updateDevice(deviceId: deviceId, key: \.rssi, value: newRssi)
 					}
-
-					// Update the list of discovered devices on the main thread for presentation
-					// in the user interface
-					self.devices = devices.sorted { $0.name < $1.name }
-
 				} catch {
 					break
 				}
-			}
-		}
-
-		rssiUpdateDuringDiscoveryTask = Task {
-			for await rssiUpdate in self.rssiUpdatesDuringDiscovery() {
-				updateDevice(deviceId: rssiUpdate.deviceId, key: \.rssi, value: rssiUpdate.rssi)
 			}
 		}
 	}
@@ -77,16 +78,4 @@ extension AccessoryManager {
 		discoveryTask = nil
 	}
 
-	private func rssiUpdatesDuringDiscovery() -> AsyncStream<TransportRSSIUpdate> {
-		AsyncStream { continuation in
-			let tasks = transports.compactMap({ $0 as? WirelessTransport }).compactMap { transport in
-				Task {
-					for await rssiUpdate in await transport.rssiStream() {
-						continuation.yield(rssiUpdate)
-					}
-				}
-			}
-			continuation.onTermination = { _ in tasks.forEach { $0.cancel() } }
-		}
-	}
 }

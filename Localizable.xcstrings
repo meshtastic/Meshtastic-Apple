@@ -1350,6 +1350,16 @@
         }
       }
     },
+    "%lld %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld %2$@"
+          }
+        }
+      }
+    },
     "%lld or less hops away" : {
       "localizations" : {
         "de" : {
@@ -14415,6 +14425,9 @@
         }
       }
     },
+    "Files Available" : {
+      "comment" : "Data source label when files exist but none are active"
+    },
     "Find a contact" : {
       "localizations" : {
         "de" : {
@@ -20195,6 +20208,44 @@
         }
       }
     },
+    "Manage custom map overlays" : {
+      "comment" : "Subtitle for map data management",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestisci sovrapposizioni mappa personalizzate"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カスタムマップオーバーレイを管理"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upravljaj prilagođenim slojevima mape"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理自定义地图覆盖层"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理自訂地圖覆蓋層"
+          }
+        }
+      }
+    },
+    "Manage map data" : {
+      "comment" : "Link to manage uploaded map data"
+    },
     "Managed Device" : {
       "localizations" : {
         "it" : {
@@ -20299,6 +20350,9 @@
     "Manual connection string" : {
 
     },
+    "Map Data" : {
+
+    },
     "Map Options" : {
       "localizations" : {
         "de" : {
@@ -20335,6 +20389,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "地圖選項"
+          }
+        }
+      }
+    },
+    "Map Overlays" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Karten-Overlays"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Superpositions de cartes"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "שכבות מפה"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sovrapposizioni mappa"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マップオーバーレイ"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nakładki map"
+          }
+        },
+        "se" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kartöverlägg"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Преклапања мапе"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地图覆盖层"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地圖覆蓋層"
           }
         }
       }
@@ -22790,6 +22908,41 @@
         }
       }
     },
+    "No Data" : {
+      "comment" : "Data source label when no files are available",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun Dato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "データなし"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bez Podataka"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无数据"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無資料"
+          }
+        }
+      }
+    },
     "No device connected" : {
       "localizations" : {
         "de" : {
@@ -22916,6 +23069,9 @@
         }
       }
     },
+    "No files uploaded" : {
+
+    },
     "No Interface" : {
       "localizations" : {
         "de" : {
@@ -22979,6 +23135,9 @@
           }
         }
       }
+    },
+    "No map data files uploaded" : {
+      "comment" : "Message when no files are uploaded"
     },
     "No PAX Counter Logs" : {
       "localizations" : {
@@ -24099,6 +24258,9 @@
           }
         }
       }
+    },
+    "Ok" : {
+
     },
     "OK" : {
       "localizations" : {
@@ -27304,6 +27466,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Process"
+          }
+        }
+      }
+    },
+    "Processing file..." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elaborazione file..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ファイル処理中..."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obrada datoteke..."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在处理文件..."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在處理檔案..."
           }
         }
       }
@@ -31331,6 +31527,9 @@
           }
         }
       }
+    },
+    "Select Map File" : {
+
     },
     "Select Node" : {
       "localizations" : {
@@ -39356,6 +39555,184 @@
         }
       }
     },
+    "Upload Error" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Errore Caricamento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップロードエラー"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Greška Otpremanja"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上传错误"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上傳錯誤"
+          }
+        }
+      }
+    },
+    "Upload GeoJSON files to display custom map overlays. Files are stored locally and can be up to 10MB." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carica file GeoJSON per visualizzare sovrapposizioni mappa personalizzate. I file sono memorizzati localmente e possono essere fino a 10MB."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カスタムマップオーバーレイを表示するためにGeoJSONファイルをアップロードしてください。ファイルはローカルに保存され、最大10MBまでです。"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otpremi GeoJSON datoteke da prikažeš prilagođene slojeve mape. Datoteke se čuvaju lokalno i mogu biti do 10MB."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上传GeoJSON文件以显示自定义地图覆盖层。文件本地存储，最大10MB。"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上傳GeoJSON檔案以顯示自訂地圖覆蓋層。檔案本機儲存，最大10MB。"
+          }
+        }
+      }
+    },
+    "Upload Map Data" : {
+      "comment" : "Title for map data upload screen",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carica Dati Mappa"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マップデータをアップロード"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otpremi Podatke Mape"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上传地图数据"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上傳地圖資料"
+          }
+        }
+      }
+    },
+    "Upload map data to enable overlays" : {
+      "comment" : "Prompt to upload map data when none is available",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carica dati mappa per abilitare sovrapposizioni"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オーバーレイを有効にするにはマップデータをアップロード"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otpremi podatke mape da omogućiš slojeve"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上传地图数据以启用覆盖层"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上傳地圖資料以啟用覆蓋層"
+          }
+        }
+      }
+    },
+    "Upload Map Overlays" : {
+
+    },
+    "Upload Success" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caricamento Riuscito"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップロード成功"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uspešno Otpremanje"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上传成功"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上傳成功"
+          }
+        }
+      }
+    },
+    "Uploaded Map Overlays" : {
+
+    },
     "Uptime" : {
       "localizations" : {
         "it" : {
@@ -39787,6 +40164,41 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "使用者主動斷線"
+          }
+        }
+      }
+    },
+    "User Uploaded" : {
+      "comment" : "Data source label for user uploaded files",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caricato dall'Utente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ユーザーがアップロード"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otpremio Korisnik"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用户上传"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用者上傳"
           }
         }
       }

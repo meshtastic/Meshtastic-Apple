@@ -8,6 +8,7 @@
 import Foundation
 import CommonCrypto
 import SwiftUI
+
 enum TransportType: String, CaseIterable {
 	case ble = "BLE"
 	case tcp = "TCP"
@@ -21,12 +22,19 @@ enum TransportStatus: Equatable {
 	case error(String)
 }
 
+enum DiscoveryEvent {
+	case deviceFound(Device)
+	case deviceUpdated(Device)
+	case deviceLost(UUID)
+	case deviceReportedRssi(UUID, Int)
+}
+
 protocol Transport {
 	var type: TransportType { get }
 	var status: TransportStatus { get }
 
 	// Discovers devices asynchronously. For ongoing scans (e.g., BLE), this can yield via AsyncStream.
-	func discoverDevices() -> AsyncStream<Device>
+	func discoverDevices() -> AsyncStream<DiscoveryEvent>
 
 	// Connects to a device and returns a Connection.
 	func connect(to device: Device) async throws -> any Connection
@@ -38,12 +46,6 @@ protocol Transport {
 	var name: String { get }
 	
 	func manuallyConnect(withConnectionString: String) async throws
-}
-
-typealias TransportRSSIUpdate = (deviceId: UUID, rssi: Int)
-
-protocol WirelessTransport: Transport {
-	func rssiStream() async -> AsyncStream<TransportRSSIUpdate>
 }
 
 // Used to make stable-ish ID's for accessories that don't have a UUID

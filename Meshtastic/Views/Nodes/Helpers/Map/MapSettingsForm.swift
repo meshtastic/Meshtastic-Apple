@@ -7,6 +7,7 @@
 
 import SwiftUI
 import MapKit
+import OSLog
 
 struct MapSettingsForm: View {
 	@Environment(\.dismiss) private var dismiss
@@ -16,14 +17,17 @@ struct MapSettingsForm: View {
 	@AppStorage("enableMapConvexHull") private var convexHull = false
 	@AppStorage("enableMapWaypoints") private var enableMapWaypoints = true
 	@AppStorage("enableMapShowFavorites") private var enableMapShowFavorites = false
+	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
+	@ObservedObject private var mapDataManager = MapDataManager.shared
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
 	@Binding var mapLayer: MapLayer
 	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 800000
 	@Binding var meshMap: Bool
-
+	@Binding var enabledOverlayConfigs: Set<UUID>
+	
 	var body: some View {
-
+		
 		NavigationStack {
 			Form {
 				Section(header: Text("Map Options")) {
@@ -115,25 +119,111 @@ struct MapSettingsForm: View {
 						UserDefaults.enableMapPointsOfInterest = self.pointsOfInterest
 					}
 				}
-			}
-
-#if targetEnvironment(macCatalyst)
-Spacer()
-				Button {
-					dismiss()
-				} label: {
-					Label("Close", systemImage: "xmark")
+				
+				Section(header: Text("Map Overlays")) {
+					let hasUserData = GeoJSONOverlayManager.shared.hasUserData()
+					// Master toggle for map overlays
+					Toggle(isOn: $mapOverlaysEnabled) {
+						Label {
+							VStack(alignment: .leading) {
+								Text("Map Overlays")
+								Text(GeoJSONOverlayManager.shared.getActiveDataSource())
+									.font(.caption)
+									.foregroundColor(.secondary)
+							}
+						} icon: {
+							Image(systemName: "map")
+								.symbolRenderingMode(.multicolor)
+						}
+					}
+					.tint(.accentColor)
+					.disabled(!hasUserData && !mapOverlaysEnabled)
+					
+					// Show individual file toggles when overlays are enabled
+					if mapOverlaysEnabled && hasUserData {
+						if !mapDataManager.getUploadedFiles().isEmpty {
+							// Individual file toggles
+							ForEach(mapDataManager.getUploadedFiles()) { file in
+								Toggle(isOn: Binding(
+									get: {
+										return enabledOverlayConfigs.contains(file.id)
+									},
+									set: { newValue in
+										if newValue {
+											enabledOverlayConfigs.insert(file.id)
+										} else {
+											enabledOverlayConfigs.remove(file.id)
+										}
+									}
+								)) {
+									Label {
+										VStack(alignment: .leading) {
+											Text(file.originalName)
+												.font(.subheadline)
+											HStack {
+												Text("\(file.overlayCount) \(file.overlayCount > 1 ? "features".localized : "feature".localized)")
+													.font(.caption2)
+													.foregroundColor(.secondary)
+												Spacer()
+												Text(ByteCountFormatter.string(fromByteCount: file.fileSize, countStyle: .file))
+													.font(.caption2)
+													.foregroundColor(.secondary)
+											}
+										}
+									} icon: {
+										let isEnabled = enabledOverlayConfigs.contains(file.id)
+										Image(systemName: isEnabled ? "doc.fill" : "doc")
+											.foregroundColor(isEnabled ? .accentColor : .secondary)
+									}
+								}
+								.tint(.accentColor)
+							}
+							NavigationLink(destination: MapDataFiles()) {
+								Label {
+									Text("Manage map data")
+								} icon: {
+									Image(systemName: "folder")
+										.symbolRenderingMode(.multicolor)
+								}
+							}
+						} else {
+							ContentUnavailableView ("No map data files uploaded", systemImage: "exclamationmark.triangle")
+						}
+					} else if !hasUserData {
+						// Upload prompt when no data available
+						NavigationLink(destination: MapDataFiles()) {
+							Label {
+								Text("Upload map data to enable overlays")
+							} icon: {
+								Image(systemName: "arrow.up.doc")
+									.symbolRenderingMode(.multicolor)
+							}
+						}
+					}
 				}
-				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding(.bottom)
+			}
+			
+#if targetEnvironment(macCatalyst)
+			Spacer()
+			Button {
+				dismiss()
+			} label: {
+				Label("Close", systemImage: "xmark")
+			}
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding(.bottom)
 #endif
 		}
 		.presentationDetents([.medium, .large], selection: $currentDetent)
 		.presentationContentInteraction(.scrolls)
 		.presentationDragIndicator(.visible)
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
-
+		.onAppear {
+			// Initialize map data manager
+			mapDataManager.initialize()
+		}
+		
 	}
 }

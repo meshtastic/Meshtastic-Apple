@@ -42,6 +42,8 @@ actor SerialConnection: Connection {
 	private let readQueue = DispatchQueue(label: "com.meshtastic.serial.read")
 	private var readBuffer = Data()
 
+	private var eventStreamContinuation: AsyncStream<ConnectionEvent>.Continuation?
+	
 	var isConnected: Bool { isOpen }
 
 	init(path: String) {
@@ -77,7 +79,7 @@ actor SerialConnection: Connection {
 			let payload = readBuffer.subdata(in: 4..<totalPacketLength)
 
 			if let fromRadio = try? FromRadio(serializedBytes: payload) {
-				packetStream?.yield(fromRadio)
+				eventStreamContinuation?.yield(.data(fromRadio))
 			} else {
 				Logger.transport.error("[Serial] Failed to deserialize payload. Skipping packet.")
 			}
@@ -150,7 +152,7 @@ actor SerialConnection: Connection {
 
 	// MARK: - Connection Lifecycle
 
-	func connect() async throws -> (AsyncStream<FromRadio>, AsyncStream<String>?) {
+	func connect() async throws -> AsyncStream<ConnectionEvent> {
 		fd = open(path, O_RDWR | O_NOCTTY | O_NONBLOCK)
 		if fd == -1 {
 			throw POSIXError(POSIXErrorCode(rawValue: errno)!)
@@ -181,7 +183,7 @@ actor SerialConnection: Connection {
 		self.isOpen = true
 
 		startReader()
-		return (getPacketStream(), nil)
+		return getPacketStream()
 	}
 
 	/// This is the primary cleanup function, called when the read source is cancelled.
@@ -194,8 +196,9 @@ actor SerialConnection: Connection {
 		fd = -1
 		readSource = nil
 
-		packetStream?.finish()
-		packetStream = nil
+		eventStreamContinuation?.finish()
+		eventStreamContinuation = nil
+		
 		Logger.transport.debug("[Serial] Connection cleaned up.")
 	}
 
@@ -225,12 +228,9 @@ actor SerialConnection: Connection {
 	}
 
 	// MARK: - Stream Management
-
-	private var packetStream: AsyncStream<MeshtasticProtobufs.FromRadio>.Continuation?
-
-	private func getPacketStream() -> AsyncStream<MeshtasticProtobufs.FromRadio> {
-		AsyncStream<MeshtasticProtobufs.FromRadio> { continuation in
-			self.packetStream = continuation
+	private func getPacketStream() -> AsyncStream<ConnectionEvent> {
+		AsyncStream<ConnectionEvent> { continuation in
+			self.eventStreamContinuation = continuation
 			continuation.onTermination = { _ in
 				Task {
 					await self.readSource?.cancel()
