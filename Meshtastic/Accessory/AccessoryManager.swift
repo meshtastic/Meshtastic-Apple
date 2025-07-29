@@ -576,6 +576,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		case .queueStatus:
 			Logger.mesh.warning("🕸️ MESH PACKET received for queueStatus UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 
+		case .logRecord(let record):
+			didReceiveLog(message: record.stringRepresentation)
+			
 		case .configCompleteID(let configCompleteID):
 			// Not sure if we want to do anythign here directly?  The continuation stuff lets you
 			// do the next step right in the connection flow.

@@ -109,17 +109,17 @@ class BLETransport: Transport {
 
 		case .poweredOff:
 			status = .error("Bluetooth is powered off")
-			self.connectContinuation?.resume(throwing: AccessoryError.connectionFailed("Bluetooth is powered off"))
+			self.setupCompleteContinuation?.resume(throwing: AccessoryError.connectionFailed("Bluetooth is powered off"))
 			self.setupCompleteContinuation = nil
 
 		case .unauthorized:
 			status = .error("Bluetooth access is unauthorized")
-			self.connectContinuation?.resume(throwing: AccessoryError.connectionFailed("Bluetooth is unauthiorized"))
+			self.setupCompleteContinuation?.resume(throwing: AccessoryError.connectionFailed("Bluetooth is unauthorized"))
 			self.setupCompleteContinuation = nil
 
 		case .unsupported:
 			status = .error("Bluetooth is unsupported on this device")
-			self.connectContinuation?.resume(throwing: AccessoryError.connectionFailed("Bluetooth is unsupported"))
+			self.setupCompleteContinuation?.resume(throwing: AccessoryError.connectionFailed("Bluetooth is unsupported"))
 			self.setupCompleteContinuation = nil
 
 		case .resetting:
@@ -131,7 +131,7 @@ class BLETransport: Transport {
 			// Perhaps wait
 		@unknown default:
 			status = .error("Unknown Bluetooth state")
-			self.connectContinuation?.resume(throwing: AccessoryError.connectionFailed("Unknown Bluetooth State"))
+			self.setupCompleteContinuation?.resume(throwing: AccessoryError.connectionFailed("Unknown Bluetooth State"))
 			self.setupCompleteContinuation = nil
 		}
 	}

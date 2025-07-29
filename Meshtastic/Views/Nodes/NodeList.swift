@@ -147,7 +147,7 @@ struct NodeList: View {
 			List(nodes, id: \.self, selection: $selectedNode) { node in
 				NodeListItem(
 					node: node,
-					connected: accessoryManager.isConnected,
+					isDirectlyConnected: node.num == accessoryManager.activeDeviceNum,
 					connectedNode: accessoryManager.activeConnection?.device.num ?? -1
 				)
 				.contextMenu {
