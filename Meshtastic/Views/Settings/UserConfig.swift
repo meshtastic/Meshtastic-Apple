@@ -222,6 +222,9 @@ struct UserConfig: View {
 		.onChange(of: longName) { oldLong, newLong in
 			if oldLong != newLong && newLong != node?.user?.longName ?? "Unknown" { hasChanges = true }
 		}
+		.onChange(of: isUnmessagable) { oldIsUnmessagable, newIsUnmessagable in
+			if oldIsUnmessagable != newIsUnmessagable && newIsUnmessagable != node?.user?.unmessagable ?? true { hasChanges = true }
+		}
 		.onChange(of: isLicensed) { _, newIsLicensed in
 			if node != nil && node!.user != nil {
 				if newIsLicensed != node?.user!.isLicensed {
