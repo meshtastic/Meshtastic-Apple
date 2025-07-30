@@ -39,6 +39,7 @@ actor BLEConnection: Connection {
 	var proxy: BLEConnectionProxy
 	var isConnected: Bool { proxy.isConnected }
 
+	var peripheral: CBPeripheral
 	private var needsDrain: Bool = false
 	private var isDraining: Bool = false
 
@@ -47,6 +48,7 @@ actor BLEConnection: Connection {
 	private var connectionStreamContinuation: AsyncStream<ConnectionEvent>.Continuation?
 	
 	init(peripheral: CBPeripheral, central: CBCentralManager, readyCallback: @escaping (Result<Void, Error>) -> Void) {
+		self.peripheral = peripheral
 		self.proxy = BLEConnectionProxy(peripheral: peripheral,
 										central: central, readyCallback: readyCallback)
 	}
@@ -62,6 +64,8 @@ actor BLEConnection: Connection {
 	func disconnect() async throws {
 		self.fromNumTask?.cancel()
 		try proxy.disconnect()
+		connectionStreamContinuation?.finish()
+		connectionStreamContinuation = nil
 	}
 
 	func startDrainPendingPackets() throws {

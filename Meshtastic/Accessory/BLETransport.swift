@@ -19,8 +19,8 @@ class BLETransport: Transport {
 	private var discoveredDeviceContinuation: AsyncStream<DiscoveryEvent>.Continuation?
 	private let delegate: BLEDelegate
 	private var connectingPeripheral: CBPeripheral?
-	private var connectedPeripheral: CBPeripheral?
-	private var connectContinuation: CheckedContinuation<any Connection, Error>?
+	private var activeConnection: BLEConnection?
+	private var connectContinuation: CheckedContinuation<BLEConnection, Error>?
 	private var setupCompleteContinuation: CheckedContinuation<Void, Error>?
 
 	var status: TransportStatus = .uninitialized
@@ -164,8 +164,8 @@ class BLETransport: Transport {
 		guard let cm = centralManager else {
 			throw AccessoryError.connectionFailed("Central manager not available")
 		}
-		return try await withCheckedThrowingContinuation { cont in
-			if self.connectContinuation != nil || self.connectedPeripheral != nil {
+		let newConnection: BLEConnection = try await withCheckedThrowingContinuation { cont in
+			if self.connectContinuation != nil || self.activeConnection != nil {
 				cont.resume(throwing: AccessoryError.connectionFailed("BLE transport is busy: already connecting or connected"))
 				return
 			}
@@ -173,15 +173,18 @@ class BLETransport: Transport {
 			self.connectingPeripheral = peripheral.peripheral
 			cm.connect(peripheral.peripheral)
 		}
-	}
-
-	func setConnected(peripheral: CBPeripheral) {
-		self.connectedPeripheral = peripheral
+		self.activeConnection = newConnection
+		return newConnection
 	}
 
 	func handlePeripheralDisconnect(peripheral: CBPeripheral) {
-		if self.connectedPeripheral?.identifier == peripheral.identifier {
-			self.connectedPeripheral = nil
+		if let connection = self.activeConnection {
+			Task {
+				if await connection.peripheral.identifier == peripheral.identifier {
+					try await connection.disconnect()
+					self.activeConnection = nil
+				}
+			}
 		}
 	}
 
@@ -195,7 +198,6 @@ class BLETransport: Transport {
 		let readyCallback: (Result<Void, Error>) -> Void = { result in
 			switch result {
 			case .success:
-				self.setConnected(peripheral: peripheral)
 				cont.resume(returning: connection)
 			case .failure(let error):
 				cont.resume(throwing: error)
