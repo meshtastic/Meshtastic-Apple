@@ -61,7 +61,7 @@ jobs:
       - name: Upload dSYMs to Datadog
         env:
           DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
-          DATADOG_SITE: datadoghq.com
+          DATADOG_SITE: us5.datadoghq.com
         run: |
           # Upload all dSYM files to Datadog
           if [ -d "./build/dSYMs" ] && [ "$(find ./build/dSYMs -name "*.dSYM" -type d | wc -l)" -gt 0 ]; then
