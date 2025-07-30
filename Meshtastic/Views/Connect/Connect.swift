@@ -215,7 +215,7 @@ struct Connect: View {
 										Text(lastError.localizedDescription).font(.callout).foregroundColor(.red)
 									}
 									HStack {
-										Image(systemName: "antenna.radiowaves.left.and.right.slash")
+										Image("custom.link.slash")
 											.resizable()
 											.symbolRenderingMode(.hierarchical)
 											.foregroundColor(.red)
