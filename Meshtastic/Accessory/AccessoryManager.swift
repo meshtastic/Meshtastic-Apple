@@ -587,6 +587,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			// case UInt32(NONCE_ONLY_CONFIG):
 			//	break;
 			// case UInt32(NONCE_ONLY_DB):
+			// case UInt32(NONCE_ONLY_DB):
 			// 	break;
 			// break:
 			// Logger.mesh.error("✅ [Accessory] Unknown UNHANDLED confligCompleteID: \(configCompleteID)")

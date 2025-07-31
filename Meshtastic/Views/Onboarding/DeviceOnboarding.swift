@@ -8,8 +8,10 @@ struct DeviceOnboarding: View {
 	enum SetupGuide: Hashable {
 		case notifications
 		case location
+		case localNetwork
+		case bluetooth
 	}
-
+	
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State var navigationPath: [SetupGuide] = []
 	@State var locationStatus = LocationsHandler.shared.manager.authorizationStatus
@@ -29,7 +31,7 @@ struct DeviceOnboarding: View {
 				.fixedSize(horizontal: false, vertical: true)
 		}
 	}
-
+	
 	var welcomeView: some View {
 		VStack {
 			ScrollView(.vertical) {
@@ -74,7 +76,7 @@ struct DeviceOnboarding: View {
 			.buttonStyle(.borderedProminent)
 		}
 	}
-
+	
 	var notificationView: some View {
 		VStack {
 			ScrollView(.vertical) {
@@ -132,7 +134,7 @@ struct DeviceOnboarding: View {
 			.buttonStyle(.borderedProminent)
 		}
 	}
-
+	
 	var locationView: some View {
 		VStack {
 			ScrollView(.vertical) {
@@ -201,7 +203,97 @@ struct DeviceOnboarding: View {
 			.buttonStyle(.borderedProminent)
 		}
 	}
-
+	
+	var localNetworkView: some View {
+		VStack {
+			ScrollView(.vertical) {
+				VStack {
+					Text("Local Network Access")
+						.font(.largeTitle.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
+				}
+				VStack(alignment: .leading, spacing: 16) {
+					Text(createLocalNetworkString())
+						.font(.body.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
+					makeRow(
+						icon: "network",
+						title: "Network-based Nodes".localized,
+						subtitle: "The Meshtastic App can connect to and manage network-enabled nodes.".localized
+					)
+					makeRow(
+						icon: "person.and.background.dotted",
+						title: "Background Connections".localized,
+						subtitle: "Background network connections are not supported and may disconnect when you leave the app.".localized
+					)
+				}
+				.padding()
+			}
+			Spacer()
+			Button {
+				Task {
+					await requestLocalNetworkPermissions()
+					await goToNextStep(after: .localNetwork)
+				}
+			} label: {
+				Text("Configure Local Network Access")
+					.frame(maxWidth: .infinity)
+			}
+			.padding()
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
+			.buttonStyle(.borderedProminent)
+		}
+	}
+	
+	var bluetoothView: some View {
+		VStack {
+			ScrollView(.vertical) {
+				VStack {
+					Text("Bluetooth Connectivity")
+						.font(.largeTitle.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
+				}
+				VStack(alignment: .leading, spacing: 16) {
+					Text(createBluetoothString())
+						.font(.body.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
+					makeRow(
+						icon: "network",
+						title: "Network-based Nodes".localized,
+						subtitle: "The Meshtastic App can connect to and manage network-enabled nodes.".localized
+					)
+					makeRow(
+						icon: "person.and.background.dotted",
+						title: "Background Connections".localized,
+						subtitle: "Bluetooth Low Energy supports background connections.  When possible, the applicaiton will remain connected to these accessories while the app is in the background".localized
+					)
+				}
+				.padding()
+			}
+			Spacer()
+			Button {
+				Task {
+					await requestBluetoothPermissions()
+					await goToNextStep(after: .bluetooth)
+				}
+			} label: {
+				Text("Configure Bluetooth Connectivity")
+					.frame(maxWidth: .infinity)
+			}
+			.padding()
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
+			.buttonStyle(.borderedProminent)
+		}
+	}
+	
 	var body: some View {
 		NavigationStack(path: $navigationPath) {
 			welcomeView
@@ -211,12 +303,16 @@ struct DeviceOnboarding: View {
 						notificationView
 					case .location:
 						locationView
+					case .bluetooth:
+						bluetoothView
+					case .localNetwork:
+						localNetworkView
 					}
 				}
 		}
 		.toolbar(.hidden)
 	}
-
+	
 	@ViewBuilder
 	func makeRow(
 		icon: String,
@@ -265,11 +361,16 @@ struct DeviceOnboarding: View {
 		case .location:
 			let status = LocationsHandler.shared.manager.authorizationStatus
 			if status != .notDetermined && status != .restricted && status != .denied {
-				dismiss()
+				navigationPath.append(.localNetwork)
 			}
+		case .localNetwork:
+			navigationPath.append(.bluetooth)
+			
+		case .bluetooth:
+			dismiss()
 		}
 	}
-
+	
 	// MARK: Formatting
 	func createLocationString() -> AttributedString {
 		var fullText = AttributedString("Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from settings.")
@@ -279,7 +380,25 @@ struct DeviceOnboarding: View {
 		}
 		return fullText
 	}
-
+	
+	func createLocalNetworkString() -> AttributedString {
+		var fullText = AttributedString("Meshtastic accesses your local network to connect to TCP-based accessories.  You can update the local network permissions at any time from settings.")
+		if let range = fullText.range(of: "settings") {
+			fullText[range].link = URL(string: UIApplication.openSettingsURLString)!
+			fullText[range].foregroundColor = .blue
+		}
+		return fullText
+	}
+	
+	func createBluetoothString() -> AttributedString {
+		var fullText = AttributedString("Meshtastic uses Bluetootht o connect to BLE-based accessories.  You can update the permissions at any time from settings.")
+		if let range = fullText.range(of: "settings") {
+			fullText[range].link = URL(string: UIApplication.openSettingsURLString)!
+			fullText[range].foregroundColor = .blue
+		}
+		return fullText
+	}
+	
 	// MARK: Permission Checks
 	func requestNotificationsPermissions() async {
 		let center = UNUserNotificationCenter.current()
@@ -294,7 +413,7 @@ struct DeviceOnboarding: View {
 			Logger.services.error("Notification permissions error: \(error.localizedDescription)")
 		}
 	}
-
+	
 	func requestLocationPermissions() async {
 		locationStatus = await LocationsHandler.shared.requestLocationAlwaysPermissions()
 		if locationStatus != .notDetermined {
@@ -302,6 +421,15 @@ struct DeviceOnboarding: View {
 		} else {
 			Logger.services.info("Location permissions denied")
 		}
-		dismiss()
+		await goToNextStep(after: .location)
 	}
+	
+	func requestLocalNetworkPermissions() async {
+		_ = await TCPTransport.requestLocalNetworkAuthorization()
+	}
+	
+	func requestBluetoothPermissions() async {
+		_ = await BluetoothAuthorizationHelper.requestBluetoothAuthorization()
+	}
+
 }

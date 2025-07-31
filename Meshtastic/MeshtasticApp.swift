@@ -85,7 +85,13 @@ struct MeshtasticAppleApp: App {
 		// Show tips in development
 		try? Tips.resetDatastore()
 	#endif
-		accessoryManager.startDiscovery()
+		if !UserDefaults.firstLaunch {
+			// If this is first launch, we will show onboarding screens which
+			// Step through the authorization process.  Do not start discovery
+			// unitl this workflow completes, otherwise the discovery process
+			// may trigger permission dialogs too soon.
+			accessoryManager.startDiscovery()
+		}
 	}
     var body: some Scene {
         WindowGroup {

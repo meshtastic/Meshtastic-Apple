@@ -6,7 +6,7 @@ import SwiftUI
 
 struct ContentView: View {
 	@ObservedObject var appState: AppState
-
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@ObservedObject var router: Router
 	@State var isShowingDeviceOnboardingFlow: Bool = false
 
@@ -63,6 +63,7 @@ struct ContentView: View {
 			isPresented: $isShowingDeviceOnboardingFlow,
 			onDismiss: {
 				UserDefaults.firstLaunch = false
+				accessoryManager.startDiscovery()
 			}, content: {
 				DeviceOnboarding()
 			}

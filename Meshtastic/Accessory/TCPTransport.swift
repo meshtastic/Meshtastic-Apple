@@ -43,9 +43,6 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 		super.init()
 		browser = NetServiceBrowser()
 		browser?.delegate = self
-		Task {
-			_ = await self.requestLocalNetworkAuthorization()
-		}
 	}
 
 	func discoverDevices() -> AsyncStream<DiscoveryEvent> {
@@ -64,57 +61,8 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 		}
 	}
 
-	private var resumeContinuation: CheckedContinuation<Bool, Never>?
-	private var resumed = false
-	private func resumeOnce(with value: Bool) {
-		if !resumed {
-			resumed = true
-			resumeContinuation?.resume(returning: value)
-		}
-	}
 
-	private func requestLocalNetworkAuthorization() async -> Bool {
-		await withCheckedContinuation { continuation in
-			resumeContinuation = continuation
-			guard let port = NWEndpoint.Port(rawValue: 0) else {
-				resumeOnce(with: false)
-				return
-			}
-			guard let listener = try? NWListener(using: .tcp, on: port) else {
-				resumeOnce(with: false)
-				return
-			}
-			listener.service = NWListener.Service(name: "preflight", type: "_preflight._tcp", domain: "local")
-			listener.newConnectionHandler = { _ in }
-			listener.stateUpdateHandler = { state in
-				if case .failed = state {
-					self.resumeOnce(with: false)
-					listener.cancel()
-				}
-			}
-			listener.start(queue: .main)
-
-			let parameters = NWParameters.tcp
-			parameters.includePeerToPeer = true
-			let browser = NWBrowser(for: .bonjour(type: "_preflight._tcp", domain: "local"), using: parameters)
-			browser.stateUpdateHandler = { state in
-				switch state {
-				case .ready:
-					self.resumeOnce(with: true)
-					browser.cancel()
-					listener.cancel()
-				case .failed:
-					self.resumeOnce(with: false)
-					browser.cancel()
-					listener.cancel()
-				default:
-					break
-				}
-			}
-			browser.start(queue: .main)
-		}
-	}
-
+	
 	func netServiceBrowser(_ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool) {
 		self.service = service
 		service.delegate = self
@@ -218,5 +166,90 @@ extension NetService {
 			return ipBytes.map { String($0) }.joined(separator: ".")
 		}
 		return nil
+	}
+}
+
+
+extension TCPTransport {
+	static func requestLocalNetworkAuthorization() async -> Bool {
+		await withCheckedContinuation { continuation in
+			var resumeContinuation: CheckedContinuation<Bool, Never>? = continuation
+			let resumeOnce: (Bool) -> Void = { result in
+				resumeContinuation?.resume(returning: result)
+				resumeContinuation = nil
+			}
+
+			let queue = DispatchQueue(label: "com.meshtastic.localNetworkAuth")
+
+			let listener: NWListener
+			do {
+				listener = try NWListener(using: .tcp)
+			} catch {
+				Logger.transport.error("[TCP Permissions] Failed to create NWListener: \(error)")
+				resumeOnce(false)
+				return
+			}
+
+			// Use a unique name to avoid conflicts
+			let uniqueName = UUID().uuidString
+			listener.service = NWListener.Service(name: uniqueName, type: MESHTASTIC_SERVICE_TYPE, domain: MESHTASTIC_DOMAIN ?? "local.")
+
+			listener.newConnectionHandler = { _ in }  // Required to avoid errors
+
+			listener.stateUpdateHandler = { state in
+				switch state {
+				case .setup, .waiting, .ready, .cancelled:
+					// No-op
+					break
+				case .failed(let error):
+					Logger.transport.error("[TCP Permissions] Authorization NWListener failed: \(error)")
+					resumeOnce(false)
+					listener.cancel()
+				@unknown default:
+					Logger.transport.debug("[TCP Permissions] Authorization NWListener unknown state")
+				}
+			}
+
+			listener.start(queue: queue)
+
+			let parameters = NWParameters.tcp
+			parameters.includePeerToPeer = true
+
+			let browser = NWBrowser(for: .bonjour(type: MESHTASTIC_SERVICE_TYPE, domain: MESHTASTIC_DOMAIN ?? "local."), using: parameters)
+
+			browser.stateUpdateHandler = { state in
+				switch state {
+				case .setup, .ready, .cancelled:
+					// No-op
+					break
+				case .waiting(let error):
+					Logger.transport.debug("[TCP Permissions] Authorization NWBrowser waiting: \(error)")
+					if case .dns(let dnsError) = error, dnsError == DNSServiceErrorType(kDNSServiceErr_PolicyDenied) {  // Or check rawValue == -72003
+						resumeOnce(false)
+						browser.cancel()
+						listener.cancel()
+					}
+				case .failed(let error):
+					Logger.transport.error("[TCP Permissions] Authorization NWBrowser failed: \(error)")
+					resumeOnce(false)
+					browser.cancel()
+					listener.cancel()
+				@unknown default:
+					Logger.transport.debug("[TCP] Authorization NWBrowser unknown state")
+				}
+			}
+
+			// Key addition: Detect success when the browser finds the service (permission granted)
+			browser.browseResultsChangedHandler = { results, _ in
+				if !results.isEmpty {
+					Logger.transport.debug("[TCP Permissions] Authorization NWBrowser found results, permission granted")
+					resumeOnce(true)
+					browser.cancel()
+					listener.cancel()
+				}
+			}
+
+			browser.start(queue: queue)
+		}
 	}
 }

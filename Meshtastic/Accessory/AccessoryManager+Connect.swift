@@ -53,6 +53,10 @@ extension AccessoryManager {
 					self.didReceive(.error(AccessoryError.connectionFailed("Connection closed")))
 				}
 				self.activeConnection = (device: device, connection: connection)
+				
+				if UserDefaults.preferredPeripheralId.count < 1 {
+					UserDefaults.preferredPeripheralId = device.id.uuidString
+				}
 			}
 			
 			// Step 2: Send Heartbeat before wantConfig (config)
