@@ -23,7 +23,7 @@ struct UserDefault<T: Decodable> {
 				let storedValue = UserDefaults.standard.object(forKey: key.rawValue)
 
 				guard let storedValue,
-				let jsonString = (storedValue as? String != nil) ? "\"\(storedValue)\"" : "\(storedValue)",
+				let jsonString = (storedValue is String) ? "\"\(storedValue)\"" : "\(storedValue)",
 				let data = jsonString.data(using: .utf8),
 				let value = (try? JSONDecoder().decode(T.self, from: data)) else { return defaultValue }
 
@@ -150,7 +150,7 @@ extension UserDefaults {
 
 	@UserDefault(.firmwareVersion, defaultValue: "0.0.0")
 	static var firmwareVersion: String
-	
+
 	@UserDefault(.hardwareModel, defaultValue: "Unset")
 	static var hardwareModel: String
 

@@ -14,7 +14,7 @@ struct ConnectedDevice: View {
 	var mqttDownlinkEnabled: Bool = false
 	var mqttTopic: String = ""
 	var phoneOnly: Bool = false
-	
+
 	var body: some View {
 		HStack {
 			if (phoneOnly && UIDevice.current.userInterfaceIdiom == .phone) || !phoneOnly {
