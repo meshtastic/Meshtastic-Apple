@@ -160,7 +160,7 @@ extension AccessoryManager {
 		case .cannedMessage:
 			try? getCannedMessageModuleMessages(destNum: deviceNum, wantResponse: true)
 		default:
-			Logger.services.error("Unkown Module Config variant UNHANDLED \(moduleConfigPacket.payloadVariant.debugDescription)")
+			Logger.services.error("⁉️ Unknown Module Config variant UNHANDLED \(moduleConfigPacket.payloadVariant.debugDescription, privacy: .public)")
 		}
 
 	}
