@@ -189,7 +189,7 @@ class BLEConnectionProxy: NSObject, CBPeripheralDelegate {
 		guard let services = peripheral.services else { return }
 		for service in services where service.uuid == meshtasticServiceCBUUID {
 			peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID, LOGRADIO_UUID], for: service)
-			Logger.transport.info("✅ [BLE] Service for Meshtastic discovered by \(peripheral.name ?? "Unknown", privacy: .public)")
+			Logger.transport.info("🛜  [BLE] Service for Meshtastic discovered by \(peripheral.name ?? "Unknown", privacy: .public)")
 		}
 	}
 	
@@ -206,42 +206,42 @@ class BLEConnectionProxy: NSObject, CBPeripheralDelegate {
 		for characteristic in characteristics {
 			switch characteristic.uuid {
 			case TORADIO_UUID:
-				Logger.transport.info("✅ [BLE] did discover TORADIO characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
+				Logger.transport.info("🛜  [BLE] did discover TORADIO characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
 				TORADIO_characteristic = characteristic
 				
 			case FROMRADIO_UUID:
-				Logger.transport.info("✅ [BLE] did discover FROMRADIO characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
+				Logger.transport.info("🛜  [BLE] did discover FROMRADIO characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
 				FROMRADIO_characteristic = characteristic
 				self.peripheral.setNotifyValue(true, for: characteristic)
 				
 			case FROMNUM_UUID:
-				Logger.transport.info("✅ [BLE] did discover FROMNUM (Notify) characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
+				Logger.transport.info("🛜  [BLE] did discover FROMNUM (Notify) characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
 				FROMNUM_characteristic = characteristic
 				self.peripheral.setNotifyValue(true, for: characteristic)
 				
 			case LOGRADIO_UUID:
-				Logger.transport.info("✅ [BLE] did discover LOGRADIO (Notify) characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
+				Logger.transport.info("🛜  [BLE] did discover LOGRADIO (Notify) characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
 				LOGRADIO_characteristic = characteristic
 				self.peripheral.setNotifyValue(true, for: characteristic)
 				
 			default:
-				Logger.transport.info("✅ [BLE] did discover unsupported \(characteristic.uuid) characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
+				Logger.transport.info("🛜  [BLE] did discover unsupported \(characteristic.uuid) characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
 			}
 		}
 		
 		if TORADIO_characteristic != nil && FROMRADIO_characteristic != nil && FROMNUM_characteristic != nil {
-			Logger.transport.info("✅ [BLE] characteristics ready")
+			Logger.transport.info("🛜  [BLE] characteristics ready")
 			readyCallback(.success(()))
 			// Read initial RSSI on ready
 			peripheral.readRSSI()
 		} else {
-			Logger.transport.info("✅ [BLE] Missing required characteristics")
+			Logger.transport.info("🛜  [BLE] Missing required characteristics")
 			readyCallback(.failure(AccessoryError.discoveryFailed("Missing required characteristics")))
 		}
 	}
 	
 	func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-		Logger.transport.info("✅ [BLE] Did update value for \(characteristic.meshtasticCharacteristicName)=\(characteristic.value ?? Data())")
+		Logger.transport.info("🛜 [BLE] Did update value for \(characteristic.meshtasticCharacteristicName)=\(characteristic.value ?? Data())")
 		if let error = error {
 			if characteristic.uuid == FROMRADIO_UUID {
 				readContinuation?.resume(throwing: error)
@@ -275,17 +275,17 @@ class BLEConnectionProxy: NSObject, CBPeripheralDelegate {
 		guard characteristic.uuid == TORADIO_UUID, !writeContinuations.isEmpty else { return }
 		let cont = writeContinuations.removeFirst()
 		if let error = error {
-			Logger.transport.error("[BLE] Did write for \(characteristic.meshtasticCharacteristicName) with error \(error)")
+			Logger.transport.error("🛜 [BLE] Did write for \(characteristic.meshtasticCharacteristicName) with error \(error)")
 			cont.resume(throwing: error)
 		} else {
-			Logger.transport.error("[BLE] Did write for \(characteristic.meshtasticCharacteristicName)")
+			Logger.transport.error("🛜 [BLE] Did write for \(characteristic.meshtasticCharacteristicName)")
 			cont.resume()
 		}
 	}
 	
 	func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
 		if let error = error {
-			Logger.transport.error("[BLE] Error reading RSSI: \(error.localizedDescription)")
+			Logger.transport.error("🛜 [BLE] Error reading RSSI: \(error.localizedDescription)")
 			return
 		}
 		eventContinuation?.yield(.rssiUpdate(RSSI.intValue))
@@ -324,7 +324,7 @@ class BLEConnectionProxy: NSObject, CBPeripheralDelegate {
 			peripheral.readValue(for: FROMRADIO_characteristic)
 		}
 		if data.isEmpty {
-			Logger.transport.error("[BLE] Received empty data, ending drain operation.")
+			Logger.transport.error("🛜 [BLE] Received empty data, ending drain operation.")
 		}
 		return data
 	}

@@ -221,7 +221,7 @@ class BLETransport: Transport {
 	}
 	
 	func manuallyConnect(withConnectionString: String) async throws {
-		Logger.transport.error("This transport does not support manual connections")
+		Logger.transport.error("🛜 [BLE] This transport does not support manual connections")
 	}
 
 }
