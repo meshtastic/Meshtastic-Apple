@@ -350,7 +350,7 @@ class BLEConnectionProxy: NSObject, CBPeripheralDelegate {
 		eventContinuation?.finish()
 		eventContinuation = nil
 		
-		readContinuation?.resume(throwing: AccessoryError.ioFailed("Disconnected"))
+		readContinuation?.resume(throwing: AccessoryError.disconnected)
 		readContinuation = nil
 	}
 	

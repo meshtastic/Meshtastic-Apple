@@ -50,7 +50,6 @@ extension AccessoryManager {
 					for await event in eventStream {
 						self.didReceive(event)
 					}
-					self.didReceive(.error(AccessoryError.connectionFailed("Connection closed")))
 				}
 				self.activeConnection = (device: device, connection: connection)
 				

@@ -203,6 +203,10 @@ actor SerialConnection: Connection {
 	}
 
 	func disconnect() async throws {
+		eventStreamContinuation?.yield(.error(AccessoryError.disconnected))
+		eventStreamContinuation?.finish()
+		eventStreamContinuation = nil
+		
 		// To disconnect, we just cancel the read source.
 		// The cancellation handler will perform the actual cleanup.
 		readSource?.cancel()
