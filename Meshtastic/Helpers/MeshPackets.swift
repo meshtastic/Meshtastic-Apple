@@ -258,7 +258,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPass
 
 func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObjectContext) -> NodeInfoEntity? {
 
-	let logString = String.localizedStringWithFormat("Node info received for: %@".localized, String(nodeInfo.num))
+	let logString = String.localizedStringWithFormat("[NodeInfo] received for: %@".localized, String(nodeInfo.num))
 	Logger.mesh.info("📟 \(logString, privacy: .public)")
 
 	guard nodeInfo.num > 0 else { return nil }

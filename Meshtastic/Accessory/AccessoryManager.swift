@@ -68,7 +68,7 @@ enum AccessoryManagerState: Equatable {
 		case .subscribed:
 			return "Subscribed"
 		case .retreivingDatabase(let nodeCount):
-			return "Retreiving Database \(nodeCount)"
+			return "Retreiving nodes \(nodeCount)"
 		}
 	}
 }
@@ -337,7 +337,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 	// Update state on MainActor for presentation in the UI
 	func updateState(_ newState: AccessoryManagerState) {
-		Logger.transport.info("Updating state from \(self.state.description) to \(newState.description)")
+		Logger.transport.info("🔗 Updating state from \(self.state.description, privacy: .public) to \(newState.description, privacy: .public)")
 		switch newState {
 		case .uninitialized, .idle, .discovering:
 			self.isConnected = false
