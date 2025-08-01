@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-15
 
     steps:
       - name: Checkout
@@ -61,12 +61,12 @@ jobs:
       - name: Upload dSYMs to Datadog
         env:
           DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
-          DATADOG_SITE: datadoghq.com
+          DATADOG_SITE: us5.datadoghq.com
         run: |
           # Upload all dSYM files to Datadog
           if [ -d "./build/dSYMs" ] && [ "$(find ./build/dSYMs -name "*.dSYM" -type d | wc -l)" -gt 0 ]; then
             echo "Uploading dSYM files to Datadog..."
-            datadog-ci dsyms upload ./build/dSYMs --dry-run=false
+            datadog-ci dsyms upload ./build/dSYMs
           else
             echo "No dSYM files found to upload"
             exit 1
