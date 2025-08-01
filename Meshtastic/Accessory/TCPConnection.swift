@@ -137,6 +137,7 @@ actor TCPConnection: Connection {
 		connection?.cancel()
 		connection = nil
 		
+		connectionStreamContinuation?.yield(.error(AccessoryError.disconnected))
 		connectionStreamContinuation?.finish()
 		connectionStreamContinuation = nil
 	}

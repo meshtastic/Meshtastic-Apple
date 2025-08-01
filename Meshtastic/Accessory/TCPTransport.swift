@@ -71,7 +71,7 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 
 	func netServiceDidResolveAddress(_ service: NetService) {
 		guard let host = service.hostName else {
-			Logger.transport.error("[TCP] Failed to resolve host for service \(service.name)")
+			Logger.transport.error("🌐 [TCP] Failed to resolve host for service \(service.name)")
 			return
 		}
 		let port = service.port
@@ -91,11 +91,11 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 	}
 
 	func netService(_ sender: NetService, didNotResolve errorDict: [String: NSNumber]) {
-		Logger.transport.error("[TCP] Failed to resolve service \(sender.name): \(errorDict)")
+		Logger.transport.error("🌐 [TCP] Failed to resolve service \(sender.name): \(errorDict)")
 	}
 
 	func connect(to device: Device) async throws -> any Connection {
-		Logger.transport.error("[TCP] Connect to device: \(device.name) with identifier: \(device.identifier)")
+		Logger.transport.error("🌐 [TCP] Connect to device: \(device.name) with identifier: \(device.identifier)")
 		let parts = device.identifier.split(separator: ":")
 		
 		var host: String?
@@ -122,7 +122,7 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 	
 	func netServiceBrowser(_ browser: NetServiceBrowser, didRemove service: NetService, moreComing: Bool) {
 		guard let leavingService = services[service.name] else {
-			Logger.transport.error("[TCP] Service \(service.name) not found in resolved services")
+			Logger.transport.error("🌐 [TCP] Service \(service.name) not found in resolved services")
 			return
 		}
 
@@ -185,7 +185,7 @@ extension TCPTransport {
 			do {
 				listener = try NWListener(using: .tcp)
 			} catch {
-				Logger.transport.error("[TCP Permissions] Failed to create NWListener: \(error)")
+				Logger.transport.error("🌐 [TCP Permissions] Failed to create NWListener: \(error)")
 				resumeOnce(false)
 				return
 			}
@@ -202,11 +202,11 @@ extension TCPTransport {
 					// No-op
 					break
 				case .failed(let error):
-					Logger.transport.error("[TCP Permissions] Authorization NWListener failed: \(error)")
+					Logger.transport.error("🌐 [TCP Permissions] Authorization NWListener failed: \(error)")
 					resumeOnce(false)
 					listener.cancel()
 				@unknown default:
-					Logger.transport.debug("[TCP Permissions] Authorization NWListener unknown state")
+					Logger.transport.debug("🌐 [TCP Permissions] Authorization NWListener unknown state")
 				}
 			}
 
@@ -223,26 +223,26 @@ extension TCPTransport {
 					// No-op
 					break
 				case .waiting(let error):
-					Logger.transport.debug("[TCP Permissions] Authorization NWBrowser waiting: \(error)")
+					Logger.transport.debug("🌐 [TCP Permissions] Authorization NWBrowser waiting: \(error)")
 					if case .dns(let dnsError) = error, dnsError == DNSServiceErrorType(kDNSServiceErr_PolicyDenied) {  // Or check rawValue == -72003
 						resumeOnce(false)
 						browser.cancel()
 						listener.cancel()
 					}
 				case .failed(let error):
-					Logger.transport.error("[TCP Permissions] Authorization NWBrowser failed: \(error)")
+					Logger.transport.error("🌐 [TCP Permissions] Authorization NWBrowser failed: \(error)")
 					resumeOnce(false)
 					browser.cancel()
 					listener.cancel()
 				@unknown default:
-					Logger.transport.debug("[TCP] Authorization NWBrowser unknown state")
+					Logger.transport.debug("🌐 [TCP] Authorization NWBrowser unknown state")
 				}
 			}
 
 			// Key addition: Detect success when the browser finds the service (permission granted)
 			browser.browseResultsChangedHandler = { results, _ in
 				if !results.isEmpty {
-					Logger.transport.debug("[TCP Permissions] Authorization NWBrowser found results, permission granted")
+					Logger.transport.debug("🌐 [TCP Permissions] Authorization NWBrowser found results, permission granted")
 					resumeOnce(true)
 					browser.cancel()
 					listener.cancel()

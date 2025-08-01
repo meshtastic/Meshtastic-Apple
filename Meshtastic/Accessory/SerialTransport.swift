@@ -35,7 +35,7 @@ class SerialTransport: Transport {
 					for port in ports {
 						let id = port.toUUIDFormatHash() ?? UUID()
 						if !portsAlreadyNotified.contains(port) {
-							Logger.transport.info("[Serial] Port \(port) found.")
+							Logger.transport.info("🔱 [Serial] Port \(port) found.")
 							let newDevice = Device(id: id,
 												   name: port.components(separatedBy: "/").last ?? port,
 												transportType: .serial,
@@ -46,7 +46,7 @@ class SerialTransport: Transport {
 					}
 					for knownPort in portsAlreadyNotified where !ports.contains(knownPort) {
 						// Previosuly seen port is no longer available
-						Logger.transport.info("[Serial] Port \(knownPort) is no longer connected.")
+						Logger.transport.info("🔱 [Serial] Port \(knownPort) is no longer connected.")
 						if let uuid = knownPort.toUUIDFormatHash() {
 							cont.yield(.deviceLost(uuid))
 						}
@@ -118,7 +118,7 @@ class SerialTransport: Transport {
 	}
 	
 	func manuallyConnect(withConnectionString: String) async throws {
-		Logger.transport.error("This transport does not support manual connections")
+		Logger.transport.error("🔱 [USB] This transport does not support manual connections")
 	}
 }
 #endif

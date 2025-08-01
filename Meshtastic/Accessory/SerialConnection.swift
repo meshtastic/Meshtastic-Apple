@@ -81,7 +81,7 @@ actor SerialConnection: Connection {
 			if let fromRadio = try? FromRadio(serializedBytes: payload) {
 				eventStreamContinuation?.yield(.data(fromRadio))
 			} else {
-				Logger.transport.error("[Serial] Failed to deserialize payload. Skipping packet.")
+				Logger.transport.error("🔱 [Serial] Failed to deserialize payload. Skipping packet.")
 			}
 
 			readBuffer.removeSubrange(0..<totalPacketLength)
@@ -134,7 +134,7 @@ actor SerialConnection: Connection {
 				}
 			}
 		} catch {
-			Logger.transport.error("[Serial] Read error: \(error)")
+			Logger.transport.error("🔱 [Serial] Read error: \(error)")
 			handleReaderEOF()
 		}
 	}
@@ -146,7 +146,7 @@ actor SerialConnection: Connection {
 	}
 
 	private func handleReaderEOF() {
-		Logger.transport.info("[Serial] Reached end of file. Closing connection.")
+		Logger.transport.info("🔱 [Serial] Reached end of file. Closing connection.")
 		readSource?.cancel()
 	}
 
@@ -199,10 +199,14 @@ actor SerialConnection: Connection {
 		eventStreamContinuation?.finish()
 		eventStreamContinuation = nil
 		
-		Logger.transport.debug("[Serial] Connection cleaned up.")
+		Logger.transport.debug("🔱 [Serial] Connection cleaned up.")
 	}
 
 	func disconnect() async throws {
+		eventStreamContinuation?.yield(.error(AccessoryError.disconnected))
+		eventStreamContinuation?.finish()
+		eventStreamContinuation = nil
+		
 		// To disconnect, we just cancel the read source.
 		// The cancellation handler will perform the actual cleanup.
 		readSource?.cancel()
