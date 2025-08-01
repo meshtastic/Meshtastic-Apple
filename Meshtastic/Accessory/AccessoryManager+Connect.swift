@@ -145,8 +145,8 @@ extension AccessoryManager {
 				try await self.disconnect()
 			default:
 				Logger.transport.error("Error returned by connectionStepper: \(error)")
-				self.lastConnectionError = error
 			}
+			self.lastConnectionError = error
 		}
 		
 		// All done, one way or another, clean up
@@ -219,6 +219,7 @@ actor SequentialSteps {
 							try await Task.sleep(for: retryDelay)
 						}
 						do {
+							// Starting a new attempt for this step.
 							if let duration = currentStep.timeout {
 								// Execute this task with a timeout
 								self.currentlyExecutingStep = executeWithTimeout(stepNumber: stepNumber, timeout: duration) {
@@ -238,10 +239,9 @@ actor SequentialSteps {
 								// If this is the last retry attempt, we throw the error to the outer loop
 								throw error
 							} else {
-								
 								switch error {
 								case let SequentialStepError.timeout(stepNumber, afterWaiting):
-									Logger.transport.info("[Inner Retry Step Loop] Sequential process timed out on step \(stepNumber) after waiting \(afterWaiting)")
+									Logger.transport.info("[Inner Retry Step Loop] Sequential process timed out on step \(stepNumber) of \(stepRetries) after waiting \(afterWaiting)")
 								default:
 									Logger.transport.error("[Inner Retry Step Loop] Sequential process failed on step \(stepNumber) with error: \(error.localizedDescription)")
 								}
@@ -255,11 +255,16 @@ actor SequentialSteps {
 					default:
 						Logger.transport.error("[Outer Step Retry Loop] Sequential process failed on step \(stepNumber) with error: \(error.localizedDescription)")
 					}
-					if case .fail = currentStep.failureBehavior {
+					switch currentStep.failureBehavior {
+					case .retryAll, .retryStep:
+						// TODO: we could have a .retryStepAndFail and a .retryStepAndContinue instead of just .retryStep to clarify the behavior here
 						continue retryLoop
+					case .fail:
+						throw error
 					}
 				}
 			}
+			// We have finished all steps
 			return
 		}
 		throw AccessoryError.tooManyRetries

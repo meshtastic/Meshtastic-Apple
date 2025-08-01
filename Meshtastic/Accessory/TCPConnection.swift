@@ -69,7 +69,7 @@ actor TCPConnection: Connection {
 						Logger.transport.debug("🌐 [TCP] startReader: EOF while waiting for magic bytes")
 						continue
 					}
-					//Logger.transport.debug("[TCP] startReader: Found magic byte, waiting for length")
+					// Logger.transport.debug("[TCP] startReader: Found magic byte, waiting for length")
 
 					if let length = try? await readInteger() {
 						let payload = try await receiveData(min: Int(length), max: Int(length))
@@ -83,6 +83,7 @@ actor TCPConnection: Connection {
 					}
 				} catch {
 					Logger.transport.error("🌐 [TCP] startReader: Error reading from TCP: \(error)")
+					await connectionStreamContinuation?.yield(.error(error))
 					await connectionStreamContinuation?.finish()
 					break
 				}
@@ -190,7 +191,10 @@ actor TCPConnection: Connection {
 				switch state {
 				case .failed(let error):
 					Logger.transport.error("🌐 [TCP] Connection failed after ready: \(error)")
-					Task { try? await self.disconnect() }
+					Task {
+						await self.connectionStreamContinuation?.yield(.error(error))
+						try? await self.disconnect()
+					}
 				case .cancelled:
 					Logger.transport.debug("🌐 [TCP] Connection cancelled")
 				default:

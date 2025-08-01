@@ -104,6 +104,7 @@ actor BLEConnection: Connection {
 				let decodedInfo = try FromRadio(serializedBytes: data)
 				connectionStreamContinuation?.yield(.data(decodedInfo))
 			} catch {
+				connectionStreamContinuation?.yield(.error(error))
 				connectionStreamContinuation?.finish()
 				throw error  // Re-throw to propagate up to the caller for handling
 			}

@@ -30,6 +30,6 @@ enum ConnectionState: Equatable {
 	case connected
 }
 
-enum ConnectionError: Error {
+enum ConnectionError: Error, LocalizedError {
 	case ioError(String)
 }

@@ -9,7 +9,7 @@ import MeshtasticProtobufs
 import OSLog
 import CocoaMQTT
 
-enum AccessoryError: Error {
+enum AccessoryError: Error, LocalizedError {
 	case discoveryFailed(String)
 	case connectionFailed(String)
 	case versionMismatch(String)
