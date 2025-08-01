@@ -70,7 +70,7 @@ struct Connect: View {
 														.symbolRenderingMode(.multicolor)
 														.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 														.foregroundColor(.teal)
-													Text("Retreiving Database \(nodeCount)").font(.callout)
+													Text("Retreiving nodes \(nodeCount)").font(.callout)
 														.foregroundColor(.teal)
 												}
 											case .communicating:
@@ -187,7 +187,7 @@ struct Connect: View {
 												.font(.title2)
 												.foregroundColor(.orange)
 										case .retreivingDatabase:
-											Text("Retreiving database . .")
+											Text("Retreiving nodes . .")
 												.font(.callout)
 												.foregroundColor(.orange)
 										case .retrying(let attempt):

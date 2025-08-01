@@ -66,7 +66,7 @@ actor TCPConnection: Connection {
 			while await isConnected {
 				do {
 					if try await waitForMagicBytes() == false {
-						Logger.transport.debug("[TCP] startReader: EOF while waiting for magic bytes")
+						Logger.transport.debug("🌐 [TCP] startReader: EOF while waiting for magic bytes")
 						continue
 					}
 					//Logger.transport.debug("[TCP] startReader: Found magic byte, waiting for length")
@@ -79,10 +79,10 @@ actor TCPConnection: Connection {
 							await connectionStreamContinuation?.finish()
 						}
 					} else {
-						Logger.transport.debug("[TCP] startReader: EOF while waiting for length")
+						Logger.transport.debug("🌐 [TCP] startReader: EOF while waiting for length")
 					}
 				} catch {
-					Logger.transport.error("[TCP] startReader: Error reading from TCP: \(error)")
+					Logger.transport.error("🌐 [TCP] startReader: Error reading from TCP: \(error)")
 					await connectionStreamContinuation?.finish()
 					break
 				}
@@ -129,7 +129,7 @@ actor TCPConnection: Connection {
 	}
 
 	func disconnect() async throws {
-		Logger.transport.debug("[TCP] Disconnecting from TCP connection")
+		Logger.transport.debug("🌐 [TCP] Disconnecting from TCP connection")
 		readerTask?.cancel()
 		readerTask = nil
 		
@@ -189,10 +189,10 @@ actor TCPConnection: Connection {
 		newConnection.stateUpdateHandler = { state in
 				switch state {
 				case .failed(let error):
-					Logger.transport.error("[TCP] Connection failed after ready: \(error)")
+					Logger.transport.error("🌐 [TCP] Connection failed after ready: \(error)")
 					Task { try? await self.disconnect() }
 				case .cancelled:
-					Logger.transport.debug("[TCP] Connection cancelled")
+					Logger.transport.debug("🌐 [TCP] Connection cancelled")
 				default:
 					break
 				}

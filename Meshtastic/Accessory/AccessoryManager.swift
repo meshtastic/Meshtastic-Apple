@@ -68,7 +68,7 @@ enum AccessoryManagerState: Equatable {
 		case .subscribed:
 			return "Subscribed"
 		case .retreivingDatabase(let nodeCount):
-			return "Retreiving Database \(nodeCount)"
+			return "Retreiving nodes \(nodeCount)"
 		}
 	}
 }
