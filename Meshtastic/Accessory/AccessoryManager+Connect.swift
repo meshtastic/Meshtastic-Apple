@@ -73,7 +73,7 @@ extension AccessoryManager {
 			
 			// Step 4: Send Heartbeat before wantConfig (database)
 			Step { @MainActor _ in
-				Logger.transport.info("[Connect] Step 4: Send heartbeat")
+				Logger.transport.info("💓 [Connect] Step 4: Send heartbeat")
 				try await self.sendHeartbeat()
 			}
 			
