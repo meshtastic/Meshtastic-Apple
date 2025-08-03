@@ -30,7 +30,7 @@ class BLETransport: Transport {
 	// Transport properties
 	var supportsManualConnection: Bool = false
 	let requiresPeriodicHeartbeat = false
-	var icon = Image(systemName: "wave.3.forward.circle")
+	var icon = Image("custom.bluetooth")
 	var name = "BLE"
 			
 	init() {
