@@ -641,14 +641,14 @@ extension AccessoryManager {
 extension AccessoryManager {
 	func setupPeriodicHeartbeat() async {
 		if let heartbeatTask {
-			Logger.transport.debug("[Heartbeat] Cancelling existing heartbeat task")
+			Logger.transport.debug("💓 [Heartbeat] Cancelling existing heartbeat task")
 			heartbeatTask.cancel()
 			self.heartbeatTask = nil
 		}
 		self.heartbeatTask = Task {
 			while Task.isCancelled == false {
 				try? await Task.sleep(for: .seconds(5 * 60))
-				Logger.transport.debug("[Heartbeat] Sending periodic heartbeat")
+				Logger.transport.debug("💓 [Heartbeat] Sending periodic heartbeat")
 				try? await sendHeartbeat()
 			}
 		}
