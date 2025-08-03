@@ -424,8 +424,16 @@ struct TransportIcon: View {
 	var body: some View {
 		let transport = accessoryManager.transports.first(where: {$0.type == transportType})
 		return HStack {
-			transport?.icon ?? Image(systemName: "questionmark")
+			if let icon = transport?.icon {
+				icon
+					.font(.title2)
+					.foregroundColor(transport?.type == .ble ? Color.accentColor : Color.primary)
+			} else {
+				Image(systemName: "questionmark")
+					.font(.title2)
+			}
 			Text(transport?.name ?? "Unknown".localized)
+				.font(.title3)
 		}
 	}
 }

@@ -71,7 +71,7 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 
 	func netServiceDidResolveAddress(_ service: NetService) {
 		guard let host = service.hostName else {
-			Logger.transport.error("🌐 [TCP] Failed to resolve host for service \(service.name)")
+			Logger.transport.error("🌐 [TCP] Failed to resolve host for service \(service.name, privacy: .public)")
 			return
 		}
 		let port = service.port
@@ -91,11 +91,11 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 	}
 
 	func netService(_ sender: NetService, didNotResolve errorDict: [String: NSNumber]) {
-		Logger.transport.error("🌐 [TCP] Failed to resolve service \(sender.name): \(errorDict)")
+		Logger.transport.error("🌐 [TCP] Failed to resolve service \(sender.name, privacy: .public): \(errorDict, privacy: .public)")
 	}
 
 	func connect(to device: Device) async throws -> any Connection {
-		Logger.transport.error("🌐 [TCP] Connect to device: \(device.name) with identifier: \(device.identifier)")
+		Logger.transport.error("🌐 [TCP] Connect to device: \(device.name, privacy: .public) with identifier: \(device.identifier, privacy: .public)")
 		let parts = device.identifier.split(separator: ":")
 		
 		var host: String?
@@ -122,7 +122,7 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 	
 	func netServiceBrowser(_ browser: NetServiceBrowser, didRemove service: NetService, moreComing: Bool) {
 		guard let leavingService = services[service.name] else {
-			Logger.transport.error("🌐 [TCP] Service \(service.name) not found in resolved services")
+			Logger.transport.error("🌐 [TCP] Service \(service.name, privacy: .public) not found in resolved services")
 			return
 		}
 

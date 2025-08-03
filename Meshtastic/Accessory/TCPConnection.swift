@@ -82,7 +82,7 @@ actor TCPConnection: Connection {
 						Logger.transport.debug("🌐 [TCP] startReader: EOF while waiting for length")
 					}
 				} catch {
-					Logger.transport.error("🌐 [TCP] startReader: Error reading from TCP: \(error)")
+					Logger.transport.error("🌐 [TCP] startReader: Error reading from TCP: \(error, privacy: .public)")
 					await connectionStreamContinuation?.yield(.error(error))
 					await connectionStreamContinuation?.finish()
 					break
@@ -191,7 +191,7 @@ actor TCPConnection: Connection {
 		newConnection.stateUpdateHandler = { state in
 				switch state {
 				case .failed(let error):
-					Logger.transport.error("🌐 [TCP] Connection failed after ready: \(error)")
+					Logger.transport.error("🌐 [TCP] Connection failed after ready: \(error, privacy: .public)")
 					Task {
 						await self.connectionStreamContinuation?.yield(.error(error))
 						try? await self.disconnect()
