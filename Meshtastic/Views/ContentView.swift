@@ -7,7 +7,7 @@ import SwiftUI
 struct ContentView: View {
 	@ObservedObject var appState: AppState
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@ObservedObject var router: Router
+	@State var router: Router
 	@State var isShowingDeviceOnboardingFlow: Bool = false
 
 	init(appState: AppState, router: Router) {

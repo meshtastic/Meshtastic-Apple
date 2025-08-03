@@ -14,7 +14,7 @@ struct NodeList: View {
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
-	@ObservedObject var router: Router
+	@State var router: Router
 
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
@@ -349,7 +349,7 @@ struct NodeList: View {
 		.onChange(of: router.navigationState) {
 			if let selected = router.navigationState.nodeListSelectedNodeNum {
 				// Force a complete view rebuild by generating a new UUID
-				Logger.services.info("Forcing view rebuild with new ID: \(self.forceRefreshID)")
+				Logger.services.info("👷‍♂️ [App] Forcing view rebuild with new ID: \(self.forceRefreshID, privacy: .public)")
 				// First clear selection
 				self.forceRefreshID = UUID()
 				self.selectedNode = nil
@@ -358,7 +358,7 @@ struct NodeList: View {
 					// Generate another UUID to ensure view gets rebuilt
 					self.forceRefreshID = UUID()
 					self.selectedNode = getNodeInfo(id: selected, context: context)
-					Logger.services.info("Complete view refresh with node: \(selected, privacy: .public)")
+					Logger.services.info("👷‍♂️ [App] Complete view refresh with node: \(selected, privacy: .public)")
 				}
 			} else {
 				self.selectedNode = nil

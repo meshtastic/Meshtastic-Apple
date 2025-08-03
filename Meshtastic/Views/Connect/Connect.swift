@@ -20,7 +20,7 @@ struct Connect: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@ObservedObject var router: Router
+	@State var router: Router
 	@State var node: NodeInfoEntity?
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
