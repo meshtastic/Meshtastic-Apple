@@ -19,17 +19,17 @@ class Router: ObservableObject {
 		self.navigationState = navigationState
 
 		$navigationState.sink { destination in
-			Logger.services.info("🛣 Routed to \(String(describing: destination), privacy: .public)")
+			Logger.services.info("🛣 [App] Routed to \(destination.selectedTab.rawValue, privacy: .public) \(String(describing: navigationState.selectedTab), privacy: .public)")
 		}.store(in: &cancellables)
 	}
 
 	func route(url: URL) {
 		guard url.scheme == "meshtastic" else {
-			Logger.services.error("🛣 Received routing URL \(url, privacy: .public) with invalid scheme. Ignoring route.")
+			Logger.services.error("🛣 [App] Received routing URL \(url, privacy: .public) with invalid scheme. Ignoring route.")
 			return
 		}
 		guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
-			Logger.services.error("🛣 Received routing URL \(url, privacy: .public) with invalid host path. Ignoring route.")
+			Logger.services.error("🛣 [App] Received routing URL \(url, privacy: .public) with invalid host path. Ignoring route.")
 			return
 		}
 
@@ -44,7 +44,7 @@ class Router: ObservableObject {
 		} else if components.path.hasPrefix("/settings") {
 			routeSettings(components)
 		} else {
-			Logger.services.warning("Failed to route url: \(url, privacy: .public)")
+			Logger.services.warning("🛣 [App] Failed to route url: \(url, privacy: .public)")
 		}
 	}
 
