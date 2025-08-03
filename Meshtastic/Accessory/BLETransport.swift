@@ -48,7 +48,7 @@ class BLETransport: Transport {
 				if self.centralManager == nil {
 					try await self.setupCentralManager()
 				}
-				centralManager?.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: nil)
+				centralManager?.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
 				
 				setupCleanupTask()
 			}
