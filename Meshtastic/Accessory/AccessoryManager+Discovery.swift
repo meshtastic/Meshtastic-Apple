@@ -17,6 +17,7 @@ extension AccessoryManager {
 					for await event in transport.discoverDevices() {
 						continuation.yield(event)
 					}
+					Logger.transport.info("[Discovery] Discovery stream closed for transport \(String(describing: transport.type))")
 				}
 			}
 			continuation.onTermination = { _ in tasks.forEach { $0.cancel() } }

@@ -50,6 +50,7 @@ extension AccessoryManager {
 					for await event in eventStream {
 						self.didReceive(event)
 					}
+					Logger.transport.info("[Accessory] Event stream closed")
 				}
 				self.activeConnection = (device: device, connection: connection)
 				

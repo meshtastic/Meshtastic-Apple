@@ -64,6 +64,7 @@ actor BLEConnection: Connection {
 	func disconnect() async throws {
 		self.fromNumTask?.cancel()
 		try proxy.disconnect()
+		connectionStreamContinuation?.yield(.error(AccessoryError.disconnected))
 		connectionStreamContinuation?.finish()
 		connectionStreamContinuation = nil
 	}
