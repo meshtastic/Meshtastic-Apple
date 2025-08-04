@@ -64,13 +64,13 @@ struct Connect: View {
 											case .subscribed:
 												Text("Subscribed").font(.callout)
 													.foregroundColor(.green)
-											case .retreivingDatabase(let nodeCount):
+											case .retrievingDatabase(let nodeCount):
 												HStack {
 													Image(systemName: "square.stack.3d.down.forward")
 														.symbolRenderingMode(.multicolor)
 														.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 														.foregroundColor(.teal)
-													Text("Retreiving nodes \(nodeCount)").font(.callout)
+													Text("Retrieving nodes \(nodeCount)").font(.callout)
 														.foregroundColor(.teal)
 												}
 											case .communicating:
@@ -186,7 +186,7 @@ struct Connect: View {
 											Text("Connecting . .")
 												.font(.title2)
 												.foregroundColor(.orange)
-										case .retreivingDatabase:
+										case .retrievingDatabase:
 											Text("Retreiving nodes . .")
 												.font(.callout)
 												.foregroundColor(.orange)

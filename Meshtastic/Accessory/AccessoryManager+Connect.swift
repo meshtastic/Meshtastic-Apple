@@ -24,11 +24,15 @@ extension AccessoryManager {
 			throw AccessoryError.connectionFailed("No transport for type")
 		}
 		
+		// Clear any errors from last time
+		lastConnectionError = nil
+		
 		// Prepare to connect
 		self.connectionStepper = SequentialSteps(maxRetries: maxRetries, retryDelay: retryDelay) {
 			
 			// Step 0
 			Step { @MainActor retryAttempt in
+				try Task.checkCancellation()
 				Logger.transport.info("🔗 [Connect] Starting connection to \(device.id)")
 				if retryAttempt > 0 {
 					try await self.closeConnection() // clean-up before retries.
@@ -42,6 +46,7 @@ extension AccessoryManager {
 			
 			// Step 1: Setup the connection
 			Step(timeout: .seconds(2)) { @MainActor _ in
+				try Task.checkCancellation()
 				Logger.transport.info("🔗 [Connect] Step 1: connection to \(device.id)")
 				let connection = try await transport.connect(to: device)
 				let eventStream = try await connection.connect()
@@ -61,38 +66,44 @@ extension AccessoryManager {
 			
 			// Step 2: Send Heartbeat before wantConfig (config)
 			Step { @MainActor _ in
+				try Task.checkCancellation()
 				Logger.transport.info("💓 [Connect] Step 2: Send heartbeat")
 				try await self.sendHeartbeat()
 			}
 			
 			// Step 3: Send WantConfig (config)
 			Step(timeout: .seconds(30)) { @MainActor _ in
+				try Task.checkCancellation()
 				Logger.transport.info("🔗 [Connect] Step 3: Send wantConfig (config)")
 				await self.sendWantConfig()
 			}
 			
 			// Step 4: Send Heartbeat before wantConfig (database)
 			Step { @MainActor _ in
+				try Task.checkCancellation()
 				Logger.transport.info("💓 [Connect] Step 4: Send heartbeat")
 				try await self.sendHeartbeat()
 			}
 			
 			// Step 5: Send WantConfig (database)
 			Step(timeout: .seconds(3.0), onFailure: .retryStep(attempts: 3)) { @MainActor _ in
+				try Task.checkCancellation()
 				Logger.transport.info("🔗 [Connect] Step 5: Send wantConfig (database)")
-				self.updateState(.retreivingDatabase(nodeCount: 0))
+				self.updateState(.retrievingDatabase(nodeCount: 0))
 				self.allowDisconnect = true
 				await self.sendWantDatabase()
 			}
 			
 			// Step 5a: Wait for end of WantConfig (database)
 			Step { @MainActor _ in
+				try Task.checkCancellation()
 				Logger.transport.info("🔗[Connect] Step 5a: Wait for the final database")
 				try await self.waitForWantDatabaseResponse()
 			}
 			
 			// Step 6: Version check
 			Step { @MainActor _ in
+				try Task.checkCancellation()
 				Logger.transport.info("🔗 [Connect] Step 6: Version check")
 
 				guard let firmwareVersion = self.activeConnection?.device.firmwareVersion else {
@@ -118,6 +129,7 @@ extension AccessoryManager {
 			
 			// Step 7: Update UI and status to connected
 			Step { @MainActor _ in
+				try Task.checkCancellation()
 				Logger.transport.info("🔗 [Connect] Step 7: Update UI and status")
 
 				// We have an active connection
@@ -127,6 +139,7 @@ extension AccessoryManager {
 			
 			// Step 8: Update UI and status to connected
 			Step { @MainActor _ in
+				try Task.checkCancellation()
 				Logger.transport.debug("🔗 [Connect] Step 8: Initialize MQTT and Location Provider")
 				await self.initializeMqtt()
 				self.initializeLocationProvider()
@@ -142,7 +155,8 @@ extension AccessoryManager {
 		} catch {
 			switch error {
 			case AccessoryError.tooManyRetries:
-				try await self.disconnect()
+				try await self.closeConnection()
+				updateState(.discovering)
 			default:
 				Logger.transport.error("🔗 [Connect] Error returned by connectionStepper: \(error)")
 			}
@@ -242,6 +256,8 @@ actor SequentialSteps {
 								switch error {
 								case let SequentialStepError.timeout(stepNumber, afterWaiting):
 									Logger.transport.info("[Inner Retry Step Loop] Sequential process timed out on step \(stepNumber) of \(stepRetries) after waiting \(afterWaiting)")
+								case let CancellationError:
+									break stepRetryLoop
 								default:
 									Logger.transport.error("[Inner Retry Step Loop] Sequential process failed on step \(stepNumber) with error: \(error.localizedDescription)")
 								}

@@ -110,7 +110,7 @@ actor SerialConnection: Connection {
 		// The cancellation handler also hops back to the actor to clean up.
 		source.setCancelHandler { [weak self] in
 			Task {
-				await self?.cleanUpConnection()
+				try? await self?.disconnect(withError: AccessoryError.disconnected("Serial connection lost"))
 			}
 		}
 
@@ -186,30 +186,27 @@ actor SerialConnection: Connection {
 		return getPacketStream()
 	}
 
-	/// This is the primary cleanup function, called when the read source is cancelled.
-	private func cleanUpConnection() {
-		guard isOpen else { return }
-		isOpen = false
-
-		try? fileHandle?.close()
-		fileHandle = nil
-		fd = -1
-		readSource = nil
-
-		eventStreamContinuation?.finish()
-		eventStreamContinuation = nil
-		
-		Logger.transport.debug("🔱 [Serial] Connection cleaned up.")
+	func disconnect(userInitiated: Bool) async throws {
+		try await self.disconnect(withError: userInitiated ? nil : AccessoryError.disconnected("Unknown error"))
 	}
-
-	func disconnect() async throws {
-		eventStreamContinuation?.yield(.error(AccessoryError.disconnected))
+	
+	func disconnect(withError error: Error? = nil) async throws {
+		if let error {
+			eventStreamContinuation?.yield(.error(error))
+		} else {
+			eventStreamContinuation?.yield(.userDisconnected)
+		}
 		eventStreamContinuation?.finish()
 		eventStreamContinuation = nil
 		
-		// To disconnect, we just cancel the read source.
-		// The cancellation handler will perform the actual cleanup.
-		readSource?.cancel()
+		if isOpen {
+			isOpen = false
+			try? fileHandle?.close()
+			fileHandle = nil
+			fd = -1
+			readSource?.cancel()
+			readSource = nil
+		}		
 	}
 
 	// MARK: - Sending Data

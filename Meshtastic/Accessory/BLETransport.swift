@@ -164,24 +164,31 @@ class BLETransport: Transport {
 		guard let cm = centralManager else {
 			throw AccessoryError.connectionFailed("Central manager not available")
 		}
-		let newConnection: BLEConnection = try await withCheckedThrowingContinuation { cont in
-			if self.connectContinuation != nil || self.activeConnection != nil {
-				cont.resume(throwing: AccessoryError.connectionFailed("BLE transport is busy: already connecting or connected"))
-				return
+		return try await withTaskCancellationHandler  {
+			let newConnection: BLEConnection = try await withCheckedThrowingContinuation { cont in
+				if self.connectContinuation != nil || self.activeConnection != nil {
+					cont.resume(throwing: AccessoryError.connectionFailed("BLE transport is busy: already connecting or connected"))
+					return
+				}
+				self.connectContinuation = cont
+				self.connectingPeripheral = peripheral.peripheral
+				cm.connect(peripheral.peripheral)
 			}
-			self.connectContinuation = cont
-			self.connectingPeripheral = peripheral.peripheral
-			cm.connect(peripheral.peripheral)
+			self.activeConnection = newConnection
+			return newConnection
+		} onCancel: {
+			self.connectContinuation?.resume(throwing: CancellationError())
+			self.connectContinuation = nil
+			self.activeConnection = nil
+			self.connectingPeripheral = nil
 		}
-		self.activeConnection = newConnection
-		return newConnection
 	}
 
 	func handlePeripheralDisconnect(peripheral: CBPeripheral) {
 		if let connection = self.activeConnection {
 			Task {
 				if await connection.peripheral.identifier == peripheral.identifier {
-					try await connection.disconnect()
+					try await connection.disconnect(withError: AccessoryError.disconnected("BLE connection lost"))
 					self.activeConnection = nil
 				}
 			}

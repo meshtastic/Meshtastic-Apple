@@ -16,8 +16,9 @@ enum AccessoryError: Error, LocalizedError {
 	case ioFailed(String)
 	case appError(String)
 	case timeout
-	case disconnected
+	case disconnected(String)
 	case tooManyRetries
+	case eventStreamCancelled
 	
 	var errorDescription: String? {
 		switch self {
@@ -33,10 +34,12 @@ enum AccessoryError: Error, LocalizedError {
 			return "Application error: \(message)"
 		case .timeout:
 			return "Timeout"
-		case .disconnected:
-			return "Disconnected"
+		case .disconnected(let message):
+			return "Disconnected: \(message)"
 		case .tooManyRetries:
 			return "Too Many Retries"
+		case .eventStreamCancelled:
+			return "Event stream cancelled"
 		}
 	}
 }
@@ -47,7 +50,7 @@ enum AccessoryManagerState: Equatable {
 	case discovering
 	case connecting
 	case retrying(attempt: Int)
-	case retreivingDatabase(nodeCount: Int)
+	case retrievingDatabase(nodeCount: Int)
 	case communicating
 	case subscribed
 
@@ -67,7 +70,7 @@ enum AccessoryManagerState: Equatable {
 			return "Communicating"
 		case .subscribed:
 			return "Subscribed"
-		case .retreivingDatabase(let nodeCount):
+		case .retrievingDatabase(let nodeCount):
 			return "Retreiving nodes \(nodeCount)"
 		}
 	}
@@ -230,38 +233,17 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
-//	private func sendNonceRequest(nonce: UInt32, connection: any Connection) async throws {
-//		if let inProgressNonceRequest = wantConfigContinuations[nonce] {
-//			Logger.transport.info("[Accessory] Existing nonce request for \(nonce) in progress. Cancelling.")
-//			inProgressNonceRequest.resume(throwing: CancellationError())
-//			wantConfigContinuations.removeValue(forKey: nonce)
-//		}
-//		try await withTaskCancellationHandler {
-//			// Create the protobuf with the wantConfigID nonce
-//			var toRadio: ToRadio = ToRadio()
-//			toRadio.wantConfigID = nonce
-//			
-//			// Send it to the radio
-//			try await self.send(toRadio)
-//			
-//			// Start draining packets in the background
-//			try await connection.startDrainPendingPackets()
-//			
-//			// Wait for the nonce request to be completed before continuing
-//			try await withCheckedThrowingContinuation { cont in
-//				wantConfigContinuations[nonce] = cont
-//			}
-//		} onCancel: {
-//			Task { @MainActor in
-//				wantConfigContinuations[nonce]?.resume(throwing: CancellationError())
-//				wantConfigContinuations[nonce] = nil
-//			}
-//		}
-//	}
-
+	// Fully tears down a connection and sets up the AccessoryManager for the next.
+	// If you are calling this in response to an error, then you should have
+	// exposed the error to the UI or handled the error prior to calling this.
 	func closeConnection() async throws {
 		Logger.transport.debug("[AccessoryManager] received disconnect request")
 
+		if let activeConnection {
+			updateDevice(deviceId: activeConnection.device.id, key: \.connectionState, value: .disconnected)
+			self.activeConnection = nil
+		}
+		
 		connectionEventTask?.cancel()
 		connectionEventTask = nil
 		
@@ -280,26 +262,20 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			wantDatabaseContiniuation.resume(throwing: CancellationError())
 		}
 		self.wantDatabaseContinuation = nil
-
-		// Close out the connection
-		if let activeConnection = activeConnection {
-			self.activeConnection = nil
-			try await activeConnection.connection.disconnect()
-			updateDevice(deviceId: activeConnection.device.id, key: \.connectionState, value: .disconnected)
-		}
+		
+		// Turn off the disconnect buttons
+		allowDisconnect = false
 	}
 	
+	// Should only be called by UI-facing callers.
 	func disconnect() async throws {
 		// Cancel ongoing connection task if it exists
 		await self.connectionStepper?.cancel()
 
-		try await closeConnection()
-
-		// Turn off the disconnect buttons
-		allowDisconnect = false
-		
-		// Set state back to discovering
-		updateState(.discovering)
+		// Close out the connection
+		if let activeConnection = activeConnection {
+			try await activeConnection.connection.disconnect(userInitiated: true)
+		}
 	}
 
 	// Update device attributes on MainActor for presentation in the UI
@@ -342,7 +318,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		case .uninitialized, .idle, .discovering:
 			self.isConnected = false
 			self.isConnecting = false
-		case .connecting, .communicating, .retrying, .retreivingDatabase:
+		case .connecting, .communicating, .retrying, .retrievingDatabase:
 			self.isConnected = false
 			self.isConnecting = true
 		case .subscribed:
@@ -380,15 +356,32 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			updateDevice(deviceId: deviceId, key: \.rssi, value: rssi)
 			
 		case .error(let error):
-			// Handle error, perhaps log and disconnect
-			Logger.transport.info("🚨 [Accessory] didReceive with failure: \(error.localizedDescription)")
-			lastConnectionError = error
-			switch self.state {
-			case .connecting, .retrying:
-				break
-			default:
-				Task { try? await self.disconnect() }
+			Task {
+				// Handle error, perhaps log and disconnect
+				Logger.transport.info("🚨 [Accessory] didReceive with failure: \(error.localizedDescription)")
+				lastConnectionError = error
+			
+				shouldAutomaticallyConnectToPreferredPeripheral = true
+				try? await self.closeConnection()
+				switch self.state {
+				case .connecting, .retrying, .retrievingDatabase:
+					// If we were actively reconnecting, then don't update the status because
+					// we're in the midst of a reconnection flow
+					break
+				default:
+					// We disconnected from some other state, so go back to discovering.
+					updateState(.discovering)
+				}
 			}
+			
+		case .userDisconnected:
+			Task {
+				// This is user-initatied, so don't reconnect
+				shouldAutomaticallyConnectToPreferredPeripheral = false
+				try? await self.closeConnection()
+				updateState(.discovering)
+			}
+			Logger.transport.info("[Accessory] Connection reported user-initiated disconnect.")
 		}
 	}
 

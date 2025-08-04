@@ -12,7 +12,7 @@ protocol Connection: Actor {
 	var isConnected: Bool { get }
 	func send(_ data: ToRadio) async throws
 	func connect() async throws -> AsyncStream<ConnectionEvent>
-	func disconnect() async throws
+	func disconnect(userInitiated: Bool) async throws  // If error is not provided, assume user-initiated disconnect
 	func drainPendingPackets() async throws
 	func startDrainPendingPackets() throws
 }
@@ -22,6 +22,7 @@ enum ConnectionEvent {
 	case logMessage(String)
 	case rssiUpdate(Int)
 	case error(Error)
+	case userDisconnected
 }
 
 enum ConnectionState: Equatable {

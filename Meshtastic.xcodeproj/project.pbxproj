@@ -733,8 +733,8 @@
 				237AEB982E20098B003B7CE3 /* BLEConnection.swift */,
 				232ED4C22E2C5E89009DA392 /* TCPTransport.swift */,
 				232ED4C42E2C5EDD009DA392 /* TCPConnection.swift */,
-				2346A7182E2FB9A300CB9239 /* SerialConnection.swift */,
 				2346A71C2E2FB9C500CB9239 /* SerialTransport.swift */,
+				2346A7182E2FB9A300CB9239 /* SerialConnection.swift */,
 				23E23F912E392C2B00919073 /* LogRecord+StringRepresentation.swift */,
 				231251372E3BC96400E6ED07 /* BLEAuthorizationHelper.swift */,
 			);

@@ -61,10 +61,19 @@ actor BLEConnection: Connection {
 		try await proxy.send(data)
 	}
 	
-	func disconnect() async throws {
+	func disconnect(userInitiated: Bool) async throws {
+		try await self.disconnect(withError: userInitiated ? nil : AccessoryError.disconnected("Unknown Error"))
+	}
+	
+	func disconnect(withError error: Error? = nil) async throws {
 		self.fromNumTask?.cancel()
 		try proxy.disconnect()
-		connectionStreamContinuation?.yield(.error(AccessoryError.disconnected))
+		
+		if let error {
+			connectionStreamContinuation?.yield(.error(error))
+		} else {
+			connectionStreamContinuation?.yield(.userDisconnected)
+		}
 		connectionStreamContinuation?.finish()
 		connectionStreamContinuation = nil
 	}
@@ -105,8 +114,7 @@ actor BLEConnection: Connection {
 				let decodedInfo = try FromRadio(serializedBytes: data)
 				connectionStreamContinuation?.yield(.data(decodedInfo))
 			} catch {
-				connectionStreamContinuation?.yield(.error(error))
-				connectionStreamContinuation?.finish()
+				try? await self.disconnect(withError: error)
 				throw error  // Re-throw to propagate up to the caller for handling
 			}
 		} while true
@@ -123,9 +131,6 @@ actor BLEConnection: Connection {
 	func getPacketStream() -> AsyncStream<ConnectionEvent> {
 		AsyncStream<ConnectionEvent> { continuation in
 			self.connectionStreamContinuation = continuation
-			continuation.onTermination = { _ in
-				Task { try await self.disconnect() }
-			}
 		}
 	}
 	
@@ -351,7 +356,7 @@ class BLEConnectionProxy: NSObject, CBPeripheralDelegate {
 		eventContinuation?.finish()
 		eventContinuation = nil
 		
-		readContinuation?.resume(throwing: AccessoryError.disconnected)
+		readContinuation?.resume(throwing: AccessoryError.disconnected("Unknown error"))
 		readContinuation = nil
 	}
 	
