@@ -36,38 +36,54 @@ extension CBCharacteristic {
 
 actor BLEConnection: Connection {
 	
-	var proxy: BLEConnectionProxy
-	var isConnected: Bool { proxy.isConnected }
-	
+	var delegate: BLEConnectionDelegate
 	var peripheral: CBPeripheral
+	var central: CBCentralManager
 	private var needsDrain: Bool = false
 	private var isDraining: Bool = false
 	
-	private var fromNumTask: Task <Void, Error>?
+	fileprivate var TORADIO_characteristic: CBCharacteristic?
+	fileprivate var FROMRADIO_characteristic: CBCharacteristic?
+	fileprivate var FROMNUM_characteristic: CBCharacteristic?
+	fileprivate var LOGRADIO_characteristic: CBCharacteristic?
 	
 	private var connectionStreamContinuation: AsyncStream<ConnectionEvent>.Continuation?
 	
-	init(peripheral: CBPeripheral, central: CBCentralManager, readyCallback: @escaping (Result<Void, Error>) -> Void) {
+	private var connectContinuation: CheckedContinuation<Void, Error>?
+	private var writeContinuation: CheckedContinuation<Void, Error>?
+	private var readContinuation: CheckedContinuation<Data, Error>?
+	
+	var isConnected: Bool { peripheral.state == .connected }
+	
+	init(peripheral: CBPeripheral, central: CBCentralManager) {
 		self.peripheral = peripheral
-		self.proxy = BLEConnectionProxy(peripheral: peripheral,
-										central: central, readyCallback: readyCallback)
+		self.central = central
+		self.delegate = BLEConnectionDelegate(peripheral: peripheral)
+		self.delegate.setConnection(self)
 	}
-	
-	func didRecieveFromRadio() async {
-		try? startDrainPendingPackets()
-	}
-	
-	func send(_ data: ToRadio) async throws {
-		try await proxy.send(data)
-	}
-	
+
 	func disconnect(userInitiated: Bool) async throws {
 		try await self.disconnect(withError: userInitiated ? nil : AccessoryError.disconnected("Unknown Error"))
 	}
 	
 	func disconnect(withError error: Error? = nil) async throws {
-		self.fromNumTask?.cancel()
-		try proxy.disconnect()
+		if peripheral.state == .connected {
+			if let characteristic = FROMRADIO_characteristic {
+				peripheral.setNotifyValue(false, for: characteristic)
+			}
+			if let characteristic = FROMNUM_characteristic {
+				peripheral.setNotifyValue(false, for: characteristic)
+			}
+			if let characteristic = LOGRADIO_characteristic {
+				peripheral.setNotifyValue(false, for: characteristic)
+			}
+		}
+		
+		central.cancelPeripheralConnection(peripheral)
+		peripheral.delegate = nil
+				
+		writeContinuation?.resume(throwing: AccessoryError.disconnected("Unknown error"))
+		writeContinuation = nil
 		
 		if let error {
 			connectionStreamContinuation?.yield(.error(error))
@@ -105,7 +121,7 @@ actor BLEConnection: Connection {
 		}
 		repeat {
 			do {
-				let data = try await proxy.read()
+				let data = try await read()
 				
 				if data.count == 0 {
 					break
@@ -134,78 +150,41 @@ actor BLEConnection: Connection {
 		}
 	}
 	
-	func connect() async -> AsyncStream<ConnectionEvent> {
-		self.fromNumTask = Task {
-			for await event in self.proxy.eventNotifications() {
-				switch event {
-				case .fromNum:
-					try? await self.drainPendingPackets()
-				case .logMessage(let message):
-					self.didReceiveLogMessage(message)
-				case .rssiUpdate(let rssi):
-					self.didUpdateRssi(rssi)
-				}
-			}
+	func discoverServices() async throws {
+		try await withCheckedThrowingContinuation { cont in
+			self.connectContinuation = cont
+			peripheral.discoverServices([meshtasticServiceCBUUID])
 		}
+	}
+	
+	func connect() async throws -> AsyncStream<ConnectionEvent> {
+		try await discoverServices()
 		return self.getPacketStream()
 	}
-}
-
-class BLEConnectionProxy: NSObject, CBPeripheralDelegate {
-	// Similar to ConnectionEvent, but this one has .fromNum
-	enum ProxyEvent {
-		case fromNum(Data)
-		case logMessage(String)
-		case rssiUpdate(Int)
-	}
 	
-	private var writeContinuations: [CheckedContinuation<Void, Error>] = []
-	
-	fileprivate var TORADIO_characteristic: CBCharacteristic?
-	fileprivate var FROMRADIO_characteristic: CBCharacteristic?
-	fileprivate var FROMNUM_characteristic: CBCharacteristic?
-	fileprivate var LOGRADIO_characteristic: CBCharacteristic?
-	
-	private let readyCallback: (Result<Void, Error>) -> Void
-	private var eventContinuation: AsyncStream<ProxyEvent>.Continuation?
-	
-	let peripheral: CBPeripheral
-	weak var central: CBCentralManager?
-	
-	var isConnected: Bool { peripheral.state == .connected }
-	
-	fileprivate var readContinuation: CheckedContinuation<Data, Error>?
-	
-	init(peripheral: CBPeripheral, central: CBCentralManager, readyCallback: @escaping (Result<Void, Error>) -> Void) {
-		self.peripheral = peripheral
-		self.readyCallback = readyCallback
-		self.central = central
-		super.init()
-		
-		peripheral.delegate = self
-		peripheral.discoverServices([meshtasticServiceCBUUID])
-	}
-	
-	// MARK: CBPeripheralDelegate
-	func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+	func didDiscoverServices(error: Error? ) {
 		if let error = error {
-			readyCallback(.failure(error))
+			connectContinuation?.resume(throwing: error)
 			return
 		}
+		
 		guard let services = peripheral.services else { return }
+		
 		for service in services where service.uuid == meshtasticServiceCBUUID {
 			peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID, LOGRADIO_UUID], for: service)
-			Logger.transport.info("🛜  [BLE] Service for Meshtastic discovered by \(peripheral.name ?? "Unknown", privacy: .public)")
+			Logger.transport.info("🛜  [BLE] Service for Meshtastic discovered by \(self.peripheral.name ?? "Unknown", privacy: .public)")
 		}
 	}
 	
-	func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+	func didDiscoverCharacteristicsFor(service: CBService, error: Error?) {
 		if let error = error {
-			readyCallback(.failure(error))
+			connectContinuation?.resume(throwing: error)
+			self.connectionStreamContinuation = nil
 			return
 		}
 		guard let characteristics = service.characteristics else {
-			readyCallback(.failure(AccessoryError.discoveryFailed("No characteristics")))
+			connectContinuation?.resume(throwing: AccessoryError.discoveryFailed("No characteristics"))
+			self.connectionStreamContinuation = nil
 			return
 		}
 		
@@ -237,17 +216,19 @@ class BLEConnectionProxy: NSObject, CBPeripheralDelegate {
 		
 		if TORADIO_characteristic != nil && FROMRADIO_characteristic != nil && FROMNUM_characteristic != nil {
 			Logger.transport.info("🛜  [BLE] characteristics ready")
-			readyCallback(.success(()))
+			connectContinuation?.resume()
+			self.connectionStreamContinuation = nil
+			
 			// Read initial RSSI on ready
 			peripheral.readRSSI()
 		} else {
 			Logger.transport.info("🛜  [BLE] Missing required characteristics")
-			readyCallback(.failure(AccessoryError.discoveryFailed("Missing required characteristics")))
+			connectContinuation?.resume(throwing: AccessoryError.discoveryFailed("Missing required characteristics"))
 		}
 	}
 	
-	func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-		Logger.transport.info("🛜 [BLE] Did update value for \(characteristic.meshtasticCharacteristicName, privacy: .public)=\(characteristic.value ?? Data(), privacy: .public)")
+	func didUpdateValueFor(characteristic: CBCharacteristic, error: Error?) {
+		Logger.transport.debug("🛜 [BLE] Did update value for \(characteristic.meshtasticCharacteristicName, privacy: .public)=\(characteristic.value ?? Data(), privacy: .public)")
 		if let error = error {
 			if characteristic.uuid == FROMRADIO_UUID {
 				readContinuation?.resume(throwing: error)
@@ -264,12 +245,12 @@ class BLEConnectionProxy: NSObject, CBPeripheralDelegate {
 				self.readContinuation = nil
 			}
 		case FROMNUM_UUID:
-			eventContinuation?.yield(.fromNum(value))
+			try? startDrainPendingPackets()
 			
 		case LOGRADIO_UUID:
 			if let value = characteristic.value,
 			   let logRecord = try? LogRecord(serializedBytes: value) {
-				eventContinuation?.yield(.logMessage(logRecord.stringRepresentation))
+				self.didReceiveLogMessage(logRecord.stringRepresentation)
 			}
 			
 		default:
@@ -277,24 +258,24 @@ class BLEConnectionProxy: NSObject, CBPeripheralDelegate {
 		}
 	}
 	
-	func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
-		guard characteristic.uuid == TORADIO_UUID, !writeContinuations.isEmpty else { return }
-		let cont = writeContinuations.removeFirst()
+	func didWriteValueFor(characteristic: CBCharacteristic, error: Error?) {
+		guard characteristic.uuid == TORADIO_UUID, let writeContinuation else { return }
 		if let error = error {
 			Logger.transport.error("🛜 [BLE] Did write for \(characteristic.meshtasticCharacteristicName) with error \(error)")
-			cont.resume(throwing: error)
+			writeContinuation.resume(throwing: error)
 		} else {
 			Logger.transport.error("🛜 [BLE] Did write for \(characteristic.meshtasticCharacteristicName)")
-			cont.resume()
+			writeContinuation.resume()
 		}
+		self.writeContinuation = nil
 	}
 	
-	func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
+	func didReadRSSI(RSSI: NSNumber, error: Error?) {
 		if let error = error {
 			Logger.transport.error("🛜 [BLE] Error reading RSSI: \(error.localizedDescription)")
 			return
 		}
-		eventContinuation?.yield(.rssiUpdate(RSSI.intValue))
+		connectionStreamContinuation?.yield(.rssiUpdate(RSSI.intValue))
 	}
 	
 	func send(_ data: ToRadio) async throws {
@@ -315,7 +296,7 @@ class BLEConnectionProxy: NSObject, CBPeripheralDelegate {
 				peripheral.writeValue(binaryData, for: characteristic, type: writeType)
 				cont.resume()
 			} else {
-				writeContinuations.append(cont)
+				writeContinuation = cont
 				peripheral.writeValue(binaryData, for: characteristic, type: writeType)
 			}
 		}
@@ -330,43 +311,45 @@ class BLEConnectionProxy: NSObject, CBPeripheralDelegate {
 			peripheral.readValue(for: FROMRADIO_characteristic)
 		}
 		if data.isEmpty {
-			Logger.transport.error("🛜 [BLE] Received empty data, ending drain operation.")
+			Logger.transport.debug("🛜 [BLE] Received empty data, ending drain operation.")
 		}
 		return data
 	}
 	
-	func disconnect() throws {
-		if peripheral.state == .connected {
-			if let characteristic = FROMRADIO_characteristic {
-				peripheral.setNotifyValue(false, for: characteristic)
-			}
-			if let characteristic = FROMNUM_characteristic {
-				peripheral.setNotifyValue(false, for: characteristic)
-			}
-			if let characteristic = LOGRADIO_characteristic {
-				peripheral.setNotifyValue(false, for: characteristic)
-			}
-		}
+}
+
+class BLEConnectionDelegate: NSObject, CBPeripheralDelegate {
+	private weak var connection: BLEConnection?
+	let peripheral: CBPeripheral
 		
-		if let central = central, peripheral.state == .connected {
-			central.cancelPeripheralConnection(peripheral)
-		}
-		peripheral.delegate = nil
-		
-		eventContinuation?.finish()
-		eventContinuation = nil
-		
-		readContinuation?.resume(throwing: AccessoryError.disconnected("Unknown error"))
-		readContinuation = nil
+	init(peripheral: CBPeripheral) {
+		self.peripheral = peripheral
+		super.init()
+		peripheral.delegate = self
 	}
 	
-	func eventNotifications() -> AsyncStream<ProxyEvent> {
-		return AsyncStream { continuation in
-			self.eventContinuation = continuation
-			continuation.onTermination = { _ in
-				self.eventContinuation = nil
-			}
-		}
+	func setConnection(_ connection: BLEConnection) {
+		self.connection = connection
 	}
 	
+	// MARK: CBPeripheralDelegate
+	func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+		Task { await connection?.didDiscoverServices(error: error) }
+	}
+	
+	func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+		Task { await connection?.didDiscoverCharacteristicsFor(service: service, error: error) }
+	}
+	
+	func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+		Task { await connection?.didUpdateValueFor(characteristic: characteristic, error: error) }
+	}
+	
+	func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
+		Task { await connection?.didWriteValueFor(characteristic: characteristic, error: error) }
+	}
+	
+	func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
+		Task { await connection?.didReadRSSI(RSSI: RSSI, error: error) }
+	}
 }

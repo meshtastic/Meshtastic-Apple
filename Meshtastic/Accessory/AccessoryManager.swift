@@ -272,7 +272,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 
 	// Update device attributes on MainActor for presentation in the UI
-	func updateDevice<T>(deviceId: UUID? = nil, key: WritableKeyPath<Device, T>, value: T) {
+	func updateDevice<T>(deviceId: UUID? = nil, key: WritableKeyPath<Device, T>, value: T) where T: Equatable {
 		guard let deviceId = deviceId ?? self.activeConnection?.device.id else {
 			Logger.transport.error("updateDevice<T> with nil deviceId")
 			return
@@ -281,23 +281,28 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// Update the active device
 		if let activeConnection {
 			var device = activeConnection.device
-			device[keyPath: key] = value
-			self.activeConnection = (device: device, connection: activeConnection.connection)
-			self.activeDeviceNum = device.num
+			if device[keyPath: key] != value {
+				// Update the @Published stuff for the UI
+				self.objectWillChange.send()
+
+				device[keyPath: key] = value
+				self.activeConnection = (device: device, connection: activeConnection.connection)
+				self.activeDeviceNum = device.num
+			}
 		}
 		
 		// Update the device in the devices array if it exists
 		if let index = devices.firstIndex(where: { $0.id == deviceId }) {
 			var device = devices[index]
 			device[keyPath: key] = value
-
-			// Update the @Published stuff for the UI
-			self.objectWillChange.send()
-			
-			if let index = devices.firstIndex(where: { $0.id == deviceId }) {
-				devices[index] = device
+			if device[keyPath: key] != value {
+				// Update the @Published stuff for the UI
+				self.objectWillChange.send()
+				
+				if let index = devices.firstIndex(where: { $0.id == deviceId }) {
+					devices[index] = device
+				}
 			}
-
 		} else {
 			Logger.transport.error("Device with ID \(deviceId) not found in devices list.")
 		}
