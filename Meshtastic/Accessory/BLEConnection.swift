@@ -247,7 +247,7 @@ class BLEConnectionProxy: NSObject, CBPeripheralDelegate {
 	}
 	
 	func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-		Logger.transport.info("🛜 [BLE] Did update value for \(characteristic.meshtasticCharacteristicName)=\(characteristic.value ?? Data())")
+		Logger.transport.info("🛜 [BLE] Did update value for \(characteristic.meshtasticCharacteristicName, privacy: .public)=\(characteristic.value ?? Data(), privacy: .public)")
 		if let error = error {
 			if characteristic.uuid == FROMRADIO_UUID {
 				readContinuation?.resume(throwing: error)
