@@ -123,7 +123,6 @@ struct Connect: View {
 								
 								if node != nil {
 									Label("\(String(node!.num))", systemImage: "number")
-									Label("BLE RSSI \(connectedDevice.rssiString)", systemImage: "cellularbars")
 									#if !targetEnvironment(macCatalyst)
 									if accessoryManager.state == .subscribed {
 										Button {
