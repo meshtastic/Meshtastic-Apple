@@ -713,201 +713,6 @@
         }
       }
     },
-    "%@ Please try connecting again and check the PIN carefully." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Bitte versuche es erneut. Achte sorgfältig auf die richtige PIN."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Merci d'essayer à nouveau en vérifiant bien le code PIN."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ בבקשה נסה שנית להתחבר למכשיר ובדוק את הקוד."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Si prega di provare a connettersi nuovamente e di controllare attentamente il PIN."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 再度接続を試行し、PINを慎重に確認してください。"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Spróbuj połączyć się ponownie i dokładnie sprawdź PIN."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Försök att ansluta igen och kontrollera PIN-koden noggrant."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Покушајте поново да се повежете и пажљиво проверите ПИН."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 请再次尝试连接并仔细检查 PIN 码。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 請再次嘗試連接並仔細檢查 PIN 碼。"
-          }
-        }
-      }
-    },
-    "%@ The app will automatically reconnect to the preferred radio if it comes back in range." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Die App wird automatisch wieder zum präferierten Gerät verbinden, sobald es in Reichweite kommt."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ L'application se reconnectera automatiquement à la radio en favori dès qu'elle sera à nouveau disponible."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ האפליקציה תנסה אוטומטית להתחבר מחדש למכשיר המועדף אם ייראה."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ L'applicazione si riconnette automaticamente alla radio preferita se torna nel raggio d'azione."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 優先無線機が範囲内に戻った場合、アプリは自動的に再接続します。"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Aplikacja automatycznie ponownie połączy się z preferowanym radiem, jeśli wróci w zasięg."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Appen kommer automatiskt att återansluta till den föredragna radion om den kommer inom räckhåll igen."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Апликација ће се аутоматски поново повезати са жељеним радиом ако се врати у домет."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 如果在默认电台的旁边，App 将会自动重连。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 如果在首選節點的旁邊，App 將會自動重連。"
-          }
-        }
-      }
-    },
-    "%@ This error usually cannot be fixed without forgetting the device under Settings > Bluetooth and re-connecting to the radio." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Dieser Fehler kann üblicherweise behoben werden, indem man unter Einstellungen > Bluetooth die Verbindung manuell löscht und sich erneut mit dem Gerät verbindet."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Cette erreur ne peut généralement pas être corrigée sans aller dans Réglages > Bluetooth et faire > Oublier cet appareil, puis reconnecter la radio."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ שגיאה זו בדרך כלל אינה ניתנת לתיקון ללא שכחחת המכשיר בהגדרות מכשיר > בלוטוס ואז להתחבר מחדש למכשיר."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Questo errore di solito non può essere risolto senza dimenticare il dispositivo sotto Impostazioni > Bluetooth e riconnettersi alla radio."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ このエラーは通常、設定 > Bluetooth でデバイスの登録を解除し、無線機に再接続しない限り修正できません。"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Ten błąd zwykle nie może być naprawiony bez zapomnienia urządzenia w Ustawienia > Bluetooth i ponownego połączenia z radiem."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Detta fel kan vanligtvis inte åtgärdas utan att glömma enheten under Inställningar > Bluetooth och återansluta till radion."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Ова грешка обично не може да се поправи без заборављања уређаја испод подешавања > Блутут и поново повезивање са радиом."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 这个错误通常无法自动修复，你需要在系统设置的蓝牙选项中忽略该电台并重新配对。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 這個錯誤通常無法自動修復，您需要在系統設定的藍芽選項中忽略該節點並重新配對。"
-          }
-        }
-      }
-    },
     "%@, %@" : {
       "localizations" : {
         "en" : {
@@ -5167,71 +4972,6 @@
         }
       }
     },
-    "BLE Name" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE Name"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nom du BLE"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שם בלוטוס"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nome BLE"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE 名前"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nazwa BLE"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE-namn"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE назив"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "蓝牙名称"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "藍芽名稱"
-          }
-        }
-      }
-    },
     "BLE Pin must be 6 digits long." : {
       "localizations" : {
         "de" : {
@@ -5544,71 +5284,6 @@
     "Bluetooth Connectivity" : {
       "comment" : "A heading displayed on a view that guides users to configure Bluetooth connectivity for the app.",
       "isCommentAutoGenerated" : true
-    },
-    "Bluetooth is off" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bluetooth ist aus"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Le Bluetooth est arrêté"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "בלוטוס כבוי"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Il Bluetooth è spento"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bluetoothがオフです"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bluetooth jest wyłączony"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bluetooth är avstängt"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Блутут је искључен"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "蓝牙已关闭"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "藍芽已關閉"
-          }
-        }
-      }
     },
     "Bold Heading" : {
 
@@ -8678,71 +8353,6 @@
     },
     "Connection details" : {
 
-    },
-    "Connection failed after %d attempts to connect to %@. You may need to forget your device under Settings > Bluetooth." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verbindung nach %d Versuchen zu %@ fehlgeschlagen. Evtl. hilft es, die Verbindung unter Einstellungen > Bluetooth manuell zu löschen."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connexion impossible après %d essais avec %@. Allez dans Réglages > Bluetooth et essayez de faire de faire > Oublier cet appareil."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "התחברות נכשלה לאחר %d נסיונות להתחבר ל%@. יתכן ויש צורך 'לשכוח' את המכשיר בהגדרות מכשיר > בלוטוס."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connessione fallita dopo %d tentativi di connessione a %@. Potrebbe essere necessario disaccoppiare il tuo dispositivo in Impostazioni > Bluetooth."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d への接続が %@ 回の試行後に失敗しました。設定 > Bluetooth でデバイスを削除する必要があるかもしれません。"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Połączenie nie powiodło się po %d próbach połączenia z %@. Zapomnij o urządzeniu w Ustawienia > Bluetooth."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anslutningen misslyckades efter %d försök att ansluta till %@. Du kan behöva glömma din enhet under Inställningar > Bluetooth."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Веза није успела након %d покушаја да се повеже са %@. Можда ћете морати да заборавите уређај у Подешавања > Блутут."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "尝试连接%d失败，你可能需要在系统设置的蓝牙选项中忽略该设备。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "嘗試連接%d失敗，您可能需要在系统設定的藍芽選項中忽略該節點。"
-          }
-        }
-      }
     },
     "Connection Name" : {
 
@@ -12924,29 +12534,6 @@
     },
     "Enabling WiFi will disable the bluetooth connection to the app." : {
 
-    },
-    "Enabling WiFi will disable the bluetooth connection to the app. TCP node connections are not available on Apple devices." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L'attivazione del WiFi disabilita la connessione bluetooth all'applicazione.  La connessione a nodi TCP non è disponibile su dispositivi Apple."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiFiを有効にすると、アプリへのBluetooth接続が無効になります。AppleデバイスではTCPノード接続は利用できません。"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Омогућавање WiFi-а ће онемогућити Bluetooth везу са апликацијом. TCP везе са чвором нису доступне на Apple уређајима.\n"
-          }
-        }
-      }
     },
     "Encoder Press Event" : {
       "localizations" : {
@@ -18552,65 +18139,6 @@
         }
       }
     },
-    "Issuing Want Config to %@" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Envoi d'un Want Config à %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שולח בקשת הגדרות ל-%@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Emissione di Want Config a %@"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ に設定要求を送信中"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wydawanie Want Config to %@"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Utfärdar Want Config till %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Издавање захтева за конфигурацију на: %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Issuing Want Config to %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Issuing Want Config to %@"
-          }
-        }
-      }
-    },
     "Japan" : {
       "localizations" : {
         "it" : {
@@ -21079,71 +20607,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Message received from the text message app."
-          }
-        }
-      }
-    },
-    "Message Send Failed, not properly connected to %@" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nachricht senden fehlgeschlagen. Nicht korrekt verbunden zu %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Erreur d'envoi du message, mauvaise connexion à %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שליחת הודעה נכשלה, אין חיבוריות ל-%@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Invio messaggio fallito, connessione non corretta a %@"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "メッセージ送信に失敗しました。%@ に適切に接続されていません"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nieudane wysłanie wiadomości, brak prawidłowego połączenia z %@"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Misslyckades med att skicka meddelande, inte korrekt ansluten till %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Слање поруке није успело, није правилно повезано са: %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Message Send Failed, not properly connected to %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Message Send Failed, not properly connected to %@"
           }
         }
       }
@@ -27935,35 +27398,6 @@
         }
       }
     },
-    "Radio Disconnected" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Radio scollegata"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "無線切断"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Радио веза је прекинута"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已斷線"
-          }
-        }
-      }
-    },
     "RAK Rotary Encoder" : {
       "localizations" : {
         "de" : {
@@ -33907,17 +33341,6 @@
     "Shows information for the connected Lora radio. You can swipe left to disconnect the radio and long press to start the live activity." : {
 
     },
-    "Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press to start the live activity." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Приказује информације о LoRa радио уређају повезаном преко Bluetooth-а. Можете превући улево да бисте искључили радио, а дугим притиском покренути активан режим праћења."
-          }
-        }
-      }
-    },
     "Shut Down" : {
       "localizations" : {
         "de" : {
@@ -36578,35 +36001,6 @@
         }
       }
     },
-    "The specified device has disconnected from us" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Il dispositivo specificato si è disconnesso"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "指定されたデバイスが切断されました"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Наведени уређај је прекинуо везу са нама"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "指定的裝置已斷線"
-          }
-        }
-      }
-    },
     "The state of the LED (on/off)" : {
       "localizations" : {
         "it" : {
@@ -39164,71 +38558,6 @@
         }
       }
     },
-    "Unsupported Firmware Version Detected, unable to connect to device." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nicht unterstützte Firmware Version erkannt. Kann nicht verbinden."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Version non supportée du firmware détectée, impossible de se connecter à l'appareil."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "גרסת קושחה אינה נתמכת, לא ניתן להתחבר למכשיר."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rilevata versione firmware non supportata, impossibile connettersi al dispositivo."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "サポートされていないファームウェアバージョンが検出されました。デバイスに接続できません。"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wykryto nieobsługiwany wersję oprogramowania, brak możliwości połączenia z urządzeniem."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Okänd Firmwareversion upptäckt, kan inte ansluta till enheten."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Откривена је неподржана верзија фирмвера, није могуће повезати са уређајем."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "检测到不支持的固件版本，无法连接到设备。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "檢測到不支援的韌體版本，無法連接到節點。"
-          }
-        }
-      }
-    },
     "Up" : {
       "localizations" : {
         "de" : {
@@ -40153,41 +39482,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "使用者 ID"
-          }
-        }
-      }
-    },
-    "User Initiated Disconnect" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Disconnessione avviata dall'utente"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ユーザーによる切断"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Корисник је покренуо прекид везе"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "用户主动断开连接"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "使用者主動斷線"
           }
         }
       }
