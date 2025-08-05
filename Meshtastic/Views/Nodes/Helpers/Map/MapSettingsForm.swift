@@ -187,7 +187,7 @@ struct MapSettingsForm: View {
 								}
 							}
 						} else {
-							ContentUnavailableView ("No map data files uploaded", systemImage: "exclamationmark.triangle")
+							ContentUnavailableView("No map data files uploaded", systemImage: "exclamationmark.triangle")
 						}
 					} else if !hasUserData {
 						// Upload prompt when no data available

@@ -116,7 +116,7 @@ struct SaveChannelQRCode: View {
 		}
 		.onAppear {
 			Logger.data.info("Ch set link \(channelSetLink)")
-			//connectedToDevice = accessoryManager.connectToPreferredDevice()
+			// connectedToDevice = accessoryManager.connectToPreferredDevice()
 			fetchLoRaConfigChanges()
 		}
 	}
