@@ -345,7 +345,7 @@ struct Connect: View {
 //		}
 		.onChange(of: self.accessoryManager.state) { _, state in
 
-			if let deviceNum = accessoryManager.activeDeviceNum, UserDefaults.preferredPeripheralId.count > 0 && state == .subscribed {
+			if let deviceNum = accessoryManager.activeDeviceNum, UserDefaults.preferredPeripheralId.count > 0 {
 
 				let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 				fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", deviceNum)

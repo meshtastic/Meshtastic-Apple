@@ -9,6 +9,7 @@ import Foundation
 @preconcurrency import CoreBluetooth
 import SwiftUI
 import OSLog
+
 class BLETransport: Transport {
 
 	let meshtasticServiceCBUUID = CBUUID(string: "0x6BA1B218-15A8-461F-9FA8-5DCAE273EAFD")
@@ -82,7 +83,7 @@ class BLETransport: Transport {
 	private func setupCentralManager() async throws {
 		try await withCheckedThrowingContinuation { cont in
 			self.setupCompleteContinuation = cont
-			centralManager = CBCentralManager(delegate: delegate, queue: .main)
+			centralManager = CBCentralManager(delegate: delegate, queue: .global())
 		}
 	}
 
@@ -186,6 +187,8 @@ class BLETransport: Transport {
 
 	func handlePeripheralDisconnect(peripheral: CBPeripheral) {
 		if let connection = self.activeConnection {
+			discoveredPeripherals.removeValue(forKey: peripheral.identifier)
+			discoveredDeviceContinuation?.yield(.deviceLost(peripheral.identifier))
 			Task {
 				if await connection.peripheral.identifier == peripheral.identifier {
 					try await connection.disconnect(withError: AccessoryError.disconnected("BLE connection lost"))
@@ -196,24 +199,15 @@ class BLETransport: Transport {
 	}
 
 	func handleDidConnect(peripheral: CBPeripheral, central: CBCentralManager) {
+		Logger.transport.debug("🛜 [BLE] handleDidConnect Connected to peripheral \(peripheral.name ?? "Unknown")")
 		guard let cont = connectContinuation,
 			  let connPeripheral = connectingPeripheral,
 			  peripheral.identifier == connPeripheral.identifier else {
 			return
 		}
-		var connection: BLEConnection!
-		let readyCallback: (Result<Void, Error>) -> Void = { result in
-			switch result {
-			case .success:
-				cont.resume(returning: connection)
-			case .failure(let error):
-				cont.resume(throwing: error)
-				central.cancelPeripheralConnection(peripheral)
-			}
-			self.connectContinuation = nil
-			self.connectingPeripheral = nil
-		}
-		connection = BLEConnection(peripheral: peripheral, central: central, readyCallback: readyCallback)
+		let connection = BLEConnection(peripheral: peripheral, central: central)
+		cont.resume(returning: connection)
+		self.connectContinuation = nil
 	}
 
 	func handleDidFailToConnect(peripheral: CBPeripheral, error: Error?) {
