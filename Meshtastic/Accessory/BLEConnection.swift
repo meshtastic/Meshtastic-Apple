@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import CoreBluetooth
+@preconcurrency import CoreBluetooth
 import OSLog
 import MeshtasticProtobufs
 

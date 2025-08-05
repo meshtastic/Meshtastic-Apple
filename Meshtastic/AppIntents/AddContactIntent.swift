@@ -9,8 +9,8 @@ import AppIntents
 import MeshtasticProtobufs
 
 struct AddContactIntent: AppIntent {
-	static var title: LocalizedStringResource = "Add Contact"
-	static var description: IntentDescription = "Takes a Meshtastic contact URL and saves it to the nodes database"
+	static let title: LocalizedStringResource = "Add Contact"
+	static let description: IntentDescription = "Takes a Meshtastic contact URL and saves it to the nodes database"
 
 	@Parameter(title: "Contact URL", description: "The URL for the node to add")
 	var contactUrl: URL

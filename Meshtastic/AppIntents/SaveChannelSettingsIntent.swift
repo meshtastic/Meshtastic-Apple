@@ -11,8 +11,8 @@ import AppIntents
 // Define the AppIntent for saving channel settings from a URL
 struct SaveChannelSettingsIntent: AppIntent {
 	// Define a title and description for the intent
-	static var title: LocalizedStringResource = "Save Channel Settings"
-	static var description: IntentDescription = "Takes a Meshtastic channel URL and saves the channel settings."
+	static let title: LocalizedStringResource = "Save Channel Settings"
+	static let description: IntentDescription = "Takes a Meshtastic channel URL and saves the channel settings."
 
 	// Define the input for the intent (the channel URL)
 	@Parameter(title: "Channel URL", description: "The URL for the channel settings")

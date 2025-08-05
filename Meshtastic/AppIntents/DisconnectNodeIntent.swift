@@ -9,9 +9,9 @@ import Foundation
 import AppIntents
 
 struct DisconnectNodeIntent: AppIntent {
-	static var title: LocalizedStringResource = "Disconnect Node"
+	static let title: LocalizedStringResource = "Disconnect Node"
 
-	static var description: IntentDescription = "Disconnect the currently connected node"
+	static let description: IntentDescription = "Disconnect the currently connected node"
 
 	func perform() async throws -> some IntentResult {
 		let isConnected = await AccessoryManager.shared.isConnected

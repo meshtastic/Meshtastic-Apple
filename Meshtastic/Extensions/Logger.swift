@@ -10,7 +10,7 @@ import OSLog
 extension Logger {
 
 	/// The logger's subsystem.
-	private static var subsystem = Bundle.main.bundleIdentifier!
+	private static let subsystem = Bundle.main.bundleIdentifier!
 
 	/// All admin messages
 	static let admin = Logger(subsystem: subsystem, category: "🏛 Admin")

@@ -37,7 +37,7 @@ struct NetworkConfig: View {
 
 							Toggle(isOn: $wifiEnabled) {
 								Label("Enabled", systemImage: "wifi")
-								Text("Enabling WiFi will disable the bluetooth connection to the app. TCP node connections are not available on Apple devices.")
+								Text("Enabling WiFi will disable the bluetooth connection to the app.")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 

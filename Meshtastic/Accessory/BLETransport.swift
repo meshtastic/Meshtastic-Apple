@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import CoreBluetooth
+@preconcurrency import CoreBluetooth
 import SwiftUI
 import OSLog
 class BLETransport: Transport {
@@ -164,7 +164,7 @@ class BLETransport: Transport {
 		guard let cm = centralManager else {
 			throw AccessoryError.connectionFailed("Central manager not available")
 		}
-		return try await withTaskCancellationHandler  {
+		return try await withTaskCancellationHandler {
 			let newConnection: BLEConnection = try await withCheckedThrowingContinuation { cont in
 				if self.connectContinuation != nil || self.activeConnection != nil {
 					cont.resume(throwing: AccessoryError.connectionFailed("BLE transport is busy: already connecting or connected"))

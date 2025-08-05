@@ -12922,7 +12922,11 @@
         }
       }
     },
+    "Enabling WiFi will disable the bluetooth connection to the app." : {
+
+    },
     "Enabling WiFi will disable the bluetooth connection to the app. TCP node connections are not available on Apple devices." : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {

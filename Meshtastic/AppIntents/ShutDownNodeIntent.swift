@@ -9,9 +9,9 @@ import Foundation
 import AppIntents
 
 struct ShutDownNodeIntent: AppIntent {
-	static var title: LocalizedStringResource = "Shut Down"
+	static let title: LocalizedStringResource = "Shut Down"
 
-	static var description: IntentDescription = "Send a shutdown to the node you are connected to"
+	static let description: IntentDescription = "Send a shutdown to the node you are connected to"
 
 	func perform() async throws -> some IntentResult {
 		try await requestConfirmation(result: .result(dialog: "Shut Down Node?"))

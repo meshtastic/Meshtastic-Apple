@@ -9,9 +9,9 @@ import Foundation
 import AppIntents
 
 struct RestartNodeIntent: AppIntent {
-	static var title: LocalizedStringResource = "Restart"
+	static let title: LocalizedStringResource = "Restart"
 
-	static var description: IntentDescription = "Restart to the node you are connected to"
+	static let description: IntentDescription = "Restart to the node you are connected to"
 
 	func perform() async throws -> some IntentResult {
 

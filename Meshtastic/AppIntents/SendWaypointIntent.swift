@@ -14,7 +14,7 @@ struct SendWaypointIntent: AppIntent {
 
 	var defaultDate = Date.now.addingTimeInterval(60 * 480)
 
-	static var title = LocalizedStringResource("Send a Waypoint")
+	static let title = LocalizedStringResource("Send a Waypoint")
 
 	@Parameter(title: "Name", default: "Dropped Pin")
 	var nameParameter: String?
