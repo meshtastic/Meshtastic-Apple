@@ -205,6 +205,7 @@ class BLETransport: Transport {
 		let readyCallback: (Result<Void, Error>) -> Void = { result in
 			switch result {
 			case .success:
+				// TODO: Fatal error: SWIFT TASK CONTINUATION MISUSE: connect(to:) tried to resume its continuation more than once, returning Meshtastic.BLEConnection!
 				cont.resume(returning: connection)
 			case .failure(let error):
 				cont.resume(throwing: error)
