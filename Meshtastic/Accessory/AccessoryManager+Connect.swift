@@ -32,7 +32,6 @@ extension AccessoryManager {
 			
 			// Step 0
 			Step { @MainActor retryAttempt in
-				try Task.checkCancellation()
 				Logger.transport.info("🔗 [Connect] Starting connection to \(device.id)")
 				if retryAttempt > 0 {
 					try await self.closeConnection() // clean-up before retries.
@@ -46,7 +45,6 @@ extension AccessoryManager {
 			
 			// Step 1: Setup the connection
 			Step(timeout: .seconds(2)) { @MainActor _ in
-				try Task.checkCancellation()
 				Logger.transport.info("🔗 [Connect] Step 1: connection to \(device.id)")
 				let connection = try await transport.connect(to: device)
 				let eventStream = try await connection.connect()
@@ -66,44 +64,38 @@ extension AccessoryManager {
 			
 			// Step 2: Send Heartbeat before wantConfig (config)
 			Step { @MainActor _ in
-				try Task.checkCancellation()
 				Logger.transport.info("💓 [Connect] Step 2: Send heartbeat")
 				try await self.sendHeartbeat()
 			}
 			
 			// Step 3: Send WantConfig (config)
 			Step(timeout: .seconds(30)) { @MainActor _ in
-				try Task.checkCancellation()
 				Logger.transport.info("🔗 [Connect] Step 3: Send wantConfig (config)")
-				await self.sendWantConfig()
+				try await self.sendWantConfig()
 			}
 			
 			// Step 4: Send Heartbeat before wantConfig (database)
 			Step { @MainActor _ in
-				try Task.checkCancellation()
 				Logger.transport.info("💓 [Connect] Step 4: Send heartbeat")
 				try await self.sendHeartbeat()
 			}
 			
 			// Step 5: Send WantConfig (database)
 			Step(timeout: .seconds(3.0), onFailure: .retryStep(attempts: 3)) { @MainActor _ in
-				try Task.checkCancellation()
 				Logger.transport.info("🔗 [Connect] Step 5: Send wantConfig (database)")
 				self.updateState(.retrievingDatabase(nodeCount: 0))
 				self.allowDisconnect = true
-				await self.sendWantDatabase()
+				try await self.sendWantDatabase()
 			}
 			
 			// Step 5a: Wait for end of WantConfig (database)
 			Step { @MainActor _ in
-				try Task.checkCancellation()
 				Logger.transport.info("🔗[Connect] Step 5a: Wait for the final database")
 				try await self.waitForWantDatabaseResponse()
 			}
 			
 			// Step 6: Version check
 			Step { @MainActor _ in
-				try Task.checkCancellation()
 				Logger.transport.info("🔗 [Connect] Step 6: Version check")
 
 				guard let firmwareVersion = self.activeConnection?.device.firmwareVersion else {
@@ -129,7 +121,6 @@ extension AccessoryManager {
 			
 			// Step 7: Update UI and status to connected
 			Step { @MainActor _ in
-				try Task.checkCancellation()
 				Logger.transport.info("🔗 [Connect] Step 7: Update UI and status")
 
 				// We have an active connection
@@ -139,7 +130,6 @@ extension AccessoryManager {
 			
 			// Step 8: Update UI and status to connected
 			Step { @MainActor _ in
-				try Task.checkCancellation()
 				Logger.transport.debug("🔗 [Connect] Step 8: Initialize MQTT and Location Provider")
 				await self.initializeMqtt()
 				self.initializeLocationProvider()
@@ -154,7 +144,7 @@ extension AccessoryManager {
 			try await connectionStepper?.run()
 		} catch {
 			switch error {
-			case AccessoryError.tooManyRetries:
+			case  is CancellationError, AccessoryError.tooManyRetries:
 				try await self.closeConnection()
 				updateState(.discovering)
 			default:
@@ -207,6 +197,7 @@ actor SequentialSteps {
 	var cancelled = false
 	var maxRetries: Int
 	var retryDelay: Duration
+	var isRunning: Bool = false
 	
 	init(maxRetries: Int = 1, retryDelay: Duration = .seconds(3), @StepsBuilder _ builder: () -> [Step]) {
 		self.maxRetries	= maxRetries
@@ -215,9 +206,11 @@ actor SequentialSteps {
 	}
 	
 	func run() async throws {
+		self.isRunning = true
 		retryLoop: for attempt in 0..<maxRetries {
 			for stepNumber in 0..<steps.count {
 				if cancelled {
+					throw CancellationError()
 					break
 				}
 				let currentStep = steps[stepNumber]
@@ -256,7 +249,7 @@ actor SequentialSteps {
 								switch error {
 								case let SequentialStepError.timeout(stepNumber, afterWaiting):
 									Logger.transport.info("[Inner Retry Step Loop] Sequential process timed out on step \(stepNumber) of \(stepRetries) after waiting \(afterWaiting)")
-								case let CancellationError:
+								case is CancellationError:
 									break stepRetryLoop
 								default:
 									Logger.transport.error("[Inner Retry Step Loop] Sequential process failed on step \(stepNumber) with error: \(error.localizedDescription)")
@@ -276,13 +269,16 @@ actor SequentialSteps {
 						// TODO: we could have a .retryStepAndFail and a .retryStepAndContinue instead of just .retryStep to clarify the behavior here
 						continue retryLoop
 					case .fail:
+						isRunning = false
 						throw error
 					}
 				}
 			}
 			// We have finished all steps
+			isRunning = false
 			return
 		}
+		isRunning = false
 		throw AccessoryError.tooManyRetries
 	}
 	

@@ -145,7 +145,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
-	func sendWantConfig() async {
+	func sendWantConfig() async throws {
 		if let inProgressWantConfigContinuation = wantConfigContinuation {
 			Logger.transport.info("[Accessory] Existing continuation for wantConfig(Config). Cancelling.")
 			inProgressWantConfigContinuation.resume(throwing: CancellationError())
@@ -155,23 +155,19 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.transport.error("Unable to send wantConfig (config): No device connected")
 			return
 		}
-		do {
-			var toRadio: ToRadio = ToRadio()
-			toRadio.wantConfigID = UInt32(NONCE_ONLY_CONFIG)
-			try await self.send(toRadio)
-			try await connection.startDrainPendingPackets()
-			try await withCheckedThrowingContinuation { cont in
-				self.wantConfigContinuation = cont
-			}
-			self.wantConfigContinuation = nil
-			Logger.transport.info("✅ [Accessory] NONCE_ONLY_CONFIG Done")
-		} catch {
-			Logger.transport.error("✅ [Accessory] NONCE_ONLY_CONFIG returned with error \(error)")
-		}
 
+		var toRadio: ToRadio = ToRadio()
+		toRadio.wantConfigID = UInt32(NONCE_ONLY_CONFIG)
+		try await self.send(toRadio)
+		try await connection.startDrainPendingPackets()
+		try await withCheckedThrowingContinuation { cont in
+			self.wantConfigContinuation = cont
+		}
+		self.wantConfigContinuation = nil
+		Logger.transport.info("✅ [Accessory] NONCE_ONLY_CONFIG Done")
 	}
 
-	func sendWantDatabase() async {
+	func sendWantDatabase() async throws {
 		if case let .notDone(inProgressWantDatabaseContinuation) = wantDatabaseContinuation {
 			inProgressWantDatabaseContinuation.resume(throwing: CancellationError())
 			Logger.transport.info("[Accessory] Existing continuation for wantConfig(Database). Cancelling.")
@@ -188,26 +184,23 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			return
 		}
 		
-		do {
-			try await withTaskCancellationHandler {
-				var toRadio: ToRadio = ToRadio()
-				toRadio.wantConfigID = UInt32(NONCE_ONLY_DB)
-				try await self.send(toRadio)
-				try await connection.startDrainPendingPackets()
-				try await withCheckedThrowingContinuation { cont in
-					firstDatabaseNodeInfoContinuation = cont
-				}
-				firstDatabaseNodeInfoContinuation = nil
-				Logger.transport.info("✅ [Accessory] NONCE_ONLY_DB first NodeInfo received.")
-			} onCancel: {
-				Task { @MainActor in
-					firstDatabaseNodeInfoContinuation?.resume(throwing: CancellationError())
-					firstDatabaseNodeInfoContinuation = nil
-				}
+		try await withTaskCancellationHandler {
+			var toRadio: ToRadio = ToRadio()
+			toRadio.wantConfigID = UInt32(NONCE_ONLY_DB)
+			try await self.send(toRadio)
+			try await connection.startDrainPendingPackets()
+			try await withCheckedThrowingContinuation { cont in
+				firstDatabaseNodeInfoContinuation = cont
 			}
-		} catch {
-			Logger.transport.error("✅ [Accessory] NONCE_ONLY_DB returned with error \(error)")
+			firstDatabaseNodeInfoContinuation = nil
+			Logger.transport.info("✅ [Accessory] NONCE_ONLY_DB first NodeInfo received.")
+		} onCancel: {
+			Task { @MainActor in
+				firstDatabaseNodeInfoContinuation?.resume(throwing: CancellationError())
+				firstDatabaseNodeInfoContinuation = nil
+			}
 		}
+
 	}
 	
 	func waitForWantDatabaseResponse() async throws {
@@ -363,13 +356,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			
 				shouldAutomaticallyConnectToPreferredPeripheral = true
 				try? await self.closeConnection()
-				switch self.state {
-				case .connecting, .retrying, .retrievingDatabase:
-					// If we were actively reconnecting, then don't update the status because
-					// we're in the midst of a reconnection flow
-					break
-				default:
-					// We disconnected from some other state, so go back to discovering.
+				
+				// If we were actively reconnecting, then don't update the status because
+				// we're in the midst of a reconnection flow
+				if !(await self.connectionStepper?.isRunning ?? false) {
 					updateState(.discovering)
 				}
 			}
@@ -607,7 +597,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		case .rebooted:
 			// If we had an existing connection, then we can probably get away with just a wantConfig?
 			if state == .subscribed {
-				Task { await sendWantConfig() }
+				Task { try? await sendWantConfig() }
 			}
 			
 		default:

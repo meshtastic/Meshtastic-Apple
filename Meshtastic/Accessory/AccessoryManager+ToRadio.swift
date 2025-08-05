@@ -134,7 +134,7 @@ extension AccessoryManager {
 				// Refresh the config from the node, in a background task
 				Task {
 					Logger.transport.debug("[AccessoryManager] sending wantConfig for addContactFromURL")
-					await sendWantConfig()
+					try? await sendWantConfig()
 				}
 
 			} catch {
@@ -474,7 +474,7 @@ extension AccessoryManager {
 			try await send(toRadio, debugDescription: logString)
 
 			Logger.transport.debug("[AccessoryManager] sending wantConfig for saveChannelSet")
-			await sendWantConfig()
+			try await sendWantConfig()
 		}
 	}
 
