@@ -169,7 +169,6 @@ extension NetService {
 	}
 }
 
-
 extension TCPTransport {
 	static func requestLocalNetworkAuthorization() async -> Bool {
 		await withCheckedContinuation { continuation in
