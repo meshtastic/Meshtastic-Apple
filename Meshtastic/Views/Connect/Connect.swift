@@ -32,202 +32,208 @@ struct Connect: View {
 		NavigationStack {
 			VStack {
 				List {
-					// if bleManager.isSwitchedOn {
-						Section {
-							if let connectedDevice = accessoryManager.activeConnection?.device,
-							   accessoryManager.isConnected || accessoryManager.isConnecting {
-								TipView(ConnectionTip(), arrowEdge: .bottom)
-									.tipViewStyle(PersistentTip())
-								VStack(alignment: .leading) {
-									HStack {
-										VStack(alignment: .center) {
-											CircleText(text: node?.user?.shortName?.addingVariationSelectors ?? "?", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90)
+					Section {
+						if let connectedDevice = accessoryManager.activeConnection?.device,
+						   accessoryManager.isConnected || accessoryManager.isConnecting {
+							TipView(ConnectionTip(), arrowEdge: .bottom)
+								.tipViewStyle(PersistentTip())
+							VStack(alignment: .leading) {
+								HStack {
+									VStack(alignment: .center) {
+										CircleText(text: node?.user?.shortName?.addingVariationSelectors ?? "?", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90)
+											.padding(.trailing, 5)
+										if node?.latestDeviceMetrics != nil {
+											BatteryCompact(batteryLevel: node?.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
 												.padding(.trailing, 5)
-											if node?.latestDeviceMetrics != nil {
-												BatteryCompact(batteryLevel: node?.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
-													.padding(.trailing, 5)
+										}
+									}
+									.padding(.trailing)
+									VStack(alignment: .leading) {
+										if node != nil {
+											Text(connectedDevice.longName?.addingVariationSelectors ?? "Unknown".localized).font(.title2)
+										}
+										Text("Connection Name").font(.callout)+Text(": \(connectedDevice.name.addingVariationSelectors)")
+											.font(.callout).foregroundColor(Color.gray)
+										HStack {
+											TransportIcon(transportType: connectedDevice.transportType)
+											Spacer()
+											if connectedDevice.transportType == .ble {
+												connectedDevice.getSignalStrength().map { SignalStrengthIndicator(signalStrength: $0, width: 5, height: 20) }
+												Spacer()
 											}
 										}
-										.padding(.trailing)
-										VStack(alignment: .leading) {
-											if node != nil {
-												Text(connectedDevice.longName?.addingVariationSelectors ?? "Unknown".localized).font(.title2)
-											}
-											Text("Connection Name").font(.callout)+Text(": \(connectedDevice.name.addingVariationSelectors)")
+										.padding(0)
+										if node != nil {
+											Text("Firmware Version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "Unknown".localized)")
 												.font(.callout).foregroundColor(Color.gray)
-											TransportIcon(transportType: connectedDevice.transportType)
-											if node != nil {
-												Text("Firmware Version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "Unknown".localized)")
-													.font(.callout).foregroundColor(Color.gray)
+										}
+										switch accessoryManager.state {
+										case .subscribed:
+											Text("Subscribed").font(.callout)
+												.foregroundColor(.green)
+										case .retrievingDatabase(let nodeCount):
+											HStack {
+												Image(systemName: "square.stack.3d.down.forward")
+													.symbolRenderingMode(.multicolor)
+													.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+													.foregroundColor(.teal)
+												Text("Retrieving nodes \(nodeCount)").font(.callout)
+													.foregroundColor(.teal)
 											}
-											switch accessoryManager.state {
-											case .subscribed:
-												Text("Subscribed").font(.callout)
-													.foregroundColor(.green)
-											case .retrievingDatabase(let nodeCount):
-												HStack {
-													Image(systemName: "square.stack.3d.down.forward")
-														.symbolRenderingMode(.multicolor)
-														.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
-														.foregroundColor(.teal)
-													Text("Retrieving nodes \(nodeCount)").font(.callout)
-														.foregroundColor(.teal)
-												}
-											case .communicating:
-												HStack {
-													Image(systemName: "square.stack.3d.down.forward")
-														.symbolRenderingMode(.multicolor)
-														.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
-														.foregroundColor(.orange)
-														Text("Communicating").font(.callout)
-															.foregroundColor(.orange)
-													}
-											case .retrying(let attempt):
-												HStack {
-													Image(systemName: "square.stack.3d.down.forward")
-														.symbolRenderingMode(.multicolor)
-														.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
-														.foregroundColor(.orange)
-													Text("Retrying (attempt \(attempt))").font(.callout)
+										case .communicating:
+											HStack {
+												Image(systemName: "square.stack.3d.down.forward")
+													.symbolRenderingMode(.multicolor)
+													.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+													.foregroundColor(.orange)
+													Text("Communicating").font(.callout)
 														.foregroundColor(.orange)
 												}
-											default:
-												EmptyView()
+										case .retrying(let attempt):
+											HStack {
+												Image(systemName: "square.stack.3d.down.forward")
+													.symbolRenderingMode(.multicolor)
+													.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+													.foregroundColor(.orange)
+												Text("Retrying (attempt \(attempt))").font(.callout)
+													.foregroundColor(.orange)
 											}
+										default:
+											EmptyView()
 										}
 									}
 								}
-								.font(.caption)
-								.foregroundColor(Color.gray)
-								.padding([.top])
+							}
+							.font(.caption)
+							.foregroundColor(Color.gray)
+							.padding([.top])
+							.swipeActions {
+								Button(role: .destructive) {
+									if accessoryManager.isConnected {
+										// bleManager.disconnectPeripheral(reconnect: false)
+										Task {
+											try await accessoryManager.disconnect()
+										}
+									}
+								} label: {
+									Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+								}.disabled(!accessoryManager.allowDisconnect)
+							}
+							.contextMenu {
+								
+								if node != nil {
+									Label("\(String(node!.num))", systemImage: "number")
+									#if !targetEnvironment(macCatalyst)
+									if accessoryManager.state == .subscribed {
+										Button {
+											if !liveActivityStarted {
+											#if canImport(ActivityKit)
+												Logger.services.info("Start live activity.")
+												startNodeActivity()
+											#endif
+											} else {
+											#if canImport(ActivityKit)
+												Logger.services.info("Stop live activity.")
+												endActivity()
+											#endif
+											}
+										} label: {
+											Label("Mesh Live Activity", systemImage: liveActivityStarted ? "stop" : "play")
+										}
+									}
+									#endif
+									if accessoryManager.allowDisconnect {
+										Button(role: .destructive) {
+											if accessoryManager.allowDisconnect {
+												Task {
+													try await accessoryManager.disconnect()
+												}
+											}
+										} label: {
+											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+										}
+										Button(role: .destructive) {
+											Task {
+												do {
+													try await accessoryManager.sendShutdown(fromUser: node!.user!, toUser: node!.user!)
+												} catch {
+													Logger.mesh.error("Shutdown Failed: \(error)")
+												}
+											}
+
+										} label: {
+											Label("Power Off", systemImage: "power")
+										}
+									}
+								}
+							}
+							if isUnsetRegion {
+								HStack {
+									NavigationLink {
+										LoRaConfig(node: node)
+									} label: {
+										Label("Set LoRa Region", systemImage: "globe.americas.fill")
+											.foregroundColor(.red)
+											.font(.title)
+									}
+								}
+							}
+						} else {
+							if accessoryManager.isConnecting {
+								HStack {
+									Image(systemName: "antenna.radiowaves.left.and.right")
+										.resizable()
+										.symbolRenderingMode(.hierarchical)
+										.foregroundColor(.orange)
+										.frame(width: 60, height: 60)
+										.padding(.trailing)
+									switch accessoryManager.state {
+									case .connecting, .communicating:
+										Text("Connecting . .")
+											.font(.title2)
+											.foregroundColor(.orange)
+									case .retrievingDatabase:
+										Text("Retreiving nodes . .")
+											.font(.callout)
+											.foregroundColor(.orange)
+									case .retrying(let attempt):
+										Text("Connection Attempt \(attempt) of 10")
+											.font(.callout)
+											.foregroundColor(.orange)
+									default:
+										EmptyView()
+									}
+								}
+								.padding()
 								.swipeActions {
 									Button(role: .destructive) {
-										if accessoryManager.isConnected {
-											// bleManager.disconnectPeripheral(reconnect: false)
-											Task {
-												try await accessoryManager.disconnect()
-											}
+										Task {
+											try await accessoryManager.disconnect()
 										}
 									} label: {
 										Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 									}.disabled(!accessoryManager.allowDisconnect)
 								}
-								.contextMenu {
-									
-									if node != nil {
-										Label("\(String(node!.num))", systemImage: "number")
-										Label("BLE RSSI \(connectedDevice.rssiString)", systemImage: "cellularbars")
-										#if !targetEnvironment(macCatalyst)
-										if accessoryManager.state == .subscribed {
-											Button {
-												if !liveActivityStarted {
-												#if canImport(ActivityKit)
-													Logger.services.info("Start live activity.")
-													startNodeActivity()
-												#endif
-												} else {
-												#if canImport(ActivityKit)
-													Logger.services.info("Stop live activity.")
-													endActivity()
-												#endif
-												}
-											} label: {
-												Label("Mesh Live Activity", systemImage: liveActivityStarted ? "stop" : "play")
-											}
-										}
-										#endif
-										if accessoryManager.allowDisconnect {
-											Button(role: .destructive) {
-												if accessoryManager.allowDisconnect {
-													Task {
-														try await accessoryManager.disconnect()
-													}
-												}
-											} label: {
-												Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
-											}
-											Button(role: .destructive) {
-												Task {
-													do {
-														try await accessoryManager.sendShutdown(fromUser: node!.user!, toUser: node!.user!)
-													} catch {
-														Logger.mesh.error("Shutdown Failed: \(error)")
-													}
-												}
 
-											} label: {
-												Label("Power Off", systemImage: "power")
-											}
-										}
-									}
-								}
-								if isUnsetRegion {
-									HStack {
-										NavigationLink {
-											LoRaConfig(node: node)
-										} label: {
-											Label("Set LoRa Region", systemImage: "globe.americas.fill")
-												.foregroundColor(.red)
-												.font(.title)
-										}
-									}
-								}
 							} else {
-								if accessoryManager.isConnecting {
-									HStack {
-										Image(systemName: "antenna.radiowaves.left.and.right")
-											.resizable()
-											.symbolRenderingMode(.hierarchical)
-											.foregroundColor(.orange)
-											.frame(width: 60, height: 60)
-											.padding(.trailing)
-										switch accessoryManager.state {
-										case .connecting, .communicating:
-											Text("Connecting . .")
-												.font(.title2)
-												.foregroundColor(.orange)
-										case .retrievingDatabase:
-											Text("Retreiving nodes . .")
-												.font(.callout)
-												.foregroundColor(.orange)
-										case .retrying(let attempt):
-											Text("Connection Attempt \(attempt) of 10")
-												.font(.callout)
-												.foregroundColor(.orange)
-										default:
-											EmptyView()
-										}
-									}
-									.padding()
-									.swipeActions {
-										Button(role: .destructive) {
-											Task {
-												try await accessoryManager.disconnect()
-											}
-										} label: {
-											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
-										}.disabled(!accessoryManager.allowDisconnect)
-									}
 
-								} else {
-
-									if let lastError = accessoryManager.lastConnectionError as? LocalizedError {
-										Text(lastError.localizedDescription).font(.callout).foregroundColor(.red)
-									}
-									HStack {
-										Image("custom.link.slash")
-											.resizable()
-											.symbolRenderingMode(.hierarchical)
-											.foregroundColor(.red)
-											.frame(width: 60, height: 60)
-											.padding(.trailing)
-										Text("No device connected").font(.title3)
-									}
-									.padding()
+								if let lastError = accessoryManager.lastConnectionError as? LocalizedError {
+									Text(lastError.localizedDescription).font(.callout).foregroundColor(.red)
 								}
+								HStack {
+									Image("custom.link.slash")
+										.resizable()
+										.symbolRenderingMode(.hierarchical)
+										.foregroundColor(.red)
+										.frame(width: 60, height: 60)
+										.padding(.trailing)
+									Text("No device connected").font(.title3)
+								}
+								.padding()
 							}
 						}
-						.textCase(nil)
+					}
+					.textCase(nil)
 
 					if !(accessoryManager.isConnected || accessoryManager .isConnecting) {
 						Section(header: HStack {
@@ -289,12 +295,6 @@ struct Connect: View {
 							}
 							.textCase(nil)
 						}
-
-//					} else {
-//						Text("Bluetooth is off")
-//							.foregroundColor(.red)
-//							.font(.title)
-//					}
 				}
 
 				HStack(alignment: .center) {

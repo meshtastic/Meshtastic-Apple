@@ -45,7 +45,8 @@ struct SignalStrengthIndicator: View {
     }
 
     let signalStrength: BLESignalStrength
-
+	var width: CGFloat = 8
+	var height: CGFloat = 40
     var body: some View {
         Group {
             HStack {
@@ -53,7 +54,7 @@ struct SignalStrengthIndicator: View {
                     RoundedRectangle(cornerRadius: 3)
                         .divided(amount: (CGFloat(bar) + 1) / CGFloat(3))
                         .fill(getColor().opacity(bar <= signalStrength.rawValue ? 1 : 0.3))
-                        .frame(width: 8, height: 40)
+                        .frame(width: width, height: height)
                 }
             }
         }
