@@ -6,6 +6,7 @@ A view draws the indicator used in the upper right corner for views using BLE
 import SwiftUI
 
 struct ConnectedDevice: View {
+	@EnvironmentObject var accessoryManager: AccessoryManager
     var deviceConnected: Bool
     var name: String
     var mqttProxyConnected: Bool = false
@@ -14,7 +15,7 @@ struct ConnectedDevice: View {
         var mqttTopic: String = ""
     var phoneOnly: Bool = false
 
-	init(deviceConnected: Bool, name: String, mqttProxyConnected: Bool = false, mqttUplinkEnabled: Bool = false, mqttDownlinkEnabled: Bool = false, mqttTopic: String = "", phoneOnly: Bool = false) {
+	init(deviceConnected: Bool, name: String, mqttProxyConnected: Bool = false, mqttUplinkEnabled: Bool = false, mqttDownlinkEnabled: Bool = false, mqttTopic: String = "", phoneOnly: Bool = false, addedString: String = "") {
 		self.deviceConnected = deviceConnected
 		self.name = name
 		self.mqttProxyConnected = mqttProxyConnected
@@ -26,6 +27,7 @@ struct ConnectedDevice: View {
 
     var body: some View {
         HStack {
+			RXTXIndicatorWidget(packetsSent: $accessoryManager.packetsSent, packetsReceived: $accessoryManager.packetsReceived)
             if (phoneOnly && UIDevice.current.userInterfaceIdiom == .phone) || !phoneOnly {
 				if deviceConnected {
 					// Create an HStack for connected state with proper accessibility

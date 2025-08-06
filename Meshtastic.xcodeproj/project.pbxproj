@@ -50,6 +50,7 @@
 		237AEB972E1FE627003B7CE3 /* BLETransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 237AEB962E1FE627003B7CE3 /* BLETransport.swift */; };
 		237AEB992E20098B003B7CE3 /* BLEConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 237AEB982E20098B003B7CE3 /* BLEConnection.swift */; };
 		237B46962DC8F1C100B22D99 /* RateLimitedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 237B46952DC8F1C100B22D99 /* RateLimitedButton.swift */; };
+		23A1AFB72E42BD2500E46C96 /* RXTXIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23A1AFB62E42BD2500E46C96 /* RXTXIndicatorView.swift */; };
 		23AD54692E2A6EAA0046E9AB /* AccessoryManager+FromRadio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AD54682E2A6EAA0046E9AB /* AccessoryManager+FromRadio.swift */; };
 		23AD546B2E2AA5A80046E9AB /* AccessoryManager+ToRadio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AD546A2E2AA5A80046E9AB /* AccessoryManager+ToRadio.swift */; };
 		23AD546D2E2AE9630046E9AB /* AccessoryManager+MQTT.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AD546C2E2AE9630046E9AB /* AccessoryManager+MQTT.swift */; };
@@ -348,6 +349,7 @@
 		237AEB962E1FE627003B7CE3 /* BLETransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLETransport.swift; sourceTree = "<group>"; };
 		237AEB982E20098B003B7CE3 /* BLEConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEConnection.swift; sourceTree = "<group>"; };
 		237B46952DC8F1C100B22D99 /* RateLimitedButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateLimitedButton.swift; sourceTree = "<group>"; };
+		23A1AFB62E42BD2500E46C96 /* RXTXIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RXTXIndicatorView.swift; sourceTree = "<group>"; };
 		23AD54682E2A6EAA0046E9AB /* AccessoryManager+FromRadio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+FromRadio.swift"; sourceTree = "<group>"; };
 		23AD546A2E2AA5A80046E9AB /* AccessoryManager+ToRadio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+ToRadio.swift"; sourceTree = "<group>"; };
 		23AD546C2E2AE9630046E9AB /* AccessoryManager+MQTT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+MQTT.swift"; sourceTree = "<group>"; };
@@ -1166,6 +1168,7 @@
 				8D3F8A3E2D44BB02009EAAA4 /* PowerMetrics.swift */,
 				237B46952DC8F1C100B22D99 /* RateLimitedButton.swift */,
 				23769D872E39521400E3601C /* View+iOS26Modifier.swift */,
+				23A1AFB62E42BD2500E46C96 /* RXTXIndicatorView.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1664,6 +1667,7 @@
 				DD6F65762C6EA5490053C113 /* AckErrors.swift in Sources */,
 				DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */,
 				DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */,
+				23A1AFB72E42BD2500E46C96 /* RXTXIndicatorView.swift in Sources */,
 				DDB75A1E2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift in Sources */,
 				DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */,
 				DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */,

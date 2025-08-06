@@ -8,6 +8,7 @@ import SwiftUI
 import MeshtasticProtobufs
 import OSLog
 import CocoaMQTT
+import Combine
 
 enum AccessoryError: Error, LocalizedError {
 	case discoveryFailed(String)
@@ -126,6 +127,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	var heartbeatTask: Task<Void, Error>?
 	var locationTask: Task<Void, Error>?
 	var connectionStepper: SequentialSteps?
+	
+	// Flash subjects
+	@Published var packetsSent: Int = 0
+	@Published var packetsReceived: Int = 0
 	
 	// Continuations
 	var wantConfigContinuation: CheckedContinuation<Void, Error>?
@@ -327,6 +332,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 
 	func send(_ data: ToRadio, debugDescription: String? = nil) async throws {
+		packetsSent += 1
+		
 		guard let active = activeConnection,
 			  await active.connection.isConnected else {
 			throw AccessoryError.connectionFailed("Not connected to any device")
@@ -338,6 +345,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 
 	func didReceive(_ event: ConnectionEvent) {
+		packetsReceived += 1
+		
 		switch event {
 		case .data(let fromRadio):
 			// Logger.transport.info("✅ [Accessory] didReceive: \(fromRadio.payloadVariant.debugDescription)")

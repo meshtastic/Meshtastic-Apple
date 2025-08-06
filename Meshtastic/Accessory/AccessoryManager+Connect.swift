@@ -26,6 +26,8 @@ extension AccessoryManager {
 		
 		// Clear any errors from last time
 		lastConnectionError = nil
+		packetsSent = 0
+		packetsReceived = 0
 		
 		// Prepare to connect
 		self.connectionStepper = SequentialSteps(maxRetries: maxRetries, retryDelay: retryDelay) {
