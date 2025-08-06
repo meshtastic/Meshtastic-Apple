@@ -189,8 +189,8 @@ struct MeshtasticAppleApp: App {
 			switch newScenePhase {
 			case .background:
 				Logger.services.info("🎬 [App] Scene is in the background")
+				accessoryManager.appDidEnterBackground()
 				do {
-
 					try persistenceController.container.viewContext.save()
 					Logger.services.info("💾 [App] Saved CoreData ViewContext when the app went to the background.")
 
@@ -202,6 +202,7 @@ struct MeshtasticAppleApp: App {
 				Logger.services.info("🎬 [App] Scene is inactive")
 			case .active:
 				Logger.services.info("🎬 [App] Scene is active")
+				accessoryManager.appDidBecomeActive()
 			@unknown default:
 				Logger.services.error("🍎 [App] Apple must have changed something")
 			}

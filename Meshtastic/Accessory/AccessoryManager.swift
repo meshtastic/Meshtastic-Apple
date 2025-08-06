@@ -658,3 +658,29 @@ enum PossiblyAlreadyDoneContinuation {
 	case alreadyDone
 	case notDone(CheckedContinuation<Void, Error>)
 }
+
+extension AccessoryManager {
+	func appDidEnterBackground() {
+		if self.state == .uninitialized { return }
+		if let connection = self.activeConnection?.connection {
+			Logger.transport.info("[AccessoryManager] informing active connection that we are entering the background")
+			Task { await connection.appDidEnterBackground() }
+		} else {
+			Logger.transport.info("[AccessoryManager] suspending scanning while in the background")
+			stopDiscovery()
+		}
+	}
+	
+	func appDidBecomeActive() {
+		if self.state == .uninitialized { return }
+		if let connection = self.activeConnection?.connection {
+			Logger.transport.info("[AccessoryManager] informing previously active connection that we are active again")
+			Task { await connection.appDidBecomeActive() }
+		} else {
+			if self.discoveryTask == nil {
+				Logger.transport.info("[AccessoryManager] Previosuly in the background but not scanning, starting scanning again")
+				self.startDiscovery()
+			}
+		}
+	}
+}

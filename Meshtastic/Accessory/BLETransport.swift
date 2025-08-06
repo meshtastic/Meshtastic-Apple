@@ -178,6 +178,15 @@ class BLETransport: Transport {
 		guard let cm = centralManager else {
 			throw AccessoryError.connectionFailed("Central manager not available")
 		}
+		
+		if await self.activeConnection?.peripheral.state == .disconnected {
+			Logger.transport.warning("🛜 [BLE] Connect request while an active (but disconnected).  Cleaning up")
+			try await self.activeConnection?.disconnect(withError: nil)
+			self.connectContinuation?.resume(throwing: CancellationError())
+			self.connectContinuation = nil
+			self.activeConnection = nil
+		}
+		
 		return try await withTaskCancellationHandler {
 			let newConnection: BLEConnection = try await withCheckedThrowingContinuation { cont in
 				if self.connectContinuation != nil || self.activeConnection != nil {

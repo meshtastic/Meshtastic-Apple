@@ -15,6 +15,9 @@ protocol Connection: Actor {
 	func disconnect(userInitiated: Bool) async throws  // If error is not provided, assume user-initiated disconnect
 	func drainPendingPackets() async throws
 	func startDrainPendingPackets() throws
+	
+	func appDidEnterBackground()
+	func appDidBecomeActive()
 }
 
 enum ConnectionEvent {

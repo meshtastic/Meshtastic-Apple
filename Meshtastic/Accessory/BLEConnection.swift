@@ -164,6 +164,14 @@ actor BLEConnection: Connection {
 	
 	func connect() async throws -> AsyncStream<ConnectionEvent> {
 		try await discoverServices()
+		startRSSITask()
+		return self.getPacketStream()
+	}
+	
+	func startRSSITask() {
+		if let task = self.rssiTask {
+			task.cancel()
+		}
 		self.rssiTask = Task {
 			do {
 				while !Task.isCancelled {
@@ -174,7 +182,6 @@ actor BLEConnection: Connection {
 				
 			}
 		}
-		return self.getPacketStream()
 	}
 	
 	func didDiscoverServices(error: Error? ) {
@@ -206,38 +213,38 @@ actor BLEConnection: Connection {
 		for characteristic in characteristics {
 			switch characteristic.uuid {
 			case TORADIO_UUID:
-				Logger.transport.info("🛜  [BLE] did discover TORADIO characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
+				Logger.transport.info("🛜 [BLE] did discover TORADIO characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
 				TORADIO_characteristic = characteristic
 				
 			case FROMRADIO_UUID:
-				Logger.transport.info("🛜  [BLE] did discover FROMRADIO characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
+				Logger.transport.info("🛜 [BLE] did discover FROMRADIO characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
 				FROMRADIO_characteristic = characteristic
 				self.peripheral.setNotifyValue(true, for: characteristic)
 				
 			case FROMNUM_UUID:
-				Logger.transport.info("🛜  [BLE] did discover FROMNUM (Notify) characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
+				Logger.transport.info("🛜 [BLE] did discover FROMNUM (Notify) characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
 				FROMNUM_characteristic = characteristic
 				self.peripheral.setNotifyValue(true, for: characteristic)
 				
 			case LOGRADIO_UUID:
-				Logger.transport.info("🛜  [BLE] did discover LOGRADIO (Notify) characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
+				Logger.transport.info("🛜 [BLE] did discover LOGRADIO (Notify) characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
 				LOGRADIO_characteristic = characteristic
 				self.peripheral.setNotifyValue(true, for: characteristic)
 				
 			default:
-				Logger.transport.info("🛜  [BLE] did discover unsupported \(characteristic.uuid) characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
+				Logger.transport.info("🛜 [BLE] did discover unsupported \(characteristic.uuid) characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
 			}
 		}
 		
 		if TORADIO_characteristic != nil && FROMRADIO_characteristic != nil && FROMNUM_characteristic != nil {
-			Logger.transport.info("🛜  [BLE] characteristics ready")
+			Logger.transport.info("🛜 [BLE] characteristics ready")
 			connectContinuation?.resume()
 			self.connectionStreamContinuation = nil
 			
 			// Read initial RSSI on ready
 			peripheral.readRSSI()
 		} else {
-			Logger.transport.info("🛜  [BLE] Missing required characteristics")
+			Logger.transport.info("🛜 [BLE] Missing required characteristics")
 			connectContinuation?.resume(throwing: AccessoryError.discoveryFailed("Missing required characteristics"))
 		}
 	}
@@ -331,6 +338,20 @@ actor BLEConnection: Connection {
 		return data
 	}
 	
+	func appDidEnterBackground() {
+		if let task = self.rssiTask {
+			Logger.transport.info("🛜 [BLE] App is entering the background, suspending RSSI reports.")
+			task.cancel()
+			self.rssiTask = nil
+		}
+	}
+	
+	func appDidBecomeActive() {
+		if self.rssiTask == nil {
+			Logger.transport.info("🛜 [BLE] App is active, restarting RSSI reports.")
+			self.startRSSITask()
+		}
+	}
 }
 
 class BLEConnectionDelegate: NSObject, CBPeripheralDelegate {
@@ -368,3 +389,4 @@ class BLEConnectionDelegate: NSObject, CBPeripheralDelegate {
 		Task { await connection?.didReadRSSI(RSSI: RSSI, error: error) }
 	}
 }
+

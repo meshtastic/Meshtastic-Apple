@@ -215,4 +215,11 @@ actor TCPConnection: Connection {
 		
 	}
 
+	func appDidEnterBackground() {
+		
+	}
+	
+	func appDidBecomeActive() {
+		
+	}
 }

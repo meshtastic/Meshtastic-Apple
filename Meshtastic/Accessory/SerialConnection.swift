@@ -244,5 +244,13 @@ actor SerialConnection: Connection {
 	// for a continuously-reading serial connection.
 	func drainPendingPackets() async throws {}
 	func startDrainPendingPackets() throws {}
+	
+	func appDidEnterBackground() {
+		
+	}
+	
+	func appDidBecomeActive() {
+		
+	}
 }
 #endif
