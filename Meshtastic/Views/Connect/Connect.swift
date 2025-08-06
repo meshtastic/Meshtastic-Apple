@@ -54,13 +54,12 @@ struct Connect: View {
 										}
 										Text("Connection Name").font(.callout)+Text(": \(connectedDevice.name.addingVariationSelectors)")
 											.font(.callout).foregroundColor(Color.gray)
-										HStack {
+										HStack(alignment: .firstTextBaseline) {
 											TransportIcon(transportType: connectedDevice.transportType)
-											Spacer()
 											if connectedDevice.transportType == .ble {
 												connectedDevice.getSignalStrength().map { SignalStrengthIndicator(signalStrength: $0, width: 5, height: 20) }
-												Spacer()
 											}
+											Spacer()
 										}
 										.padding(0)
 										if node != nil {
@@ -423,7 +422,7 @@ struct TransportIcon: View {
 	
 	var body: some View {
 		let transport = accessoryManager.transports.first(where: {$0.type == transportType})
-		return HStack {
+		return HStack (spacing: 3.0) {
 			if let icon = transport?.icon {
 				icon
 					.font(.title2)

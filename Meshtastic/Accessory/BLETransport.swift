@@ -54,6 +54,7 @@ class BLETransport: Transport {
 				setupCleanupTask()
 			}
 			cont.onTermination = { _ in
+				Logger.transport.error("🛜 [BLE] Discovery event stream has been canecelled.")
 				self.stopScanning()
 			}
 		}
@@ -77,6 +78,7 @@ class BLETransport: Transport {
 		
 				try? await Task.sleep(for: .seconds(15)) // Cleanup every 15 seconds
 			}
+			Logger.transport.debug("🛜 [BLE] Discovery clean up task has been canecelled.")
 		}
 	}
 
@@ -88,6 +90,7 @@ class BLETransport: Transport {
 	}
 
 	private func stopScanning() {
+		Logger.transport.error("🛜 [BLE] stopScanning: BLE Discovery has been stopped.")
 		centralManager?.stopScan()
 		discoveredPeripherals.removeAll()
 		discoveredDeviceContinuation = nil
@@ -102,14 +105,22 @@ class BLETransport: Transport {
 	}
 
 	func handleCentralState(_ state: CBManagerState, central: CBCentralManager) {
+		Logger.transport.error("🛜 [BLE] State hast transitioned to: \(cbManagerStateDescription(state))")
 		switch state {
 		case .poweredOn:
 			status = .discovering
 			self.setupCompleteContinuation?.resume()
 			self.setupCompleteContinuation = nil
+			
+			if self.discoveredDeviceContinuation != nil {
+				// We have someone already subscribed to our discovery event stream.
+				// Likely a powerOff event occcurred and need to now restore scanning.
+				central.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
+			}
 
 		case .poweredOff:
 			status = .error("Bluetooth is powered off")
+			status = .ready
 			self.setupCompleteContinuation?.resume(throwing: AccessoryError.connectionFailed("Bluetooth is powered off"))
 			self.setupCompleteContinuation = nil
 
@@ -149,8 +160,10 @@ class BLETransport: Transport {
 							identifier: id.uuidString,
 							rssi: rssi.intValue)
 		if isNew {
+			Logger.transport.error("🛜 [BLE] didDiscover new device: \(peripheral.name ?? "Unknown") (\(peripheral.identifier))")
 			discoveredDeviceContinuation?.yield(.deviceFound(device))
 		} else {
+			// Logger.transport.error("🛜 [BLE] didDiscover previosuly seen device: \(peripheral.name ?? "Unknown") (\(peripheral.identifier))")
 			let rssiVal = rssi.intValue
 			let deviceId = id
 			discoveredPeripherals[id]?.lastSeen = Date()
@@ -221,6 +234,10 @@ class BLETransport: Transport {
 		self.connectingPeripheral = nil
 	}
 	
+	func handleWillRestoreState(dict: [String : Any]) {
+		Logger.transport.debug("🛜 [BLE] willRestoreState was called, unhandled. \(dict)")
+	}
+	
 	func manuallyConnect(withConnectionString: String) async throws {
 		Logger.transport.error("🛜 [BLE] This transport does not support manual connections")
 	}
@@ -257,4 +274,21 @@ class BLEDelegate: NSObject, CBCentralManagerDelegate {
 	func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
 		self.transport?.handlePeripheralDisconnect(peripheral: peripheral)
 	}
+	
+	func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
+		self.transport?.handleWillRestoreState(dict: dict)
+	}
+}
+
+/// Returns a human-readable description for a CBManagerState value.
+fileprivate func cbManagerStateDescription(_ state: CBManagerState) -> String {
+    switch state {
+    case .unknown: return "unknown"
+    case .resetting: return "resetting"
+    case .unsupported: return "unsupported"
+    case .unauthorized: return "unauthorized"
+    case .poweredOff: return "poweredOff"
+    case .poweredOn: return "poweredOn"
+    @unknown default: return "unhandled state"
+    }
 }

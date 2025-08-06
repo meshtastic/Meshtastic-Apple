@@ -17,10 +17,13 @@ extension AccessoryManager {
 					for await event in transport.discoverDevices() {
 						continuation.yield(event)
 					}
-					Logger.transport.info("[Discovery] Discovery stream closed for transport \(String(describing: transport.type))")
+					Logger.transport.info("🔎 [Discovery] Discovery stream closed for transport \(String(describing: transport.type))")
 				}
 			}
-			continuation.onTermination = { _ in tasks.forEach { $0.cancel() } }
+			continuation.onTermination = { _ in 
+				Logger.transport.info("🔎 [Discovery] Cancelling discovery for all transports.")
+				tasks.forEach { $0.cancel() }
+			}
 		}
 	}
 
@@ -50,7 +53,7 @@ extension AccessoryManager {
 						}
 						
 						if self.shouldAutomaticallyConnectToPreferredPeripheral, UserDefaults.preferredPeripheralId == newDevice.id.uuidString {
-							Logger.transport.debug("[Discovery] Found preferred peripheral \(newDevice.name)")
+							Logger.transport.debug("🔎 [Discovery] Found preferred peripheral \(newDevice.name)")
 							self.connectToPreferredDevice()
 						}
 						
