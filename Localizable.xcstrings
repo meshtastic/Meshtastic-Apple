@@ -5036,10 +5036,8 @@
         }
       }
     },
-    "BLE RSSI %@" : {
-
-    },
     "BLE RSSI %lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ja" : {
           "stringUnit" : {

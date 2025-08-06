@@ -17,12 +17,12 @@ struct RXTXIndicatorWidget: View {
 	let fontSize: CGFloat = 7.0
 	var body: some View {
 		VStack (spacing: 3.0) {
-			HStack (spacing: 1.0) {
+			HStack (spacing: 2.0) {
 				Image(systemName:"arrow.up")
 					.font(.system(size: fontSize))
 				LEDIndicator(flash: $packetsSent, color: .green)
 			}.frame(maxHeight: fontSize)
-			HStack (spacing: 1.0) {
+			HStack (spacing: 2.0) {
 				Image(systemName:"arrow.down")
 					.font(.system(size: fontSize))
 				LEDIndicator(flash: $packetsReceived, color: .red)
