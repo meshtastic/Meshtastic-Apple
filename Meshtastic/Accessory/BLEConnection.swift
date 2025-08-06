@@ -53,6 +53,8 @@ actor BLEConnection: Connection {
 	private var writeContinuation: CheckedContinuation<Void, Error>?
 	private var readContinuation: CheckedContinuation<Data, Error>?
 	
+	private var rssiTask: Task<Void, Never>?
+	
 	var isConnected: Bool { peripheral.state == .connected }
 	
 	init(peripheral: CBPeripheral, central: CBCentralManager) {
@@ -92,6 +94,9 @@ actor BLEConnection: Connection {
 		}
 		connectionStreamContinuation?.finish()
 		connectionStreamContinuation = nil
+		
+		rssiTask?.cancel()
+		rssiTask = nil
 	}
 	
 	func startDrainPendingPackets() throws {
@@ -159,6 +164,16 @@ actor BLEConnection: Connection {
 	
 	func connect() async throws -> AsyncStream<ConnectionEvent> {
 		try await discoverServices()
+		self.rssiTask = Task {
+			do {
+				while !Task.isCancelled {
+					try await Task.sleep(for: .seconds(10))
+					peripheral.readRSSI()
+				}
+			} catch {
+				
+			}
+		}
 		return self.getPacketStream()
 	}
 	

@@ -14,6 +14,7 @@ extension AccessoryManager {
 		AsyncStream { continuation in
 			let tasks = transports.map { transport in
 				Task {
+					Logger.transport.info("🔎 [Discovery] Discovery stream started for transport \(String(describing: transport.type))")
 					for await event in transport.discoverDevices() {
 						continuation.yield(event)
 					}
@@ -28,7 +29,10 @@ extension AccessoryManager {
 	}
 
 	func startDiscovery() {
-		stopDiscovery()
+		if discoveryTask != nil {
+			Logger.transport.debug("🔎 [Discovery] Existing discovery task is active.")
+			return
+		}
 		updateState(.discovering)
 
 		discoveryTask = Task { @MainActor in

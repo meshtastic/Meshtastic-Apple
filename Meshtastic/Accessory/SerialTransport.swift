@@ -25,12 +25,13 @@ class SerialTransport: Transport {
 	let name = "Serial"
 
 	var portsAlreadyNotified = [String]()
+	var discoveryTask: Task<Void, Never>?
 	
 	func discoverDevices() -> AsyncStream<DiscoveryEvent> {
 		AsyncStream { cont in
 			self.status = .discovering
-			Task {
-				while true {
+			self.discoveryTask = Task {
+				while !Task.isCancelled {
 					let ports = self.getSerialPorts()
 					for port in ports {
 						let id = port.toUUIDFormatHash() ?? UUID()
@@ -56,6 +57,9 @@ class SerialTransport: Transport {
 				}
 			}
 			cont.onTermination = { _ in
+				self.discoveryTask?.cancel()
+				self.discoveryTask = nil
+				self.portsAlreadyNotified.removeAll()
 				self.status = .ready
 			}
 		}

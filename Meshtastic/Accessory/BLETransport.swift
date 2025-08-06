@@ -275,9 +275,9 @@ class BLEDelegate: NSObject, CBCentralManagerDelegate {
 		self.transport?.handlePeripheralDisconnect(peripheral: peripheral)
 	}
 	
-	func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
-		self.transport?.handleWillRestoreState(dict: dict)
-	}
+//	func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
+//		self.transport?.handleWillRestoreState(dict: dict)
+//	}
 }
 
 /// Returns a human-readable description for a CBManagerState value.

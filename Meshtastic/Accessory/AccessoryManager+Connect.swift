@@ -133,6 +133,7 @@ extension AccessoryManager {
 			// Step 8: Update UI and status to connected
 			Step { @MainActor _ in
 				Logger.transport.debug("🔗 [Connect] Step 8: Initialize MQTT and Location Provider")
+				self.stopDiscovery()
 				await self.initializeMqtt()
 				self.initializeLocationProvider()
 				if transport.requiresPeriodicHeartbeat {

@@ -263,6 +263,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		
 		// Turn off the disconnect buttons
 		allowDisconnect = false
+		self.startDiscovery()
 	}
 	
 	// Should only be called by UI-facing callers.
@@ -309,7 +310,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				}
 			}
 		} else {
-			Logger.transport.error("Device with ID \(deviceId) not found in devices list.")
+			// Durring active connections, this discover list will be empty, so this is expected.
+			// Logger.transport.error("Device with ID \(deviceId) not found in devices list.")
 		}
 
 	}
