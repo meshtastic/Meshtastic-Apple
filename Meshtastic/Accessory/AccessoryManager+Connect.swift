@@ -201,6 +201,7 @@ actor SequentialSteps {
 	var maxRetries: Int
 	var retryDelay: Duration
 	var isRunning: Bool = false
+	var externalError: Error?
 	
 	init(maxRetries: Int = 1, retryDelay: Duration = .seconds(3), @StepsBuilder _ builder: () -> [Step]) {
 		self.maxRetries	= maxRetries
@@ -253,6 +254,12 @@ actor SequentialSteps {
 								case let SequentialStepError.timeout(stepNumber, afterWaiting):
 									Logger.transport.info("[Inner Retry Step Loop] Sequential process timed out on step \(stepNumber) of \(stepRetries) after waiting \(afterWaiting)")
 								case is CancellationError:
+									if let externalError {
+										// Something from the outside had an error which caused the cancellation of this step
+										let errorToThrow = externalError
+										self.externalError = nil
+										throw errorToThrow
+									}
 									break stepRetryLoop
 								default:
 									Logger.transport.error("[Inner Retry Step Loop] Sequential process failed on step \(stepNumber) with error: \(error.localizedDescription)")
@@ -287,6 +294,11 @@ actor SequentialSteps {
 	
 	func cancel() {
 		cancelled = true
+		self.currentlyExecutingStep?.cancel()
+	}
+	
+	func cancelCurrentlyExecutingStep(withError: Error?) {
+		self.externalError = withError
 		self.currentlyExecutingStep?.cancel()
 	}
 	

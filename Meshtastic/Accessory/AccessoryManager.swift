@@ -370,15 +370,22 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Task {
 				// Handle error, perhaps log and disconnect
 				Logger.transport.info("🚨 [Accessory] didReceive with failure: \(error.localizedDescription)")
-				lastConnectionError = error
-			
-				shouldAutomaticallyConnectToPreferredPeripheral = true
-				try? await self.closeConnection()
-				
-				// If we were actively reconnecting, then don't update the status because
-				// we're in the midst of a reconnection flow
-				if !(await self.connectionStepper?.isRunning ?? false) {
-					updateState(.discovering)
+								
+				if let connectionStepper = self.connectionStepper {
+					// If we're in the midst of a connection process, tell the stepper that something happened
+					await connectionStepper.cancelCurrentlyExecutingStep(withError: error)
+				} else {
+					// Normal processing.  Expose the error and disconnect
+					lastConnectionError = error
+					
+					shouldAutomaticallyConnectToPreferredPeripheral = true
+					try? await self.closeConnection()
+					
+					// If we were actively reconnecting, then don't update the status because
+					// we're in the midst of a reconnection flow
+					if !(await self.connectionStepper?.isRunning ?? false) {
+						updateState(.discovering)
+					}
 				}
 			}
 			
