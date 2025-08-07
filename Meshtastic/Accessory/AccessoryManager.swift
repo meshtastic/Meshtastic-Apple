@@ -323,10 +323,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		case .uninitialized, .idle, .discovering:
 			self.isConnected = false
 			self.isConnecting = false
-		case .connecting, .communicating, .retrying, .retrievingDatabase:
+		case .connecting, .communicating, .retrying:
 			self.isConnected = false
 			self.isConnecting = true
-		case .subscribed:
+		case .subscribed, .retrievingDatabase:
 			self.isConnected = true
 			self.isConnecting = false
 		}
