@@ -196,6 +196,10 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
   ///
   /// Sensirion SFA30 Formaldehyde sensor
   case sfa30 // = 42
+
+  ///
+  /// SEN5X PM SENSORS
+  case sen5X // = 43
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -247,6 +251,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 40: self = .ads1X15
     case 41: self = .ads1X15Alt
     case 42: self = .sfa30
+    case 43: self = .sen5X
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -296,6 +301,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .ads1X15: return 40
     case .ads1X15Alt: return 41
     case .sfa30: return 42
+    case .sen5X: return 43
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -345,6 +351,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     .ads1X15,
     .ads1X15Alt,
     .sfa30,
+    .sen5X,
   ]
 
 }
@@ -893,7 +900,7 @@ public struct AirQualityMetrics: @unchecked Sendable {
   // methods supported on all messages.
 
   ///
-  /// Concentration Units Standard PM1.0
+  /// Concentration Units Standard PM1.0 in ug/m3
   public var pm10Standard: UInt32 {
     get {return _storage._pm10Standard ?? 0}
     set {_uniqueStorage()._pm10Standard = newValue}
@@ -904,7 +911,7 @@ public struct AirQualityMetrics: @unchecked Sendable {
   public mutating func clearPm10Standard() {_uniqueStorage()._pm10Standard = nil}
 
   ///
-  /// Concentration Units Standard PM2.5
+  /// Concentration Units Standard PM2.5 in ug/m3
   public var pm25Standard: UInt32 {
     get {return _storage._pm25Standard ?? 0}
     set {_uniqueStorage()._pm25Standard = newValue}
@@ -915,7 +922,7 @@ public struct AirQualityMetrics: @unchecked Sendable {
   public mutating func clearPm25Standard() {_uniqueStorage()._pm25Standard = nil}
 
   ///
-  /// Concentration Units Standard PM10.0
+  /// Concentration Units Standard PM10.0 in ug/m3
   public var pm100Standard: UInt32 {
     get {return _storage._pm100Standard ?? 0}
     set {_uniqueStorage()._pm100Standard = newValue}
@@ -926,7 +933,7 @@ public struct AirQualityMetrics: @unchecked Sendable {
   public mutating func clearPm100Standard() {_uniqueStorage()._pm100Standard = nil}
 
   ///
-  /// Concentration Units Environmental PM1.0
+  /// Concentration Units Environmental PM1.0 in ug/m3
   public var pm10Environmental: UInt32 {
     get {return _storage._pm10Environmental ?? 0}
     set {_uniqueStorage()._pm10Environmental = newValue}
@@ -937,7 +944,7 @@ public struct AirQualityMetrics: @unchecked Sendable {
   public mutating func clearPm10Environmental() {_uniqueStorage()._pm10Environmental = nil}
 
   ///
-  /// Concentration Units Environmental PM2.5
+  /// Concentration Units Environmental PM2.5 in ug/m3
   public var pm25Environmental: UInt32 {
     get {return _storage._pm25Environmental ?? 0}
     set {_uniqueStorage()._pm25Environmental = newValue}
@@ -948,7 +955,7 @@ public struct AirQualityMetrics: @unchecked Sendable {
   public mutating func clearPm25Environmental() {_uniqueStorage()._pm25Environmental = nil}
 
   ///
-  /// Concentration Units Environmental PM10.0
+  /// Concentration Units Environmental PM10.0 in ug/m3
   public var pm100Environmental: UInt32 {
     get {return _storage._pm100Environmental ?? 0}
     set {_uniqueStorage()._pm100Environmental = newValue}
@@ -959,7 +966,7 @@ public struct AirQualityMetrics: @unchecked Sendable {
   public mutating func clearPm100Environmental() {_uniqueStorage()._pm100Environmental = nil}
 
   ///
-  /// 0.3um Particle Count
+  /// 0.3um Particle Count in #/0.1l
   public var particles03Um: UInt32 {
     get {return _storage._particles03Um ?? 0}
     set {_uniqueStorage()._particles03Um = newValue}
@@ -970,7 +977,7 @@ public struct AirQualityMetrics: @unchecked Sendable {
   public mutating func clearParticles03Um() {_uniqueStorage()._particles03Um = nil}
 
   ///
-  /// 0.5um Particle Count
+  /// 0.5um Particle Count in #/0.1l
   public var particles05Um: UInt32 {
     get {return _storage._particles05Um ?? 0}
     set {_uniqueStorage()._particles05Um = newValue}
@@ -981,7 +988,7 @@ public struct AirQualityMetrics: @unchecked Sendable {
   public mutating func clearParticles05Um() {_uniqueStorage()._particles05Um = nil}
 
   ///
-  /// 1.0um Particle Count
+  /// 1.0um Particle Count in #/0.1l
   public var particles10Um: UInt32 {
     get {return _storage._particles10Um ?? 0}
     set {_uniqueStorage()._particles10Um = newValue}
@@ -992,7 +999,7 @@ public struct AirQualityMetrics: @unchecked Sendable {
   public mutating func clearParticles10Um() {_uniqueStorage()._particles10Um = nil}
 
   ///
-  /// 2.5um Particle Count
+  /// 2.5um Particle Count in #/0.1l
   public var particles25Um: UInt32 {
     get {return _storage._particles25Um ?? 0}
     set {_uniqueStorage()._particles25Um = newValue}
@@ -1003,7 +1010,7 @@ public struct AirQualityMetrics: @unchecked Sendable {
   public mutating func clearParticles25Um() {_uniqueStorage()._particles25Um = nil}
 
   ///
-  /// 5.0um Particle Count
+  /// 5.0um Particle Count in #/0.1l
   public var particles50Um: UInt32 {
     get {return _storage._particles50Um ?? 0}
     set {_uniqueStorage()._particles50Um = newValue}
@@ -1014,7 +1021,7 @@ public struct AirQualityMetrics: @unchecked Sendable {
   public mutating func clearParticles50Um() {_uniqueStorage()._particles50Um = nil}
 
   ///
-  /// 10.0um Particle Count
+  /// 10.0um Particle Count in #/0.1l
   public var particles100Um: UInt32 {
     get {return _storage._particles100Um ?? 0}
     set {_uniqueStorage()._particles100Um = newValue}
@@ -1089,6 +1096,83 @@ public struct AirQualityMetrics: @unchecked Sendable {
   public var hasFormTemperature: Bool {return _storage._formTemperature != nil}
   /// Clears the value of `formTemperature`. Subsequent reads from it will return its default value.
   public mutating func clearFormTemperature() {_uniqueStorage()._formTemperature = nil}
+
+  ///
+  /// Concentration Units Standard PM4.0 in ug/m3
+  public var pm40Standard: UInt32 {
+    get {return _storage._pm40Standard ?? 0}
+    set {_uniqueStorage()._pm40Standard = newValue}
+  }
+  /// Returns true if `pm40Standard` has been explicitly set.
+  public var hasPm40Standard: Bool {return _storage._pm40Standard != nil}
+  /// Clears the value of `pm40Standard`. Subsequent reads from it will return its default value.
+  public mutating func clearPm40Standard() {_uniqueStorage()._pm40Standard = nil}
+
+  ///
+  /// 4.0um Particle Count in #/0.1l
+  public var particles40Um: UInt32 {
+    get {return _storage._particles40Um ?? 0}
+    set {_uniqueStorage()._particles40Um = newValue}
+  }
+  /// Returns true if `particles40Um` has been explicitly set.
+  public var hasParticles40Um: Bool {return _storage._particles40Um != nil}
+  /// Clears the value of `particles40Um`. Subsequent reads from it will return its default value.
+  public mutating func clearParticles40Um() {_uniqueStorage()._particles40Um = nil}
+
+  ///
+  /// PM Sensor Temperature
+  public var pmTemperature: Float {
+    get {return _storage._pmTemperature ?? 0}
+    set {_uniqueStorage()._pmTemperature = newValue}
+  }
+  /// Returns true if `pmTemperature` has been explicitly set.
+  public var hasPmTemperature: Bool {return _storage._pmTemperature != nil}
+  /// Clears the value of `pmTemperature`. Subsequent reads from it will return its default value.
+  public mutating func clearPmTemperature() {_uniqueStorage()._pmTemperature = nil}
+
+  ///
+  /// PM Sensor humidity
+  public var pmHumidity: Float {
+    get {return _storage._pmHumidity ?? 0}
+    set {_uniqueStorage()._pmHumidity = newValue}
+  }
+  /// Returns true if `pmHumidity` has been explicitly set.
+  public var hasPmHumidity: Bool {return _storage._pmHumidity != nil}
+  /// Clears the value of `pmHumidity`. Subsequent reads from it will return its default value.
+  public mutating func clearPmHumidity() {_uniqueStorage()._pmHumidity = nil}
+
+  ///
+  /// PM Sensor VOC Index
+  public var pmVocIdx: Float {
+    get {return _storage._pmVocIdx ?? 0}
+    set {_uniqueStorage()._pmVocIdx = newValue}
+  }
+  /// Returns true if `pmVocIdx` has been explicitly set.
+  public var hasPmVocIdx: Bool {return _storage._pmVocIdx != nil}
+  /// Clears the value of `pmVocIdx`. Subsequent reads from it will return its default value.
+  public mutating func clearPmVocIdx() {_uniqueStorage()._pmVocIdx = nil}
+
+  ///
+  /// PM Sensor NOx Index
+  public var pmNoxIdx: Float {
+    get {return _storage._pmNoxIdx ?? 0}
+    set {_uniqueStorage()._pmNoxIdx = newValue}
+  }
+  /// Returns true if `pmNoxIdx` has been explicitly set.
+  public var hasPmNoxIdx: Bool {return _storage._pmNoxIdx != nil}
+  /// Clears the value of `pmNoxIdx`. Subsequent reads from it will return its default value.
+  public mutating func clearPmNoxIdx() {_uniqueStorage()._pmNoxIdx = nil}
+
+  ///
+  /// Typical Particle Size in um
+  public var particlesTps: Float {
+    get {return _storage._particlesTps ?? 0}
+    set {_uniqueStorage()._particlesTps = newValue}
+  }
+  /// Returns true if `particlesTps` has been explicitly set.
+  public var hasParticlesTps: Bool {return _storage._particlesTps != nil}
+  /// Clears the value of `particlesTps`. Subsequent reads from it will return its default value.
+  public mutating func clearParticlesTps() {_uniqueStorage()._particlesTps = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1476,6 +1560,7 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     40: .same(proto: "ADS1X15"),
     41: .same(proto: "ADS1X15_ALT"),
     42: .same(proto: "SFA30"),
+    43: .same(proto: "SEN5X"),
   ]
 }
 
@@ -1590,15 +1675,11 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     var _soilMoisture: UInt32? = nil
     var _soilTemperature: Float? = nil
 
-    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
 
     private init() {}
 
@@ -1930,6 +2011,13 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     16: .standard(proto: "form_formaldehyde"),
     17: .standard(proto: "form_humidity"),
     18: .standard(proto: "form_temperature"),
+    19: .standard(proto: "pm40_standard"),
+    20: .standard(proto: "particles_40um"),
+    21: .standard(proto: "pm_temperature"),
+    22: .standard(proto: "pm_humidity"),
+    23: .standard(proto: "pm_voc_idx"),
+    24: .standard(proto: "pm_nox_idx"),
+    25: .standard(proto: "particles_tps"),
   ]
 
   fileprivate class _StorageClass {
@@ -1951,16 +2039,19 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     var _formFormaldehyde: Float? = nil
     var _formHumidity: Float? = nil
     var _formTemperature: Float? = nil
+    var _pm40Standard: UInt32? = nil
+    var _particles40Um: UInt32? = nil
+    var _pmTemperature: Float? = nil
+    var _pmHumidity: Float? = nil
+    var _pmVocIdx: Float? = nil
+    var _pmNoxIdx: Float? = nil
+    var _particlesTps: Float? = nil
 
-    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
 
     private init() {}
 
@@ -1983,6 +2074,13 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       _formFormaldehyde = source._formFormaldehyde
       _formHumidity = source._formHumidity
       _formTemperature = source._formTemperature
+      _pm40Standard = source._pm40Standard
+      _particles40Um = source._particles40Um
+      _pmTemperature = source._pmTemperature
+      _pmHumidity = source._pmHumidity
+      _pmVocIdx = source._pmVocIdx
+      _pmNoxIdx = source._pmNoxIdx
+      _particlesTps = source._particlesTps
     }
   }
 
@@ -2019,6 +2117,13 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         case 16: try { try decoder.decodeSingularFloatField(value: &_storage._formFormaldehyde) }()
         case 17: try { try decoder.decodeSingularFloatField(value: &_storage._formHumidity) }()
         case 18: try { try decoder.decodeSingularFloatField(value: &_storage._formTemperature) }()
+        case 19: try { try decoder.decodeSingularUInt32Field(value: &_storage._pm40Standard) }()
+        case 20: try { try decoder.decodeSingularUInt32Field(value: &_storage._particles40Um) }()
+        case 21: try { try decoder.decodeSingularFloatField(value: &_storage._pmTemperature) }()
+        case 22: try { try decoder.decodeSingularFloatField(value: &_storage._pmHumidity) }()
+        case 23: try { try decoder.decodeSingularFloatField(value: &_storage._pmVocIdx) }()
+        case 24: try { try decoder.decodeSingularFloatField(value: &_storage._pmNoxIdx) }()
+        case 25: try { try decoder.decodeSingularFloatField(value: &_storage._particlesTps) }()
         default: break
         }
       }
@@ -2085,6 +2190,27 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       try { if let v = _storage._formTemperature {
         try visitor.visitSingularFloatField(value: v, fieldNumber: 18)
       } }()
+      try { if let v = _storage._pm40Standard {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 19)
+      } }()
+      try { if let v = _storage._particles40Um {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 20)
+      } }()
+      try { if let v = _storage._pmTemperature {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 21)
+      } }()
+      try { if let v = _storage._pmHumidity {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 22)
+      } }()
+      try { if let v = _storage._pmVocIdx {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 23)
+      } }()
+      try { if let v = _storage._pmNoxIdx {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 24)
+      } }()
+      try { if let v = _storage._particlesTps {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 25)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2112,6 +2238,13 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         if _storage._formFormaldehyde != rhs_storage._formFormaldehyde {return false}
         if _storage._formHumidity != rhs_storage._formHumidity {return false}
         if _storage._formTemperature != rhs_storage._formTemperature {return false}
+        if _storage._pm40Standard != rhs_storage._pm40Standard {return false}
+        if _storage._particles40Um != rhs_storage._particles40Um {return false}
+        if _storage._pmTemperature != rhs_storage._pmTemperature {return false}
+        if _storage._pmHumidity != rhs_storage._pmHumidity {return false}
+        if _storage._pmVocIdx != rhs_storage._pmVocIdx {return false}
+        if _storage._pmNoxIdx != rhs_storage._pmNoxIdx {return false}
+        if _storage._particlesTps != rhs_storage._particlesTps {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -2374,15 +2507,11 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     var _time: UInt32 = 0
     var _variant: Telemetry.OneOf_Variant?
 
-    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
 
     private init() {}
 

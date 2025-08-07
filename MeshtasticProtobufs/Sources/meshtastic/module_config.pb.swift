@@ -804,6 +804,10 @@ public struct ModuleConfig: Sendable {
       /// VE.Direct is a serial protocol used by Victron Energy products
       /// https://beta.ivc.no/wiki/index.php/Victron_VE_Direct_DIY_Cable
       case veDirect // = 7
+
+      ///Used to configure and view some parameters of MeshSolar.
+      ///https://heltec.org/project/meshsolar/
+      case msConfig // = 8
       case UNRECOGNIZED(Int)
 
       public init() {
@@ -820,6 +824,7 @@ public struct ModuleConfig: Sendable {
         case 5: self = .caltopo
         case 6: self = .ws85
         case 7: self = .veDirect
+        case 8: self = .msConfig
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -834,6 +839,7 @@ public struct ModuleConfig: Sendable {
         case .caltopo: return 5
         case .ws85: return 6
         case .veDirect: return 7
+        case .msConfig: return 8
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -848,6 +854,7 @@ public struct ModuleConfig: Sendable {
         .caltopo,
         .ws85,
         .veDirect,
+        .msConfig,
       ]
 
     }
@@ -1109,11 +1116,15 @@ public struct ModuleConfig: Sendable {
 
     ///
     /// Enable/disable CannedMessageModule.
+    ///
+    /// NOTE: This field was marked as deprecated in the .proto file.
     public var enabled: Bool = false
 
     ///
     /// Input event origin accepted by the canned message module.
     /// Can be e.g. "rotEnc1", "upDownEnc1", "scanAndSelect", "cardkb", "serialkb", or keyword "_any"
+    ///
+    /// NOTE: This field was marked as deprecated in the .proto file.
     public var allowInputSource: String = String()
 
     ///
@@ -2100,6 +2111,7 @@ extension ModuleConfig.SerialConfig.Serial_Mode: SwiftProtobuf._ProtoNameProvidi
     5: .same(proto: "CALTOPO"),
     6: .same(proto: "WS85"),
     7: .same(proto: "VE_DIRECT"),
+    8: .same(proto: "MS_CONFIG"),
   ]
 }
 

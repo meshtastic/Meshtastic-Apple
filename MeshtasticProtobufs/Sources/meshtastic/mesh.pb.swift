@@ -483,6 +483,11 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
   case thinknodeM5 // = 107
 
   ///
+  /// MeshSolar is an integrated power management and communication solution designed for outdoor low-power devices.
+  /// https://heltec.org/project/meshsolar/
+  case heltecMeshSolar // = 108
+
+  ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -603,6 +608,7 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 105: self = .wismeshTag
     case 106: self = .rak3312
     case 107: self = .thinknodeM5
+    case 108: self = .heltecMeshSolar
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -718,6 +724,7 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .wismeshTag: return 105
     case .rak3312: return 106
     case .thinknodeM5: return 107
+    case .heltecMeshSolar: return 108
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -833,6 +840,7 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     .wismeshTag,
     .rak3312,
     .thinknodeM5,
+    .heltecMeshSolar,
     .privateHw,
   ]
 
@@ -1013,6 +1021,84 @@ public enum CriticalErrorCode: SwiftProtobuf.Enum, Swift.CaseIterable {
     .radioSpiBug,
     .flashCorruptionRecoverable,
     .flashCorruptionUnrecoverable,
+  ]
+
+}
+
+///
+/// Enum to indicate to clients whether this firmware is a special firmware build, like an event.
+/// The first 16 values are reserved for non-event special firmwares, like the Smart Citizen use case.
+public enum FirmwareEdition: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+
+  ///
+  /// Vanilla firmware
+  case vanilla // = 0
+
+  ///
+  /// Firmware for use in the Smart Citizen environmental monitoring network
+  case smartCitizen // = 1
+
+  ///
+  /// Open Sauce, the maker conference held yearly in CA
+  case openSauce // = 16
+
+  ///
+  /// DEFCON, the yearly hacker conference
+  case defcon // = 17
+
+  ///
+  /// Burning Man, the yearly hippie gathering in the desert
+  case burningMan // = 18
+
+  ///
+  /// Hamvention, the Dayton amateur radio convention
+  case hamvention // = 19
+
+  ///
+  /// Placeholder for DIY and unofficial events
+  case diyEdition // = 127
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .vanilla
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .vanilla
+    case 1: self = .smartCitizen
+    case 16: self = .openSauce
+    case 17: self = .defcon
+    case 18: self = .burningMan
+    case 19: self = .hamvention
+    case 127: self = .diyEdition
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .vanilla: return 0
+    case .smartCitizen: return 1
+    case .openSauce: return 16
+    case .defcon: return 17
+    case .burningMan: return 18
+    case .hamvention: return 19
+    case .diyEdition: return 127
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [FirmwareEdition] = [
+    .vanilla,
+    .smartCitizen,
+    .openSauce,
+    .defcon,
+    .burningMan,
+    .hamvention,
+    .diyEdition,
   ]
 
 }
@@ -2592,6 +2678,15 @@ public struct MyNodeInfo: @unchecked Sendable {
   /// The PlatformIO environment used to build this firmware
   public var pioEnv: String = String()
 
+  ///
+  /// The indicator for whether this device is running event firmware and which
+  public var firmwareEdition: FirmwareEdition = .vanilla
+
+  ///
+  /// The number of nodes in the nodedb.
+  /// This is used by the phone to know how many NodeInfo packets to expect on want_config
+  public var nodedbCount: UInt32 = 0
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -3672,6 +3767,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     105: .same(proto: "WISMESH_TAG"),
     106: .same(proto: "RAK3312"),
     107: .same(proto: "THINKNODE_M5"),
+    108: .same(proto: "HELTEC_MESH_SOLAR"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
@@ -3699,6 +3795,18 @@ extension CriticalErrorCode: SwiftProtobuf._ProtoNameProviding {
     11: .same(proto: "RADIO_SPI_BUG"),
     12: .same(proto: "FLASH_CORRUPTION_RECOVERABLE"),
     13: .same(proto: "FLASH_CORRUPTION_UNRECOVERABLE"),
+  ]
+}
+
+extension FirmwareEdition: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "VANILLA"),
+    1: .same(proto: "SMART_CITIZEN"),
+    16: .same(proto: "OPEN_SAUCE"),
+    17: .same(proto: "DEFCON"),
+    18: .same(proto: "BURNING_MAN"),
+    19: .same(proto: "HAMVENTION"),
+    127: .same(proto: "DIY_EDITION"),
   ]
 }
 
@@ -3776,15 +3884,11 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     var _seqNumber: UInt32 = 0
     var _precisionBits: UInt32 = 0
 
-    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
 
     private init() {}
 
@@ -4557,15 +4661,11 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     var _relayNode: UInt32 = 0
     var _txAfter: UInt32 = 0
 
-    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
 
     private init() {}
 
@@ -4814,15 +4914,11 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     var _isIgnored: Bool = false
     var _isKeyManuallyVerified: Bool = false
 
-    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
 
     private init() {}
 
@@ -4955,6 +5051,8 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     11: .standard(proto: "min_app_version"),
     12: .standard(proto: "device_id"),
     13: .standard(proto: "pio_env"),
+    14: .standard(proto: "firmware_edition"),
+    15: .standard(proto: "nodedb_count"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -4968,6 +5066,8 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       case 11: try { try decoder.decodeSingularUInt32Field(value: &self.minAppVersion) }()
       case 12: try { try decoder.decodeSingularBytesField(value: &self.deviceID) }()
       case 13: try { try decoder.decodeSingularStringField(value: &self.pioEnv) }()
+      case 14: try { try decoder.decodeSingularEnumField(value: &self.firmwareEdition) }()
+      case 15: try { try decoder.decodeSingularUInt32Field(value: &self.nodedbCount) }()
       default: break
       }
     }
@@ -4989,6 +5089,12 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     if !self.pioEnv.isEmpty {
       try visitor.visitSingularStringField(value: self.pioEnv, fieldNumber: 13)
     }
+    if self.firmwareEdition != .vanilla {
+      try visitor.visitSingularEnumField(value: self.firmwareEdition, fieldNumber: 14)
+    }
+    if self.nodedbCount != 0 {
+      try visitor.visitSingularUInt32Field(value: self.nodedbCount, fieldNumber: 15)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -4998,6 +5104,8 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     if lhs.minAppVersion != rhs.minAppVersion {return false}
     if lhs.deviceID != rhs.deviceID {return false}
     if lhs.pioEnv != rhs.pioEnv {return false}
+    if lhs.firmwareEdition != rhs.firmwareEdition {return false}
+    if lhs.nodedbCount != rhs.nodedbCount {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
