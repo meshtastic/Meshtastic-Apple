@@ -9,6 +9,8 @@ import Foundation
 import MeshtasticProtobufs
 
 protocol Connection: Actor {
+	var type: TransportType { get }
+	
 	var isConnected: Bool { get }
 	func send(_ data: ToRadio) async throws
 	func connect() async throws -> AsyncStream<ConnectionEvent>

@@ -14,8 +14,9 @@ struct ConnectedDevice: View {
     var mqttDownlinkEnabled: Bool = false
         var mqttTopic: String = ""
     var phoneOnly: Bool = false
-
-	init(deviceConnected: Bool, name: String, mqttProxyConnected: Bool = false, mqttUplinkEnabled: Bool = false, mqttDownlinkEnabled: Bool = false, mqttTopic: String = "", phoneOnly: Bool = false, addedString: String = "") {
+	var showActivityLights: Bool
+	
+	init(deviceConnected: Bool, name: String, mqttProxyConnected: Bool = false, mqttUplinkEnabled: Bool = false, mqttDownlinkEnabled: Bool = false, mqttTopic: String = "", phoneOnly: Bool = false, showActivityLights: Bool = true) {
 		self.deviceConnected = deviceConnected
 		self.name = name
 		self.mqttProxyConnected = mqttProxyConnected
@@ -23,11 +24,14 @@ struct ConnectedDevice: View {
 		self.mqttDownlinkEnabled = mqttDownlinkEnabled
 		self.mqttTopic = mqttTopic
 		self.phoneOnly = phoneOnly
+		self.showActivityLights = showActivityLights
 	}
 
     var body: some View {
-        HStack {
-			RXTXIndicatorWidget(packetsSent: $accessoryManager.packetsSent, packetsReceived: $accessoryManager.packetsReceived)
+		HStack {
+			if showActivityLights {
+				RXTXIndicatorWidget(packetsSent: $accessoryManager.packetsSent, packetsReceived: $accessoryManager.packetsReceived)
+			}
             if (phoneOnly && UIDevice.current.userInterfaceIdiom == .phone) || !phoneOnly {
 				if deviceConnected {
 					// Create an HStack for connected state with proper accessibility

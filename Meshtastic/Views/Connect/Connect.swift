@@ -85,9 +85,9 @@ struct Connect: View {
 													.symbolRenderingMode(.multicolor)
 													.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 													.foregroundColor(.orange)
-													Text("Communicating").font(.callout)
-														.foregroundColor(.orange)
-												}
+												Text("Communicating").font(.callout)
+													.foregroundColor(.orange)
+											}
 										case .retrying(let attempt):
 											HStack {
 												Image(systemName: "square.stack.3d.down.forward")
@@ -122,25 +122,25 @@ struct Connect: View {
 								
 								if node != nil {
 									Label("\(String(node!.num))", systemImage: "number")
-									#if !targetEnvironment(macCatalyst)
+#if !targetEnvironment(macCatalyst)
 									if accessoryManager.state == .subscribed {
 										Button {
 											if !liveActivityStarted {
-											#if canImport(ActivityKit)
+#if canImport(ActivityKit)
 												Logger.services.info("Start live activity.")
 												startNodeActivity()
-											#endif
+#endif
 											} else {
-											#if canImport(ActivityKit)
+#if canImport(ActivityKit)
 												Logger.services.info("Stop live activity.")
 												endActivity()
-											#endif
+#endif
 											}
 										} label: {
 											Label("Mesh Live Activity", systemImage: liveActivityStarted ? "stop" : "play")
 										}
 									}
-									#endif
+#endif
 									if accessoryManager.allowDisconnect {
 										Button(role: .destructive) {
 											if accessoryManager.allowDisconnect {
@@ -159,7 +159,7 @@ struct Connect: View {
 													Logger.mesh.error("Shutdown Failed: \(error)")
 												}
 											}
-
+											
 										} label: {
 											Label("Power Off", systemImage: "power")
 										}
@@ -213,9 +213,9 @@ struct Connect: View {
 										Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 									}.disabled(!accessoryManager.allowDisconnect)
 								}
-
+								
 							} else {
-
+								
 								if let lastError = accessoryManager.lastConnectionError as? LocalizedError {
 									Text(lastError.localizedDescription).font(.callout).foregroundColor(.red)
 								}
@@ -233,72 +233,72 @@ struct Connect: View {
 						}
 					}
 					.textCase(nil)
-
+					
 					if !(accessoryManager.isConnected || accessoryManager .isConnecting) {
 						Section(header: HStack {
 							Text("Available Radios").font(.title)
 							Spacer()
 							ManualConnectionMenu()
 						}) {
-								ForEach(accessoryManager.devices.sorted(by: { $0.name < $1.name })) { device in
-									HStack {
-										if UserDefaults.preferredPeripheralId == device.id.uuidString {
-											Image(systemName: "star.fill")
-												.imageScale(.large).foregroundColor(.yellow)
-												.padding(.trailing)
-										} else {
-											Image(systemName: "circle.fill")
-												.imageScale(.large).foregroundColor(.gray)
-												.padding(.trailing)
-										}
-										VStack(alignment: .leading) {
-											Button(action: {
-												if UserDefaults.preferredPeripheralId.count > 0 && device.id.uuidString != UserDefaults.preferredPeripheralId {
-													if accessoryManager.allowDisconnect {
-														Task { try await accessoryManager.disconnect() }
-													}
-													presentingSwitchPreferredPeripheral = true
-													selectedPeripherialId = device.id.uuidString
-												} else {
-													Task {
-														try? await accessoryManager.connect(to: device)
-													}
+							ForEach(accessoryManager.devices.sorted(by: { $0.name < $1.name })) { device in
+								HStack {
+									if UserDefaults.preferredPeripheralId == device.id.uuidString {
+										Image(systemName: "star.fill")
+											.imageScale(.large).foregroundColor(.yellow)
+											.padding(.trailing)
+									} else {
+										Image(systemName: "circle.fill")
+											.imageScale(.large).foregroundColor(.gray)
+											.padding(.trailing)
+									}
+									VStack(alignment: .leading) {
+										Button(action: {
+											if UserDefaults.preferredPeripheralId.count > 0 && device.id.uuidString != UserDefaults.preferredPeripheralId {
+												if accessoryManager.allowDisconnect {
+													Task { try await accessoryManager.disconnect() }
 												}
-											}) {
-												Text(device.name).font(.callout)
+												presentingSwitchPreferredPeripheral = true
+												selectedPeripherialId = device.id.uuidString
+											} else {
+												Task {
+													try? await accessoryManager.connect(to: device)
+												}
 											}
-											// Show transport type
-											TransportIcon(transportType: device.transportType)
+										}) {
+											Text(device.name).font(.callout)
 										}
-										Spacer()
-										VStack {
-											device.getSignalStrength().map { SignalStrengthIndicator(signalStrength: $0) }
-										}
-									}.padding([.bottom, .top])
-								}
-							}
-							.confirmationDialog("Connecting to a new radio will clear all app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
-								Button("Connect to new radio?", role: .destructive) {
-									UserDefaults.preferredPeripheralId = selectedPeripherialId
-									UserDefaults.preferredPeripheralNum = 0
-									if accessoryManager.allowDisconnect {
-										Task { try await accessoryManager.disconnect() }
+										// Show transport type
+										TransportIcon(transportType: device.transportType)
 									}
-									clearCoreDataDatabase(context: context, includeRoutes: false)
-									if let radio = accessoryManager.devices.first(where: { $0.id.uuidString == selectedPeripherialId }) {
-										Task {
-											try await accessoryManager.connect(to: radio)
-										}
+									Spacer()
+									VStack {
+										device.getSignalStrength().map { SignalStrengthIndicator(signalStrength: $0) }
 									}
-								}
+								}.padding([.bottom, .top])
 							}
-							.textCase(nil)
 						}
+						.confirmationDialog("Connecting to a new radio will clear all app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
+							Button("Connect to new radio?", role: .destructive) {
+								UserDefaults.preferredPeripheralId = selectedPeripherialId
+								UserDefaults.preferredPeripheralNum = 0
+								if accessoryManager.allowDisconnect {
+									Task { try await accessoryManager.disconnect() }
+								}
+								clearCoreDataDatabase(context: context, includeRoutes: false)
+								if let radio = accessoryManager.devices.first(where: { $0.id.uuidString == selectedPeripherialId }) {
+									Task {
+										try await accessoryManager.connect(to: radio)
+									}
+								}
+							}
+						}
+						.textCase(nil)
+					}
 				}
-
+				
 				HStack(alignment: .center) {
 					Spacer()
-					#if targetEnvironment(macCatalyst)
+#if targetEnvironment(macCatalyst)
 					// TODO: should this be allowDisconnect?
 					if accessoryManager.allowDisconnect {
 						Button(role: .destructive, action: {
@@ -315,23 +315,30 @@ struct Connect: View {
 						.controlSize(.large)
 						.padding()
 					}
-					#endif
+#endif
 					Spacer()
 				}
 				.padding(.bottom, 10)
 			}
 			.navigationTitle("Connect")
-			.navigationBarItems(
-				leading: MeshtasticLogo(),
-				trailing: ZStack {
+			.toolbar {
+				ToolbarItem(placement: .principal) {
+					MeshtasticLogo()
+				}
+				ToolbarItem(placement: .navigationBarTrailing) {
+					RXTXIndicatorWidget(packetsSent: $accessoryManager.packetsSent, packetsReceived: $accessoryManager.packetsReceived)
+
+				}
+				ToolbarItem(placement: .navigationBarTrailing) {
 					ConnectedDevice(
 						deviceConnected: accessoryManager.isConnected,
 						name: accessoryManager.activeConnection?.device.shortName ?? "?",
 						mqttProxyConnected: accessoryManager.mqttProxyConnected,
-						mqttTopic: accessoryManager.mqttManager.topic
+						mqttTopic: accessoryManager.mqttManager.topic,
+						showActivityLights: false
 					)
 				}
-			)
+			}
 		}
 		// TODO: REMOVING VERSION STUFF?
 //		.sheet(isPresented: $invalidFirmwareVersion, onDismiss: didDismissSheet) {
@@ -423,7 +430,7 @@ struct TransportIcon: View {
 	var body: some View {
 		let transport = accessoryManager.transports.first(where: {$0.type == transportType})
 		return HStack (spacing: 3.0) {
-			if let icon = transport?.icon {
+			if let icon = transport?.type.icon {
 				icon
 					.font(.title2)
 					.foregroundColor(transport?.type == .ble ? Color.accentColor : Color.primary)
@@ -431,7 +438,7 @@ struct TransportIcon: View {
 				Image(systemName: "questionmark")
 					.font(.title2)
 			}
-			Text(transport?.name ?? "Unknown".localized)
+			Text(transport?.type.rawValue ?? "Unknown".localized)
 				.font(.title3)
 		}
 	}
@@ -449,7 +456,7 @@ struct ManualConnectionMenu: View {
 	
 	init() {
 		self.transports = AccessoryManager.shared.transports.filter { $0.supportsManualConnection}.map { transport in
-			IterableTransport(id: UUID(), icon: transport.icon, title: transport.name, transport: transport)
+			IterableTransport(id: UUID(), icon: transport.type.icon, title: transport.type.rawValue, transport: transport)
 		}
 	}
 	

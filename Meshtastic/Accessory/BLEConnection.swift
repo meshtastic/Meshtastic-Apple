@@ -35,6 +35,7 @@ extension CBCharacteristic {
 }
 
 actor BLEConnection: Connection {
+	let type = TransportType.ble
 	
 	var delegate: BLEConnectionDelegate
 	var peripheral: CBPeripheral

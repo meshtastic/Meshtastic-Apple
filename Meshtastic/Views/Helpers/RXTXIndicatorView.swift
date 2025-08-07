@@ -18,6 +18,12 @@ struct RXTXIndicatorWidget: View {
 	let fontSize: CGFloat = 7.0
 	var body: some View {
 		Button( action: {
+			if !isPopoverOpen && accessoryManager.isConnected {
+				Task {
+					//TODO: replace with a heartbeat when the heartbeat works
+					try await accessoryManager.requestDeviceMetadata()
+				}
+			}
 			self.isPopoverOpen.toggle()
 		}) {
 			VStack(spacing: 3.0) {
@@ -31,15 +37,54 @@ struct RXTXIndicatorWidget: View {
 						.font(.system(size: fontSize))
 					LEDIndicator(flash: $packetsReceived, color: .red)
 				}.frame(maxHeight: fontSize)
-			} }
-		.popover(isPresented: self.$isPopoverOpen, content: {
-			VStack(spacing: 0.5) {
-				Text("Activity Lights")
-					.font(.caption)
-					.padding(20)
 			}
-			.presentationCompactAdaptation(.popover)
-		})
+			.contentShape(Rectangle()) // Make sure the whole thing is tappable
+			.popover(isPresented: self.$isPopoverOpen,
+					 attachmentAnchor: .rect(.bounds),
+					 arrowEdge: .top) {
+				Button(action: {
+					self.isPopoverOpen = false
+				}) {
+					VStack(spacing: 0.5) {
+						Text("Activity Lights")
+							.font(.caption)
+							.bold()
+							.padding(2.0)
+						Divider()
+						Text("Packet Count")
+							.font(.caption2)
+							.padding(2.0)
+						
+						VStack(alignment: .leading) {
+							HStack(spacing: 3.0) {
+								HStack(spacing: 2.0) {
+									LEDIndicator(flash: $packetsSent, color: .green)
+										.frame(maxHeight: fontSize)
+									Image(systemName: "arrow.up")
+										.font(.system(size: fontSize))
+								}
+								Text("To Radio (TX): \(packetsSent)")
+									.font(.caption2)
+								Spacer()
+							}
+							HStack(spacing: 3.0) {
+								HStack(spacing: 2.0) {
+									LEDIndicator(flash: $packetsReceived, color: .red)
+										.frame(maxHeight: fontSize)
+									Image(systemName: "arrow.down")
+										.font(.system(size: fontSize))
+								}
+								Text("From Radio (RX): \(packetsReceived)")
+									.font(.caption2)
+								Spacer()
+							}
+						}.padding(2.0)
+					}.padding(10)
+					.contentShape(Rectangle()) // Make sure the whole thing is tappable
+				}.buttonStyle(PlainButtonStyle())
+				.presentationCompactAdaptation(.popover)
+			}
+		}.buttonStyle(PlainButtonStyle())
 	}
 }
 
@@ -49,7 +94,7 @@ struct LEDIndicator: View {
 	let color: Color
 	
 	@State private var brightness: Double = 0.0
-
+	
 	var body: some View {
 		Circle()
 			.foregroundColor(color.opacity(brightness))

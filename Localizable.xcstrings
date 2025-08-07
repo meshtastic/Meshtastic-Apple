@@ -5040,6 +5040,7 @@
       }
     },
     "BLE: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -15308,6 +15309,9 @@
         }
       }
     },
+    "From Radio (RX): %lld" : {
+
+    },
     "Full Support" : {
       "localizations" : {
         "it" : {
@@ -24769,6 +24773,9 @@
       }
     },
     "Override default screen layout." : {
+
+    },
+    "Packet Count" : {
 
     },
     "Pairing Mode" : {
@@ -37125,6 +37132,9 @@
           }
         }
       }
+    },
+    "To Radio (TX): %lld" : {
+
     },
     "Topic: %@" : {
       "localizations" : {

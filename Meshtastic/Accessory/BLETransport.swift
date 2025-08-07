@@ -31,8 +31,6 @@ class BLETransport: Transport {
 	// Transport properties
 	var supportsManualConnection: Bool = false
 	let requiresPeriodicHeartbeat = false
-	var icon = Image("custom.bluetooth")
-	var name = "BLE"
 			
 	init() {
 		self.centralManager = nil
@@ -120,6 +118,13 @@ class BLETransport: Transport {
 
 		case .poweredOff:
 			status = .error("Bluetooth is powered off")
+			if let connection = activeConnection {
+				Task {
+					Logger.transport.error("🛜 [BLE] Bluetooth has powered off during active connection. Cleaning up.")
+					try await connection.disconnect(withError: AccessoryError.disconnected("Bluetooth powered off"))
+					self.activeConnection = nil
+				}
+			}
 			status = .ready
 			self.setupCompleteContinuation?.resume(throwing: AccessoryError.connectionFailed("Bluetooth is powered off"))
 			self.setupCompleteContinuation = nil
@@ -289,7 +294,7 @@ class BLEDelegate: NSObject, CBCentralManagerDelegate {
 }
 
 /// Returns a human-readable description for a CBManagerState value.
-fileprivate func cbManagerStateDescription(_ state: CBManagerState) -> String {
+private func cbManagerStateDescription(_ state: CBManagerState) -> String {
     switch state {
     case .unknown: return "unknown"
     case .resetting: return "resetting"

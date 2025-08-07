@@ -32,6 +32,7 @@ private enum SerialError: Error, LocalizedError {
 }
 
 actor SerialConnection: Connection {
+	let type = TransportType.serial
 	private let path: String
 	private var fd: Int32 = -1
 	private var fileHandle: FileHandle?
