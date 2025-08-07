@@ -56,48 +56,52 @@ func generateMessageMarkdown (message: String) -> String {
 }
 
 func localConfig (config: Config, context: NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
-
-	if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
+	switch config.payloadVariant {
+	case .bluetooth:
 		upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
+	case .device:
 		upsertDeviceConfigPacket(config: config.device, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
+	case .display:
 		upsertDisplayConfigPacket(config: config.display, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
+	case .lora:
 		upsertLoRaConfigPacket(config: config.lora, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
+	case .network:
 		upsertNetworkConfigPacket(config: config.network, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
+	case .position:
 		upsertPositionConfigPacket(config: config.position, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == Config.OneOf_PayloadVariant.power(config.power) {
+	case .power:
 		upsertPowerConfigPacket(config: config.power, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == Config.OneOf_PayloadVariant.security(config.security) {
+	case .security:
 		upsertSecurityConfigPacket(config: config.security, nodeNum: nodeNum, context: context)
+	default:
+		Logger.services.error("⁉️ Unknown Config variant UNHANDLED \(config.payloadVariant.debugDescription, privacy: .public)")
 	}
 }
 
 func moduleConfig (config: ModuleConfig, context: NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
-
-	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.ambientLighting(config.ambientLighting) {
+	switch config.payloadVariant {
+	case .ambientLighting:
 		upsertAmbientLightingModuleConfigPacket(config: config.ambientLighting, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(config.cannedMessage) {
+	case .cannedMessage:
 		upsertCannedMessagesModuleConfigPacket(config: config.cannedMessage, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.detectionSensor(config.detectionSensor) {
+	case .detectionSensor:
 		upsertDetectionSensorModuleConfigPacket(config: config.detectionSensor, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.externalNotification(config.externalNotification) {
+	case .externalNotification:
 		upsertExternalNotificationModuleConfigPacket(config: config.externalNotification, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.mqtt(config.mqtt) {
+	case .mqtt:
 		upsertMqttModuleConfigPacket(config: config.mqtt, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.paxcounter(config.paxcounter) {
+	case .paxcounter:
 		upsertPaxCounterModuleConfigPacket(config: config.paxcounter, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.rangeTest(config.rangeTest) {
+	case .rangeTest:
 		upsertRangeTestModuleConfigPacket(config: config.rangeTest, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.serial(config.serial) {
+	case .serial:
 		upsertSerialModuleConfigPacket(config: config.serial, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.telemetry(config.telemetry) {
+	case .telemetry:
 		upsertTelemetryModuleConfigPacket(config: config.telemetry, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.storeForward(config.storeForward) {
+	case .storeForward:
 		upsertStoreForwardModuleConfigPacket(config: config.storeForward, nodeNum: nodeNum, context: context)
+	default:
+		Logger.services.error("⁉️ Unknown Module Config variant UNHANDLED \(config.payloadVariant.debugDescription, privacy: .public)")
 	}
 }
 

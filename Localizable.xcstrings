@@ -2339,6 +2339,9 @@
         }
       }
     },
+    "Activity Lights" : {
+
+    },
     "ADC Override" : {
       "localizations" : {
         "de" : {
@@ -5032,23 +5035,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "藍芽 PIN 碼必須是 6 位數字。"
-          }
-        }
-      }
-    },
-    "BLE RSSI %lld" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE RSSI %lld"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE RSSI %lld"
           }
         }
       }

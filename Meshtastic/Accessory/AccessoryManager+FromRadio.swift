@@ -154,20 +154,15 @@ extension AccessoryManager {
 			Logger.services.error("Attempt to process channel information when no connected device.")
 			return
 		}
-
 		moduleConfig(config: moduleConfigPacket, context: context, nodeNum: Int64(truncatingIfNeeded: deviceNum), nodeLongName: longName)
-		switch moduleConfigPacket.payloadVariant {
-		case .cannedMessage:
+		// Get Canned Message Message List if the Module is Canned Messages
+		if moduleConfigPacket.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(moduleConfigPacket.cannedMessage) {
 			try? getCannedMessageModuleMessages(destNum: deviceNum, wantResponse: true)
-		default:
-			Logger.services.error("⁉️ Unknown Module Config variant UNHANDLED \(moduleConfigPacket.payloadVariant.debugDescription, privacy: .public)")
 		}
-
 	}
 
 	func handleDeviceMetadata(_ metadata: DeviceMetadata) {
 		// Note: moved firmware version check to be inline with connection process
-
 		guard let device = activeConnection?.device, let deviceNum = device.num else {
 			Logger.services.error("Attempt to process device metadata information when no connected device.")
 			return
@@ -178,7 +173,6 @@ extension AccessoryManager {
 		updateDevice(key: \.firmwareVersion, value: metadata.firmwareVersion)
 
 		deviceMetadataPacket(metadata: metadata, fromNum: deviceNum, context: context)
-
 	}
 
 	internal func tryClearExistingChannels() {

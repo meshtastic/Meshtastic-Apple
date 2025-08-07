@@ -567,14 +567,19 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			handleDeviceMetadata(metadata)
 
 		case .deviceuiConfig:
-			Logger.mesh.warning("🕸️ MESH PACKET received for deviceUIConfig UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
-
+#if DEBUG
+			Logger.mesh.info("🕸️ MESH PACKET received for deviceUIConfig UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+#endif
 		case .fileInfo:
-			Logger.mesh.warning("🕸️ MESH PACKET received for fileInfo UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
-
+#if DEBUG
+			Logger.mesh.info("🕸️ MESH PACKET received for fileInfo UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+#endif
 		case .queueStatus:
-			Logger.mesh.warning("🕸️ MESH PACKET received for queueStatus UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
-
+#if DEBUG
+			Logger.mesh.info("🕸️ MESH PACKET received for queueStatus \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+#else
+			Logger.mesh.info("🕸️ MESH PACKET received for heartbeat response")
+#endif
 		case .logRecord(let record):
 			didReceiveLog(message: record.stringRepresentation)
 			
