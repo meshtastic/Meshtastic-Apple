@@ -59,6 +59,9 @@ struct UserConfig: View {
 										totalBytes = newValue.utf8.count
 									}
 									longName = newValue
+									if longName.contains("📵") {
+										isUnmessagable = true
+									}
 								}
 						}
 						.keyboardType(.default)
