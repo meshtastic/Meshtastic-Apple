@@ -16350,6 +16350,7 @@
       }
     },
     "Hide sidebar" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ja" : {
           "stringUnit" : {

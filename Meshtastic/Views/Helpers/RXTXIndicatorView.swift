@@ -11,9 +11,7 @@ import Combine
 
 struct RXTXIndicatorWidget: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@Binding var packetsSent: Int
-	@Binding var packetsReceived: Int
-	@State var isPopoverOpen = false
+	@State private var isPopoverOpen = false
 	
 	let fontSize: CGFloat = 7.0
 	var body: some View {
@@ -30,12 +28,12 @@ struct RXTXIndicatorWidget: View {
 				HStack(spacing: 2.0) {
 					Image(systemName: "arrow.up")
 						.font(.system(size: fontSize))
-					LEDIndicator(flash: $packetsSent, color: .green)
+					LEDIndicator(flash: $accessoryManager.packetsSent, color: .green)
 				}.frame(maxHeight: fontSize)
 				HStack(spacing: 2.0) {
 					Image(systemName: "arrow.down")
 						.font(.system(size: fontSize))
-					LEDIndicator(flash: $packetsReceived, color: .red)
+					LEDIndicator(flash: $accessoryManager.packetsReceived, color: .red)
 				}.frame(maxHeight: fontSize)
 			}
 			.contentShape(Rectangle()) // Make sure the whole thing is tappable
@@ -58,23 +56,23 @@ struct RXTXIndicatorWidget: View {
 						VStack(alignment: .leading) {
 							HStack(spacing: 3.0) {
 								HStack(spacing: 2.0) {
-									LEDIndicator(flash: $packetsSent, color: .green)
+									LEDIndicator(flash: $accessoryManager.packetsSent, color: .green)
 										.frame(maxHeight: fontSize)
 									Image(systemName: "arrow.up")
 										.font(.system(size: fontSize))
 								}
-								Text("To Radio (TX): \(packetsSent)")
+								Text("To Radio (TX): \(accessoryManager.packetsSent)")
 									.font(.caption2)
 								Spacer()
 							}
 							HStack(spacing: 3.0) {
 								HStack(spacing: 2.0) {
-									LEDIndicator(flash: $packetsReceived, color: .red)
+									LEDIndicator(flash: $accessoryManager.packetsReceived, color: .red)
 										.frame(maxHeight: fontSize)
 									Image(systemName: "arrow.down")
 										.font(.system(size: fontSize))
 								}
-								Text("From Radio (RX): \(packetsReceived)")
+								Text("From Radio (RX): \(accessoryManager.packetsReceived)")
 									.font(.caption2)
 								Spacer()
 							}

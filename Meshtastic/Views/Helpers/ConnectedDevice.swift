@@ -30,7 +30,7 @@ struct ConnectedDevice: View {
     var body: some View {
 		HStack {
 			if showActivityLights {
-				RXTXIndicatorWidget(packetsSent: $accessoryManager.packetsSent, packetsReceived: $accessoryManager.packetsReceived)
+				RXTXIndicatorWidget()
 			}
             if (phoneOnly && UIDevice.current.userInterfaceIdiom == .phone) || !phoneOnly {
 				if deviceConnected {

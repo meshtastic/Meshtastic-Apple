@@ -321,24 +321,19 @@ struct Connect: View {
 				.padding(.bottom, 10)
 			}
 			.navigationTitle("Connect")
-			.toolbar {
-				ToolbarItem(placement: .principal) {
-					MeshtasticLogo()
-				}
-				ToolbarItem(placement: .navigationBarTrailing) {
-					RXTXIndicatorWidget(packetsSent: $accessoryManager.packetsSent, packetsReceived: $accessoryManager.packetsReceived)
-
-				}
-				ToolbarItem(placement: .navigationBarTrailing) {
+			.navigationBarItems(
+				leading: MeshtasticLogo(),
+				trailing: ZStack {
 					ConnectedDevice(
 						deviceConnected: accessoryManager.isConnected,
 						name: accessoryManager.activeConnection?.device.shortName ?? "?",
 						mqttProxyConnected: accessoryManager.mqttProxyConnected,
-						mqttTopic: accessoryManager.mqttManager.topic,
-						showActivityLights: false
+						mqttTopic: accessoryManager.mqttManager.topic
+						
 					)
 				}
-			}
+			)
+
 		}
 		// TODO: REMOVING VERSION STUFF?
 //		.sheet(isPresented: $invalidFirmwareVersion, onDismiss: didDismissSheet) {

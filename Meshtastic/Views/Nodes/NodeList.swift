@@ -244,22 +244,18 @@ struct NodeList: View {
 							}
 						}
 						.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
-						.toolbar {
-							ToolbarItem(placement: .navigationBarLeading) {
-								MeshtasticLogo()
-							}
-							ToolbarItem(placement: .navigationBarTrailing) {
-								RXTXIndicatorWidget(packetsSent: $accessoryManager.packetsSent, packetsReceived: $accessoryManager.packetsReceived)
-							}
-							ToolbarItem(placement: .navigationBarTrailing) {
+						.navigationBarItems(
+							leading: MeshtasticLogo(),
+							trailing: ZStack {
 								ConnectedDevice(
 									deviceConnected: accessoryManager.isConnected,
 									name: accessoryManager.activeConnection?.device.shortName ?? "?",
-									phoneOnly: true,
-									showActivityLights: false
-								).accessibilityElement(children: .contain)
+									phoneOnly: true
+								)
 							}
-						}
+							// Make sure the ZStack passes through accessibility to the ConnectedDevice component
+								.accessibilityElement(children: .contain)
+						)
 		} content: {
 			if let node = selectedNode {
 				NavigationStack {
@@ -269,33 +265,18 @@ struct NodeList: View {
 						columnVisibility: columnVisibility
 					)
 					.edgesIgnoringSafeArea([.leading, .trailing])
-					.toolbar {
-						ToolbarItem(placement: .navigationBarTrailing) {
-							ZStack {
-								if UIDevice.current.userInterfaceIdiom != .phone {
-									Button {
-										columnVisibility = .detailOnly
-									} label: {
-										Image(systemName: "rectangle")
-									}
-									.accessibilityLabel("Hide sidebar")
-								}
-							}
-							// Make sure the ZStack passes through accessibility to the ConnectedDevice component
-							.accessibilityElement(children: .contain)
-						}
-						ToolbarItem(placement: .navigationBarTrailing) {
-							RXTXIndicatorWidget(packetsSent: $accessoryManager.packetsSent, packetsReceived: $accessoryManager.packetsReceived)
-						}
-						ToolbarItem(placement: .navigationBarTrailing) {
+					.navigationBarItems(
+						leading: MeshtasticLogo(),
+						trailing: ZStack {
 							ConnectedDevice(
 								deviceConnected: accessoryManager.isConnected,
 								name: accessoryManager.activeConnection?.device.shortName ?? "?",
-								phoneOnly: true,
-								showActivityLights: false
+								phoneOnly: true
 							)
 						}
-					}
+						// Make sure the ZStack passes through accessibility to the ConnectedDevice component
+							.accessibilityElement(children: .contain)
+					)
 				}
 			} else {
 				ContentUnavailableView("Select Node", systemImage: "flipphone")
