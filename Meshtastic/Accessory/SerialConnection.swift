@@ -135,7 +135,7 @@ actor SerialConnection: Connection {
 				}
 			}
 		} catch {
-			Logger.transport.error("🔱 [Serial] Read error: \(error)")
+			Logger.transport.error("🔱 [Serial] Read error: \(error, privacy: .public)")
 			handleReaderEOF()
 		}
 	}

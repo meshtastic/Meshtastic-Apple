@@ -33,7 +33,7 @@ class SerialTransport: Transport {
 					for port in ports {
 						let id = port.toUUIDFormatHash() ?? UUID()
 						if !portsAlreadyNotified.contains(port) {
-							Logger.transport.info("🔱 [Serial] Port \(port) found.")
+							Logger.transport.info("🔱 [Serial] Port \(port, privacy: .public) found.")
 							let newDevice = Device(id: id,
 												   name: port.components(separatedBy: "/").last ?? port,
 												transportType: .serial,
@@ -44,7 +44,7 @@ class SerialTransport: Transport {
 					}
 					for knownPort in portsAlreadyNotified where !ports.contains(knownPort) {
 						// Previosuly seen port is no longer available
-						Logger.transport.info("🔱 [Serial] Port \(knownPort) is no longer connected.")
+						Logger.transport.info("🔱 [Serial] Port \(knownPort, privacy: .public) is no longer connected.")
 						if let uuid = knownPort.toUUIDFormatHash() {
 							cont.yield(.deviceLost(uuid))
 						}
@@ -69,7 +69,7 @@ class SerialTransport: Transport {
 //			let contents = try FileManager.default.contentsOfDirectory(atPath: dev)
 //			return contents.filter { $0.hasPrefix("cu.") || $0.hasPrefix("tty.") }.map { dev + "/" + $0 }
 //		} catch {
-//			Logger.transport.error("[Serial] Error listing /dev: \(error)")
+//			Logger.transport.error("[Serial] Error listing /dev: \(error, privacy: .public)")
 //			return []
 //		}
 //	}

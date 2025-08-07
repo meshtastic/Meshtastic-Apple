@@ -103,7 +103,7 @@ class BLETransport: Transport {
 	}
 
 	func handleCentralState(_ state: CBManagerState, central: CBCentralManager) {
-		Logger.transport.error("🛜 [BLE] State has transitioned to: \(cbManagerStateDescription(state))")
+		Logger.transport.error("🛜 [BLE] State has transitioned to: \(cbManagerStateDescription(state), privacy: .public)")
 		switch state {
 		case .poweredOn:
 			status = .discovering
@@ -165,7 +165,7 @@ class BLETransport: Transport {
 							identifier: id.uuidString,
 							rssi: rssi.intValue)
 		if isNew {
-			Logger.transport.debug("🛜 [BLE] Did Discover new device: \(peripheral.name ?? "Unknown") (\(peripheral.identifier))")
+			Logger.transport.debug("🛜 [BLE] Did Discover new device: \(peripheral.name ?? "Unknown", privacy: .public) (\(peripheral.identifier))")
 			discoveredDeviceContinuation?.yield(.deviceFound(device))
 		} else {
 			let rssiVal = rssi.intValue
@@ -225,7 +225,7 @@ class BLETransport: Transport {
 	}
 
 	func handleDidConnect(peripheral: CBPeripheral, central: CBCentralManager) {
-		Logger.transport.debug("🛜 [BLE] Handle Did Connect Connected to peripheral \(peripheral.name ?? "Unknown")")
+		Logger.transport.debug("🛜 [BLE] Handle Did Connect Connected to peripheral \(peripheral.name ?? "Unknown", privacy: .public)")
 		guard let cont = connectContinuation,
 			  let connPeripheral = connectingPeripheral,
 			  peripheral.identifier == connPeripheral.identifier else {
@@ -248,7 +248,7 @@ class BLETransport: Transport {
 	}
 	
 	func handleWillRestoreState(dict: [String: Any]) {
-		Logger.transport.debug("🛜 [BLE] Will Restore State was called, unhandled. \(dict)")
+		Logger.transport.debug("🛜 [BLE] Will Restore State was called, unhandled. \(dict, privacy: .public)")
 	}
 	
 	func manuallyConnect(withConnectionString: String) async throws {
