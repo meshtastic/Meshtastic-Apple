@@ -92,7 +92,7 @@ extension AccessoryManager {
 			
 			// Step 5a: Wait for end of WantConfig (database)
 			Step { @MainActor _ in
-				Logger.transport.info("🔗[Connect] Step 5a: Wait for the final database")
+				Logger.transport.info("🔗 [Connect] Step 5a: Wait for the final database")
 				try await self.waitForWantDatabaseResponse()
 			}
 			
@@ -215,7 +215,6 @@ actor SequentialSteps {
 			for stepNumber in 0..<steps.count {
 				if cancelled {
 					throw CancellationError()
-					break
 				}
 				let currentStep = steps[stepNumber]
 				let isRetry = (attempt > 0)

@@ -29,9 +29,6 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 	let requiresPeriodicHeartbeat = true
 	let supportsManualConnection = true
 	
-	let icon = Image(systemName: "network")
-	let name = "TCP"
-
 	struct ResolvedService {
 		let id: UUID
 		let service: NetService

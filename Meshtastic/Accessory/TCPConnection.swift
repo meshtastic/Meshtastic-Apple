@@ -11,7 +11,8 @@ import OSLog
 import MeshtasticProtobufs
 
 actor TCPConnection: Connection {
-
+	let type = TransportType.tcp
+	
 	private var connection: NWConnection?
 	private let queue = DispatchQueue(label: "tcp.connection")
 	private var readerTask: Task<Void, Never>?

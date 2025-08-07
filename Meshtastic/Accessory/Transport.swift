@@ -13,6 +13,17 @@ enum TransportType: String, CaseIterable {
 	case ble = "BLE"
 	case tcp = "TCP"
 	case serial = "Serial"
+	
+	var icon: Image {
+		switch self {
+		case .ble:
+			Image("custom.bluetooth")
+		case .tcp:
+			Image(systemName: "network")
+		case .serial:
+			Image(systemName: "cable.connector.horizontal")
+		}
+	}
 }
 
 enum TransportStatus: Equatable {
@@ -41,9 +52,6 @@ protocol Transport {
 	
 	var requiresPeriodicHeartbeat: Bool { get }
 	var supportsManualConnection: Bool { get }
-	
-	var icon: Image { get }
-	var name: String { get }
 	
 	func manuallyConnect(withConnectionString: String) async throws
 }

@@ -736,18 +736,21 @@ extension AccessoryManager {
 
 	}
 
-	func requestDeviceMetadata(fromUser: UserEntity, toUser: UserEntity) async throws -> Int64 {
+	func requestDeviceMetadata(fromUser: UserEntity? = nil, toUser: UserEntity? = nil) async throws -> Int64 {
 
 		guard isConnected else {
 			throw AccessoryError.ioFailed("No connected accessory")
 		}
+		
+		let fromUserNum = fromUser.map{ UInt32($0.num) } ?? UInt32(activeDeviceNum ?? 0)
+		let toUserNum = toUser.map{ UInt32($0.num) } ?? UInt32(activeDeviceNum ?? 0)
 
 		var adminPacket = AdminMessage()
 		adminPacket.getDeviceMetadataRequest = true
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-		meshPacket.to = UInt32(toUser.num)
-		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.to = fromUserNum
+		meshPacket.from	= toUserNum
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
@@ -760,7 +763,7 @@ extension AccessoryManager {
 			throw AccessoryError.ioFailed("removeNode: Unable to serialize admin packet")
 		}
 
-		let messageDescription = "🛎️ [Device Metadata] Requested for node \(toUser.longName ?? "Unknown".localized) by \(fromUser.longName ?? "Unknown".localized)"
+		let messageDescription = "🛎️ [Device Metadata] Requested for node \(toUser?.longName ?? "#\(toUserNum)") by \(fromUser?.longName ?? "#\(fromUser)")"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 		return Int64(meshPacket.id)
 	}

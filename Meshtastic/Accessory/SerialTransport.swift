@@ -21,9 +21,6 @@ class SerialTransport: Transport {
 	let requiresPeriodicHeartbeat = true
 	let supportsManualConnection = false
 
-	let icon = Image(systemName: "cable.connector.horizontal")
-	let name = "Serial"
-
 	var portsAlreadyNotified = [String]()
 	var discoveryTask: Task<Void, Never>?
 	

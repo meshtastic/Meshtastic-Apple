@@ -388,9 +388,9 @@ struct Settings: View {
 										/// Connected Node
 										if node.num == accessoryManager.activeDeviceNum ?? 0 {
 											Label {
-												Text("BLE: \(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
+												Text("Connected") + Text(verbatim: ": \(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
 											} icon: {
-												Image(systemName: "antenna.radiowaves.left.and.right")
+												accessoryManager.activeConnection?.connection.type.icon ?? Image("questionmark.circle")
 											}
 											.tag(Int(node.num))
 										} else if node.canRemoteAdmin && UserDefaults.enableAdministration && node.sessionPasskey != nil { /// Nodes using the new PKI system
