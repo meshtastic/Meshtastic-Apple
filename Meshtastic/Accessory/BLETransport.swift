@@ -105,7 +105,7 @@ class BLETransport: Transport {
 	}
 
 	func handleCentralState(_ state: CBManagerState, central: CBCentralManager) {
-		Logger.transport.error("🛜 [BLE] State hast transitioned to: \(cbManagerStateDescription(state))")
+		Logger.transport.error("🛜 [BLE] State has transitioned to: \(cbManagerStateDescription(state))")
 		switch state {
 		case .poweredOn:
 			status = .discovering
