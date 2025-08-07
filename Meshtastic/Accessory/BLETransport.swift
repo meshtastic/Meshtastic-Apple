@@ -90,7 +90,7 @@ class BLETransport: Transport {
 	}
 
 	private func stopScanning() {
-		Logger.transport.error("🛜 [BLE] stopScanning: BLE Discovery has been stopped.")
+		Logger.transport.debug("🛜 [BLE] Stop Scanning: BLE Discovery has been stopped.")
 		centralManager?.stopScan()
 		discoveredPeripherals.removeAll()
 		discoveredDeviceContinuation = nil
@@ -160,10 +160,9 @@ class BLETransport: Transport {
 							identifier: id.uuidString,
 							rssi: rssi.intValue)
 		if isNew {
-			Logger.transport.error("🛜 [BLE] didDiscover new device: \(peripheral.name ?? "Unknown") (\(peripheral.identifier))")
+			Logger.transport.debug("🛜 [BLE] Did Discover new device: \(peripheral.name ?? "Unknown") (\(peripheral.identifier))")
 			discoveredDeviceContinuation?.yield(.deviceFound(device))
 		} else {
-			// Logger.transport.error("🛜 [BLE] didDiscover previosuly seen device: \(peripheral.name ?? "Unknown") (\(peripheral.identifier))")
 			let rssiVal = rssi.intValue
 			let deviceId = id
 			discoveredPeripherals[id]?.lastSeen = Date()
@@ -221,7 +220,7 @@ class BLETransport: Transport {
 	}
 
 	func handleDidConnect(peripheral: CBPeripheral, central: CBCentralManager) {
-		Logger.transport.debug("🛜 [BLE] handleDidConnect Connected to peripheral \(peripheral.name ?? "Unknown")")
+		Logger.transport.debug("🛜 [BLE] Handle Did Connect Connected to peripheral \(peripheral.name ?? "Unknown")")
 		guard let cont = connectContinuation,
 			  let connPeripheral = connectingPeripheral,
 			  peripheral.identifier == connPeripheral.identifier else {
@@ -243,8 +242,8 @@ class BLETransport: Transport {
 		self.connectingPeripheral = nil
 	}
 	
-	func handleWillRestoreState(dict: [String : Any]) {
-		Logger.transport.debug("🛜 [BLE] willRestoreState was called, unhandled. \(dict)")
+	func handleWillRestoreState(dict: [String: Any]) {
+		Logger.transport.debug("🛜 [BLE] Will Restore State was called, unhandled. \(dict)")
 	}
 	
 	func manuallyConnect(withConnectionString: String) async throws {

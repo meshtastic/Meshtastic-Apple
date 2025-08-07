@@ -74,7 +74,9 @@ func localConfig (config: Config, context: NSManagedObjectContext, nodeNum: Int6
 	case .security:
 		upsertSecurityConfigPacket(config: config.security, nodeNum: nodeNum, context: context)
 	default:
+#if DEBUG
 		Logger.services.error("⁉️ Unknown Config variant UNHANDLED \(config.payloadVariant.debugDescription, privacy: .public)")
+#endif
 	}
 }
 
@@ -101,7 +103,9 @@ func moduleConfig (config: ModuleConfig, context: NSManagedObjectContext, nodeNu
 	case .storeForward:
 		upsertStoreForwardModuleConfigPacket(config: config.storeForward, nodeNum: nodeNum, context: context)
 	default:
+#if DEBUG
 		Logger.services.error("⁉️ Unknown Module Config variant UNHANDLED \(config.payloadVariant.debugDescription, privacy: .public)")
+#endif
 	}
 }
 

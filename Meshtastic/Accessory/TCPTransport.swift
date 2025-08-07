@@ -95,7 +95,7 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 	}
 
 	func connect(to device: Device) async throws -> any Connection {
-		Logger.transport.error("🌐 [TCP] Connect to device: \(device.name, privacy: .public) with identifier: \(device.identifier, privacy: .public)")
+		Logger.transport.debug("🌐 [TCP] Connect to device: \(device.name, privacy: .public) with identifier: \(device.identifier, privacy: .public)")
 		let parts = device.identifier.split(separator: ":")
 		
 		var host: String?
