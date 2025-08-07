@@ -977,6 +977,8 @@ public struct Config: Sendable {
     ///
     /// If this is set, the displayed compass will always point north. if unset, the old behaviour
     /// (top of display is heading direction) is used.
+    ///
+    /// NOTE: This field was marked as deprecated in the .proto file.
     public var compassNorthTop: Bool = false
 
     ///
@@ -1603,6 +1605,14 @@ public struct Config: Sendable {
       ///
       /// Kazakhstan 863MHz
       case kz863 // = 24
+
+      ///
+      /// Nepal 865MHz
+      case np865 // = 25
+
+      ///
+      /// Brazil 902MHz
+      case br902 // = 26
       case UNRECOGNIZED(Int)
 
       public init() {
@@ -1636,6 +1646,8 @@ public struct Config: Sendable {
         case 22: self = .anz433
         case 23: self = .kz433
         case 24: self = .kz863
+        case 25: self = .np865
+        case 26: self = .br902
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -1667,6 +1679,8 @@ public struct Config: Sendable {
         case .anz433: return 22
         case .kz433: return 23
         case .kz863: return 24
+        case .np865: return 25
+        case .br902: return 26
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1698,6 +1712,8 @@ public struct Config: Sendable {
         .anz433,
         .kz433,
         .kz863,
+        .np865,
+        .br902,
       ]
 
     }
@@ -2837,15 +2853,11 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     var _ignoreMqtt: Bool = false
     var _configOkToMqtt: Bool = false
 
-    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
 
     private init() {}
 
@@ -3029,6 +3041,8 @@ extension Config.LoRaConfig.RegionCode: SwiftProtobuf._ProtoNameProviding {
     22: .same(proto: "ANZ_433"),
     23: .same(proto: "KZ_433"),
     24: .same(proto: "KZ_863"),
+    25: .same(proto: "NP_865"),
+    26: .same(proto: "BR_902"),
   ]
 }
 
