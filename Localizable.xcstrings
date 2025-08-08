@@ -3232,7 +3232,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Администрация"
+            "value" : "Администрирование"
           }
         },
         "sr" : {
@@ -8585,7 +8585,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Помощь каналов"
+            "value" : "Помощь по каналам"
           }
         },
         "sr" : {
