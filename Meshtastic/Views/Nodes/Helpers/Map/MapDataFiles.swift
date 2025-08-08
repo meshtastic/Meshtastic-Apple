@@ -58,7 +58,7 @@ struct MapDataFiles: View {
 				let uploadedFiles = mapDataManager.getUploadedFiles()
 				
 				if uploadedFiles.isEmpty {
-					ContentUnavailableView ("No files uploaded", systemImage: "doc.text")
+					ContentUnavailableView("No files uploaded", systemImage: "doc.text")
 				} else {
 					ScrollView {
 						LazyVStack() {

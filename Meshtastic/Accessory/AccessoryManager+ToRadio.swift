@@ -742,8 +742,8 @@ extension AccessoryManager {
 			throw AccessoryError.ioFailed("No connected accessory")
 		}
 		
-		let fromUserNum = fromUser.map{ UInt32($0.num) } ?? UInt32(activeDeviceNum ?? 0)
-		let toUserNum = toUser.map{ UInt32($0.num) } ?? UInt32(activeDeviceNum ?? 0)
+		let fromUserNum = fromUser.map { UInt32($0.num) } ?? UInt32(activeDeviceNum ?? 0)
+		let toUserNum = toUser.map { UInt32($0.num) } ?? UInt32(activeDeviceNum ?? 0)
 
 		var adminPacket = AdminMessage()
 		adminPacket.getDeviceMetadataRequest = true

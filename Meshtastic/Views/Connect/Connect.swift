@@ -430,7 +430,7 @@ struct TransportIcon: View {
 	
 	var body: some View {
 		let transport = accessoryManager.transportForType(transportType)
-		return HStack (spacing: 3.0) {
+		return HStack(spacing: 3.0) {
 			if let icon = transport?.type.icon {
 				icon
 					.font(.title2)
@@ -487,4 +487,3 @@ struct ManualConnectionMenu: View {
 				}
 	}
 }
-

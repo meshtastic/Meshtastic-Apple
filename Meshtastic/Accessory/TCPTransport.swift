@@ -58,8 +58,6 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 		}
 	}
 
-
-	
 	func netServiceBrowser(_ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool) {
 		self.service = service
 		service.delegate = self
@@ -188,7 +186,7 @@ extension TCPTransport {
 
 			// Use a unique name to avoid conflicts
 			let uniqueName = UUID().uuidString
-			listener.service = NWListener.Service(name: uniqueName, type: MESHTASTIC_SERVICE_TYPE, domain: MESHTASTIC_DOMAIN ?? "local.")
+			listener.service = NWListener.Service(name: uniqueName, type: MESHTASTIC_SERVICE_TYPE, domain: MESHTASTIC_DOMAIN)
 
 			listener.newConnectionHandler = { _ in }  // Required to avoid errors
 
