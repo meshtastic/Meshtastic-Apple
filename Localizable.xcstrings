@@ -5036,41 +5036,6 @@
         }
       }
     },
-    "BLE: %@" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE: %@"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE: %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE: %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE: %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "藍牙名稱：%@"
-          }
-        }
-      }
-    },
     "Bluetooth" : {
       "localizations" : {
         "de" : {
@@ -16342,23 +16307,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "靜音通知"
-          }
-        }
-      }
-    },
-    "Hide sidebar" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "サイドバーを隠す"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Сакриј бочну траку"
           }
         }
       }
