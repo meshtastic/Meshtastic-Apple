@@ -2530,7 +2530,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "О Мештастике"
+            "value" : "О Meshtastic"
           }
         },
         "sr" : {
@@ -4396,7 +4396,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Окружающее освещение"
+            "value" : "Световая индикация"
           }
         },
         "se" : {
@@ -4460,7 +4460,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Конфигурация окружающего освещения"
+            "value" : "Конфигурация световой индикации"
           }
         },
         "se" : {
@@ -4524,7 +4524,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Получена конфигурация модуля окружающего освещения: %@"
+            "value" : "Получена конфигурация модуля световой индикации: %@"
           }
         },
         "se" : {
@@ -10289,7 +10289,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Выпуклая оболочка"
+            "value" : "Выпуклая поверхность"
           }
         },
         "sr" : {
@@ -13058,7 +13058,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Прямые сообщения"
+            "value" : "Личные сообщения"
           }
         },
         "se" : {
@@ -13144,7 +13144,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Прямые сообщения используют общий ключ канала."
+            "value" : "Личные сообщения используют общий ключ канала."
           }
         },
         "sr" : {
@@ -13462,7 +13462,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Отображать"
+            "value" : "Экран"
           }
         },
         "se" : {
@@ -19577,7 +19577,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Убегает прочь"
+            "value" : "Кол-во прыжков"
           }
         },
         "sr" : {
@@ -19617,7 +19617,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Прыгает прочь %d"
+            "value" : "Кол-во прыжков %d"
           }
         },
         "sr" : {
@@ -19657,7 +19657,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Убегай прочь:"
+            "value" : "Кол-во прыжков:"
           }
         },
         "sr" : {
@@ -19697,7 +19697,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Прыгает далеко: %d"
+            "value" : "Кол-во прыжков: %d"
           }
         },
         "sr" : {
@@ -23951,7 +23951,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Обновление активности сетки"
+            "value" : "Обновление активности сети"
           }
         },
         "sr" : {
@@ -24079,7 +24079,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Карта сетки"
+            "value" : "Карта сети"
           }
         },
         "se" : {
@@ -30970,7 +30970,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Власть"
+            "value" : "Питание"
           }
         },
         "se" : {
@@ -37769,7 +37769,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Серийный"
+            "value" : "Серийная консоль"
           }
         },
         "se" : {
@@ -37891,7 +37891,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Последовательная консоль"
+            "value" : "Серийная консоль"
           }
         },
         "sr" : {
@@ -40007,7 +40007,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Разработка спонсорского приложения"
+            "value" : "Стать спонсором разработки"
           }
         },
         "sr" : {
@@ -45493,7 +45493,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "до %@ прочь"
+            "value" : "удаленность до %@ "
           }
         },
         "se" : {
@@ -47690,7 +47690,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Что такое Мештастик?"
+            "value" : "Что такое Meshtastic?"
           }
         },
         "sr" : {
