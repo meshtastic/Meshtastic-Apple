@@ -10,6 +10,7 @@ import DatadogCrashReporting
 import DatadogRUM
 import DatadogTrace
 import DatadogLogs
+import DatadogSessionReplay
 
 @main
 struct MeshtasticAppleApp: App {
@@ -69,6 +70,17 @@ struct MeshtasticAppleApp: App {
 			"hardware_model": UserDefaults.hardwareModel
 		]
 		RUMMonitor.shared().addAttributes(attributes)
+		
+		SessionReplay.enable(
+		  with: SessionReplay.Configuration(
+			replaySampleRate: 100,
+			textAndInputPrivacyLevel: .maskAll,
+			imagePrivacyLevel: .maskNone,
+			touchPrivacyLevel: .show,
+			startRecordingImmediately: true,
+			featureFlags: [.swiftui: true]
+		  )
+		)
 #endif
 		accessoryManager = AccessoryManager.shared
 		accessoryManager.appState = appState

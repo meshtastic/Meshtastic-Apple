@@ -18,7 +18,7 @@ struct RXTXIndicatorWidget: View {
 		Button( action: {
 			if !isPopoverOpen && accessoryManager.isConnected {
 				Task {
-					//TODO: replace with a heartbeat when the heartbeat works
+					// TODO: replace with a heartbeat when the heartbeat works
 					try await Task.sleep(for: .seconds(0.5)) // little delay for user affordance
 					try await accessoryManager.requestDeviceMetadata()
 				}
@@ -45,15 +45,11 @@ struct RXTXIndicatorWidget: View {
 					self.isPopoverOpen = false
 				}) {
 					VStack(spacing: 0.5) {
-						Text("Activity Lights")
+						Text("Packet Count")
 							.font(.caption)
 							.bold()
 							.padding(2.0)
 						Divider()
-						Text("Packet Count")
-							.font(.caption2)
-							.padding(2.0)
-						
 						VStack(alignment: .leading) {
 							HStack(spacing: 3.0) {
 								HStack(spacing: 2.0) {
