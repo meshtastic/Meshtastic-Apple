@@ -1339,6 +1339,7 @@
 				sr,
 				it,
 				ja,
+				ru,
 			);
 			mainGroup = DDC2E14B26CE248E0042C5E4;
 			packageReferences = (
