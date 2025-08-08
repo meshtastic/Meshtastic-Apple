@@ -61,7 +61,7 @@ struct MapDataFiles: View {
 					ContentUnavailableView("No files uploaded", systemImage: "doc.text")
 				} else {
 					ScrollView {
-						LazyVStack() {
+						LazyVStack {
 							ForEach(Array(uploadedFiles.enumerated()), id: \.offset) { index, file in
 								MapDataFileRow(file: file, showDivider: index < uploadedFiles.count - 1) {
 									deleteFile(file)

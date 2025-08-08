@@ -74,7 +74,7 @@ struct MeshtasticAppleApp: App {
 		SessionReplay.enable(
 		  with: SessionReplay.Configuration(
 			replaySampleRate: 100,
-			textAndInputPrivacyLevel: .maskAll,
+			textAndInputPrivacyLevel: .maskSensitiveInputs,
 			imagePrivacyLevel: .maskNone,
 			touchPrivacyLevel: .show,
 			startRecordingImmediately: true,

@@ -57,7 +57,7 @@ actor BLEConnection: Connection {
 	private var rssiTask: Task<Void, Never>?
 	
 	var isConnected: Bool { peripheral.state == .connected }
-	var transport : BLETransport?
+	var transport: BLETransport?
 	
 	init(peripheral: CBPeripheral, central: CBCentralManager, transport: BLETransport) {
 		self.peripheral = peripheral
