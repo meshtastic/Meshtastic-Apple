@@ -137,6 +137,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	var firstDatabaseNodeInfoContinuation: CheckedContinuation<Void, Error>?
 	var wantDatabaseContinuation: PossiblyAlreadyDoneContinuation?
 
+	// Misc
+	@Published var expectedNodeDBSize: Int?
+	
 	init(transports: [any Transport] = [BLETransport(), TCPTransport()]) {
 		self.transports = transports
 		self.state = .uninitialized

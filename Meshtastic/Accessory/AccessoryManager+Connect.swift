@@ -28,6 +28,7 @@ extension AccessoryManager {
 		lastConnectionError = nil
 		packetsSent = 0
 		packetsReceived = 0
+		expectedNodeDBSize = nil
 		
 		// Prepare to connect
 		self.connectionStepper = SequentialSteps(maxRetries: maxRetries, retryDelay: retryDelay) {

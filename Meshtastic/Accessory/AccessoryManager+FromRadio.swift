@@ -80,7 +80,11 @@ extension AccessoryManager {
 				updateDevice(key: \.name, value: bleName)
 				updateDevice(key: \.longName, value: bleName)
 			}
-
+			
+			if myNodeInfo.nodedbCount > 0 {
+				expectedNodeDBSize = Int(myNodeInfo.nodedbCount)
+			}
+			
 			UserDefaults.preferredPeripheralNum = Int(myInfo.myNodeNum)
 			let newConnection = Int64(UserDefaults.preferredPeripheralNum) != Int64(myInfo.myNodeNum)
 			if newConnection {

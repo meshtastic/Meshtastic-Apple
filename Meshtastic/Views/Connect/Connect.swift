@@ -76,8 +76,14 @@ struct Connect: View {
 													.symbolRenderingMode(.multicolor)
 													.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 													.foregroundColor(.teal)
-												Text("Retrieving nodes \(nodeCount)").font(.callout)
-													.foregroundColor(.teal)
+												if let expectedNodeDBSize = accessoryManager.expectedNodeDBSize {
+													Text("Retrieving nodes").font(.callout)
+														.foregroundColor(.teal)
+													ProgressView(value: Double(nodeCount), total: Double(expectedNodeDBSize))
+												} else {
+													Text("Retrieving nodes \(nodeCount)").font(.callout)
+														.foregroundColor(.teal)
+												}
 											}
 										case .communicating:
 											HStack {
@@ -481,3 +487,4 @@ struct ManualConnectionMenu: View {
 				}
 	}
 }
+
