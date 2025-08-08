@@ -19,6 +19,7 @@ struct RXTXIndicatorWidget: View {
 			if !isPopoverOpen && accessoryManager.isConnected {
 				Task {
 					//TODO: replace with a heartbeat when the heartbeat works
+					try await Task.sleep(for: .seconds(0.5)) // little delay for user affordance
 					try await accessoryManager.requestDeviceMetadata()
 				}
 			}
@@ -79,10 +80,10 @@ struct RXTXIndicatorWidget: View {
 						}.padding(2.0)
 					}.padding(10)
 					.contentShape(Rectangle()) // Make sure the whole thing is tappable
-				}.buttonStyle(PlainButtonStyle())
+				}.buttonStyle(.plain)
 				.presentationCompactAdaptation(.popover)
 			}
-		}.buttonStyle(PlainButtonStyle())
+		}.buttonStyle(.borderless)
 	}
 }
 
