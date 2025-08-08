@@ -149,9 +149,9 @@ extension AccessoryManager {
 		var heartbeatToRadio: ToRadio = ToRadio()
 		heartbeatToRadio.payloadVariant = .heartbeat(Heartbeat())
 		if let toConnection {
-			try? await toConnection.send(heartbeatToRadio)
+			try await toConnection.send(heartbeatToRadio)
 		} else {
-			try? await self.send(heartbeatToRadio)
+			try await self.send(heartbeatToRadio)
 		}
 	}
 

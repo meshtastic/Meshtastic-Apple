@@ -111,7 +111,7 @@ actor SerialConnection: Connection {
 		// The cancellation handler also hops back to the actor to clean up.
 		source.setCancelHandler { [weak self] in
 			Task {
-				try? await self?.disconnect(withError: AccessoryError.disconnected("Serial connection lost"))
+				try? await self?.disconnect(withError: AccessoryError.disconnected("Serial connection lost"), shouldReconnect: true)
 			}
 		}
 
@@ -187,15 +187,16 @@ actor SerialConnection: Connection {
 		return getPacketStream()
 	}
 
-	func disconnect(userInitiated: Bool) async throws {
-		try await self.disconnect(withError: userInitiated ? nil : AccessoryError.disconnected("Unknown error"))
-	}
-	
-	func disconnect(withError error: Error? = nil) async throws {
+	func disconnect(withError error: Error? = nil, shouldReconnect: Bool) async throws {
 		if let error {
-			eventStreamContinuation?.yield(.error(error))
+			// Inform the AccessoryManager of the error and intent to reconnect
+			if shouldReconnect {
+				eventStreamContinuation?.yield(.error(error))
+			} else {
+				eventStreamContinuation?.yield(.errorWithoutReconnect(error))
+			}
 		} else {
-			eventStreamContinuation?.yield(.userDisconnected)
+			eventStreamContinuation?.yield(.disconnected(shouldReconnect: shouldReconnect))
 		}
 		eventStreamContinuation?.finish()
 		eventStreamContinuation = nil

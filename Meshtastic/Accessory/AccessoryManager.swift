@@ -143,6 +143,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		self.mqttManager.delegate = self
 	}
 
+	func transportForType(_ type: TransportType) -> Transport? {
+		return transports.first(where: {$0.type == type })
+	}
+	
 	func connectToPreferredDevice() {
 		if !self.isConnected && !self.isConnecting,
 		   let preferredDevice = self.devices.first(where: { $0.id.uuidString == UserDefaults.preferredPeripheralId }) {
@@ -160,16 +164,23 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.transport.error("Unable to send wantConfig (config): No device connected")
 			return
 		}
-
-		var toRadio: ToRadio = ToRadio()
-		toRadio.wantConfigID = UInt32(NONCE_ONLY_CONFIG)
-		try await self.send(toRadio)
-		try await connection.startDrainPendingPackets()
-		try await withCheckedThrowingContinuation { cont in
-			self.wantConfigContinuation = cont
+		
+		try await withTaskCancellationHandler {
+			var toRadio: ToRadio = ToRadio()
+			toRadio.wantConfigID = UInt32(NONCE_ONLY_CONFIG)
+			try await self.send(toRadio)
+			try await connection.startDrainPendingPackets()
+			try await withCheckedThrowingContinuation { cont in
+				self.wantConfigContinuation = cont
+			}
+			self.wantConfigContinuation = nil
+			Logger.transport.info("✅ [Accessory] NONCE_ONLY_CONFIG Done")
+		} onCancel: {
+			Task { @MainActor in
+				wantConfigContinuation?.resume(throwing: CancellationError())
+				wantConfigContinuation = nil
+			}
 		}
-		self.wantConfigContinuation = nil
-		Logger.transport.info("✅ [Accessory] NONCE_ONLY_CONFIG Done")
 	}
 
 	func sendWantDatabase() async throws {
@@ -273,7 +284,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 		// Close out the connection
 		if let activeConnection = activeConnection {
-			try await activeConnection.connection.disconnect(userInitiated: true)
+			try await activeConnection.connection.disconnect(withError: nil, shouldReconnect: false)
 		}
 	}
 
@@ -366,19 +377,25 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			}
 			updateDevice(deviceId: deviceId, key: \.rssi, value: rssi)
 			
-		case .error(let error):
+		case .error(let error), .errorWithoutReconnect(let error):
 			Task {
-				// Handle error, perhaps log and disconnect
-				Logger.transport.info("🚨 [Accessory] didReceive with failure: \(error.localizedDescription)")
-								
+				// Figure out if we'll reconnect
+				if case .errorWithoutReconnect = event {
+					shouldAutomaticallyConnectToPreferredPeripheral = false
+				} else {
+					shouldAutomaticallyConnectToPreferredPeripheral = true
+				}
+				
+				Logger.transport.info("🚨 [Accessory] didReceive with failure: \(error.localizedDescription) (willReconnect = \(self.shouldAutomaticallyConnectToPreferredPeripheral, privacy: .public)")
+
+				lastConnectionError = error
+				
 				if let connectionStepper = self.connectionStepper {
 					// If we're in the midst of a connection process, tell the stepper that something happened
-					await connectionStepper.cancelCurrentlyExecutingStep(withError: error)
+					// This cancels retry connection attempts if we've been asked not to reconnect
+					await connectionStepper.cancelCurrentlyExecutingStep(withError: error, cancelFullProcess: !shouldAutomaticallyConnectToPreferredPeripheral)
 				} else {
 					// Normal processing.  Expose the error and disconnect
-					lastConnectionError = error
-					
-					shouldAutomaticallyConnectToPreferredPeripheral = true
 					try? await self.closeConnection()
 					
 					// If we were actively reconnecting, then don't update the status because
@@ -389,7 +406,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				}
 			}
 			
-		case .userDisconnected:
+		case .disconnected:
 			Task {
 				// This is user-initatied, so don't reconnect
 				shouldAutomaticallyConnectToPreferredPeripheral = false

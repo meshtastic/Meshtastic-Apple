@@ -77,14 +77,14 @@ actor TCPConnection: Connection {
 						if let fromRadio = try? FromRadio(serializedBytes: payload) {
 							await connectionStreamContinuation?.yield(.data(fromRadio))
 						} else {
-							try await self.disconnect(withError: AccessoryError.disconnected("Network connection dropped"))
+							try await self.disconnect(withError: AccessoryError.disconnected("Network connection dropped"), shouldReconnect: true)
 						}
 					} else {
 						Logger.transport.debug("🌐 [TCP] startReader: EOF while waiting for length")
 					}
 				} catch {
 					Logger.transport.error("🌐 [TCP] startReader: Error reading from TCP: \(error, privacy: .public)")
-					try? await self.disconnect(withError: error)
+					try? await self.disconnect(withError: error, shouldReconnect: true)
 					break
 				}
 			}
@@ -128,12 +128,8 @@ actor TCPConnection: Connection {
 			})
 		}
 	}
-
-	func disconnect(userInitiated: Bool) async throws {
-		try await self.disconnect(withError: userInitiated ? nil : AccessoryError.disconnected("Unknown error"))
-	}
 	
-	func disconnect(withError error: Error? = nil) async throws {
+	func disconnect(withError error: Error? = nil, shouldReconnect: Bool) async throws {
 		Logger.transport.debug("🌐 [TCP] Disconnecting from TCP connection")
 		readerTask?.cancel()
 		readerTask = nil
@@ -142,9 +138,14 @@ actor TCPConnection: Connection {
 		connection = nil
 		
 		if let error {
-			connectionStreamContinuation?.yield(.error(error))
+			// Inform the AccessoryManager of the error and intent to reconnect
+			if shouldReconnect {
+				connectionStreamContinuation?.yield(.error(error))
+			} else {
+				connectionStreamContinuation?.yield(.errorWithoutReconnect(error))
+			}
 		} else {
-			connectionStreamContinuation?.yield(.userDisconnected)
+			connectionStreamContinuation?.yield(.disconnected(shouldReconnect: shouldReconnect))
 		}
 		
 		connectionStreamContinuation?.finish()
@@ -163,7 +164,7 @@ actor TCPConnection: Connection {
 		AsyncStream<ConnectionEvent> { continuation in
 			self.connectionStreamContinuation = continuation
 			continuation.onTermination = { _ in
-				Task { try await self.disconnect(withError: AccessoryError.eventStreamCancelled) }
+				Task { try await self.disconnect(withError: AccessoryError.eventStreamCancelled, shouldReconnect: true) }
 			}
 		}
 	}
@@ -202,7 +203,7 @@ actor TCPConnection: Connection {
 				case .failed(let error):
 					Logger.transport.error("🌐 [TCP] Connection failed after ready: \(error, privacy: .public)")
 					Task {
-						try? await self.disconnect(withError: error)
+						try? await self.disconnect(withError: error, shouldReconnect: true)
 					}
 				case .cancelled:
 					Logger.transport.debug("🌐 [TCP] Connection cancelled")

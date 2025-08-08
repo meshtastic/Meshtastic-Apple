@@ -57,19 +57,17 @@ actor BLEConnection: Connection {
 	private var rssiTask: Task<Void, Never>?
 	
 	var isConnected: Bool { peripheral.state == .connected }
+	var transport : BLETransport?
 	
-	init(peripheral: CBPeripheral, central: CBCentralManager) {
+	init(peripheral: CBPeripheral, central: CBCentralManager, transport: BLETransport) {
 		self.peripheral = peripheral
 		self.central = central
+		self.transport = transport
 		self.delegate = BLEConnectionDelegate(peripheral: peripheral)
 		self.delegate.setConnection(self)
 	}
-
-	func disconnect(userInitiated: Bool) async throws {
-		try await self.disconnect(withError: userInitiated ? nil : AccessoryError.disconnected("Unknown Error"))
-	}
 	
-	func disconnect(withError error: Error? = nil) async throws {
+	func disconnect(withError error: Error? = nil, shouldReconnect: Bool) async throws {
 		if peripheral.state == .connected {
 			if let characteristic = FROMRADIO_characteristic {
 				peripheral.setNotifyValue(false, for: characteristic)
@@ -82,6 +80,8 @@ actor BLEConnection: Connection {
 			}
 		}
 		
+		transport?.connectionDidDisconnect()
+		
 		central.cancelPeripheralConnection(peripheral)
 		peripheral.delegate = nil
 				
@@ -89,10 +89,16 @@ actor BLEConnection: Connection {
 		writeContinuation = nil
 		
 		if let error {
-			connectionStreamContinuation?.yield(.error(error))
+			// Inform the AccessoryManager of the error and intent to reconnect
+			if shouldReconnect {
+				connectionStreamContinuation?.yield(.error(error))
+			} else {
+				connectionStreamContinuation?.yield(.errorWithoutReconnect(error))
+			}
 		} else {
-			connectionStreamContinuation?.yield(.userDisconnected)
+			connectionStreamContinuation?.yield(.disconnected(shouldReconnect: shouldReconnect))
 		}
+
 		connectionStreamContinuation?.finish()
 		connectionStreamContinuation = nil
 		
@@ -136,7 +142,7 @@ actor BLEConnection: Connection {
 				let decodedInfo = try FromRadio(serializedBytes: data)
 				connectionStreamContinuation?.yield(.data(decodedInfo))
 			} catch {
-				try? await self.disconnect(withError: error)
+				try? await self.disconnect(withError: error, shouldReconnect: true)
 				throw error  // Re-throw to propagate up to the caller for handling
 			}
 		} while true
@@ -286,6 +292,7 @@ actor BLEConnection: Connection {
 		if let error = error {
 			Logger.transport.error("🛜 [BLE] Did write for \(characteristic.meshtasticCharacteristicName) with error \(error)")
 			writeContinuation.resume(throwing: error)
+			Task { try await self.handlePeripheralError(error: error) }
 		} else {
 			Logger.transport.error("🛜 [BLE] Did write for \(characteristic.meshtasticCharacteristicName)")
 			writeContinuation.resume()
@@ -337,6 +344,72 @@ actor BLEConnection: Connection {
 			Logger.transport.debug("🛜 [BLE] Received empty data, ending drain operation.")
 		}
 		return data
+	}
+	
+	func handlePeripheralError(error: Error) async throws {
+		var shouldReconnect = false
+		switch error {
+		case let cbError as CBError:
+			switch cbError.code {
+			case .unknown: // 0
+				Logger.transport.error("🛜 [BLEConnection] Disconnected due to unknown error.")
+			case .invalidParameters: // 1
+				Logger.transport.error("🛜 [BLEConnection] Disconnected due to invalid parameters.")
+			case .invalidHandle: // 2
+				Logger.transport.error("🛜 [BLEConnection] Disconnected due to invalid handle.")
+			case .notConnected: // 3
+				Logger.transport.error("🛜 [BLEConnection] Disconnected because device was not connected.")
+			case .outOfSpace: // 4
+				Logger.transport.error("🛜 [BLEConnection] Disconnected due to out of space.")
+			case .operationCancelled: // 5
+				Logger.transport.error("🛜 [BLEConnection] Disconnected due to operation cancelled.")
+			case .connectionTimeout: // 6
+				// Should disconnect, show error, and retry when re-advertised
+				Logger.transport.error("🛜 [BLEConnection] Disconnected due to connection timeout.")
+				shouldReconnect = true
+			case .peripheralDisconnected: // 7
+				// Likely prompting for a PIN
+				// Should disconnect, show error, and retry when re-advertised
+				Logger.transport.error("🛜 [BLEConnection] Disconnected by peripheral.")
+				shouldReconnect = true
+			case .uuidNotAllowed: // 8
+				Logger.transport.error("🛜 [BLEConnection] Disconnected due to UUID not allowed.")
+			case .alreadyAdvertising: // 9
+				Logger.transport.error("🛜 [BLEConnection] Disconnected because already advertising.")
+			case .connectionFailed: // 10
+				Logger.transport.error("🛜 [BLEConnection] Disconnected due to connection failure.")
+			case .connectionLimitReached: // 11
+				Logger.transport.error("🛜 [BLEConnection] Disconnected due to connection limit reached.")
+			case .unknownDevice, .unkownDevice: // 12
+				Logger.transport.error("🛜 [BLEConnection] Disconnected due to unknown device.")
+			case .operationNotSupported: // 13
+				Logger.transport.error("🛜 [BLEConnection] Disconnected due to operation not supported.")
+			case .peerRemovedPairingInformation: // 14
+				// Should disconnect and not retry
+				Logger.transport.error("🛜 [BLEConnection] Disconnected because peer removed pairing information.")
+				return
+			case .encryptionTimedOut: // 15
+				Logger.transport.error("🛜 [BLEConnection] Disconnected due to encryption timeout.")
+			case .tooManyLEPairedDevices: // 16
+				Logger.transport.error("🛜 [BLEConnection] Disconnected due to too many LE paired devices.")
+				
+				// leGatt cases are watchOS only
+			case .leGattExceededBackgroundNotificationLimit: // 17
+				Logger.transport.error("🛜 [BLEConnection] Disconnected due to exceeding LE GATT background notification limit.")
+			case .leGattNearBackgroundNotificationLimit: // 18
+				Logger.transport.error("🛜 [BLEConnection] Disconnected due to nearing LE GATT background notification limit.")
+				
+			@unknown default:
+				Logger.transport.error("🛜 [BLEConnection] Disconnected due to unknown future error code: \(cbError.code.rawValue)")
+			}
+		case let otherError:
+			Logger.transport.error("🛜 [BLEConnection] Disconnected with non-CBError: \(otherError.localizedDescription)")
+		}
+		
+		// Inform the active connection that there was an error and it should disconnect
+		Task {
+			try await self.disconnect(withError: error, shouldReconnect: shouldReconnect)
+		}
 	}
 	
 	func appDidEnterBackground() {

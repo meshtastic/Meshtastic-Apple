@@ -20,7 +20,7 @@ extension AccessoryManager {
 			throw AccessoryError.connectionFailed("Already connected to a device")
 		}
 		
-		guard let transport = transports.first(where: { $0.type == device.transportType }) else {
+		guard let transport = transportForType(device.transportType) else {
 			throw AccessoryError.connectionFailed("No transport for type")
 		}
 		
@@ -34,7 +34,7 @@ extension AccessoryManager {
 			
 			// Step 0
 			Step { @MainActor retryAttempt in
-				Logger.transport.info("🔗 [Connect] Starting connection to \(device.id)")
+				Logger.transport.info("🔗👟 [Connect] Starting connection to \(device.id)")
 				if retryAttempt > 0 {
 					try await self.closeConnection() // clean-up before retries.
 					self.updateState(.retrying(attempt: retryAttempt + 1))
@@ -47,7 +47,7 @@ extension AccessoryManager {
 			
 			// Step 1: Setup the connection
 			Step(timeout: .seconds(2)) { @MainActor _ in
-				Logger.transport.info("🔗 [Connect] Step 1: connection to \(device.id)")
+				Logger.transport.info("🔗👟[Connect] Step 1: connection to \(device.id)")
 				let connection = try await transport.connect(to: device)
 				let eventStream = try await connection.connect()
 				self.updateState(.communicating)
@@ -66,13 +66,13 @@ extension AccessoryManager {
 			
 			// Step 2: Send Heartbeat before wantConfig (config)
 			Step { @MainActor _ in
-				Logger.transport.info("💓 [Connect] Step 2: Send heartbeat")
+				Logger.transport.info("💓👟 [Connect] Step 2: Send heartbeat")
 				try await self.sendHeartbeat()
 			}
 			
 			// Step 3: Send WantConfig (config)
 			Step(timeout: .seconds(30)) { @MainActor _ in
-				Logger.transport.info("🔗 [Connect] Step 3: Send wantConfig (config)")
+				Logger.transport.info("🔗👟 [Connect] Step 3: Send wantConfig (config)")
 				try await self.sendWantConfig()
 			}
 			
@@ -84,7 +84,7 @@ extension AccessoryManager {
 			
 			// Step 5: Send WantConfig (database)
 			Step(timeout: .seconds(3.0), onFailure: .retryStep(attempts: 3)) { @MainActor _ in
-				Logger.transport.info("🔗 [Connect] Step 5: Send wantConfig (database)")
+				Logger.transport.info("🔗👟 [Connect] Step 5: Send wantConfig (database)")
 				self.updateState(.retrievingDatabase(nodeCount: 0))
 				self.allowDisconnect = true
 				try await self.sendWantDatabase()
@@ -92,13 +92,13 @@ extension AccessoryManager {
 			
 			// Step 5a: Wait for end of WantConfig (database)
 			Step { @MainActor _ in
-				Logger.transport.info("🔗 [Connect] Step 5a: Wait for the final database")
+				Logger.transport.info("🔗👟 [Connect] Step 5a: Wait for the final database")
 				try await self.waitForWantDatabaseResponse()
 			}
 			
 			// Step 6: Version check
 			Step { @MainActor _ in
-				Logger.transport.info("🔗 [Connect] Step 6: Version check")
+				Logger.transport.info("🔗👟 [Connect] Step 6: Version check")
 
 				guard let firmwareVersion = self.activeConnection?.device.firmwareVersion else {
 					Logger.transport.error("🔗 [Connect] Firmware version not available for device \(device.name, privacy: .public)")
@@ -123,7 +123,7 @@ extension AccessoryManager {
 			
 			// Step 7: Update UI and status to connected
 			Step { @MainActor _ in
-				Logger.transport.info("🔗 [Connect] Step 7: Update UI and status")
+				Logger.transport.info("🔗👟 [Connect] Step 7: Update UI and status")
 
 				// We have an active connection
 				self.updateDevice(deviceId: device.id, key: \.connectionState, value: .connected)
@@ -132,7 +132,7 @@ extension AccessoryManager {
 			
 			// Step 8: Update UI and status to connected
 			Step { @MainActor _ in
-				Logger.transport.debug("🔗 [Connect] Step 8: Initialize MQTT and Location Provider")
+				Logger.transport.debug("🔗👟 [Connect] Step 8: Initialize MQTT and Location Provider")
 				self.stopDiscovery()
 				await self.initializeMqtt()
 				self.initializeLocationProvider()
@@ -145,14 +145,11 @@ extension AccessoryManager {
 		// Run the connection process
 		do {
 			try await connectionStepper?.run()
+			Logger.transport.debug("🔗 [Connect] ConnectionStepper completed.")
 		} catch {
-			switch error {
-			case  is CancellationError, AccessoryError.tooManyRetries:
-				try await self.closeConnection()
-				updateState(.discovering)
-			default:
-				Logger.transport.error("🔗 [Connect] Error returned by connectionStepper: \(error)")
-			}
+			Logger.transport.error("🔗 [Connect] Error returned by connectionStepper: \(error)")
+			try await self.closeConnection()
+			updateState(.discovering)
 			self.lastConnectionError = error
 		}
 		
@@ -214,7 +211,7 @@ actor SequentialSteps {
 		retryLoop: for attempt in 0..<maxRetries {
 			for stepNumber in 0..<steps.count {
 				if cancelled {
-					throw CancellationError()
+					throw externalError ?? CancellationError()
 				}
 				let currentStep = steps[stepNumber]
 				let isRetry = (attempt > 0)
@@ -296,9 +293,13 @@ actor SequentialSteps {
 		self.currentlyExecutingStep?.cancel()
 	}
 	
-	func cancelCurrentlyExecutingStep(withError: Error?) {
+	func cancelCurrentlyExecutingStep(withError: Error?, cancelFullProcess: Bool = false) {
 		self.externalError = withError
-		self.currentlyExecutingStep?.cancel()
+		if cancelFullProcess {
+			cancel()
+		} else {
+			self.currentlyExecutingStep?.cancel()
+		}
 	}
 	
 	func executeWithTimeout<ReturnType>(stepNumber: Int, timeout: Duration, operation: @escaping @Sendable () async throws -> ReturnType) -> Task<ReturnType, Error> {

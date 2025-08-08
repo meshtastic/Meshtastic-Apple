@@ -121,7 +121,7 @@ class BLETransport: Transport {
 			if let connection = activeConnection {
 				Task {
 					Logger.transport.error("🛜 [BLE] Bluetooth has powered off during active connection. Cleaning up.")
-					try await connection.disconnect(withError: AccessoryError.disconnected("Bluetooth powered off"))
+					try await connection.disconnect(withError: AccessoryError.disconnected("Bluetooth powered off"), shouldReconnect: false)
 					self.activeConnection = nil
 				}
 			}
@@ -184,14 +184,11 @@ class BLETransport: Transport {
 		}
 		
 		if await self.activeConnection?.peripheral.state == .disconnected {
-			Logger.transport.warning("🛜 [BLE] Connect request while an active (but disconnected).  Cleaning up")
-			try await self.activeConnection?.disconnect(withError: nil)
-			self.connectContinuation?.resume(throwing: CancellationError())
-			self.connectContinuation = nil
-			self.activeConnection = nil
+			Logger.transport.error("🛜 [BLE] Connect request while an active (but disconnected)")
+			throw AccessoryError.connectionFailed("Connect request while an active connection exists")
 		}
 		
-		return try await withTaskCancellationHandler {
+		let returnConnection = try await withTaskCancellationHandler {
 			let newConnection: BLEConnection = try await withCheckedThrowingContinuation { cont in
 				if self.connectContinuation != nil || self.activeConnection != nil {
 					cont.resume(throwing: AccessoryError.connectionFailed("BLE transport is busy: already connecting or connected"))
@@ -209,6 +206,8 @@ class BLETransport: Transport {
 			self.activeConnection = nil
 			self.connectingPeripheral = nil
 		}
+		Logger.transport.debug("🛜 [BLE] Connect complete.")
+		return returnConnection
 	}
 
 	func handlePeripheralDisconnect(peripheral: CBPeripheral) {
@@ -217,10 +216,77 @@ class BLETransport: Transport {
 			discoveredDeviceContinuation?.yield(.deviceLost(peripheral.identifier))
 			Task {
 				if await connection.peripheral.identifier == peripheral.identifier {
-					try await connection.disconnect(withError: AccessoryError.disconnected("BLE connection lost"))
+					try await connection.disconnect(withError: AccessoryError.disconnected("BLE connection lost"), shouldReconnect: true)
 					self.activeConnection = nil
 				}
 			}
+		}
+	}
+	
+	func handlePeripheralDisconnectError(peripheral: CBPeripheral, error: Error) {
+		var shouldReconnect = false
+		switch error {
+		case let cbError as CBError:
+			switch cbError.code {
+			case .unknown: // 0
+				Logger.transport.error("🛜 [BLETransport] Disconnected due to unknown error.")
+			case .invalidParameters: // 1
+				Logger.transport.error("🛜 [BLETransport] Disconnected due to invalid parameters.")
+			case .invalidHandle: // 2
+				Logger.transport.error("🛜 [BLETransport] Disconnected due to invalid handle.")
+			case .notConnected: // 3
+				Logger.transport.error("🛜 [BLETransport] Disconnected because device was not connected.")
+			case .outOfSpace: // 4
+				Logger.transport.error("🛜 [BLETransport] Disconnected due to out of space.")
+			case .operationCancelled: // 5
+				Logger.transport.error("🛜 [BLETransport] Disconnected due to operation cancelled.")
+			case .connectionTimeout: // 6
+				// Should disconnect, show error, and retry when re-advertised
+				Logger.transport.error("🛜 [BLETransport] Disconnected due to connection timeout.")
+				shouldReconnect = true
+			case .peripheralDisconnected: // 7
+				// Likely prompting for a PIN
+				// Should disconnect, show error, and retry when re-advertised
+				Logger.transport.error("🛜 [BLETransport] Disconnected by peripheral.")
+				shouldReconnect = true
+			case .uuidNotAllowed: // 8
+				Logger.transport.error("🛜 [BLETransport] Disconnected due to UUID not allowed.")
+			case .alreadyAdvertising: // 9
+				Logger.transport.error("🛜 [BLETransport] Disconnected because already advertising.")
+			case .connectionFailed: // 10
+				Logger.transport.error("🛜 [BLETransport] Disconnected due to connection failure.")
+			case .connectionLimitReached: // 11
+				Logger.transport.error("🛜 [BLETransport] Disconnected due to connection limit reached.")
+			case .unknownDevice, .unkownDevice: // 12
+				Logger.transport.error("🛜 [BLETransport] Disconnected due to unknown device.")
+			case .operationNotSupported: // 13
+				Logger.transport.error("🛜 [BLETransport] Disconnected due to operation not supported.")
+			case .peerRemovedPairingInformation: // 14
+				// Should disconnect and not retry
+				Logger.transport.error("🛜 [BLETransport] Disconnected because peer removed pairing information.")
+				return
+			case .encryptionTimedOut: // 15
+				Logger.transport.error("🛜 [BLETransport] Disconnected due to encryption timeout.")
+			case .tooManyLEPairedDevices: // 16
+				Logger.transport.error("🛜 [BLETransport] Disconnected due to too many LE paired devices.")
+				
+			// leGatt cases are watchOS only
+			case .leGattExceededBackgroundNotificationLimit: // 17
+				Logger.transport.error("🛜 [BLETransport] Disconnected due to exceeding LE GATT background notification limit.")
+			case .leGattNearBackgroundNotificationLimit: // 18
+				Logger.transport.error("🛜 [BLETransport] Disconnected due to nearing LE GATT background notification limit.")
+				
+			@unknown default:
+				Logger.transport.error("🛜 [BLETransport] Disconnected due to unknown future error code: \(cbError.code.rawValue)")
+			}
+		case let otherError:
+			Logger.transport.error("🛜 [BLETransport] Disconnected with non-CBError: \(otherError.localizedDescription)")
+		}
+		
+		// Inform the active connection that there was an error and it should disconnect
+		Task {
+			try? await self.activeConnection?.disconnect(withError: error, shouldReconnect: shouldReconnect)
+			self.activeConnection = nil
 		}
 	}
 
@@ -231,9 +297,10 @@ class BLETransport: Transport {
 			  peripheral.identifier == connPeripheral.identifier else {
 			return
 		}
-		let connection = BLEConnection(peripheral: peripheral, central: central)
+		let connection = BLEConnection(peripheral: peripheral, central: central, transport: self)
 		cont.resume(returning: connection)
 		self.connectContinuation = nil
+		self.connectingPeripheral = nil
 	}
 
 	func handleDidFailToConnect(peripheral: CBPeripheral, error: Error?) {
@@ -255,6 +322,11 @@ class BLETransport: Transport {
 		Logger.transport.error("🛜 [BLE] This transport does not support manual connections")
 	}
 
+	// BLETransport handles portions of the connection process, so it needs to be informed that we've closed up shop.
+	func connectionDidDisconnect() {
+		self.activeConnection = nil
+		self.connectingPeripheral = nil
+	}
 }
 
 class BLEDelegate: NSObject, CBCentralManagerDelegate {
@@ -285,7 +357,11 @@ class BLEDelegate: NSObject, CBCentralManagerDelegate {
 	}
 
 	func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-		self.transport?.handlePeripheralDisconnect(peripheral: peripheral)
+		if let error = error as? NSError {
+			transport?.handlePeripheralDisconnectError(peripheral: peripheral, error: error)
+		} else {
+			transport?.handlePeripheralDisconnect(peripheral: peripheral)
+		}
 	}
 	
 //	func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {

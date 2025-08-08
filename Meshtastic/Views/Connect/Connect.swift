@@ -216,7 +216,7 @@ struct Connect: View {
 								
 							} else {
 								
-								if let lastError = accessoryManager.lastConnectionError as? LocalizedError {
+								if let lastError = accessoryManager.lastConnectionError as? Error {
 									Text(lastError.localizedDescription).font(.callout).foregroundColor(.red)
 								}
 								HStack {
@@ -423,7 +423,7 @@ struct TransportIcon: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	
 	var body: some View {
-		let transport = accessoryManager.transports.first(where: {$0.type == transportType})
+		let transport = accessoryManager.transportForType(transportType)
 		return HStack (spacing: 3.0) {
 			if let icon = transport?.type.icon {
 				icon
