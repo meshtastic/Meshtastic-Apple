@@ -77,9 +77,21 @@ struct Connect: View {
 													.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 													.foregroundColor(.teal)
 												if let expectedNodeDBSize = accessoryManager.expectedNodeDBSize {
-													Text("Retrieving nodes").font(.callout)
-														.foregroundColor(.teal)
-													ProgressView(value: Double(nodeCount), total: Double(expectedNodeDBSize))
+													if UIDevice.current.userInterfaceIdiom == .phone {
+														VStack(alignment: .leading, spacing: 2.0) {
+															Text("Retrieving nodes").font(.callout)
+																.foregroundColor(.teal)
+															ProgressView(value: Double(nodeCount), total: Double(expectedNodeDBSize))
+														}
+													} else {
+														// iPad/Mac with more space, show progress bar AFTER the label
+														HStack {
+															Text("Retrieving nodes").font(.callout)
+																.foregroundColor(.teal)
+															ProgressView(value: Double(nodeCount), total: Double(expectedNodeDBSize))
+														}
+													}
+													
 												} else {
 													Text("Retrieving nodes \(nodeCount)").font(.callout)
 														.foregroundColor(.teal)
