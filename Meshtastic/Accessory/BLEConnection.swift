@@ -290,11 +290,14 @@ actor BLEConnection: Connection {
 	func didWriteValueFor(characteristic: CBCharacteristic, error: Error?) {
 		guard characteristic.uuid == TORADIO_UUID, let writeContinuation else { return }
 		if let error = error {
-			Logger.transport.error("🛜 [BLE] Did write for \(characteristic.meshtasticCharacteristicName) with error \(error)")
+			Logger.transport.error("🛜 [BLE] Did write for \(characteristic.meshtasticCharacteristicName, privacy: .public) with error \(error)")
 			writeContinuation.resume(throwing: error)
 			Task { try await self.handlePeripheralError(error: error) }
 		} else {
-			Logger.transport.error("🛜 [BLE] Did write for \(characteristic.meshtasticCharacteristicName)")
+			#if DEBUG
+			// Too much logging to report every write.
+			Logger.transport.error("🛜 [BLE] Did write for \(characteristic.meshtasticCharacteristicName, privacy: .public)")
+			#endif
 			writeContinuation.resume()
 		}
 		self.writeContinuation = nil
