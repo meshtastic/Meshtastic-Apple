@@ -259,7 +259,7 @@ actor SequentialSteps {
 									}
 									break stepRetryLoop
 								default:
-									Logger.transport.error("[Inner Retry Step Loop] Sequential process failed on step \(stepNumber) with error: \(error.localizedDescription)")
+									Logger.transport.error("[Inner Retry Step Loop] Sequential process failed on step \(stepNumber) with error: \(error.localizedDescription, privacy: .public)")
 								}
 							}
 						}
@@ -269,7 +269,7 @@ actor SequentialSteps {
 					case let SequentialStepError.timeout(stepNumber, afterWaiting):
 						Logger.transport.info("[Outer Step Retry Loop] Sequential process timed out on step \(stepNumber) after waiting \(afterWaiting)")
 					default:
-						Logger.transport.error("[Outer Step Retry Loop] Sequential process failed on step \(stepNumber) with error: \(error.localizedDescription)")
+						Logger.transport.error("[Outer Step Retry Loop] Sequential process failed on step \(stepNumber) with error: \(error.localizedDescription, privacy: .public)")
 					}
 					switch currentStep.failureBehavior {
 					case .retryAll, .retryStep:
