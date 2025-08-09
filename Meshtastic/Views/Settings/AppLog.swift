@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import OSLog
+@preconcurrency import OSLog
 
 struct AppLog: View {
 

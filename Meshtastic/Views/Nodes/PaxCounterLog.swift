@@ -12,7 +12,7 @@ import OSLog
 struct PaxCounterLog: View {
 
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
@@ -203,7 +203,7 @@ struct PaxCounterLog: View {
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
+			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 		})
 		.fileExporter(
 			isPresented: $isExporting,

@@ -9,19 +9,19 @@ import Foundation
 import AppIntents
 
 struct DisconnectNodeIntent: AppIntent {
-	static var title: LocalizedStringResource = "Disconnect Node"
+	static let title: LocalizedStringResource = "Disconnect Node"
 
-	static var description: IntentDescription = "Disconnect the currently connected node"
+	static let description: IntentDescription = "Disconnect the currently connected node"
 
 	func perform() async throws -> some IntentResult {
-		if !BLEManager.shared.isConnected {
+		let isConnected = await AccessoryManager.shared.isConnected
+		if !isConnected {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 
-		if let connectedPeripheral = BLEManager.shared.connectedPeripheral,
-				   connectedPeripheral.peripheral.state == .connected {
-					BLEManager.shared.disconnectPeripheral(reconnect: false)
-		} else {
+		do {
+			try await AccessoryManager.shared.disconnect()
+		} catch {
 			throw AppIntentErrors.AppIntentError.message("Error disconnecting node")
 		}
 

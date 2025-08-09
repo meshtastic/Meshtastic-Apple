@@ -13,7 +13,7 @@ import OSLog
 struct PowerMetricsLog: View {
 
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@ObservedObject var node: NodeInfoEntity
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@State private var sortOrder = [KeyPathComparator(\TelemetryEntity.time, order: .reverse)]
@@ -276,7 +276,7 @@ struct PowerMetricsLog: View {
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
+			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 		})
 		.fileExporter(
 			isPresented: $isExporting,

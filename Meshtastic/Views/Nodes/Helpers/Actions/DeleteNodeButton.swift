@@ -4,8 +4,9 @@ import SwiftUI
 
 struct DeleteNodeButton: View {
 
-	var bleManager: BLEManager
-	var context: NSManagedObjectContext
+	@Environment(\.managedObjectContext) var context
+	@EnvironmentObject var accessoryManager: AccessoryManager
+
 	var connectedNode: NodeInfoEntity
 	var node: NodeInfoEntity
 	@Environment(\.dismiss) private var dismiss
@@ -44,14 +45,19 @@ struct DeleteNodeButton: View {
 						Logger.data.error("Unable to find node info to delete node \(node.num, privacy: .public)")
 						return
 					}
-					let success = bleManager.removeNode(
-						node: deleteNode,
-						connectedNodeNum: connectedNode.num
-					)
-					if !success {
-						Logger.data.error("Failed to delete node \(deleteNode.user?.longName ?? "Unknown".localized, privacy: .public)")
-					} else {
-						dismiss()
+
+					Task {
+						do {
+							try await accessoryManager.removeNode(
+								node: deleteNode,
+								connectedNodeNum: connectedNode.num
+							)
+							Task {@MainActor in
+								dismiss()
+							}
+						} catch {
+							Logger.data.error("Failed to delete node \(deleteNode.user?.longName ?? "Unknown".localized, privacy: .public)")
+						}
 					}
 				}
 			}

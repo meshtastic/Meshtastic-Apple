@@ -3,35 +3,42 @@ import OSLog
 import SwiftUI
 
 struct IgnoreNodeButton: View {
-	var bleManager: BLEManager
-	var context: NSManagedObjectContext
+	@Environment(\.managedObjectContext) var context
+	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	@ObservedObject
 	var node: NodeInfoEntity
 
 	var body: some View {
 		Button(role: .destructive) {
-			guard let connectedNodeNum = bleManager.connectedPeripheral?.num else { return }
-			let success = if node.ignored {
-				bleManager.removeIgnoredNode(
-					node: node,
-					connectedNodeNum: Int64(connectedNodeNum)
-				)
-			} else {
-				bleManager.setIgnoredNode(
-					node: node,
-					connectedNodeNum: Int64(connectedNodeNum)
-				)
-			}
-			if success {
-				node.ignored = !node.ignored
+			guard let connectedNodeNum = accessoryManager.activeDeviceNum else { return }
+			Task {
 				do {
-					try context.save()
+					if node.ignored {
+						try await accessoryManager.removeIgnoredNode(
+							node: node,
+							connectedNodeNum: Int64(connectedNodeNum)
+						)
+					} else {
+						try await accessoryManager.setIgnoredNode(
+							node: node,
+							connectedNodeNum: Int64(connectedNodeNum)
+						)
+					}
+					Task {@MainActor in
+						// CoreData Stuff
+						node.ignored = !node.ignored
+						do {
+							try context.save()
+						} catch {
+							context.rollback()
+							Logger.data.error("Save Ignored Node Error")
+						}
+					}
+					Logger.data.debug("Ignored a node")
 				} catch {
-					context.rollback()
-					Logger.data.error("Save Ignored Node Error")
+					Logger.mesh.error("Faile to Ignored/Un-ignore a node")
 				}
-				Logger.data.debug("Ignored a node")
 			}
 		} label: {
 			Label {

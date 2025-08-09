@@ -6,8 +6,8 @@ import SwiftUI
 
 struct ContentView: View {
 	@ObservedObject var appState: AppState
-
-	@ObservedObject var router: Router
+	@EnvironmentObject var accessoryManager: AccessoryManager
+	@State var router: Router
 	@State var isShowingDeviceOnboardingFlow: Bool = false
 
 	init(appState: AppState, router: Router) {
@@ -33,9 +33,9 @@ struct ContentView: View {
 					router: appState.router
 				)
 				.tabItem {
-					Label("Bluetooth", systemImage: "antenna.radiowaves.left.and.right")
+					Label("Connect", systemImage: "link")
 				}
-				.tag(NavigationState.Tab.bluetooth)
+				.tag(NavigationState.Tab.connect)
 
 			NodeList(
 				router: appState.router
@@ -63,6 +63,7 @@ struct ContentView: View {
 			isPresented: $isShowingDeviceOnboardingFlow,
 			onDismiss: {
 				UserDefaults.firstLaunch = false
+				accessoryManager.startDiscovery()
 			}, content: {
 				DeviceOnboarding()
 			}

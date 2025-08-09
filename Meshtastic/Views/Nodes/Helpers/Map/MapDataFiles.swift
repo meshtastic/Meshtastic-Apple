@@ -4,7 +4,7 @@ import OSLog
 
 struct MapDataFiles: View {
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@ObservedObject private var mapDataManager = MapDataManager.shared
 	
 	@State private var isShowingFilePicker = false
@@ -58,10 +58,10 @@ struct MapDataFiles: View {
 				let uploadedFiles = mapDataManager.getUploadedFiles()
 				
 				if uploadedFiles.isEmpty {
-					ContentUnavailableView ("No files uploaded", systemImage: "doc.text")
+					ContentUnavailableView("No files uploaded", systemImage: "doc.text")
 				} else {
 					ScrollView {
-						LazyVStack() {
+						LazyVStack {
 							ForEach(Array(uploadedFiles.enumerated()), id: \.offset) { index, file in
 								MapDataFileRow(file: file, showDivider: index < uploadedFiles.count - 1) {
 									deleteFile(file)

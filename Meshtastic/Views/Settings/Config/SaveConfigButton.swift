@@ -1,8 +1,7 @@
 import SwiftUI
 
 struct SaveConfigButton: View {
-	@EnvironmentObject var bleManager: BLEManager
-
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var isPresentingSaveConfirm = false
 	let node: NodeInfoEntity?
 	@Binding var hasChanges: Bool
@@ -14,7 +13,7 @@ struct SaveConfigButton: View {
 		} label: {
 			Label("Save", systemImage: "square.and.arrow.down")
 		}
-		.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
+		.disabled(!accessoryManager.isConnected || !hasChanges)
 		.buttonStyle(.bordered)
 		.buttonBorderShape(.capsule)
 		.controlSize(.large)

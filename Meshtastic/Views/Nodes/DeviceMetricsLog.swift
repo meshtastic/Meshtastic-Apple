@@ -11,7 +11,7 @@ import OSLog
 struct DeviceMetricsLog: View {
 
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 
 	@State private var isPresentingClearLogConfirm: Bool = false
@@ -244,7 +244,7 @@ struct DeviceMetricsLog: View {
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
+			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 		})
 		.fileExporter(
 			isPresented: $isExporting,

@@ -29,7 +29,7 @@ if [[ -e "${SWIFT_LINT}" ]]; then
             file_var="SCRIPT_INPUT_FILE_$i"
             file_path=${!file_var}
             echo "Fixing $file_path"
-            $SWIFT_LINT --fix "$file_path"
+            $SWIFT_LINT --config .swiftlint-precommit.yml --fix "$file_path"
         done
 
         # Add the fixed files back to staging
@@ -43,7 +43,7 @@ if [[ -e "${SWIFT_LINT}" ]]; then
 
         # Optionally lint the fixed files
         echo "Linting fixed files..."
-        $SWIFT_LINT lint --use-script-input-files
+        $SWIFT_LINT lint --use-script-input-files --config .swiftlint-precommit.yml 
     else
         exit 0
     fi

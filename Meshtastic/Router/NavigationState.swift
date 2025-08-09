@@ -57,13 +57,13 @@ enum SettingsNavigationState: String {
 struct NavigationState: Hashable {
 	enum Tab: String, Hashable {
 		case messages
-		case bluetooth
+		case connect
 		case nodes
 		case map
 		case settings
 	}
 
-	var selectedTab: Tab = .bluetooth
+	var selectedTab: Tab = .connect
 	var messages: MessagesNavigationState?
 	var nodeListSelectedNodeNum: Int64?
 	var map: MapNavigationState?
