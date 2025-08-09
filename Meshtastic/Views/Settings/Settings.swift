@@ -524,25 +524,26 @@ struct Settings: View {
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
+				// If the preferred node changes, then select the newly perferred node
+				// This should only happen during connect
 				preferredNodeNum = newConnectedNode
-				if nodes.count > 1 {
-					if selectedNode == 0 {
-						self.selectedNode = Int(accessoryManager.isConnected ? newConnectedNode : 0)
-					}
-				} else {
-					self.selectedNode = Int(accessoryManager.isConnected ? newConnectedNode: 0)
+				setSelectedNode(to: newConnectedNode)
+			}
+			.onChange(of: accessoryManager.isConnected) { _, isConnectedNow in
+				// If we are on this screen, haven't iniatialized the selection yet,
+				// And we transition, to connected, then initialize the selection
+				if isConnectedNow, self.selectedNode == 0 {
+					self.preferredNodeNum = UserDefaults.preferredPeripheralNum
+					setSelectedNode(to: UserDefaults.preferredPeripheralNum)
 				}
 			}
 			.onAppear {
+				// If the selection hasn't be initialized yet, try to initalize it.
+				// If we are not fully connected yet, then setSelectedNode will
+				// not select the node and it will remain 0
 				if self.preferredNodeNum <= 0 {
 					self.preferredNodeNum = UserDefaults.preferredPeripheralNum
-					if nodes.count > 1 {
-						if selectedNode == 0 {
-							self.selectedNode = Int(accessoryManager.isConnected ? UserDefaults.preferredPeripheralNum : 0)
-						}
-					} else {
-						self.selectedNode = Int(accessoryManager.isConnected ? UserDefaults.preferredPeripheralNum : 0)
-					}
+					setSelectedNode(to: UserDefaults.preferredPeripheralNum)
 				}
 			}
 			.navigationTitle("Settings")
@@ -552,6 +553,16 @@ struct Settings: View {
 					UIImpactFeedbackGenerator(style: .medium).impactOccurred()
 				}
 			)
+		}
+	}
+	
+	func setSelectedNode(to nodeNum: Int) {
+		if nodes.count > 1 {
+			if selectedNode == 0 {
+				self.selectedNode = Int(accessoryManager.isConnected ? nodeNum : 0)
+			}
+		} else {
+			self.selectedNode = Int(accessoryManager.isConnected ? nodeNum: 0)
 		}
 	}
 }
