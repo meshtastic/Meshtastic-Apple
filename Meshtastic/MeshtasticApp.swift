@@ -71,16 +71,6 @@ struct MeshtasticAppleApp: App {
 		]
 		RUMMonitor.shared().addAttributes(attributes)
 		
-		SessionReplay.enable(
-		  with: SessionReplay.Configuration(
-			replaySampleRate: 100,
-			textAndInputPrivacyLevel: .maskSensitiveInputs,
-			imagePrivacyLevel: .maskNone,
-			touchPrivacyLevel: .show,
-			startRecordingImmediately: true,
-			featureFlags: [.swiftui: true]
-		  )
-		)
 #endif
 		accessoryManager = AccessoryManager.shared
 		accessoryManager.appState = appState
