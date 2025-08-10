@@ -2127,7 +2127,7 @@
 			repositoryURL = "https://github.com/DataDog/dd-sdk-ios.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 2.29.0;
+				minimumVersion = 2.30.0;
 			};
 		};
 		259792242C2F10B600AD1659 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
