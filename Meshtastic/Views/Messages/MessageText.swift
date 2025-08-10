@@ -26,7 +26,7 @@ struct MessageText: View {
 	
 	var body: some View {
 		
-		SessionReplayPrivacyView(textAndInputPrivacy: .maskAll() {
+		SessionReplayPrivacyView(textAndInputPrivacy: .maskAll) {
 			
 			let markdownText = LocalizedStringKey(message.messagePayloadMarkdown ?? (message.messagePayload ?? "EMPTY MESSAGE"))
 			return Text(markdownText)
