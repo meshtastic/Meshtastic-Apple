@@ -106,6 +106,9 @@ class BLETransport: Transport {
 		Logger.transport.error("🛜 [BLE] State has transitioned to: \(cbManagerStateDescription(state), privacy: .public)")
 		switch state {
 		case .poweredOn:
+			if activeConnection != nil {
+				Logger.transport.info("🛜 [BLE] CBManager has poweredOn with an already active connection")
+			}
 			status = .discovering
 			self.setupCompleteContinuation?.resume()
 			self.setupCompleteContinuation = nil
@@ -121,7 +124,7 @@ class BLETransport: Transport {
 			if let connection = activeConnection {
 				Task {
 					Logger.transport.error("🛜 [BLE] Bluetooth has powered off during active connection. Cleaning up.")
-					try await connection.disconnect(withError: AccessoryError.disconnected("Bluetooth powered off"), shouldReconnect: false)
+					try await connection.disconnect(withError: AccessoryError.disconnected("Bluetooth powered off"), shouldReconnect: true)
 					self.activeConnection = nil
 				}
 			}
