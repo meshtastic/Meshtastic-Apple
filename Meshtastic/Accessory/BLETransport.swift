@@ -168,7 +168,7 @@ class BLETransport: Transport {
 							identifier: id.uuidString,
 							rssi: rssi.intValue)
 		if isNew {
-			Logger.transport.debug("🛜 [BLE] Did Discover new device: \(peripheral.name ?? "Unknown", privacy: .public) (\(peripheral.identifier))")
+			Logger.transport.debug("🛜 [BLE] Did Discover new device: \(peripheral.name ?? "Unknown", privacy: .public) (\(peripheral.identifier, privacy: .public))")
 			discoveredDeviceContinuation?.yield(.deviceFound(device))
 		} else {
 			let rssiVal = rssi.intValue
