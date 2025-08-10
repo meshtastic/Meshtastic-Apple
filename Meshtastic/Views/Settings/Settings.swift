@@ -390,7 +390,7 @@ struct Settings: View {
 											Label {
 												Text("Connected") + Text(verbatim: ": \(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
 											} icon: {
-												accessoryManager.activeConnection?.connection.type.icon ?? Image("questionmark.circle")
+												accessoryManager.activeConnection?.device.transportType.icon ?? Image("questionmark.circle")
 											}
 											.tag(Int(node.num))
 										} else if node.canRemoteAdmin && UserDefaults.enableAdministration && node.sessionPasskey != nil { /// Nodes using the new PKI system
@@ -427,16 +427,18 @@ struct Settings: View {
 								}
 								.pickerStyle(.navigationLink)
 								.onChange(of: selectedNode) { _, newValue in
-									if selectedNode > 0 {
-										let node = nodes.first(where: { $0.num == newValue })
-										let connectedNode = nodes.first(where: { $0.num == preferredNodeNum })
-										preferredNodeNum = Int(connectedNode?.num ?? 0)// Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
-										if connectedNode != nil && connectedNode?.user != nil && connectedNode?.myInfo != nil && node?.user != nil {// && node?.metadata == nil {
-											Task {
-												_ = try await accessoryManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!)
-												Task { @MainActor in
-													Logger.mesh.info("Sent node metadata request from node details")
-												}
+									if selectedNode > 0,
+									   let destinationNode = nodes.first(where: { $0.num == newValue }),
+									   let connectedNode = nodes.first(where: { $0.num == preferredNodeNum }),
+									   let fromUser = connectedNode.user,
+									   let _ = connectedNode.myInfo,  //not sure why, but this check was present in the initial code.
+									   let toUser = destinationNode.user {
+
+										preferredNodeNum = Int(connectedNode.num)
+										Task {
+											_ = try await accessoryManager.requestDeviceMetadata(fromUser: fromUser, toUser: toUser)
+											Task { @MainActor in
+												Logger.mesh.info("Sent node metadata request from node details")
 											}
 										}
 									}

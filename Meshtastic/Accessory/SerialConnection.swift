@@ -166,7 +166,12 @@ actor SerialConnection: Connection {
 		}
 
 		cfmakeraw(&term)
-		term.c_cflag |= UInt((CS8 | CREAD | CLOCAL))
+		
+		term.c_cflag = UInt((CS8 | CREAD | CLOCAL))
+		term.c_oflag = 0
+		term.c_iflag = 0
+		term.c_lflag = 0
+		
 		term.c_cc.16 = 0 // VMIN
 		term.c_cc.17 = 1 // VTIME (1 decisecond = 100ms)
 
