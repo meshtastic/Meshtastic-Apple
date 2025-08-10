@@ -267,7 +267,6 @@ class BLETransport: Transport {
 			case .peerRemovedPairingInformation: // 14
 				// Should disconnect and not retry
 				Logger.transport.error("🛜 [BLETransport] Disconnected because peer removed pairing information.")
-				return
 			case .encryptionTimedOut: // 15
 				Logger.transport.error("🛜 [BLETransport] Disconnected due to encryption timeout.")
 			case .tooManyLEPairedDevices: // 16

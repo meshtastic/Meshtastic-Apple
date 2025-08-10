@@ -8,6 +8,7 @@
 import Foundation
 import OSLog
 import MeshtasticProtobufs
+import CoreBluetooth
 
 private let maxRetries = 10
 private let retryDelay: Duration = .seconds(1)
@@ -49,19 +50,23 @@ extension AccessoryManager {
 			// Step 1: Setup the connection
 			Step(timeout: .seconds(2)) { @MainActor _ in
 				Logger.transport.info("🔗👟[Connect] Step 1: connection to \(device.id)")
-				let connection = try await transport.connect(to: device)
-				let eventStream = try await connection.connect()
-				self.updateState(.communicating)
-				self.connectionEventTask = Task {
-					for await event in eventStream {
-						self.didReceive(event)
+				do {
+					let connection = try await transport.connect(to: device)
+					let eventStream = try await connection.connect()
+					self.updateState(.communicating)
+					self.connectionEventTask = Task {
+						for await event in eventStream {
+							self.didReceive(event)
+						}
+						Logger.transport.info("[Accessory] Event stream closed")
 					}
-					Logger.transport.info("[Accessory] Event stream closed")
-				}
-				self.activeConnection = (device: device, connection: connection)
-				
-				if UserDefaults.preferredPeripheralId.count < 1 {
-					UserDefaults.preferredPeripheralId = device.id.uuidString
+					self.activeConnection = (device: device, connection: connection)
+					
+					if UserDefaults.preferredPeripheralId.count < 1 {
+						UserDefaults.preferredPeripheralId = device.id.uuidString
+					}
+				} catch let error as CBError where error.code == .peerRemovedPairingInformation {
+					await self.connectionStepper?.cancelCurrentlyExecutingStep(withError: error, cancelFullProcess: true)
 				}
 			}
 			
@@ -327,3 +332,4 @@ actor SequentialSteps {
 		}
 	}
 }
+
