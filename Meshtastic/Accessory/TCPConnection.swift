@@ -129,7 +129,7 @@ actor TCPConnection: Connection {
 		}
 	}
 	
-	func disconnect(withError error: Error? = nil, shouldReconnect: Bool) async throws {
+	func disconnect(withError error: Error? = nil, shouldReconnect: Bool) throws {
 		Logger.transport.debug("🌐 [TCP] Disconnecting from TCP connection")
 		readerTask?.cancel()
 		readerTask = nil

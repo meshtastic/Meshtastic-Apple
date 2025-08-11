@@ -192,7 +192,7 @@ actor SerialConnection: Connection {
 		return getPacketStream()
 	}
 
-	func disconnect(withError error: Error? = nil, shouldReconnect: Bool) async throws {
+	func disconnect(withError error: Error? = nil, shouldReconnect: Bool) throws {
 		if let error {
 			// Inform the AccessoryManager of the error and intent to reconnect
 			if shouldReconnect {

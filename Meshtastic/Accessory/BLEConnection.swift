@@ -67,7 +67,7 @@ actor BLEConnection: Connection {
 		self.delegate.setConnection(self)
 	}
 	
-	func disconnect(withError error: Error? = nil, shouldReconnect: Bool) async throws {
+	func disconnect(withError error: Error? = nil, shouldReconnect: Bool) throws {
 		if peripheral.state == .connected {
 			if let characteristic = FROMRADIO_characteristic {
 				peripheral.setNotifyValue(false, for: characteristic)
