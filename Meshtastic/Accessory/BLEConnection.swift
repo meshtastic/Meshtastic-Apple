@@ -175,7 +175,10 @@ actor BLEConnection: Connection {
 			startRSSITask()
 			return self.getPacketStream()
 		} onCancel: {
-			Task { await continueConnectionProcess(throwing: CancellationError()) }
+			Task {
+				await continueConnectionProcess(throwing: CancellationError())
+				await self.transport?.connectionDidDisconnect()
+			}
 		}
 	}
 	
