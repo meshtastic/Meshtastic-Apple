@@ -194,6 +194,7 @@ actor BLEConnection: Connection {
 	func didDiscoverServices(error: Error? ) {
 		if let error = error {
 			connectContinuation?.resume(throwing: error)
+			connectContinuation = nil
 			return
 		}
 		
@@ -208,12 +209,12 @@ actor BLEConnection: Connection {
 	func didDiscoverCharacteristicsFor(service: CBService, error: Error?) {
 		if let error = error {
 			connectContinuation?.resume(throwing: error)
-			self.connectionStreamContinuation = nil
+			self.connectContinuation = nil
 			return
 		}
 		guard let characteristics = service.characteristics else {
 			connectContinuation?.resume(throwing: AccessoryError.discoveryFailed("No characteristics"))
-			self.connectionStreamContinuation = nil
+			self.connectContinuation = nil
 			return
 		}
 		
@@ -246,13 +247,14 @@ actor BLEConnection: Connection {
 		if TORADIO_characteristic != nil && FROMRADIO_characteristic != nil && FROMNUM_characteristic != nil {
 			Logger.transport.info("🛜 [BLE] characteristics ready")
 			connectContinuation?.resume()
-			self.connectionStreamContinuation = nil
+			self.connectContinuation = nil
 			
 			// Read initial RSSI on ready
 			peripheral.readRSSI()
 		} else {
 			Logger.transport.info("🛜 [BLE] Missing required characteristics")
 			connectContinuation?.resume(throwing: AccessoryError.discoveryFailed("Missing required characteristics"))
+			self.connectContinuation = nil
 		}
 	}
 	
