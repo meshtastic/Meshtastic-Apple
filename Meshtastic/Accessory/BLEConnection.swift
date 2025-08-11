@@ -263,6 +263,7 @@ actor BLEConnection: Connection {
 				readContinuation?.resume(throwing: error)
 				readContinuation = nil
 			}
+			Task { try await self.handlePeripheralError(error: error) }
 			return
 		}
 		Logger.transport.debug("🛜 [BLE] Did update value for \(characteristic.meshtasticCharacteristicName, privacy: .public)=\(characteristic.value ?? Data(), privacy: .public)")
