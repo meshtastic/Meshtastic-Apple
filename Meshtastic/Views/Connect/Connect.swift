@@ -126,7 +126,7 @@ struct Connect: View {
 							.padding([.top])
 							.swipeActions {
 								Button(role: .destructive) {
-									if accessoryManager.isConnected {
+									if accessoryManager.allowDisconnect {
 										// bleManager.disconnectPeripheral(reconnect: false)
 										Task {
 											try await accessoryManager.disconnect()
