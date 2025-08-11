@@ -257,14 +257,16 @@ actor BLEConnection: Connection {
 	}
 	
 	func didUpdateValueFor(characteristic: CBCharacteristic, error: Error?) {
-		Logger.transport.debug("🛜 [BLE] Did update value for \(characteristic.meshtasticCharacteristicName, privacy: .public)=\(characteristic.value ?? Data(), privacy: .public)")
 		if let error = error {
 			if characteristic.uuid == FROMRADIO_UUID {
+				Logger.transport.debug("🛜 [BLE] Error updating value for \(characteristic.meshtasticCharacteristicName, privacy: .public): \(error)")
 				readContinuation?.resume(throwing: error)
 				readContinuation = nil
 			}
 			return
 		}
+		Logger.transport.debug("🛜 [BLE] Did update value for \(characteristic.meshtasticCharacteristicName, privacy: .public)=\(characteristic.value ?? Data(), privacy: .public)")
+
 		guard let value = characteristic.value else { return }
 		
 		switch characteristic.uuid {
