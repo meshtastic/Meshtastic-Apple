@@ -170,9 +170,22 @@ actor BLEConnection: Connection {
 	}
 	
 	func connect() async throws -> AsyncStream<ConnectionEvent> {
-		try await discoverServices()
-		startRSSITask()
-		return self.getPacketStream()
+		return try await withTaskCancellationHandler {
+			try await discoverServices()
+			startRSSITask()
+			return self.getPacketStream()
+		} onCancel: {
+			Task { await continueConnectionProcess(throwing: CancellationError()) }
+		}
+	}
+	
+	private func continueConnectionProcess(throwing error: Error? = nil) {
+		if let error {
+			self.connectContinuation?.resume(throwing: error)
+		} else {
+			self.connectContinuation?.resume()
+		}
+		self.connectContinuation = nil
 	}
 	
 	func startRSSITask() {
@@ -193,8 +206,7 @@ actor BLEConnection: Connection {
 	
 	func didDiscoverServices(error: Error? ) {
 		if let error = error {
-			connectContinuation?.resume(throwing: error)
-			connectContinuation = nil
+			self.continueConnectionProcess(throwing: error)
 			return
 		}
 		
@@ -208,13 +220,11 @@ actor BLEConnection: Connection {
 	
 	func didDiscoverCharacteristicsFor(service: CBService, error: Error?) {
 		if let error = error {
-			connectContinuation?.resume(throwing: error)
-			self.connectContinuation = nil
+			self.continueConnectionProcess(throwing: error)
 			return
 		}
 		guard let characteristics = service.characteristics else {
-			connectContinuation?.resume(throwing: AccessoryError.discoveryFailed("No characteristics"))
-			self.connectContinuation = nil
+			self.continueConnectionProcess(throwing: AccessoryError.discoveryFailed("No characteristics"))
 			return
 		}
 		
@@ -246,15 +256,13 @@ actor BLEConnection: Connection {
 		
 		if TORADIO_characteristic != nil && FROMRADIO_characteristic != nil && FROMNUM_characteristic != nil {
 			Logger.transport.info("🛜 [BLE] characteristics ready")
-			connectContinuation?.resume()
-			self.connectContinuation = nil
+			self.continueConnectionProcess()
 			
 			// Read initial RSSI on ready
 			peripheral.readRSSI()
 		} else {
 			Logger.transport.info("🛜 [BLE] Missing required characteristics")
-			connectContinuation?.resume(throwing: AccessoryError.discoveryFailed("Missing required characteristics"))
-			self.connectContinuation = nil
+			self.continueConnectionProcess(throwing: AccessoryError.discoveryFailed("Missing required characteristics"))
 		}
 	}
 	

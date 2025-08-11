@@ -125,16 +125,15 @@ struct Connect: View {
 							.foregroundColor(Color.gray)
 							.padding([.top])
 							.swipeActions {
-								Button(role: .destructive) {
-									if accessoryManager.allowDisconnect {
-										// bleManager.disconnectPeripheral(reconnect: false)
+								if accessoryManager.allowDisconnect {
+									Button(role: .destructive) {
 										Task {
 											try await accessoryManager.disconnect()
 										}
-									}
-								} label: {
-									Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
-								}.disabled(!accessoryManager.allowDisconnect)
+									} label: {
+										Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+									}.disabled(!accessoryManager.allowDisconnect)
+								}
 							}
 							.contextMenu {
 								
