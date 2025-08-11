@@ -147,7 +147,9 @@ extension AccessoryManager {
 	// toConnection parameter can be used during connection process before the AccessoryManager is fully setup
 	public func sendHeartbeat(toConnection: Connection? = nil) async throws {
 		var heartbeatToRadio: ToRadio = ToRadio()
-		heartbeatToRadio.payloadVariant = .heartbeat(Heartbeat())
+		var heartbeatPacket = Heartbeat()
+		heartbeatPacket.nonce = UInt32.random(in: 0...UInt32.max)
+		heartbeatToRadio.payloadVariant = .heartbeat(heartbeatPacket)
 		if let toConnection {
 			try await toConnection.send(heartbeatToRadio)
 		} else {
