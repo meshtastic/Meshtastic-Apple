@@ -17,7 +17,7 @@ import ActivityKit
 #endif
 
 struct Connect: View {
-
+	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State var router: Router
@@ -27,7 +27,7 @@ struct Connect: View {
 	@State var liveActivityStarted = false
 	@State var presentingSwitchPreferredPeripheral = false
 	@State var selectedPeripherialId = ""
-
+	
 	var body: some View {
 		NavigationStack {
 			VStack {
@@ -222,13 +222,15 @@ struct Connect: View {
 								}
 								.padding()
 								.swipeActions {
-									Button(role: .destructive) {
-										Task {
-											try await accessoryManager.disconnect()
-										}
-									} label: {
-										Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
-									}.disabled(!accessoryManager.allowDisconnect)
+									if accessoryManager.allowDisconnect {
+										Button(role: .destructive) {
+											Task {
+												try await accessoryManager.disconnect()
+											}
+										} label: {
+											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+										}.disabled(!accessoryManager.allowDisconnect)
+									}
 								}
 								
 							} else {
@@ -350,24 +352,24 @@ struct Connect: View {
 					)
 				}
 			)
-
+			
 		}
 		// TODO: REMOVING VERSION STUFF?
-//		.sheet(isPresented: $invalidFirmwareVersion, onDismiss: didDismissSheet) {
-//			InvalidVersion(minimumVersion: accessoryManager.minimumVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
-//				.presentationDetents([.large])
-//				.presentationDragIndicator(.automatic)
-//		}
-//		.onChange(of: accessoryManager) {
-//			invalidFirmwareVersion = self.bleManager.invalidVersion
-//		}
+		//		.sheet(isPresented: $invalidFirmwareVersion, onDismiss: didDismissSheet) {
+		//			InvalidVersion(minimumVersion: accessoryManager.minimumVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
+		//				.presentationDetents([.large])
+		//				.presentationDragIndicator(.automatic)
+		//		}
+		//		.onChange(of: accessoryManager) {
+		//			invalidFirmwareVersion = self.bleManager.invalidVersion
+		//		}
 		.onChange(of: self.accessoryManager.state) { _, state in
-
+			
 			if let deviceNum = accessoryManager.activeDeviceNum, UserDefaults.preferredPeripheralId.count > 0 && state == .subscribed {
-
+				
 				let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 				fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", deviceNum)
-
+				
 				do {
 					node = try context.fetch(fetchNodeInfoRequest).first
 					if let loRaConfig = node?.loRaConfig, loRaConfig.regionCode == RegionCodes.unset.rawValue {
@@ -389,9 +391,9 @@ struct Connect: View {
 		let timerSeconds = 900
 		let localStats = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 4"))
 		let mostRecent = localStats?.lastObject as? TelemetryEntity
-
+		
 		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName?.addingVariationSelectors ?? "unknown")
-
+		
 		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
 		let initialContentState = MeshActivityAttributes.ContentState(uptimeSeconds: UInt32(mostRecent?.uptimeSeconds ?? 0),
 																	  channelUtilization: mostRecent?.channelUtilization ?? 0.0,
@@ -405,9 +407,9 @@ struct Connect: View {
 																	  nodesOnline: UInt32(mostRecent?.numOnlineNodes ?? 0),
 																	  totalNodes: UInt32(mostRecent?.numTotalNodes ?? 0),
 																	  timerRange: Date.now...future)
-
+		
 		let activityContent = ActivityContent(state: initialContentState, staleDate: Calendar.current.date(byAdding: .minute, value: 15, to: Date())!)
-
+		
 		do {
 			let myActivity = try Activity<MeshActivityAttributes>.request(attributes: activityAttributes, content: activityContent,
 																		  pushType: nil)
@@ -416,7 +418,7 @@ struct Connect: View {
 			Logger.services.error("Error requesting live activity: \(error.localizedDescription, privacy: .public)")
 		}
 	}
-
+	
 	func endActivity() {
 		liveActivityStarted = false
 		Task {
@@ -486,15 +488,15 @@ struct ManualConnectionMenu: View {
 					Label(title: { Text(transport.title)}, icon: { transport.icon })
 				}
 			}
-	   } label: {
-		   Label("Manual", systemImage: "plus")
-	   }.alert("Manual connection string", isPresented: $showAlert, presenting: selectedTransport) { selectedTransport in
-		   TextField("Connection details", text: $connectionString)
-					Button("OK", action: {
-						Task {
-							try await selectedTransport.transport.manuallyConnect(withConnectionString: connectionString)
-						}
-					})
+		} label: {
+			Label("Manual", systemImage: "plus")
+		}.alert("Manual connection string", isPresented: $showAlert, presenting: selectedTransport) { selectedTransport in
+			TextField("Connection details", text: $connectionString)
+			Button("OK", action: {
+				Task {
+					try await selectedTransport.transport.manuallyConnect(withConnectionString: connectionString)
 				}
+			})
+		}
 	}
 }
