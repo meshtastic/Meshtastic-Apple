@@ -19,7 +19,7 @@ class Router: ObservableObject {
 		self.navigationState = navigationState
 
 		$navigationState.sink { destination in
-			Logger.services.info("🛣 [App] Routed to \(destination.selectedTab.rawValue, privacy: .public) \(String(describing: navigationState.selectedTab), privacy: .public)")
+			Logger.services.info("🛣 [App] Routed to \(destination.selectedTab.rawValue, privacy: .public)")
 		}.store(in: &cancellables)
 	}
 
