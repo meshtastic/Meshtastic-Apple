@@ -877,7 +877,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .waypointApp:
 				waypointPacket(packet: decodedInfo.packet, context: context)
 			case .nodeinfoApp:
-				if !invalidVersion { upsertNodeInfoPacket(packet: decodedInfo.packet, context: context) }
+				guard let peripheral = self.connectedPeripheral else {
+					Logger.mesh.error("🕸️ connectedPeripheral is nil. Unable to determine connectedNodeNum for node info upsert.")
+					return
+				}
+				if Int64(truncatingIfNeeded: decodedInfo.packet.from) != peripheral.num {
+					upsertNodeInfoPacket(packet: decodedInfo.packet, context: context)
+				}
 			case .routingApp:
 				if !invalidVersion {
 					guard let peripheral = self.connectedPeripheral else {
