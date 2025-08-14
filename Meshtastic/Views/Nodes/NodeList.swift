@@ -40,7 +40,6 @@ struct NodeList: View {
 	@State private var isPresentingPositionFailedAlert = false
 	@State private var isPresentingDeleteNodeAlert = false
 	@State private var deleteNodeId: Int64 = 0
-    @State private var isPresentingShareContactQR = false
     @State private var shareContactNode: NodeInfoEntity?
 
 	var boolFilters: [Bool] {[
@@ -83,7 +82,6 @@ struct NodeList: View {
 			if !user.unmessagable {
 				Button(action: {
 					shareContactNode = node
-					isPresentingShareContactQR = true
 				}) {
 					Label("Share Contact QR", systemImage: "qrcode")
 				}
@@ -234,12 +232,8 @@ struct NodeList: View {
 					}
 				}
 			 }
-			.sheet(isPresented: $isPresentingShareContactQR) {
-				if let node = shareContactNode {
-					ShareContactQRDialog(node: node.toProto())
-				} else {
-					EmptyView()
-				}
+			.sheet(item: $shareContactNode) { selectedNode in
+				ShareContactQRDialog(node: selectedNode.toProto())
 			}
 			.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
 			.navigationBarItems(

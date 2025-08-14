@@ -224,8 +224,29 @@ struct UserMessageList: View {
 				context.refresh(user, mergeChanges: true)
 			}
 		}
-		.navigationBarTitleDisplayMode(.inline)
+		.navigationBarTitleDisplayMode(.large)
 		.toolbar {
+			if !user.keyMatch {
+				ToolbarItem(placement: .bottomBar) {
+					VStack {
+						HStack {
+							Image(systemName: "key.slash.fill")
+								.symbolRenderingMode(.multicolor)
+								.foregroundStyle(.red)
+								.font(.caption2)
+							Text("There is an issue with this contact's public key.")
+								.foregroundStyle(.secondary)
+								.font(.caption2)
+						}
+						Link(destination: URL(string: "meshtastic:///nodes?nodenum=\(user.num)")!) {
+							Text("Details...")
+								.font(.caption2)
+								.offset(y: -15)
+						}
+					}
+					.offset(y: -15)
+				}
+			}
 			ToolbarItem(placement: .principal) {
 				HStack {
 					CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 44)
