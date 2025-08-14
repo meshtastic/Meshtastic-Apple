@@ -47,7 +47,7 @@ struct LockLegend: View {
 					Text("Public Key Mismatch")
 						.fontWeight(.semibold)
 				}
-				Text("The public key does not match the recorded key. You may delete the node and let it exchange keys again, but this may indicate a more serious security problem. Contact the user through another trusted channel, to determine if the key change was due to a factory reset or other intentional action.")
+				Text("Verify who you are messaging with by comparing public keys in person or over the phone. The most recent public key for this node does not match the previously recorded key. You can delete the node and let it exchange keys again if the key change was due to a factory reset or other intentional action but this also may indicate a more serious security problem.")
 					.allowsTightening(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
 					.font(.callout)
 					.fixedSize(horizontal: false, vertical: true)

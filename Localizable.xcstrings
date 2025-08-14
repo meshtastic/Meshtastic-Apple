@@ -36264,6 +36264,7 @@
       }
     },
     "The most recent public key for this node does not match the previously recorded key. You can delete the node and let it exchange keys again, but this also may indicate a more serious security problem. Contact the user through another trusted channel to determine if the key change was due to a factory reset or other intentional action." : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -36702,7 +36703,7 @@
         }
       }
     },
-    "There is an issue with this Contact's Public Key." : {
+    "There is an issue with this contact's public key." : {
 
     },
     "These settings will %@ channels. The current LoRa Config will be replaced, if there are substantial changes to the LoRa config the device will reboot" : {
@@ -40388,6 +40389,9 @@
           }
         }
       }
+    },
+    "Verify who you are messaging with by comparing public keys in person or over the phone. The most recent public key for this node does not match the previously recorded key. You can delete the node and let it exchange keys again if the key change was due to a factory reset or other intentional action but this also may indicate a more serious security problem." : {
+
     },
     "Version %@ includes substantial network optimizations and extensive changes to devices and client apps. Only nodes version %@ and above are supported." : {
       "localizations" : {
