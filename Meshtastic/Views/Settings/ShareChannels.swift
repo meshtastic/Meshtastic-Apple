@@ -34,7 +34,7 @@ struct QrCodeImage {
 struct ShareChannels: View {
 
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var dismiss
 	@State var channelSet: ChannelSet = ChannelSet()
 	@State var includeChannel0 = true
@@ -248,7 +248,7 @@ struct ShareChannels: View {
 			.navigationBarTitleDisplayMode(.inline)
 			.navigationBarItems(trailing:
 			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			})
 			.onAppear {
 				generateChannelSet()

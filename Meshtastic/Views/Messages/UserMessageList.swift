@@ -12,7 +12,7 @@ import OSLog
 struct UserMessageList: View {
 
 	@EnvironmentObject var appState: AppState
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.managedObjectContext) var context
 	// Keyboard State
 	@FocusState var messageFieldFocused: Bool
@@ -39,7 +39,7 @@ struct UserMessageList: View {
 										.font(.caption)
 										.foregroundColor(.gray)
 								}
-								if user.num != bleManager.connectedPeripheral?.num ?? -1 {
+								if user.num != accessoryManager.activeDeviceNum ?? -1 {
 									let currentUser: Bool = (Int64(UserDefaults.preferredPeripheralNum) == message.fromUser?.num ?? -1 ? true : false)
 
 									if message.replyID > 0 {
@@ -234,9 +234,8 @@ struct UserMessageList: View {
 			ToolbarItem(placement: .navigationBarTrailing) {
 				ZStack {
 					ConnectedDevice(
-						bluetoothOn: bleManager.isSwitchedOn,
-						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
+						deviceConnected: accessoryManager.isConnected,
+						name: accessoryManager.activeConnection?.device.shortName ?? "?")
 				}
 			}
 		}

@@ -23,7 +23,7 @@ func generateChannelKey(size: Int) -> String {
 struct Channels: View {
 
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	@Environment(\.sizeCategory) var sizeCategory
 
@@ -153,7 +153,7 @@ struct Channels: View {
 					.presentationDetents([.large])
 					.presentationDragIndicator(.visible)
 				.onFirstAppear {
-					supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
+					supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumVersion)
 				}
 				HStack {
 					Button {
@@ -212,18 +212,20 @@ struct Channels: View {
 								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
 							}
 						}
-						let adminMessageId =  bleManager.saveChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
+						Task {
+							_ = try await accessoryManager.saveChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
 
-						if adminMessageId > 0 {
-							selectedChannel = nil
-							channelName = ""
-							channelRole	= 2
-							hasChanges = false
+							Task { @MainActor in
+								selectedChannel = nil
+								channelName = ""
+								channelRole	= 2
+								hasChanges = false
+							}
 						}
 					} label: {
 						Label("Save", systemImage: "square.and.arrow.down")
 					}
-					.disabled(bleManager.connectedPeripheral == nil)// || !hasChanges)// !hasValidKey)
+					.disabled(!accessoryManager.isConnected)// || !hasChanges)// !hasValidKey)
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
 					.controlSize(.large)
@@ -307,7 +309,7 @@ struct Channels: View {
 		.navigationTitle("Channels")
 		.navigationBarItems(trailing:
 		ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
+			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 		})
 	}
 }

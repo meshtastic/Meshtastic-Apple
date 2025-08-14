@@ -10,7 +10,7 @@ import UniformTypeIdentifiers
 
 struct CsvDocument: FileDocument {
 
-	static var readableContentTypes =  [UTType.commaSeparatedText]
+	static let readableContentTypes =  [UTType.commaSeparatedText]
 
 	@State var csvData: String
 

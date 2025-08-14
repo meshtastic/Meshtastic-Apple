@@ -1,9 +1,10 @@
 import SwiftUI
 import OSLog
+import DatadogSessionReplay
 
 struct TextMessageField: View {
 	static let maxbytes = 200
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	let destination: MessageDestination
 	@Binding var replyMessageId: Int64
@@ -15,118 +16,125 @@ struct TextMessageField: View {
 	@State private var sendPositionWithMessage = false
 
 	var body: some View {
-		VStack {
-			#if targetEnvironment(macCatalyst)
-			HStack {
-				if destination.showAlertButton {
-					Spacer()
-					AlertButton { typingMessage += "🔔 Alert Bell! \u{7}" }
-				}
-				Spacer()
-				RequestPositionButton(action: requestPosition)
-				TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes).padding(.trailing)
-			}
-			#endif
-
-			HStack(alignment: .top) {
-				if replyMessageId != 0 {
-					HStack {
-						Button {
-							withAnimation(.easeInOut(duration: 0.2)) {
-								replyMessageId = 0
-							}
-							isFocused = false
-						} label: {
-							Image(systemName: "x.circle.fill")
-						}
-						Text("Reply")
+		SessionReplayPrivacyView(textAndInputPrivacy: .maskAllInputs) {
+			VStack {
+#if targetEnvironment(macCatalyst)
+				HStack {
+					if destination.showAlertButton {
+						Spacer()
+						AlertButton { typingMessage += "🔔 Alert Bell! \u{7}" }
 					}
-					.padding(.top)
+					Spacer()
+					RequestPositionButton(action: requestPosition)
+					TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes).padding(.trailing)
 				}
-
-				ZStack {
-					TextField("Message", text: $typingMessage, axis: .vertical)
-						.onChange(of: typingMessage) { _, value in
-							totalBytes = value.utf8.count
-							while totalBytes > Self.maxbytes {
-								typingMessage = String(typingMessage.dropLast())
-								totalBytes = typingMessage.utf8.count
-							}
-						}
-						.keyboardType(.default)
-						.toolbar {
-							ToolbarItemGroup(placement: .keyboard) {
-								Button("Dismiss") {
-									isFocused = false
+#endif
+				
+				HStack(alignment: .top) {
+					if replyMessageId != 0 {
+						HStack {
+							Button {
+								withAnimation(.easeInOut(duration: 0.2)) {
+									replyMessageId = 0
 								}
-								.font(.subheadline)
-
-								if destination.showAlertButton {
+								isFocused = false
+							} label: {
+								Image(systemName: "x.circle.fill")
+							}
+							Text("Reply")
+						}
+						.padding(.top)
+					}
+					
+					ZStack {
+						TextField("Message", text: $typingMessage, axis: .vertical)
+							.onChange(of: typingMessage) { _, value in
+								totalBytes = value.utf8.count
+								while totalBytes > Self.maxbytes {
+									typingMessage = String(typingMessage.dropLast())
+									totalBytes = typingMessage.utf8.count
+								}
+							}
+							.keyboardType(.default)
+							.toolbar {
+								ToolbarItemGroup(placement: .keyboard) {
+									Button("Dismiss") {
+										isFocused = false
+									}
+									.font(.subheadline)
+									
+									if destination.showAlertButton {
+										Spacer()
+										AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
+									}
+									
 									Spacer()
-									AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
+									RequestPositionButton(action: requestPosition)
+									TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes)
 								}
-
-								Spacer()
-								RequestPositionButton(action: requestPosition)
-								TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes)
 							}
-						}
-						.padding(.horizontal, 8)
-						.focused($isFocused)
-						.multilineTextAlignment(.leading)
-						.frame(minHeight: 50)
-						.keyboardShortcut(.defaultAction)
-						.onSubmit {
-							#if targetEnvironment(macCatalyst)
-							sendMessage()
-							#endif
-						}
-
-					Text(typingMessage)
-						.opacity(0)
-						.padding(.all, 0)
+							.padding(.horizontal, 8)
+							.focused($isFocused)
+							.multilineTextAlignment(.leading)
+							.frame(minHeight: 50)
+							.keyboardShortcut(.defaultAction)
+							.onSubmit {
+#if targetEnvironment(macCatalyst)
+								sendMessage()
+#endif
+							}
+						
+						Text(typingMessage)
+							.opacity(0)
+							.padding(.all, 0)
+					}
+					.overlay(RoundedRectangle(cornerRadius: 20).stroke(.tertiary, lineWidth: 1))
+					.padding(.bottom, 15)
+					
+					Button(action: sendMessage) {
+						Image(systemName: "arrow.up.circle.fill")
+							.font(.largeTitle)
+							.foregroundColor(.accentColor)
+					}
 				}
-				.overlay(RoundedRectangle(cornerRadius: 20).stroke(.tertiary, lineWidth: 1))
-				.padding(.bottom, 15)
-
-				Button(action: sendMessage) {
-					Image(systemName: "arrow.up.circle.fill")
-						.font(.largeTitle)
-						.foregroundColor(.accentColor)
-				}
+				.padding(.all, 15)
 			}
-			.padding(.all, 15)
 		}
 	}
 
 	private func requestPosition() {
-		let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
+		let userLongName = accessoryManager.activeConnection?.device.longName ?? "Unknown"
 		sendPositionWithMessage = true
 		typingMessage = "📍 " + userLongName + " \(destination.positionShareMessage)."
 	}
 
 	private func sendMessage() {
-		let messageSent = bleManager.sendMessage(
-			message: typingMessage,
-			toUserNum: destination.userNum,
-			channel: destination.channelNum,
-			isEmoji: false,
-			replyID: replyMessageId
-		)
-		if messageSent {
-			typingMessage = ""
-			isFocused = false
-			replyMessageId = 0
-			onSubmit()
-			if sendPositionWithMessage {
-				let positionSent = bleManager.sendPosition(
+		Task {
+			do {
+				try await accessoryManager.sendMessage(
+					message: typingMessage,
+					toUserNum: destination.userNum,
 					channel: destination.channelNum,
-					destNum: destination.positionDestNum,
-					wantResponse: destination.wantPositionResponse
-				)
-				if positionSent {
+					isEmoji: false,
+					replyID: replyMessageId)
+
+				// If nothing thrown, then successful.  Reset for the next message
+				typingMessage = ""
+				isFocused = false
+				replyMessageId = 0
+				onSubmit()
+
+				if sendPositionWithMessage {
+					try await accessoryManager.sendPosition(
+						channel: destination.channelNum,
+						destNum: destination.positionDestNum,
+						wantResponse: destination.wantPositionResponse
+					)
+					// If nothing thrown, then successful.
 					Logger.mesh.info("Location Sent")
 				}
+			} catch {
+				Logger.mesh.info("Error sending message")
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 import SwiftUI
-
+import OSLog
 struct TraceRouteButton: View {
-	var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	var node: NodeInfoEntity
 
@@ -10,10 +10,19 @@ struct TraceRouteButton: View {
 
     var body: some View {
 		RateLimitedButton(key: "traceroute", rateLimit: 30.0) {
-			isPresentingTraceRouteSentAlert = bleManager.sendTraceRouteRequest(
-				destNum: node.user?.num ?? 0,
-				wantResponse: true
-			)
+			Task {
+				do {
+					try await accessoryManager.sendTraceRouteRequest(
+						destNum: node.user?.num ?? 0,
+						wantResponse: true
+					)
+					Task {
+						isPresentingTraceRouteSentAlert = true
+					}
+				} catch {
+					Logger.mesh.warning("Failed to send traceroute request: \(error)")
+				}
+			}
 		} label: { completion in
 			if let completion, completion.percentComplete > 0.0 {
 				Label {
