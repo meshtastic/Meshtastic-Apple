@@ -10146,6 +10146,9 @@
         }
       }
     },
+    "Details..." : {
+
+    },
     "Detection" : {
       "localizations" : {
         "it" : {
@@ -36698,6 +36701,9 @@
           }
         }
       }
+    },
+    "There is an issue with this Contact's Public Key." : {
+
     },
     "These settings will %@ channels. The current LoRa Config will be replaced, if there are substantial changes to the LoRa config the device will reboot" : {
       "localizations" : {
