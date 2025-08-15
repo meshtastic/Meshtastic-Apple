@@ -28340,7 +28340,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Config. Radio"
+            "value" : "Configurazione Radio"
           }
         },
         "ja" : {
@@ -36978,6 +36978,7 @@
       }
     },
     "The public key does not match the recorded key. You may delete the node and let it exchange keys again, but this may indicate a more serious security problem. Contact the user through another trusted channel, to determine if the key change was due to a factory reset or other intentional action." : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
